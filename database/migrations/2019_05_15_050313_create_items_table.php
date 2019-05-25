@@ -4,22 +4,21 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateUsersTable extends Migration
+class CreateItemsTable extends Migration
 {
   /**
    * Run the migrations.
    *
    * @return void
+   * 
+   * W tabeli Items będą poszczególne przedmioty w magazynie.
    */
   public function up()
   {
-    Schema::create('users', function (Blueprint $table) {
+    Schema::create('items', function (Blueprint $table) {
       $table->bigIncrements('id');
-      $table->string('name');
-      $table->string('email')->unique();
-      $table->timestamp('email_verified_at')->nullable();
-      $table->string('password');
-      $table->rememberToken();
+      $table->integer('product_id')->unsigned();
+      $table->string('size', 128);
       $table->timestamps();
     });
   }
@@ -31,6 +30,6 @@ class CreateUsersTable extends Migration
    */
   public function down()
   {
-    Schema::dropIfExists('users');
+    Schema::dropIfExists('items');
   }
 }
