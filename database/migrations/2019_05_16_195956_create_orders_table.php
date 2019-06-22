@@ -14,10 +14,11 @@ class CreateOrdersTable extends Migration
   public function up()
   {
     Schema::create('orders', function (Blueprint $table) {
-      $table->bigIncrements('id');
-      $table->string('code', 8)->unique();
+      $table->bigIncrements('id')->uniqe();
+      $table->string('code', 16)->unique();
       $table->smallInteger('payment')->default(0);
       $table->tinyInteger('payment_status')->default(0);
+      $table->tinyInteger('shop_status')->default(0);
       $table->smallInteger('delivery')->default(0);
       $table->tinyInteger('delivery_status')->default(0);
       $table->timestamps();

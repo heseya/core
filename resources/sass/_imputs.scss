@@ -1,0 +1,13 @@
+.input {
+  max-width: 320px;
+  margin: 20px 0;
+
+  input {
+    width: calc(100% - 42px);
+    font-size: 15px;
+    padding: 10px 21px;
+    border-radius: 21px;
+    border: 0;
+    background: $grey-light;
+  }
+}
