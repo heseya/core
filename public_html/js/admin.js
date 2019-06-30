@@ -91,16 +91,37 @@
   !*** ./resources/js/admin.js ***!
   \*******************************/
 /*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(/*! ./admin/orders.js */ "./resources/js/admin/orders.js");
+
+__webpack_require__(/*! ./admin/chats.js */ "./resources/js/admin/chats.js");
+
+function loader(element) {
+  var loader = document.createElement('div');
+  loader.classList.add('loader--warper');
+  var loader2 = document.createElement('div');
+  loader2.classList.add('loader');
+  loader.appendChild(loader2);
+  element.appendChild(loader);
+}
+
+/***/ }),
+
+/***/ "./resources/js/admin/chats.js":
+/*!*************************************!*\
+  !*** ./resources/js/admin/chats.js ***!
+  \*************************************/
+/*! no static exports found */
 /***/ (function(module, exports) {
 
 var rtf = new Intl.RelativeTimeFormat('pl', {
   numeric: 'auto'
 });
-var orders = document.getElementById('orders');
+var chats = document.getElementById('chats');
 
-function updateOrders() {
-  var loader = document.createElement('div');
-  loader.classList.add('loader--warper');
+function updateChats() {
+  loader(orders);
   fetch('/api/admin/orders', {
     credentials: 'same-origin'
   }).then(function (response) {
@@ -126,10 +147,10 @@ function updateOrders() {
       var e = document.createElement('li');
       var left = document.createElement('div');
       var top = document.createElement('div');
-      top.innerText = row.name;
+      top.innerText = row.code;
       left.appendChild(top);
       var bottom = document.createElement('small');
-      bottom.innerText = row.code;
+      bottom.innerText = row.email;
       left.appendChild(bottom);
       e.appendChild(left);
       var sum = document.createElement('div');
@@ -151,11 +172,88 @@ function updateOrders() {
       a.appendChild(e);
       orders.appendChild(a);
     });
-    document.querySelector('.loader').style.display = 'none';
+    loader.remove();
   });
 }
 
-updateOrders();
+if (chats !== null) updateOrders();
+
+/***/ }),
+
+/***/ "./resources/js/admin/orders.js":
+/*!**************************************!*\
+  !*** ./resources/js/admin/orders.js ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var rtf = new Intl.RelativeTimeFormat('pl', {
+  numeric: 'auto'
+});
+var orders = document.getElementById('orders');
+
+function updateOrders() {
+  var loader = document.createElement('div');
+  loader.classList.add('loader--warper');
+  var loader2 = document.createElement('div');
+  loader2.classList.add('loader');
+  loader.appendChild(loader2);
+  orders.appendChild(loader);
+  fetch('/api/admin/orders', {
+    credentials: 'same-origin'
+  }).then(function (response) {
+    return response.json();
+  }).then(function (data) {
+    if (data.error) return;
+    var days;
+    data.forEach(function (row) {
+      var created = new Date(row.created_at);
+      var sec = created.getTime() - new Date().getTime();
+      created = Math.ceil(sec / (1000 * 60 * 60 * 24));
+
+      if (days != created) {
+        var _e = document.createElement('li');
+
+        _e.classList.add('separator');
+
+        _e.innerText = rtf.format(created, 'day');
+        orders.appendChild(_e);
+        days = created;
+      }
+
+      var e = document.createElement('li');
+      var left = document.createElement('div');
+      var top = document.createElement('div');
+      top.innerText = row.code;
+      left.appendChild(top);
+      var bottom = document.createElement('small');
+      bottom.innerText = row.email;
+      left.appendChild(bottom);
+      e.appendChild(left);
+      var sum = document.createElement('div');
+      sum.innerText = row.sum;
+      sum.classList.add('sum');
+      e.appendChild(sum);
+      var status = document.createElement('div');
+      status.classList.add('status');
+      e.appendChild(status);
+      row.status.forEach(function (color) {
+        if (color == null) return;
+        var x = document.createElement('div');
+        x.classList.add('status-circle');
+        x.classList.add('status-circle__' + color);
+        status.appendChild(x);
+      });
+      var a = document.createElement('a');
+      a.href = '/admin/orders/' + row.id;
+      a.appendChild(e);
+      orders.appendChild(a);
+    });
+    loader.remove();
+  });
+}
+
+if (orders !== null) updateOrders();
 
 /***/ }),
 

@@ -8,6 +8,8 @@ use App\Item;
 use App\Product;
 use App\ProductCategory;
 
+use App\User;
+
 class Cleaner extends Seeder {
   /**
    * Run the database seeds.
@@ -23,6 +25,8 @@ class Cleaner extends Seeder {
     Item::truncate();
     Product::truncate();
     ProductCategory::truncate();
+
+    User::truncate();
 
     DB::statement('SET FOREIGN_KEY_CHECKS=1;');
   }

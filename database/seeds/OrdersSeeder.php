@@ -20,6 +20,7 @@ class OrdersSeeder extends Seeder
 
       $order = Order::create([
         'code' => $faker->regexify('[A-Z0-9]{6}'),
+        'email' => $faker->email(),
         'payment' => 1,
         'payment_status' => 0,
         'shop_status' => 0,

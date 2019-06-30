@@ -16,6 +16,7 @@ class CreateOrdersTable extends Migration
     Schema::create('orders', function (Blueprint $table) {
       $table->bigIncrements('id')->uniqe();
       $table->string('code', 16)->unique();
+      $table->string('email', 256);
       $table->smallInteger('payment')->default(0);
       $table->tinyInteger('payment_status')->default(0);
       $table->tinyInteger('shop_status')->default(0);

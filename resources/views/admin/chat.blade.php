@@ -8,46 +8,40 @@
   <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
-  <nav class="nav">
-    <div class="logo">
-      <img src="/img/logo.png">
+
+  <nav class="chat-nav">
+    <a href="/admin/chat">
+      <img src="/img/icons/back.svg">
+    </a>
+    <div>
+      <div>Jakub Stężowski</div>
+      <small>stezowskijakub@gmail.com</small>
     </div>
-
-    <a href="/admin/products" class="nav--products"></a>
-    <a href="/admin/orders" class="nav--orders"></a>
-    <a href="/admin/chat" class="nav--chat nav--chat__selected"></a>
+    <img src="/img/avatar.jpg" class="avatar">
   </nav>
+ 
+  <ol class="chat">
+    <li class="from">
+      Hej,<br>
+      Obecnie czekamy na nowe pudełka do wisiorków, poczekasz kilka dni na aż dojdą do nas pudełka czy wysłać już jutro w foliowym worku?
+    </li>
+    <li>
+      Hej
+    </li>
+    <li>
+      Wyślijcie w foliowym worku, nie zależy mi specjalnie na tym w co będzie zapakowane, a bardziej na czasie
+    </li>
+    <li>
+      Pozdrawiam
+    </li>
+  </ol>
 
-  <main>
-    <nav class="top-nav">
-      <h1>Konwersacje</h1>
-    </nav>
+  <form class="response">
+    <textarea placeholder="Napisz coś miłego..."></textarea>
+    <button>
+      <img src="/img/icons/send.svg">
+    </button>
+  </form>
 
-    <ol class="list list--chat">
-      <li class="separator">
-        Dzisiaj
-      </li>
-      <a href="/admin/chat/1">
-        <li>
-          <div class="avatar">
-            <img src="/img/avatar.jpg">
-          </div>
-          <div>
-            <div>Szymon Grabowski</div>
-            <small>Kiedy moje zamówienie?</small>
-          </div>
-        </li>
-      </a>
-      <li>
-        <div class="avatar">
-          <img src="/img/icons/email.svg">
-        </div>
-        <div>
-          <div>stezowskijakub@gmail.com</div>
-          <small class="one-line">Hej, Wyślijcie w foliowym worku...</small>
-        </div>
-      </li>
-    </ol>
-  </main>
 </body>
 </html>

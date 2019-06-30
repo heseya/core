@@ -1,0 +1,186 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use SammyK\LaravelFacebookSdk\LaravelFacebookSdk;
+
+use Auth;
+use App\User;
+
+class FacebookController extends Controller
+{
+  public function login (\SammyK\LaravelFacebookSdk\LaravelFacebookSdk $fb)
+  {
+    // Send an array of permissions to request
+    $login_url = $fb->getLoginUrl([
+      'manage_pages',
+      'pages_messaging'
+    ]);
+
+    return redirect($login_url);
+  }
+
+  // Endpoint that is redirected to after an authentication attempt
+  public function callback (\SammyK\LaravelFacebookSdk\LaravelFacebookSdk $fb)
+  {
+    // Obtain an access token.
+    try {
+      $token = $fb->getAccessTokenFromRedirect();
+    } catch (Facebook\Exceptions\FacebookSDKException $e) {
+      dd($e->getMessage());
+    }
+
+    // Access token will be null if the user denied the request
+    // or if someone just hit this URL outside of the OAuth flow.
+    if (! $token) {
+      // Get the redirect helper
+      $helper = $fb->getRedirectLoginHelper();
+
+      if (! $helper->getError()) {
+        abort(403, 'Unauthorized action.');
+      }
+
+      // User denied the request
+      dd(
+        $helper->getError(),
+        $helper->getErrorCode(),
+        $helper->getErrorReason(),
+        $helper->getErrorDescription()
+      );
+    }
+
+    if (! $token->isLongLived()) {
+      // OAuth 2.0 client handler
+      $oauth_client = $fb->getOAuth2Client();
+
+      // Extend the access token.
+      try {
+        $token = $oauth_client->getLongLivedAccessToken($token);
+      } catch (Facebook\Exceptions\FacebookSDKException $e) {
+        dd($e->getMessage());
+      }
+    }
+
+    // Zapisywanie tokenu klienta i pierwszego z brzegu tokenu strony
+    $user = Auth::user();
+    $user->update(['fb' => $token]);
+
+    return redirect('/admin/facebook/pages');
+  }
+
+  public function settings (\SammyK\LaravelFacebookSdk\LaravelFacebookSdk $fb) {
+
+    $user = Auth::user();
+
+    // Jeśli nie jesteś zalogowany
+    if(is_null($user->fb))
+      return response()->view('admin/facebook-empty');
+
+    // Jeśli nie wybrano strony
+    if(is_null($user->fb_page))
+      return redirect('/admin/facebook/pages');
+
+    try {
+      $response = $fb->get('/me?fields=id,name,picture', $user->fb);
+    } catch (Facebook\Exceptions\FacebookSDKException $e) {
+      dd($e->getMessage());
+    }
+    $user_fb = json_decode($response->getGraphUser(), true);
+
+    try {
+      $response = $fb->get('/me?fields=id,name,picture', $user->fb_page);
+    } catch (Facebook\Exceptions\FacebookSDKException $e) {
+      dd($e->getMessage());
+    }
+    $page = json_decode($response->getGraphUser(), true);
+
+    return response()->view('admin/facebook', [
+      'user' => $user_fb,
+      'page' => isset($page) ? $page : null,
+    ]);
+  }
+
+  public function pages (\SammyK\LaravelFacebookSdk\LaravelFacebookSdk $fb) {
+
+    $user = Auth::user();
+
+    // Token strony
+    try {
+      $response = $fb->get('/me/accounts?type=page&fields=name,access_token,picture', $user->fb);
+    } catch (Facebook\Exceptions\FacebookSDKException $e) {
+      dd($e->getMessage());
+    }
+    $pages = json_decode($response->getGraphEdge(), true);
+
+    return response()->view('admin/facebook-pages', ['pages' => $pages]);
+  }
+
+  public function setPage ($access_token) {
+
+    $user = Auth::user();
+    $user->update([
+      'fb_page' => $access_token
+    ]);
+
+    return redirect('admin/facebook');
+  }
+
+  // Odlączanie konta
+  public function unlink (\SammyK\LaravelFacebookSdk\LaravelFacebookSdk $fb) {
+
+    $user = Auth::user();
+
+    if(!is_null($user->fb)) {
+    
+      try {
+        $fb->delete('/me/permissions', [], $user->fb);
+      } catch (Facebook\Exceptions\FacebookSDKException $e) {
+        dd($e->getMessage());
+      }
+
+      $user->update([
+        'fb' => null,
+        'fb_page' => null
+      ]);
+    }
+
+    return redirect('/admin/facebook');
+  }
+
+  public function chats (\SammyK\LaravelFacebookSdk\LaravelFacebookSdk $fb) {
+
+    $user = Auth::user();
+
+    // Jeśli nie jesteś zalogowany
+    if(is_null($user->fb_page))
+      return redirect('/admin/facebook');
+
+    try {
+      $response = $fb->get('/me/conversations?fields=id,unread_count,snippet,participants', $user->fb_page);
+    } catch (Facebook\Exceptions\FacebookSDKException $e) {
+      dd($e->getMessage());
+    }
+
+    $chats = $response->getGraphEdge();
+
+    // foreach($response->getGraphEdge() as $chat) {
+
+    //   $id = $chat['participants'][0]['id'];
+
+    //   try {
+    //     $response2 = $fb->get('/' . $id , $user->fb_page);
+    //   } catch (Facebook\Exceptions\FacebookSDKException $e) {
+    //     dd($e->getMessage());
+    //   }
+
+    //   $chat['participants'][0]['picture'] = $response->getGraphEdge();
+
+    //   $chats[] = $chat;
+    // }
+
+    return response()->view('admin/chats', [
+      'chats' => $chats
+    ]);
+  }
+}

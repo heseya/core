@@ -5,20 +5,34 @@ body {
   padding: 0;
 }
 
+main {
+  margin-bottom: 100px;
+  max-width: 940px;
+  margin: 0 auto;
+}
+
 .one-line {
   text-overflow: ellipsis; 
   overflow: hidden; 
   white-space: nowrap;
 }
 
-main {
-  margin-bottom: 100px;
+.round {
+  border-radius: 8px;
+}
+
+.margin {
+  &__left {
+    margin-left: 12px;
+  }
 }
 
 .loader--warper {
   width: 100%;
+  height: 40px;
   display: flex;
   justify-content: center;
+  align-items: flex-end;
 }
 
 .loader,
@@ -77,6 +91,6 @@ main {
 
 @media (min-width: $break) {
   main {
-    margin: 0 0 0 70px;
+    padding: 0 0 0 70px;
   }
 }

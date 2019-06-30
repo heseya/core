@@ -1,11 +1,6 @@
 <?php
 
-Route::get('/', function () {
-  return view('welcome');
-});
-
-Route::get('zamawiam', 'Controller@clientInfo');
-
+Route::get('/', 'HomeController@index');
 
 // Panel admina
 Route::prefix('admin')->group(function () {
@@ -13,8 +8,18 @@ Route::prefix('admin')->group(function () {
   Route::middleware('auth')->group(function () {
     Route::get('orders', 'AdminController@orders');
     Route::get('products', 'AdminController@products');
-    Route::get('chat', 'AdminController@chat');
+    Route::get('chat', 'FacebookController@chats');
     Route::get('chat/{id}', 'AdminController@chatSingle');
+
+    Route::get('settings', 'AdminController@settings');
+    Route::get('info', 'AdminController@info');
+
+    Route::get('facebook', 'FacebookController@settings');
+    Route::get('facebook/login', 'FacebookController@login');
+    Route::get('facebook/callback', 'FacebookController@callback');
+    Route::get('facebook/unlink', 'FacebookController@unlink');
+    Route::get('facebook/pages', 'FacebookController@pages');
+    Route::get('facebook/set-page/{access_token}', 'FacebookController@setPage');
 
     Route::get('logout', 'Auth\LoginController@logout');
   });
@@ -23,5 +28,4 @@ Route::prefix('admin')->group(function () {
 });
 
 Route::redirect('/panel', '/admin', 301);
-
-Route::get('/home', 'HomeController@index')->name('home');
+Route::redirect('/home', '/', 301);

@@ -34,7 +34,7 @@ class Order extends Model
     return [
       'id' => $this->id,
       'code' => $this->code,
-      'name' => $this->address->name,
+      'email' => $this->email,
       'sum' => rand(50, 200) . 'zł',
       'created_at' => $this->created_at,
       'status' => [
