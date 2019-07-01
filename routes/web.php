@@ -6,6 +6,7 @@ Route::get('/', 'HomeController@index');
 Route::prefix('admin')->group(function () {
 
   Route::middleware('auth')->group(function () {
+
     Route::get('orders', 'AdminController@orders');
     Route::get('products', 'AdminController@products');
     Route::get('chat', 'FacebookController@chats');
@@ -28,4 +29,5 @@ Route::prefix('admin')->group(function () {
 });
 
 Route::redirect('/panel', '/admin', 301);
+Route::redirect('/admin', '/admin/orders', 302);
 Route::redirect('/home', '/', 301);
