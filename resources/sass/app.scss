@@ -1,5 +1,12 @@
-/* CSS by Jędrzej Buliński */
-/* jedrzej@heseya.com */
+/*! CSS by Jedrzej Bulinski !*/
+/*! jedrzej@heseya.com !*/
+
+// Libs
+@import 'normalize';
+textarea, input, button {
+  outline: none;
+  -webkit-appearance: none;
+}
 
 // Fonts
 @font-face{
@@ -20,3 +27,6 @@
 @import 'login';
 @import 'chat';
 @import 'products';
+
+// Dark mode
+@import 'dark';

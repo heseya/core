@@ -36,7 +36,9 @@ class AdminController extends Controller
   }
 
   public function info(Request $request) {
-    return response()->view('admin/info');
+    return response()->view('admin/info', [
+      'version' => '0.1'
+    ]);
   }
 
   public function login(Request $request) {

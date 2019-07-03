@@ -10,7 +10,7 @@ Route::prefix('admin')->group(function () {
     Route::get('orders', 'AdminController@orders');
     Route::get('products', 'AdminController@products');
     Route::get('chat', 'FacebookController@chats');
-    Route::get('chat/{id}', 'AdminController@chatSingle');
+    Route::get('chat/{id}', 'FacebookController@chat');
 
     Route::get('settings', 'AdminController@settings');
     Route::get('info', 'AdminController@info');

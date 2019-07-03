@@ -1,0 +1,24 @@
+.dark {
+  background: #000;
+  color: $white;
+
+  a {
+    color: $white;
+  }
+
+  .separator {
+    background: #000;
+  }
+
+  .nav {
+    background: #111;
+
+    a {
+      filter: invert(1);
+    }
+  }
+
+  .icon {
+    filter: invert(0.9);
+  }
+}

@@ -28,9 +28,9 @@
     </nav>
 
     <ol id="orders" class="list list--orders"></ol>
-
   </main>
 
+  <!-- <div id="splashscreen" class="splashscreen"></div> -->
   <script src="/js/admin.js"></script>
 </body>
 </html>

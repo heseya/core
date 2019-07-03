@@ -7,7 +7,7 @@
   <title>Informacje o systemie</title>
   <link rel="stylesheet" href="/css/app.css">
 </head>
-<body>
+<body class="dark">
 
   <nav class="nav">
     <div class="logo">
@@ -28,6 +28,7 @@
     </nav>
     
     <ol class="list list--settings">
+      <li>Heseya Shop System wersja {{ $version }}</li>
       <li>Icons made by Freepik from www.flaticon.com is licensed by CC 3.0 BY</li>
     </ol>
 

@@ -34,22 +34,27 @@
           <small>{{ $user['email'] }}</small>
         </span>
       </li>
+      <li class="clickable" onclick="darkMode()">
+        <img class="icon" src="/img/icons/moon.svg">Tryb ciemny
+      </li>
       <a href="/admin/info">
         <li class="clickable">
-          <img src="/img/icons/info.svg"> Informacje o systemie
+          <img class="icon" src="/img/icons/info.svg">Informacje o systemie
         </li>
       </a>
       <a href="/admin/facebook">
         <li class="clickable">
-          <img src="/img/icons/facebook.svg"> Facebook
+          <img class="icon" src="/img/icons/facebook.svg">Facebook
         </li>
       </a>
       <a href="/admin/logout">
         <li class="clickable">
-          <img src="/img/icons/logout.svg"> Wyloguj się
+          <img class="icon" src="/img/icons/logout.svg">Wyloguj się
         </li>
       </a>
     </ol>
   </main>
+
+  <script src="/js/admin.js"></script>
 </body>
 </html>

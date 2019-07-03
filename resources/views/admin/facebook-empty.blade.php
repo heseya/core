@@ -31,7 +31,7 @@
       <li>Nie jesteś połączony.</li>
       <a href="/admin/facebook/login">
         <li class="clickable">
-          <img src="/img/icons/facebook.svg">
+          <img class="icon" src="/img/icons/facebook.svg">
           Połącz z kontem Facebook
         </li>
       </a>

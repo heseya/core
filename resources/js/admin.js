@@ -1,6 +1,8 @@
 require('./admin/orders.js')
 require('./admin/chats.js')
 
+require('./admin/dark.js')
+
 function loader (element) {
   let loader = document.createElement('div')
   loader.classList.add('loader--warper')

@@ -152,35 +152,64 @@ class FacebookController extends Controller
 
     $user = Auth::user();
 
-    // Jeśli nie jesteś zalogowany
+    // Jeśli nie jesteś zalogowany do fb
     if(is_null($user->fb_page))
       return redirect('/admin/facebook');
 
     try {
-      $response = $fb->get('/me/conversations?fields=id,unread_count,snippet,participants', $user->fb_page);
+      $response = $fb->get('/me/conversations?fields=id,unread_count,snippet,participants,user_id', $user->fb_page);
     } catch (Facebook\Exceptions\FacebookSDKException $e) {
       dd($e->getMessage());
     }
 
     $chats = $response->getGraphEdge();
 
+    // return response($chats);
+
     // foreach($response->getGraphEdge() as $chat) {
 
     //   $id = $chat['participants'][0]['id'];
 
     //   try {
-    //     $response2 = $fb->get('/' . $id , $user->fb_page);
+    //     $response2 = $fb->get('/' . $id . '/picture?redirect=false', $user->fb_page);
     //   } catch (Facebook\Exceptions\FacebookSDKException $e) {
-    //     dd($e->getMessage());
+    //     // dd($e->getMessage());
     //   }
 
-    //   $chat['participants'][0]['picture'] = $response->getGraphEdge();
+    //   $chat['participants'][0]['picture'] = $response2;
+
+    //   var_dump($response2);
+    //   exit();
 
     //   $chats[] = $chat;
     // }
 
     return response()->view('admin/chats', [
       'chats' => $chats
+    ]);
+  }
+
+  public function chat (\SammyK\LaravelFacebookSdk\LaravelFacebookSdk $fb, $id) {
+
+    $user = Auth::user();
+
+    // Jeśli nie jesteś zalogowany do fb
+    if(is_null($user->fb_page))
+      return redirect('/admin/facebook');
+
+    try {
+      $response = $fb->get('/' . $id . '/messages?fields=message,attachments,from,shares{link}', $user->fb_page);
+    } catch (Facebook\Exceptions\FacebookSDKException $e) {
+      dd($e->getMessage());
+    }
+
+    $messages = $response->getGraphEdge();
+
+    // return response($messages);
+
+    return response()->view('admin/chat', [
+      'messages' => $messages,
+      'fb_page' => 1338260872868488
     ]);
   }
 }

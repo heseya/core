@@ -50,12 +50,12 @@
     <ol class="list list--settings">
       <a href="/admin/facebook/pages">
         <li class="clickable">
-          <img src="/img/icons/switch.svg"> Przełącz stronę
+          <img class="icon" src="/img/icons/switch.svg"> Przełącz stronę
         </li>
       </a>
       <a href="/admin/facebook/unlink">
         <li class="clickable">
-          <img src="/img/icons/logout.svg"> Odłącz konto
+          <img class="icon" src="/img/icons/logout.svg"> Odłącz konto
         </li>
       </a>
     </ol>

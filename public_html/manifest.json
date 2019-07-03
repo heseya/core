@@ -3,9 +3,11 @@
   "short_name": "Depth",
   "start_url": "/admin",
   "display": "standalone",
-  "background_color": "#000",
+  "theme_color": "#ffffff",
+  "background_color": "#000000",
   "description": "Depth Admin Tool.",
   "orientation": "portrait",
+  "splash_pages": null,
   "icons": [
     {
       "src": "img/pwa/icon-72x72.png",
@@ -47,6 +49,5 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ],
-  "splash_pages": null
+  ]
 }
