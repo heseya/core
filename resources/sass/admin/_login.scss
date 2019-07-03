@@ -5,14 +5,18 @@
   justify-content: center;
   align-items: center;
 
+  form {
+    min-width: 300px;
+  }
+
   .buttons {
     display: flex;
     justify-content: space-between;
     align-items: center;
 
     a {
-      color: $blue;
-      font-size: 18px;
+      color: black;
+      font-size: 14px;
       text-decoration: none;
     }
 
@@ -21,7 +25,7 @@
       width: 38px;
       border: 0;
       border-radius: 50%;
-      background: $gradient;
+      background: black;
       cursor: pointer;
       transition: .1s;
   

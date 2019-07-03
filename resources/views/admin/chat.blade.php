@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Admin</title>
-  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
   <nav class="chat-nav">
@@ -14,7 +14,7 @@
     </a>
     <div>
       <div>Jakub Stężowski</div>
-      <small>stezowskijakub@gmail.com</small>
+      <small>facebook</small>
     </div>
     <!-- <img src="/img/avatar.jpg" class="avatar"> -->
     <div></div>
@@ -22,7 +22,7 @@
 
   <div class="chat">
     @foreach($messages as $message)
-      <div class="{{ $message['from']['id'] == $fb_page ? 'from' : '' }}">
+      <div class="{{ $message['from']['id'] == $fb_page ? 'from' : 'to' }}">
         {{ $message['message'] }}
       </div>
     @endforeach
@@ -35,5 +35,6 @@
     </button>
   </form> -->
 
+  <script src="/js/admin.js"></script>
 </body>
 </html>

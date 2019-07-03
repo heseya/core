@@ -1,5 +1,5 @@
-/*! CSS by Jedrzej Bulinski !*/
-/*! jedrzej@heseya.com !*/
+/*! CSS by Jedrzej Bulinski */
+/*! jedrzej@heseya.com */
 
 // Libs
 @import 'normalize';
@@ -17,16 +17,16 @@ textarea, input, button {
 }
 
 // Variables
-@import 'variables';
+@import 'admin/variables';
 
 // Modules
-@import 'base';
-@import 'nav';
-@import 'list';
-@import 'imputs';
-@import 'login';
-@import 'chat';
-@import 'products';
+@import 'admin/base';
+@import 'admin/nav';
+@import 'admin/list';
+@import 'admin/imputs';
+@import 'admin/login';
+@import 'admin/chat';
+@import 'admin/products';
 
 // Dark mode
-@import 'dark';
+@import 'admin/dark';

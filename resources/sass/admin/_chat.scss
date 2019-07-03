@@ -48,13 +48,18 @@
     border-radius: 18px;
     padding: 10px 16px;
     background: $grey-light;
-    margin-bottom: 11px;
+    margin-bottom: 3px;
     flex-direction: row-reverse;
   }
 
   .from {
-    background: $gradient;
     align-self: flex-end;
+    color: white;
+    background: #000;
+  }
+
+  .to + .from, .from + .to {
+    margin-bottom: 11px;
   }
 }
 
@@ -105,17 +110,21 @@
 
 .unread {
   position: relative;
-  margin-left: 12px;
+  margin-left: 19px;
 
   &::before {
-    content: ' ';
+    content: 'N';
+    color: white;
+    font-size: 10px;
     position: absolute;
     display: inline-block;
-    height: 7px;
-    width: 7px;
-    bottom: 5px;
-    left: -12px;
+    padding: 4px;
+    padding-top: 2px;
+    height: 8px;
+    width: 6px;
+    bottom: 3px;
+    left: -19px;
     border-radius: 50%;
-    background: $blue;
+    background: #000;
   }
 }

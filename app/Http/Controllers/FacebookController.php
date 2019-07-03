@@ -191,6 +191,8 @@ class FacebookController extends Controller
 
   public function chat (\SammyK\LaravelFacebookSdk\LaravelFacebookSdk $fb, $id) {
 
+    $page_id = 1338260872868488;
+
     $user = Auth::user();
 
     // Jeśli nie jesteś zalogowany do fb
@@ -209,7 +211,7 @@ class FacebookController extends Controller
 
     return response()->view('admin/chat', [
       'messages' => $messages,
-      'fb_page' => 1338260872868488
+      'fb_page' => $page_id
     ]);
   }
 }

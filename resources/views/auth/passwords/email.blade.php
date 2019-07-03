@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Resetowanie hasła</title>
-  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
 
@@ -30,7 +30,7 @@
       </div>
 
       <div class="buttons">
-        <div></div>
+        <a href="/admin/login">Zaloguj się</a>
         <button type="submit">
           <img src="/img/icons/send2.svg">
         </button>

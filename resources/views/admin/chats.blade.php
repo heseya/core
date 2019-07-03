@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Konwersacje</title>
-  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
   <nav class="nav">
@@ -32,7 +32,7 @@
       </li> -->
       @foreach($chats as $chat)
         <a href="/admin/chat/{{ $chat['id'] }}">
-          <li>
+          <li class="clickable">
             <div class="avatar">
               <img src="/img/avatar.jpg">
             </div>
@@ -46,5 +46,7 @@
 
     </ol>
   </main>
+
+  <script src="/js/admin.js"></script>
 </body>
 </html>

@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Facebook</title>
-  <link rel="stylesheet" href="/css/app.css">
+  <title>Ustawienia Facebook</title>
+  <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
 
