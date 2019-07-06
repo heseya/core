@@ -113,6 +113,9 @@ class FacebookController extends Controller
     }
     $pages = json_decode($response->getGraphEdge(), true);
 
+    if(count($pages) < 1)
+      return redirect('/admin/facebook/unlink');
+
     return response()->view('admin/facebook-pages', ['pages' => $pages]);
   }
 

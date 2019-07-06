@@ -1,9 +1,8 @@
 .products-list {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-gap: 20px;
+  grid-gap: 15px;
   margin: 40px 20px;
-  text-align: center;
 
   a {
     text-decoration: none;
@@ -13,16 +12,25 @@
   .product {
     background: $grey-light;
     border-radius: 12px;
-    padding: 20px;
-    padding-bottom: 20px;
+    padding: 10px;
 
     img {
       width: 100%;
       border-radius: 7px;
     }
 
-    div {
-      margin-top: 15px;
+    .name {
+      padding: 6px;
+      padding-bottom: 2px;
+      text-align: center;
+    }
+
+    .details {
+      padding: 0 6px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #666;
     }
   }
 }

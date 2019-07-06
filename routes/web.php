@@ -8,6 +8,7 @@ Route::prefix('admin')->group(function () {
   Route::middleware('auth')->group(function () {
 
     Route::get('orders', 'AdminController@orders');
+    Route::get('orders/{order}', 'AdminController@order');
     Route::get('products', 'AdminController@products');
     Route::get('chat', 'FacebookController@chats');
     Route::get('chat/{id}', 'FacebookController@chat');

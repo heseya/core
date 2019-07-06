@@ -30,7 +30,7 @@
       </div>
 
       <div class="buttons">
-        <a href="/admin/login">Zaloguj się</a>
+        <a href="/admin/login">Wróć do logowania</a>
         <button type="submit">
           <img src="/img/icons/send2.svg">
         </button>

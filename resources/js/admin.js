@@ -12,3 +12,7 @@ function loader (element) {
   loader.appendChild(loader2)
   element.appendChild(loader)
 }
+
+window.toBottom = function () {
+  window.scrollTo(0, document.body.scrollHeight);
+}

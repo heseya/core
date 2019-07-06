@@ -108,6 +108,10 @@ function loader(element) {
   element.appendChild(loader);
 }
 
+window.toBottom = function () {
+  window.scrollTo(0, document.body.scrollHeight);
+};
+
 /***/ }),
 
 /***/ "./resources/js/admin/chats.js":

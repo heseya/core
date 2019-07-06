@@ -5,12 +5,20 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use Auth;
-use App\Products;
+use App\Product;
+use App\Order;
 
 class AdminController extends Controller
 {
   public function orders(Request $request) {
     return response()->view('admin/orders');
+  }
+
+  public function order(Request $request, Order $order) {
+
+    $order->address();
+
+    return response()->view('admin/order', $order);
   }
 
   public function products(Request $request) {

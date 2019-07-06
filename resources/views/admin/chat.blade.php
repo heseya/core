@@ -7,7 +7,7 @@
   <title>Admin</title>
   <link rel="stylesheet" href="/css/admin.css">
 </head>
-<body>
+<body onload="toBottom()">
   <nav class="chat-nav">
     <a href="/admin/chat">
       <img src="/img/icons/back.svg">
