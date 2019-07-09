@@ -1,8 +1,8 @@
-const rtf = new Intl.RelativeTimeFormat('pl', { numeric: 'auto' });
+window.updateOrders = () => {
 
-let orders = document.getElementById('orders')
+  const rtf = new Intl.RelativeTimeFormat('pl', { numeric: 'auto' });
 
-function updateOrders () {
+  let orders = document.getElementById('orders')
 
   let loader = document.createElement('div')
   loader.classList.add('loader--warper')
@@ -36,6 +36,7 @@ function updateOrders () {
       }
 
       let e = document.createElement('li')
+      e.onclick = () => window.interface.switchPanel('order')
 
       let left = document.createElement('div')
 
@@ -66,16 +67,9 @@ function updateOrders () {
         status.appendChild(x)
       });
 
-      let a = document.createElement('a')
-      a.href = '/admin/orders/' + row.id
-
-      a.appendChild(e)
-      orders.appendChild(a)
+      orders.appendChild(e)
     });
 
     loader.remove()
   })
 }
-
-if(orders !== null)
-  updateOrders()

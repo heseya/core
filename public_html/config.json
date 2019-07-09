@@ -1,0 +1,62 @@
+{
+  "init": {
+    "panel": "orders",
+    "slideTime": 300
+  },
+  "panels": [
+    [
+      {
+        "id": "products",
+        "src": "/panels/products.html"
+      },
+      {
+        "id": "orders",
+        "src": "/panels/orders.html"
+      },
+      {
+        "id": "chats",
+        "src": "/panels/chats.html"
+      }
+    ],
+    [
+      {
+        "id": "order",
+        "src": "/panels/order.html"
+      },
+      {
+        "id": "settings",
+        "src": "/panels/settings.html"
+      }
+    ],
+    [
+      {
+        "id": "facebook",
+        "src": "/panels/facebook.html"
+      },
+      {
+        "id": "info",
+        "src": "/panels/info.html"
+      }
+    ]
+  ],
+  "tabs": [
+    {
+      "icon": "/img/nav/products.svg",
+      "tooltip": "Asortyment",
+      "panel": "products"
+    },
+    {
+      "icon": "/img/nav/orders.svg",
+      "tooltip": "Zamówienia",
+      "panel": "orders"
+    },
+    {
+      "icon": "/img/nav/chats.svg",
+      "tooltip": "Konwersacje",
+      "panel": "chats"
+    }
+  ],
+  "scripts": [
+    "updateOrders()"
+  ]
+}

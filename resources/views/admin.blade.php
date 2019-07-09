@@ -9,26 +9,15 @@
 </head>
 <body>
 
-  <nav id="sidebar" class="nav">
+  <nav id="tabs" class="nav">
     <div id="logo" class="logo">
       <img src="/img/logo.png">
     </div>
-
-    <span id="tabs"></span>
   </nav>
 
-  <main id="main">
-    <nav class="top-nav">
-      <h1>Zamówienia</h1>
-      <a href="/admin/settings" class="avatar">
-        <img src="/img/avatar.jpg">
-      </a>
-    </nav>
+  <main id="main"></main>
 
-    <ol id="orders" class="list list--orders"></ol>
-  </main>
-
-  <!-- <div id="splashscreen" class="splashscreen"></div> -->
+  <div id="splashscreen" class="splashscreen"></div>
   <script src="/js/admin.js"></script>
 </body>
 </html>

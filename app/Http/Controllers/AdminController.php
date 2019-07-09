@@ -11,7 +11,7 @@ use App\Order;
 class AdminController extends Controller
 {
   public function orders(Request $request) {
-    return response()->view('admin/orders');
+    return response()->view('admin');
   }
 
   public function order(Request $request, Order $order) {

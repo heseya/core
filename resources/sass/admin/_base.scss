@@ -1,9 +1,58 @@
+:root {
+  --slide-time: 0s;
+}
+
 body {
   font-family: $font;
   background: #fff;
+  display: grid;
+  height: 100vh;
+  margin: 0;
+  overflow: hidden;
 }
 
-main {
+.main {
+  position: relative;
+  overflow: hidden;
+}
+
+.panel {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+}
+
+.slide {
+  transition: var(--slide-time);
+}
+
+.left {
+  left: -100%;
+  top: 0;
+}
+
+.top {
+  left: 0;
+  top: -100%;
+}
+
+.middle {
+  left: 0;
+  top: 0;
+}
+
+.bottom {
+  left: 0;
+  top: 100%;
+}
+
+.right {
+  left: 100%;
+  top: 0;
+}
+
+.content {
   padding-bottom: 80px;
   max-width: 940px;
   margin: 0 auto;
@@ -139,7 +188,7 @@ h1, h2, h3, h4, h5 {
 }
 
 @media (min-width: $break) {
-  main {
+  .content {
     padding: 0 0 0 70px;
   }
 }
