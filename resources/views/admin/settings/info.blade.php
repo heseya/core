@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Facebook</title>
+  <title>Informacje o systemie</title>
   <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
@@ -21,20 +21,15 @@
 
   <main>
     <nav class="top-nav">
-      <h1>Facebook</h1>
+      <h1>Informacje o systemie</h1>
       <a href="/admin/settings" class="avatar">
-        <img src="/img/avatar.jpg">
+        <img src="{{ $user->avatar() }}">
       </a>
     </nav>
     
     <ol class="list list--settings">
-      <li>Nie jesteś połączony.</li>
-      <a href="/admin/facebook/login">
-        <li class="clickable">
-          <img class="icon" src="/img/icons/facebook.svg">
-          Połącz z kontem Facebook
-        </li>
-      </a>
+      <li>Heseya Shop System wersja {{ $version }}</li>
+      <li>Icons made by Freepik from www.flaticon.com is licensed by CC 3.0 BY</li>
     </ol>
 
   </main>

@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Informacje o systemie</title>
+  <title>Powiadomienia</title>
   <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
-
   <nav class="nav">
     <div class="logo">
       <img src="/img/logo.png">
@@ -21,17 +20,24 @@
 
   <main>
     <nav class="top-nav">
-      <h1>Informacje o systemie</h1>
+      <h1>Powiadomienia</h1>
       <a href="/admin/settings" class="avatar">
-        <img src="/img/avatar.jpg">
+        <img src="{{ $user->avatar() }}">
       </a>
     </nav>
-    
-    <ol class="list list--settings">
-      <li>Heseya Shop System wersja {{ $version }}</li>
-      <li>Icons made by Freepik from www.flaticon.com is licensed by CC 3.0 BY</li>
-    </ol>
 
+    <ol class="list list--settings">
+      <li>
+        <input name="new" id="new" class="switch" type="checkbox">
+        <label for="new">Nowe zamówienie</label>
+      </li>
+    </ol>
+    <ol class="list list--settings">
+      <li>
+        <input name="new" id="new" class="switch" type="checkbox">
+        <label for="new">Nowa wiadomość</label>
+      </li>
+    </ol>
   </main>
 
   <script src="/js/admin.js"></script>

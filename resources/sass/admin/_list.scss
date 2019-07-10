@@ -40,6 +40,19 @@
     display: flex;
     align-items: center;
   }
+
+  .avatar {
+    height: 50px;
+    width: 50px;
+    background-color: $grey-light;
+    border-radius: 12px;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+    }
+  }
 }
 
 .list--orders {
@@ -97,17 +110,6 @@
     grid-template-columns: 70px 1fr;
     align-items: center;
   }
-
-  .avatar {
-    height: 50px;
-    width: 50px;
-
-    img {
-      width: 100%;
-      height: 100%;
-      border-radius: 12px;
-    }
-  }
 }
 
 .list--settings {
@@ -117,11 +119,8 @@
 
     img {
       height: 23px;
+      width: 23px;
       margin-right: 12px;
-    }
-
-    .big {
-      height: 50px;
     }
   }
 }

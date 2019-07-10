@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Zamówenie {{ $code }}</title>
+  <title>Facebook</title>
   <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
@@ -15,28 +15,30 @@
     </div>
 
     <a href="/admin/products" class="nav--products"></a>
-    <a href="/admin/orders" class="nav--orders nav--orders__selected"></a>
+    <a href="/admin/orders" class="nav--orders"></a>
     <a href="/admin/chat" class="nav--chat"></a>
   </nav>
 
   <main>
     <nav class="top-nav">
-      <h1>Zamówienie {{ $code }}</h1>
+      <h1>Facebook</h1>
       <a href="/admin/settings" class="avatar">
         <img src="{{ $user->avatar() }}">
       </a>
     </nav>
-    <div class="order">
-      <div>
-        <div class="separator">Adres dostawy</div><br>
-        <div>Wojtek Kowalski</div>
-        <div>Gdańska 82/1</div>
-        <div>82-200 Bydgoszcz</div>
-      </div>
-    </div>
+    
+    <ol class="list list--settings">
+      <li>Nie jesteś połączony.</li>
+      <a href="/admin/settings/facebook/login">
+        <li class="clickable">
+          <img class="icon" src="/img/icons/facebook.svg">
+          Połącz z kontem Facebook
+        </li>
+      </a>
+    </ol>
+
   </main>
 
-  <!-- <div id="splashscreen" class="splashscreen"></div> -->
   <script src="/js/admin.js"></script>
 </body>
 </html>

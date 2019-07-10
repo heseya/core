@@ -2,7 +2,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: calc(100% - 40px);
+  width: calc(100% - 30px);
   padding: 15px;
   background: $white;
   display: flex;
@@ -110,20 +110,16 @@
 
 .unread {
   position: relative;
-  margin-left: 19px;
+  margin-left: 13px;
 
   &::before {
-    content: 'N';
-    color: white;
-    font-size: 10px;
+    content: ' ';
     position: absolute;
     display: inline-block;
-    padding: 4px;
-    padding-top: 2px;
-    height: 8px;
-    width: 6px;
-    bottom: 3px;
-    left: -19px;
+    height: 7px;
+    width: 7px;
+    bottom: 6px;
+    left: -13px;
     border-radius: 50%;
     background: #000;
   }

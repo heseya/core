@@ -22,29 +22,50 @@
     <nav class="top-nav">
       <h1>Ustawienia</h1>
       <a href="/admin/settings" class="avatar">
-        <img src="/img/avatar.jpg">
+        <img src="{{ $user->avatar() }}">
       </a>
     </nav>
 
     <ol class="list list--settings">
       <li class="center">
-        <img class="round big" src="/img/avatar.jpg">
+        <img class="avatar" src="{{ $user->avatar() }}">
         <span>
           <div>{{ $user['name'] }}</div>
           <small>{{ $user['email'] }}</small>
         </span>
       </li>
-      <li class="clickable" onclick="darkMode()">
+
+      <!-- <li class="clickable" onclick="darkMode()">
         <img class="icon" src="/img/icons/moon.svg">Tryb ciemny
-      </li>
-      <a href="/admin/info">
+      </li> -->
+
+      <!-- <a href="/admin/settings/notifications">
         <li class="clickable">
-          <img class="icon" src="/img/icons/info.svg">Informacje o systemie
+          <img class="icon" src="/img/icons/alarm.svg">Powiadomienia
+        </li>
+      </a> -->
+
+      <li class="separator">Ustawienia sklepu</li>
+      <a href="/admin/settings/email">
+        <li class="clickable">
+          <img class="icon" src="/img/icons/email.svg">E-mail
         </li>
       </a>
-      <a href="/admin/facebook">
+      <a href="/admin/settings/facebook">
         <li class="clickable">
           <img class="icon" src="/img/icons/facebook.svg">Facebook
+        </li>
+      </a>
+
+      <li class="separator">Inne</li>
+      <a href="https://gravatar.com/emails" target="_blank">
+        <li class="clickable">
+          <img class="icon" src="/img/icons/joke.svg">Zmień avatar
+        </li>
+      </a>
+      <a href="/admin/settings/info">
+        <li class="clickable">
+          <img class="icon" src="/img/icons/info.svg">Informacje o systemie
         </li>
       </a>
       <a href="/admin/logout">

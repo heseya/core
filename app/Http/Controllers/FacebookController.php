@@ -66,7 +66,7 @@ class FacebookController extends Controller
     $user = Auth::user();
     $user->update(['fb' => $token]);
 
-    return redirect('/admin/facebook/pages');
+    return redirect('/admin/settings/facebook/pages');
   }
 
   public function settings (\SammyK\LaravelFacebookSdk\LaravelFacebookSdk $fb) {
@@ -75,11 +75,13 @@ class FacebookController extends Controller
 
     // Jeśli nie jesteś zalogowany
     if(is_null($user->fb))
-      return response()->view('admin/facebook-empty');
+      return response()->view('admin/settings/facebook-empty', [
+        'user' => Auth::user()
+      ]);
 
     // Jeśli nie wybrano strony
     if(is_null($user->fb_page))
-      return redirect('/admin/facebook/pages');
+      return redirect('/admin/settings/facebook/pages');
 
     try {
       $response = $fb->get('/me?fields=id,name,picture', $user->fb);
@@ -95,9 +97,10 @@ class FacebookController extends Controller
     }
     $page = json_decode($response->getGraphUser(), true);
 
-    return response()->view('admin/facebook', [
-      'user' => $user_fb,
+    return response()->view('admin/settings/facebook', [
+      'user_fb' => $user_fb,
       'page' => isset($page) ? $page : null,
+      'user' => $user
     ]);
   }
 
@@ -114,9 +117,12 @@ class FacebookController extends Controller
     $pages = json_decode($response->getGraphEdge(), true);
 
     if(count($pages) < 1)
-      return redirect('/admin/facebook/unlink');
+      return redirect('/admin/settings/facebook/unlink');
 
-    return response()->view('admin/facebook-pages', ['pages' => $pages]);
+    return response()->view('admin/settings/facebook-pages', [
+      'pages' => $pages,
+      'user' => $user
+    ]);
   }
 
   public function setPage ($access_token) {
@@ -126,7 +132,7 @@ class FacebookController extends Controller
       'fb_page' => $access_token
     ]);
 
-    return redirect('admin/facebook');
+    return redirect('admin/settings/facebook');
   }
 
   // Odlączanie konta
@@ -148,7 +154,9 @@ class FacebookController extends Controller
       ]);
     }
 
-    return redirect('/admin/facebook');
+    return redirect('/admin/settings/facebook', [
+      'user' => $user
+    ]);
   }
 
   public function chats (\SammyK\LaravelFacebookSdk\LaravelFacebookSdk $fb) {
@@ -157,7 +165,7 @@ class FacebookController extends Controller
 
     // Jeśli nie jesteś zalogowany do fb
     if(is_null($user->fb_page))
-      return redirect('/admin/facebook');
+      return redirect('/admin/settings/facebook');
 
     try {
       $response = $fb->get('/me/conversations?fields=id,unread_count,snippet,participants,user_id', $user->fb_page);
@@ -188,7 +196,8 @@ class FacebookController extends Controller
     // }
 
     return response()->view('admin/chats', [
-      'chats' => $chats
+      'chats' => $chats,
+      'user' => $user
     ]);
   }
 
@@ -200,7 +209,7 @@ class FacebookController extends Controller
 
     // Jeśli nie jesteś zalogowany do fb
     if(is_null($user->fb_page))
-      return redirect('/admin/facebook');
+      return redirect('/admin/settings/facebook');
 
     try {
       $response = $fb->get('/' . $id . '/messages?fields=message,attachments,from,shares{link}', $user->fb_page);
@@ -213,8 +222,10 @@ class FacebookController extends Controller
     // return response($messages);
 
     return response()->view('admin/chat', [
+      'id' => $id,
       'messages' => $messages,
-      'fb_page' => $page_id
+      'fb_page' => $page_id,
+      'user' => $user
     ]);
   }
 }

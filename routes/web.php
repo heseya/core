@@ -13,15 +13,24 @@ Route::prefix('admin')->group(function () {
     Route::get('chat', 'FacebookController@chats');
     Route::get('chat/{id}', 'FacebookController@chat');
 
-    Route::get('settings', 'AdminController@settings');
-    Route::get('info', 'AdminController@info');
+    Route::prefix('settings')->group(function () {
 
-    Route::get('facebook', 'FacebookController@settings');
-    Route::get('facebook/login', 'FacebookController@login');
-    Route::get('facebook/callback', 'FacebookController@callback');
-    Route::get('facebook/unlink', 'FacebookController@unlink');
-    Route::get('facebook/pages', 'FacebookController@pages');
-    Route::get('facebook/set-page/{access_token}', 'FacebookController@setPage');
+      Route::get('', 'AdminController@settings');
+      Route::get('email', 'AdminController@email');
+      Route::get('email/config', 'AdminController@emailConfig');
+      Route::get('info', 'AdminController@info');
+      Route::get('notifications', 'AdminController@notifications');
+
+      Route::prefix('facebook')->group(function () {
+
+        Route::get('', 'FacebookController@settings');
+        Route::get('login', 'FacebookController@login');
+        Route::get('callback', 'FacebookController@callback');
+        Route::get('unlink', 'FacebookController@unlink');
+        Route::get('pages', 'FacebookController@pages');
+        Route::get('set-page/{access_token}', 'FacebookController@setPage');
+      });
+    });
 
     Route::get('logout', 'Auth\LoginController@logout');
   });

@@ -13,11 +13,11 @@
       <img src="/img/icons/back.svg">
     </a>
     <div>
-      <div>Jakub Stężowski</div>
+      <div>Imie Nazwisko</div>
       <small>facebook</small>
     </div>
     <!-- <img src="/img/avatar.jpg" class="avatar"> -->
-    <div></div>
+    <div style="width: 36px"></div>
   </nav>
 
   <div class="chat">
@@ -29,6 +29,7 @@
   </div>
 
   <!-- <form class="response">
+    <input type="hidden" value="{{ $id }}">
     <textarea placeholder="Napisz coś miłego..."></textarea>
     <button>
       <img src="/img/icons/send.svg">

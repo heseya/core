@@ -21,7 +21,7 @@
     <nav class="top-nav">
       <h1>Zamówienia</h1>
       <a href="/admin/settings" class="avatar">
-        <img src="/img/avatar.jpg">
+        <img src="{{ $user->avatar() }}">
       </a>
     </nav>
 

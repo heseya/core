@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Facebook</title>
+  <title>E-mail</title>
   <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
@@ -21,24 +21,25 @@
 
   <main>
     <nav class="top-nav">
-      <h1>Wybierz stronę</h1>
+      <h1>E-mail</h1>
       <a href="/admin/settings" class="avatar">
-        <img src="/img/avatar.jpg">
+        <img src="{{ $user->avatar() }}">
       </a>
     </nav>
-
-    <ol class="list">
-      @foreach($pages as $page)
-        <a href="/admin/facebook/set-page/{{ $page['access_token'] }}">
-          <li class="center clickable">
-            <img class="round" src="{{ $page['picture']['url'] }}">
-            <span class="margin__left">
-              <div>{{ $page['name'] }}</div>
-              <small>{{ $page['id'] }}</small>
-            </span>
-          </li>
-        </a>
-      @endforeach
+    
+    <ol class="list list--settings">
+      <li class="center">
+        <img class="avatar" src="//www.gravatar.com/avatar/{{ $gravatar }}?d=retro">
+        <span>
+          <div>{{ $email }}</div>
+          <small>Avatar pobierany jest z <a href="//gravatar.com" target="_blank">gravatar.com</a></small>
+        </span>
+      </li>
+      <a href="/admin/settings/email/config">
+        <li class="clickable">
+          <img class="icon" src="/img/icons/settings.svg">Ustawienia serwera
+        </li>
+      </a>
     </ol>
 
   </main>

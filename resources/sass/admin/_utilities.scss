@@ -1,0 +1,35 @@
+.one-line {
+  text-overflow: ellipsis; 
+  overflow: hidden; 
+  white-space: nowrap;
+}
+
+.round {
+  border-radius: 8px;
+}
+
+.margin {
+  &__left {
+    margin-left: 12px;
+  }
+}
+
+.grid {
+  display: grid;
+  column-gap: 30px;
+  margin: 0 30px;
+  grid-template-columns: 1fr;
+}
+
+.sto {
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: $break) {
+  .grid {
+    &--2 {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+}

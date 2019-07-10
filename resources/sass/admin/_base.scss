@@ -62,22 +62,6 @@ h1, h2, h3, h4, h5 {
   font-weight: normal;
 }
 
-.one-line {
-  text-overflow: ellipsis; 
-  overflow: hidden; 
-  white-space: nowrap;
-}
-
-.round {
-  border-radius: 8px;
-}
-
-.margin {
-  &__left {
-    margin-left: 12px;
-  }
-}
-
 .loader--warper {
   width: 100%;
   height: 40px;
