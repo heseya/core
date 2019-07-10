@@ -7,14 +7,16 @@
   <title>Zamówenia</title>
   <link rel="stylesheet" href="/css/admin.css">
 </head>
-<body>
+<body onload="updateOrders()">
 
-  <nav id="sidebar" class="nav">
-    <div id="logo" class="logo">
+  <nav class="nav">
+    <div class="logo">
       <img src="/img/logo.png">
     </div>
 
-    <span id="tabs"></span>
+    <a href="/admin/products" class="nav--products nav--products__selected"></a>
+    <a href="/admin/orders" class="nav--orders"></a>
+    <a href="/admin/chat" class="nav--chat"></a>
   </nav>
 
   <main id="main">

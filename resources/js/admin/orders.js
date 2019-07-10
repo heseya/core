@@ -36,7 +36,7 @@ window.updateOrders = () => {
       }
 
       let e = document.createElement('li')
-      e.onclick = () => window.interface.switchPanel('order')
+      e.classList.add('clickable')
 
       let left = document.createElement('div')
 
@@ -67,7 +67,11 @@ window.updateOrders = () => {
         status.appendChild(x)
       });
 
-      orders.appendChild(e)
+      let a = document.createElement('a')
+      a.href = '/admin/orders/' + row.id
+      a.appendChild(e)
+
+      orders.appendChild(a)
     });
 
     loader.remove()

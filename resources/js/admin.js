@@ -1,5 +1,3 @@
-require('./admin/nav.js')
-
 require('./admin/orders.js')
 require('./admin/chats.js')
 

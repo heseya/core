@@ -14,20 +14,41 @@
   justify-content: space-around;
   align-items: center;
 
-  .tab {
-    cursor: pointer;
+  a {
     display: block;
-    height: 24px;
-    width: 24px;
-    padding: 18px;
+    height: 60px;
+    width: 60px;
     border-radius: 12px;
-
-    img {
-      width: 100%;
-    }
+    background-size: 46%;
+    background-repeat: no-repeat;
+    background-position: center;
 
     &:hover {
       background-color: $grey-light;
+    }
+  }
+
+  &--products {
+    background-image: url(/img/nav/products.svg);
+
+    &__selected {
+      background-image: url(/img/nav/products.svg);
+    }
+  }
+
+  &--orders {
+    background-image: url(/img/nav/orders.svg);
+
+    &__selected {
+      background-image: url(/img/nav/orders.svg);
+    }
+  }
+
+  &--chat {
+    background-image: url(/img/nav/chats.svg);
+
+    &__selected {
+      background-image: url(/img/nav/chats.svg);
     }
   }
 
