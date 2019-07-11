@@ -14,7 +14,7 @@ button {
     font-size: 15px;
     padding: 10px 21px;
     border-radius: 21px;
-    border: 0;
+    border: none;
     background: $grey-light;
   }
 }
@@ -46,5 +46,20 @@ button {
       left: 20px;
       box-shadow: -2px 4px 3px rgba(0,0,0,0.05);
     }
+  }
+}
+
+.button {
+  cursor: pointer;
+  font-size: 15px;
+  padding: 10px 21px;
+  border-radius: 21px;
+  border: none;
+  background: #000;
+  color: white;
+  transition: 0.2s;
+
+  &:hover {
+    background: #444;
   }
 }

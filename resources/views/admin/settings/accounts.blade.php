@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>E-mail</title>
+  <title>Dostęp do panelu</title>
   <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
@@ -21,29 +21,25 @@
 
   <main>
     <nav class="top-nav">
-      <h1>E-mail</h1>
+      <h1>Dostęp do panelu</h1>
       <a href="/admin/settings" class="avatar">
         <img src="{{ $user->avatar() }}">
       </a>
     </nav>
-    
-    <ol class="list list--settings">
-      <li class="center">
-        <img class="avatar" src="//www.gravatar.com/avatar/{{ $gravatar }}?d=retro">
-        <span>
-          <div>{{ $name }}</div>
-          <small>{{ $email }}</small>
-        </span>
-      </li>
-      <a href="/admin/settings/email/config">
-        <li class="clickable">
-          <img class="icon" src="/img/icons/settings.svg">Ustawienia serwera
+
+    <ol class="list">
+      @foreach($accounts as $user)
+        <li class="center">
+          <img class="avatar" src="{{ $user->avatar() }}">
+          <span class="margin__left">
+            <div>{{ $user['name'] }}</div>
+            <small>{{ $user['email'] }}</small>
+          </span>
         </li>
-      </a>
+      @endforeach
     </ol>
 
   </main>
-
   <script src="/js/admin.js"></script>
 </body>
 </html>

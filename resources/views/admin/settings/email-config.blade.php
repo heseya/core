@@ -28,20 +28,22 @@
     </nav>
     
     <form method="post">
+      @csrf
+
       <div class="grid grid--2">
         <div>
           <p>Serwer poczty przychodzącej (IMAP)</p>
           <div class="input sto">
-            <input type="text" name="from-user" value="{{ $old['to']['user'] }}" placeholder="Użytkownik">
+            <input type="text" name="to-user" value="{{ $old['to']['user'] }}" placeholder="Użytkownik">
           </div>
           <div class="input sto">
-            <input type="password" name="from-user" placeholder="Hasło">
+            <input type="password" name="to-password" placeholder="Hasło">
           </div>
           <div class="input sto">
-            <input type="text" name="from-user" value="{{ $old['to']['host'] }}" placeholder="Adres serwera">
+            <input type="text" name="to-host" value="{{ $old['to']['host'] }}" placeholder="Adres serwera">
           </div>
           <div class="input sto">
-            <input type="number" name="from-user" value="{{ $old['to']['port'] }}" placeholder="Port">
+            <input type="number" name="to-port" value="{{ $old['to']['port'] }}" placeholder="Port" required>
           </div>
         </div>
         <div>
@@ -50,17 +52,20 @@
             <input type="text" name="from-user" value="{{ $old['from']['user'] }}" placeholder="Użytkownik">
           </div>
           <div class="input sto">
-            <input type="password" name="from-user" placeholder="Hasło">
+            <input type="password" name="from-password" placeholder="Hasło">
           </div>
           <div class="input sto">
-            <input type="text" name="from-user" value="{{ $old['from']['host'] }}" placeholder="Adres serwera">
+            <input type="text" name="from-host" value="{{ $old['from']['host'] }}" placeholder="Adres serwera">
           </div>
           <div class="input sto">
-            <input type="number" name="from-user" value="{{ $old['from']['port'] }}" placeholder="Port">
+            <input type="number" name="from-port" value="{{ $old['from']['port'] }}" placeholder="Port" required>
           </div>
         </div>
+        <div>
+          <small>Jeśli nie chcesz zmieniać hasła, pozostaw pola puste</small><br><br>
+          <button class="button">Zapisz</button>
+        </div>
       </div>
-      <button>Zapisz</button>
     </form>
 
   </main>

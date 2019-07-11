@@ -16,8 +16,12 @@ Route::prefix('admin')->group(function () {
     Route::prefix('settings')->group(function () {
 
       Route::get('', 'AdminController@settings');
+
       Route::get('email', 'AdminController@email');
       Route::get('email/config', 'AdminController@emailConfig');
+      Route::post('email/config', 'AdminController@emailConfigStore');
+
+      Route::get('accounts', 'AdminController@accounts');
       Route::get('info', 'AdminController@info');
       Route::get('notifications', 'AdminController@notifications');
 

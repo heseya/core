@@ -56,6 +56,11 @@
           <img class="icon" src="/img/icons/facebook.svg">Facebook
         </li>
       </a>
+      <a href="/admin/settings/accounts">
+        <li class="clickable">
+          <img class="icon" src="/img/icons/accounts.svg">Dostęp do panelu
+        </li>
+      </a>
 
       <li class="separator">Inne</li>
       <a href="https://gravatar.com/emails" target="_blank">

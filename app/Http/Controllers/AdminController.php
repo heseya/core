@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use anlutro\LaravelSettings\Facade as Setting;
 
 use Auth;
+
+use App\User;
 use App\Product;
 use App\Order;
 
@@ -72,10 +74,11 @@ class AdminController extends Controller
 
   public function email(Request $request) {
 
-    $email = Setting::get('email.from.user', 'shop@kupdepth.pl');
+    $email = Setting::get('email.from.user');
     $gravatar = md5(strtolower(trim($email)));
 
     return response()->view('admin/settings/email', [
+      'name' => Setting::get('email.name'),
       'email' => $email,
       'gravatar' => $gravatar,
       'user' => Auth::user()
@@ -84,8 +87,44 @@ class AdminController extends Controller
 
   public function emailConfig(Request $request) {
 
+    $old = Setting::get('email');
+
+    $old['to']['port'] = empty($old['to']['port']) ? 993 : $old['to']['port'];
+    $old['from']['port'] = empty($old['from']['port']) ? 587 : $old['from']['port'];
+
     return response()->view('admin/settings/email-config', [
-      'old' => Setting::get('email'),
+      'old' => $old,
+      'user' => Auth::user()
+    ]);
+  }
+
+  public function emailConfigStore(Request $request) {
+
+    Setting::set('email', [
+      'to' => [
+        'user' => $_POST['to-user'],
+        'password' => $_POST['to-password'],
+        'host' => $_POST['to-host'],
+        'port' => $_POST['to-port'] ?? 993
+      ],
+      'from' => [
+        'user' => $_POST['from-user'],
+        'password' => $_POST['from-password'],
+        'host' => $_POST['from-host'],
+        'port' => $_POST['from-port'] ?? 587
+      ]
+    ]);
+    Setting::save();
+
+    return redirect('admin/settings/email');
+  }
+
+  public function accounts(Request $request) {
+
+    $accounts = User::all();
+
+    return response()->view('admin/settings/accounts', [
+      'accounts' => $accounts,
       'user' => Auth::user()
     ]);
   }
