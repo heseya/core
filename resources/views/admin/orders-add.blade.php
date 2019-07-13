@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Konfiguracja e-mail</title>
+  <title>Nowe zamówienie</title>
   <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
@@ -25,7 +25,7 @@
         <a href="/admin/settings" class="avatar">
           <img src="{{ $user->avatar() }}">
         </a>
-        <h1>Konfiguracja e-mail</h1>
+        <h1>Nowe zamówienie</h1>
       </div>
     </nav>
     
@@ -34,37 +34,30 @@
 
       <div class="grid grid--2">
         <div>
-          <p>Serwer poczty przychodzącej (IMAP)</p>
+          <p>Dane zamówienia</p>
           <div class="input sto">
-            <input type="text" name="to-user" value="{{ $old['to']['user'] }}" placeholder="Użytkownik">
+            <input type="text" name="id" placeholder="Numer">
           </div>
           <div class="input sto">
-            <input type="password" name="to-password" placeholder="Hasło">
-          </div>
-          <div class="input sto">
-            <input type="text" name="to-host" value="{{ $old['to']['host'] }}" placeholder="Adres serwera">
-          </div>
-          <div class="input sto">
-            <input type="number" name="to-port" value="{{ $old['to']['port'] }}" placeholder="Port" required>
+            <input type="email" name="email" placeholder="E-mail">
           </div>
         </div>
         <div>
-          <p>Serwer poczty wychodzącej (SMPT)</p>
+          <p>Dane adresowe</p>
           <div class="input sto">
-            <input type="text" name="from-user" value="{{ $old['from']['user'] }}" placeholder="Użytkownik">
+            <input type="text" name="name" placeholder="Imię i nazwisko">
           </div>
           <div class="input sto">
-            <input type="password" name="from-password" placeholder="Hasło">
+            <input type="text" name="address" placeholder="Adres">
           </div>
           <div class="input sto">
-            <input type="text" name="from-host" value="{{ $old['from']['host'] }}" placeholder="Adres serwera">
+            <input type="text" name="address" placeholder="Kod pocztowy">
           </div>
           <div class="input sto">
-            <input type="number" name="from-port" value="{{ $old['from']['port'] }}" placeholder="Port" required>
+            <input type="text" name="address" placeholder="Miasto">
           </div>
         </div>
         <div>
-          <small>Jeśli nie chcesz zmieniać hasła, pozostaw pola puste</small><br><br>
           <button class="button">Zapisz</button>
         </div>
       </div>

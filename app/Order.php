@@ -4,8 +4,6 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-use App\Address;
-
 class Order extends Model
 {
   protected $fillable = [

@@ -21,11 +21,14 @@
 
   <main>
     <nav class="top-nav">
-      <h1>Zamówienie {{ $code }}</h1>
-      <a href="/admin/settings" class="avatar">
-        <img src="{{ $user->avatar() }}">
-      </a>
+      <div class="title">
+        <a href="/admin/settings" class="avatar">
+          <img src="{{ $user->avatar() }}">
+        </a>
+        <h1>Zamówienie {{ $code }}</h1>
+      </div>
     </nav>
+
     <div class="order">
       <div>
         <div class="separator">Adres dostawy</div><br>

@@ -21,10 +21,17 @@
 
   <main>
     <nav class="top-nav">
-      <h1>Dostęp do panelu</h1>
-      <a href="/admin/settings" class="avatar">
-        <img src="{{ $user->avatar() }}">
-      </a>
+      <div class="title">
+        <a href="/admin/settings" class="avatar">
+          <img src="{{ $user->avatar() }}">
+        </a>
+        <h1>Dostęp do panelu</h1>
+      </div>
+      <div>
+        <a href="/admin/settings/accounts/add" class="top-nav--button">
+          <img class="icon" src="/img/icons/plus.svg">
+        </a>
+      </div>
     </nav>
 
     <ol class="list">

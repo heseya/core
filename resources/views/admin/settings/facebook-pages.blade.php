@@ -21,11 +21,14 @@
 
   <main>
     <nav class="top-nav">
-      <h1>Wybierz stronę</h1>
-      <a href="/admin/settings" class="avatar">
-        <img src="{{ $user->avatar() }}">
-      </a>
+      <div class="title">
+        <a href="/admin/settings" class="avatar">
+          <img src="{{ $user->avatar() }}">
+        </a>
+        <h1>Wybierz stronę</h1>
+      </div>
     </nav>
+    
 
     <ol class="list">
       @foreach($pages as $page)

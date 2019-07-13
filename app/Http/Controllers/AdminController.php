@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use anlutro\LaravelSettings\Facade as Setting;
 
 use Auth;
@@ -10,6 +12,8 @@ use Auth;
 use App\User;
 use App\Product;
 use App\Order;
+
+use App\Mail\NewAdmin;
 
 class AdminController extends Controller
 {
@@ -26,6 +30,12 @@ class AdminController extends Controller
     $order['user'] = Auth::user();
 
     return response()->view('admin/order', $order);
+  }
+
+  public function ordersAdd(Request $request) {
+    return response()->view('admin/orders-add', [
+      'user' => Auth::user()
+    ]);
   }
 
   public function products(Request $request) {
@@ -72,8 +82,8 @@ class AdminController extends Controller
     ]);
   }
 
-  public function email(Request $request) {
-
+  public function email(Request $request)
+  {
     $email = Setting::get('email.from.user');
     $gravatar = md5(strtolower(trim($email)));
 
@@ -85,8 +95,8 @@ class AdminController extends Controller
     ]);
   }
 
-  public function emailConfig(Request $request) {
-
+  public function emailConfig(Request $request)
+  {
     $old = Setting::get('email');
 
     $old['to']['port'] = empty($old['to']['port']) ? 993 : $old['to']['port'];
@@ -98,8 +108,8 @@ class AdminController extends Controller
     ]);
   }
 
-  public function emailConfigStore(Request $request) {
-
+  public function emailConfigStore(Request $request)
+  {
     Setting::set('email', [
       'to' => [
         'user' => $_POST['to-user'],
@@ -119,8 +129,8 @@ class AdminController extends Controller
     return redirect('admin/settings/email');
   }
 
-  public function accounts(Request $request) {
-
+  public function accounts(Request $request)
+  {
     $accounts = User::all();
 
     return response()->view('admin/settings/accounts', [
@@ -129,7 +139,30 @@ class AdminController extends Controller
     ]);
   }
 
-  public function notifications(Request $request) {
+  public function accountsAdd(Request $request)
+  {
+    return response()->view('admin/settings/accounts-add', [
+      'user' => Auth::user()
+    ]);
+  }
+
+  public function accountsStore(Request $request)
+  {
+    $password = str_random(8);
+
+    Mail::to($_POST['email'])->send(new NewAdmin($_POST['email'], $password));
+
+    User::create([
+      'name' => $_POST['name'],
+      'email' => $_POST['email'],
+      'password' => Hash::make($password)
+    ]);
+
+    return redirect('/admin/settings/accounts');
+  }
+
+  public function notifications(Request $request)
+  {
     return response()->view('admin/settings/notifications', [
       'user' => Auth::user()
     ]);

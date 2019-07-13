@@ -21,11 +21,14 @@
 
   <main>
     <nav class="top-nav">
-      <h1>E-mail</h1>
-      <a href="/admin/settings" class="avatar">
-        <img src="{{ $user->avatar() }}">
-      </a>
+      <div class="title">
+        <a href="/admin/settings" class="avatar">
+          <img src="{{ $user->avatar() }}">
+        </a>
+        <h1>E-mail</h1>
+      </div>
     </nav>
+    
     
     <ol class="list list--settings">
       <li class="center">

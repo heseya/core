@@ -20,10 +20,12 @@
 
   <main>
     <nav class="top-nav">
-      <h1>Ustawienia</h1>
-      <a href="/admin/settings" class="avatar">
-        <img src="{{ $user->avatar() }}">
-      </a>
+      <div class="title">
+        <a href="/admin/settings" class="avatar">
+          <img src="{{ $user->avatar() }}">
+        </a>
+        <h1>Ustawienia</h1>
+      </div>
     </nav>
 
     <ol class="list list--settings">
@@ -46,6 +48,11 @@
       </a> -->
 
       <li class="separator">Ustawienia sklepu</li>
+      <a href="/admin/settings/delivery">
+        <li class="clickable">
+          <img class="icon" src="/img/icons/delivery.svg">Dostawa
+        </li>
+      </a>
       <a href="/admin/settings/email">
         <li class="clickable">
           <img class="icon" src="/img/icons/email.svg">E-mail
