@@ -21,6 +21,7 @@ Route::prefix('admin')->group(function () {
       Route::get('email', 'AdminController@email');
       Route::get('email/config', 'AdminController@emailConfig');
       Route::post('email/config', 'AdminController@emailConfigStore');
+      Route::get('email/test', 'AdminController@emailTest');
 
       Route::get('accounts', 'AdminController@accounts');
       Route::get('accounts/add', 'AdminController@accountsAdd');

@@ -1,52 +1,45 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>E-mail</title>
-  <link rel="stylesheet" href="/css/admin.css">
-</head>
-<body>
+@extends('admin/layout')
 
-  <nav class="nav">
-    <div class="logo">
-      <img src="/img/logo.png">
-    </div>
+@section('title', 'E-mail')
 
-    <a href="/admin/products" class="nav--products"></a>
-    <a href="/admin/orders" class="nav--orders"></a>
-    <a href="/admin/chat" class="nav--chat"></a>
-  </nav>
+@section('buttons')
+  
+@endsection
 
-  <main>
-    <nav class="top-nav">
-      <div class="title">
-        <a href="/admin/settings" class="avatar">
-          <img src="{{ $user->avatar() }}">
-        </a>
-        <h1>E-mail</h1>
-      </div>
-    </nav>
-    
-    
-    <ol class="list list--settings">
-      <li class="center">
-        <img class="avatar" src="//www.gravatar.com/avatar/{{ $gravatar }}?d=retro">
-        <span>
-          <div>{{ $name }}</div>
-          <small>{{ $email }}</small>
-        </span>
-      </li>
-      <a href="/admin/settings/email/config">
-        <li class="clickable">
-          <img class="icon" src="/img/icons/settings.svg">Ustawienia serwera
-        </li>
-      </a>
-    </ol>
+@section('content')
+<ol class="list list--settings">
+  <li class="center">
+    <img class="avatar" src="//www.gravatar.com/avatar/{{ $gravatar }}?d=retro">
+    <span>
+      <div>{{ $name }}</div>
+      <small>{{ $email }}</small>
+    </span>
+  </li>
+  @if ($imap == false)
+    <li>
+      <img class="icon" src="/img/icons/warning.svg">Serwer nie posiada biblioteki IMAP!
+    </li>
+  @endif
+  <a href="/admin/settings/email/config">
+    <li class="clickable">
+      <img class="icon" src="/img/icons/settings.svg">Ustawienia
+    </li>
+  </a>
+  <a href="/admin/settings/email/config">
+    <li class="clickable">
+      <img class="icon" src="/img/icons/settings.svg">Ustawienia serwera
+    </li>
+  </a>
+  <a href="/admin/settings/email/test">
+    <li class="clickable">
+      <img class="icon" src="/img/icons/email-send.svg">Test wysyłki
+    </li>
+  </a>
+</ol>
 
-  </main>
+@endsection
 
-  <script src="/js/admin.js"></script>
-</body>
-</html>
+@section('scripts')
+  
+@endsection
+

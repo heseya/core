@@ -1,42 +1,18 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Informacje o systemie</title>
-  <link rel="stylesheet" href="/css/admin.css">
-</head>
-<body>
+@extends('admin/layout')
 
-  <nav class="nav">
-    <div class="logo">
-      <img src="/img/logo.png">
-    </div>
+@section('title', 'Informacje o systemie')
 
-    <a href="/admin/products" class="nav--products"></a>
-    <a href="/admin/orders" class="nav--orders"></a>
-    <a href="/admin/chat" class="nav--chat"></a>
-  </nav>
+@section('buttons')
+  
+@endsection
 
-  <main>
-    <nav class="top-nav">
-      <div class="title">
-        <a href="/admin/settings" class="avatar">
-          <img src="{{ $user->avatar() }}">
-        </a>
-        <h1>Informacje o systemie</h1>
-      </div>
-    </nav>
-    
-    
-    <ol class="list list--settings">
-      <li>Heseya Shop System wersja {{ $version }}</li>
-      <li>Icons made by Freepik from www.flaticon.com is licensed by CC 3.0 BY</li>
-    </ol>
+@section('content')
+<ol class="list list--settings">
+  <li>Heseya Shop System wersja {{ $version }}</li>
+  <li>Icons made by Freepik from www.flaticon.com is licensed by CC 3.0 BY</li>
+</ol>
+@endsection
 
-  </main>
-
-  <script src="/js/admin.js"></script>
-</body>
-</html>
+@section('scripts')
+  
+@endsection

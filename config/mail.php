@@ -1,5 +1,7 @@
 <?php
 
+use anlutro\LaravelSettings\Facade as Setting;
+
 return [
 
     /*
@@ -16,7 +18,7 @@ return [
     |
     */
 
-    'driver' => env('MAIL_DRIVER', 'smtp'),
+    'driver' => 'smtp',
 
     /*
     |--------------------------------------------------------------------------
@@ -29,7 +31,7 @@ return [
     |
     */
 
-    'host' => env('MAIL_HOST', 'smtp.mailgun.org'),
+    'host' => Setting::get('email.from.host', 'mail.heseya.com'),
 
     /*
     |--------------------------------------------------------------------------
@@ -42,7 +44,7 @@ return [
     |
     */
 
-    'port' => env('MAIL_PORT', 587),
+    'port' => Setting::get('email.from.port', 587),
 
     /*
     |--------------------------------------------------------------------------
@@ -56,8 +58,8 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-        'name' => env('MAIL_FROM_NAME', 'Example'),
+        'address' => Setting::get('email.from.user', 'shop@kupdepth.pl'),
+        'name' => Setting::get('email.name', 'Depth'),
     ],
 
     /*
@@ -84,9 +86,9 @@ return [
     |
     */
 
-    'username' => env('MAIL_USERNAME'),
+    'username' => Setting::get('email.from.user', 'shop@kupdepth.pl'),
 
-    'password' => env('MAIL_PASSWORD'),
+    'password' => Setting::get('email.from.password', 'secret'),
 
     /*
     |--------------------------------------------------------------------------

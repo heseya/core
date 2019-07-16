@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Artisan;
 use anlutro\LaravelSettings\Facade as Setting;
 
 use Auth;
@@ -14,6 +15,7 @@ use App\Product;
 use App\Order;
 
 use App\Mail\NewAdmin;
+use App\Mail\Test;
 
 class AdminController extends Controller
 {
@@ -84,6 +86,8 @@ class AdminController extends Controller
 
   public function email(Request $request)
   {
+    return (string) phpinfo();
+
     $email = Setting::get('email.from.user');
     $gravatar = md5(strtolower(trim($email)));
 
@@ -91,7 +95,8 @@ class AdminController extends Controller
       'name' => Setting::get('email.name'),
       'email' => $email,
       'gravatar' => $gravatar,
-      'user' => Auth::user()
+      'user' => Auth::user(),
+      'imap' => extension_loaded('imap')
     ]);
   }
 
@@ -125,6 +130,14 @@ class AdminController extends Controller
       ]
     ]);
     Setting::save();
+    Artisan::call('config:cache');
+
+    return redirect('admin/settings/email');
+  }
+
+  public function emailTest(Request $request)
+  {
+    Mail::to(Auth::user()->email)->send(new Test());
 
     return redirect('admin/settings/email');
   }
