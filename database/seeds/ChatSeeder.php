@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Seeder;
 
+use App\Client;
 use App\Chat;
 
 class ChatSeeder extends Seeder
@@ -17,9 +18,13 @@ class ChatSeeder extends Seeder
 
     for ($i = 1; $i <= 20; $i++) {
 
-      $order = Chat::create([
-        'type' => 0,
+      $client = Client::create([
+        'name' => $faker->name()
       ]);
+
+      $client->chats()->save(new Chat([
+        'type' => rand(0, 2),
+      ]));
     }
   }
 }

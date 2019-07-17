@@ -19,14 +19,15 @@ use App\Mail\Test;
 
 class AdminController extends Controller
 {
-  public function orders(Request $request) {
+  public function orders(Request $request)
+  {
     return response()->view('admin/orders', [
       'user' => Auth::user()
     ]);
   }
 
-  public function order(Request $request, Order $order) {
-
+  public function order(Request $request, Order $order)
+  {
     $order->address();
 
     $order['user'] = Auth::user();
@@ -34,50 +35,58 @@ class AdminController extends Controller
     return response()->view('admin/order', $order);
   }
 
-  public function ordersAdd(Request $request) {
+  public function ordersAdd(Request $request)
+  {
     return response()->view('admin/orders-add', [
       'user' => Auth::user()
     ]);
   }
 
-  public function products(Request $request) {
+  public function products(Request $request)
+  {
     return response()->view('admin/products', [
       'user' => Auth::user()
     ]);
   }
 
-  public function productsSingle(Request $request) {
+  public function productsSingle(Request $request)
+  {
     return response()->view('admin/products-single', [
       'user' => Auth::user()
     ]);
   }
 
-  public function chat(Request $request) {
+  public function chats(Request $request)
+  {
+    return response()->view('admin/chats', [
+      'user' => Auth::user()
+    ]);
+  }
+
+  public function chat(Request $request)
+  {
     return response()->view('admin/chat', [
       'user' => Auth::user()
     ]);
   }
 
-  public function chatSingle(Request $request) {
-    return response()->view('admin/chat', [
-      'user' => Auth::user()
-    ]);
-  }
-
-  public function login(Request $request) {
+  public function login(Request $request)
+  {
     return response()->view('admin/login', [
       'user' => Auth::user()
     ]);
   }
 
   // USTAWIENIA
-  public function settings(Request $request) {
+  public function settings(Request $request)
+  {
     return response()->view('admin/settings', [
       'user' => Auth::user()
     ]);
   }
 
-  public function info(Request $request) {
+  public function info(Request $request)
+  {
     return response()->view('admin/settings/info', [
       'version' => '0.1',
       'user' => Auth::user()
@@ -86,8 +95,6 @@ class AdminController extends Controller
 
   public function email(Request $request)
   {
-    return (string) phpinfo();
-
     $email = Setting::get('email.from.user');
     $gravatar = md5(strtolower(trim($email)));
 
@@ -102,10 +109,21 @@ class AdminController extends Controller
 
   public function emailConfig(Request $request)
   {
-    $old = Setting::get('email');
-
-    $old['to']['port'] = empty($old['to']['port']) ? 993 : $old['to']['port'];
-    $old['from']['port'] = empty($old['from']['port']) ? 587 : $old['from']['port'];
+    $old = Setting::get('email', [
+      'name' => '',
+      'from' => [
+        'host' => '',
+        'port' => 587,
+        'user' => '',
+        'password' => ''
+      ],
+      'to' => [
+        'host' => '',
+        'port' => 993,
+        'user' => '',
+        'password' => ''
+      ]
+    ]);
 
     return response()->view('admin/settings/email-config', [
       'old' => $old,

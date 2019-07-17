@@ -93,7 +93,11 @@
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+__webpack_require__(/*! ./admin/loader.js */ "./resources/js/admin/loader.js");
+
 __webpack_require__(/*! ./admin/orders.js */ "./resources/js/admin/orders.js");
+
+__webpack_require__(/*! ./admin/products.js */ "./resources/js/admin/products.js");
 
 __webpack_require__(/*! ./admin/chats.js */ "./resources/js/admin/chats.js");
 
@@ -112,68 +116,23 @@ window.toBottom = function () {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-var rtf = new Intl.RelativeTimeFormat('pl', {
-  numeric: 'auto'
-});
-var chats = document.getElementById('chats');
-
-function updateChats() {
-  loader(orders);
-  fetch('/api/admin/orders', {
+window.updateChats = function () {
+  var chats = document.getElementById('chats');
+  window.loader.start(chats);
+  fetch('/api/admin/chats', {
     credentials: 'same-origin'
   }).then(function (response) {
     return response.json();
   }).then(function (data) {
     if (data.error) return;
-    var days;
+    var chatsTemp = chats.innerHTML;
     data.forEach(function (row) {
-      var created = new Date(row.created_at);
-      var sec = created.getTime() - new Date().getTime();
-      created = Math.ceil(sec / (1000 * 60 * 60 * 24));
-
-      if (days != created) {
-        var _e = document.createElement('li');
-
-        _e.classList.add('separator');
-
-        _e.innerText = rtf.format(created, 'day');
-        orders.appendChild(_e);
-        days = created;
-      }
-
-      var e = document.createElement('li');
-      var left = document.createElement('div');
-      var top = document.createElement('div');
-      top.innerText = row.code;
-      left.appendChild(top);
-      var bottom = document.createElement('small');
-      bottom.innerText = row.email;
-      left.appendChild(bottom);
-      e.appendChild(left);
-      var sum = document.createElement('div');
-      sum.innerText = row.sum;
-      sum.classList.add('sum');
-      e.appendChild(sum);
-      var status = document.createElement('div');
-      status.classList.add('status');
-      e.appendChild(status);
-      row.status.forEach(function (color) {
-        if (color == null) return;
-        var x = document.createElement('div');
-        x.classList.add('status-circle');
-        x.classList.add('status-circle__' + color);
-        status.appendChild(x);
-      });
-      var a = document.createElement('a');
-      a.href = '/admin/orders/' + row.id;
-      a.appendChild(e);
-      orders.appendChild(a);
+      chatsTemp += "\n      <a href=\"/admin/chat/".concat(row.id, "\">\n        <li class=\"clickable\">\n          <div class=\"avatar\">\n            <img src=\"/img/avatar.jpg\">\n          </div>\n          <div>\n            <div class=\"").concat(row.unread ? "unread" : "", "\">").concat(row.client.name, "</div>\n            <small>").concat(row.snippet, "</small>\n          </div>\n        </li>\n      </a>");
     });
-    loader.remove();
+    chats.innerHTML = chatsTemp;
   });
-}
-
-if (chats !== null) updateOrders();
+  window.loader.stop();
+};
 
 /***/ }),
 
@@ -197,6 +156,30 @@ window.darkMode = function () {
 if (localStorage.dark == 1) {
   document.body.classList.add('dark');
 }
+
+/***/ }),
+
+/***/ "./resources/js/admin/loader.js":
+/*!**************************************!*\
+  !*** ./resources/js/admin/loader.js ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+window.loader = {
+  start: function start(element) {
+    var loader = document.createElement('div');
+    loader.classList.add('loader--warper');
+    loader.id = 'loader';
+    var loader2 = document.createElement('div');
+    loader2.classList.add('loader');
+    loader.appendChild(loader2);
+    element.appendChild(loader);
+  },
+  stop: function stop() {
+    document.getElementById('loader').remove();
+  }
+};
 
 /***/ }),
 
@@ -271,6 +254,38 @@ window.updateOrders = function () {
     });
     loader.remove();
   });
+};
+
+/***/ }),
+
+/***/ "./resources/js/admin/products.js":
+/*!****************************************!*\
+  !*** ./resources/js/admin/products.js ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var products = document.getElementById('products');
+var formatter = new Intl.NumberFormat('pl-PL', {
+  style: 'currency',
+  currency: 'PLN'
+});
+
+window.updateProducts = function () {
+  window.loader.start(products);
+  fetch('/api/admin/products', {
+    credentials: 'same-origin'
+  }).then(function (response) {
+    return response.json();
+  }).then(function (data) {
+    if (data.error) return;
+    var temp = products.innerHTML;
+    data.forEach(function (row) {
+      temp += "\n        <a href=\"/admin/products/".concat(row.id, "\" class=\"product\">\n          <div class=\"product__img\">\n            <img src=\"").concat(row.img, "\">\n          </div>\n          <div class=\"flex\">\n            <div class=\"name\">\n              ").concat(row.name, "<br/>\n              <small>").concat(formatter.format(row.price), "</small>  \n            </div>\n          </div>\n        </a>");
+    });
+    products.innerHTML = temp;
+  });
+  window.loader.stop();
 };
 
 /***/ }),
