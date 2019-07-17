@@ -127,7 +127,7 @@ window.updateChats = function () {
     if (data.error) return;
     var chatsTemp = chats.innerHTML;
     data.forEach(function (row) {
-      chatsTemp += "\n      <a href=\"/admin/chat/".concat(row.id, "\">\n        <li class=\"clickable\">\n          <div class=\"avatar\">\n            <img src=\"/img/avatar.jpg\">\n          </div>\n          <div>\n            <div class=\"").concat(row.unread ? "unread" : "", "\">").concat(row.client.name, "</div>\n            <small>").concat(row.snippet, "</small>\n          </div>\n        </li>\n      </a>");
+      chatsTemp += "\n      <a href=\"/admin/chat/".concat(row.id, "\">\n        <li class=\"clickable\">\n          <div class=\"avatar\">\n            <img src=\"").concat(row.avatar, "\">\n          </div>\n          <div>\n            <div class=\"").concat(row.unread ? "unread" : "", "\">").concat(row.client.name, "</div>\n            <small>").concat(row.snippet, "</small>\n          </div>\n        </li>\n      </a>");
     });
     chats.innerHTML = chatsTemp;
   });

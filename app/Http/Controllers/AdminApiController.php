@@ -40,6 +40,7 @@ class AdminApiController extends Controller
 
     foreach($chats as $chat) {
       $chat->client;
+      $chat->avatar = 'https://source.unsplash.com/collection/2013520/50x50?' . $chat->id;
       $chat->snippet = $chat->snippet();
     }
 

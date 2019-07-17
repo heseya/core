@@ -18,7 +18,7 @@ window.updateChats = () => {
       <a href="/admin/chat/${row.id}">
         <li class="clickable">
           <div class="avatar">
-            <img src="/img/avatar.jpg">
+            <img src="${row.avatar}">
           </div>
           <div>
             <div class="${row.unread ? `unread` : ``}">${row.client.name}</div>
