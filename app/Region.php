@@ -4,9 +4,10 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Product extends Model
+class Region extends Model
 {
   protected $fillable = [
-    'name', 'category'
+    'name',
+    'name_eng'
   ];
 }

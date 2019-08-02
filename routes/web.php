@@ -10,7 +10,12 @@ Route::prefix('admin')->group(function () {
     Route::get('orders', 'AdminController@orders');
     Route::get('orders/add', 'AdminController@ordersAdd');
     Route::get('orders/{order}', 'AdminController@order');
+
     Route::get('products', 'AdminController@products');
+    Route::get('products/add', 'AdminController@productsAdd');
+    Route::post('products/add', 'AdminController@productsStore');
+    Route::get('products/{product}', 'AdminController@product');
+
     Route::get('chat', 'AdminController@chats');
     Route::get('chat/{id}', 'AdminController@chat');
 

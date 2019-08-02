@@ -36,7 +36,8 @@
       </div>
     </div>
     <div>
-      <button class="button">Zapisz</button>
+      <br>
+      <button class="button sto sto-mobile">Zapisz</button>
     </div>
   </div>
 </form>

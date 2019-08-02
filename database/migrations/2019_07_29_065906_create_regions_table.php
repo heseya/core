@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateProductSchemasTable extends Migration
+class CreateRegionsTable extends Migration
 {
   /**
    * Run the migrations.
@@ -13,11 +13,9 @@ class CreateProductSchemasTable extends Migration
    */
   public function up()
   {
-    Schema::create('product_schemas', function (Blueprint $table) {
-      $table->increments('id');
-      $table->integer('product_id')->unsigned();
+    Schema::create('regions', function (Blueprint $table) {
+      $table->smallIncrements('id');
       $table->string('name');
-      $table->boolean('required')->default(0);
       $table->timestamps();
     });
   }
@@ -29,6 +27,6 @@ class CreateProductSchemasTable extends Migration
    */
   public function down()
   {
-    Schema::dropIfExists('product_schemas');
+    Schema::dropIfExists('regions');
   }
 }

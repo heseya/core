@@ -22,11 +22,6 @@
   @endif
   <a href="/admin/settings/email/config">
     <li class="clickable">
-      <img class="icon" src="/img/icons/settings.svg">Ustawienia
-    </li>
-  </a>
-  <a href="/admin/settings/email/config">
-    <li class="clickable">
       <img class="icon" src="/img/icons/settings.svg">Ustawienia serwera
     </li>
   </a>

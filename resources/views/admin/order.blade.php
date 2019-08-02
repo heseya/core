@@ -1,6 +1,6 @@
 @extends('admin/layout')
 
-@section('title', 'Zamówienie' . $code)
+@section('title', 'Zamówienie ' . $code)
 
 @section('buttons')
   

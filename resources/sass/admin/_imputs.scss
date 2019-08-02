@@ -9,24 +9,40 @@ button {
   max-width: 320px;
   margin: 20px 0;
 
-  input, select {
-    width: calc(100% - 42px);
+  input, select, textarea {
+    width: calc(100% - 32px);
     font-size: 15px;
-    padding: 10px 21px;
-    border-radius: 21px;
+    padding: 10px 16px;
+    border-radius: 6px;
     border: none;
     background: $grey-light;
+  }
+
+  label {
+    padding-left: 6px;
+    padding-bottom: 8px;
   }
 
   select {
     width: 100%;
     -webkit-appearance: none;
     appearance: none;
+    background: $grey-light url("/img/icons/down-arrow.svg") no-repeat 95% 50%;
+    background-size: 14px;
+
+    &:-moz-focusring {
+      color: transparent;
+      text-shadow: 0 0 0 #000;
+    }
+
+    option:not(:checked) {
+      color: black;
+    }
   }
 
-  select::-ms-expand {
-    display: none;
-}
+  textarea {
+    resize: vertical;
+  }
 }
 
 .switch {

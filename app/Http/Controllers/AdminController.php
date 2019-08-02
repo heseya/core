@@ -49,11 +49,30 @@ class AdminController extends Controller
     ]);
   }
 
+  public function product(Request $request, Product $product)
+  {
+    return response()->view('admin/product', $product);
+  }
+
   public function productsSingle(Request $request)
   {
     return response()->view('admin/products-single', [
       'user' => Auth::user()
     ]);
+  }
+
+  public function productsAdd(Request $request)
+  {
+    return response()->view('admin/products-add', [
+      'user' => Auth::user()
+    ]);
+  }
+
+  public function productsStore(Request $request)
+  {
+    $product = Product::create($request->all());
+
+    return redirect('/admin/products/' . $product->id);
   }
 
   public function chats(Request $request)
