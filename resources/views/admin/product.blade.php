@@ -1,46 +1,25 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <link rel="stylesheet" href="/css/admin.css">
-  <link rel="manifest" href="/manifest.json">
+@extends('admin/layout')
 
-  <title>{{ $name }}</title>
-</head>
-<body>
+@section('title', $product->name)
 
-  <nav class="nav">
-    <div class="logo">
-      <img src="/img/logo.png">
-    </div>
+@section('buttons')
 
-    <a href="/admin/products" class="nav--products nav--products__selected"></a>
-    <a href="/admin/orders" class="nav--orders"></a>
-    <a href="/admin/chat" class="nav--chat"></a>
-  </nav>
+@endsection
 
-  <nav class="product-nav">
-    <a href="/admin/products">
-      <img src="/img/icons/back.svg">
-    </a>
+@section('content')
+<div class="stats">
+  <div class="stats__item">
+    <img class="icon" src="/img/icons/bookmark.svg">203
+  </div>
+  <div class="stats__item">
+    <img class="icon" src="/img/icons/user.svg">22
+  </div>
+  <div class="stats__item">
+    <img class="icon" src="/img/icons/sad.svg">0
+  </div>
+</div>
+@endsection
 
-    <div class="product-nav__photos">
-      <img src="https://source.unsplash.com/collection/1085173">
-    </div>
-  </nav>
+@section('scripts')
 
-  <main id="main" class="product">
-    <div class="details">
-      <div class="content">
-        <h1>{{ $name }}</h1>
-        <small>200 zł</small>
-        <p>{{ $description }}</p>
-      </div>
-    </div>
-
-  </main>
-  <script src="/js/admin.js"></script>
-</body>
-</html>
+@endsection

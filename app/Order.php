@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Status;
 
 class Order extends Model
 {
@@ -22,12 +23,7 @@ class Order extends Model
 
   public function view() 
   {
-    $colors = [
-      'grey',
-      'orange',
-      'green',
-      'red'
-    ];
+    $status = new Status;
 
     return [
       'id' => $this->id,
@@ -36,10 +32,43 @@ class Order extends Model
       'sum' => rand(50, 200) . 'zł',
       'created_at' => $this->created_at,
       'status' => [
-        $colors[$this->payment_status],
-        $colors[$this->shop_status],
-        $colors[$this->delivery_status]
+        $status->payment_status[$this->payment_status]['color'],
+        $status->shop_status[$this->shop_status]['color'],
+        $status->delivery_status[$this->delivery_status]['color'],
       ]
     ];
+  }
+
+  public function paymentStatus($id)
+  {
+    $status = [
+      'Oczekuje',
+      'Realizacja',
+      'Opłacone',
+      'Niepowodzenie',
+    ];
+    return $status[$id];
+  }
+
+  public function shopStatus($id)
+  {
+    $status = [
+      'Oczekuje',
+      'Realizacja',
+      'Gotowe',
+      'Anulowane',
+    ];
+    return $status[$id];
+  }
+
+  public function deliveryStatus($id)
+  {
+    $status = [
+      'Oczekuje',
+      'W trasie',
+      'Dostarczono',
+      'Anulowane',
+    ];
+    return $status[$id];
   }
 }

@@ -115,8 +115,8 @@
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /Users/jedrzej/Projekty/depth-2/resources/js/app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! /Users/jedrzej/Projekty/depth-2/resources/sass/admin.scss */"./resources/sass/admin.scss");
+__webpack_require__(/*! /Users/jedrzej/Projekty/depth/resources/js/app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! /Users/jedrzej/Projekty/depth/resources/sass/admin.scss */"./resources/sass/admin.scss");
 
 
 /***/ })

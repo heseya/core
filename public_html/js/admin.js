@@ -297,7 +297,7 @@ window.updateProducts = function () {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! /Users/jedrzej/Projekty/depth-2/resources/js/admin.js */"./resources/js/admin.js");
+module.exports = __webpack_require__(/*! /Users/jedrzej/Projekty/depth/resources/js/admin.js */"./resources/js/admin.js");
 
 
 /***/ })

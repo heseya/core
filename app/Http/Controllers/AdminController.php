@@ -13,6 +13,7 @@ use Auth;
 use App\User;
 use App\Product;
 use App\Order;
+use App\Status;
 
 use App\Mail\NewAdmin;
 use App\Mail\Test;
@@ -30,9 +31,11 @@ class AdminController extends Controller
   {
     $order->address();
 
-    $order['user'] = Auth::user();
-
-    return response()->view('admin/order', $order);
+    return response()->view('admin/order', [
+        'order' => $order,
+        'status' => new Status,
+        'user' => Auth::user(),
+    ]);
   }
 
   public function ordersAdd(Request $request)
@@ -51,7 +54,10 @@ class AdminController extends Controller
 
   public function product(Request $request, Product $product)
   {
-    return response()->view('admin/product', $product);
+    return response()->view('admin/product', [
+        'product' => $product,
+        'user' => Auth::user(),
+    ]);
   }
 
   public function productsSingle(Request $request)
