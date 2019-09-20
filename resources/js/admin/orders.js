@@ -41,7 +41,7 @@ window.updateOrders = () => {
       let left = document.createElement('div')
 
       let top = document.createElement('div')
-      top.innerText = row.code
+      top.innerText = row.title
       left.appendChild(top)
 
       let bottom = document.createElement('small')

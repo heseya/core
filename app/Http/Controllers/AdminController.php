@@ -29,8 +29,6 @@ class AdminController extends Controller
 
   public function order(Request $request, Order $order)
   {
-    $order->address();
-
     return response()->view('admin/order', [
         'order' => $order,
         'status' => new Status,

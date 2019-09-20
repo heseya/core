@@ -15,16 +15,13 @@ class CreateAddressesTable extends Migration
   {
     Schema::create('addresses', function (Blueprint $table) {
       $table->increments('id');
-      $table->integer('order_id')->unsigned()->index();
       $table->string('name');
+      $table->string('phone', 20);
       $table->string('address');
       $table->string('zip', 16);
       $table->string('city');
       $table->string('country', 2);
       $table->timestamps();
-
-      // Relations
-      $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
     });
   }
 

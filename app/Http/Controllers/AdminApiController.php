@@ -4,20 +4,32 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Order;
-use App\Product;
-use App\Chat;
+use App\{Order, Product, Chat, Status};
 
 class AdminApiController extends Controller
 {
   public function orders ()
   {
-    $orders = Order::select('id', 'code', 'email', 'payment_status', 'shop_status', 'delivery_status', 'created_at')
+    $orders = Order::select('id', 'code', 'email', 'payment_status', 'shop_status', 'delivery_status', 'created_at', 'delivery_address')
     ->orderBy('created_at', 'desc')
     ->get();
 
-    foreach($orders as $order)
-      $result[] = $order->view();
+    $status = new Status;
+
+    foreach($orders as $order) {
+      $result[] = [
+        'id' => $order->id,
+        'title' => $order->deliveryAddress->name ?? $order->code,
+        'email' => $order->email,
+        'sum' => number_format(rand(5000, 20000)/100, 2, ',', ' ') . ' zł',
+        'created_at' => $order->created_at,
+        'status' => [
+          $status->payment_status[$order->payment_status]['color'],
+          $status->shop_status[$order->shop_status]['color'],
+          $status->delivery_status[$order->delivery_status]['color'],
+        ]
+      ];
+    }
 
     return response()->json($result);
   }

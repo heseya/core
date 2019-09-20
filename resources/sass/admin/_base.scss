@@ -47,7 +47,7 @@ h1, h2, h3, h4, h5 {
 
 .stats {
     padding: 10px 30px 25px 30px;
-    width: 100%;
+    width: clac(100% -60px);
     
     &__item {
         display: inline-flex;

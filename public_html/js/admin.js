@@ -227,7 +227,7 @@ window.updateOrders = function () {
       e.classList.add('clickable');
       var left = document.createElement('div');
       var top = document.createElement('div');
-      top.innerText = row.code;
+      top.innerText = row.title;
       left.appendChild(top);
       var bottom = document.createElement('small');
       bottom.innerText = row.email;
