@@ -17,6 +17,7 @@ return [
      * storing your app ID and app secret. Make sure to update
      * your /.env file with your app ID and secret.
      */
+
     'facebook_config' => [
         'app_id' => env('FACEBOOK_APP_ID'),
         'app_secret' => env('FACEBOOK_APP_SECRET'),
@@ -39,11 +40,13 @@ return [
      *
      * https://developers.facebook.com/docs/facebook-login/permissions
      */
+
     'default_scope' => [],
 
     /*
      * The default endpoint that Facebook will redirect to after
      * an authentication attempt.
      */
+
     'default_redirect_uri' => '/admin/settings/facebook/callback',
-    ];
+];

@@ -24,7 +24,7 @@ class Status
         4 => [
             'name' => 'Przy odbiorze',
             'color' => 'blue',
-        ]
+        ],
     ];
 
     public $shop_status = [
@@ -95,6 +95,6 @@ class Status
             'name' => 'Nieoczekiewany problem',
             'color' => 'red',
             'description' => 'Wystąpiła nieoczekiwana sytuacja',
-        ]
+        ],
     ];
 }

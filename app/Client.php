@@ -6,12 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Client extends Model
 {
-  protected $fillable = [
-    'name',
-  ];
+    protected $fillable = [
+        'name',
+    ];
 
-  public function chats()
-  {
-    return $this->hasMany(Chat::class);
-  }
+    public function chats()
+    {
+        return $this->hasMany(Chat::class);
+    }
 }

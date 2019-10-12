@@ -1,23 +1,22 @@
 <?php
 
-use Illuminate\Database\Seeder;
-
 use App\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class UsersSeeder extends Seeder
 {
-  /**
-   * Run the database seeds.
-   *
-   * @return void
-   */
-  public function run()
-  {
-    User::create([
-      'name' => 'Jędrzej Buliński',
-      'email' => 'jedrzej@heseya.com',
-      'password' => Hash::make('secret')
-    ]);
-  }
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        User::create([
+            'name' => 'Jędrzej Buliński',
+            'email' => 'jedrzej@heseya.com',
+            'password' => Hash::make('secret'),
+        ]);
+    }
 }

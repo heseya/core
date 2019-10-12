@@ -2,45 +2,46 @@
 
 namespace App\Http\Controllers\Auth;
 
-use Auth;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Auth;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\Request;
 
 class LoginController extends Controller
 {
-  /*
-  |--------------------------------------------------------------------------
-  | Login Controller
-  |--------------------------------------------------------------------------
-  |
-  | This controller handles authenticating users for the application and
-  | redirecting them to your home screen. The controller uses a trait
-  | to conveniently provide its functionality to your applications.
-  |
-  */
+    /*
+    |--------------------------------------------------------------------------
+    | Login Controller
+    |--------------------------------------------------------------------------
+    |
+    | This controller handles authenticating users for the application and
+    | redirecting them to your home screen. The controller uses a trait
+    | to conveniently provide its functionality to your applications.
+    |
+     */
 
-  use AuthenticatesUsers;
+    use AuthenticatesUsers;
 
-  /**
-   * Where to redirect users after login.
-   *
-   * @var string
-   */
-  protected $redirectTo = '/admin/orders';
+    /**
+     * Where to redirect users after login.
+     *
+     * @var string
+     */
+    protected $redirectTo = '/admin/orders';
 
-  /**
-   * Create a new controller instance.
-   *
-   * @return void
-   */
-  public function __construct()
-  {
-    $this->middleware('guest')->except('logout');
-  }
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('guest')->except('logout');
+    }
 
-  public function logout(Request $request) {
-    Auth::logout();
-    return redirect('/admin/login');
-  }
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        return redirect('/admin/login');
+    }
 }

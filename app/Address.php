@@ -6,17 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Address extends Model
 {
-  protected $fillable = [
-    'name',
-    'address',
-    'zip',
-    'city',
-    'country',
-    'phone',
-  ];
+    protected $fillable = [
+        'name',
+        'address',
+        'zip',
+        'city',
+        'country',
+        'phone',
+    ];
 
-  public function orders()
-  {
-    return $this->hasMany(Order::class);
-  }
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }
