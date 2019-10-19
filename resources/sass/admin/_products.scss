@@ -45,57 +45,8 @@
   }
 }
 
-.product-add {
-
+.product-add, .product-photos {
   margin: 0 30px;
-
-  .gallery {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    grid-gap: 10px;
-
-    &__img {
-      position: relative;
-      width: 100%;
-      padding-top: 100%;
-      border-radius: 6px;
-      background-color: $grey-light;
-      overflow: hidden;
-      margin-bottom: 4px;
-      text-align:center;
-
-      &:first-child {
-        grid-column: 1/3;
-        grid-row: 1/3;
-      }
-
-      img {
-        position: absolute;
-        top: 0; left: 0;
-        height: 100%;
-      }
-
-      .remove {
-        cursor: pointer;
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 12px;
-        height: 12px;
-        padding: 4px;
-        border-bottom-left-radius: 6px;
-        background: url(/img/icons/cancel.svg) no-repeat scroll right center #000;
-        background-origin: content-box;
-      }
-    }
-
-    .add {
-      img {
-        top: 40%; left: 40%;
-        height: 20%;
-      }
-    }
-  }
 }
 
 .product-nav {
@@ -146,7 +97,7 @@
     background: white;
     border-top-left-radius: 26px;
     border-top-right-radius: 26px;
-    
+
     .content {
       padding: 0 30px;
       padding-top: 30px;
@@ -178,18 +129,18 @@
     border-radius: 24px;
     margin-bottom: 0;
     margin-top: 15px;
-  
+
     a {
       display: none;
     }
-  
+
     &__photos {
       position: relative;
       width: 100%;
       height: 50vh;
       overflow: hidden;
       background-color: $grey-light;
-  
+
       img {
         position: absolute;
         top: 0; left: 0;
@@ -202,11 +153,11 @@
   .product {
     max-width: $break;
     padding: 0;
-  
+
     .details {
       position: static;
       margin: 0;
     }
   }
-  
+
 }

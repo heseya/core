@@ -1,7 +1,10 @@
 <?php
 
+use App\Brand;
 use App\Product;
+use Faker\Factory;
 use Illuminate\Database\Seeder;
+use Bezhanov\Faker\ProviderCollectionHelper;
 
 class ProductsSeeder extends Seeder
 {
@@ -12,16 +15,19 @@ class ProductsSeeder extends Seeder
      */
     public function run()
     {
-        $faker = \Faker\Factory::create('pl_PL');
-        \Bezhanov\Faker\ProviderCollectionHelper::addAllProvidersTo($faker);
+        $faker = Factory::create('pl_PL');
+        ProviderCollectionHelper::addAllProvidersTo($faker);
+
+        Brand::create([
+            'name' => 'Depth',
+            'link' => 'depth',
+        ]);
 
         for ($i = 1; $i <= 10; $i++) {
 
             Product::create([
                 'name' => $faker->productName(),
                 'description' => $faker->paragraph(),
-                'category' => 0,
-                'brand' => 0,
             ]);
         }
     }

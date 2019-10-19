@@ -21,8 +21,9 @@ class CreateOrdersTable extends Migration
             $table->smallInteger('payment')->default(0);
             $table->tinyInteger('payment_status')->default(0);
             $table->tinyInteger('shop_status')->default(0);
-            $table->smallInteger('delivery')->default(0);
+            $table->smallInteger('delivery')->nullable();
             $table->tinyInteger('delivery_status')->default(0);
+            $table->string('delivery_tracking')->nullable();
             $table->integer('delivery_address')->unsigned()->nullable()->default(null);
             $table->integer('invoice_address')->unsigned()->nullable()->default(null);
             $table->timestamps();

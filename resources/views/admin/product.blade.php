@@ -8,15 +8,27 @@
 
 @section('content')
 <div class="stats">
-  <div class="stats__item">
-    <img class="icon" src="/img/icons/bookmark.svg">203
-  </div>
-  <div class="stats__item">
-    <img class="icon" src="/img/icons/user.svg">22
-  </div>
-  <div class="stats__item">
-    <img class="icon" src="/img/icons/sad.svg">0
-  </div>
+    <div class="stats__item">
+        <img class="icon" src="/img/icons/money.svg">250 PLN
+    </div>
+</div>
+
+<div class="product-photos">
+    <div class="gallery">
+        <div class="gallery__img">
+            <img src="https://source.unsplash.com/collection/1085173/500x500">
+        </div>
+        <div class="gallery__img">
+            <img src="https://source.unsplash.com/collection/1085173/250x250?1">
+        </div>
+        <div class="gallery__img">
+            <img src="https://source.unsplash.com/collection/1085173/250x250?2">
+        </div>
+    </div>
+</div>
+
+<div class="product-description">
+    {{ $product->description }}
 </div>
 @endsection
 

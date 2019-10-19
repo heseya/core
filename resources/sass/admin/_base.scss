@@ -48,7 +48,7 @@ h1, h2, h3, h4, h5 {
 .stats {
     padding: 10px 30px 25px 30px;
     width: clac(100% -60px);
-    
+
     &__item {
         display: inline-flex;
         align-items: center;
@@ -66,8 +66,9 @@ h1, h2, h3, h4, h5 {
         appearance: none;
         border: 0;
         width: auto;
+        background: none;
     }
-    
+
     select::-ms-expand {
         display: none;
     }
@@ -154,8 +155,8 @@ h1, h2, h3, h4, h5 {
   transform: translate(-50%, -50%);
 
   &--off {
-    animation: 
-      puff 0.4s 0s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards, 
+    animation:
+      puff 0.4s 0s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards,
       borderRadius 0.15s 0.42s linear forwards;
   }
 }

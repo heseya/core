@@ -2,29 +2,32 @@
 
 namespace App\Http\Controllers;
 
-use anlutro\LaravelSettings\Facade as Setting;
-use App\Mail\NewAdmin;
-use App\Mail\Test;
-use App\Order;
-use App\Product;
-use App\Status;
-use App\User;
 use Auth;
+use App\User;
+use App\Brand;
+use App\Order;
+use App\Status;
+use App\Product;
+use App\Mail\Test;
+use App\Mail\NewAdmin;
+use App\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Artisan;
+use anlutro\LaravelSettings\Facade as Setting;
 
 class AdminController extends Controller
 {
-    public function orders(Request $request)
+    public function orders()
     {
         return response()->view('admin/orders', [
             'user' => Auth::user(),
         ]);
     }
 
-    public function order(Request $request, Order $order)
+    public function order(Order $order)
     {
         return response()->view('admin/order', [
             'order' => $order,
@@ -33,7 +36,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function ordersAdd(Request $request)
+    public function ordersAdd()
     {
         return response()->view('admin/orders-add', [
             'user' => Auth::user(),
@@ -47,7 +50,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function product(Request $request, Product $product)
+    public function product(Product $product)
     {
         return response()->view('admin/product', [
             'product' => $product,
@@ -55,17 +58,19 @@ class AdminController extends Controller
         ]);
     }
 
-    public function productsSingle(Request $request)
+    public function productsSingle()
     {
         return response()->view('admin/products-single', [
             'user' => Auth::user(),
         ]);
     }
 
-    public function productsAdd(Request $request)
+    public function productsAdd()
     {
         return response()->view('admin/products-add', [
             'user' => Auth::user(),
+            'brands' => Brand::all(),
+            'categories' => Category::all(),
         ]);
     }
 
@@ -76,14 +81,14 @@ class AdminController extends Controller
         return redirect('/admin/products/' . $product->id);
     }
 
-    public function chats(Request $request)
+    public function chats()
     {
         return response()->view('admin/chats', [
             'user' => Auth::user(),
         ]);
     }
 
-    public function chat(Request $request)
+    public function chat()
     {
         return response()->view('admin/chat', [
             'user' => Auth::user(),
@@ -151,7 +156,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function emailConfigStore(Request $request)
+    public function emailConfigStore()
     {
         Setting::set('email', [
             'to' => [
@@ -170,17 +175,17 @@ class AdminController extends Controller
         Setting::save();
         Artisan::call('config:cache');
 
-        return redirect('admin/settings/email');
+        return redirect('/admin/settings/email');
     }
 
-    public function emailTest(Request $request)
+    public function emailTest()
     {
         Mail::to(Auth::user()->email)->send(new Test());
 
-        return redirect('admin/settings/email');
+        return redirect('/admin/settings/email');
     }
 
-    public function accounts(Request $request)
+    public function accounts()
     {
         $accounts = User::all();
 
@@ -190,14 +195,14 @@ class AdminController extends Controller
         ]);
     }
 
-    public function accountsAdd(Request $request)
+    public function accountsAdd()
     {
         return response()->view('admin/settings/accounts-add', [
             'user' => Auth::user(),
         ]);
     }
 
-    public function accountsStore(Request $request)
+    public function accountsStore()
     {
         $password = str_random(8);
 
@@ -212,7 +217,65 @@ class AdminController extends Controller
         return redirect('/admin/settings/accounts');
     }
 
-    public function notifications(Request $request)
+    public function categories()
+    {
+        return response()->view('admin/settings/categories', [
+            'user' => Auth::user(),
+            'categories' => Category::all(),
+        ]);
+    }
+
+    public function categoryAdd()
+    {
+        return response()->view('admin/settings/category-add', [
+            'user' => Auth::user(),
+        ]);
+    }
+
+    public function categoryStore(Request $request)
+    {
+        Category::create($request->all());
+
+        return redirect('/admin/settings/categories');
+    }
+
+    public function categoryUpdate(Request $request)
+    {
+        Category::update($request->all());
+
+        return redirect('/admin/settings/categories');
+    }
+
+    public function brands()
+    {
+        return response()->view('admin/settings/brands', [
+            'user' => Auth::user(),
+            'brands' => Brand::all(),
+        ]);
+    }
+
+    public function brandAdd()
+    {
+        return response()->view('admin/settings/brand-add', [
+            'user' => Auth::user(),
+        ]);
+    }
+
+    public function brandStore(Request $request)
+    {
+        Brand::create($request->all());
+
+        return redirect('/admin/settings/brands');
+    }
+
+    public function brandUpdate(Request $request)
+    {
+        Brand::update($request->all());
+
+        return redirect('/admin/settings/brands');
+    }
+
+    public function notifications()
     {
         return response()->view('admin/settings/notifications', [
             'user' => Auth::user(),

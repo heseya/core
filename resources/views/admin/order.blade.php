@@ -103,6 +103,18 @@
     </div>
 
     <div>
+        <h3 class="margin--left">Dokumenty</h3>
+        <div class="list">
+            <li class="clickable marginles">
+                <div>Faktura VAT D109-19</div>
+            </li>
+            <li class="clickable marginles">
+                <div>List przewozowy</div>
+            </li>
+        </div>
+    </div>
+
+    <div>
         <h3>Linia czasu</h3>
         <div class="timeline">
             <div class="timeline__block">

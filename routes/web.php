@@ -28,6 +28,16 @@ Route::prefix('admin')->group(function () {
             Route::post('email/config', 'AdminController@emailConfigStore');
             Route::get('email/test', 'AdminController@emailTest');
 
+            Route::get('categories', 'AdminController@categories');
+            Route::get('categories/add', 'AdminController@categoryAdd');
+            Route::post('categories/add', 'AdminController@categoryStore');
+            Route::put('categories/add', 'AdminController@categoryUpdate');
+
+            Route::get('brands', 'AdminController@brands');
+            Route::get('brands/add', 'AdminController@brandAdd');
+            Route::post('brands/add', 'AdminController@brandStore');
+            Route::put('brands/add', 'AdminController@brandUpdate');
+
             Route::get('accounts', 'AdminController@accounts');
             Route::get('accounts/add', 'AdminController@accountsAdd');
             Route::post('accounts/add', 'AdminController@accountsStore');
