@@ -12,25 +12,31 @@
 <div class="stats">
     <div class="stats__item">
         <img class="icon" src="/img/icons/money.svg">
-        <select>
+        <select id="payment_status">
         @foreach ($status->payment_status as $id => $pstatus)
-            <option onchange="updateStatus('payment', {{ $order->id }}, {{ $id }})">{{ $pstatus['name'] }}</option>
+            <option value="{{ $id }}" {{ $order->delivery_status == $id ? 'selected' : '' }}>
+                {{ $pstatus['name'] }}
+            </option>
         @endforeach
         </select>
     </div>
     <div class="stats__item">
         <img class="icon" src="/img/icons/shop.svg">
-        <select>
-            @foreach ($status->shop_status as $sstatus)
-            <option onchange="updateStatus('shop', {{ $order->id }}, {{ $id }})">{{ $sstatus['name'] }}</option>
+        <select id="shop_status">
+            @foreach ($status->shop_status as $id => $sstatus)
+            <option value="{{ $id }}" {{ $order->delivery_status == $id ? 'selected' : '' }}>
+                {{ $sstatus['name'] }}
+            </option>
             @endforeach
         </select>
         </div>
     <div class="stats__item">
         <img class="icon" src="/img/icons/delivery.svg">
-        <select>
-        @foreach ($status->delivery_status as $dstatus)
-            <option onchange="updateStatus('delivery', {{ $order->id }}, {{ $id }})">{{ $dstatus['name'] }}</option>
+        <select id="delivery_status">
+        @foreach ($status->delivery_status as $id => $dstatus)
+            <option value="{{ $id }}" {{ $order->delivery_status == $id ? 'selected' : '' }}>
+                {{ $dstatus['name'] }}
+            </option>
         @endforeach
         </select>
     </div>
@@ -39,7 +45,7 @@
 <div class="order">
     <div>
         <h3>Informacje</h3>
-        <div>Dostawa: DPD</div>
+        <div>Dostawa: kurier</div>
         <div>Płatność: mTransfer</div>
 
         @if ($order->deliveryAddress)
@@ -117,27 +123,15 @@
     <div>
         <h3>Linia czasu</h3>
         <div class="timeline">
-            <div class="timeline__block">
-                <div class="marker"></div>
-                <div class="timeline-content">
-                    <p>Gotowe do wysyłki</p>
-                    <small>Szymon Makowski, 5 min temu</small>
+            @foreach ($order->logs as $log)
+                <div class="timeline__block">
+                    <div class="marker"></div>
+                    <div class="timeline-content">
+                        <p>{{ $log['content'] }}</p>
+                        <small>{{ $log['user'] }}, {{ $log['created_at'] }}</small>
+                    </div>
                 </div>
-            </div>
-            <div class="timeline__block">
-                <div class="marker"></div>
-                <div class="timeline-content">
-                    <p>Zaksięgowano wpłatę</p>
-                    <small>Bluemedia, 3h temu</small>
-                </div>
-            </div>
-            <div class="timeline__block">
-                <div class="marker"></div>
-                <div class="timeline-content">
-                    <p>Złożono zamówienie na depth.store</p>
-                    <small>Maksymilian Kołodziej, 3h temu</small>
-                </div>
-            </div>
+            @endforeach
         </div>
     </div>
 
@@ -145,5 +139,8 @@
 @endsection
 
 @section('scripts')
-
+<script src="/js/status.js"></script>
+<script>
+    window.order_id = {{ $order->id }}
+</script>
 @endsection

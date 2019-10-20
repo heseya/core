@@ -24,4 +24,9 @@ class Order extends Model
     {
         return $this->hasOne(Address::class, 'id', 'invoice_address');
     }
+
+    public function logs()
+    {
+        return $this->hasMany(OrderLog::class)->orderBy('created_at', 'DESC');
+    }
 }

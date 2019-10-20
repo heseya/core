@@ -60,4 +60,14 @@ class AdminApiController extends Controller
 
         return response()->json($chats);
     }
+
+    public function changeStatus(Request $request)
+    {
+        $order = Order::find($request->order_id);
+        $order->update([
+            $request->type . '_status' => $request->status,
+        ]);
+
+        return response()->json(null, 204);
+    }
 }
