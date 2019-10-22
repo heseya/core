@@ -68,7 +68,7 @@ class Status
         ],
         3 => [
             'name' => 'W doręczeniu',
-            'color' => 'red',
+            'color' => 'orange',
             'description' => 'Przesyłka zmierza już prosto do Ciebie!',
         ],
         4 => [

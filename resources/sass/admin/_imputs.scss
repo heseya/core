@@ -2,7 +2,7 @@ a,
 input,
 select,
 button {
-  outline: none; 
+  outline: none;
 }
 
 .input {
@@ -52,10 +52,10 @@ button {
   background-color: #ffffff; border: 1px solid $grey-light;
   border-radius: 50px;
   transition-duration: 0.1s;
-  margin-right: 10px; 
+  margin-right: 10px;
 
   &:after {
-    content: ""; 
+    content: "";
     position: absolute;
     top: 1px; left: 1px;
     width: 18px; height: 18px;
@@ -88,5 +88,14 @@ button {
 
   &:hover {
     background: #444;
+  }
+
+  &--second {
+      background: $grey-light;
+      color: black;
+
+      &:hover {
+        background: $grey;
+      }
   }
 }

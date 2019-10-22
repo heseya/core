@@ -1,6 +1,6 @@
 document.getElementById('payment_status').addEventListener('change', (event) => {
 
-    if (confirm('Czy na pewno chcesz zmienić status?')) {
+    if (confirm('Czy na pewno chcesz zmienić status płatności?')) {
 
         fetch('/api/admin/status', {
             method: 'POST', // or 'PUT'
@@ -18,7 +18,7 @@ document.getElementById('payment_status').addEventListener('change', (event) => 
 
 document.getElementById('shop_status').addEventListener('change', (event) => {
 
-    if (confirm('Czy na pewno chcesz zmienić status?')) {
+    if (confirm('Czy na pewno chcesz zmienić status zanówienia?')) {
 
         fetch('/api/admin/status', {
             method: 'POST', // or 'PUT'
@@ -36,7 +36,7 @@ document.getElementById('shop_status').addEventListener('change', (event) => {
 
 document.getElementById('delivery_status').addEventListener('change', (event) => {
 
-    if (confirm('Czy na pewno chcesz zmienić status?')) {
+    if (confirm('Czy na pewno chcesz zmienić status dostawy?')) {
 
         fetch('/api/admin/status', {
             method: 'POST', // or 'PUT'

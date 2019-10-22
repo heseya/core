@@ -14,7 +14,7 @@
         <img class="icon" src="/img/icons/money.svg">
         <select id="payment_status">
         @foreach ($status->payment_status as $id => $pstatus)
-            <option value="{{ $id }}" {{ $order->delivery_status == $id ? 'selected' : '' }}>
+            <option value="{{ $id }}" {{ $order->payment_status == $id ? 'selected' : '' }}>
                 {{ $pstatus['name'] }}
             </option>
         @endforeach
@@ -24,7 +24,7 @@
         <img class="icon" src="/img/icons/shop.svg">
         <select id="shop_status">
             @foreach ($status->shop_status as $id => $sstatus)
-            <option value="{{ $id }}" {{ $order->delivery_status == $id ? 'selected' : '' }}>
+            <option value="{{ $id }}" {{ $order->shop_status == $id ? 'selected' : '' }}>
                 {{ $sstatus['name'] }}
             </option>
             @endforeach

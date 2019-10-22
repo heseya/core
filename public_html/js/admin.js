@@ -95,6 +95,8 @@
 
 __webpack_require__(/*! ./admin/loader.js */ "./resources/js/admin/loader.js");
 
+__webpack_require__(/*! ./admin/modal.js */ "./resources/js/admin/modal.js");
+
 __webpack_require__(/*! ./admin/orders.js */ "./resources/js/admin/orders.js");
 
 __webpack_require__(/*! ./admin/products.js */ "./resources/js/admin/products.js");
@@ -179,6 +181,25 @@ window.loader = {
   stop: function stop() {
     document.getElementById('loader').remove();
   }
+};
+
+/***/ }),
+
+/***/ "./resources/js/admin/modal.js":
+/*!*************************************!*\
+  !*** ./resources/js/admin/modal.js ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+window.closeModal = function () {
+  document.getElementById('modal').classList.add('modal--hidden');
+};
+
+window.confirmModal = function (title) {
+  var modal = document.getElementById('modal');
+  document.getElementById('modal__title').innerText = title;
+  modal.classList.remove('modal--hidden');
 };
 
 /***/ }),
