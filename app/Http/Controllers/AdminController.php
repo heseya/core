@@ -3,14 +3,15 @@
 namespace App\Http\Controllers;
 
 use Auth;
+use App\Chat;
 use App\User;
 use App\Brand;
 use App\Order;
 use App\Status;
 use App\Product;
+use App\Category;
 use App\Mail\Test;
 use App\Mail\NewAdmin;
-use App\Category;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
@@ -88,10 +89,13 @@ class AdminController extends Controller
         ]);
     }
 
-    public function chat()
+    public function chat(Chat $chat)
     {
         return response()->view('admin/chat', [
             'user' => Auth::user(),
+            'messages' => $chat->messages,
+            'client' => $chat->client,
+            'type' => $chat->typeName(),
         ]);
     }
 
@@ -138,15 +142,15 @@ class AdminController extends Controller
             'name' => '',
             'from' => [
                 'host' => '',
-                'port' => 587,
                 'user' => '',
                 'password' => '',
+                'port' => 587,
             ],
             'to' => [
                 'host' => '',
-                'port' => 993,
                 'user' => '',
                 'password' => '',
+                'port' => 993,
             ],
         ]);
 

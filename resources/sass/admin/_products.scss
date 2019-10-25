@@ -20,8 +20,6 @@
       overflow: hidden;
       margin-bottom: 4px;
 
-      @include photo-loader(lighten($grey-light, 40));
-
       img {
         position: absolute;
         top: 0; left: 0;

@@ -41,7 +41,7 @@ class AdminApiController extends Controller
         $products = Product::all();
 
         foreach ($products as $product) {
-            $product->img = 'https://source.unsplash.com/collection/1085173/250x250?' . $product->id;
+            $product->img = '/img/snake.png';
             $product->price = 200;
         }
 
@@ -54,7 +54,7 @@ class AdminApiController extends Controller
 
         foreach ($chats as $chat) {
             $chat->client;
-            $chat->avatar = 'https://source.unsplash.com/collection/2013520/50x50?' . $chat->id;
+            $chat->avatar = $chat->avatar();
             $chat->snippet = $chat->snippet();
         }
 

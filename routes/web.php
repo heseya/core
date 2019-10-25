@@ -17,7 +17,7 @@ Route::prefix('admin')->group(function () {
         Route::get('products/{product}', 'AdminController@product');
 
         Route::get('chat', 'AdminController@chats');
-        Route::get('chat/{id}', 'AdminController@chat');
+        Route::get('chat/{chat}', 'AdminController@chat');
 
         Route::prefix('settings')->group(function () {
 

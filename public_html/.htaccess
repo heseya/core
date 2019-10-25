@@ -3,7 +3,7 @@
     Options -MultiViews -Indexes
   </IfModule>
 
-  AddType application/x-httpd-php71 .php
+  AddType application/x-httpd-php72 .php
 
   RewriteEngine On
 

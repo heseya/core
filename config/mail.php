@@ -1,94 +1,29 @@
 <?php
 
-use anlutro\LaravelSettings\Facade as Setting;
-
 return [
 
     /*
     |--------------------------------------------------------------------------
-    | Mail Driver
+    | SMTP Mail - FROM
     |--------------------------------------------------------------------------
     |
-    | Laravel supports both SMTP and PHP's "mail" function as drivers for the
-    | sending of e-mail. You may specify which one you're using throughout
-    | your application here. By default, Laravel is setup for SMTP mail.
-    |
-    | Supported: "smtp", "sendmail", "mailgun", "mandrill", "ses",
+    | Drivers: "smtp", "sendmail", "mailgun", "mandrill", "ses",
     |            "sparkpost", "postmark", "log", "array"
     |
      */
 
     'driver' => 'smtp',
 
-    /*
-    |--------------------------------------------------------------------------
-    | SMTP Host Address
-    |--------------------------------------------------------------------------
-    |
-    | Here you may provide the host address of the SMTP server used by your
-    | applications. A default option is provided that is compatible with
-    | the Mailgun mail service which will provide reliable deliveries.
-    |
-     */
-
-    'host' => Setting::get('email.from.host', 'mail.heseya.com'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | SMTP Host Port
-    |--------------------------------------------------------------------------
-    |
-    | This is the SMTP port used by your application to deliver e-mails to
-    | users of the application. Like the host we have set this value to
-    | stay compatible with the Mailgun e-mail application by default.
-    |
-     */
-
-    'port' => Setting::get('email.from.port', 587),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Global "From" Address
-    |--------------------------------------------------------------------------
-    |
-    | You may wish for all e-mails sent by your application to be sent from
-    | the same address. Here, you may specify a name and address that is
-    | used globally for all e-mails that are sent by your application.
-    |
-     */
+    'host' => env('EMAIL_FROM_HOST', 'mail.heseya.com'),
+    'port' => env('EMAIL_FROM_PORT', 587),
+    'encryption' => env('EMAIL_FROM_ENCRYPTION', 'tls'),
+    'username' => env('EMAIL_FROM_USER', 'shop@kupdepth.pl'),
+    'password' => env('EMAIL_FROM_PASSWORD', 'secret'),
 
     'from' => [
-        'address' => Setting::get('email.from.user', 'shop@kupdepth.pl'),
-        'name' => Setting::get('email.name', 'Depth'),
+        'address' => env('EMAIL_FROM_ADDRESS', 'shop@kupdepth.pl'),
+        'name' => env('EMAIL_FROM_NAME', 'Depth'),
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | E-Mail Encryption Protocol
-    |--------------------------------------------------------------------------
-    |
-    | Here you may specify the encryption protocol that should be used when
-    | the application send e-mail messages. A sensible default using the
-    | transport layer security protocol should provide great security.
-    |
-     */
-
-    'encryption' => env('MAIL_ENCRYPTION', 'tls'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | SMTP Server Username
-    |--------------------------------------------------------------------------
-    |
-    | If your SMTP server requires a username for authentication, you should
-    | set it here. This will get used to authenticate with your server on
-    | connection. You may also set the "password" value below this one.
-    |
-     */
-
-    'username' => Setting::get('email.from.user', 'shop@kupdepth.pl'),
-
-    'password' => Setting::get('email.from.password', 'secret'),
 
     /*
     |--------------------------------------------------------------------------

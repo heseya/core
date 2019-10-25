@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Chat;
 use Illuminate\Database\Eloquent\Model;
 
 class Client extends Model

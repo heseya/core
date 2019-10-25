@@ -21,13 +21,13 @@ window.updateProducts = () => {
 
       temp += `
         <a href="/admin/products/${row.id}" class="product">
-          <div class="product__img">
+          <div class="product__img" style="background-color: #${row.color}">
             <img src="${row.img}">
           </div>
           <div class="flex">
             <div class="name">
               ${row.name}<br/>
-              <small>${formatter.format(row.price)}</small>  
+              <small>${formatter.format(row.price)}</small>
             </div>
           </div>
         </a>`

@@ -15,14 +15,14 @@
 
 <div class="product-photos">
     <div class="gallery">
-        <div class="gallery__img">
-            <img src="https://source.unsplash.com/collection/1085173/500x500">
+        <div class="gallery__img" style="background-color: #{{ $product->color }}">
+            <img src="/img/snake.png">
         </div>
-        <div class="gallery__img">
-            <img src="https://source.unsplash.com/collection/1085173/250x250?1">
+        <div class="gallery__img" style="background-color: #{{ $product->color }}">
+            <img src="/img/snake1.png">
         </div>
-        <div class="gallery__img">
-            <img src="https://source.unsplash.com/collection/1085173/250x250?2">
+        <div class="gallery__img" style="background-color: #{{ $product->color }}">
+            <img src="/img/snake3.jpg">
         </div>
     </div>
 </div>
