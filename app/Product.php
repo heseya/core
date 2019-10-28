@@ -2,24 +2,35 @@
 
 namespace App;
 
+use App\Brand;
+use App\Category;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
     protected $fillable = [
         'name',
+        'price',
+        'color',
         'description',
-        'category_id',
         'brand_id',
+        'category_id',
+    ];
+
+    protected $hidden = [
+        'brand_id',
+        'category_id',
+        'created_at',
+        'updated_at',
     ];
 
     public function brand()
     {
-        return $this->hasOne(Product::class);
+        return $this->belongsTo(Brand::class);
     }
 
     public function category()
     {
-        return $this->hasOne(Product::class);
+        return $this->belongsTo(Category::class);
     }
 }

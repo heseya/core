@@ -72,6 +72,16 @@ class AdminController extends Controller
             'user' => Auth::user(),
             'brands' => Brand::all(),
             'categories' => Category::all(),
+            'taxes' => [
+                [
+                    'id' => 0,
+                    'name' => '23%',
+                ],
+                [
+                    'id' => 1,
+                    'name' => '8%',
+                ]
+            ]
         ]);
     }
 

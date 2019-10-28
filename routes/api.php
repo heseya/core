@@ -1,5 +1,8 @@
 <?php
 
+Route::get('products', 'ApiController@products');
+Route::get('products/{product}', 'ApiController@product');
+
 Route::prefix('furgonetka')->group(function () {
     Route::post('webhook', 'FurgonetkaController@webhook');
 });

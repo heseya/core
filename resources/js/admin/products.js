@@ -21,7 +21,7 @@ window.updateProducts = () => {
 
       temp += `
         <a href="/admin/products/${row.id}" class="product">
-          <div class="product__img" style="background-color: #${row.color}">
+          <div class="product__img" style="background-color: ${row.color}">
             <img src="${row.img}">
           </div>
           <div class="flex">

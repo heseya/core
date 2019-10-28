@@ -34,13 +34,13 @@
         @endforeach
     </div>
 
-    <!-- <form class="response">
+    <form class="response">
         <input type="hidden">
         <textarea placeholder="Napisz coś miłego..."></textarea>
         <button>
         <img src="/img/icons/send.svg">
         </button>
-    </form> -->
+    </form>
 
     <script src="/js/admin.js"></script>
 </body>

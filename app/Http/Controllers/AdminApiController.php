@@ -42,7 +42,6 @@ class AdminApiController extends Controller
 
         foreach ($products as $product) {
             $product->img = '/img/snake.png';
-            $product->price = 200;
         }
 
         return response()->json($products);

@@ -18,14 +18,15 @@ class CreateProductsTable extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
-            $table->string('color', 6)->default('bbd0d3');
-            $table->smallInteger('brand_id')->unsigned()->nullable();
-            $table->smallInteger('category_id')->unsigned()->nullable();
+            $table->float('price', 8, 2);
+            $table->string('color', 16)->default('#000');
+            $table->smallInteger('brand_id')->unsigned();
+            $table->smallInteger('category_id')->unsigned();
             $table->text('description')->nullable();
             $table->timestamps();
 
-            $table->foreign('category_id')->references('id')->on('categories')->onDelete('set null');
-            $table->foreign('brand_id')->references('id')->on('brands')->onDelete('set null');
+            $table->foreign('category_id')->references('id')->on('categories')->onDelete('restrict');
+            $table->foreign('brand_id')->references('id')->on('brands')->onDelete('restrict');
         });
     }
 

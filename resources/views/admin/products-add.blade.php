@@ -32,8 +32,26 @@
                     @endforeach
                 </select>
             </div>
+            <div class="input input__color sto">
+                <label for="color">Kolor</label>
+                <input type="color" name="color" required/>
+            </div>
         </div>
         <div>
+            <div class="grid grid--2 grid--no-margin">
+                <div class="input sto" style="margin-bottom: 0">
+                    <label for="price">Cena brutto (PLN)</label>
+                    <input type="number" step="0.01" name="price" required>
+                </div>
+                <div class="input sto" style="margin-bottom: 0">
+                    <label for="category">VAT</label>
+                    <select type="text" name="vat" required>
+                        @foreach($taxes as $tax)
+                            <option value="{{ $tax['id'] }}">{{ $tax['name'] }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
             <div class="input sto">
                 <label for="description">Opis</label>
                 <textarea name="desctiprion" rows="10"></textarea>

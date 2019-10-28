@@ -10,4 +10,9 @@ class Category extends Model
         'name',
         'link',
     ];
+
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+    ];
 }
