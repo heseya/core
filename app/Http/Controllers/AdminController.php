@@ -91,9 +91,11 @@ class AdminController extends Controller
         $product = Product::create($request->all());
 
         foreach ($request->photos as $photo) {
-            $product->photos()->attach(Photo::create([
-                'url' => $photo,
-            ]));
+            if ($photo !== null) {
+                $product->photos()->attach(Photo::create([
+                    'url' => $photo,
+                ]));
+            }
         }
 
         return redirect('/admin/products/' . $product->id);

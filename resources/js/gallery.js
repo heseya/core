@@ -1,46 +1,46 @@
 class Tabs {
-  constructor (body) {
-    this.tabs = []
-    this.currentTab = null
+    constructor (body) {
+        this.tabs = []
+        this.currentTab = null
 
-    if (!body)
-      this.dom = document.createElement('div')
+        if (!body)
+            this.dom = document.createElement('div')
 
-    else if (typeof body == 'string')
-      this.dom = document.querySelector(body)
+        else if (typeof body == 'string')
+            this.dom = document.querySelector(body)
 
-    else
-      this.dom = body
+        else
+            this.dom = body
 
-    this.dom.classList.add('tabs')
+        this.dom.classList.add('tabs')
 
-    this.initTabs()
-  }
-
-  initTabs () {
-    this.updateTabs()
-
-    this.dom.ondragover = (ev) => {
-      ev.preventDefault()
-      ev.dataTransfer.dropEffect = 'move'
+        this.initTabs()
     }
 
-    this.dom.ondragenter = () => {
-      this.dom.classList.add('dragover')
-    }
+    initTabs () {
+        this.updateTabs()
 
-    this.dom.ondragleave = () => {
-      this.dom.classList.remove('dragover')
-    }
+        this.dom.ondragover = (ev) => {
+            ev.preventDefault()
+            ev.dataTransfer.dropEffect = 'move'
+        }
 
-    this.dom.ondrop = (ev) => {
-      ev.preventDefault()
+        this.dom.ondragenter = () => {
+            this.dom.classList.add('dragover')
+        }
 
-      if (!isNaN(ev.dataTransfer.getData('text/plain')))
-        this.moveTab(ev.dataTransfer.getData('text/plain'), this.tabs.length - 1)
-      this.dom.classList.remove('dragover')
+        this.dom.ondragleave = () => {
+            this.dom.classList.remove('dragover')
+        }
+
+        this.dom.ondrop = (ev) => {
+            ev.preventDefault()
+
+            if (!isNaN(ev.dataTransfer.getData('text/plain')))
+                this.moveTab(ev.dataTransfer.getData('text/plain'), this.tabs.length - 1)
+            this.dom.classList.remove('dragover')
+        }
     }
-  }
 
   addTab (tab) {
       this.tabs.push(tab)

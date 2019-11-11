@@ -41,7 +41,7 @@ class AdminApiController extends Controller
     {
         $products = Product::with(['photos' => function($query)
         {
-            $query->orderBy('id', 'desc')->limit(1);
+            $query->orderBy('id', 'desc');
         }])->get();
 
         return response()->json($products);
