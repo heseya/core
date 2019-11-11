@@ -15,7 +15,7 @@
         </a>
         <div>
             <div>{{ $client['name'] }}</div>
-            <small>{{ $type }}</small>
+            <small>{{ $chat->system_id }}</small>
         </div>
         {{-- <img src="/img/avatar.jpg" class="avatar"> --}}
         <div style="width: 36px"></div>
@@ -27,9 +27,11 @@
             <div class="bubble">
                 {{ $message['content'] }}
             </div>
-            <div class="info">
-                {{ empty($message['user_id']) ? '' : $message->user->name }}
-            </div>
+            @if (!empty($message['user_id'] && isset($messages[$loop->index + 1]['user_id']) && $messages[$loop->index + 1] !== $message['user_id']))
+                <div class="info">
+                    {{ $message->user->name }}
+                </div>
+            @endif
         </div>
         @endforeach
     </div>

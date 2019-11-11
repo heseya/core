@@ -13,6 +13,7 @@
         "fideloper/proxy": "^4.0",
         "laravel/framework": "5.8.*",
         "laravel/tinker": "^1.0",
+        "mashape/unirest-php": "^3.0",
         "sammyk/laravel-facebook-sdk": "^3.5"
     },
     "require-dev": {

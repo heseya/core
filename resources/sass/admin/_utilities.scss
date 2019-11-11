@@ -9,6 +9,10 @@
 }
 
 .margin {
+  &--30 {
+    margin: 0 30px;
+  }
+
   &__left {
     margin-left: 12px;
   }

@@ -7,28 +7,20 @@
 @endsection
 
 @section('content')
-<div class="stats">
-    <div class="stats__item">
-        <img class="icon" src="/img/icons/money.svg">{{ $product->price }} zł
-    </div>
-</div>
-
 <div class="product-photos">
     <div class="gallery">
-        <div class="gallery__img" style="background-color: {{ $product->color }}">
-            <img src="/img/snake.png">
-        </div>
-        <div class="gallery__img" style="background-color: {{ $product->color }}">
-            <img src="/img/snake1.png">
-        </div>
-        <div class="gallery__img" style="background-color: {{ $product->color }}">
-            <img src="/img/snake3.jpg">
-        </div>
+        @foreach ($product->photos as $photo)
+            <div class="gallery__img" style="background-color: {{ $product->color }}">
+                <img src="{{ $photo->url }}">
+            </div>
+        @endforeach
     </div>
 </div>
 
-<div class="product-description">
-    {{ $product->description }}
+<div class="margin--30 margin--top">
+    <h2>{{ $product->price }} zł</h2>
+
+    <p>{{ $product->description }}</p>
 </div>
 @endsection
 

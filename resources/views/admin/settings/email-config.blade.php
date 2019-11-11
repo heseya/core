@@ -17,7 +17,7 @@
                 <input type="text" name="to-user" value="{{ $old['to']['user'] }}" placeholder="Użytkownik">
             </div>
             <div class="input sto">
-                <input type="password" name="to-password" value="{{ $old['to']['password'] }}" placeholder="Hasło">
+                <input type="password" name="to-password" placeholder="Hasło">
             </div>
             <div class="input sto">
                 <input type="text" name="to-host" value="{{ $old['to']['host'] }}" placeholder="Adres serwera">
@@ -32,7 +32,7 @@
                 <input type="text" name="from-user" value="{{ $old['from']['user'] }}" placeholder="Użytkownik">
             </div>
             <div class="input sto">
-                <input type="password" name="from-password" value="{{ $old['from']['password'] }}" placeholder="Hasło">
+                <input type="password" name="from-password" placeholder="Hasło">
             </div>
             <div class="input sto">
                 <input type="text" name="from-host" value="{{ $old['from']['host'] }}" placeholder="Adres serwera">

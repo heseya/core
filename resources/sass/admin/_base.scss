@@ -46,32 +46,32 @@ h1, h2, h3, h4, h5 {
 }
 
 .stats {
-    padding: 10px 30px 25px 30px;
-    width: clac(100% -60px);
+  padding: 10px 30px 25px 30px;
+  width: clac(100% -60px);
 
-    &__item {
-        display: inline-flex;
-        align-items: center;
-        margin-right: 23px;
+  &__item {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 6px;
 
-        img {
-            height: 20px;
-            margin-right: 8px;
-        }
+    img {
+      height: 20px;
+      margin-right: 8px;
     }
+  }
 
-    select {
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        border: 0;
-        width: auto;
-        background: none;
-    }
+  select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: 0;
+    width: auto;
+    background: none;
+  }
 
-    select::-ms-expand {
-        display: none;
-    }
+  select::-ms-expand {
+    display: none;
+  }
 }
 
 .loader--warper {

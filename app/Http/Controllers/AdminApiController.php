@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Unirest;
 use App\Chat;
-
 use App\Order;
+use App\Status;
 use App\Product;
-use App\Status;use Illuminate\Http\Request;
+use Illuminate\Http\Request;
 
 class AdminApiController extends Controller
 {
@@ -36,13 +37,12 @@ class AdminApiController extends Controller
         return response()->json($result);
     }
 
-    public function products(Request $request)
+    public function products()
     {
-        $products = Product::all();
-
-        foreach ($products as $product) {
-            $product->img = '/img/snake.png';
-        }
+        $products = Product::with(['photos' => function($query)
+        {
+            $query->orderBy('id', 'desc')->limit(1);
+        }])->get();
 
         return response()->json($products);
     }
@@ -68,5 +68,14 @@ class AdminApiController extends Controller
         ]);
 
         return response()->json(null, 204);
+    }
+
+    public function upload(Request $request)
+    {
+        $body = Unirest\Request\Body::multipart([], ['photo' => $request->photo]);
+        $response = Unirest\Request::post(config('cdn.host'), config('cdn.headers'), $body);
+
+        // return $response->raw_body;
+        return (config('cdn.host') . '/' . $response->body[0]->id);
     }
 }

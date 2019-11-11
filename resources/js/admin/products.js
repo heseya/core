@@ -19,18 +19,20 @@ window.updateProducts = () => {
 
     data.forEach(row => {
 
-      temp += `
-        <a href="/admin/products/${row.id}" class="product">
-          <div class="product__img" style="background-color: ${row.color}">
-            <img src="${row.img}">
-          </div>
-          <div class="flex">
-            <div class="name">
-              ${row.name}<br/>
-              <small>${formatter.format(row.price)}</small>
+        let photo = row.photos[0] ? '<img src="' + row.photos[0].url + '">' : ''
+
+        temp += `
+            <a href="/admin/products/${row.id}" class="product">
+            <div class="product__img" style="background-color: ${row.color}">
+                ${photo}
             </div>
-          </div>
-        </a>`
+            <div class="flex">
+                <div class="name">
+                ${row.name}<br/>
+                <small>${formatter.format(row.price)}</small>
+                </div>
+            </div>
+            </a>`
     });
 
     products.innerHTML = temp

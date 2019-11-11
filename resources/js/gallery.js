@@ -11,9 +11,9 @@ class Tabs {
 
     else
       this.dom = body
-    
+
     this.dom.classList.add('tabs')
-    
+
     this.initTabs()
   }
 
@@ -32,7 +32,7 @@ class Tabs {
     this.dom.ondragleave = () => {
       this.dom.classList.remove('dragover')
     }
-    
+
     this.dom.ondrop = (ev) => {
       ev.preventDefault()
 
@@ -48,16 +48,16 @@ class Tabs {
       tab.dom.ondragstart = (ev) => {
           ev.dataTransfer.setData('text/plain', this.tabs.indexOf(tab).toString())
       }
-  
+
       tab.dom.ondragover = (ev) => {
           ev.preventDefault()
-  
+
           ev.dataTransfer.dropEffect = "move"
       }
 
       tab.dom.ondragenter = (ev) => {
           ev.stopPropagation()
-          
+
           tab.dom.classList.add('dragover')
       }
 
@@ -66,7 +66,7 @@ class Tabs {
 
           tab.dom.classList.remove('dragover')
       }
-  
+
       tab.dom.ondrop = (ev) => {
           ev.preventDefault()
           ev.stopPropagation()
@@ -87,7 +87,7 @@ class Tabs {
 
   delTab (tab) {
     this.tabs.splice(this.tabs.indexOf(tab), 1)
-    
+
     this.updateTabs()
   }
 
@@ -150,10 +150,10 @@ for (let id of window.oldpictures) {
   rotate.onclick = () => {
     tabs.rotateTab(tab)
   }
-  
+
   preview.appendChild(rotate)
   preview.appendChild(del)
-  
+
   tabs.addTab(tab)
 }
 
@@ -195,19 +195,19 @@ window.addPicture = (container) => {
         reader.readAsDataURL(input.files[0])
 
         preview.children[0].src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
-        
+
         reader.onload = event => {
             preview.classList.add('loading')
             preview.children[0].src = event.target.result
-            
+
         }
 
         let data = new FormData()
-        data.append('file', input.files[0])
+        data.append('photo', input.files[0])
 
         let tab = new Tab(preview, 0)
 
-        fetch('/panel/save/photo.php', {
+        fetch('/api/admin/upload', {
             method: 'POST',
             body: data,
             credentials: 'same-origin'
@@ -230,12 +230,12 @@ window.addPicture = (container) => {
         rotate.onclick = () => {
             tabs.rotateTab(tab)
         }
-        
+
         preview.onclick = null
         preview.ondrop = null
         preview.appendChild(del)
         preview.appendChild(rotate)
-        
+
         tabs.addTab(tab)
 
         addPicture(container)
@@ -255,33 +255,33 @@ class Tab {
       this.rotateState = 0;
   }
 
-  select () {
-      this.dom.classList.add('active')
-      if (this.callback)
-          this.callback()
-  }
+    select () {
+        this.dom.classList.add('active')
+        if (this.callback)
+            this.callback()
+    }
 
-  unselect () {
-      this.dom.classList.remove('active')
-  }
+    unselect () {
+        this.dom.classList.remove('active')
+    }
 
-  rotate () {
-      this.dom.classList.remove('rotated-' + this.rotateState)
-      this.rotateState = (this.rotateState == 3) ? 0 : this.rotateState + 1
-      this.dom.classList.add('rotated-' + this.rotateState)
-      // console.log(this.id)
+    rotate () {
+        this.dom.classList.remove('rotated-' + this.rotateState)
+        this.rotateState = (this.rotateState == 3) ? 0 : this.rotateState + 1
+        this.dom.classList.add('rotated-' + this.rotateState)
+        // console.log(this.id)
 
-      let data = new FormData()
-      data.append('id', this.id)
-      data.append('pos', this.rotateState)
+        let data = new FormData()
+        data.append('id', this.id)
+        data.append('pos', this.rotateState)
 
-      fetch('/panel/save/photo-pos.php', {
-          method: 'POST',
-          body: data,
-          credentials: 'same-origin'
-      }).then((response) => response.text())
-      .then((text) => {
-          console.log(text)
-      })
-  }
+        fetch('/panel/save/photo-pos.php', {
+            method: 'POST',
+            body: data,
+            credentials: 'same-origin'
+        }).then((response) => response.text())
+        .then((text) => {
+            console.log(text)
+        })
+    }
 }

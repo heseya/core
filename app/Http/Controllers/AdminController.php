@@ -7,6 +7,7 @@ use App\Chat;
 use App\User;
 use App\Brand;
 use App\Order;
+use App\Photo;
 use App\Status;
 use App\Product;
 use App\Category;
@@ -89,24 +90,13 @@ class AdminController extends Controller
     {
         $product = Product::create($request->all());
 
+        foreach ($request->photos as $photo) {
+            $product->photos()->attach(Photo::create([
+                'url' => $photo,
+            ]));
+        }
+
         return redirect('/admin/products/' . $product->id);
-    }
-
-    public function chats()
-    {
-        return response()->view('admin/chats', [
-            'user' => Auth::user(),
-        ]);
-    }
-
-    public function chat(Chat $chat)
-    {
-        return response()->view('admin/chat', [
-            'user' => Auth::user(),
-            'messages' => $chat->messages,
-            'client' => $chat->client,
-            'type' => $chat->typeName(),
-        ]);
     }
 
     public function login(Request $request)
@@ -132,13 +122,13 @@ class AdminController extends Controller
         ]);
     }
 
-    public function email(Request $request)
+    public function email()
     {
-        $email = Setting::get('email.from.user');
+        $email = config('mail.from.address');
         $gravatar = md5(strtolower(trim($email)));
 
         return response()->view('admin/settings/email', [
-            'name' => Setting::get('email.name'),
+            'name' => config('mail.from.name'),
             'email' => $email,
             'gravatar' => $gravatar,
             'user' => Auth::user(),
@@ -146,7 +136,7 @@ class AdminController extends Controller
         ]);
     }
 
-    public function emailConfig(Request $request)
+    public function emailConfig()
     {
         $old = Setting::get('email', [
             'name' => '',

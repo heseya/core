@@ -7,7 +7,7 @@
 @endsection
 
 @section('content')
-<form method="post">
+<form method="post" enctype="multipart/form-data">
     @csrf
 
     <div class="grid grid--2">

@@ -32,51 +32,51 @@
 }
 
 .chat {
-    max-width: $break;
-    margin: auto;
-    font-size: 15px;
-    margin-bottom: 80px;
-    padding: 70px 20px 0 20px;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    flex-direction: column-reverse;
+  max-width: $break;
+  margin: auto;
+  font-size: 15px;
+  margin-bottom: 80px;
+  padding: 70px 20px 0 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  flex-direction: column-reverse;
 
-    .message {
-        flex-direction: row-reverse;
-        width: auto;
-        max-width: 74%;
+  .message {
+    flex-direction: row-reverse;
+    width: auto;
+    max-width: 74%;
 
-        .bubble {
-            border-radius: 18px;
-            padding: 10px 16px;
-            background: $grey-light;
-            margin-bottom: 3px;
-        }
-
-        .info {
-            color: $grey;
-            font-size: 12px;
-            margin: 0 14px;
-        }
-
-        &--from {
-            align-self: flex-end;
-
-            .bubble {
-                color: white;
-                background: #000;
-            }
-
-            .info {
-                text-align: right;
-            }
-        }
+    .bubble {
+      border-radius: 18px;
+      padding: 10px 16px;
+      background: $grey-light;
+      margin-bottom: 3px;
     }
 
-    .message--to + .message--from, .message--from + .message--to {
-        margin-bottom: 11px;
+    .info {
+      color: $grey;
+      font-size: 12px;
+      margin: 0 14px 5px 0;
     }
+
+    &--from {
+      align-self: flex-end;
+
+      .bubble {
+        color: white;
+        background: #000;
+      }
+
+      .info {
+        text-align: right;
+      }
+    }
+  }
+
+  .message--to + .message--from, .message--from + .message--to {
+    margin-bottom: 11px;
+  }
 }
 
 .response {
@@ -92,7 +92,7 @@
   textarea {
     font-family: $font;
     font-size: 15px;
-    width: calc(100% - 70px);
+    max-width: $break;
     height: 32px;
     margin: 0;
     padding-top: 17px;

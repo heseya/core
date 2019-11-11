@@ -302,7 +302,8 @@ window.updateProducts = function () {
     if (data.error) return;
     var temp = products.innerHTML;
     data.forEach(function (row) {
-      temp += "\n        <a href=\"/admin/products/".concat(row.id, "\" class=\"product\">\n          <div class=\"product__img\" style=\"background-color: ").concat(row.color, "\">\n            <img src=\"").concat(row.img, "\">\n          </div>\n          <div class=\"flex\">\n            <div class=\"name\">\n              ").concat(row.name, "<br/>\n              <small>").concat(formatter.format(row.price), "</small>\n            </div>\n          </div>\n        </a>");
+      var photo = row.photos[0] ? '<img src="' + row.photos[0].url + '">' : '';
+      temp += "\n            <a href=\"/admin/products/".concat(row.id, "\" class=\"product\">\n            <div class=\"product__img\" style=\"background-color: ").concat(row.color, "\">\n                ").concat(photo, "\n            </div>\n            <div class=\"flex\">\n                <div class=\"name\">\n                ").concat(row.name, "<br/>\n                <small>").concat(formatter.format(row.price), "</small>\n                </div>\n            </div>\n            </a>");
     });
     products.innerHTML = temp;
   });

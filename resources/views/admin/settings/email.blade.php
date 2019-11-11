@@ -20,11 +20,11 @@
             <img class="icon" src="/img/icons/warning.svg">Serwer nie posiada biblioteki IMAP!
         </li>
     @endif
-    <a href="/admin/settings/email/config">
+    {{-- <a href="/admin/settings/email/config">
         <li class="clickable">
             <img class="icon" src="/img/icons/settings.svg">Ustawienia serwera
         </li>
-    </a>
+    </a> --}}
     <a href="/admin/settings/email/test">
         <li class="clickable">
             <img class="icon" src="/img/icons/email-send.svg">Test wysyłki
