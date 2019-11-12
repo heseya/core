@@ -27,7 +27,7 @@ class Message extends Mailable
      */
     public function build()
     {
-        return $this->text('mail.message', [
+        return $this->text('mail/message', [
             'content' => $this->content,
         ])
             ->subject('Nowa wiadomość');

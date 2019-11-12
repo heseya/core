@@ -3,15 +3,13 @@
 Route::get('products', 'ApiController@products');
 Route::get('products/{product}', 'ApiController@product');
 
-Route::prefix('furgonetka')->group(function () {
-    Route::post('webhook', 'FurgonetkaController@webhook');
+// Admin
+Route::prefix('admin')->group(function () {
+    Route::post('status', 'Admin\ApiController@changeStatus');
+    Route::post('upload', 'Admin\ApiController@upload');
 });
 
-Route::prefix('admin')->group(function () {
-    Route::get('orders', 'AdminApiController@orders');
-    Route::get('products', 'AdminApiController@products');
-    Route::post('status', 'AdminApiController@changeStatus');
-    Route::post('upload', 'AdminApiController@upload');
-
-    Route::get('chats', 'ChatController@chatsList');
+// 3th Party
+Route::prefix('furgonetka')->group(function () {
+    Route::post('webhook', '3thParty\FurgonetkaController@webhook');
 });

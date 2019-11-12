@@ -52,7 +52,7 @@ return [
     |
      */
 
-    'url' => env('APP_URL', 'http://depth.l'),
+    'url' => env('APP_URL', 'https://depth.store'),
 
     'asset_url' => env('ASSET_URL', null),
 

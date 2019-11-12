@@ -33,7 +33,7 @@
 
       <div class="buttons">
         <a href="{{ route('password.request') }}">Nie pamiętam hasła</a>
-        <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
+        {{-- <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}> --}}
         <button type="submit">
           <img src="/img/icons/send2.svg">
         </button>

@@ -31,8 +31,7 @@ class NewAdmin extends Mailable
         return $this->view('mail/accounts-new', [
             'email' => $this->email,
             'password' => $this->password,
-        ])
-            ->subject('Twoje dane logowania do panelu');
+        ])->subject('Twoje dane logowania do panelu');
         // ->text('emails.orders.shipped_plain');
     }
 }

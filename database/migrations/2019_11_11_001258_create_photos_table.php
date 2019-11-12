@@ -21,7 +21,7 @@ class CreatePhotosTable extends Migration
 
         Schema::create('photo_product', function (Blueprint $table) {
             $table->increments('id');
-            $table->smallInteger('order');
+            $table->smallInteger('order')->nullable();
 
             $table->integer('photo_id')->unsigned()->index();
             $table->foreign('photo_id')->references('id')->on('photos')->onDelete('cascade');

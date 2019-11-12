@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Order;
 use App\Status;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class FurgonetkaController extends Controller
 {
+    /**
+     * Odbieranie statusów przesyłek z Furgonetka.pl
+     */
     public function webhook(Request $request)
     {
-
         $request->validate([
             'package_id' => 'required',
             'package_no' => 'required',

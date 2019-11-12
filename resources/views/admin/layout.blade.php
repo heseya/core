@@ -4,8 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="/css/admin.css">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="{{ mix('css/admin.css') }}">
     <title>@yield('title')</title>
 </head>
 <body>
@@ -24,7 +23,7 @@
         <nav class="top-nav">
         <div class="title">
             <a href="/admin/settings" class="avatar">
-            <img src="{{ $user->avatar() }}">
+                <img src="{{ $user->avatar() }}">
             </a>
             <h1>@yield('title')</h1>
         </div>
@@ -52,7 +51,7 @@
         <div class="modal__bg" onclick="closeModal()"></div>
     </div>
 
-    <script src="/js/admin.js"></script>
+    <script src="{{ mix('js/admin.js') }}"></script>
     @yield('scripts')
 </body>
 </html>

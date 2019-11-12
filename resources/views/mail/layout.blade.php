@@ -17,7 +17,7 @@
             <td>
             <tr>
                 <td align="center">
-                <a href="https://depth.store" target="_blank">
+                <a href="{{ Config::get('app.url') }}" target="_blank">
                     <img src="https://depth.store/img/depth-b.svg" alt="DEPTH" style="border:none" height="64">
                 </a>
                 </td>
@@ -32,7 +32,6 @@
             </tr>
             </td>
         </tr>
-
         <tr>
             <td height="40"></td>
         </tr>
@@ -64,15 +63,14 @@
         </tr>
         <tr>
             <td align="center">
-            <a href="mailto:contact@depth.store" style="color: #017173; text-decoration: none; font-weight: bold; font-size: 15px; padding: 0 20px;" target="_blank">
-                contact@depth.store
+            <a href="mailto:{{ Config::get('mail.address') }}" style="color: #017173; text-decoration: none; font-weight: bold; font-size: 15px; padding: 0 20px;" target="_blank">
+                {{ Config::get('mail.address') }}
             </a>
             </td>
         </tr>
         <tr>
             <td height="40"></td>
         </tr>
-
         <td>
             <tr>
             <td style="font-size: 12px; padding: 0 20px;" align="center">
@@ -84,17 +82,9 @@
             </td>
             </tr>
         </td>
-
         <tr>
-            <td height="50"></td>
+            <td height="10"></td>
         </tr>
-        <td>
-            <tr>
-            <td style="font-size: 10px; padding: 0 20px; color: #adadad" align="center">
-                Depth jest marką należącą do Heseya&nbsp;sp.&nbsp;z&nbsp;o.o. z&nbsp;siedzibą w&nbsp;Bydgoszczy, ul.&nbsp;Gdańska&nbsp;89/1, 85-022&nbsp;Bydgoszcz.
-            </td>
-            </tr>
-        </td>
         </tbody></table>
     </center>
 </body>

@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\User;
 use Auth;
 use SammyK\LaravelFacebookSdk\LaravelFacebookSdk;
 
 class FacebookController extends Controller
 {
-    public function login(\SammyK\LaravelFacebookSdk\LaravelFacebookSdk $fb)
+    public function login(LaravelFacebookSdk $fb)
     {
         // Send an array of permissions to request
         $login_url = $fb->getLoginUrl([
@@ -20,7 +19,7 @@ class FacebookController extends Controller
     }
 
     // Endpoint that is redirected to after an authentication attempt
-    public function callback(\SammyK\LaravelFacebookSdk\LaravelFacebookSdk $fb)
+    public function callback(LaravelFacebookSdk $fb)
     {
         // Obtain an access token.
         try {
@@ -67,9 +66,8 @@ class FacebookController extends Controller
         return redirect('/admin/settings/facebook/pages');
     }
 
-    public function settings(\SammyK\LaravelFacebookSdk\LaravelFacebookSdk $fb)
+    public function settings(LaravelFacebookSdk $fb)
     {
-
         $user = Auth::user();
 
         // Jeśli nie jesteś zalogowany
@@ -105,9 +103,8 @@ class FacebookController extends Controller
         ]);
     }
 
-    public function pages(\SammyK\LaravelFacebookSdk\LaravelFacebookSdk $fb)
+    public function pages(LaravelFacebookSdk $fb)
     {
-
         $user = Auth::user();
 
         // Token strony
@@ -130,7 +127,6 @@ class FacebookController extends Controller
 
     public function setPage($access_token)
     {
-
         $user = Auth::user();
         $user->update([
             'fb_page' => $access_token,
@@ -140,9 +136,8 @@ class FacebookController extends Controller
     }
 
     // Odlączanie konta
-    public function unlink(\SammyK\LaravelFacebookSdk\LaravelFacebookSdk $fb)
+    public function unlink(LaravelFacebookSdk $fb)
     {
-
         $user = Auth::user();
 
         if (!is_null($user->fb)) {
@@ -164,9 +159,8 @@ class FacebookController extends Controller
         ]);
     }
 
-    public function chats(\SammyK\LaravelFacebookSdk\LaravelFacebookSdk $fb)
+    public function chats(LaravelFacebookSdk $fb)
     {
-
         $user = Auth::user();
 
         // Jeśli nie jesteś zalogowany do fb
@@ -208,9 +202,8 @@ class FacebookController extends Controller
         ]);
     }
 
-    public function chat(\SammyK\LaravelFacebookSdk\LaravelFacebookSdk $fb, $id)
+    public function chat(LaravelFacebookSdk $fb, $id)
     {
-
         $page_id = 1338260872868488;
 
         $user = Auth::user();

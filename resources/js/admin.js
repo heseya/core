@@ -1,9 +1,6 @@
-require('./admin/loader.js')
 require('./admin/modal.js')
-
-require('./admin/orders.js')
-require('./admin/products.js')
-require('./admin/chats.js')
+require('./admin/gallery.js');
+require('./admin/status.js');
 
 require('./admin/dark.js')
 

@@ -1,21 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use Auth;
 use App\Chat;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class ChatController extends Controller
 {
     public function chats()
-    {
-        return response()->view('chat/chats', [
-            'user' => Auth::user(),
-        ]);
-    }
-
-    public function chatsList()
     {
         $chats = Chat::all();
 
@@ -25,12 +18,15 @@ class ChatController extends Controller
             $chat->snippet = ''; // $chat->snippet();
         }
 
-        return response()->json($chats);
+        return response()->view('admin/chat/list', [
+            'user' => Auth::user(),
+            'chats' => $chats,
+        ]);
     }
 
     public function chat(Chat $chat)
     {
-        return response()->view('chat/chat', [
+        return response()->view('admin/chat/single', [
             'user' => Auth::user(),
             'chat' => $chat,
             'messages' => $chat->messages,

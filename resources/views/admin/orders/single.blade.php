@@ -139,7 +139,6 @@
 @endsection
 
 @section('scripts')
-<script src="/js/status.js"></script>
 <script>
     window.order_id = {{ $order->id }}
 </script>

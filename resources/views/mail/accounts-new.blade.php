@@ -5,15 +5,15 @@
 @section('title', 'Twoje dane logowania do panelu')
 
 @section('content')
-  <tr>
+<tr>
     <td height="30"></td>
-  </tr>
-  <tr>
+</tr>
+<tr>
     <td align="left">
-      <h2 style="color: #000000; margin: 0; font-size: 13px; padding: 0 20px;">
-        E-mail: <span style="color: #000000; text-decoration: none;">{{ $email }}</span><br>
-        Hasło: {{ $password }}
-      </h2>
+        <h2 style="color: #000000; margin: 0; font-size: 13px; padding: 0 20px;">
+            E-mail: <span style="color: #000000; text-decoration: none;">{{ $email }}</span><br>
+            Hasło: {{ $password }}
+        </h2>
     </td>
-  </tr>
+</tr>
 @endsection
