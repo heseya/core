@@ -18,18 +18,18 @@ class FurgonetkaController extends Controller
         // temp
 
 
-        $request->validate([
-            'package_id' => 'required',
-            'package_no' => 'required',
-            'partner_order_id' => 'required',
+        // $request->validate([
+        //     'package_id' => 'required',
+        //     'package_no' => 'required',
+        //     'partner_order_id' => 'required',
 
-            'tracking.state' => 'required',
-            'tracking.description' => 'required',
-            'tracking.datetime' => 'required',
-            'tracking.branch' => 'required',
+        //     'tracking.state' => 'required',
+        //     'tracking.description' => 'required',
+        //     'tracking.datetime' => 'required',
+        //     'tracking.branch' => 'required',
 
-            'control' => 'required',
-        ]);
+        //     'control' => 'required',
+        // ]);
 
         $control = md5(
             $request->package_id .
@@ -51,22 +51,25 @@ class FurgonetkaController extends Controller
 
         $order = Order::where('delivery_tracking', $request->package_no)->first();
 
-        if (empty($order)) {
-            return response()->json([
-                'status' => 'ERROR',
-                'message' => 'order not found',
-            ], 404);
-        }
+        if (! empty($order)) {
 
-        $status = new Status;
-        $order->update([
-            'delivery_status' => $status->furgonetka_status[$request->tracking['state']],
-        ]);
-        $order->logs()->save(new OrderLog([
-            'content' => $request->tracking['description'],
-            'user' => 'Furgonetka',
-            'created_at' => $request->tracking['datetime'],
-        ]));
+            // Brak powiadomienia bo furgonetka musi dostać status ok jak hash się zgadza
+            // return response()->json([
+            //     'status' => 'ERROR',
+            //     'message' => 'order not found',
+            // ], 404);
+
+            $status = new Status;
+            $order->update([
+                'delivery_status' => $status->furgonetka_status[$request->tracking['state']],
+            ]);
+
+            $order->logs()->save(new OrderLog([
+                'content' => $request->tracking['description'],
+                'user' => 'Furgonetka',
+                'created_at' => $request->tracking['datetime'],
+            ]));
+        }
 
         return response()->json([
             'status' => 'OK',
