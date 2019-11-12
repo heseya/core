@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\External;
 
 use Auth;
 // use SammyK\LaravelFacebookSdk\LaravelFacebookSdk;

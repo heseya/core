@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderLog extends Model
 {
-    public $timestamps = ['created_at'];
+    public $timestamps = false;
 
     protected $fillable = [
         'order_id',

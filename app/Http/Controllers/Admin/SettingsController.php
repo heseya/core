@@ -8,6 +8,7 @@ use App\Brand;
 use App\Category;
 use App\Mail\Test;
 use App\Mail\NewAdmin;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
@@ -70,7 +71,7 @@ class SettingsController extends Controller
 
     public function accountsStore()
     {
-        $password = str_random(8);
+        $password = Str::random(10);
 
         Mail::to($_POST['email'])->send(new NewAdmin($_POST['email'], $password));
 

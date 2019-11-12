@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\External;
 
 use App\Order;
 use App\Status;
+use App\OrderLog;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -14,6 +15,9 @@ class FurgonetkaController extends Controller
      */
     public function webhook(Request $request)
     {
+        // temp
+
+
         $request->validate([
             'package_id' => 'required',
             'package_no' => 'required',
@@ -45,7 +49,7 @@ class FurgonetkaController extends Controller
             ], 400);
         }
 
-        $order = Order::find($request->partner_order_id);
+        $order = Order::where('delivery_tracking', $request->package_no)->first();
 
         if (empty($order)) {
             return response()->json([
@@ -58,6 +62,11 @@ class FurgonetkaController extends Controller
         $order->update([
             'delivery_status' => $status->furgonetka_status[$request->tracking['state']],
         ]);
+        $order->logs()->save(new OrderLog([
+            'content' => $request->tracking['description'],
+            'user' => 'Furgonetka',
+            'created_at' => $request->tracking['datetime'],
+        ]));
 
         return response()->json([
             'status' => 'OK',

@@ -11,5 +11,5 @@ Route::prefix('admin')->group(function () {
 
 // 3th Party
 Route::prefix('furgonetka')->group(function () {
-    Route::post('webhook', '3thParty\FurgonetkaController@webhook');
+    Route::post('webhook', 'External\FurgonetkaController@webhook');
 });

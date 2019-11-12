@@ -23,8 +23,8 @@ return [
     'name' => env('EMAIL_NAME', 'Depth'),
 
     'from' => [
-        'address' => config('mail.address'),
-        'name' => config('mail.name'),
+        'address' => env('EMAIL_ADDRESS', 'shop@kupdepth.pl'),
+        'name' => env('EMAIL_NAME', 'Depth'),
     ],
 
     /*

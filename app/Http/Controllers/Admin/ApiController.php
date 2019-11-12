@@ -5,12 +5,18 @@ namespace App\Http\Controllers\Admin;
 use Unirest;
 use App\Order;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class ApiController extends Controller
 {
     public function changeStatus(Request $request)
     {
         $order = Order::find($request->order_id);
+
+        if(empty($order)) {
+            return response()->json(['message' => 'Order not found.'], 404);
+        }
+
         $order->update([
             $request->type . '_status' => $request->status,
         ]);
