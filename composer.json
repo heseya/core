@@ -9,12 +9,10 @@
     "license": "MIT",
     "require": {
         "php": "^7.1.3",
-        "anlutro/l4-settings": "^0.8.3",
+        "facade/ignition": "^1.11",
         "fideloper/proxy": "^4.0",
-        "laravel/framework": "5.8.*",
-        "laravel/tinker": "^1.0",
-        "mashape/unirest-php": "^3.0",
-        "sammyk/laravel-facebook-sdk": "^3.5"
+        "laravel/framework": "6.0.*",
+        "laravel/tinker": "^1.0"
     },
     "require-dev": {
         "beyondcode/laravel-dump-server": "^1.0",
@@ -23,7 +21,8 @@
         "mbezhanov/faker-provider-collection": "^1.2",
         "mockery/mockery": "^1.0",
         "nunomaduro/collision": "^3.0",
-        "phpunit/phpunit": "^7.5"
+        "phpunit/phpunit": "^7.5",
+        "mashape/unirest-php": "^3.0"
     },
     "config": {
         "optimize-autoloader": true,

@@ -165,7 +165,7 @@ return [
         /*
          * Package Service Providers...
          */
-        SammyK\LaravelFacebookSdk\LaravelFacebookSdkServiceProvider::class,
+        // SammyK\LaravelFacebookSdk\LaravelFacebookSdkServiceProvider::class,
 
         /*
          * Application Service Providers...
@@ -226,7 +226,7 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
-        'Facebook' => SammyK\LaravelFacebookSdk\FacebookFacade::class,
+        // 'Facebook' => SammyK\LaravelFacebookSdk\FacebookFacade::class,
     ],
 
 ];

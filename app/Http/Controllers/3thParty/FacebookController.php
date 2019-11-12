@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Auth;
-use SammyK\LaravelFacebookSdk\LaravelFacebookSdk;
+// use SammyK\LaravelFacebookSdk\LaravelFacebookSdk;
 
 class FacebookController extends Controller
 {
