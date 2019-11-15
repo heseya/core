@@ -13,7 +13,7 @@
 
 <div id="products" class="products-list">
     @foreach ($products as $product)
-        <a href="/admin/products/{{ $product->id }}" class="product">
+        <a href="/admin/products/{{ $product->slug }}" class="product">
             <div class="product__img" style="background-color: {{ $product->color }}">
                 @if (isset($product->photos[0]))
                     <img src="{{ $product->photos[0]->url }}" />

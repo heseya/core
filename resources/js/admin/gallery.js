@@ -207,7 +207,7 @@ window.addPicture = (container) => {
 
         let tab = new Tab(preview, 0)
 
-        fetch('/api/admin/upload', {
+        fetch('/admin/upload', {
             method: 'POST',
             body: data,
             credentials: 'same-origin'

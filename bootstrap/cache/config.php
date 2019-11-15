@@ -5,6 +5,7 @@
     'env' => 'local',
     'debug' => true,
     'url' => 'http://depth.l',
+    'store_url' => 'http://depth.l',
     'asset_url' => NULL,
     'timezone' => 'UTC',
     'locale' => 'pl',

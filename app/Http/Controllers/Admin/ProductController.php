@@ -12,11 +12,12 @@ use App\Http\Controllers\Controller;
 
 class ProductController extends Controller
 {
-    public function products()
+    public function index()
     {
         $products = Product::select([
             'id',
             'name',
+            'slug',
             'price',
             'color',
             'brand_id',
@@ -27,29 +28,31 @@ class ProductController extends Controller
             'photos',
         ])->get();
 
-        return response()->view('admin/products/list', [
+        return response()->view('admin/products/index', [
             'user' => Auth::user(),
             'products' => $products,
         ]);
     }
 
-    public function productJson(Product $product)
+    public function single($slug)
     {
-        $product->brand;
-        $product->category;
+        $product = Product::where(['slug' => $slug])->with([
+            'brand',
+            'category',
+            'photos',
+        ])->first();
 
-        return response()->json($product);
-    }
+        if (empty($product)) {
+            abort(404);
+        }
 
-    public function product(Product $product)
-    {
         return response()->view('admin/products/single', [
             'product' => $product,
             'user' => Auth::user(),
         ]);
     }
 
-    public function productsAdd()
+    public function addForm()
     {
         return response()->view('admin/products/add', [
             'user' => Auth::user(),
@@ -68,7 +71,7 @@ class ProductController extends Controller
         ]);
     }
 
-    public function productsStore(Request $request)
+    public function store(Request $request)
     {
         $product = Product::create($request->all());
 
@@ -80,6 +83,6 @@ class ProductController extends Controller
             }
         }
 
-        return redirect('/admin/products/' . $product->id);
+        return redirect('/admin/products/' . $product->slug);
     }
 }

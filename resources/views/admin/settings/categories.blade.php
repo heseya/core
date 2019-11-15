@@ -13,8 +13,8 @@
     @foreach($categories as $category)
         <li class="center clickable">
             <span class="margin__left">
-                <div>{{ $category['name'] }}</div>
-                <small>/{{ $category['link'] }}</small>
+                <div>{{ $category->name }}</div>
+                <small>/{{ $category->slug }}</small>
             </span>
         </li>
     @endforeach

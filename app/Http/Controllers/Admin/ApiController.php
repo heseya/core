@@ -13,7 +13,7 @@ class ApiController extends Controller
     {
         $order = Order::find($request->order_id);
 
-        if(empty($order)) {
+        if (empty($order)) {
             return response()->json(['message' => 'Order not found.'], 404);
         }
 
@@ -29,7 +29,7 @@ class ApiController extends Controller
         $body = Unirest\Request\Body::multipart([], ['photo' => $request->photo]);
         $response = Unirest\Request::post(config('cdn.host'), config('cdn.headers'), $body);
 
-        // return $response->raw_body;
+        // return $response->raw_body; // debug
         return (config('cdn.host') . '/' . $response->body[0]->id);
     }
 }

@@ -15,7 +15,7 @@
                 <input type="text" name="name" placeholder="Nazwa" required>
             </div>
             <div class="input sto">
-                <input type="text" name="link" placeholder="link" required>
+                <input type="text" name="slug" placeholder="slug" required>
             </div>
             <button class="button">Dodaj</button>
         </div>

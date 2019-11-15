@@ -13,8 +13,8 @@
     @foreach($brands as $brand)
         <li class="center clickable">
             <span class="margin__left">
-                <div>{{ $brand['name'] }}</div>
-                <small>/{{ $brand['link'] }}</small>
+                <div>{{ $brand->name }}</div>
+                <small>/{{ $brand->slug }}</small>
             </span>
         </li>
     @endforeach

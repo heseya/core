@@ -1,11 +1,11 @@
 <?php
 
 use App\Brand;
-use App\Category;
 use App\Product;
-use Bezhanov\Faker\ProviderCollectionHelper;
+use App\Category;
 use Faker\Factory;
 use Illuminate\Database\Seeder;
+use Bezhanov\Faker\ProviderCollectionHelper;
 
 class ProductsSeeder extends Seeder
 {
@@ -22,31 +22,34 @@ class ProductsSeeder extends Seeder
         Brand::create([
             'id' => 1,
             'name' => 'Depth',
-            'link' => 'depth',
+            'slug' => 'depth',
         ]);
 
         Category::create([
             'id' => 1,
             'name' => 'Łańcuszki',
-            'link' => 'chains',
+            'slug' => 'chains',
         ]);
 
         Category::create([
             'id' => 2,
             'name' => 'Sygnety',
-            'link' => 'rings',
+            'slug' => 'rings',
         ]);
 
         Category::create([
             'id' => 3,
             'name' => 'Koszulki',
-            'link' => 'tees',
+            'slug' => 'tees',
         ]);
 
         for ($i = 1; $i <= 10; $i++) {
 
+            $name = $faker->productName();
+
             Product::create([
-                'name' => $faker->productName(),
+                'name' => $name,
+                'slug' => strtolower(str_replace(' ', '-', $name)),
                 'price' => rand(100, 200),
                 'description' => $faker->paragraph(),
                 'brand_id' => 1,

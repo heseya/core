@@ -8,23 +8,24 @@ use App\Http\Controllers\Controller;
 
 class ChatController extends Controller
 {
-    public function chats()
+    public function index()
     {
         $chats = Chat::all();
 
         foreach ($chats as $chat) {
             $chat->client;
             $chat->avatar = $chat->avatar();
-            $chat->snippet = ''; // $chat->snippet();
+            $chat->snippet = '';
+            // $chat->snippet();
         }
 
-        return response()->view('admin/chat/list', [
+        return response()->view('admin/chat/index', [
             'user' => Auth::user(),
             'chats' => $chats,
         ]);
     }
 
-    public function chat(Chat $chat)
+    public function single(Chat $chat)
     {
         return response()->view('admin/chat/single', [
             'user' => Auth::user(),

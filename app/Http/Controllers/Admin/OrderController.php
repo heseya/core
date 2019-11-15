@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
-    public function orders()
+    public function index()
     {
         $orders = Order::select('id', 'code', 'email', 'payment_status', 'shop_status', 'delivery_status', 'created_at', 'delivery_address')
-        ->orderBy('created_at', 'desc')
-        ->get();
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         $status = new Status;
 
@@ -32,13 +32,13 @@ class OrderController extends Controller
             ];
         }
 
-        return response()->view('admin/orders/list', [
+        return response()->view('admin/orders/index', [
             'user' => Auth::user(),
             'orders' => $ordersFormat ?? [],
         ]);
     }
 
-    public function order(Order $order)
+    public function single(Order $order)
     {
         return response()->view('admin/orders/single', [
             'order' => $order,
@@ -47,7 +47,7 @@ class OrderController extends Controller
         ]);
     }
 
-    public function ordersAdd()
+    public function addForm()
     {
         return response()->view('admin/orders/add', [
             'user' => Auth::user(),

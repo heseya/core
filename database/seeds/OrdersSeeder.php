@@ -1,7 +1,7 @@
 <?php
 
-use App\Address;
 use App\Order;
+use App\Address;
 use Illuminate\Database\Seeder;
 
 class OrdersSeeder extends Seeder

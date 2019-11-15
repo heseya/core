@@ -17,6 +17,10 @@
                 <input type="text" name="name" required>
             </div>
             <div class="input sto">
+                <label for="slug">Link</label>
+                <input type="text" name="slug" required>
+            </div>
+            <div class="input sto">
                 <label for="brand">Marka</label>
                 <select type="text" name="brand_id" required>
                     @foreach($brands as $brand)
@@ -31,10 +35,6 @@
                         <option value="{{ $category->id }}">{{ $category->name }}</option>
                     @endforeach
                 </select>
-            </div>
-            <div class="input input__color sto">
-                <label for="color">Kolor</label>
-                <input type="color" name="color" required/>
             </div>
         </div>
         <div>

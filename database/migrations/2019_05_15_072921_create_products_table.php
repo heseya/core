@@ -18,8 +18,8 @@ class CreateProductsTable extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
+            $table->string('slug')->unique()->index();
             $table->float('price', 8, 2);
-            $table->string('color', 16)->default('#000');
             $table->smallInteger('brand_id')->unsigned();
             $table->smallInteger('category_id')->unsigned();
             $table->text('description')->nullable();

@@ -14,6 +14,10 @@
             E-mail: <span style="color: #000000; text-decoration: none;">{{ $email }}</span><br>
             Hasło: {{ $password }}
         </h2>
+
+        <p style="padding: 0 20px;">
+            <a href="{{ Config::get('app.url') }}/admin">Zaloguj się</a>
+        </p>
     </td>
 </tr>
 @endsection
