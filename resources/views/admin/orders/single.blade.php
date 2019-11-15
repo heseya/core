@@ -44,10 +44,6 @@
 
 <div class="order">
     <div>
-        <h3>Informacje</h3>
-        <div>Dostawa: kurier</div>
-        <div>Płatność: mTransfer</div>
-
         @if ($order->deliveryAddress)
         <h3>Adres dostawy</h3>
         <div>{{ $order->deliveryAddress->name }}</div>
@@ -70,7 +66,7 @@
         <div class="list">
             <li class="cart__item">
                 <div class="cart__img">
-                    <img src="https://source.unsplash.com/collection/1085173/50x50?2">
+                    <img src="//source.unsplash.com/collection/1085173/50x50?1">
                 </div>
                 <div class="cart__details">
                     <div>Nazwa produktu</div>
@@ -79,7 +75,7 @@
             </li>
             <li class="cart__item">
                 <div class="cart__img">
-                    <img src="https://source.unsplash.com/collection/1085173/50x50?1">
+                    <img src="//source.unsplash.com/collection/1085173/50x50?2">
                 </div>
                 <div class="cart__details">
                     <div>Nazwa produktu <small>x 2</small></div>
@@ -87,9 +83,9 @@
                 </div>
             </li>
             <li class="cart__item">
-                <div class="cart__img">
-                    <img src="https://is5-ssl.mzstatic.com/image/thumb/Purple123/v4/e5/d3/74/e5d3743b-b2c0-ccb8-ddd8-ca69f5e40e55/AppIcon-0-1x_U007emarketing-0-0-GLES2_U002c0-512MB-sRGB-0-0-0-85-220-0-0-0-7.png/246x0w.jpg">
-                </div>
+                    <div class="cart__img cart__img--delivery">
+                        <img src="/img/icons/delivery.svg">
+                    </div>
                 <div class="cart__details">
                     <div>Dostawa</div>
                     <small>17,00 zł</small>

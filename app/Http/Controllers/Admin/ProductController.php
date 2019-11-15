@@ -19,7 +19,6 @@ class ProductController extends Controller
             'name',
             'slug',
             'price',
-            'color',
             'brand_id',
             'category_id',
         ])->with([

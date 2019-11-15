@@ -40,11 +40,11 @@ class Chat extends Model
     {
         switch($this->type) {
             case 1:
-                return 'https://www.gravatar.com/avatar/' . md5(strtolower(trim($this->system_id))) . '?d=retro&s=50x50';
+                return '//www.gravatar.com/avatar/' . md5(strtolower(trim($this->system_id))) . '?d=mp&s=50x50';
                 break;
 
             default:
-                return '/img/avatar.png';
+                return '//www.gravatar.com/avatar/2?d=mp&s=50x50';
         }
     }
 

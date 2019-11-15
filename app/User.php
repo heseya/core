@@ -38,6 +38,6 @@ class User extends Authenticatable
 
     public function avatar()
     {
-        return '//www.gravatar.com/avatar/' . md5(strtolower(trim($this->email))) . '?d=retro';
+        return '//www.gravatar.com/avatar/' . md5(strtolower(trim($this->email))) . '?d=mp';
     }
 }

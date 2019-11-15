@@ -10,12 +10,12 @@
 
 @section('content')
 <ol class="list">
-  @foreach($accounts as $user)
+  @foreach($accounts as $account)
     <li class="center">
-      <img class="avatar" src="{{ $user->avatar() }}">
+      <img class="avatar" src="{{ $account->avatar() }}">
       <span class="margin__left">
-        <div>{{ $user['name'] }}</div>
-        <small>{{ $user['email'] }}</small>
+        <div>{{ $account['name'] }}</div>
+        <small>{{ $account['email'] }}</small>
       </span>
     </li>
   @endforeach
@@ -23,5 +23,5 @@
 @endsection
 
 @section('scripts')
-  
+
 @endsection

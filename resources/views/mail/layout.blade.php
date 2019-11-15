@@ -18,7 +18,7 @@
             <tr>
                 <td align="center">
                 <a href="{{ Config::get('app.store_url') }}" target="_blank">
-                    <img src="https://depth.store/img/depth-b.svg" alt="DEPTH" style="border:none" height="64">
+                    <img src="https://secure.depth.store/img/depth-b.svg" alt="DEPTH" style="border:none" height="64">
                 </a>
                 </td>
             </tr>

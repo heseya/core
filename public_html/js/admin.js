@@ -384,7 +384,7 @@ window.addPicture = function (container) {
     var data = new FormData();
     data.append('photo', input.files[0]);
     var tab = new Tab(preview, 0);
-    fetch('/api/admin/upload', {
+    fetch('/admin/upload', {
       method: 'POST',
       body: data,
       credentials: 'same-origin'

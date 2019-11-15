@@ -13,8 +13,6 @@ class StaticController extends Controller
         return response()->json([
             'name' => config('app.name'),
             'store_url' => config('app.store_url'),
-            'developer' => 'heseya.com',
-            'created_with' => '❤️'
         ]);
     }
 
