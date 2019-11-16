@@ -13,7 +13,12 @@
     @foreach($categories as $category)
         <li class="center clickable">
             <span class="margin__left">
-                <div>{{ $category->name }}</div>
+                <div>
+                    @if (!$category->public)
+                        <img class="small-img" src="/img/icons/locker.svg">
+                    @endif
+                    {{ $category->name }}
+                </div>
                 <small>/{{ $category->slug }}</small>
             </span>
         </li>

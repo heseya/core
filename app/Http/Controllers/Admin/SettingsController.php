@@ -26,7 +26,6 @@ class SettingsController extends Controller
     public function info()
     {
         return response()->view('admin/settings/info', [
-            'version' => '0.1',
             'user' => Auth::user(),
         ]);
     }

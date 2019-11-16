@@ -14,6 +14,7 @@ class Product extends Model
         'slug',
         'price',
         'description',
+        'public',
         'brand_id',
         'category_id',
     ];

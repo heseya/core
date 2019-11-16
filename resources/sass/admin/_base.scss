@@ -52,7 +52,7 @@ h1, h2, h3, h4, h5 {
   &__item {
     display: inline-flex;
     align-items: center;
-    margin-right: 6px;
+    margin-right: 16px;
 
     img {
       height: 20px;
@@ -71,6 +71,22 @@ h1, h2, h3, h4, h5 {
 
   select::-ms-expand {
     display: none;
+  }
+}
+
+.img {
+  position: relative;
+  width: 100%;
+  padding-top: 100%;
+  border-radius: 7px;
+  background-color: $grey-light;
+  overflow: hidden;
+  margin-bottom: 4px;
+
+  img {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
   }
 }
 

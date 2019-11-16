@@ -12,6 +12,11 @@ Route::middleware('auth')->group(function () {
     Route::post('products/add', 'Admin\ProductController@store');
     Route::get('products/{slug}', 'Admin\ProductController@single');
 
+    Route::get('items', 'Admin\ItemController@index');
+    Route::get('items/add', 'Admin\ItemController@addForm');
+    Route::post('items/add', 'Admin\ItemController@store');
+    Route::get('items/{item}', 'Admin\ItemController@single');
+
     Route::get('chat', 'Admin\ChatController@index');
     Route::get('chat/{chat}', 'Admin\ChatController@single');
 
@@ -53,6 +58,6 @@ Route::middleware('auth')->group(function () {
     Route::get('logout', 'Admin\AuthController@logout');
 });
 
-Auth::routes(['register' => false, 'logout' => false]);
+Auth::routes(['register' => false, 'logout' => false, 'verify' => false]);
 
 Route::redirect('/', '/admin/orders', 302);

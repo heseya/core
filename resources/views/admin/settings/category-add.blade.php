@@ -12,10 +12,16 @@
     <div class="grid grid--2">
         <div>
             <div class="input sto">
-                <input type="text" name="name" placeholder="Nazwa" required>
+                <label for="name">Nazwa</label>
+                <input type="text" name="name" required>
             </div>
             <div class="input sto">
-                <input type="text" name="slug" placeholder="slug" required>
+                <label for="slug">Link</label>
+                <input type="text" name="slug" required>
+            </div>
+            <div>
+                <label for="public">Widoczna w sklepie</label>
+                <input type="checkbox" name="public">
             </div>
             <button class="button">Dodaj</button>
         </div>

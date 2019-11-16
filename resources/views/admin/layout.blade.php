@@ -5,31 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="{{ mix('css/admin.css') }}">
-    <title>@yield('title')</title>
+    <title>@yield('title') - {{ Config::get('app.name') }}</title>
 </head>
 <body>
 
     <nav class="nav">
         <div class="logo">
-        <img src="/img/logo.png">
+            <img src="/img/logo.png">
         </div>
 
-        <a href="/admin/products" class="nav--products nav--products__selected"></a>
+        <a href="/admin/products" class="nav--products"></a>
         <a href="/admin/orders" class="nav--orders"></a>
         <a href="/admin/chat" class="nav--chat"></a>
     </nav>
 
     <main id="main">
         <nav class="top-nav">
-        <div class="title">
-            <a href="/admin/settings" class="avatar">
-                <img src="{{ $user->avatar() }}">
-            </a>
-            <h1>@yield('title')</h1>
-        </div>
-        <div>
-            @yield('buttons')
-        </div>
+            <div class="title">
+                <a href="/admin/settings" class="avatar">
+                    <img src="{{ $user->avatar() }}">
+                </a>
+                <h1>@yield('title')</h1>
+            </div>
+            <div class="buttons">
+                @yield('buttons')
+            </div>
         </nav>
 
         @yield('content')

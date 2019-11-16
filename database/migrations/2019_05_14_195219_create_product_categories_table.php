@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 class CreateProductCategoriesTable extends Migration
 {
@@ -16,7 +16,8 @@ class CreateProductCategoriesTable extends Migration
         Schema::create('categories', function (Blueprint $table) {
             $table->smallIncrements('id');
             $table->string('name');
-            $table->string('slug');
+            $table->string('slug')->unique()->index();
+            $table->boolean('public')->default(false);
             $table->timestamps();
         });
     }

@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 class CreateProductSchemasTable extends Migration
 {
@@ -15,7 +15,7 @@ class CreateProductSchemasTable extends Migration
     {
         Schema::create('product_schemas', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('product_id')->unsigned();
+            $table->integer('product_id')->unsigned()->index();
             $table->string('name');
             $table->boolean('required')->default(0);
             $table->timestamps();

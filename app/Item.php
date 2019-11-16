@@ -8,7 +8,13 @@ class Item extends Model
 {
     protected $fillable = [
         'name',
+        'symbol',
         'qty',
         'photo',
     ];
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
 }

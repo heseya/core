@@ -3,8 +3,11 @@
 @section('title', 'Asortyment')
 
 @section('buttons')
+<a href="/admin/items" class="top-nav--button">
+    <img class="icon" src="/img/icons/chest.svg">
+</a>
 <a href="/admin/products/add" class="top-nav--button">
-  <img class="icon" src="/img/icons/plus.svg">
+    <img class="icon" src="/img/icons/plus.svg">
 </a>
 @endsection
 

@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 class CreateItemsTable extends Migration
 {
@@ -18,9 +18,13 @@ class CreateItemsTable extends Migration
         Schema::create('items', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
-            $table->float('qty', 16, 8);
-            $table->string('photo');
+            $table->string('symbol', 128)->index();
+            $table->smallInteger('category_id')->unsigned()->index()->nullable();
+            $table->float('qty', 16, 8)->default(0);
+            $table->string('photo')->nullable();
             $table->timestamps();
+
+            $table->foreign('category_id')->references('id')->on('categories')->onDelete('restrict');
         });
     }
 

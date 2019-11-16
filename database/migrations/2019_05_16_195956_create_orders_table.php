@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 class CreateOrdersTable extends Migration
 {
@@ -16,7 +16,7 @@ class CreateOrdersTable extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->increments('id')->uniqe();
             $table->string('code', 16)->unique();
-            $table->integer('client_id')->unsigned()->nullable()->default(null);
+            $table->integer('client_id')->unsigned()->index()->nullable();
             $table->string('email', 256);
             $table->smallInteger('payment')->default(0);
             $table->tinyInteger('payment_status')->default(0);
@@ -24,8 +24,8 @@ class CreateOrdersTable extends Migration
             $table->smallInteger('delivery')->nullable();
             $table->tinyInteger('delivery_status')->default(0);
             $table->string('delivery_tracking')->nullable();
-            $table->integer('delivery_address')->unsigned()->nullable()->default(null);
-            $table->integer('invoice_address')->unsigned()->nullable()->default(null);
+            $table->integer('delivery_address')->unsigned()->index()->nullable();
+            $table->integer('invoice_address')->unsigned()->index()->nullable();
             $table->timestamps();
 
             // Relations

@@ -92,9 +92,14 @@
     }
   }
 
+  .buttons {
+    display: flex;
+  }
+
   &--button {
     display: inline-block;
     border-radius: 50%;
+    margin-left: 12px;
     height: 28px;
     width: 28px;
     background-color: $grey-light;

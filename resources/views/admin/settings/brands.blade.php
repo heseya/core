@@ -13,7 +13,12 @@
     @foreach($brands as $brand)
         <li class="center clickable">
             <span class="margin__left">
-                <div>{{ $brand->name }}</div>
+                <div>
+                    @if (!$brand->public)
+                        <img class="small-img" src="/img/icons/locker.svg">
+                    @endif
+                    {{ $brand->name }}
+                </div>
                 <small>/{{ $brand->slug }}</small>
             </span>
         </li>
