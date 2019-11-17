@@ -481,12 +481,13 @@ function () {
 /***/ (function(module, exports) {
 
 window.closeModal = function () {
-  document.getElementById('modal').classList.add('modal--hidden');
+  document.querySelector('.modal').classList.add('modal--hidden');
 };
 
-window.confirmModal = function (title) {
-  var modal = document.getElementById('modal');
-  document.getElementById('modal__title').innerText = title;
+window.confirmModal = function (title, url) {
+  var modal = document.getElementById('modal-confirm');
+  document.getElementById('modal-title').innerText = title;
+  document.getElementById('modal-form').action = url;
   modal.classList.remove('modal--hidden');
 };
 

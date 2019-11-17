@@ -3,7 +3,12 @@
 @section('title', $item->name)
 
 @section('buttons')
-
+<button onclick="window.confirmModal(
+        'Czy na pewno chcesz usunąć {{ $item->name }}?',
+        '/admin/items/{{ $item->id }}/delete'
+    )" class="top-nav--button">
+    <img class="icon" src="/img/icons/trash.svg">
+</button>
 @endsection
 
 @section('content')
@@ -30,10 +35,12 @@
     <div>
         <h3></h3>
         <div class="img">
-            <img src="//source.unsplash.com/collection/1085173">
+            @if ($item->photo)
+                <img src="{{ $item->photo->url }}">
+            @endif
         </div>
     </div>
-    <div>
+    {{-- <div>
         <h3 class="margin--left">Dokumenty magazynowe</h3>
         <div class="list">
             <li class="clickable marginles">
@@ -41,8 +48,7 @@
                 <small>2019-11-15</small>
             </li>
         </div>
-    </div>
-
+    </div> --}}
 </div>
 @endsection
 

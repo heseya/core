@@ -14,11 +14,11 @@
         <div>
             <div class="input sto">
                 <label for="name">Nazwa</label>
-                <input type="text" name="name" required>
+                <input type="text" name="name" required autocomplete="off">
             </div>
             <div class="input sto">
                 <label for="symbol">Symbol</label>
-                <input type="text" name="symbol" required>
+                <input type="text" name="symbol" required autocomplete="off">
             </div>
             <div class="input sto">
                 <label for="category">Kategoria</label>
@@ -31,10 +31,8 @@
             </div>
         </div>
         <div>
-            {{-- <div class="input sto">
-                <label for="description">Opis</label>
-                <textarea name="desctiprion" rows="10"></textarea>
-            </div> --}}
+            <p>Zdjęcie</p>
+            <div id="tabs" class="gallery"></div>
         </div>
     </div>
 

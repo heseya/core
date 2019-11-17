@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use Auth;
 use App\Brand;
-use App\Photo;
 use App\Product;
 use App\Category;
 use Illuminate\Http\Request;
@@ -76,9 +75,7 @@ class ProductController extends Controller
 
         foreach ($request->photos as $photo) {
             if ($photo !== null) {
-                $product->photos()->attach(Photo::create([
-                    'url' => $photo,
-                ]));
+                $product->photos()->attach($photo);
             }
         }
 

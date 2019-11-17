@@ -11,10 +11,16 @@ class Item extends Model
         'symbol',
         'qty',
         'photo',
+        'category_id',
     ];
 
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function photo()
+    {
+        return $this->belongsTo(Photo::class);
     }
 }

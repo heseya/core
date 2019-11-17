@@ -42,82 +42,82 @@ class Tabs {
         }
     }
 
-  addTab (tab) {
-      this.tabs.push(tab)
+    addTab (tab) {
+        this.tabs.push(tab)
 
-      tab.dom.ondragstart = (ev) => {
-          ev.dataTransfer.setData('text/plain', this.tabs.indexOf(tab).toString())
-      }
+        tab.dom.ondragstart = (ev) => {
+            ev.dataTransfer.setData('text/plain', this.tabs.indexOf(tab).toString())
+        }
 
-      tab.dom.ondragover = (ev) => {
-          ev.preventDefault()
+        tab.dom.ondragover = (ev) => {
+            ev.preventDefault()
 
-          ev.dataTransfer.dropEffect = "move"
-      }
+            ev.dataTransfer.dropEffect = "move"
+        }
 
-      tab.dom.ondragenter = (ev) => {
-          ev.stopPropagation()
+        tab.dom.ondragenter = (ev) => {
+            ev.stopPropagation()
 
-          tab.dom.classList.add('dragover')
-      }
+            tab.dom.classList.add('dragover')
+        }
 
-      tab.dom.ondragleave = (ev) => {
-          ev.stopPropagation()
+        tab.dom.ondragleave = (ev) => {
+            ev.stopPropagation()
 
-          tab.dom.classList.remove('dragover')
-      }
+            tab.dom.classList.remove('dragover')
+        }
 
-      tab.dom.ondrop = (ev) => {
-          ev.preventDefault()
-          ev.stopPropagation()
+        tab.dom.ondrop = (ev) => {
+            ev.preventDefault()
+            ev.stopPropagation()
 
-          this.moveTab(ev.dataTransfer.getData('text/plain'), this.tabs.indexOf(tab))
-          tab.dom.classList.remove('dragover')
-      }
+            this.moveTab(ev.dataTransfer.getData('text/plain'), this.tabs.indexOf(tab))
+            tab.dom.classList.remove('dragover')
+        }
 
-      tab.dom.onmousedown = () => {
-          this.selectTab(tab)
-      }
+        tab.dom.onmousedown = () => {
+            this.selectTab(tab)
+        }
 
-      if (!this.currentTab)
-          this.selectTab(tab)
+        if (!this.currentTab)
+            this.selectTab(tab)
 
-      this.updateTabs()
-  }
-
-  delTab (tab) {
-    this.tabs.splice(this.tabs.indexOf(tab), 1)
-
-    this.updateTabs()
-  }
-
-  rotateTab(tab) {
-    tab.rotate()
-  }
-
-  moveTab (from, to) {
-    let tab = this.tabs.splice(from, 1)[0]
-    this.tabs.splice(to, 0, tab)
-
-    this.updateTabs()
-  }
-
-  selectTab (tab) {
-    if (this.currentTab)
-      this.currentTab.unselect()
-    tab.select()
-    this.currentTab = tab
-  }
-
-  updateTabs () {
-    while (this.dom.firstChild) {
-      this.dom.removeChild(this.dom.firstChild)
+        this.updateTabs()
     }
 
-    for(let tab of this.tabs) {
-      this.dom.appendChild(tab.dom)
+    delTab (tab) {
+        this.tabs.splice(this.tabs.indexOf(tab), 1)
+
+        this.updateTabs()
     }
-  }
+
+    rotateTab(tab) {
+        tab.rotate()
+    }
+
+    moveTab (from, to) {
+        let tab = this.tabs.splice(from, 1)[0]
+        this.tabs.splice(to, 0, tab)
+
+        this.updateTabs()
+    }
+
+    selectTab (tab) {
+        if (this.currentTab)
+            this.currentTab.unselect()
+        tab.select()
+        this.currentTab = tab
+    }
+
+    updateTabs () {
+        while (this.dom.firstChild) {
+            this.dom.removeChild(this.dom.firstChild)
+        }
+
+        for(let tab of this.tabs) {
+            this.dom.appendChild(tab.dom)
+        }
+    }
 }
 
 
@@ -125,36 +125,36 @@ let tabs = new Tabs('#tabs')
 window.oldpictures = []
 
 for (let id of window.oldpictures) {
-  const preview = document.createElement('div')
-  preview.className = 'gallery__img'
-  preview.innerHTML = '<img src="/img/icons/camera.svg" />'
-  preview.children[0].src = `/img/thumbnails/${id}.jpeg?` + Math.random()
+    const preview = document.createElement('div')
+    preview.className = 'gallery__img'
+    preview.innerHTML = '<img src="/img/icons/camera.svg" />'
+    preview.children[0].src = `/img/thumbnails/${id}.jpeg?` + Math.random()
 
-  const input = document.createElement('input')
-  input.name = 'photos[]'
-  input.type = 'hidden'
-  input.value = id
+    const input = document.createElement('input')
+    input.name = 'photos[]'
+    input.type = 'hidden'
+    input.value = id
 
-  preview.appendChild(input)
+    preview.appendChild(input)
 
-  let tab = new Tab(preview, id)
+    let tab = new Tab(preview, id)
 
-  const del = document.createElement('div')
-  del.className = 'remove'
-  del.onclick = () => {
-    tabs.delTab(tab)
-  }
+    const del = document.createElement('div')
+    del.className = 'remove'
+    del.onclick = () => {
+        tabs.delTab(tab)
+    }
 
-  const rotate = document.createElement('div')
-  rotate.className = 'rotate'
-  rotate.onclick = () => {
-    tabs.rotateTab(tab)
-  }
+    const rotate = document.createElement('div')
+    rotate.className = 'rotate'
+    rotate.onclick = () => {
+        tabs.rotateTab(tab)
+    }
 
-  preview.appendChild(rotate)
-  preview.appendChild(del)
+    preview.appendChild(rotate)
+    preview.appendChild(del)
 
-  tabs.addTab(tab)
+    tabs.addTab(tab)
 }
 
 window.addPicture = (container) => {

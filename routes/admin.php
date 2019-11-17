@@ -16,6 +16,7 @@ Route::middleware('auth')->group(function () {
     Route::get('items/add', 'Admin\ItemController@addForm');
     Route::post('items/add', 'Admin\ItemController@store');
     Route::get('items/{item}', 'Admin\ItemController@single');
+    Route::get('items/{item}/delete', 'Admin\ItemController@delete');
 
     Route::get('chat', 'Admin\ChatController@index');
     Route::get('chat/{chat}', 'Admin\ChatController@single');

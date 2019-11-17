@@ -14,11 +14,11 @@
         <div>
             <div class="input sto">
                 <label for="name">Nazwa</label>
-                <input type="text" name="name" required>
+                <input type="text" name="name" required autocomplete="off">
             </div>
             <div class="input sto">
                 <label for="slug">Link</label>
-                <input type="text" name="slug" required>
+                <input type="text" name="slug" required autocomplete="off">
             </div>
             <div class="input sto">
                 <label for="brand">Marka</label>
@@ -41,7 +41,7 @@
             <div class="grid grid--2 grid--no-margin">
                 <div class="input sto" style="margin-bottom: 0">
                     <label for="price">Cena brutto (PLN)</label>
-                    <input type="number" step="0.01" name="price" required>
+                    <input type="number" step="0.01" name="price" required autocomplete="off">
                 </div>
                 <div class="input sto" style="margin-bottom: 0">
                     <label for="category">VAT</label>

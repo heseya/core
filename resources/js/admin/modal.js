@@ -1,10 +1,11 @@
 window.closeModal = () => {
-    document.getElementById('modal').classList.add('modal--hidden')
+    document.querySelector('.modal').classList.add('modal--hidden')
 }
 
-window.confirmModal = (title) => {
-    let modal = document.getElementById('modal')
+window.confirmModal = (title, url) => {
+    let modal = document.getElementById('modal-confirm')
 
-    document.getElementById('modal__title').innerText = title
+    document.getElementById('modal-title').innerText = title
+    document.getElementById('modal-form').action = url
     modal.classList.remove('modal--hidden')
 }

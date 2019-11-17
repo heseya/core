@@ -39,7 +39,15 @@ class ItemController extends Controller
     public function store(Request $request)
     {
         $product = Item::create($request->all());
+        $product->photo()->associate($request->photos[0])->save();
 
         return redirect('/admin/items/' . $product->id);
+    }
+
+    public function delete(Item $item)
+    {
+        $item->delete();
+
+        return redirect('/admin/items');
     }
 }

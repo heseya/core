@@ -15,7 +15,7 @@
             <li class="clickable">
                 <div class="avatar">
                     @if ($item->photo)
-                        <img src="{{ $item->photo }}">
+                        <img src="{{ $item->photo->url }}">
                     @endif
                 </div>
                 <div>

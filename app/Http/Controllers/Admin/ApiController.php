@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use Unirest;
 use App\Order;
+use App\Photo;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -29,7 +30,10 @@ class ApiController extends Controller
         $body = Unirest\Request\Body::multipart([], ['photo' => $request->photo]);
         $response = Unirest\Request::post(config('cdn.host'), config('cdn.headers'), $body);
 
-        // return $response->raw_body; // debug
-        return (config('cdn.host') . '/' . $response->body[0]->id);
+        $photo = Photo::create([
+            'url' => config('cdn.host') . '/' . $response->body[0]->id
+        ]);
+
+        return $photo->id;
     }
 }

@@ -18,17 +18,6 @@ class CreatePhotosTable extends Migration
             $table->string('url');
             $table->timestamps();
         });
-
-        Schema::create('photo_product', function (Blueprint $table) {
-            $table->increments('id');
-            $table->smallInteger('order')->nullable();
-
-            $table->integer('photo_id')->unsigned()->index();
-            $table->foreign('photo_id')->references('id')->on('photos')->onDelete('cascade');
-
-            $table->integer('product_id')->unsigned()->index();
-            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
-        });
     }
 
     /**

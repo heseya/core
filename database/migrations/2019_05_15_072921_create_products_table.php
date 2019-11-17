@@ -29,6 +29,17 @@ class CreateProductsTable extends Migration
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('restrict');
             $table->foreign('brand_id')->references('id')->on('brands')->onDelete('restrict');
         });
+
+        Schema::create('photo_product', function (Blueprint $table) {
+            $table->increments('id');
+            $table->smallInteger('order')->nullable();
+
+            $table->integer('photo_id')->unsigned()->index();
+            $table->foreign('photo_id')->references('id')->on('photos')->onDelete('cascade');
+
+            $table->integer('product_id')->unsigned()->index();
+            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
+        });
     }
 
     /**
