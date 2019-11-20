@@ -9,7 +9,7 @@
 @endsection
 
 @section('content')
-<ol id="orders" class="list list--orders">
+<ol class="list list--orders">
     @foreach ($orders as $order)
         <a href="/admin/orders/{{ $order['id'] }}">
             <li class="clickable">

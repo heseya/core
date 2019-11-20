@@ -20,15 +20,6 @@
                 <label for="symbol">Symbol</label>
                 <input type="text" name="symbol" required autocomplete="off">
             </div>
-            <div class="input sto">
-                <label for="category">Kategoria</label>
-                <select type="text" name="category_id">
-                    <option value="NULL">- brak -</option>
-                    @foreach($categories as $category)
-                        <option value="{{ $category->id }}">{{ $category->name }}</option>
-                    @endforeach
-                </select>
-            </div>
         </div>
         <div>
             <p>Zdjęcie</p>

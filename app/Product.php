@@ -5,6 +5,7 @@ namespace App;
 use App\Brand;
 use App\Photo;
 use App\Category;
+use App\ProductSchema;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
@@ -39,5 +40,10 @@ class Product extends Model
     public function photos()
     {
         return $this->belongsToMany(Photo::class);
+    }
+
+    public function shema()
+    {
+        return $this->hasMany(ProductSchema::class);
     }
 }

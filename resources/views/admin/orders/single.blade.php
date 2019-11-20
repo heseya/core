@@ -42,7 +42,7 @@
     </div>
 </div>
 
-<div class="order">
+<div class="grid grid--2">
     <div>
         @if ($order->deliveryAddress)
         <h3>Adres dostawy</h3>

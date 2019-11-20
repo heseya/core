@@ -25,7 +25,7 @@
             <div class="flex">
                 <div class="name">
                 {{ $product->name }}<br/>
-                <small>{{ $product->price }}</small>
+                <small>{{ \App\Money::PLN($product->price) }}</small>
                 </div>
             </div>
         </a>

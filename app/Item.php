@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\ProductSchema;
 use Illuminate\Database\Eloquent\Model;
 
 class Item extends Model
@@ -11,16 +12,15 @@ class Item extends Model
         'symbol',
         'qty',
         'photo',
-        'category_id',
     ];
-
-    public function category()
-    {
-        return $this->belongsTo(Category::class);
-    }
 
     public function photo()
     {
         return $this->belongsTo(Photo::class);
+    }
+
+    public function schemas()
+    {
+        return $this->belongsToMany(ProductSchema::class, 'product_schema_item');
     }
 }

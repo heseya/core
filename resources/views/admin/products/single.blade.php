@@ -17,10 +17,37 @@
     </div>
 </div>
 
-<div class="margin--30 margin--top">
-    <h2>{{ $product->price }} zł</h2>
+<div class="grid grid--2">
+    <div>
+        <h2>{{ \App\Money::PLN($product->price) }}</h2>
+        <p>{{ $product->description }}</p>
+    </div>
 
-    <p>{{ $product->description }}</p>
+    <div class="cart">
+        @foreach ($product->shema as $schema)
+            <h3>{{ $schema->name }} <small style="color: #aaa">{{ $schema->required ? 'wymagany' : '' }}</small></h3>
+            <div class="list">
+                @foreach ($schema->items as $item)
+                <a href="/admin/items/{{ $item->id }}" class="cart__item">
+                    <div class="cart__img">
+                    @if ($item->photo)
+                        <img src="{{ $item->photo->url }}">
+                    @endif
+                    </div>
+                    <div class="cart__details">
+                        <div>{{ $item->name }} <small>x {{ $item->qty }}</small></div>
+                        <small>
+                            {{ $item->symbol }}
+                            @if ($item->pivot->extraPrice > 0)
+                            | + {{ \App\Money::PLN($item->pivot->extraPrice) }}
+                            @endif
+                        </small>
+                    </div>
+                </a>
+                @endforeach
+            </div>
+        @endforeach
+    </div>
 </div>
 @endsection
 

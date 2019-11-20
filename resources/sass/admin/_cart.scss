@@ -1,7 +1,3 @@
-.order {
-  margin: 0 30px;
-}
-
 .cart {
   &__item {
     display: flex;
@@ -44,13 +40,5 @@
         height: 50%;
       }
     }
-  }
-}
-
-@media (min-width: $break) {
-  .order {
-    display: grid;
-    grid-template-columns: 1fr 1.2fr;
-    grid-gap: 20px;
   }
 }

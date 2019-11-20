@@ -25,9 +25,6 @@
                     </div>
                     <small>
                         {{ $item->symbol }}
-                        @if ($item->category)
-                            - {{ $item->category->name }}
-                        @endif
                     </small>
                 </div>
             </li>

@@ -12,7 +12,7 @@ class ItemController extends Controller
 {
     public function index()
     {
-        $items = Item::all();
+        $items = Item::orderBy('symbol')->get();
 
         return response()->view('admin/items/index', [
             'user' => Auth::user(),

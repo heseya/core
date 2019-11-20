@@ -20,6 +20,17 @@ class CreateProductSchemasTable extends Migration
             $table->boolean('required')->default(0);
             $table->timestamps();
         });
+
+        Schema::create('product_schema_item', function (Blueprint $table) {
+            $table->increments('id');
+            $table->float('extraPrice', 8, 2);
+
+            $table->integer('product_schema_id')->unsigned()->index();
+            $table->foreign('product_schema_id')->references('id')->on('product_schemas')->onDelete('cascade');
+
+            $table->integer('item_id')->unsigned()->index();
+            $table->foreign('item_id')->references('id')->on('items')->onDelete('cascade');
+        });
     }
 
     /**
@@ -30,5 +41,6 @@ class CreateProductSchemasTable extends Migration
     public function down()
     {
         Schema::dropIfExists('product_schemas');
+        Schema::dropIfExists('product_schema_item');
     }
 }
