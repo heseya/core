@@ -3,7 +3,12 @@
 @section('title', $product->name)
 
 @section('buttons')
-
+<button onclick="window.confirmModal(
+        'Czy na pewno chcesz usunąć {{ $product->name }}?',
+        '/admin/products/{{ $product->id }}/delete'
+    )" class="top-nav--button">
+    <img class="icon" src="/img/icons/trash.svg">
+</button>
 @endsection
 
 @section('content')

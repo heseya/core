@@ -81,4 +81,11 @@ class ProductController extends Controller
 
         return redirect('/admin/products/' . $product->slug);
     }
+
+    public function delete(Product $product)
+    {
+        $product->delete();
+
+        return redirect('/admin/products');
+    }
 }

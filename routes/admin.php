@@ -11,6 +11,7 @@ Route::middleware('auth')->group(function () {
     Route::get('products/add', 'Admin\ProductController@addForm');
     Route::post('products/add', 'Admin\ProductController@store');
     Route::get('products/{slug}', 'Admin\ProductController@single');
+    Route::get('products/{product}/delete', 'Admin\ProductController@delete');
 
     Route::get('items', 'Admin\ItemController@index');
     Route::get('items/add', 'Admin\ItemController@addForm');
