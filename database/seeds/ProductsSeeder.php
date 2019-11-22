@@ -23,24 +23,28 @@ class ProductsSeeder extends Seeder
             'id' => 1,
             'name' => 'Depth',
             'slug' => 'depth',
+            'public' => 1,
         ]);
 
         Category::create([
             'id' => 1,
             'name' => 'Łańcuszki',
             'slug' => 'chains',
+            'public' => 1,
         ]);
 
         Category::create([
             'id' => 2,
             'name' => 'Sygnety',
             'slug' => 'rings',
+            'public' => 1,
         ]);
 
         Category::create([
             'id' => 3,
             'name' => 'Koszulki',
             'slug' => 'tees',
+            'public' => 1,
         ]);
 
         for ($i = 1; $i <= 10; $i++) {

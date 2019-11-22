@@ -18,11 +18,11 @@ class StaticController extends Controller
 
     public function categories()
     {
-        return response()->json(Category::all());
+        return response()->json(Category::where(['public' => 1])->get());
     }
 
     public function brands()
     {
-        return response()->json(Brand::all());
+        return response()->json(Brand::where(['public' => 1])->get());
     }
 }
