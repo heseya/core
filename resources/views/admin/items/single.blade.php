@@ -38,8 +38,8 @@
             @foreach ($item->schemas as $schema)
             <a href="/admin/products/{{ $schema->product->slug }}" class="cart__item">
                 <div class="cart__img">
-                @if ($schema->product->photos[0])
-                    <img src="{{ $schema->product->photos[0]->url }}">
+                @if ($schema->product->gallery[0])
+                    <img src="{{ $schema->product->gallery[0]->url }}">
                 @endif
                 </div>
                 <div class="cart__details">

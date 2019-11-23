@@ -20,7 +20,7 @@ class ProductController extends Controller
             'brand',
             'category',
             'gallery',
-        ])->get();
+        ])->paginate(20);
 
         return response()->json($products);
     }
