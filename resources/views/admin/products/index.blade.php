@@ -18,8 +18,8 @@
     @foreach ($products as $product)
         <a href="/admin/products/{{ $product->slug }}" class="product">
             <div class="product__img">
-                @if (isset($product->photos[0]))
-                    <img src="{{ $product->photos[0]->url }}" />
+                @if (isset($product->gallery[0]))
+                    <img src="{{ $product->gallery[0]->url }}" />
                 @endif
             </div>
             <div class="flex">

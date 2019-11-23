@@ -23,7 +23,7 @@ class ProductController extends Controller
         ])->with([
             'brand',
             'category',
-            'photos',
+            'gallery',
         ])->get();
 
         return response()->view('admin/products/index', [
@@ -37,7 +37,7 @@ class ProductController extends Controller
         $product = Product::where(['slug' => $slug])->with([
             'brand',
             'category',
-            'photos',
+            'gallery',
         ])->first();
 
         if (empty($product)) {

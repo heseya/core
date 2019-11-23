@@ -30,14 +30,13 @@ class CreateProductsTable extends Migration
             $table->foreign('brand_id')->references('id')->on('brands')->onDelete('restrict');
         });
 
-        Schema::create('photo_product', function (Blueprint $table) {
+        Schema::create('product_gallery', function (Blueprint $table) {
             $table->increments('id');
-
-            $table->integer('photo_id')->unsigned()->index();
-            $table->foreign('photo_id')->references('id')->on('photos')->onDelete('cascade');
 
             $table->integer('product_id')->unsigned()->index();
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
+
+            $table->morphs('media');
         });
     }
 

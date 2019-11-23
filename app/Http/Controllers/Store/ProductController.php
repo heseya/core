@@ -19,7 +19,7 @@ class ProductController extends Controller
         ])->with([
             'brand',
             'category',
-            'photos',
+            'gallery',
         ])->get();
 
         return response()->json($products);
@@ -30,12 +30,13 @@ class ProductController extends Controller
         $product = Product::where(['slug' => $slug])->with([
             'brand',
             'category',
-            'photos',
         ])->first();
 
         if (empty($product)) {
             abort(404);
         }
+
+        $product->gallery;
 
         return response()->json($product);
     }

@@ -14,9 +14,9 @@
 @section('content')
 <div class="product-photos">
     <div class="gallery">
-        @foreach ($product->photos as $photo)
-            <div class="gallery__img" style="background-color: {{ $product->color }}">
-                <img src="{{ $photo->url }}">
+        @foreach ($product->gallery as $media)
+            <div class="gallery__img">
+                <img src="{{ $media->url }}">
             </div>
         @endforeach
     </div>

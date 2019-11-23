@@ -1,6 +1,7 @@
 <?php
 
 use App\Brand;
+use App\Photo;
 use App\Product;
 use App\Category;
 use Faker\Factory;
@@ -49,15 +50,37 @@ class ProductsSeeder extends Seeder
 
         for ($i = 1; $i <= 10; $i++) {
 
-            $name = $faker->productName();
+            $name = $faker->randomElement([
+                'Snake',
+                'Half-hearth',
+                'Doberman',
+                'Moon',
+                'Bat',
+                'Tribal',
+                'Hangskeleton',
+                'Coffin',
+            ]);
 
-            Product::create([
+            $product = Product::create([
                 'name' => $name,
-                'slug' => strtolower(str_replace(' ', '-', $name)),
+                'slug' => strtolower(str_replace(' ', '-', $name)) . '-' . rand(1, 999),
                 'price' => rand(100, 200),
                 'description' => $faker->paragraph(),
                 'brand_id' => 1,
                 'category_id' => rand(1, 3),
+            ]);
+
+            $product->gallery()->attach([
+                Photo::create([
+                    'url' => $faker->randomElement([
+                        'https://kupdepth.pl/img/products/174.jpeg',
+                        'https://kupdepth.pl/img/products/283.jpeg',
+                        'https://kupdepth.pl/img/products/275.jpeg',
+                        'https://kupdepth.pl/img/products/275.jpeg',
+                        'https://kupdepth.pl/img/products/275.jpeg',
+                        'https://kupdepth.pl/img/products/295.jpeg',
+                    ]),
+                ])->id
             ]);
         }
     }

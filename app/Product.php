@@ -3,7 +3,6 @@
 namespace App;
 
 use App\Brand;
-use App\Photo;
 use App\Category;
 use App\ProductSchema;
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +26,11 @@ class Product extends Model
         'updated_at',
     ];
 
+    public function gallery()
+    {
+        return $this->morphedByMany(Photo::class, 'media', 'product_gallery');
+    }
+
     public function brand()
     {
         return $this->belongsTo(Brand::class);
@@ -35,11 +39,6 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
-    }
-
-    public function photos()
-    {
-        return $this->belongsToMany(Photo::class);
     }
 
     public function shema()
