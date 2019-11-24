@@ -60,6 +60,13 @@
         </li>
     </a>
 
+    <li class="separator">Integracje</li>
+    <a href="/admin/settings/furgonetka">
+        <li class="clickable">
+            <img class="icon" src="/img/icons/delivery.svg">Furgonetka
+        </li>
+    </a>
+
     <li class="separator">Inne</li>
     <a href="https://gravatar.com/emails" target="_blank">
         <li class="clickable">

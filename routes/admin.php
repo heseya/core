@@ -47,6 +47,8 @@ Route::middleware('auth')->group(function () {
         Route::get('info', 'Admin\SettingsController@info');
         Route::get('notifications', 'Admin\SettingsController@notifications');
 
+        Route::get('furgonetka', 'Admin\SettingsController@furgonetka');
+
         Route::prefix('facebook')->group(function () {
             Route::get('/', 'FacebookController@settings');
             Route::get('login', 'FacebookController@login');

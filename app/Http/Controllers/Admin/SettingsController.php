@@ -140,4 +140,11 @@ class SettingsController extends Controller
 
         return redirect('/admin/settings/brands');
     }
+
+    public function furgonetka()
+    {
+        return response()->view('admin/settings/furgonetka', [
+            'user' => Auth::user(),
+        ]);
+    }
 }
