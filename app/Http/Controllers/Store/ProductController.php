@@ -3,13 +3,19 @@
 namespace App\Http\Controllers\Store;
 
 use App\Product;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::select([
+        $request->validate([
+            'brand' => 'integer',
+            'category' => 'integer',
+        ]);
+
+        $query = Product::select([
             'id',
             'name',
             'slug',
@@ -19,10 +25,19 @@ class ProductController extends Controller
         ])->with([
             'brand',
             'category',
-            'gallery',
-        ])->paginate(20);
+        ])->with(['gallery' => function ($q) {
+            $q->first();
+        }]);
 
-        return response()->json($products);
+        if ($request->brand) {
+            $query->where('brand_id', $request->brand);
+        }
+
+        if ($request->category) {
+            $query->where('category_id', $request->category);
+        }
+
+        return response()->json($query->paginate(20));
     }
 
     public function single($slug)
