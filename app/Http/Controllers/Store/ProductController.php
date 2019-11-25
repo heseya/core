@@ -45,13 +45,13 @@ class ProductController extends Controller
         $product = Product::where(['slug' => $slug])->with([
             'brand',
             'category',
+            'gallery',
+            'shema',
         ])->first();
 
         if (empty($product)) {
             abort(404);
         }
-
-        $product->gallery;
 
         return response()->json($product);
     }

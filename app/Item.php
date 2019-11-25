@@ -14,6 +14,13 @@ class Item extends Model
         'photo',
     ];
 
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+        'photo_id',
+        'symbol',
+    ];
+
     public function photo()
     {
         return $this->belongsTo(Photo::class);

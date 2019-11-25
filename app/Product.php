@@ -43,6 +43,6 @@ class Product extends Model
 
     public function shema()
     {
-        return $this->hasMany(ProductSchema::class);
+        return $this->hasMany(ProductSchema::class)->with('items');
     }
 }
