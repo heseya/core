@@ -1,7 +1,18 @@
 <?php
 
 // prefix /admin
+Auth::routes([
+    'login' => false,
+    'register' => false,
+    'logout' => false,
+    'verify' => false,
+]);
+Route::get('login', 'Admin\AuthController@showLoginForm');
+Route::post('login', 'Admin\AuthController@login');
+
 Route::middleware('auth')->group(function () {
+
+    Route::get('logout', 'Admin\AuthController@logout');
 
     Route::get('orders', 'Admin\OrderController@index');
     Route::get('orders/add', 'Admin\OrderController@addForm');
@@ -58,10 +69,6 @@ Route::middleware('auth')->group(function () {
             Route::get('set-page/{access_token}', 'FacebookController@setPage');
         });
     });
-
-    Route::get('logout', 'Admin\AuthController@logout');
 });
-
-Auth::routes(['register' => false, 'logout' => false, 'verify' => false]);
 
 Route::redirect('/', '/admin/orders', 302);

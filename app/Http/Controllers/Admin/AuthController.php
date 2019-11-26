@@ -23,11 +23,9 @@ class AuthController extends Controller
         $this->middleware('guest')->except('logout');
     }
 
-    public function login()
+    public function showLoginForm()
     {
-        return response()->view('admin/login', [
-            'user' => Auth::user(),
-        ]);
+        return response()->view('admin/auth/login');
     }
 
     public function logout()
