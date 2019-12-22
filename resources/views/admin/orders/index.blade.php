@@ -3,9 +3,7 @@
 @section('title', 'Zamówienia')
 
 @section('buttons')
-<a href="/admin/orders/add" class="top-nav--button">
-    <img class="icon" src="/img/icons/plus.svg">
-</a>
+
 @endsection
 
 @section('content')
@@ -27,8 +25,4 @@
         </a>
     @endforeach
 </ol>
-@endsection
-
-@section('scripts')
-
 @endsection

@@ -14,12 +14,18 @@
             <img src="/img/logo.png">
         </div>
 
-        <a href="/admin/products" class="nav--products"></a>
-        <a href="/admin/orders" class="nav--orders"></a>
-        <a href="/admin/chat" class="nav--chat"></a>
+        <a href="/admin/orders">
+            <img class="icon" src="/img/icons/orders.svg">
+        </a>
+        <a href="/admin/products">
+            <img class="icon" src="/img/icons/products.svg">
+        </a>
+        <a href="/admin/items">
+            <img class="icon" src="/img/icons/chest.svg">
+        </a>
     </nav>
 
-    <main id="main">
+    <main class="main">
         <nav class="top-nav">
             <div class="title">
                 <a href="/admin/settings" class="avatar">
@@ -48,6 +54,5 @@
     </div>
 
     <script src="{{ mix('js/admin.js') }}"></script>
-    @yield('scripts')
 </body>
 </html>

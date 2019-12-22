@@ -35,7 +35,7 @@ class SettingsController extends Controller
         $email = config('mail.address');
         $gravatar = md5(strtolower(trim($email)));
 
-        return response()->view('admin/settings/email', [
+        return response()->view('admin/settings/email/index', [
             'name' => config('mail.name'),
             'email' => $email,
             'gravatar' => $gravatar,
@@ -55,20 +55,20 @@ class SettingsController extends Controller
     {
         $accounts = User::all();
 
-        return response()->view('admin/settings/accounts', [
+        return response()->view('admin/settings/accounts/index', [
             'accounts' => $accounts,
             'user' => Auth::user(),
         ]);
     }
 
-    public function accountsAdd()
+    public function accountsCreateForm()
     {
-        return response()->view('admin/settings/accounts-add', [
+        return response()->view('admin/settings/accounts/create', [
             'user' => Auth::user(),
         ]);
     }
 
-    public function accountsStore()
+    public function accountsCreate()
     {
         $password = Str::random(10);
 
@@ -85,49 +85,42 @@ class SettingsController extends Controller
 
     public function categories()
     {
-        return response()->view('admin/settings/categories', [
+        return response()->view('admin/settings/categories/index', [
             'user' => Auth::user(),
             'categories' => Category::all(),
         ]);
     }
 
-    public function categoryAdd()
+    public function categoryCreateForm()
     {
-        return response()->view('admin/settings/category-add', [
+        return response()->view('admin/settings/categories/create', [
             'user' => Auth::user(),
         ]);
     }
 
-    public function categoryStore(Request $request)
+    public function categoryCreate(Request $request)
     {
         Category::create($request->all());
 
         return redirect('/admin/settings/categories');
     }
 
-    public function categoryUpdate(Request $request)
-    {
-        Category::update($request->all());
-
-        return redirect('/admin/settings/categories');
-    }
-
     public function brands()
     {
-        return response()->view('admin/settings/brands', [
+        return response()->view('admin/settings/brands/index', [
             'user' => Auth::user(),
             'brands' => Brand::all(),
         ]);
     }
 
-    public function brandAdd()
+    public function brandCreateForm()
     {
-        return response()->view('admin/settings/brand-add', [
+        return response()->view('admin/settings/brands/create', [
             'user' => Auth::user(),
         ]);
     }
 
-    public function brandStore(Request $request)
+    public function brandCreate(Request $request)
     {
         Brand::create($request->all());
 

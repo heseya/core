@@ -32,7 +32,7 @@ class ProductController extends Controller
         ]);
     }
 
-    public function single($slug)
+    public function view($slug)
     {
         $product = Product::where(['slug' => $slug])->with([
             'brand',
@@ -44,15 +44,15 @@ class ProductController extends Controller
             abort(404);
         }
 
-        return response()->view('admin/products/single', [
+        return response()->view('admin/products/view', [
             'product' => $product,
             'user' => Auth::user(),
         ]);
     }
 
-    public function addForm()
+    public function createForm()
     {
-        return response()->view('admin/products/add', [
+        return response()->view('admin/products/create', [
             'user' => Auth::user(),
             'brands' => Brand::all(),
             'categories' => Category::all(),
@@ -69,8 +69,16 @@ class ProductController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function create(Request $request)
     {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|unique:products',
+            'category_id' => 'required|integer',
+            'price' => 'required',
+            'vat' => 'required',
+        ]);
+
         $product = Product::create($request->all());
 
         foreach ($request->photos as $photo) {

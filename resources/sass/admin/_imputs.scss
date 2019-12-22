@@ -44,12 +44,16 @@ button {
     resize: vertical;
   }
 
-    &__color {
-        input {
-            width: 100%;
-            height: 37px;
-        }
+  &__color {
+    input {
+        width: 100%;
+        height: 37px;
     }
+  }
+
+  .error {
+    color: darkred;
+  }
 }
 
 .switch {
@@ -98,11 +102,11 @@ button {
   }
 
   &--second {
-      background: $grey-light;
-      color: black;
+    background: $grey-light;
+    color: black;
 
-      &:hover {
-        background: $grey;
-      }
+    &:hover {
+      background: $grey;
+    }
   }
 }

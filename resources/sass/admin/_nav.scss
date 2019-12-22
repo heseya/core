@@ -4,7 +4,7 @@
   bottom: 0;
   left: 0;
   height: 60px;
-  width: calc(100% - 30px);
+  width: 100%;
   padding: 0 15px;
   background: $white;
   box-shadow: 0px 0px 12px 0px rgba(64,64,64,0.30);
@@ -19,36 +19,13 @@
     height: 60px;
     width: 60px;
     border-radius: 12px;
-    background-size: 46%;
-    background-repeat: no-repeat;
-    background-position: center;
 
     &:hover {
       background-color: $grey-light;
     }
-  }
 
-  &--products {
-    background-image: url(/img/icons/products.svg);
-
-    &__selected {
-      background-image: url(/img/icons/products.svg);
-    }
-  }
-
-  &--orders {
-    background-image: url(/img/icons/orders.svg);
-
-    &__selected {
-      background-image: url(/img/icons/orders.svg);
-    }
-  }
-
-  &--chat {
-    background-image: url(/img/icons/chats.svg);
-
-    &__selected {
-      background-image: url(/img/icons/chats.svg);
+    img {
+      padding: 29%;
     }
   }
 
@@ -58,7 +35,6 @@
 }
 
 .top-nav {
-  margin: 30px;
   margin-top: 40px;
   margin-bottom: 20px;
   display: flex;

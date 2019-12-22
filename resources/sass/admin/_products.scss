@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-gap: 22px;
-  margin: 40px 30px;
+  margin: 40px 0;
 
   a {
     text-decoration: none;
@@ -40,10 +40,6 @@
       padding: 5px 5px 0 0;
     }
   }
-}
-
-.product-add, .product-photos {
-  margin: 0 30px;
 }
 
 .product-nav {
@@ -96,7 +92,6 @@
     border-top-right-radius: 26px;
 
     .content {
-      padding: 0 30px;
       padding-top: 30px;
     }
 

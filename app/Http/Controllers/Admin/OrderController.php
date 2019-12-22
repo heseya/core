@@ -38,18 +38,18 @@ class OrderController extends Controller
         ]);
     }
 
-    public function single(Order $order)
+    public function view(Order $order)
     {
-        return response()->view('admin/orders/single', [
+        return response()->view('admin/orders/view', [
             'order' => $order,
             'status' => new Status,
             'user' => Auth::user(),
         ]);
     }
 
-    public function addForm()
+    public function createForm()
     {
-        return response()->view('admin/orders/add', [
+        return response()->view('admin/orders/create', [
             'user' => Auth::user(),
         ]);
     }

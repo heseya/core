@@ -27,7 +27,7 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $middlewareGroups = [
-        'web' => [
+        'admin' => [
             \App\Http\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
@@ -41,7 +41,7 @@ class Kernel extends HttpKernel
             'throttle:60,1',
             'bindings',
 
-            \Barryvdh\Cors\HandleCors::class,
+            \Barryvdh\Cors\ServiceProvider::class,
         ],
     ];
 

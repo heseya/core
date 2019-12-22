@@ -20,23 +20,23 @@ class ItemController extends Controller
         ]);
     }
 
-    public function single(Item $item)
+    public function view(Item $item)
     {
-        return response()->view('admin/items/single', [
+        return response()->view('admin/items/view', [
             'user' => Auth::user(),
             'item' => $item,
         ]);
     }
 
-    public function addForm()
+    public function createForm()
     {
-        return response()->view('admin/items/add', [
+        return response()->view('admin/items/create', [
             'user' => Auth::user(),
             'categories' => Category::all(),
         ]);
     }
 
-    public function store(Request $request)
+    public function create(Request $request)
     {
         $product = Item::create($request->all());
         $product->photo()->associate($request->photos[0])->save();

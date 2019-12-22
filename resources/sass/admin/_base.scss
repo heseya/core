@@ -5,7 +5,8 @@ body {
 }
 
 main {
-  max-width: 960px;
+  max-width: 940px;
+  padding: 0 20px;
   margin: 0 auto;
   margin-bottom: 80px;
 }
@@ -46,7 +47,7 @@ h1, h2, h3, h4, h5 {
 }
 
 .stats {
-  padding: 10px 30px 25px 30px;
+  padding: 10px 0 25px 0;
   width: clac(100% -60px);
 
   &__item {
@@ -201,6 +202,6 @@ h1, h2, h3, h4, h5 {
 
 @media (min-width: $break) {
   main {
-    padding: 0 0 0 70px;
+    padding: 0 20px 0 80px;
   }
 }

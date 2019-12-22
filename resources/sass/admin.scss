@@ -2,11 +2,7 @@
 /*! jedrzej@heseya.com */
 
 // Libs
-@import 'normalize';
-textarea, input, button {
-  outline: none;
-  -webkit-appearance: none;
-}
+@import "bulma";
 
 // Fonts
 @font-face{
@@ -23,7 +19,6 @@ textarea, input, button {
 @import 'admin/base';
 @import 'admin/nav';
 @import 'admin/list';
-@import 'admin/imputs';
 @import 'admin/login';
 @import 'admin/chat';
 @import 'admin/products';
@@ -32,6 +27,3 @@ textarea, input, button {
 @import 'admin/timeline';
 @import 'admin/modal';
 @import 'admin/utilities';
-
-// Dark mode
-@import 'admin/dark';

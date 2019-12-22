@@ -3,7 +3,7 @@
 @section('title', 'Magazyn')
 
 @section('buttons')
-<a href="/admin/items/add" class="top-nav--button">
+<a href="/admin/items/create" class="top-nav--button">
     <img class="icon" src="/img/icons/plus.svg">
 </a>
 @endsection
@@ -31,8 +31,4 @@
         </a>
     @endforeach
 </ol>
-@endsection
-
-@section('scripts')
-
 @endsection

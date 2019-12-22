@@ -1,37 +1,30 @@
 <?php
 
 // prefix /admin
-Auth::routes([
-    'login' => false,
-    'register' => false,
-    'logout' => false,
-    'verify' => false,
-]);
-Route::get('login', 'Admin\AuthController@showLoginForm');
+Route::get('login', 'Admin\AuthController@showLoginForm')->name('login');
 Route::post('login', 'Admin\AuthController@login');
+Route::get('logout', 'Admin\AuthController@logout');
 
 Route::middleware('auth')->group(function () {
 
-    Route::get('logout', 'Admin\AuthController@logout');
-
     Route::get('orders', 'Admin\OrderController@index');
-    Route::get('orders/add', 'Admin\OrderController@addForm');
-    Route::get('orders/{order}', 'Admin\OrderController@single');
+    Route::get('orders/add', 'Admin\OrderController@createForm');
+    Route::get('orders/{order}', 'Admin\OrderController@view');
 
     Route::get('products', 'Admin\ProductController@index');
-    Route::get('products/add', 'Admin\ProductController@addForm');
-    Route::post('products/add', 'Admin\ProductController@store');
-    Route::get('products/{slug}', 'Admin\ProductController@single');
+    Route::get('products/create', 'Admin\ProductController@createForm');
+    Route::post('products/create', 'Admin\ProductController@create');
+    Route::get('products/{slug}', 'Admin\ProductController@view');
     Route::get('products/{product}/delete', 'Admin\ProductController@delete');
 
     Route::get('items', 'Admin\ItemController@index');
-    Route::get('items/add', 'Admin\ItemController@addForm');
-    Route::post('items/add', 'Admin\ItemController@store');
-    Route::get('items/{item}', 'Admin\ItemController@single');
+    Route::get('items/add', 'Admin\ItemController@createForm');
+    Route::post('items/add', 'Admin\ItemController@create');
+    Route::get('items/{item}', 'Admin\ItemController@view');
     Route::get('items/{item}/delete', 'Admin\ItemController@delete');
 
     Route::get('chat', 'Admin\ChatController@index');
-    Route::get('chat/{chat}', 'Admin\ChatController@single');
+    Route::get('chat/{chat}', 'Admin\ChatController@view');
 
     Route::prefix('settings')->group(function () {
 
@@ -43,18 +36,17 @@ Route::middleware('auth')->group(function () {
         Route::get('email/test', 'Admin\SettingsController@emailTest');
 
         Route::get('categories', 'Admin\SettingsController@categories');
-        Route::get('categories/add', 'Admin\SettingsController@categoryAdd');
-        Route::post('categories/add', 'Admin\SettingsController@categoryStore');
-        Route::put('categories/add', 'Admin\SettingsController@categoryUpdate');
+        Route::get('categories/create', 'Admin\SettingsController@categoryCreateForm');
+        Route::post('categories/create', 'Admin\SettingsController@categoryCreate');
+        Route::put('categories/create', 'Admin\SettingsController@categoryUpdate');
 
         Route::get('brands', 'Admin\SettingsController@brands');
-        Route::get('brands/add', 'Admin\SettingsController@brandAdd');
-        Route::post('brands/add', 'Admin\SettingsController@brandStore');
-        Route::put('brands/add', 'Admin\SettingsController@brandUpdate');
+        Route::get('brands/create', 'Admin\SettingsController@brandCreateForm');
+        Route::post('brands/create', 'Admin\SettingsController@brandCreate');
 
         Route::get('accounts', 'Admin\SettingsController@accounts');
-        Route::get('accounts/add', 'Admin\SettingsController@accountsAdd');
-        Route::post('accounts/add', 'Admin\SettingsController@accountsStore');
+        Route::get('accounts/create', 'Admin\SettingsController@accountsCreateForm');
+        Route::post('accounts/create', 'Admin\SettingsController@accountsCreate');
         Route::get('info', 'Admin\SettingsController@info');
         Route::get('notifications', 'Admin\SettingsController@notifications');
 

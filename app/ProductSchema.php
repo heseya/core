@@ -26,7 +26,7 @@ class ProductSchema extends Model
     public function items()
     {
         return $this->belongsToMany(Item::class, 'product_schema_item')
-            ->withPivot('extraPrice')
+            ->withPivot('extra_price')
             ->orderBy('symbol');
     }
 }

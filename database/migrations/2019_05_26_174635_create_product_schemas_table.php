@@ -23,7 +23,7 @@ class CreateProductSchemasTable extends Migration
 
         Schema::create('product_schema_item', function (Blueprint $table) {
             $table->increments('id');
-            $table->float('extraPrice', 8, 2);
+            $table->float('extra_price', 8, 2);
 
             $table->integer('product_schema_id')->unsigned()->index();
             $table->foreign('product_schema_id')->references('id')->on('product_schemas')->onDelete('cascade');

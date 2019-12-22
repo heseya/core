@@ -25,9 +25,9 @@ class ChatController extends Controller
         ]);
     }
 
-    public function single(Chat $chat)
+    public function view(Chat $chat)
     {
-        return response()->view('admin/chat/single', [
+        return response()->view('admin/chat/view', [
             'user' => Auth::user(),
             'chat' => $chat,
             'messages' => $chat->messages,
