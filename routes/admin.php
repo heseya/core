@@ -18,8 +18,8 @@ Route::middleware('auth')->group(function () {
     Route::get('products/{product}/delete', 'Admin\ProductController@delete');
 
     Route::get('items', 'Admin\ItemController@index');
-    Route::get('items/add', 'Admin\ItemController@createForm');
-    Route::post('items/add', 'Admin\ItemController@create');
+    Route::get('items/create', 'Admin\ItemController@createForm');
+    Route::post('items/create', 'Admin\ItemController@create');
     Route::get('items/{item}', 'Admin\ItemController@view');
     Route::get('items/{item}/delete', 'Admin\ItemController@delete');
 

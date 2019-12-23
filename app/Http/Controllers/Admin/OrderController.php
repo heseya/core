@@ -13,28 +13,12 @@ class OrderController extends Controller
     {
         $orders = Order::select('id', 'code', 'email', 'payment_status', 'shop_status', 'delivery_status', 'created_at', 'delivery_address')
             ->orderBy('created_at', 'desc')
-            ->get();
-
-        $status = new Status;
-
-        foreach ($orders as $order) {
-            $ordersFormat[] = [
-                'id' => $order->id,
-                'title' => $order->deliveryAddress->name ?? $order->code,
-                'email' => $order->email,
-                'sum' => number_format(rand(5000, 20000) / 100, 2, ',', ' ') . ' zł',
-                'created_at' => $order->created_at,
-                'status' => [
-                    'payment' => $status->payment_status[$order->payment_status]['color'],
-                    'shop' => $status->shop_status[$order->shop_status]['color'],
-                    'delivery' => $status->delivery_status[$order->delivery_status]['color'],
-                ],
-            ];
-        }
+            ->paginate(20);
 
         return response()->view('admin/orders/index', [
             'user' => Auth::user(),
-            'orders' => $ordersFormat ?? [],
+            'orders' => $orders,
+            'status' => new Status,
         ]);
     }
 

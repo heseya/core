@@ -33,14 +33,10 @@
             </div>
         </div>
         <div class="column">
-            <p>Zdjęcie</p>
+            <label class="label" for="name">Zdjęcie</label>
             <div id="tabs" class="gallery"></div>
         </div>
     </div>
-    <button class="button sto sto-mobile">Dodaj</button>
+    <button class="button is-black">Dodaj</button>
 </form>
-@endsection
-
-@section('scripts')
-<script src="/js/gallery.js"></script>
 @endsection

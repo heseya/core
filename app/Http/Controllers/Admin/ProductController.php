@@ -24,7 +24,7 @@ class ProductController extends Controller
             'brand',
             'category',
             'gallery',
-        ])->get();
+        ])->paginate(20);
 
         return response()->view('admin/products/index', [
             'user' => Auth::user(),

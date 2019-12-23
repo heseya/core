@@ -3,15 +3,19 @@
     display: flex;
     align-items: center;
     height: 50px;
-    padding: 7px 0 !important;
-    margin: 0 !important;
+    margin: 10px 0;
   }
 
   &__summary {
     display: grid;
     grid-template-columns: 1fr 1fr;
     font-size: 30px;
-    margin: 0 !important;
+    margin: 0;
+  }
+
+  &__small {
+    font-size: 14px;
+    color: #4a4a4a;
   }
 
   &__img {

@@ -12,7 +12,8 @@ class ItemController extends Controller
 {
     public function index()
     {
-        $items = Item::orderBy('symbol')->get();
+        $items = Item::orderBy('symbol')
+            ->paginate(20);
 
         return response()->view('admin/items/index', [
             'user' => Auth::user(),

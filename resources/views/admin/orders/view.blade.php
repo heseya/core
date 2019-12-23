@@ -61,10 +61,10 @@
         @endif
     </div>
 
-    <div class="cart column is-half">
-        <h3 class="margin--left">Koszyk</h3>
-        <div class="list">
-            <li class="cart__item">
+    <div class="column is-half">
+        <h3>Koszyk</h3>
+        <div class="cart">
+            <div class="cart__item">
                 <div class="cart__img">
                     <img src="//source.unsplash.com/collection/1085173/50x50?1">
                 </div>
@@ -72,35 +72,37 @@
                     <div>Nazwa produktu</div>
                     <small>200,00 zł</small>
                 </div>
-            </li>
-            <li class="cart__item">
+            </div>
+            <div class="cart__item">
                 <div class="cart__img">
                     <img src="//source.unsplash.com/collection/1085173/50x50?2">
                 </div>
                 <div class="cart__details">
-                    <div>Nazwa produktu <small>x 2</small></div>
+                    <div class="cart__name">Nazwa produktu
+                        <small class="cart__small">x 2</small>
+                    </div>
                     <small>200,00 zł</small>
                 </div>
-            </li>
-            <li class="cart__item">
-                    <div class="cart__img cart__img--delivery">
-                        <img src="/img/icons/delivery.svg">
-                    </div>
+            </div>
+            <div class="cart__item">
+                <div class="cart__img cart__img--delivery">
+                    <img src="/img/icons/delivery.svg">
+                </div>
                 <div class="cart__details">
                     <div>Dostawa</div>
                     <small>17,00 zł</small>
                 </div>
-            </li>
-            <li class="cart__summary">
+            </div>
+            <div class="cart__summary">
                 <div>
-                    <small>łącznie</small>
+                    <small class="cart__small">łącznie</small>
                     <div>100,00 zł</div>
                 </div>
                 <div>
-                    <small>koszt produkcji</small>
+                    <small class="cart__small">koszt produkcji</small>
                     <div>32,00 zł</div>
                 </div>
-            </li>
+            </div>
         </div>
     </div>
 

@@ -31,4 +31,7 @@
         </a>
     @endforeach
 </ol>
+
+<br>
+{{ $items->links() }}
 @endsection
