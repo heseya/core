@@ -25,7 +25,7 @@
             <div class="field">
                 <label class="label" for="slug">Link</label>
                 <div class="control">
-                    <input name="slug" class="input @error('slug') is-danger @enderror" required autocomplete="off" value="{{ old('slug') }}">
+                    <input name="slug" pattern="[a-z0-9]+(?:-[a-z0-9]+)" class="input @error('slug') is-danger @enderror" required autocomplete="off" value="{{ old('slug') }}">
                 </div>
                 @error('slug')
                     <p class="help is-danger">{{ $message }}</p>
@@ -49,7 +49,7 @@
             </div>
 
             <div class="field">
-                <label class="label" for="category_id">Marka</label>
+                <label class="label" for="category_id">Kategoria</label>
                 <div class="control">
                     <div class="select is-fullwidth">
                         <select name="category_id">
@@ -63,36 +63,40 @@
                     <p class="help is-danger">{{ $message }}</p>
                 @enderror
             </div>
+
         </div>
         <div class="column">
-            <div class="grid grid--2 grid--no-margin">
 
-                <div class="field">
-                    <label class="label" for="price">Cena brutto</label>
-                    <div class="control">
-                        <input name="price" class="input @error('price') is-danger @enderror" required autocomplete="off" value="{{ old('price') }}">
-                    </div>
-                    @error('price')
-                        <p class="help is-danger">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div class="field">
-                    <label class="label" for="vat">VAT</label>
-                    <div class="control">
-                        <div class="select is-fullwidth">
-                            <select name="vat">
-                            @foreach($taxes as $tax)
-                                <option value="{{ $tax['id'] }}">{{ $tax['name'] }}</option>
-                            @endforeach
-                            </select>
+            <div class="columns">
+                <div class="column">
+                    <div class="field">
+                        <label class="label" for="price">Cena brutto</label>
+                        <div class="control">
+                            <input type="number" step="0.01" name="price" class="input @error('price') is-danger @enderror" required autocomplete="off" value="{{ old('price') }}">
                         </div>
+                        @error('price')
+                            <p class="help is-danger">{{ $message }}</p>
+                        @enderror
                     </div>
-                    @error('vat')
-                        <p class="help is-danger">{{ $message }}</p>
-                    @enderror
                 </div>
 
+                <div class="column">
+                    <div class="field">
+                        <label class="label" for="vat">VAT</label>
+                        <div class="control">
+                            <div class="select is-fullwidth">
+                                <select name="vat">
+                                @foreach($taxes as $tax)
+                                    <option value="{{ $tax['id'] }}">{{ $tax['name'] }}</option>
+                                @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        @error('vat')
+                            <p class="help is-danger">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
             </div>
 
             <div class="field">

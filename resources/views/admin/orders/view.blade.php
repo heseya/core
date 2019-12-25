@@ -45,19 +45,20 @@
 <div class="columns is-multiline">
     <div class="column is-half">
         @if ($order->deliveryAddress)
-        <h3>Adres dostawy</h3>
-        <div>{{ $order->deliveryAddress->name }}</div>
-        <div>{{ $order->deliveryAddress->address }}</div>
-        <div>{{ $order->deliveryAddress->zip }} {{ $order->deliveryAddress->city }}</div>
-        <div>{{ $order->deliveryAddress->country }}</div>
+            <h3>Adres dostawy</h3>
+            <div>{{ $order->deliveryAddress->name }}</div>
+            <div>{{ $order->deliveryAddress->address }}</div>
+            <div>{{ $order->deliveryAddress->zip }} {{ $order->deliveryAddress->city }}</div>
+            <div>{{ $order->deliveryAddress->country }}</div>
+            <br>
         @endif
 
         @if ($order->invoiceAddress)
-        <h3>Dane do faktury</h3>
-        <div>{{ $order->invoiceAddress->name }}</div>
-        <div>{{ $order->invoiceAddress->address }}</div>
-        <div>{{ $order->invoiceAddress->zip }} {{ $order->invoiceAddress->city }}</div>
-        <div>{{ $order->invoiceAddress->country }}</div>
+            <h3>Dane do faktury</h3>
+            <div>{{ $order->invoiceAddress->name }}</div>
+            <div>{{ $order->invoiceAddress->address }}</div>
+            <div>{{ $order->invoiceAddress->zip }} {{ $order->invoiceAddress->city }}</div>
+            <div>{{ $order->invoiceAddress->country }}</div>
         @endif
     </div>
 
@@ -98,10 +99,10 @@
                     <small class="cart__small">łącznie</small>
                     <div>100,00 zł</div>
                 </div>
-                <div>
+                {{-- <div>
                     <small class="cart__small">koszt produkcji</small>
                     <div>32,00 zł</div>
-                </div>
+                </div> --}}
             </div>
         </div>
     </div>

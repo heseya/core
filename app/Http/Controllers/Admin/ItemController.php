@@ -39,8 +39,16 @@ class ItemController extends Controller
 
     public function create(Request $request)
     {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'symbol' => 'required|string|unique:items',
+        ]);
+
         $product = Item::create($request->all());
-        $product->photo()->associate($request->photos[0])->save();
+
+        if(isset($request->photos[0]) && $request->photos[0] !== null) {
+            $product->photo()->associate($request->photos[0])->save();
+        }
 
         return redirect('/admin/items/' . $product->id);
     }

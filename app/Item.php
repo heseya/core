@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Category;
 use App\ProductSchema;
 use Illuminate\Database\Eloquent\Model;
 
@@ -11,15 +12,20 @@ class Item extends Model
         'name',
         'symbol',
         'qty',
-        'photo',
+        'category_id',
     ];
 
     protected $hidden = [
+        'category_id',
+        'photo_id',
         'created_at',
         'updated_at',
-        'photo_id',
-        'symbol',
     ];
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
 
     public function photo()
     {

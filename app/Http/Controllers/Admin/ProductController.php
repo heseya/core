@@ -65,6 +65,18 @@ class ProductController extends Controller
                     'id' => 1,
                     'name' => '8%',
                 ],
+                [
+                    'id' => 2,
+                    'name' => '5%',
+                ],
+                [
+                    'id' => 3,
+                    'name' => '0%',
+                ],
+                [
+                    'id' => 4,
+                    'name' => 'zw',
+                ],
             ],
         ]);
     }
@@ -73,7 +85,7 @@ class ProductController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|unique:products',
+            'slug' => 'required|string|unique:products|regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
             'category_id' => 'required|integer',
             'price' => 'required',
             'vat' => 'required',
@@ -83,7 +95,9 @@ class ProductController extends Controller
 
         foreach ($request->photos as $photo) {
             if ($photo !== null) {
-                $product->photos()->attach($photo);
+                $product->gallery()->attach($photo, [
+                    'media_type' => 'photo'
+                ]);
             }
         }
 

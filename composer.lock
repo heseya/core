@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4829c6143336ac3d12c7880b55e484ee",
+    "content-hash": "520e962152e338c0975ca89ec37281f8",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -63,12 +63,12 @@
             "version": "v0.11.4",
             "source": {
                 "type": "git",
-                "url": "https://github.com/barryvdh/laravel-cors.git",
+                "url": "https://github.com/fruitcake/laravel-cors.git",
                 "reference": "03492f1a3bc74a05de23f93b94ac7cc5c173eec9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/barryvdh/laravel-cors/zipball/03492f1a3bc74a05de23f93b94ac7cc5c173eec9",
+                "url": "https://api.github.com/repos/fruitcake/laravel-cors/zipball/03492f1a3bc74a05de23f93b94ac7cc5c173eec9",
                 "reference": "03492f1a3bc74a05de23f93b94ac7cc5c173eec9",
                 "shasum": ""
             },
@@ -665,16 +665,16 @@
         },
         {
             "name": "filp/whoops",
-            "version": "2.5.1",
+            "version": "2.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filp/whoops.git",
-                "reference": "ee9699e79d8fcdd15c107e035d7b965e4fa854ac"
+                "reference": "ecbc8f3ed2cafca3cfca3d5febaae5a9d2899508"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filp/whoops/zipball/ee9699e79d8fcdd15c107e035d7b965e4fa854ac",
-                "reference": "ee9699e79d8fcdd15c107e035d7b965e4fa854ac",
+                "url": "https://api.github.com/repos/filp/whoops/zipball/ecbc8f3ed2cafca3cfca3d5febaae5a9d2899508",
+                "reference": "ecbc8f3ed2cafca3cfca3d5febaae5a9d2899508",
                 "shasum": ""
             },
             "require": {
@@ -683,8 +683,8 @@
             },
             "require-dev": {
                 "mockery/mockery": "^0.9 || ^1.0",
-                "phpunit/phpunit": "^4.8.35 || ^5.7",
-                "symfony/var-dumper": "^2.6 || ^3.0 || ^4.0"
+                "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.0",
+                "symfony/var-dumper": "^2.6 || ^3.0 || ^4.0 || ^5.0"
             },
             "suggest": {
                 "symfony/var-dumper": "Pretty print complex values better with var-dumper available",
@@ -693,7 +693,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.2-dev"
+                    "dev-master": "2.5-dev"
                 }
             },
             "autoload": {
@@ -722,7 +722,7 @@
                 "throwable",
                 "whoops"
             ],
-            "time": "2019-12-21T10:00:00+00:00"
+            "time": "2019-12-25T10:00:00+00:00"
         },
         {
             "name": "jakub-onderka/php-console-color",
@@ -814,16 +814,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v6.0.4",
+            "version": "v6.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "372e0add8a58e0e3deb78f87cbb2dc40d3e0ff08"
+                "reference": "60610be97ca389fa4b959d4d13fb3690970d9fb7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/372e0add8a58e0e3deb78f87cbb2dc40d3e0ff08",
-                "reference": "372e0add8a58e0e3deb78f87cbb2dc40d3e0ff08",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/60610be97ca389fa4b959d4d13fb3690970d9fb7",
+                "reference": "60610be97ca389fa4b959d4d13fb3690970d9fb7",
                 "shasum": ""
             },
             "require": {
@@ -919,7 +919,8 @@
                 "league/flysystem-sftp": "Required to use the Flysystem SFTP driver (^1.0).",
                 "moontoast/math": "Required to use ordered UUIDs (^1.1).",
                 "pda/pheanstalk": "Required to use the beanstalk queue driver (^4.0).",
-                "pusher/pusher-php-server": "Required to use the Pusher broadcast driver (^3.0).",
+                "psr/http-message": "Required to allow Storage::put to accept a StreamInterface (^1.0).",
+                "pusher/pusher-php-server": "Required to use the Pusher broadcast driver (^4.0).",
                 "symfony/cache": "Required to PSR-6 cache bridge (^4.3.4).",
                 "symfony/psr-http-message-bridge": "Required to use PSR-7 bridging features (^1.2).",
                 "wildbit/swiftmailer-postmark": "Required to use Postmark mail driver (^3.0)."
@@ -955,7 +956,7 @@
                 "framework",
                 "laravel"
             ],
-            "time": "2019-09-24T13:40:36+00:00"
+            "time": "2019-12-19T18:16:22+00:00"
         },
         {
             "name": "laravel/tinker",
@@ -1103,6 +1104,52 @@
                 "storage"
             ],
             "time": "2019-12-08T21:46:50+00:00"
+        },
+        {
+            "name": "mashape/unirest-php",
+            "version": "v3.0.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Mashape/unirest-php.git",
+                "reference": "842c0f242dfaaf85f16b72e217bf7f7c19ab12cb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Mashape/unirest-php/zipball/842c0f242dfaaf85f16b72e217bf7f7c19ab12cb",
+                "reference": "842c0f242dfaaf85f16b72e217bf7f7c19ab12cb",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "codeclimate/php-test-reporter": "0.1.*",
+                "phpunit/phpunit": "~4.4"
+            },
+            "suggest": {
+                "ext-json": "Allows using JSON Bodies for sending and parsing requests"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Unirest\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Unirest PHP",
+            "homepage": "https://github.com/Mashape/unirest-php",
+            "keywords": [
+                "client",
+                "curl",
+                "http",
+                "https",
+                "rest"
+            ],
+            "time": "2016-08-11T17:49:21+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -3595,52 +3642,6 @@
             "time": "2016-01-20T08:20:44+00:00"
         },
         {
-            "name": "mashape/unirest-php",
-            "version": "v3.0.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Mashape/unirest-php.git",
-                "reference": "842c0f242dfaaf85f16b72e217bf7f7c19ab12cb"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Mashape/unirest-php/zipball/842c0f242dfaaf85f16b72e217bf7f7c19ab12cb",
-                "reference": "842c0f242dfaaf85f16b72e217bf7f7c19ab12cb",
-                "shasum": ""
-            },
-            "require": {
-                "ext-curl": "*",
-                "php": ">=5.4.0"
-            },
-            "require-dev": {
-                "codeclimate/php-test-reporter": "0.1.*",
-                "phpunit/phpunit": "~4.4"
-            },
-            "suggest": {
-                "ext-json": "Allows using JSON Bodies for sending and parsing requests"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "Unirest\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "Unirest PHP",
-            "homepage": "https://github.com/Mashape/unirest-php",
-            "keywords": [
-                "client",
-                "curl",
-                "http",
-                "https",
-                "rest"
-            ],
-            "time": "2016-08-11T17:49:21+00:00"
-        },
-        {
             "name": "mbezhanov/faker-provider-collection",
             "version": "1.2.1",
             "source": {
@@ -5177,7 +5178,7 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": "^7.1.3"
+        "php": "^7.2"
     },
     "platform-dev": []
 }

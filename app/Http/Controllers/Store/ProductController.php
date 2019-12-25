@@ -25,9 +25,10 @@ class ProductController extends Controller
         ])->with([
             'brand',
             'category',
-        ])->with(['gallery' => function ($q) {
-            $q->first();
-        }]);
+            'gallery' => function ($q) {
+                $q->first();
+            },
+        ]);
 
         if ($request->brand) {
             $query->where('brand_id', $request->brand);

@@ -20,9 +20,11 @@ class CreateItemsTable extends Migration
             $table->string('name');
             $table->string('symbol', 128)->index();
             $table->integer('qty')->unsigned()->default(0);
+            $table->smallInteger('category_id')->index()->unsigned()->nullable();
             $table->integer('photo_id')->unsigned()->index()->nullable();
             $table->timestamps();
 
+            $table->foreign('category_id')->references('id')->on('categories')->onDelete('restrict');
             $table->foreign('photo_id')->references('id')->on('photos')->onDelete('set null');
         });
     }

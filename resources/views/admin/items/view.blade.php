@@ -21,6 +21,12 @@
         <img class="icon" src="/img/icons/chest.svg">
         {{ $item->qty }} szt.
     </div>
+    @if ($item->category)
+        <div class="stats__item">
+            <img class="icon" src="/img/icons/list.svg">
+            {{ $item->category->name }}
+        </div>
+    @endif
 </div>
 
 <div class="columns is-multiline">

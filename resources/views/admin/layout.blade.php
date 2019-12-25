@@ -46,8 +46,8 @@
         <form id="modal-form" class="modal__body">
             <h3 id="modal-title"></h3>
             <div class="grid grid--two grid--no-margin">
-                <button class="button button--second sto" type="button" onclick="closeModal()">Nie</button>
-                <button class="button sto">Tak</button>
+                <button class="button" type="button" onclick="closeModal()">Nie</button>
+                <button class="button is-black">Tak</button>
             </div>
         </form>
         <div class="modal__bg" onclick="closeModal()"></div>

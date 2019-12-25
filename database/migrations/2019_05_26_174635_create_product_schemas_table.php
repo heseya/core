@@ -19,6 +19,8 @@ class CreateProductSchemasTable extends Migration
             $table->string('name');
             $table->boolean('required')->default(0);
             $table->timestamps();
+
+            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         });
 
         Schema::create('product_schema_item', function (Blueprint $table) {

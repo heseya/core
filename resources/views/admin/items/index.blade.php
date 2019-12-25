@@ -9,7 +9,7 @@
 @endsection
 
 @section('content')
-<ol id="chats" class="list list--chat">
+<ol class="list list--chat">
     @foreach ($items as $item)
         <a href="/admin/items/{{ $item->id }}">
             <li class="clickable">

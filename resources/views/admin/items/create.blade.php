@@ -31,6 +31,24 @@
                     <p class="help is-danger">{{ $message }}</p>
                 @enderror
             </div>
+
+            <div class="field">
+                <label class="label" for="category_id">Kategoria</label>
+                <div class="control">
+                    <div class="select is-fullwidth">
+                        <select name="category_id">
+                            <option value="null">- brak -</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                @error('category_id')
+                    <p class="help is-danger">{{ $message }}</p>
+                @enderror
+            </div>
+
         </div>
         <div class="column">
             <label class="label" for="name">Zdjęcie</label>
