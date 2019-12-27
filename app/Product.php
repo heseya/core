@@ -2,9 +2,6 @@
 
 namespace App;
 
-use App\Brand;
-use App\Category;
-use App\ProductSchema;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
@@ -15,11 +12,13 @@ class Product extends Model
         'price',
         'description',
         'public',
+        'tax_id',
         'brand_id',
         'category_id',
     ];
 
     protected $hidden = [
+        'tax_id',
         'brand_id',
         'category_id',
         'created_at',
@@ -29,6 +28,11 @@ class Product extends Model
     public function gallery()
     {
         return $this->morphedByMany(Photo::class, 'media', 'product_gallery');
+    }
+
+    public function tax()
+    {
+        return $this->belongsTo(Tax::class);
     }
 
     public function brand()

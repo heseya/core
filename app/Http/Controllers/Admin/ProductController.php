@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use Auth;
+use App\Tax;
 use App\Brand;
 use App\Product;
 use App\Category;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 
 class ProductController extends Controller
@@ -27,57 +29,23 @@ class ProductController extends Controller
         ])->paginate(20);
 
         return response()->view('admin/products/index', [
-            'user' => Auth::user(),
             'products' => $products,
         ]);
     }
 
-    public function view($slug)
+    public function view(Product $product)
     {
-        $product = Product::where(['slug' => $slug])->with([
-            'brand',
-            'category',
-            'gallery',
-        ])->first();
-
-        if (empty($product)) {
-            abort(404);
-        }
-
         return response()->view('admin/products/view', [
             'product' => $product,
-            'user' => Auth::user(),
         ]);
     }
 
     public function createForm()
     {
-        return response()->view('admin/products/create', [
-            'user' => Auth::user(),
+        return response()->view('admin/products/form', [
             'brands' => Brand::all(),
             'categories' => Category::all(),
-            'taxes' => [
-                [
-                    'id' => 0,
-                    'name' => '23%',
-                ],
-                [
-                    'id' => 1,
-                    'name' => '8%',
-                ],
-                [
-                    'id' => 2,
-                    'name' => '5%',
-                ],
-                [
-                    'id' => 3,
-                    'name' => '0%',
-                ],
-                [
-                    'id' => 4,
-                    'name' => 'zw',
-                ],
-            ],
+            'taxes' => Tax::all(),
         ]);
     }
 
@@ -88,7 +56,6 @@ class ProductController extends Controller
             'slug' => 'required|string|unique:products|regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
             'category_id' => 'required|integer',
             'price' => 'required',
-            'vat' => 'required',
         ]);
 
         $product = Product::create($request->all());
@@ -102,6 +69,43 @@ class ProductController extends Controller
         }
 
         return redirect('/admin/products/' . $product->slug);
+    }
+
+    public function updateForm(Product $product)
+    {
+        return response()->view('admin/products/form', [
+            'product' => $product,
+            'brands' => Brand::all(),
+            'categories' => Category::all(),
+            'taxes' => Tax::all(),
+        ]);
+    }
+
+    public function update(Product $product, Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'category_id' => 'required|integer',
+            'price' => 'required',
+            'slug' => [
+                'required',
+                'string',
+                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+                Rule::unique('products')->ignore($product->slug, 'slug'),
+            ],
+        ]);
+
+        $product->update($request->all());
+
+        foreach ($request->photos as $photo) {
+            if ($photo !== null) {
+                $product->gallery()->attach($photo, [
+                    'media_type' => 'photo'
+                ]);
+            }
+        }
+
+        return redirect('/admin/products/' . $product->id);
     }
 
     public function delete(Product $product)

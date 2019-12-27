@@ -20,7 +20,6 @@ class ChatController extends Controller
         }
 
         return response()->view('admin/chat/index', [
-            'user' => Auth::user(),
             'chats' => $chats,
         ]);
     }
@@ -28,7 +27,6 @@ class ChatController extends Controller
     public function view(Chat $chat)
     {
         return response()->view('admin/chat/view', [
-            'user' => Auth::user(),
             'chat' => $chat,
             'messages' => $chat->messages,
             'client' => $chat->client,

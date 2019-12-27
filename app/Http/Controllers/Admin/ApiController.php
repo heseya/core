@@ -31,7 +31,7 @@ class ApiController extends Controller
         $response = Unirest\Request::post(config('cdn.host'), config('cdn.headers'), $body);
 
         $photo = Photo::create([
-            'url' => config('cdn.host') . '/' . $response->body[0]->id
+            'url' => config('cdn.host') . '/' . $response->body[0]->id,
         ]);
 
         return $photo->id;

@@ -17,7 +17,6 @@ class FurgonetkaController extends Controller
     {
         // temp
 
-
         // $request->validate([
         //     'package_id' => 'required',
         //     'package_no' => 'required',
@@ -51,7 +50,7 @@ class FurgonetkaController extends Controller
 
         $order = Order::where('delivery_tracking', $request->package_no)->first();
 
-        if (! empty($order)) {
+        if (!empty($order)) {
 
             // Brak powiadomienia bo furgonetka musi dostać status ok jak hash się zgadza
             // return response()->json([

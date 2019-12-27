@@ -1,5 +1,6 @@
 <?php
 
+use App\Tax;
 use App\Brand;
 use App\Photo;
 use App\Product;
@@ -20,10 +21,29 @@ class ProductsSeeder extends Seeder
         $faker = Factory::create('pl_PL');
         ProviderCollectionHelper::addAllProvidersTo($faker);
 
+        Tax::create([
+            'id' => 1,
+            'name' => '23%',
+            'value' => 23,
+        ]);
+
+        Tax::create([
+            'id' => 2,
+            'name' => '8%',
+            'value' => 8,
+        ]);
+
         Brand::create([
             'id' => 1,
             'name' => 'Depth',
             'slug' => 'depth',
+            'public' => 1,
+        ]);
+
+        Brand::create([
+            'id' => 2,
+            'name' => 'Depth Steel',
+            'slug' => 'depth-steel',
             'public' => 1,
         ]);
 
@@ -66,6 +86,7 @@ class ProductsSeeder extends Seeder
                 'slug' => strtolower(str_replace(' ', '-', $name)) . '-' . rand(1, 999),
                 'price' => rand(100, 200),
                 'description' => $faker->paragraph(),
+                'tax_id' => rand(1, 2),
                 'brand_id' => 1,
                 'category_id' => rand(1, 3),
             ]);

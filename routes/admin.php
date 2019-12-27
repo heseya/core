@@ -14,13 +14,17 @@ Route::middleware('auth')->group(function () {
     Route::get('products', 'Admin\ProductController@index');
     Route::get('products/create', 'Admin\ProductController@createForm');
     Route::post('products/create', 'Admin\ProductController@create');
-    Route::get('products/{slug}', 'Admin\ProductController@view');
+    Route::get('products/{product}', 'Admin\ProductController@view');
+    Route::get('products/{product}/update', 'Admin\ProductController@updateForm');
+    Route::post('products/{product}/update', 'Admin\ProductController@update');
     Route::get('products/{product}/delete', 'Admin\ProductController@delete');
 
     Route::get('items', 'Admin\ItemController@index');
     Route::get('items/create', 'Admin\ItemController@createForm');
     Route::post('items/create', 'Admin\ItemController@create');
     Route::get('items/{item}', 'Admin\ItemController@view');
+    Route::get('items/{item}/update', 'Admin\ItemController@updateForm');
+    Route::post('items/{item}/update', 'Admin\ItemController@update');
     Route::get('items/{item}/delete', 'Admin\ItemController@delete');
 
     Route::get('chat', 'Admin\ChatController@index');

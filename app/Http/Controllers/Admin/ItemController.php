@@ -6,33 +6,30 @@ use Auth;
 use App\Item;
 use App\Category;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 
 class ItemController extends Controller
 {
     public function index()
     {
-        $items = Item::orderBy('symbol')
-            ->paginate(20);
+        $items = Item::orderBy('symbol')->paginate(20);
 
-        return response()->view('admin/items/index', [
-            'user' => Auth::user(),
+        return view('admin/items/index', [
             'items' => $items,
         ]);
     }
 
     public function view(Item $item)
     {
-        return response()->view('admin/items/view', [
-            'user' => Auth::user(),
+        return view('admin/items/view', [
             'item' => $item,
         ]);
     }
 
     public function createForm()
     {
-        return response()->view('admin/items/create', [
-            'user' => Auth::user(),
+        return view('admin/items/form', [
             'categories' => Category::all(),
         ]);
     }
@@ -44,13 +41,41 @@ class ItemController extends Controller
             'symbol' => 'required|string|unique:items',
         ]);
 
-        $product = Item::create($request->all());
+        $item = Item::create($request->all());
 
-        if(isset($request->photos[0]) && $request->photos[0] !== null) {
-            $product->photo()->associate($request->photos[0])->save();
+        if (isset($request->photos[0]) && $request->photos[0] !== null) {
+            $item->photo()->associate($request->photos[0])->save();
         }
 
-        return redirect('/admin/items/' . $product->id);
+        return redirect('/admin/items/' . $item->id);
+    }
+
+    public function updateForm(Item $item)
+    {
+        return view('admin/items/form', [
+            'item' => $item,
+            'categories' => Category::all(),
+        ]);
+    }
+
+    public function update(Item $item, Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'symbol' => [
+                'required',
+                'string',
+                Rule::unique('items')->ignore($item->symbol, 'symbol'),
+            ],
+        ]);
+
+        $item->update($request->all());
+
+        if (isset($request->photos[0]) && $request->photos[0] !== null) {
+            $item->photo()->associate($request->photos[0])->save();
+        }
+
+        return redirect('/admin/items/' . $item->id);
     }
 
     public function delete(Item $item)

@@ -25,9 +25,7 @@ class SettingsController extends Controller
 
     public function info()
     {
-        return response()->view('admin/settings/info', [
-            'user' => Auth::user(),
-        ]);
+        return response()->view('admin/settings/info');
     }
 
     public function email()
@@ -39,7 +37,6 @@ class SettingsController extends Controller
             'name' => config('mail.name'),
             'email' => $email,
             'gravatar' => $gravatar,
-            'user' => Auth::user(),
             'imap' => extension_loaded('imap'),
         ]);
     }
@@ -57,26 +54,30 @@ class SettingsController extends Controller
 
         return response()->view('admin/settings/accounts/index', [
             'accounts' => $accounts,
-            'user' => Auth::user(),
         ]);
     }
 
     public function accountsCreateForm()
     {
-        return response()->view('admin/settings/accounts/create', [
-            'user' => Auth::user(),
-        ]);
+        return response()->view('admin/settings/accounts/create');
     }
 
-    public function accountsCreate()
+    public function accountsCreate(Request $request)
     {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|unique:users|email',
+        ]);
+
         $password = Str::random(10);
 
-        Mail::to($_POST['email'])->send(new NewAdmin($_POST['email'], $password));
+        Mail::to($request->email)->send(
+            new NewAdmin($request->email, $password)
+        );
 
         User::create([
-            'name' => $_POST['name'],
-            'email' => $_POST['email'],
+            'name' => $request->name,
+            'email' => $request->email,
             'password' => Hash::make($password),
         ]);
 
@@ -86,20 +87,22 @@ class SettingsController extends Controller
     public function categories()
     {
         return response()->view('admin/settings/categories/index', [
-            'user' => Auth::user(),
             'categories' => Category::all(),
         ]);
     }
 
     public function categoryCreateForm()
     {
-        return response()->view('admin/settings/categories/create', [
-            'user' => Auth::user(),
-        ]);
+        return response()->view('admin/settings/categories/create');
     }
 
     public function categoryCreate(Request $request)
     {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|unique:categories|regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+        ]);
+
         Category::create($request->all());
 
         return redirect('/admin/settings/categories');
@@ -108,20 +111,22 @@ class SettingsController extends Controller
     public function brands()
     {
         return response()->view('admin/settings/brands/index', [
-            'user' => Auth::user(),
             'brands' => Brand::all(),
         ]);
     }
 
     public function brandCreateForm()
     {
-        return response()->view('admin/settings/brands/create', [
-            'user' => Auth::user(),
-        ]);
+        return response()->view('admin/settings/brands/create');
     }
 
     public function brandCreate(Request $request)
     {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|unique:brands|regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+        ]);
+
         Brand::create($request->all());
 
         return redirect('/admin/settings/brands');
@@ -136,8 +141,6 @@ class SettingsController extends Controller
 
     public function furgonetka()
     {
-        return response()->view('admin/settings/furgonetka', [
-            'user' => Auth::user(),
-        ]);
+        return response()->view('admin/settings/furgonetka');
     }
 }

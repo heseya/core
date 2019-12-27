@@ -3,6 +3,9 @@
 @section('title', $product->name)
 
 @section('buttons')
+<a href="/admin/products/{{ $product->id }}/update" class="top-nav--button">
+    <img class="icon" src="/img/icons/pencil.svg">
+</a>
 <button onclick="window.confirmModal(
         'Czy na pewno chcesz usunąć {{ $product->name }}?',
         '/admin/products/{{ $product->id }}/delete'
@@ -12,6 +15,22 @@
 @endsection
 
 @section('content')
+<div class="stats">
+    <div class="stats__item">
+        <img class="icon" src="/img/icons/shield.svg">
+        {{ $product->brand->name }}
+    </div>
+    <div class="stats__item">
+        <img class="icon" src="/img/icons/list.svg">
+        {{ $product->category->name }}
+    </div>
+    <div class="stats__item">
+        <img class="icon" src="/img/icons/tax.svg">
+        {{ $product->tax->name }}
+    </div>
+</div>
+
+
 <div class="product-photos">
     <div class="gallery">
         @foreach ($product->gallery as $media)

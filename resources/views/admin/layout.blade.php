@@ -29,7 +29,7 @@
         <nav class="top-nav">
             <div class="title">
                 <a href="/admin/settings" class="avatar">
-                    <img src="{{ $user->avatar() }}">
+                    <img src="{{ Auth::user()->avatar() }}">
                 </a>
                 <h1>@yield('title')</h1>
             </div>

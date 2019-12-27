@@ -16,7 +16,6 @@ class OrderController extends Controller
             ->paginate(20);
 
         return response()->view('admin/orders/index', [
-            'user' => Auth::user(),
             'orders' => $orders,
             'status' => new Status,
         ]);
@@ -27,14 +26,11 @@ class OrderController extends Controller
         return response()->view('admin/orders/view', [
             'order' => $order,
             'status' => new Status,
-            'user' => Auth::user(),
         ]);
     }
 
     public function createForm()
     {
-        return response()->view('admin/orders/create', [
-            'user' => Auth::user(),
-        ]);
+        return response()->view('admin/orders/create');
     }
 }

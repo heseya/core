@@ -3,6 +3,9 @@
 @section('title', $item->name)
 
 @section('buttons')
+<a href="/admin/items/{{ $item->id }}/update" class="top-nav--button">
+    <img class="icon" src="/img/icons/pencil.svg">
+</a>
 <button onclick="window.confirmModal(
         'Czy na pewno chcesz usunąć {{ $item->name }}?',
         '/admin/items/{{ $item->id }}/delete'
