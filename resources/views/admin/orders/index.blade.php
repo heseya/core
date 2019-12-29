@@ -17,7 +17,7 @@
                     </div>
                     <small>{{ $order->email }}</small>
                 </div>
-                <div class="sum">{{ number_format(rand(5000, 20000) / 100, 2, ',', ' ') . ' zł' }}</div>
+                <div class="sum">{{ number_format($order->summary(), 2, ',', ' ') }} zł</div>
                 <div class="status">
                     <div class="status-circle status-circle__{{ $status->payment_status[$order->payment_status]['color'] }}"></div>
                     <div class="status-circle status-circle__{{ $status->shop_status[$order->shop_status]['color'] }}"></div>

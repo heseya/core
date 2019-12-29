@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="{{ mix('css/admin.css') }}">
     <title>@yield('title') - {{ Config::get('app.name') }}</title>
+    @stack('head')
 </head>
 <body>
 

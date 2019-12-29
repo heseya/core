@@ -41,10 +41,13 @@
     </div>
 </div>
 
+<br>
 <div class="columns">
     <div class="column">
         <h2>{{ \App\Money::PLN($product->price) }}</h2>
-        <p>{{ $product->description }}</p>
+        <div class="content">
+            {!! $description !!}
+        </div>
     </div>
 
     <div class="column cart">

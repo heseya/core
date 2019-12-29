@@ -197,8 +197,19 @@ class InitDatabase extends Migration
         Schema::create('order_items', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
-            $table->integer('shema_id');
+            $table->string('symbol')->nullable();
+            $table->float('qty', 8, 4);
+            $table->float('price', 8, 2);
+            $table->nestedSet();
             $table->timestamps();
+        });
+
+        Schema::create('order_order_item', function (Blueprint $table) {
+            $table->integer('order_id')->unsigned()->index();
+            $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
+
+            $table->bigInteger('order_item_id')->unsigned()->index();
+            $table->foreign('order_item_id')->references('id')->on('order_items')->onDelete('cascade');
         });
     }
 
@@ -228,5 +239,6 @@ class InitDatabase extends Migration
         Schema::dropIfExists('order_logs');
         Schema::dropIfExists('messages');
         Schema::dropIfExists('order_items');
+        Schema::dropIfExists('order_order_item');
     }
 }

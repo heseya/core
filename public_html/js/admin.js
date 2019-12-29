@@ -97,13 +97,7 @@ __webpack_require__(/*! ./admin/modal.js */ "./resources/js/admin/modal.js");
 
 __webpack_require__(/*! ./admin/gallery.js */ "./resources/js/admin/gallery.js");
 
-__webpack_require__(/*! ./admin/status.js */ "./resources/js/admin/status.js");
-
 __webpack_require__(/*! ./admin/dark.js */ "./resources/js/admin/dark.js");
-
-window.toBottom = function () {
-  window.scrollTo(0, document.body.scrollHeight);
-};
 
 /***/ }),
 
@@ -490,67 +484,6 @@ window.confirmModal = function (title, url) {
   document.getElementById('modal-form').action = url;
   modal.classList.remove('modal--hidden');
 };
-
-/***/ }),
-
-/***/ "./resources/js/admin/status.js":
-/*!**************************************!*\
-  !*** ./resources/js/admin/status.js ***!
-  \**************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-document.getElementById('payment_status').addEventListener('change', function (event) {
-  if (confirm('Czy na pewno chcesz zmienić status płatności?')) {
-    fetch('/api/admin/status', {
-      method: 'POST',
-      // or 'PUT'
-      body: JSON.stringify({
-        order_id: window.order_id,
-        type: 'payment',
-        status: event.target.value
-      }),
-      // data can be `string` or {object}!
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-  }
-});
-document.getElementById('shop_status').addEventListener('change', function (event) {
-  if (confirm('Czy na pewno chcesz zmienić status zanówienia?')) {
-    fetch('/api/admin/status', {
-      method: 'POST',
-      // or 'PUT'
-      body: JSON.stringify({
-        order_id: window.order_id,
-        type: 'shop',
-        status: event.target.value
-      }),
-      // data can be `string` or {object}!
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-  }
-});
-document.getElementById('delivery_status').addEventListener('change', function (event) {
-  if (confirm('Czy na pewno chcesz zmienić status dostawy?')) {
-    fetch('/api/admin/status', {
-      method: 'POST',
-      // or 'PUT'
-      body: JSON.stringify({
-        order_id: window.order_id,
-        type: 'delivery',
-        status: event.target.value
-      }),
-      // data can be `string` or {object}!
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-  }
-});
 
 /***/ }),
 

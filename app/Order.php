@@ -15,6 +15,26 @@ class Order extends Model
         'delivery_status',
     ];
 
+    public function summary()
+    {
+        $value = 0;
+
+        foreach ($this->items as $item) {
+            $value += $item->price;
+
+            foreach ($item->descendants as $subItem) {
+                $value += $subItem->price;
+            }
+        }
+
+        return $value;
+    }
+
+    public function items()
+    {
+        return $this->belongsToMany(OrderItem::class, 'order_order_item');
+    }
+
     public function deliveryAddress()
     {
         return $this->hasOne(Address::class, 'id', 'delivery_address');

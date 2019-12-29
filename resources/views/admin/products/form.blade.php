@@ -25,7 +25,7 @@
             <div class="field">
                 <label class="label" for="slug">Link</label>
                 <div class="control">
-                    <input name="slug" pattern="[a-z0-9]+(?:-[a-z0-9]+)?" class="input @error('slug') is-danger @enderror" required autocomplete="off" value="{{ old('slug') ?? $product->slug ?? '' }}">
+                    <input name="slug" class="input @error('slug') is-danger @enderror" required autocomplete="off" value="{{ old('slug') ?? $product->slug ?? '' }}">
                 </div>
                 @error('slug')
                     <p class="help is-danger">{{ $message }}</p>
@@ -113,6 +113,7 @@
                 @error('description')
                     <p class="help is-danger">{{ $message }}</p>
                 @enderror
+                <small>MD supported <a target="_blank" href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet">[?]</a></small>
             </div>
         </div>
     </div>
@@ -124,9 +125,21 @@
             <br><button class="button is-black">Zapisz</button>
         </div>
     </div>
-
-    <div class="">
-
-    </div>
 </form>
+
 @endsection
+
+{{-- @push('head')
+    <script>
+        window.oldPhotos = [
+            @if (isset($product))
+            @foreach ($product->gallery as $photo)
+                {
+                    url: "{{ $photo->url }}",
+                    id: "{{ $photo->id }}"
+                },
+            @endforeach
+            @endif
+        ];
+    </script>
+@endpush --}}

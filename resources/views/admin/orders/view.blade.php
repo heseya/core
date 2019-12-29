@@ -65,44 +65,40 @@
     <div class="column is-half">
         <h3>Koszyk</h3>
         <div class="cart">
-            <div class="cart__item">
-                <div class="cart__img">
-                    <img src="//source.unsplash.com/collection/1085173/50x50?1">
-                </div>
-                <div class="cart__details">
-                    <div>Nazwa produktu</div>
-                    <small>200,00 zł</small>
-                </div>
-            </div>
-            <div class="cart__item">
-                <div class="cart__img">
-                    <img src="//source.unsplash.com/collection/1085173/50x50?2">
-                </div>
-                <div class="cart__details">
-                    <div class="cart__name">Nazwa produktu
-                        <small class="cart__small">x 2</small>
+            @foreach ($order->items as $item)
+                <div class="cart__item">
+                    <div class="cart__details">
+                        <div>
+                            {{ $item->name }}
+                            @if ($item->qty != 1)
+                                <small class="cart__small">
+                                    x {{ $item->qty }}
+                                </small>
+                            @endif
+                        </div>
+                        <small>{{ number_format($item->price, 2, ',', ' ') }} zł</small>
+                        <div class="cart__subitem">
+                            @foreach ($item->descendants as $subItem)
+                                &nbsp;&nbsp;&nbsp;&nbsp;
+                                {{ $subItem->name }}
+                                @if ($subItem->qty != 1)
+                                    <small class="cart__small">
+                                        x {{ $subItem->qty }}
+                                    </small>
+                                @endif
+                                @if ($subItem->price != 0)
+                                    <small>{{ number_format($subItem->price, 2, ',', ' ') }} zł</small>
+                                @endif
+                            @endforeach
+                        </div>
                     </div>
-                    <small>200,00 zł</small>
                 </div>
-            </div>
-            <div class="cart__item">
-                <div class="cart__img cart__img--delivery">
-                    <img src="/img/icons/delivery.svg">
-                </div>
-                <div class="cart__details">
-                    <div>Dostawa</div>
-                    <small>17,00 zł</small>
-                </div>
-            </div>
+            @endforeach
             <div class="cart__summary">
                 <div>
                     <small class="cart__small">łącznie</small>
-                    <div>100,00 zł</div>
+                    <div>{{ number_format($order->summary(), 2, ',', ' ') }} zł</div>
                 </div>
-                {{-- <div>
-                    <small class="cart__small">koszt produkcji</small>
-                    <div>32,00 zł</div>
-                </div> --}}
             </div>
         </div>
     </div>
