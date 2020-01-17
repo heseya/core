@@ -71,10 +71,10 @@
     <div class="column is-half">
         <h3>Koszyk</h3>
         <br>
-        <div class="cart">
+        <div class="menu">
             @foreach ($order->items as $item)
-                <div class="cart__item">
-                    <div class="cart__details">
+                <ul class="menu-list">
+                    <li>
                         <b>
                             {{ $item->name }}
                             @if ($item->qty != 1)
@@ -84,22 +84,24 @@
                             @endif
                         </b>
                         <small>{{ number_format($item->price, 2, ',', ' ') }} zł</small>
-                        @foreach ($item->descendants as $subItem)
-                            <div class="cart__subitem">
-                                &nbsp;&nbsp;&nbsp;&nbsp;
-                                {{ $subItem->name }}
-                                @if ($subItem->qty != 1)
-                                    <small class="cart__small">
-                                        x {{ $subItem->qty }}
-                                    </small>
-                                @endif
-                                @if ($subItem->price != 0)
-                                    <small>{{ number_format($subItem->price, 2, ',', ' ') }} zł</small>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
+                        <ul>
+                            @foreach ($item->descendants as $subItem)
+                                <li>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;
+                                    {{ $subItem->name }}
+                                    @if ($subItem->qty != 1)
+                                        <small class="cart__small">
+                                            x {{ $subItem->qty }}
+                                        </small>
+                                    @endif
+                                    @if ($subItem->price != 0)
+                                        <small>{{ number_format($subItem->price, 2, ',', ' ') }} zł</small>
+                                    @endif
+                                    </li>
+                            @endforeach
+                        </ul>
+                    </li>
+                </ul>
             @endforeach
             <div class="cart__summary">
                 <div>

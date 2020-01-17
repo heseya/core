@@ -33,6 +33,14 @@ class Order extends Model
         return $value;
     }
 
+    public function saveItems($items)
+    {
+        foreach ($items as $item) {
+            $item = OrderItem::create($item);
+            $this->items()->save($item);
+        }
+    }
+
     public function items()
     {
         return $this->belongsToMany(OrderItem::class, 'order_order_item');

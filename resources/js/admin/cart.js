@@ -1,6 +1,6 @@
 window.cartItems = 0
 
-window.addItem = ($id, depth = 0) => {
+window.addItem = ($id, depth = 0, parent = 'items') => {
 
     window.cartItems++;
 
@@ -14,7 +14,7 @@ window.addItem = ($id, depth = 0) => {
             '<div class="field">' +
                 '<label class="label">Symbol</label>' +
                 '<div class="control">' +
-                    '<input name="itemSymbol[]" class="input">' +
+                    '<input name="' + parent + '[' + window.cartItems + '][symbol]" class="input">' +
                 '</div>' +
             '</div>' +
         '</div>' +
@@ -22,7 +22,7 @@ window.addItem = ($id, depth = 0) => {
             '<div class="field">' +
                 '<label class="label">Nazwa</label>' +
                 '<div class="control">' +
-                    '<input name="itemName[]" class="input">' +
+                    '<input name="' + parent + '[' + window.cartItems + '][name]" class="input" required>' +
                 '</div>' +
             '</div>' +
         '</div>' +
@@ -30,7 +30,7 @@ window.addItem = ($id, depth = 0) => {
             '<div class="field">' +
                 '<label class="label">Ilość</label>' +
                 '<div class="control">' +
-                    '<input name="itemQty[]" class="input">' +
+                    '<input name="' + parent + '[' + window.cartItems + '][qty]" class="input" required>' +
                 '</div>' +
             '</div>' +
         '</div>' +
@@ -38,13 +38,13 @@ window.addItem = ($id, depth = 0) => {
             '<div class="field">' +
                 '<label class="label">Cena</label>' +
                 '<div class="control">' +
-                    '<input name="itemValue[]" class="input">' +
+                    '<input name="' + parent + '[' + window.cartItems + '][price]" class="input" required>' +
                 '</div>' +
             '</div>' +
         '</div>' +
         '<div class="column is-1">' +
             '<div class="buttons">' +
-                '<button class="button is-small" type="button" onclick="window.addItem(`subItem' + window.cartItems + '`, ' + (depth + 1) + ')">' +
+                '<button class="button is-small" type="button" onclick="window.addItem(`subItem' + window.cartItems + '`, ' + (depth + 1) + ', `' + parent + '[' + window.cartItems + '][children]`)">' +
                     '<span class="icon is-small">' +
                         '<img src="/img/icons/plus.svg">' +
                     '</span>' +

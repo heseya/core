@@ -37,13 +37,20 @@ class OrderController extends Controller
 
     public function create(Request $request)
     {
-        dd($request);
+        $request->validate([
+            'email' => 'required|email',
+            'code' => 'required|max:16',
+            // 'client_id' => 'exists:clients,id',
+            'deliveryAddress.country' => 'string|size:2',
+        ]);
 
         $order = new Order($request->all());
 
         $deliveryAddress = $order->deliveryAddress()->firstOrCreate($request->deliveryAddress);
         $order->delivery_address = $deliveryAddress->id;
         $order->save();
+        $order->saveItems($request->items);
+
 
         // logi
         $order->logs()->create([
