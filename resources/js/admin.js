@@ -1,4 +1,4 @@
 require('./admin/modal.js')
-require('./admin/gallery.js');
+require('./admin/cart.js')
 
 require('./admin/dark.js')

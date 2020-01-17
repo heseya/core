@@ -120,7 +120,6 @@ class Tabs {
     }
 }
 
-
 let tabs = new Tabs('#tabs')
 window.oldpictures = []
 
@@ -243,8 +242,6 @@ window.addPicture = (container) => {
 }
 
 addPicture(document.getElementById('tabs'))
-
-
 class Tab {
   constructor (content, id, callback) {
       this.id = id

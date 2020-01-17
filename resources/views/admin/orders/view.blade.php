@@ -3,9 +3,15 @@
 @section('title', 'Zamówienie ' . $order->code)
 
 @section('buttons')
-{{-- <a href="/admin/orders/{{ $order->id }}/invoice" class="top-nav--button">
-  <img class="icon" src="/img/icons/file.svg">
+{{-- <a href="/admin/orders/{{ $order->id - 1 }}" class="top-nav--button">
+    <img class="icon" src="/img/icons/left.svg">
+</a>
+<a href="/admin/orders/{{ $order->id + 1 }}" class="top-nav--button">
+    <img class="icon" src="/img/icons/right.svg">
 </a> --}}
+<a href="/admin/orders/{{ $order->id }}/update" class="top-nav--button">
+    <img class="icon" src="/img/icons/pencil.svg">
+</a>
 @endsection
 
 @section('content')
@@ -64,21 +70,22 @@
 
     <div class="column is-half">
         <h3>Koszyk</h3>
+        <br>
         <div class="cart">
             @foreach ($order->items as $item)
                 <div class="cart__item">
                     <div class="cart__details">
-                        <div>
+                        <b>
                             {{ $item->name }}
                             @if ($item->qty != 1)
                                 <small class="cart__small">
                                     x {{ $item->qty }}
                                 </small>
                             @endif
-                        </div>
+                        </b>
                         <small>{{ number_format($item->price, 2, ',', ' ') }} zł</small>
-                        <div class="cart__subitem">
-                            @foreach ($item->descendants as $subItem)
+                        @foreach ($item->descendants as $subItem)
+                            <div class="cart__subitem">
                                 &nbsp;&nbsp;&nbsp;&nbsp;
                                 {{ $subItem->name }}
                                 @if ($subItem->qty != 1)
@@ -89,8 +96,8 @@
                                 @if ($subItem->price != 0)
                                     <small>{{ number_format($subItem->price, 2, ',', ' ') }} zł</small>
                                 @endif
-                            @endforeach
-                        </div>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             @endforeach

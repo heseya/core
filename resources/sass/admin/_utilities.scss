@@ -66,3 +66,8 @@
     width: auto;
   }
 }
+
+.is-justify-between {
+  -webkit-box-pack: justify;
+  justify-content: space-between;
+}

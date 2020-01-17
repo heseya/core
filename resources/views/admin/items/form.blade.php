@@ -31,9 +31,6 @@
                     <p class="help is-danger">{{ $message }}</p>
                 @enderror
             </div>
-
-
-
         </div>
         <div class="column">
             <label class="label" for="name">Zdjęcie</label>
@@ -42,4 +39,6 @@
     </div>
     <button class="button is-black">Zapisz</button>
 </form>
+
+<script src="/js/gallery.js"></script>
 @endsection

@@ -112,12 +112,12 @@ class InitDatabase extends Migration
 
         Schema::create('addresses', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name');
-            $table->string('phone', 20);
-            $table->string('address');
-            $table->string('zip', 16);
-            $table->string('city');
-            $table->string('country', 2);
+            $table->string('name')->nullable();
+            $table->string('phone', 20)->nullable();
+            $table->string('address')->nullable();
+            $table->string('zip', 16)->nullable();
+            $table->string('city')->nullable();
+            $table->string('country', 2)->nullable();
             $table->timestamps();
         });
 

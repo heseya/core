@@ -71,7 +71,7 @@
         </div>
         <div class="column">
 
-            <div class="columns">
+            <div class="columns has-no-margin-bottom">
                 <div class="column">
                     <div class="field">
                         <label class="label" for="price">Cena brutto</label>
@@ -127,6 +127,7 @@
     </div>
 </form>
 
+<script src="/js/gallery.js"></script>
 @endsection
 
 {{-- @push('head')

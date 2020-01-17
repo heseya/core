@@ -8,11 +8,14 @@ class Order extends Model
 {
     protected $fillable = [
         'code',
+        'email',
+        'client_id',
         'payment',
         'payment_status',
         'shop_status',
         'delivery',
         'delivery_status',
+        'delivery_tracking',
     ];
 
     public function summary()

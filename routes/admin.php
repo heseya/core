@@ -8,8 +8,11 @@ Route::get('logout', 'Admin\AuthController@logout');
 Route::middleware('auth')->group(function () {
 
     Route::get('orders', 'Admin\OrderController@index');
-    Route::get('orders/add', 'Admin\OrderController@createForm');
+    Route::get('orders/create', 'Admin\OrderController@createForm');
+    Route::post('orders/create', 'Admin\OrderController@create');
     Route::get('orders/{order}', 'Admin\OrderController@view');
+    Route::get('orders/{order}/update', 'Admin\OrderController@updateForm');
+    Route::post('orders/{order}/update', 'Admin\OrderController@update');
 
     Route::get('products', 'Admin\ProductController@index');
     Route::get('products/create', 'Admin\ProductController@createForm');

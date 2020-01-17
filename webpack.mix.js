@@ -14,4 +14,5 @@ const mix = require('laravel-mix');
 
 mix.setPublicPath('public_html/')
    .js('resources/js/admin.js', 'js')
+   .js('resources/js/admin/gallery.js', 'js')
    .sass('resources/sass/admin.scss', 'css');
