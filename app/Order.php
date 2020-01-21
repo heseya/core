@@ -23,10 +23,10 @@ class Order extends Model
         $value = 0;
 
         foreach ($this->items as $item) {
-            $value += $item->price;
+            $value += $item->price * $item->qty;
 
             foreach ($item->descendants as $subItem) {
-                $value += $subItem->price;
+                $value += $subItem->price * $item->qty;
             }
         }
 
