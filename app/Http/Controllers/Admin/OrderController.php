@@ -12,9 +12,7 @@ class OrderController extends Controller
 {
     public function index()
     {
-        $orders = Order::select('id', 'code', 'email', 'payment_status', 'shop_status', 'delivery_status', 'created_at', 'delivery_address')
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
+        $orders = Order::orderBy('created_at', 'desc')->paginate(20);
 
         return view('admin/orders/index', [
             'orders' => $orders,
@@ -51,7 +49,6 @@ class OrderController extends Controller
         $order->save();
         $order->saveItems($request->items);
 
-
         // logi
         $order->logs()->create([
             'content' => 'Utworzenie zamówienia.',
@@ -76,6 +73,8 @@ class OrderController extends Controller
         $deliveryAddress = $order->deliveryAddress()->firstOrCreate($request->deliveryAddress);
         $order->delivery_address = $deliveryAddress->id;
         $order->save();
+        $order->items()->delete();
+        $order->saveItems($request->items);
 
         // logi
         $order->logs()->create([

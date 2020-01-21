@@ -22,7 +22,7 @@
                                 <div class="field">
                                     <label class="label" for="error">E-mail</label>
                                     <div class="control">
-                                        <input name="email" type="email" class="input @error('email') is-danger @enderror" required value="{{ old('email') }}">
+                                        <input name="email" type="email" class="input @error('email') is-danger @enderror" required value="{{ old('email') }}" autofocus>
                                     </div>
                                     @error('email')
                                         <p class="help is-danger">{{ $message }}</p>
@@ -41,7 +41,7 @@
 
                                 <div class="checkbox">
                                     <label for="remember">
-                                        <input type="checkbox" class="checkbox" name="remember">
+                                        <input name="remember" id="remember" type="checkbox" class="checkbox">
                                         Zapamiętaj mnie
                                     </label>
                                 </div>
