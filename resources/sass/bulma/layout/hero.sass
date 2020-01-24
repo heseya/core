@@ -10,6 +10,10 @@
   .tabs
     ul
       border-bottom: none
+  &.has-image
+    background: url('/img/bg.jpg') center center
+    background-size: cover
+
   // Colors
   @each $name, $pair in $colors
     $color: nth($pair, 1)
