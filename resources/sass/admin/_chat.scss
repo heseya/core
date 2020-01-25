@@ -1,42 +1,6 @@
-.chat-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: calc(100% - 30px);
-  padding: 15px;
-  background: $white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  text-align: center;
-
-  .avatar {
-    height: 36px;
-    border-radius: 6px;
-  }
-
-  small {
-    color: $grey;
-  }
-
-  a {
-    height: 36px;
-    width: 36px;
-
-    img {
-      margin: 7px;
-      height: 22px;
-      width: 22px;
-    }
-  }
-}
-
 .chat {
-  max-width: $break;
-  margin: auto;
   font-size: 15px;
   margin-bottom: 80px;
-  padding: 70px 20px 0 20px;
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
@@ -81,50 +45,12 @@
 
 .response {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  width: calc(100% - 40px);
-  margin: 20px;
-  background: $white;
-  border: 1px solid $grey;
-  border-radius: 24px;
-
-  textarea {
-    font-family: $font;
-    font-size: 15px;
-    max-width: $break;
-    height: 32px;
-    margin: 0;
-    padding-top: 17px;
-    margin: 0 24px;
-    border: 0;
-    resize: none;
-  }
-
-  button {
-    position: absolute;
-    top: 5px;
-    right: 6px;
-    height: 38px;
-    width: 38px;
-    border: 0;
-    border-radius: 50%;
-    background: none;
-    cursor: pointer;
-    transition: .1s;
-
-    &:hover {
-      background: $grey-light;
-    }
-
-    img {
-      width: 100%;
-      height: 100%;
-    }
-  }
+  bottom: 20px;
+  width: 840px;
 }
 
 .unread {
+  color: #222;
   position: relative;
   margin-left: 13px;
 
@@ -134,9 +60,9 @@
     display: inline-block;
     height: 7px;
     width: 7px;
-    bottom: 6px;
+    bottom: 5px;
     left: -13px;
     border-radius: 50%;
-    background: #000;
+    background: $blue;
   }
 }

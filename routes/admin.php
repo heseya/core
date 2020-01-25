@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('chat', 'Admin\ChatController@index');
     Route::get('chat/{chat}', 'Admin\ChatController@view');
+    Route::post('chat/{chat}', 'Admin\ChatController@send');
 
     Route::prefix('settings')->group(function () {
 

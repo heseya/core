@@ -24,6 +24,9 @@
         <a href="/admin/items">
             <img class="icon" src="/img/icons/chest.svg">
         </a>
+        <a href="/admin/chat">
+            <img class="icon" src="/img/icons/chat.svg">
+        </a>
     </nav>
 
     <main class="main">

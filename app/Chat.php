@@ -33,7 +33,17 @@ class Chat extends Model
 
     public function snippet()
     {
-        return Str::limit('The quick brown fox jumps over the lazy dog', 40);
+        $message = $this->messages()->first();
+
+        if (empty($message)) {
+            return null;
+        }
+
+        if ($message->user_id === null) {
+            return '<spam class="unread">' . Str::limit($message->content, 40) . '</spam>';
+        }
+
+        return Str::limit($message->user->name . ': ' . $message->content, 40);
     }
 
     public function avatar()

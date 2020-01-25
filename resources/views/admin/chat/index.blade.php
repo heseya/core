@@ -12,20 +12,19 @@
         <a href="/admin/chat/{{ $chat->id }}">
             <li class="clickable">
                 <div class="avatar">
-                    <img src="{{ $chat->avatar }}">
+                    <img src="{{ $chat->avatar() }}">
                 </div>
                 <div>
                     <div class="{{ $chat->unread ? 'unread' : '' }}">
                         {{ $chat->client->name }}
                     </div>
-                    <small>{{ $chat->snippet }}</small>
+                    <small>{!! $chat->snippet() !!}</small>
                 </div>
             </li>
         </a>
     @endforeach
 </ol>
-@endsection
 
-@section('scripts')
-
+<br>
+{{ $chats->links() }}
 @endsection
