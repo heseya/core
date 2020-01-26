@@ -17,7 +17,7 @@
                     <div>
                         {{ $order->deliveryAddress->name ? $order->deliveryAddress->name : $order->code }}
                     </div>
-                    <small>{{ $order->email }}</small>
+                    <small>{{ $order->code }} - {{ $order->email }}</small>
                 </div>
                 <div class="sum">{{ number_format($order->summary(), 2, ',', ' ') }} zł</div>
                 <div class="status">

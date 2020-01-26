@@ -1,64 +1,78 @@
 <?php
 
 // prefix /admin
-Route::get('login', 'Admin\AuthController@showLoginForm')->name('login');
-Route::post('login', 'Admin\AuthController@login');
-Route::get('logout', 'Admin\AuthController@logout');
+Route::get('login', 'AuthController@showLoginForm')->name('login');
+Route::post('login', 'AuthController@login');
+Route::get('logout', 'AuthController@logout');
 
 Route::middleware('auth')->group(function () {
 
-    Route::get('orders', 'Admin\OrderController@index');
-    Route::get('orders/create', 'Admin\OrderController@createForm');
-    Route::post('orders/create', 'Admin\OrderController@create');
-    Route::get('orders/{order}', 'Admin\OrderController@view');
-    Route::get('orders/{order}/update', 'Admin\OrderController@updateForm');
-    Route::post('orders/{order}/update', 'Admin\OrderController@update');
+    // Orders
+    Route::prefix('orders')->group(function () {
+        Route::get('/', 'OrderController@index');
+        Route::get('create', 'OrderController@createForm');
+        Route::post('create', 'OrderController@create');
+        Route::get('{order}', 'OrderController@view');
+        Route::get('{order}/update', 'OrderController@updateForm');
+        Route::post('{order}/update', 'OrderController@update');
+        Route::post('{order}/status', 'OrderController@updateStatus');
+    });
 
-    Route::get('products', 'Admin\ProductController@index');
-    Route::get('products/create', 'Admin\ProductController@createForm');
-    Route::post('products/create', 'Admin\ProductController@create');
-    Route::get('products/{product}', 'Admin\ProductController@view');
-    Route::get('products/{product}/update', 'Admin\ProductController@updateForm');
-    Route::post('products/{product}/update', 'Admin\ProductController@update');
-    Route::get('products/{product}/delete', 'Admin\ProductController@delete');
+    // Products
+    Route::prefix('products')->group(function () {
+        Route::get('/', 'ProductController@index');
+        Route::get('create', 'ProductController@createForm');
+        Route::post('create', 'ProductController@create');
+        Route::get('{product}', 'ProductController@view');
+        Route::get('{product}/update', 'ProductController@updateForm');
+        Route::post('{product}/update', 'ProductController@update');
+        Route::get('{product}/delete', 'ProductController@delete');
+    });
 
-    Route::get('items', 'Admin\ItemController@index');
-    Route::get('items/create', 'Admin\ItemController@createForm');
-    Route::post('items/create', 'Admin\ItemController@create');
-    Route::get('items/{item}', 'Admin\ItemController@view');
-    Route::get('items/{item}/update', 'Admin\ItemController@updateForm');
-    Route::post('items/{item}/update', 'Admin\ItemController@update');
-    Route::get('items/{item}/delete', 'Admin\ItemController@delete');
+    // Items
+    Route::prefix('items')->group(function () {
+        Route::get('/', 'ItemController@index');
+        Route::get('create', 'ItemController@createForm');
+        Route::post('create', 'ItemController@create');
+        Route::get('{item}', 'ItemController@view');
+        Route::get('{item}/update', 'ItemController@updateForm');
+        Route::post('{item}/update', 'ItemController@update');
+        Route::get('{item}/delete', 'ItemController@delete');
+    });
 
-    Route::get('chat', 'Admin\ChatController@index');
-    Route::get('chat/{chat}', 'Admin\ChatController@view');
-    Route::post('chat/{chat}', 'Admin\ChatController@send');
+    // Chat
+    Route::prefix('chat')->group(function () {
+        Route::get('/', 'ChatController@index');
+        Route::get('{chat}', 'ChatController@view');
+        Route::post('{chat}', 'ChatController@send');
+    });
 
+    // Settings
     Route::prefix('settings')->group(function () {
 
-        Route::get('/', 'Admin\SettingsController@settings');
+        Route::get('/', 'SettingsController@settings');
 
-        Route::get('email', 'Admin\SettingsController@email');
-        Route::get('email/config', 'Admin\SettingsController@emailConfig');
-        Route::post('email/config', 'Admin\SettingsController@emailConfigStore');
-        Route::get('email/test', 'Admin\SettingsController@emailTest');
+        Route::get('email', 'SettingsController@email');
+        Route::get('email/config', 'SettingsController@emailConfig');
+        Route::post('email/config', 'SettingsController@emailConfigStore');
+        Route::get('email/test', 'SettingsController@emailTest');
 
-        Route::get('categories', 'Admin\SettingsController@categories');
-        Route::get('categories/create', 'Admin\SettingsController@categoryCreateForm');
-        Route::post('categories/create', 'Admin\SettingsController@categoryCreate');
-        Route::put('categories/create', 'Admin\SettingsController@categoryUpdate');
+        Route::get('categories', 'SettingsController@categories');
+        Route::get('categories/create', 'SettingsController@categoryCreateForm');
+        Route::post('categories/create', 'SettingsController@categoryCreate');
+        Route::put('categories/create', 'SettingsController@categoryUpdate');
 
-        Route::get('brands', 'Admin\SettingsController@brands');
-        Route::get('brands/create', 'Admin\SettingsController@brandCreateForm');
-        Route::post('brands/create', 'Admin\SettingsController@brandCreate');
+        Route::get('brands', 'SettingsController@brands');
+        Route::get('brands/create', 'SettingsController@brandCreateForm');
+        Route::post('brands/create', 'SettingsController@brandCreate');
 
-        Route::get('accounts', 'Admin\SettingsController@accounts');
-        Route::get('accounts/create', 'Admin\SettingsController@accountsCreateForm');
-        Route::post('accounts/create', 'Admin\SettingsController@accountsCreate');
-        Route::get('info', 'Admin\SettingsController@info');
-        Route::get('notifications', 'Admin\SettingsController@notifications');
+        Route::get('accounts', 'SettingsController@accounts');
+        Route::get('accounts/create', 'SettingsController@accountsCreateForm');
+        Route::post('accounts/create', 'SettingsController@accountsCreate');
+        Route::get('info', 'SettingsController@info');
+        Route::get('notifications', 'SettingsController@notifications');
 
-        Route::get('furgonetka', 'Admin\SettingsController@furgonetka');
+        Route::get('furgonetka', 'SettingsController@furgonetka');
 
         Route::prefix('facebook')->group(function () {
             Route::get('/', 'FacebookController@settings');
@@ -69,6 +83,9 @@ Route::middleware('auth')->group(function () {
             Route::get('set-page/{access_token}', 'FacebookController@setPage');
         });
     });
+
+    // Other
+    Route::post('media/photo', 'MediaController@uploadPhoto');
 });
 
 Route::redirect('/', '/admin/orders', 302);

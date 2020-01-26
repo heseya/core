@@ -78,10 +78,25 @@ class OrderController extends Controller
 
         // logi
         $order->logs()->create([
-            'content' => 'Edycja zamówienia.',
+            'content' => 'Edycja.',
             'user' => Auth::user()->name,
         ]);
 
         return redirect('/admin/orders/' . $order->id);
+    }
+
+    public function updateStatus(Order $order, Request $request)
+    {
+        $order->update([
+            $request->type . '_status' => $request->status,
+        ]);
+
+        // logi
+        $order->logs()->create([
+            'content' => 'Zmiana statusu.',
+            'user' => Auth::user()->name,
+        ]);
+
+        return response()->json(null, 204);
     }
 }

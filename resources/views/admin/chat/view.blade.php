@@ -16,7 +16,7 @@
 
         <div class="info">
             @if (!empty($message->user_id))
-                {{ $message->user->name }}
+                {{ $message->user->name }},
             @endif
             {{ $message->created_at }}
         </div>

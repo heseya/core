@@ -140,4 +140,8 @@
     </div>
 
 </div>
+
+<script>
+    window.order_id = {{ $order->id }}
+</script>
 @endsection
