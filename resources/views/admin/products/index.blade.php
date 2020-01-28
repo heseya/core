@@ -11,7 +11,7 @@
 @section('content')
 <div class="products-list">
     @foreach ($products as $product)
-        <a href="/admin/products/{{ $product->id }}" class="product">
+        <a href="/admin/products/{{ $product->slug }}" class="product">
             <div class="product__img">
                 @if (isset($product->gallery[0]))
                     <img src="{{ $product->gallery[0]->url }}" />

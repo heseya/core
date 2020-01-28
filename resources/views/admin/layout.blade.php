@@ -15,14 +15,17 @@
             <img src="/img/logo.png">
         </div>
 
-        <a href="/admin/orders">
-            <img class="icon" src="/img/icons/orders.svg">
-        </a>
         <a href="/admin/products">
             <img class="icon" src="/img/icons/products.svg">
         </a>
         <a href="/admin/items">
             <img class="icon" src="/img/icons/chest.svg">
+        </a>
+        <a href="/admin/orders">
+            <img class="icon" src="/img/icons/orders.svg">
+        </a>
+        <a href="/admin/pages">
+            <img class="icon" src="/img/icons/copy.svg">
         </a>
         <a href="/admin/chat">
             <img class="icon" src="/img/icons/chat.svg">

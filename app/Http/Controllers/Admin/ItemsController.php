@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 
-class ItemController extends Controller
+class ItemsController extends Controller
 {
     public function index()
     {
@@ -37,8 +37,8 @@ class ItemController extends Controller
     public function create(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'symbol' => 'required|string|unique:items',
+            'name' => ['required', 'string', 'max:255'],
+            'symbol' => ['required', 'string', 'unique:items'],
         ]);
 
         $item = Item::create($request->all());
@@ -61,7 +61,7 @@ class ItemController extends Controller
     public function update(Item $item, Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => ['required', 'string', 'max:255'],
             'symbol' => [
                 'required',
                 'string',

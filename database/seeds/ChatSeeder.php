@@ -15,7 +15,7 @@ class ChatSeeder extends Seeder
     {
         $faker = \Faker\Factory::create('pl_PL');
 
-        for ($i = 1; $i <= 20; $i++) {
+        for ($i = 1; $i <= 100; $i++) {
 
             $client = Client::create([
                 'name' => $faker->name(),

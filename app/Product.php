@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
     protected $fillable = [
         'name',
         'slug',
@@ -17,6 +22,11 @@ class Product extends Model
         'category_id',
     ];
 
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
     protected $hidden = [
         'tax_id',
         'brand_id',
@@ -24,6 +34,11 @@ class Product extends Model
         'created_at',
         'updated_at',
     ];
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 
     public function gallery()
     {

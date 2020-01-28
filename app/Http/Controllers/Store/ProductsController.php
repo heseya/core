@@ -8,7 +8,7 @@ use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Builder;
 
-class ProductController extends Controller
+class ProductsController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
@@ -51,18 +51,12 @@ class ProductController extends Controller
         return response()->json($query->simplePaginate(12));
     }
 
-    public function single(String $slug): JsonResponse
+    public function view(Product $product): JsonResponse
     {
-        $product = Product::where(['slug' => $slug])->with([
-            'brand',
-            'category',
-            'gallery',
-            'shema',
-        ])->first();
-
-        if (empty($product)) {
-            abort(404);
-        }
+        $product->brand;
+        $product->category;
+        $product->gallery;
+        $product->shema;
 
         return response()->json($product);
     }

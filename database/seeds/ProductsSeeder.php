@@ -68,7 +68,7 @@ class ProductsSeeder extends Seeder
             'public' => 1,
         ]);
 
-        for ($i = 1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 100; $i++) {
 
             $name = $faker->randomElement([
                 'Snake',
@@ -79,11 +79,18 @@ class ProductsSeeder extends Seeder
                 'Tribal',
                 'Hangskeleton',
                 'Coffin',
+                'Innocente',
+                'Reduction',
+                'Automaton',
+                'Cry Baby',
+                'Pancer',
+                'Benz',
+                'Eagle',
             ]);
 
             $product = Product::create([
                 'name' => $name,
-                'slug' => strtolower(str_replace(' ', '-', $name)) . '-' . rand(1, 999),
+                'slug' => strtolower(str_replace(' ', '-', $name)) . '-' . rand(1, 9999),
                 'price' => rand(100, 200),
                 'description' => $faker->paragraph(),
                 'tax_id' => rand(1, 2),

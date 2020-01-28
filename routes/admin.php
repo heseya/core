@@ -9,35 +9,35 @@ Route::middleware('auth')->group(function () {
 
     // Orders
     Route::prefix('orders')->group(function () {
-        Route::get('/', 'OrderController@index');
-        Route::get('create', 'OrderController@createForm');
-        Route::post('create', 'OrderController@create');
-        Route::get('{order}', 'OrderController@view');
-        Route::get('{order}/update', 'OrderController@updateForm');
-        Route::post('{order}/update', 'OrderController@update');
-        Route::post('{order}/status', 'OrderController@updateStatus');
+        Route::get('/', 'OrdersController@index');
+        Route::get('create', 'OrdersController@createForm');
+        Route::post('create', 'OrdersController@create');
+        Route::get('{order}', 'OrdersController@view');
+        Route::get('{order}/update', 'OrdersController@updateForm');
+        Route::post('{order}/update', 'OrdersController@update');
+        Route::post('{order}/status', 'OrdersController@updateStatus');
     });
 
     // Products
     Route::prefix('products')->group(function () {
-        Route::get('/', 'ProductController@index');
-        Route::get('create', 'ProductController@createForm');
-        Route::post('create', 'ProductController@create');
-        Route::get('{product}', 'ProductController@view');
-        Route::get('{product}/update', 'ProductController@updateForm');
-        Route::post('{product}/update', 'ProductController@update');
-        Route::get('{product}/delete', 'ProductController@delete');
+        Route::get('/', 'ProductsController@index');
+        Route::get('create', 'ProductsController@createForm');
+        Route::post('create', 'ProductsController@create');
+        Route::get('{product}', 'ProductsController@view');
+        Route::get('{product}/update', 'ProductsController@updateForm');
+        Route::post('{product}/update', 'ProductsController@update');
+        Route::get('{product}/delete', 'ProductsController@delete');
     });
 
     // Items
     Route::prefix('items')->group(function () {
-        Route::get('/', 'ItemController@index');
-        Route::get('create', 'ItemController@createForm');
-        Route::post('create', 'ItemController@create');
-        Route::get('{item}', 'ItemController@view');
-        Route::get('{item}/update', 'ItemController@updateForm');
-        Route::post('{item}/update', 'ItemController@update');
-        Route::get('{item}/delete', 'ItemController@delete');
+        Route::get('/', 'ItemsController@index');
+        Route::get('create', 'ItemsController@createForm');
+        Route::post('create', 'ItemsController@create');
+        Route::get('{item}', 'ItemsController@view');
+        Route::get('{item}/update', 'ItemsController@updateForm');
+        Route::post('{item}/update', 'ItemsController@update');
+        Route::get('{item}/delete', 'ItemsController@delete');
     });
 
     // Chat
@@ -45,6 +45,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/', 'ChatController@index');
         Route::get('{chat}', 'ChatController@view');
         Route::post('{chat}', 'ChatController@send');
+    });
+
+    // Items
+    Route::prefix('pages')->group(function () {
+        Route::get('/', 'PagesController@index');
+        Route::get('create', 'PagesController@createForm');
+        Route::post('create', 'PagesController@create');
+        Route::get('{page}', 'PagesController@view');
+        Route::get('{page}/update', 'PagesController@updateForm');
+        Route::post('{page}/update', 'PagesController@update');
+        Route::get('{page}/delete', 'PagesController@delete');
     });
 
     // Settings

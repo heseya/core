@@ -12,22 +12,11 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 
-class ProductController extends Controller
+class ProductsController extends Controller
 {
     public function index()
     {
-        $products = Product::select([
-            'id',
-            'name',
-            'slug',
-            'price',
-            'brand_id',
-            'category_id',
-        ])->with([
-            'brand',
-            'category',
-            'gallery',
-        ])->paginate(20);
+        $products = Product::paginate(16);
 
         return response()->view('admin/products/index', [
             'products' => $products,
@@ -109,7 +98,7 @@ class ProductController extends Controller
             }
         }
 
-        return redirect('/admin/products/' . $product->id);
+        return redirect('/admin/products/' . $product->slug);
     }
 
     public function delete(Product $product)

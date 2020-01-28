@@ -15,7 +15,7 @@ class OrdersSeeder extends Seeder
     {
         $faker = \Faker\Factory::create('pl_PL');
 
-        for ($i = 1; $i <= 20; $i++) {
+        for ($i = 1; $i <= 100; $i++) {
             $address = Address::create([
                 'name' => $faker->firstName() . ' ' . $faker->lastName(),
                 'phone' => $faker->phoneNumber(),

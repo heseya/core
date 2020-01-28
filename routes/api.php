@@ -4,8 +4,11 @@
 Route::get('/', 'Store\StaticController@index');
 
 // Store
-Route::get('products', 'Store\ProductController@index');
-Route::get('products/{slug}', 'Store\ProductController@single');
+Route::get('products', 'Store\ProductsController@index');
+Route::get('products/{product}', 'Store\ProductsController@view');
+
+Route::get('pages', 'Store\PagesController@index');
+Route::get('pages/{page}', 'Store\PagesController@view');
 
 Route::get('brands', 'Store\StaticController@brands');
 Route::get('categories', 'Store\StaticController@categories');

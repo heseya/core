@@ -197,7 +197,7 @@ class InitDatabase extends Migration
         Schema::create('order_items', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
-            $table->string('symbol')->nullable();
+            $table->string('symbol')->nullable()->index();
             $table->float('qty', 8, 4);
             $table->float('price', 8, 2);
             $table->nestedSet();
@@ -210,6 +210,15 @@ class InitDatabase extends Migration
 
             $table->bigInteger('order_item_id')->unsigned()->index();
             $table->foreign('order_item_id')->references('id')->on('order_items')->onDelete('cascade');
+        });
+
+        Schema::create('pages', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name', 128);
+            $table->string('slug', 128)->unique()->index();
+            $table->boolean('public')->default(false);
+            $table->text('content');
+            $table->timestamps();
         });
     }
 
@@ -240,5 +249,6 @@ class InitDatabase extends Migration
         Schema::dropIfExists('messages');
         Schema::dropIfExists('order_items');
         Schema::dropIfExists('order_order_item');
+        Schema::dropIfExists('pages');
     }
 }
