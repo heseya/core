@@ -58,7 +58,7 @@ class InitDatabase extends Migration
         Schema::create('brands', function (Blueprint $table) {
             $table->smallIncrements('id');
             $table->string('name', 80);
-            $table->string('slug')->unique()->index();
+            $table->string('slug', 80)->unique()->index();
             $table->boolean('public')->default(false);
             $table->timestamps();
         });
@@ -66,7 +66,7 @@ class InitDatabase extends Migration
         Schema::create('categories', function (Blueprint $table) {
             $table->smallIncrements('id');
             $table->string('name', 80);
-            $table->string('slug')->unique()->index();
+            $table->string('slug', 80)->unique()->index();
             $table->boolean('public')->default(false);
             $table->timestamps();
         });

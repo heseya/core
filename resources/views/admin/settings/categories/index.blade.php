@@ -11,7 +11,7 @@
 @section('content')
 <ol class="list">
     @foreach($categories as $category)
-        <li class="center clickable">
+        <li class="center">
             <span class="margin__left">
                 <div>
                     @if (!$category->public)

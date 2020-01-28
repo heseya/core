@@ -6,30 +6,18 @@ use App\Order;
 use App\Status;
 use App\OrderLog;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 
 class FurgonetkaController extends Controller
 {
     /**
-     * Odbieranie statusów przesyłek z Furgonetka.pl
+     * Odbieranie statusów przesyłek z Furgonetka.pl w formacie JSON
+     *
+     * https://furgonetka.pl/files/dokumentacja_webhook.pdf
      */
-    public function webhook(Request $request)
+    public function webhook(Request $request): JsonResponse
     {
-        // temp
-
-        // $request->validate([
-        //     'package_id' => 'required',
-        //     'package_no' => 'required',
-        //     'partner_order_id' => 'required',
-
-        //     'tracking.state' => 'required',
-        //     'tracking.description' => 'required',
-        //     'tracking.datetime' => 'required',
-        //     'tracking.branch' => 'required',
-
-        //     'control' => 'required',
-        // ]);
-
         $control = md5(
             $request->package_id .
             $request->package_no .
@@ -48,15 +36,11 @@ class FurgonetkaController extends Controller
             ], 400);
         }
 
-        $order = Order::where('delivery_tracking', $request->package_no)->first();
+        $order = Order::where('delivery_tracking', $request->package_no) // numer śledzenia
+            ->orWhere('code', $request->partner_order_id) // kod zamówienia
+            ->first();
 
         if (!empty($order)) {
-
-            // Brak powiadomienia bo furgonetka musi dostać status ok jak hash się zgadza
-            // return response()->json([
-            //     'status' => 'ERROR',
-            //     'message' => 'order not found',
-            // ], 404);
 
             $status = new Status;
             $order->update([
@@ -70,8 +54,9 @@ class FurgonetkaController extends Controller
             ]));
         }
 
+        // Brak błędów bo furgonetka musi dostać status ok jak hash się zgadza
         return response()->json([
             'status' => 'OK',
-        ], 200);
+        ]);
     }
 }

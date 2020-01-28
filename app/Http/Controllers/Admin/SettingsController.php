@@ -50,10 +50,8 @@ class SettingsController extends Controller
 
     public function accounts()
     {
-        $accounts = User::all();
-
         return response()->view('admin/settings/accounts/index', [
-            'accounts' => $accounts,
+            'accounts' => User::all(),
         ]);
     }
 

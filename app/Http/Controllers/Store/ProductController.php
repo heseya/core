@@ -4,15 +4,18 @@ namespace App\Http\Controllers\Store;
 
 use App\Product;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\Builder;
 
 class ProductController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $request->validate([
-            'brand' => 'integer',
-            'category' => 'integer',
+            'brand' => ['string', 'max:80'],
+            'category' => ['string', 'max:80'],
+            'q' => ['string', 'max:80'],
         ]);
 
         $query = Product::select([
@@ -25,23 +28,30 @@ class ProductController extends Controller
         ])->with([
             'brand',
             'category',
-            'gallery' => function ($q) {
-                $q->first();
-            },
+            'gallery',
         ]);
 
         if ($request->brand) {
-            $query->where('brand_id', $request->brand);
+            $query->whereHas('brand', function (Builder $query) use ($request) {
+                return $query->where('slug', $request->brand);
+            });
         }
 
         if ($request->category) {
-            $query->where('category_id', $request->category);
+            $query->whereHas('category', function (Builder $query) use ($request) {
+                return $query->where('slug', $request->category);
+            });
         }
 
-        return response()->json($query->paginate(20));
+        if ($request->q) {
+            $query->where('slug', 'LIKE', '%' . $request->q . '%')
+                ->orWhere('name', 'LIKE', '%' . $request->q . '%');
+        }
+
+        return response()->json($query->simplePaginate(12));
     }
 
-    public function single($slug)
+    public function single(String $slug): JsonResponse
     {
         $product = Product::where(['slug' => $slug])->with([
             'brand',

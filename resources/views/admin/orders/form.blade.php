@@ -107,7 +107,7 @@
             <div class="field">
                 <label class="label" for="deliveryAddress[phone]">Telefon</label>
                 <div class="control">
-                    <input name="deliveryAddress[phone]" maxlength="2" class="input @error('deliveryAddress[phone]') is-danger @enderror" value="{{ old('deliveryAddress.phone') ?? $order->deliveryAddress->phone ?? '' }}">
+                    <input name="deliveryAddress[phone]" type="tel" class="input @error('deliveryAddress[phone]') is-danger @enderror" value="{{ old('deliveryAddress.phone') ?? $order->deliveryAddress->phone ?? '' }}">
                 </div>
                 @error('deliveryAddress.phone')
                     <p class="help is-danger">{{ $message }}</p>
