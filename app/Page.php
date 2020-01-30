@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Parsedown;
 use Illuminate\Database\Eloquent\Model;
 
 class Page extends Model
@@ -24,11 +25,37 @@ class Page extends Model
      * @var array
      */
     protected $hidden = [
+        'id',
         'public',
     ];
 
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'public' => 'boolean',
+    ];
+
+    /**
+     * Get the route key for the model.
+     *
+     * @return string
+     */
     public function getRouteKeyName(): string
     {
         return 'slug';
+    }
+
+    /**
+     * MD content parser.
+     *
+     * @var array
+     */
+    public function getParsedContentAttribute(): string
+    {
+        $parsedown = new Parsedown();
+        return $parsedown->text($this->content);
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Store;
 
 use App\Page;
-use Parsedown;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 
@@ -15,14 +14,18 @@ class PagesController extends Controller
             Page::select([
                 'slug',
                 'name',
-            ])->simplePaginate(14)
+            ])->where('public', true)
+            ->simplePaginate(14)
         );
     }
 
     public function view(Page $page): JsonResponse
     {
-        $parsedown = new Parsedown();
-        $page->content = $parsedown->text($page->content);
+        if ($page->public !== true) {
+            abort(403);
+        }
+
+        $page->content = $page->parsed_content;
 
         return response()->json($page);
     }

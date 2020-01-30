@@ -15,5 +15,5 @@
 @endsection
 
 @section('content')
-<div class="content">{!! $page->content !!}</div>
+<div class="content">{!! $page->parsed_content !!}</div>
 @endsection

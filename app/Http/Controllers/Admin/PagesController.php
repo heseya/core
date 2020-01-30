@@ -19,9 +19,6 @@ class PagesController extends Controller
 
     public function view(Page $page)
     {
-        $parsedown = new Parsedown();
-        $page->content = $parsedown->text($page->content);
-
         return view('admin/pages/view', [
             'page' => $page,
         ]);
@@ -36,6 +33,7 @@ class PagesController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:128'],
+            'public' => 'required',
             'slug' => [
                 'required',
                 'string',
@@ -61,6 +59,7 @@ class PagesController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:128'],
+            'public' => 'required',
             'slug' => [
                 'required',
                 'string',
