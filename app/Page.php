@@ -56,6 +56,8 @@ class Page extends Model
     public function getParsedContentAttribute(): string
     {
         $parsedown = new Parsedown();
+        $parsedown->setBreaksEnabled(true);
+
         return $parsedown->text($this->content);
     }
 }
