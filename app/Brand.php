@@ -11,10 +11,4 @@ class Brand extends Model
         'slug',
         'public',
     ];
-
-    protected $hidden = [
-        'created_at',
-        'updated_at',
-        'public',
-    ];
 }

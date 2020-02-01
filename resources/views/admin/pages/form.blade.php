@@ -32,7 +32,7 @@
     <div class="checkbox">
         <label for="public">
             <input type="hidden" name="public" value="0">
-            <input name="public" id="public" type="checkbox" class="checkbox" value="1" {{ old('public') ? 'checked' : $page->public ? 'checked' : '' }}>
+            <input name="public" id="public" type="checkbox" class="checkbox" value="1" {{ old('public') ? 'checked' : isset($page) ? $page->public ? 'checked' : '' : '' }}>
             Widoczność na stronie
         </label>
         @error('public')

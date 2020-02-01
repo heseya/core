@@ -65,7 +65,7 @@ class InitDatabase extends Migration
 
         Schema::create('categories', function (Blueprint $table) {
             $table->smallIncrements('id');
-            $table->string('name', 80);
+            $table->json('name');
             $table->string('slug', 80)->unique()->index();
             $table->boolean('public')->default(false);
             $table->timestamps();
@@ -73,7 +73,7 @@ class InitDatabase extends Migration
 
         Schema::create('items', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name');
+            $table->json('name');
             $table->string('symbol', 128)->index();
             $table->integer('qty')->unsigned()->default(0);
             $table->smallInteger('category_id')->index()->unsigned()->nullable();
@@ -86,13 +86,13 @@ class InitDatabase extends Migration
 
         Schema::create('products', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name');
+            $table->json('name');
             $table->string('slug')->unique()->index();
             $table->float('price', 8, 2);
             $table->tinyInteger('tax_id')->index()->unsigned();
             $table->smallInteger('brand_id')->index()->unsigned();
             $table->smallInteger('category_id')->index()->unsigned();
-            $table->text('description')->nullable();
+            $table->json('description')->nullable();
             $table->boolean('public')->default(false);
             $table->timestamps();
 
@@ -214,10 +214,10 @@ class InitDatabase extends Migration
 
         Schema::create('pages', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name', 128);
             $table->string('slug', 128)->unique()->index();
             $table->boolean('public')->default(false);
-            $table->text('content');
+            $table->json('name');
+            $table->json('content');
             $table->timestamps();
         });
     }

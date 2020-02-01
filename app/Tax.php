@@ -10,9 +10,4 @@ class Tax extends Model
         'name',
         'value',
     ];
-
-    protected $hidden = [
-        'created_at',
-        'updated_at',
-    ];
 }

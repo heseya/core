@@ -6,11 +6,16 @@ use App\Product;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\BrandResource;
+use App\Http\Resources\MediaResource;
+use App\Http\Resources\ProductResource;
+use App\Http\Resources\CategoryResource;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class ProductsController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): ResourceCollection
     {
         $request->validate([
             'brand' => ['string', 'max:80'],
@@ -18,14 +23,7 @@ class ProductsController extends Controller
             'q' => ['string', 'max:80'],
         ]);
 
-        $query = Product::select([
-            'id',
-            'name',
-            'slug',
-            'price',
-            'brand_id',
-            'category_id',
-        ])->with([
+        $query = Product::with([
             'brand',
             'category',
             'gallery',
@@ -48,16 +46,22 @@ class ProductsController extends Controller
                 ->orWhere('name', 'LIKE', '%' . $request->q . '%');
         }
 
-        return response()->json($query->simplePaginate(12));
+        return ProductResource::collection(
+            $query->simplePaginate(12)
+        );
     }
 
     public function view(Product $product): JsonResponse
     {
-        $product->brand;
-        $product->category;
-        $product->gallery;
-        $product->shema;
-
-        return response()->json($product);
+        return response()->json([
+            'slug' => $product->slug,
+            'name' => $product->name,
+            'price' => $product->price,
+            'description' => $product->parsed_description,
+            'brand' => new BrandResource($product->brand),
+            'category' => new CategoryResource($product->category),
+            'gallery' => MediaResource::collection($product->gallery),
+            'schema' => $product->schema,
+        ]);
     }
 }

@@ -5,21 +5,21 @@ namespace App;
 use App\Category;
 use App\ProductSchema;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Translatable\HasTranslations;
 
 class Item extends Model
 {
+    use HasTranslations;
+
+    public $translatable = [
+        'name',
+    ];
+
     protected $fillable = [
         'name',
         'symbol',
         'qty',
         'category_id',
-    ];
-
-    protected $hidden = [
-        'category_id',
-        'photo_id',
-        'created_at',
-        'updated_at',
     ];
 
     public function category()

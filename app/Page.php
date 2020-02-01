@@ -2,11 +2,18 @@
 
 namespace App;
 
-use Parsedown;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Translatable\HasTranslations;
 
 class Page extends Model
 {
+    use HasTranslations;
+
+    public $translatable = [
+        'name',
+        'content',
+    ];
+
     /**
      * The attributes that are mass assignable.
      *
@@ -17,16 +24,6 @@ class Page extends Model
         'slug',
         'public',
         'content',
-    ];
-
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'id',
-        'public',
     ];
 
     /**
@@ -55,9 +52,6 @@ class Page extends Model
      */
     public function getParsedContentAttribute(): string
     {
-        $parsedown = new Parsedown();
-        $parsedown->setBreaksEnabled(true);
-
-        return $parsedown->text($this->content);
+        return parsedown($this->content);
     }
 }

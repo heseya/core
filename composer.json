@@ -5,13 +5,14 @@
     "require": {
         "php": "^7.2",
         "barryvdh/laravel-cors": "^0.11.4",
-        "erusev/parsedown": "^1.7",
         "facade/ignition": "^1.11",
         "fideloper/proxy": "^4.0",
         "kalnoy/nestedset": "^5.0",
         "laravel/framework": "6.*",
         "laravel/tinker": "^1.0",
-        "mashape/unirest-php": "^3.0"
+        "mashape/unirest-php": "^3.0",
+        "parsedown/laravel": "^1.2",
+        "spatie/laravel-translatable": "^4.2"
     },
     "require-dev": {
         "beyondcode/laravel-dump-server": "^1.0",

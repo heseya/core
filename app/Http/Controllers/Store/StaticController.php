@@ -6,6 +6,9 @@ use App\Brand;
 use App\Category;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\BrandResource;
+use App\Http\Resources\CategoryResource;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class StaticController extends Controller
 {
@@ -17,13 +20,17 @@ class StaticController extends Controller
         ]);
     }
 
-    public function categories(): JsonResponse
+    public function categories(): ResourceCollection
     {
-        return response()->json(Category::where(['public' => 1])->get());
+        return CategoryResource::collection(
+            Category::where(['public' => 1])->get()
+        );
     }
 
-    public function brands(): JsonResponse
+    public function brands(): ResourceCollection
     {
-        return response()->json(Brand::where(['public' => 1])->get());
+        return BrandResource::collection(
+            Brand::where(['public' => 1])->get()
+        );
     }
 }

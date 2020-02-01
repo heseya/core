@@ -5,17 +5,15 @@ namespace App\Http\Controllers\Store;
 use App\Page;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\PageResource;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class PagesController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(): ResourceCollection
     {
-        return response()->json(
-            Page::select([
-                'slug',
-                'name',
-            ])->where('public', true)
-            ->simplePaginate(14)
+        return PageResource::collection(
+            Page::where('public', true)->simplePaginate(14)
         );
     }
 
@@ -25,8 +23,10 @@ class PagesController extends Controller
             abort(403);
         }
 
-        $page->content = $page->parsed_content;
-
-        return response()->json($page);
+        return response()->json([
+            'name' => $page->name,
+            'slug' => $page->slug,
+            'content' => $page->parsed_content,
+        ]);
     }
 }

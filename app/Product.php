@@ -3,14 +3,17 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Translatable\HasTranslations;
 
 class Product extends Model
 {
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
+    use HasTranslations;
+
+    public $translatable = [
+        'name',
+        'description',
+    ];
+
     protected $fillable = [
         'name',
         'slug',
@@ -20,19 +23,6 @@ class Product extends Model
         'tax_id',
         'brand_id',
         'category_id',
-    ];
-
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'tax_id',
-        'brand_id',
-        'category_id',
-        'created_at',
-        'updated_at',
     ];
 
     public function getRouteKeyName(): string
@@ -63,5 +53,15 @@ class Product extends Model
     public function shema()
     {
         return $this->hasMany(ProductSchema::class)->with('items');
+    }
+
+    /**
+     * MD description parser.
+     *
+     * @var array
+     */
+    public function getParsedDescriptionAttribute(): string
+    {
+        return parsedown($this->description);
     }
 }
