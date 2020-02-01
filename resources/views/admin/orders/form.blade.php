@@ -13,15 +13,6 @@
     <div class="columns">
         <div class="column">
             <h3>Szczegóły</h3>
-            <div class="field">
-                <label class="label" for="code">Numer</label>
-                <div class="control">
-                    <input name="code" class="input @error('code') is-danger @enderror" required autocomplete="off" maxlength="16" value="{{ old('code') ?? $order->code ?? '' }}">
-                </div>
-                @error('code')
-                    <p class="help is-danger">{{ $message }}</p>
-                @enderror
-            </div>
             {{-- <div class="field">
                 <label class="label" for="client_id">ID Klienta</label>
                 <div class="control">

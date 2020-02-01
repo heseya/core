@@ -60,6 +60,7 @@
         <div class="modal__bg" onclick="closeModal()"></div>
     </div>
 
+    <script src="/js/bulma-toast.min.js"></script>
     <script src="{{ mix('js/admin.js') }}"></script>
 </body>
 </html>

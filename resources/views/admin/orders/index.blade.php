@@ -11,7 +11,7 @@
 @section('content')
 <ol class="list list--orders">
     @foreach ($orders as $order)
-        <a href="/admin/orders/{{ $order->id }}">
+        <a href="/admin/orders/{{ $order->code }}">
             <li class="clickable">
                 <div>
                     <div>

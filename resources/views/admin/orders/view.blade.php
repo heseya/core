@@ -9,7 +9,7 @@
 <a href="/admin/orders/{{ $order->id + 1 }}" class="top-nav--button">
     <img class="icon" src="/img/icons/right.svg">
 </a> --}}
-<a href="/admin/orders/{{ $order->id }}/update" class="top-nav--button">
+<a href="/admin/orders/{{ $order->code }}/update" class="top-nav--button">
     <img class="icon" src="/img/icons/pencil.svg">
 </a>
 @endsection
@@ -142,6 +142,6 @@
 </div>
 
 <script>
-    window.order_id = {{ $order->id }}
+    window.order_code = "{{ $order->code }}"
 </script>
 @endsection

@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     protected $fillable = [
-        'code',
         'email',
         'client_id',
         'payment',
@@ -17,6 +16,16 @@ class Order extends Model
         'delivery_status',
         'delivery_tracking',
     ];
+
+    /**
+     * Get the route key for the model.
+     *
+     * @return string
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'code';
+    }
 
     public function summary()
     {

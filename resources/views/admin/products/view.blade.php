@@ -3,12 +3,12 @@
 @section('title', $product->name)
 
 @section('buttons')
-<a href="/admin/products/{{ $product->id }}/update" class="top-nav--button">
+<a href="/admin/products/{{ $product->slug }}/update" class="top-nav--button">
     <img class="icon" src="/img/icons/pencil.svg">
 </a>
 <button onclick="window.confirmModal(
         'Czy na pewno chcesz usunąć {{ $product->name }}?',
-        '/admin/products/{{ $product->id }}/delete'
+        '/admin/products/{{ $product->slug }}/delete'
     )" class="top-nav--button">
     <img class="icon" src="/img/icons/trash.svg">
 </button>
