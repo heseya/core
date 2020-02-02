@@ -3,7 +3,7 @@
 @section('title', $page->name)
 
 @section('buttons')
-<a href="/admin/pages/{{ $page->slug }}/update" class="top-nav--button">
+<a href="/admin/pages/{{ $page->slug }}/update?lang={{ $selectLang }}" class="top-nav--button">
     <img class="icon" src="/img/icons/pencil.svg">
 </a>
 <button onclick="window.confirmModal(
@@ -15,5 +15,15 @@
 @endsection
 
 @section('content')
+<div class="tabs">
+    <ul>
+        @foreach ($page->getTranslations('content') as $lang => $translation)
+            <li {{ $selectLang == $lang ? 'class=is-active' : '' }}>
+                <a href="/admin/pages/{{ $page->slug }}?lang={{ $lang }}">{{ $lang }}</a>
+            </li>
+        @endforeach
+    </ul>
+</div>
+
 <div class="content">{!! $page->parsed_content !!}</div>
 @endsection

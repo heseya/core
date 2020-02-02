@@ -21,6 +21,7 @@ class PagesController extends Controller
     {
         return view('admin/pages/view', [
             'page' => $page,
+            'selectLang' => app()->getLocale(),
         ]);
     }
 
@@ -34,6 +35,7 @@ class PagesController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:128'],
             'public' => 'required',
+            'lang' => ['required', 'size:2'],
             'slug' => [
                 'required',
                 'string',
@@ -71,7 +73,7 @@ class PagesController extends Controller
 
         $page->update($request->all());
 
-        return redirect('/admin/pages/' . $page->slug);
+        return redirect('/admin/pages/' . $page->slug . '?lang=' . app()->getLocale());
     }
 
     public function delete(Page $page)

@@ -47,15 +47,17 @@ Route::middleware('auth')->group(function () {
         Route::post('{chat}', 'ChatController@send');
     });
 
-    // Items
-    Route::prefix('pages')->group(function () {
-        Route::get('/', 'PagesController@index');
-        Route::get('create', 'PagesController@createForm');
-        Route::post('create', 'PagesController@create');
-        Route::get('{page}', 'PagesController@view');
-        Route::get('{page}/update', 'PagesController@updateForm');
-        Route::post('{page}/update', 'PagesController@update');
-        Route::get('{page}/delete', 'PagesController@delete');
+    Route::middleware('lang')->group(function () {
+        // Items
+        Route::prefix('pages')->group(function () {
+            Route::get('/', 'PagesController@index');
+            Route::get('create', 'PagesController@createForm');
+            Route::post('create', 'PagesController@create');
+            Route::get('{page}', 'PagesController@view');
+            Route::get('{page}/update', 'PagesController@updateForm');
+            Route::post('{page}/update', 'PagesController@update');
+            Route::get('{page}/delete', 'PagesController@delete');
+        });
     });
 
     // Settings
