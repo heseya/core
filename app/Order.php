@@ -2,17 +2,20 @@
 
 namespace App;
 
+use App\Payment\Payable;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
+    use Payable;
+
     protected $fillable = [
         'email',
         'client_id',
-        'payment',
+        'payment_method',
         'payment_status',
         'shop_status',
-        'delivery',
+        'delivery_method',
         'delivery_status',
         'delivery_tracking',
     ];
@@ -48,6 +51,15 @@ class Order extends Model
             $item = OrderItem::create($item);
             $this->items()->save($item);
         }
+    }
+
+    public function canChangePaymentStatus(): boolean
+    {
+        if ($this->payment_method === null) {
+            return true;
+        }
+
+        return false;
     }
 
     public function items()

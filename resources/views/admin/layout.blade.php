@@ -39,7 +39,7 @@
 
     <main class="main">
         <nav class="top-nav">
-            <div class="title">
+            <div class="title is-marginless">
                 <a href="/admin/settings" class="avatar">
                     <img src="{{ Auth::user()->avatar() }}">
                 </a>

@@ -66,6 +66,10 @@
             <div>{{ $order->invoiceAddress->zip }} {{ $order->invoiceAddress->city }}</div>
             <div>{{ $order->invoiceAddress->country }}</div>
         @endif
+
+        <h3>Metoda płatności</h3>
+        <div>{{ $order->payment_method ?? 'Brak' }}</div>
+        <a href="#">Generuj link</a>
     </div>
 
     <div class="column is-half">

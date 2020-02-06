@@ -28,10 +28,8 @@ class OrdersSeeder extends Seeder
             Order::create([
                 'code' => $faker->regexify('[A-Z0-9]{6}'),
                 'email' => $faker->email(),
-                'payment' => 1,
                 'payment_status' => 0,
                 'shop_status' => 0,
-                'delivery' => 1,
                 'delivery_status' => 0,
                 'delivery_address' => $address->id,
                 'invoice_address' => rand(0, 1) == 1 ? $address->id : null,

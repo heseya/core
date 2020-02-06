@@ -126,10 +126,10 @@ class InitDatabase extends Migration
             $table->string('code', 16)->unique();
             $table->integer('client_id')->unsigned()->index()->nullable();
             $table->string('email', 256);
-            $table->smallInteger('payment')->default(0);
+            $table->smallInteger('payment_method')->default(0);
             $table->tinyInteger('payment_status')->default(0);
             $table->tinyInteger('shop_status')->default(0);
-            $table->smallInteger('delivery')->nullable();
+            $table->smallInteger('delivery_method')->nullable();
             $table->tinyInteger('delivery_status')->default(0);
             $table->string('delivery_tracking')->nullable();
             $table->integer('delivery_address')->unsigned()->index()->nullable();

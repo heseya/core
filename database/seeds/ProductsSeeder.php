@@ -108,7 +108,7 @@ class ProductsSeeder extends Seeder
                         'https://kupdepth.pl/img/products/275.jpeg',
                         'https://kupdepth.pl/img/products/295.jpeg',
                     ]),
-                ])->id
+                ])->id,
             ]);
         }
     }
