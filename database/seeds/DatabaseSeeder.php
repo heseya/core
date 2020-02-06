@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ProductsSeeder::class)
             ->call(OrdersSeeder::class)
             ->call(UsersSeeder::class)
+            ->call(PagesSeeder::class)
             ->call(ChatSeeder::class);
     }
 }
