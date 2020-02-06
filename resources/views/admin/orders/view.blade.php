@@ -18,18 +18,12 @@
 <div class="stats">
     <div class="stats__item">
         <img class="icon" src="/img/icons/money.svg">
-        <select id="payment_status">
-        @foreach ($status->payment_status as $id => $pstatus)
-            <option value="{{ $id }}" {{ $order->payment_status == $id ? 'selected' : '' }}>
-                {{ $pstatus['name'] }}
-            </option>
-        @endforeach
-        </select>
+        {{ \App\Status::payment($order->payment_status)['name'] }}
     </div>
     <div class="stats__item">
         <img class="icon" src="/img/icons/shop.svg">
         <select id="shop_status">
-            @foreach ($status->shop_status as $id => $sstatus)
+            @foreach (\App\Status::shopAll() as $id => $sstatus)
             <option value="{{ $id }}" {{ $order->shop_status == $id ? 'selected' : '' }}>
                 {{ $sstatus['name'] }}
             </option>
@@ -38,13 +32,7 @@
         </div>
     <div class="stats__item">
         <img class="icon" src="/img/icons/delivery.svg">
-        <select id="delivery_status">
-        @foreach ($status->delivery_status as $id => $dstatus)
-            <option value="{{ $id }}" {{ $order->delivery_status == $id ? 'selected' : '' }}>
-                {{ $dstatus['name'] }}
-            </option>
-        @endforeach
-        </select>
+        {{ \App\Status::delivery($order->delivery_status)['name'] }}
     </div>
 </div>
 

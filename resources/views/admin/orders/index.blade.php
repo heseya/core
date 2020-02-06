@@ -21,9 +21,9 @@
                 </div>
                 <div class="sum">{{ number_format($order->summary(), 2, ',', ' ') }} zł</div>
                 <div class="status">
-                    <div class="status-circle status-circle__{{ $status->payment_status[$order->payment_status]['color'] }}"></div>
-                    <div class="status-circle status-circle__{{ $status->shop_status[$order->shop_status]['color'] }}"></div>
-                    <div class="status-circle status-circle__{{ $status->delivery_status[$order->delivery_status]['color'] }}"></div>
+                    <div class="status-circle status-circle__{{ \App\Status::payment($order->payment_status)['color'] }}"></div>
+                    <div class="status-circle status-circle__{{ \App\Status::shop($order->shop_status)['color'] }}"></div>
+                    <div class="status-circle status-circle__{{ \App\Status::delivery($order->delivery_status)['color'] }}"></div>
                 </div>
             </li>
         </a>
