@@ -7,6 +7,8 @@ Route::get('/', 'Store\StaticController@index');
 Route::get('products', 'Store\ProductsController@index');
 Route::get('products/{product}', 'Store\ProductsController@view');
 
+Route::get('orders/{order}', 'Store\OrdersController@view');
+
 Route::get('pages', 'Store\PagesController@index');
 Route::get('pages/{page}', 'Store\PagesController@view');
 
