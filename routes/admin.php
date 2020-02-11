@@ -79,9 +79,14 @@ Route::middleware('auth')->group(function () {
         Route::get('brands/create', 'SettingsController@brandCreateForm');
         Route::post('brands/create', 'SettingsController@brandCreate');
 
-        Route::get('accounts', 'SettingsController@accounts');
-        Route::get('accounts/create', 'SettingsController@accountsCreateForm');
-        Route::post('accounts/create', 'SettingsController@accountsCreate');
+        Route::prefix('users')->group(function () {
+            Route::get('/', 'UsersController@index');
+            Route::get('{user}', 'UsersController@view');
+            Route::get('create', 'UsersController@createForm');
+            Route::post('create', 'UsersController@create');
+            Route::post('{user}/rbac', 'UsersController@rbac');
+        });
+
         Route::get('info', 'SettingsController@info');
         Route::get('notifications', 'SettingsController@notifications');
 

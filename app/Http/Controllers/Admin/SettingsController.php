@@ -48,40 +48,6 @@ class SettingsController extends Controller
         return redirect('/admin/settings/email');
     }
 
-    public function accounts()
-    {
-        return response()->view('admin/settings/accounts/index', [
-            'accounts' => User::all(),
-        ]);
-    }
-
-    public function accountsCreateForm()
-    {
-        return response()->view('admin/settings/accounts/create');
-    }
-
-    public function accountsCreate(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|unique:users|email',
-        ]);
-
-        $password = Str::random(10);
-
-        Mail::to($request->email)->send(
-            new NewAdmin($request->email, $password)
-        );
-
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($password),
-        ]);
-
-        return redirect('/admin/settings/accounts');
-    }
-
     public function categories()
     {
         return response()->view('admin/settings/categories/index', [

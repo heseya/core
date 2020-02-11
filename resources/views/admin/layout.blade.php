@@ -19,21 +19,21 @@
             <img class="icon" src="/img/icons/products.svg">
             <span class="label animated faster fadeInLeft">Asortyment</span>
         </a>
-        <a href="/admin/items">
-            <img class="icon" src="/img/icons/chest.svg">
-            <span class="label animated faster fadeInLeft">Magazyn</span>
-        </a>
         <a href="/admin/orders">
             <img class="icon" src="/img/icons/orders.svg">
             <span class="label animated faster fadeInLeft">Zamówienia</span>
+        </a>
+        <a href="/admin/chat">
+            <img class="icon" src="/img/icons/chat.svg">
+            <span class="label animated faster fadeInLeft">Konwersajce</span>
         </a>
         <a href="/admin/pages">
             <img class="icon" src="/img/icons/copy.svg">
             <span class="label animated faster fadeInLeft">Strony</span>
         </a>
-        <a href="/admin/chat">
-            <img class="icon" src="/img/icons/chat.svg">
-            <span class="label animated faster fadeInLeft">Konwersajce</span>
+        <a href="/admin/stats">
+            <img class="icon" src="/img/icons/chart.svg">
+            <span class="label animated faster fadeInLeft">Statystyki</span>
         </a>
     </nav>
 

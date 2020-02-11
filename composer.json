@@ -12,6 +12,7 @@
         "laravel/tinker": "^1.0",
         "mashape/unirest-php": "^3.0",
         "parsedown/laravel": "^1.2",
+        "spatie/laravel-permission": "^3.6",
         "spatie/laravel-translatable": "^4.2"
     },
     "require-dev": {

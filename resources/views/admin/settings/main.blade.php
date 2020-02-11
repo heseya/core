@@ -8,14 +8,6 @@
 
 @section('content')
 <ol class="list list--settings">
-    <li class="center">
-        <img class="avatar" src="{{ $user->avatar() }}">
-        <span>
-            <div>{{ $user['name'] }}</div>
-            <small>{{ $user['email'] }}</small>
-        </span>
-    </li>
-
     {{-- <li class="clickable" onclick="darkMode()">
         <img class="icon" src="/img/icons/moon.svg">Tryb ciemny
     </li> --}}
@@ -54,7 +46,7 @@
             <img class="icon" src="/img/icons/facebook.svg">Facebook
         </li>
     </a> --}}
-    <a href="/admin/settings/accounts">
+    <a href="/admin/settings/users">
         <li class="clickable">
             <img class="icon" src="/img/icons/accounts.svg">Dostęp do panelu
         </li>
@@ -84,8 +76,4 @@
         </li>
     </a>
 </ol>
-@endsection
-
-@section('scripts')
-
 @endsection

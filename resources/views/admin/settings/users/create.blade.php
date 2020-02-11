@@ -8,7 +8,7 @@
 
 @section('content')
 <form method="post">
-  @csrf
+    @csrf
 
     <div class="field">
         <label class="label" for="name">Imię i nazwisko</label>
