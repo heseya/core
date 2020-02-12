@@ -9,12 +9,9 @@
 @endsection
 
 @section('content')
-<link rel="stylesheet" type="text/css" href="/css/swagger-ui.css" >
-
 <div id="swagger-ui"></div>
 
 <script src="https://unpkg.com/swagger-ui-dist@3/swagger-ui-bundle.js"></script>
-<script src="/js/swagger-ui-standalone-preset.js"></script>
 <script>
 window.onload = function() {
     // Begin Swagger UI call region

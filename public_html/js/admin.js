@@ -179,22 +179,6 @@ window.confirmModal = function (title, url) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-document.getElementById('payment_status').addEventListener('change', function (event) {
-  if (confirm('Czy na pewno chcesz zmienić status płatności?')) {
-    fetch('/admin/orders/' + window.order_code + '/status', {
-      method: 'POST',
-      body: JSON.stringify({
-        type: 'payment',
-        status: event.target.value
-      }),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    }).then(function (response) {
-      return window.responseNotify(response);
-    });
-  }
-});
 document.getElementById('shop_status').addEventListener('change', function (event) {
   if (confirm('Czy na pewno chcesz zmienić status zanówienia?')) {
     fetch('/admin/orders/' + window.order_code + '/status', {
@@ -211,26 +195,10 @@ document.getElementById('shop_status').addEventListener('change', function (even
     });
   }
 });
-document.getElementById('delivery_status').addEventListener('change', function (event) {
-  if (confirm('Czy na pewno chcesz zmienić status dostawy?')) {
-    fetch('/admin/orders/' + window.order_code + '/status', {
-      method: 'POST',
-      body: JSON.stringify({
-        type: 'delivery',
-        status: event.target.value
-      }),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    }).then(function (response) {
-      return window.responseNotify(response);
-    });
-  }
-});
 
 window.responseNotify = function (response) {
   if (response.status === 204) {
-    bulmaToast.toast({
+    toast.toast({
       message: 'Zmiany został poprawnie zapisane!',
       type: 'is-success',
       duration: 4000,
@@ -240,7 +208,7 @@ window.responseNotify = function (response) {
       }
     });
   } else {
-    bulmaToast.toast({
+    toast.toast({
       message: 'Nie udało się zapisać zmian!',
       type: 'is-danger',
       duration: 6000,

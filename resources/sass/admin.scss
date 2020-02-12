@@ -1,18 +1,16 @@
-/*! CSS by Jedrzej Bulinski */
-/*! jedrzej@heseya.com */
-
 @charset "utf-8";
 
 // Libs
-@import "animate";
-@import "bulma";
+@import "animate/animate";
+@import "bulma/bulma";
+@import "swagger/swagger";
 
 // Fonts
 @font-face{
   font-family:'Tw Cen MT';
   font-style: normal;
   font-weight: 400;
-  src: local('Tw Cen MT'), url(/fonts/TwCenMT.woff) format('woff')
+  src: local('Tw Cen MT'), url(/fonts/TwCenMT.woff) format('woff');
 }
 
 // Variables
@@ -29,4 +27,3 @@
 @import 'admin/timeline';
 @import 'admin/modal';
 @import 'admin/utilities';
-@import 'admin/swagger';
