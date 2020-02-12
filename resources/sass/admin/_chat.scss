@@ -41,28 +41,28 @@
   .message--to + .message--from, .message--from + .message--to {
     margin-bottom: 11px;
   }
-}
 
-.response {
-  position: fixed;
-  bottom: 20px;
-  width: 840px;
-}
+  .response {
+    position: fixed;
+    bottom: 20px;
+    width: 840px;
+  }
 
-.unread {
-  color: #222;
-  position: relative;
-  margin-left: 13px;
+  .unread {
+    color: #222;
+    position: relative;
+    margin-left: 13px;
 
-  &::before {
-    content: ' ';
-    position: absolute;
-    display: inline-block;
-    height: 7px;
-    width: 7px;
-    bottom: 5px;
-    left: -13px;
-    border-radius: 50%;
-    background: $blue;
+    &::before {
+      content: ' ';
+      position: absolute;
+      display: inline-block;
+      height: 7px;
+      width: 7px;
+      bottom: 5px;
+      left: -13px;
+      border-radius: 50%;
+      background: $blue;
+    }
   }
 }

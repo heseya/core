@@ -28,6 +28,11 @@ class SettingsController extends Controller
         return response()->view('admin/settings/info');
     }
 
+    public function docs()
+    {
+        return response()->view('admin/settings/docs');
+    }
+
     public function email()
     {
         $email = config('mail.address');

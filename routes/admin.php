@@ -88,6 +88,7 @@ Route::middleware('auth')->group(function () {
         });
 
         Route::get('info', 'SettingsController@info');
+        Route::get('docs', 'SettingsController@docs');
         Route::get('notifications', 'SettingsController@notifications');
 
         Route::get('furgonetka', 'SettingsController@furgonetka');

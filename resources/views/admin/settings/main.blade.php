@@ -60,9 +60,9 @@
     </a>
 
     <li class="separator">Inne</li>
-    <a href="https://gravatar.com/emails" target="_blank">
+    <a href="/admin/settings/docs">
         <li class="clickable">
-            <img class="icon" src="/img/icons/joke.svg">Zmień avatar
+            <img class="icon" src="/img/icons/book.svg">Dokumentacja API
         </li>
     </a>
     <a href="/admin/settings/info">
