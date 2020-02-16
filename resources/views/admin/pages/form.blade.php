@@ -43,7 +43,7 @@
     <div class="field">
         <label class="label" for="content">Treść</label>
         <div class="control">
-            <textarea name="content" rows="14" class="textarea">{{ old('content', $page->content ?? '') }}</textarea>
+            <textarea name="content" rows="16" class="textarea">{{ old('content', $page->content ?? '') }}</textarea>
         </div>
         @error('content')
             <p class="help is-danger">{{ $message }}</p>

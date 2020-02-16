@@ -53,7 +53,7 @@ return [
      */
 
     'url' => env('APP_URL', 'https://secure.example.com'),
-    'store_url' => env('APP_URL', 'https://example.com'),
+    'store_url' => rtrim(env('APP_STORE_URL', 'https://example.com'), '/'),
 
     'asset_url' => env('ASSET_URL', null),
 

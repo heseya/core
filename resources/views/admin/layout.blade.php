@@ -31,10 +31,6 @@
             <img class="icon" src="/img/icons/copy.svg">
             <span class="label animated faster fadeInLeft">Strony</span>
         </a>
-        <a href="/admin/stats">
-            <img class="icon" src="/img/icons/chart.svg">
-            <span class="label animated faster fadeInLeft">Statystyki</span>
-        </a>
     </nav>
 
     <main class="main">
@@ -62,6 +58,13 @@
                 <button class="button is-black">Tak</button>
             </div>
         </form>
+        <div class="modal__bg" onclick="closeModal()"></div>
+    </div>
+
+    <div id="modal-info" class="modal modal--hidden">
+        <div class="modal__body">
+            <p id="modal-content" class="content"></p>
+        </div>
         <div class="modal__bg" onclick="closeModal()"></div>
     </div>
 

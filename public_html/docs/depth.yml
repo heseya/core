@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: Store API
+  title: Depth API
   version: 1.0.0
 
 paths:
@@ -67,6 +67,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Order'
+
+  '/orders/{code}/pay':
+    get:
+      summary: Payment link
+      operationId: order-pay
+      tags:
+        - Orders
+      parameters:
+        - name: code
+          in: path
+          description: Order code
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  url:
+                    type: string
+                    example: "https://pay.heseya.com/8kxz9SkfSMV21"
+        '406':
+          description: Payment not available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   '/categories':
     get:

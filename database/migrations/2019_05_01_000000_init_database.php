@@ -122,11 +122,10 @@ class InitDatabase extends Migration
         });
 
         Schema::create('orders', function (Blueprint $table) {
-            $table->increments('id')->uniqe();
+            $table->increments('id');
             $table->string('code', 16)->unique();
             $table->integer('client_id')->unsigned()->index()->nullable();
             $table->string('email', 256);
-            $table->smallInteger('payment_method')->default(0);
             $table->tinyInteger('payment_status')->default(0);
             $table->tinyInteger('shop_status')->default(0);
             $table->smallInteger('delivery_method')->nullable();
@@ -140,6 +139,20 @@ class InitDatabase extends Migration
             $table->foreign('client_id')->references('id')->on('clients')->onDelete('set null');
             $table->foreign('delivery_address')->references('id')->on('addresses')->onDelete('restrict');
             $table->foreign('invoice_address')->references('id')->on('addresses')->onDelete('restrict');
+        });
+
+        Schema::create('payments', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->integer('order_id')->unsigned()->index();
+            $table->string('external_id')->index()->nullable();
+            $table->string('method', 16);
+            $table->string('status', 32)->nullable();
+            $table->string('currency', 3);
+            $table->float('amount', 8, 2);
+            $table->string('url', 1000)->nullable();
+            $table->timestamps();
+
+            $table->foreign('order_id')->references('id')->on('orders')->onDelete('restrict');
         });
 
         Schema::create('product_schemas', function (Blueprint $table) {
@@ -242,6 +255,7 @@ class InitDatabase extends Migration
         Schema::dropIfExists('product_gallery');
         Schema::dropIfExists('addresses');
         Schema::dropIfExists('orders');
+        Schema::dropIfExists('payments');
         Schema::dropIfExists('product_schemas');
         Schema::dropIfExists('product_schema_item');
         Schema::dropIfExists('chats');

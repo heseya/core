@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Payment;
 use App\Payment\Payable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,7 +13,6 @@ class Order extends Model
     protected $fillable = [
         'email',
         'client_id',
-        'payment_method',
         'payment_status',
         'shop_status',
         'delivery_method',
@@ -75,6 +75,11 @@ class Order extends Model
     public function invoiceAddress()
     {
         return $this->hasOne(Address::class, 'id', 'invoice_address');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
     }
 
     public function logs()

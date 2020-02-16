@@ -9,6 +9,9 @@
 <a href="/admin/orders/{{ $order->id + 1 }}" class="top-nav--button">
     <img class="icon" src="/img/icons/right.svg">
 </a> --}}
+<a class="top-nav--button" onclick="payment('{{ $order->code }}')">
+    <img class="icon" src="/img/icons/cash.svg">
+</a>
 <a href="/admin/orders/{{ $order->code }}/update" class="top-nav--button">
     <img class="icon" src="/img/icons/pencil.svg">
 </a>
@@ -53,16 +56,15 @@
             <div>{{ $order->invoiceAddress->address }}</div>
             <div>{{ $order->invoiceAddress->zip }} {{ $order->invoiceAddress->city }}</div>
             <div>{{ $order->invoiceAddress->country }}</div>
+            <br>
         @endif
 
-        <h3>Metoda płatności</h3>
-        <div>{{ $order->payment_method ?? 'Brak' }}</div>
-        <a href="#">Generuj link</a>
+        <h3>Metoda dostawy</h3>
+        <div>{{ $order->delivery_method }}</div>
     </div>
 
     <div class="column is-half">
         <h3>Koszyk</h3>
-        <br>
         <div class="menu">
             @foreach ($order->items as $item)
                 <ul class="menu-list">
@@ -97,7 +99,7 @@
             @endforeach
             <div class="cart__summary">
                 <div>
-                    <small class="cart__small">łącznie</small>
+                    <small class="cart__small">Łącznie</small>
                     <div>{{ number_format($order->summary(), 2, ',', ' ') }} zł</div>
                 </div>
             </div>

@@ -13,21 +13,11 @@ class Status
                 'icon' => 'lnr-hourglass',
             ],
             1 => [
-                'name' => 'Realizacja',
-                'color' => 'orange',
-                'icon' => 'lnr-magic-wand',
-            ],
-            2 => [
                 'name' => 'Opłacone',
                 'color' => 'green',
                 'icon' => 'lnr-checkmark-circle',
             ],
-            3 => [
-                'name' => 'Niepowodzenie',
-                'color' => 'red',
-                'icon' => 'lnr-cross-circle',
-            ],
-            4 => [
+            2 => [
                 'name' => 'Przy odbiorze',
                 'color' => 'blue',
                 'icon' => 'lnr-hourglass',
@@ -44,21 +34,16 @@ class Status
                 'icon' => 'lnr-hourglass',
             ],
             1 => [
-                'name' => 'Produkcja',
-                'color' => 'blue',
-                'icon' => 'lnr-magic-wand',
-            ],
-            2 => [
                 'name' => 'Realizacja',
                 'color' => 'orange',
                 'icon' => 'lnr-arrow-right-circle',
             ],
-            3 => [
+            2 => [
                 'name' => 'Gotowe',
                 'color' => 'green',
                 'icon' => 'lnr-checkmark-circle',
             ],
-            4 => [
+            3 => [
                 'name' => 'Anulowano',
                 'color' => 'red',
                 'icon' => 'lnr-cross-circle',

@@ -99,6 +99,8 @@ __webpack_require__(/*! ./admin/cart.js */ "./resources/js/admin/cart.js");
 
 __webpack_require__(/*! ./admin/status.js */ "./resources/js/admin/status.js");
 
+__webpack_require__(/*! ./admin/payment.js */ "./resources/js/admin/payment.js");
+
 __webpack_require__(/*! ./admin/dark.js */ "./resources/js/admin/dark.js");
 
 /***/ }),
@@ -160,7 +162,8 @@ if (localStorage.dark == 1) {
 /***/ (function(module, exports) {
 
 window.closeModal = function () {
-  document.querySelector('.modal').classList.add('modal--hidden');
+  document.getElementById('modal-confirm').classList.add('modal--hidden');
+  document.getElementById('modal-info').classList.add('modal--hidden');
 };
 
 window.confirmModal = function (title, url) {
@@ -168,6 +171,32 @@ window.confirmModal = function (title, url) {
   document.getElementById('modal-title').innerText = title;
   document.getElementById('modal-form').action = url;
   modal.classList.remove('modal--hidden');
+};
+
+window.infoModal = function (content) {
+  var modal = document.getElementById('modal-info');
+  document.getElementById('modal-content').innerText = content;
+  modal.classList.remove('modal--hidden');
+};
+
+/***/ }),
+
+/***/ "./resources/js/admin/payment.js":
+/*!***************************************!*\
+  !*** ./resources/js/admin/payment.js ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+window.payment = function (code) {
+  fetch('/orders/' + code + '/pay', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }).then(function (response) {
+    return window.infoModal(response);
+  });
 };
 
 /***/ }),
