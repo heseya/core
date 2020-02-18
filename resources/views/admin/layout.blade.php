@@ -31,14 +31,15 @@
             <img class="icon" src="/img/icons/copy.svg">
             <span class="label animated faster fadeInLeft">Strony</span>
         </a>
+        <a href="/admin/settings">
+            <img class="icon" src="/img/icons/settings.svg">
+            <span class="label animated faster fadeInLeft">Ustawienia</span>
+        </a>
     </nav>
 
     <main class="main">
         <nav class="top-nav">
             <div class="title is-marginless">
-                <a href="/admin/settings" class="avatar">
-                    <img src="{{ Auth::user()->avatar() }}">
-                </a>
                 <h1>@yield('title')</h1>
             </div>
             <div class="buttons">
