@@ -13,7 +13,7 @@ use App\Http\Resources\CategoryResource;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class ProductsController extends Controller
+class ProductController extends Controller
 {
     public function index(Request $request): ResourceCollection
     {

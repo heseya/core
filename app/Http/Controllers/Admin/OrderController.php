@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 
-class OrdersController extends Controller
+class OrderController extends Controller
 {
     public function index()
     {

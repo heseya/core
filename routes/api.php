@@ -4,14 +4,14 @@
 Route::get('/', 'Store\StaticController@index');
 
 // Store
-Route::get('products', 'Store\ProductsController@index');
-Route::get('products/{product}', 'Store\ProductsController@view');
+Route::get('products', 'Store\ProductController@index');
+Route::get('products/{product}', 'Store\ProductController@view');
 
-Route::get('orders/{order}', 'Store\OrdersController@view');
-Route::get('orders/{order}/pay/{method}', 'Store\OrdersController@pay');
+Route::get('orders/{order}', 'Store\OrderController@view');
+Route::get('orders/{order}/pay/{method}', 'Store\OrderController@pay');
 
-Route::get('pages', 'Store\PagesController@index');
-Route::get('pages/{page}', 'Store\PagesController@view');
+Route::get('pages', 'Store\PageController@index');
+Route::get('pages/{page}', 'Store\PageController@view');
 
 Route::get('brands', 'Store\StaticController@brands');
 Route::get('categories', 'Store\StaticController@categories');

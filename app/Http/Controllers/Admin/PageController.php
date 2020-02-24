@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 
-class PagesController extends Controller
+class PageController extends Controller
 {
     public function index()
     {

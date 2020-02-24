@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\PageResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
-class PagesController extends Controller
+class PageController extends Controller
 {
     public function index(): ResourceCollection
     {

@@ -3,10 +3,10 @@
     "type": "project",
     "description": "Depth",
     "require": {
-        "php": "^7.2",
-        "barryvdh/laravel-cors": "^0.11.4",
+        "php": "^7.4",
         "facade/ignition": "^1.11",
         "fideloper/proxy": "^4.0",
+        "fruitcake/laravel-cors": "^1.0",
         "kalnoy/nestedset": "^5.0",
         "laravel/framework": "6.*",
         "laravel/tinker": "^1.0",

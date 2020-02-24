@@ -166,7 +166,6 @@ return [
         /*
          * Package Service Providers...
          */
-        Barryvdh\Cors\ServiceProvider::class,
         Spatie\Permission\PermissionServiceProvider::class,
         Parsedown\Providers\ParsedownServiceProvider::class,
         // SammyK\LaravelFacebookSdk\LaravelFacebookSdkServiceProvider::class,

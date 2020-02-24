@@ -12,8 +12,7 @@ const mix = require('laravel-mix');
  */
 
 
-mix.setPublicPath('public_html/')
-   .js('resources/js/admin.js', 'js')
+mix.js('resources/js/admin.js', 'js')
    .js('resources/js/gallery.js', 'js')
    .js('resources/js/toast.js', 'js')
    .sass('resources/sass/admin.scss', 'css');

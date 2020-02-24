@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 
-class ProductsController extends Controller
+class ProductController extends Controller
 {
     public function index()
     {

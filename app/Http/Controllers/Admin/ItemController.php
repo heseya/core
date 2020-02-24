@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 
-class ItemsController extends Controller
+class ItemController extends Controller
 {
     public function index()
     {

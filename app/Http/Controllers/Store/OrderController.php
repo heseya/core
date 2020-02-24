@@ -7,7 +7,7 @@ use App\Status;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 
-class OrdersController extends Controller
+class OrderController extends Controller
 {
     public function view(Order $order): JsonResponse
     {
