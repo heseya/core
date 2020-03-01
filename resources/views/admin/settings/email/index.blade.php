@@ -1,4 +1,4 @@
-@extends('admin/layout')
+@extends('admin.layout')
 
 @section('title', 'E-mail')
 
@@ -17,7 +17,10 @@
     </li>
     @if ($imap == false)
         <li>
-            <img class="icon" src="/img/icons/warning.svg">Serwer nie posiada biblioteki IMAP!
+            <img class="icon" src="/img/icons/warning.svg">
+            <span>
+                <div>Serwer nie posiada biblioteki IMAP!</div>
+            </span>
         </li>
     @endif
     {{-- <a href="/admin/settings/email/config">
@@ -25,9 +28,13 @@
             <img class="icon" src="/img/icons/settings.svg">Ustawienia serwera
         </li>
     </a> --}}
-    <a href="/admin/settings/email/test">
+    <a href="{{ route('email.test') }}">
         <li class="clickable">
-            <img class="icon" src="/img/icons/email-send.svg">Test wysyłki
+            <img class="icon" src="/img/icons/email-send.svg">
+            <span>
+                <div>Test wysyłki</div>
+                <small>Wyślij testową wiadomość na adres: {{ auth()->user()->email }}</small>
+            </span>
         </li>
     </a>
 </ol>

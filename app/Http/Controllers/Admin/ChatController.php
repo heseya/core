@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Auth;
 use App\Chat;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -29,7 +28,7 @@ class ChatController extends Controller
     {
         $chat->messages()->create([
             'content' => $request->message,
-            'user_id' => Auth::user()->id,
+            'user_id' => auth()->user()->id,
         ]);
 
         return redirect()->route('chats.view', $chat->id);

@@ -1,4 +1,4 @@
-@extends('admin/layout')
+@extends('admin.layout')
 
 @section('title', $user->name)
 
@@ -22,63 +22,63 @@
         <li class="separator">Uprawnienia</li>
         <li class="separator">Produkty</li>
         <li><label class="checkbox">
-            <input name="perms[viewProducts]" type="checkbox" @can('viewProducts') checked @endcan>
+            <input name="perms[viewProducts]" type="checkbox" {{ $user->can('viewProducts') ? 'checked' : '' }}>
             Przeglądanie
         </label></li>
         <li><label class="checkbox">
-            <input name="perms[manageProducts]" type="checkbox" @can('manageProducts') checked @endcan>
+            <input name="perms[manageProducts]" type="checkbox" {{ $user->can('manageProducts') ? 'checked' : '' }}>
             Zarządzanie
         </label></li>
         <li><label class="checkbox">
-            <input name="perms[createProducts]" type="checkbox" @can('createProducts') checked @endcan>
+            <input name="perms[createProducts]" type="checkbox" {{ $user->can('createProducts') ? 'checked' : '' }}>
             Tworzenie
         </label></li>
 
         <li class="separator">Zamówienia</li>
         <li><label class="checkbox">
-            <input name="perms[viewOrders]" type="checkbox" @can('viewOrders') checked @endcan>
+            <input name="perms[viewOrders]" type="checkbox" {{ $user->can('viewOrders') ? 'checked' : '' }}>
             Przeglądanie
         </label></li>
         <li><label class="checkbox">
-            <input name="perms[manageOrders]" type="checkbox" @can('manageOrders') checked @endcan>
+            <input name="perms[manageOrders]" type="checkbox" {{ $user->can('manageOrders') ? 'checked' : '' }}>
             Zarządzanie
         </label></li>
         <li><label class="checkbox">
-            <input name="perms[createOrders]" type="checkbox" @can('createOrders') checked @endcan>
+            <input name="perms[createOrders]" type="checkbox" {{ $user->can('createOrders') ? 'checked' : '' }}>
             Tworzenie
         </label></li>
 
         <li class="separator">Konwersacje</li>
         <li><label class="checkbox">
-            <input name="perms[viewChats]" type="checkbox" @can('viewChats') checked @endcan>
+            <input name="perms[viewChats]" type="checkbox" {{ $user->can('viewChats') ? 'checked' : '' }}>
             Przeglądanie
         </label></li>
         <li><label class="checkbox">
-            <input name="perms[replyChats]" type="checkbox" @can('replyChats') checked @endcan>
+            <input name="perms[replyChats]" type="checkbox" {{ $user->can('replyChats') ? 'checked' : '' }}>
             Odpowiedź
         </label></li>
         <li><label class="checkbox">
-            <input name="perms[createChats]" type="checkbox" @can('createChats') checked @endcan>
+            <input name="perms[createChats]" type="checkbox" {{ $user->can('createChats') ? 'checked' : '' }}>
             Tworzenie
         </label></li>
 
         <li class="separator">Strony</li>
         <li><label class="checkbox">
-            <input name="perms[viewPages]" type="checkbox" @can('viewPages') checked @endcan>
+            <input name="perms[viewPages]" type="checkbox" {{ $user->can('viewPages') ? 'checked' : '' }}>
             Przeglądanie
         </label></li>
         <li><label class="checkbox">
-            <input name="perms[managePages]" type="checkbox" @can('managePages') checked @endcan>
+            <input name="perms[managePages]" type="checkbox" {{ $user->can('managePages') ? 'checked' : '' }}>
             Zarządzanie
         </label></li>
 
         <li class="separator">Administracja</li>
         <li><label class="checkbox">
-            <input name="perms[manageUsers]" type="checkbox" @can('manageUsers') checked @endcan>
+            <input name="perms[manageUsers]" type="checkbox" {{ $user->can('manageUsers') ? 'checked' : '' }}>
             Zarządzanie użytkownikami
         </label></li>
         <li><label class="checkbox">
-            <input name="perms[manageStore]" type="checkbox" @can('manageStore') checked @endcan>
+            <input name="perms[manageStore]" type="checkbox" {{ $user->can('manageStore') ? 'checked' : '' }}>
             Zarządzanie sklepem
         </label></li>
     </ol>

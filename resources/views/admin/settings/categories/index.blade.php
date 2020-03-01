@@ -1,9 +1,9 @@
-@extends('admin/layout')
+@extends('admin.layout')
 
 @section('title', 'Kategorie')
 
 @section('buttons')
-<a href="/admin/settings/categories/create" class="top-nav--button">
+<a href="{{ route('categories.create') }}" class="top-nav--button">
     <img class="icon" src="/img/icons/plus.svg">
 </a>
 @endsection

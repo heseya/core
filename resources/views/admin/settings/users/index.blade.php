@@ -1,4 +1,4 @@
-@extends('admin/layout')
+@extends('admin.layout')
 
 @section('title', 'Dostęp do panelu')
 
@@ -17,7 +17,7 @@
                 <span class="margin__left">
                     <div>
                         {{ $user->name }}
-                        {{ $user->id == Auth::user()->id ? '(Ty)' : '' }}
+                        {{ $user->id === auth()->user()->id ? '(Ty)' : '' }}
                     </div>
                     <small>{{ $user->email }}</small>
                 </span>

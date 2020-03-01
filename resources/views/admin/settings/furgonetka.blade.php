@@ -1,4 +1,4 @@
-@extends('admin/layout')
+@extends('admin.layout')
 
 @section('title', 'Furgonetka')
 
@@ -9,8 +9,8 @@
 @section('content')
 <ol class="list list--settings">
     <li class="separator">Webhook</li>
-    <li>Url: {{ Config::get('app.url') }}/furgonetka/webhook</li>
-    <li>Sól: {{ Config::get('furgonetka.webhook_salt') }}</li>
+    <li>Url: {{ config('app.url') }}/furgonetka/webhook</li>
+    <li>Sól: {{ config('furgonetka.webhook_salt') }}</li>
     <li>Format: JSON</li>
     <a href="https://furgonetka.pl/konto/powiadomienia" target="_blank">
         <li class="clickable">

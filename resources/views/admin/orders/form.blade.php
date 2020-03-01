@@ -1,4 +1,4 @@
-@extends('admin/layout')
+@extends('admin.layout')
 
 @section('title', isset($order->code) ? 'Zamówienie ' . $order->code : 'Nowe zamówienie')
 

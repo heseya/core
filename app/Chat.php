@@ -66,4 +66,9 @@ class Chat extends Model
             2 => 'facebook',
         ][$this->type];
     }
+
+    public static function imap(): bool
+    {
+        return extension_loaded('imap');
+    }
 }

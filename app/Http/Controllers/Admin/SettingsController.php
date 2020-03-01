@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Auth;
 use App\User;
 use App\Brand;
 use App\Category;
@@ -19,7 +18,7 @@ class SettingsController extends Controller
     public function settings()
     {
         return view('admin.settings.main', [
-            'user' => Auth::user(),
+            'user' => auth()->user(),
         ]);
     }
 
@@ -42,13 +41,13 @@ class SettingsController extends Controller
             'name' => config('mail.name'),
             'email' => $email,
             'gravatar' => $gravatar,
-            'imap' => extension_loaded('imap'),
+            'imap' => Chat::imap(),
         ]);
     }
 
     public function emailTest()
     {
-        Mail::to(Auth::user()->email)->send(new Test());
+        Mail::to(auth()->user()->email)->send(new Test());
 
         return redirect()->route('email');
     }

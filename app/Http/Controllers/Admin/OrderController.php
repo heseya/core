@@ -6,7 +6,6 @@ use App\Order;
 use App\Status;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
@@ -52,7 +51,7 @@ class OrderController extends Controller
         // logi
         $order->logs()->create([
             'content' => 'Utworzenie zamówienia.',
-            'user' => Auth::user()->name,
+            'user' => auth()->user()->name,
         ]);
 
         return redirect()->route('orders.view', $order->code);
@@ -79,7 +78,7 @@ class OrderController extends Controller
         // logi
         $order->logs()->create([
             'content' => 'Edycja.',
-            'user' => Auth::user()->name,
+            'user' => auth()->user()->name,
         ]);
 
         return redirect()->route('orders', $order->code);
@@ -94,7 +93,7 @@ class OrderController extends Controller
         // logi
         $order->logs()->create([
             'content' => 'Zmiana statusu.',
-            'user' => Auth::user()->name,
+            'user' => auth()->user()->name,
         ]);
 
         return response()->json(null, 204);

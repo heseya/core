@@ -7,7 +7,6 @@ use App\Mail\NewAdmin;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
@@ -51,12 +50,12 @@ class UserController extends Controller
             'password' => Hash::make($password),
         ]);
 
-        return redirect()->route('users');
+        return redirect()->route('users.view', $user->id);
     }
 
     public function rbac(User $user, Request $request)
     {
-        if (Auth::user()->can('manageUsers')) {
+        if (auth()->user()->can('manageUsers')) {
             $user->syncPermissions(array_keys($request->perms ?? []));
         }
 
