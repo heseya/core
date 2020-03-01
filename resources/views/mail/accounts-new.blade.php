@@ -1,4 +1,4 @@
-@extends('mail/layout')
+@extends('mail.layout')
 
 @section('greeting', 'Hej')
 
@@ -16,7 +16,7 @@
         </h2>
 
         <p style="padding: 0 20px;">
-            <a href="{{ Config::get('app.url') }}/admin">Zaloguj się</a>
+            <a href="{{ route('login') }}">Zaloguj się</a>
         </p>
     </td>
 </tr>

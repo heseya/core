@@ -1,4 +1,4 @@
-@extends('mail/layout')
+@extends('mail.layout')
 
 @section('greeting', 'Hej')
 

@@ -17,8 +17,8 @@
             <td>
             <tr>
                 <td align="center">
-                <a href="{{ Config::get('app.store_url') }}" target="_blank">
-                    <img src="https://secure.depth.store/img/depth-b.svg" alt="DEPTH" style="border:none" height="64">
+                <a href="{{ config('app.store_url') }}" target="_blank">
+                    <img src="{{ config('app.url') }}/img/depth-b.svg" alt="DEPTH" style="border:none" height="64">
                 </a>
                 </td>
             </tr>
@@ -63,8 +63,8 @@
         </tr>
         <tr>
             <td align="center">
-            <a href="mailto:{{ Config::get('mail.address') }}" style="color: #017173; text-decoration: none; font-weight: bold; font-size: 15px; padding: 0 20px;" target="_blank">
-                {{ Config::get('mail.address') }}
+            <a href="mailto:{{ config('mail.address') }}" style="color: #017173; text-decoration: none; font-weight: bold; font-size: 15px; padding: 0 20px;" target="_blank">
+                {{ config('mail.address') }}
             </a>
             </td>
         </tr>

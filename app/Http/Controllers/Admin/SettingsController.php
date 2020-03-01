@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Chat;
 use App\User;
 use App\Brand;
 use App\Category;
