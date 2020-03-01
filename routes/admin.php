@@ -50,13 +50,13 @@ Route::middleware('auth')->group(function () {
     Route::middleware('lang')->group(function () {
         // Items
         Route::prefix('pages')->group(function () {
-            Route::get('/', 'PagesController@index');
-            Route::get('create', 'PagesController@createForm');
-            Route::post('create', 'PagesController@create');
-            Route::get('{page}', 'PagesController@view');
-            Route::get('{page}/update', 'PagesController@updateForm');
-            Route::post('{page}/update', 'PagesController@update');
-            Route::get('{page}/delete', 'PagesController@delete');
+            Route::get('/', 'PageController@index');
+            Route::get('create', 'PageController@createForm');
+            Route::post('create', 'PageController@create');
+            Route::get('{page}', 'PageController@view');
+            Route::get('{page}/update', 'PageController@updateForm');
+            Route::post('{page}/update', 'PageController@update');
+            Route::get('{page}/delete', 'PageController@delete');
         });
     });
 
@@ -81,9 +81,9 @@ Route::middleware('auth')->group(function () {
 
         Route::prefix('users')->group(function () {
             Route::get('/', 'UserController@index');
-            Route::get('{user}', 'UserController@view');
             Route::get('create', 'UserController@createForm');
             Route::post('create', 'UserController@create');
+            Route::get('{user}', 'UserController@view');
             Route::post('{user}/rbac', 'UserController@rbac');
         });
 

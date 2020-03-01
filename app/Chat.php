@@ -46,7 +46,7 @@ class Chat extends Model
         return Str::limit($message->user->name . ': ' . $message->content, 40);
     }
 
-    public function avatar()
+    public function avatar(): string
     {
         switch($this->type) {
             case 1:
