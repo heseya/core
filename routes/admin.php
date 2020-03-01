@@ -46,13 +46,19 @@ Route::get('logout', 'AuthController@logout')->name('logout');
 
     // Items
     Route::prefix('items')->group(function () {
-        Route::get('/', 'ItemController@index')->name('items');
-        Route::get('create', 'ItemController@createForm')->name('items.create');
-        Route::post('create', 'ItemController@create');
-        Route::get('{item}', 'ItemController@view')->name('items.view');
-        Route::get('{item}/update', 'ItemController@updateForm')->name('items.update');
-        Route::post('{item}/update', 'ItemController@update');
-        Route::get('{item}/delete', 'ItemController@delete')->name('items.delete');
+        Route::group(['middleware' => ['perm:createProducts']], function () {
+            Route::get('create', 'ItemController@createForm')->name('items.create');
+            Route::post('create', 'ItemController@create');
+        });
+        Route::group(['middleware' => ['perm:viewProducts']], function () {
+            Route::get('/', 'ItemController@index')->name('items');
+            Route::get('{item}', 'ItemController@view')->name('items.view');
+        });
+        Route::group(['middleware' => ['perm:manageProducts']], function () {
+            Route::get('{item}/update', 'ItemController@updateForm')->name('items.update');
+            Route::post('{item}/update', 'ItemController@update');
+            Route::get('{item}/delete', 'ItemController@delete')->name('items.delete');
+        });
     });
 
     // Chat

@@ -18,7 +18,7 @@ class ProductController extends Controller
     {
         $products = Product::paginate(16);
 
-        return view('admin/products/index', [
+        return view('admin.products.index', [
             'products' => $products,
         ]);
     }
@@ -27,7 +27,7 @@ class ProductController extends Controller
     {
         $parsedown = new Parsedown();
 
-        return view('admin/products/view', [
+        return view('admin.products.view', [
             'product' => $product,
             'description' => $parsedown->text($product->description),
         ]);
@@ -35,7 +35,7 @@ class ProductController extends Controller
 
     public function createForm()
     {
-        return view('admin/products/form', [
+        return view('admin.products.form', [
             'brands' => Brand::all(),
             'categories' => Category::all(),
             'taxes' => Tax::all(),
@@ -66,7 +66,7 @@ class ProductController extends Controller
 
     public function updateForm(Product $product)
     {
-        return view('admin/products/form', [
+        return view('admin.products.form', [
             'product' => $product,
             'brands' => Brand::all(),
             'categories' => Category::all(),

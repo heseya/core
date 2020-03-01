@@ -15,21 +15,21 @@ class ItemController extends Controller
     {
         $items = Item::orderBy('symbol')->paginate(20);
 
-        return view('admin/items/index', [
+        return view('admin.items.index', [
             'items' => $items,
         ]);
     }
 
     public function view(Item $item)
     {
-        return view('admin/items/view', [
+        return view('admin.items.view', [
             'item' => $item,
         ]);
     }
 
     public function createForm()
     {
-        return view('admin/items/form', [
+        return view('admin.items.form', [
             'categories' => Category::all(),
         ]);
     }
@@ -52,7 +52,7 @@ class ItemController extends Controller
 
     public function updateForm(Item $item)
     {
-        return view('admin/items/form', [
+        return view('admin.items.form', [
             'item' => $item,
             'categories' => Category::all(),
         ]);

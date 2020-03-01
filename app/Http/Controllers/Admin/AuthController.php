@@ -19,7 +19,7 @@ class AuthController extends Controller
 
     public function loginForm()
     {
-        return view('admin/auth/login');
+        return view('admin.auth.login');
     }
 
     public function logout()

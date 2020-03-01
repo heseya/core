@@ -15,21 +15,21 @@ class UserController extends Controller
 {
     public function index()
     {
-        return view('admin/settings/users/index', [
+        return view('admin.settings.users.index', [
             'users' => User::all(),
         ]);
     }
 
     public function view(User $user)
     {
-        return view('admin/settings/users/view', [
+        return view('admin.settings.users.view', [
             'user' => $user,
         ]);
     }
 
     public function createForm()
     {
-        return view('admin/settings/users/create');
+        return view('admin.settings.users.create');
     }
 
     public function create(Request $request)
@@ -51,7 +51,7 @@ class UserController extends Controller
             'password' => Hash::make($password),
         ]);
 
-        return redirect('/admin/settings/users');
+        return redirect()->route('users');
     }
 
     public function rbac(User $user, Request $request)
@@ -60,6 +60,6 @@ class UserController extends Controller
             $user->syncPermissions(array_keys($request->perms ?? []));
         }
 
-        return redirect('/admin/settings/users/' . $user->id);
+        return redirect()->route('users.view', $user->id);
     }
 }

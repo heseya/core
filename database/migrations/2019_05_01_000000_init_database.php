@@ -88,7 +88,7 @@ class InitDatabase extends Migration
             $table->increments('id');
             $table->json('name');
             $table->string('slug')->unique()->index();
-            $table->float('price', 8, 2);
+            $table->float('price', 19, 2);
             $table->tinyInteger('tax_id')->index()->unsigned();
             $table->smallInteger('brand_id')->index()->unsigned();
             $table->smallInteger('category_id')->index()->unsigned();
@@ -148,7 +148,7 @@ class InitDatabase extends Migration
             $table->string('method', 16);
             $table->string('status', 32)->nullable();
             $table->string('currency', 3);
-            $table->float('amount', 8, 2);
+            $table->float('amount', 19, 2);
             $table->string('url', 1000)->nullable();
             $table->timestamps();
 
@@ -167,7 +167,7 @@ class InitDatabase extends Migration
 
         Schema::create('product_schema_item', function (Blueprint $table) {
             $table->increments('id');
-            $table->float('extra_price', 8, 2);
+            $table->float('extra_price', 19, 2);
 
             $table->integer('product_schema_id')->unsigned()->index();
             $table->foreign('product_schema_id')->references('id')->on('product_schemas')->onDelete('cascade');
@@ -212,7 +212,7 @@ class InitDatabase extends Migration
             $table->string('name');
             $table->string('symbol')->nullable()->index();
             $table->float('qty', 8, 4);
-            $table->float('price', 8, 2);
+            $table->float('price', 19, 2);
             $table->nestedSet();
             $table->timestamps();
         });

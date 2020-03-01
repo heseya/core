@@ -8,7 +8,7 @@
 </a>
 <button onclick="window.confirmModal(
         'Czy na pewno chcesz usunąć {{ $item->name }}?',
-        '{{ route('items.delete'), $item->id) }}/delete'
+        '{{ route('items.delete', $item->id) }}/delete'
     )" class="top-nav--button">
     <img class="icon" src="/img/icons/trash.svg">
 </button>

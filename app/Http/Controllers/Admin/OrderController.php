@@ -14,7 +14,7 @@ class OrderController extends Controller
     {
         $orders = Order::orderBy('created_at', 'desc')->paginate(20);
 
-        return view('admin/orders/index', [
+        return view('admin.orders.index', [
             'orders' => $orders,
             'status' => new Status,
         ]);
@@ -22,7 +22,7 @@ class OrderController extends Controller
 
     public function view(Order $order)
     {
-        return view('admin/orders/view', [
+        return view('admin.orders.view', [
             'order' => $order,
             'status' => new Status,
         ]);
@@ -30,7 +30,7 @@ class OrderController extends Controller
 
     public function createForm()
     {
-        return view('admin/orders/form');
+        return view('admin.orders.form');
     }
 
     public function create(Request $request)
@@ -60,7 +60,7 @@ class OrderController extends Controller
 
     public function updateForm(Order $order)
     {
-        return view('admin/orders/form', [
+        return view('admin.orders.form', [
             'order' => $order,
         ]);
     }

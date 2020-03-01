@@ -12,14 +12,14 @@ class PageController extends Controller
 {
     public function index()
     {
-        return view('admin/pages/index', [
+        return view('admin.pages.index', [
             'pages' => Page::paginate(20),
         ]);
     }
 
     public function view(Page $page)
     {
-        return view('admin/pages/view', [
+        return view('admin.pages.view', [
             'page' => $page,
             'selectLang' => app()->getLocale(),
         ]);
@@ -27,7 +27,7 @@ class PageController extends Controller
 
     public function createForm()
     {
-        return view('admin/pages/form');
+        return view('admin.pages.form');
     }
 
     public function create(Request $request)
@@ -52,7 +52,7 @@ class PageController extends Controller
 
     public function updateForm(Page $page)
     {
-        return view('admin/pages/form', [
+        return view('admin.pages.form', [
             'page' => $page,
         ]);
     }
