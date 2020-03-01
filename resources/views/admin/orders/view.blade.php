@@ -12,9 +12,11 @@
 <a class="top-nav--button" onclick="payment('{{ $order->code }}')">
     <img class="icon" src="/img/icons/cash.svg">
 </a>
-<a href="/admin/orders/{{ $order->code }}/update" class="top-nav--button">
+@can('manageOrders')
+<a href="{{ route('orders.update', $order->code) }}" class="top-nav--button">
     <img class="icon" src="/img/icons/pencil.svg">
 </a>
+@endcan
 @endsection
 
 @section('content')

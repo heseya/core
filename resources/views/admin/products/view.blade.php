@@ -3,12 +3,12 @@
 @section('title', $product->name)
 
 @section('buttons')
-<a href="/admin/products/{{ $product->slug }}/update" class="top-nav--button">
+<a href="{{ route('products.update', $product->slug) }}" class="top-nav--button">
     <img class="icon" src="/img/icons/pencil.svg">
 </a>
 <button onclick="window.confirmModal(
         'Czy na pewno chcesz usunąć {{ $product->name }}?',
-        '/admin/products/{{ $product->slug }}/delete'
+        '{{ route('products.delete', $product->slug) }}'
     )" class="top-nav--button">
     <img class="icon" src="/img/icons/trash.svg">
 </button>

@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Store;
+namespace App\Http\Controllers;
 
 use App\Order;
 use App\Status;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
 
 class OrderController extends Controller
 {

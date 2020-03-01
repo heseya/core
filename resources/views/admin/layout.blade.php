@@ -15,23 +15,31 @@
             <img src="/img/logo.png">
         </div>
 
-        <a href="/admin/products">
+        @can('viewProducts')
+        <a href="{{ route('products') }}">
             <img class="icon" src="/img/icons/products.svg">
             <span class="label animated faster fadeInLeft">Asortyment</span>
         </a>
-        <a href="/admin/orders">
+        @endcan
+        @can('viewOrders')
+        <a href="{{ route('orders') }}">
             <img class="icon" src="/img/icons/orders.svg">
             <span class="label animated faster fadeInLeft">Zamówienia</span>
         </a>
-        <a href="/admin/chat">
+        @endcan
+        @can('viewChats')
+        <a href="{{ route('chats') }}">
             <img class="icon" src="/img/icons/chat.svg">
             <span class="label animated faster fadeInLeft">Konwersajce</span>
         </a>
-        <a href="/admin/pages">
+        @endcan
+        @can('viewPages')
+        <a href="{{ route('pages') }}">
             <img class="icon" src="/img/icons/copy.svg">
             <span class="label animated faster fadeInLeft">Strony</span>
         </a>
-        <a href="/admin/settings">
+        @endcan
+        <a href="{{ route('settings') }}">
             <img class="icon" src="/img/icons/settings.svg">
             <span class="label animated faster fadeInLeft">Ustawienia</span>
         </a>

@@ -3,7 +3,7 @@
 @section('title', 'Magazyn')
 
 @section('buttons')
-<a href="/admin/items/create" class="top-nav--button">
+<a href="{{ route('items.create') }}" class="top-nav--button">
     <img class="icon" src="/img/icons/plus.svg">
 </a>
 @endsection
@@ -11,7 +11,7 @@
 @section('content')
 <ol class="list list--chat">
     @foreach ($items as $item)
-        <a href="/admin/items/{{ $item->id }}">
+        <a href="{{ route('items.view', $item->id) }}">
             <li class="clickable">
                 <div class="avatar">
                     @if ($item->photo)

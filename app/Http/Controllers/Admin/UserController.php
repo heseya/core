@@ -15,21 +15,21 @@ class UserController extends Controller
 {
     public function index()
     {
-        return response()->view('admin/settings/users/index', [
+        return view('admin/settings/users/index', [
             'users' => User::all(),
         ]);
     }
 
     public function view(User $user)
     {
-        return response()->view('admin/settings/users/view', [
+        return view('admin/settings/users/view', [
             'user' => $user,
         ]);
     }
 
     public function createForm()
     {
-        return response()->view('admin/settings/users/create');
+        return view('admin/settings/users/create');
     }
 
     public function create(Request $request)

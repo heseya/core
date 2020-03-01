@@ -47,7 +47,7 @@ class PageController extends Controller
 
         $page = Page::create($request->all());
 
-        return redirect('/admin/pages/' . $page->slug);
+        return redirect()->route('pages.view', $page->slug);
     }
 
     public function updateForm(Page $page)
@@ -73,13 +73,13 @@ class PageController extends Controller
 
         $page->update($request->all());
 
-        return redirect('/admin/pages/' . $page->slug . '?lang=' . app()->getLocale());
+        return redirect()->route('pages.view', $page->slug);
     }
 
     public function delete(Page $page)
     {
         $page->delete();
 
-        return redirect('/admin/pages');
+        return redirect()->route('pages');
     }
 }

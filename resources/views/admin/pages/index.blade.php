@@ -3,7 +3,7 @@
 @section('title', 'Strony')
 
 @section('buttons')
-<a href="/admin/pages/create" class="top-nav--button">
+<a href="{{ route('pages.create') }}" class="top-nav--button">
     <img class="icon" src="/img/icons/plus.svg">
 </a>
 @endsection
@@ -11,7 +11,7 @@
 @section('content')
 <ol class="list">
     @foreach($pages as $page)
-        <a href="/admin/pages/{{ $page->slug }}">
+        <a href="{{ route('pages.view', $page->slug) }}">
             <li class="center clickable">
                 <span class="margin__left">
                     <div>

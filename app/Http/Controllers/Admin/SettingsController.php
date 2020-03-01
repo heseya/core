@@ -18,19 +18,19 @@ class SettingsController extends Controller
 {
     public function settings()
     {
-        return response()->view('admin/settings/main', [
+        return view('admin/settings/main', [
             'user' => Auth::user(),
         ]);
     }
 
     public function info()
     {
-        return response()->view('admin/settings/info');
+        return view('admin/settings/info');
     }
 
     public function docs()
     {
-        return response()->view('admin/settings/docs');
+        return view('admin/settings/docs');
     }
 
     public function email()
@@ -38,7 +38,7 @@ class SettingsController extends Controller
         $email = config('mail.address');
         $gravatar = md5(strtolower(trim($email)));
 
-        return response()->view('admin/settings/email/index', [
+        return view('admin/settings/email/index', [
             'name' => config('mail.name'),
             'email' => $email,
             'gravatar' => $gravatar,
@@ -55,14 +55,14 @@ class SettingsController extends Controller
 
     public function categories()
     {
-        return response()->view('admin/settings/categories/index', [
+        return view('admin/settings/categories/index', [
             'categories' => Category::all(),
         ]);
     }
 
     public function categoryCreateForm()
     {
-        return response()->view('admin/settings/categories/create');
+        return view('admin/settings/categories/create');
     }
 
     public function categoryCreate(Request $request)
@@ -79,14 +79,14 @@ class SettingsController extends Controller
 
     public function brands()
     {
-        return response()->view('admin/settings/brands/index', [
+        return view('admin/settings/brands/index', [
             'brands' => Brand::all(),
         ]);
     }
 
     public function brandCreateForm()
     {
-        return response()->view('admin/settings/brands/create');
+        return view('admin/settings/brands/create');
     }
 
     public function brandCreate(Request $request)
@@ -110,6 +110,6 @@ class SettingsController extends Controller
 
     public function furgonetka()
     {
-        return response()->view('admin/settings/furgonetka');
+        return view('admin/settings/furgonetka');
     }
 }

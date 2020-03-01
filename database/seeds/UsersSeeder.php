@@ -13,10 +13,12 @@ class UsersSeeder extends Seeder
      */
     public function run()
     {
-        User::create([
+        $user = User::create([
             'name' => 'Jędrzej Buliński',
             'email' => 'jedrzej@heseya.com',
             'password' => Hash::make('secret'),
         ]);
+
+        $user->givePermissionTo('manageUsers');
     }
 }

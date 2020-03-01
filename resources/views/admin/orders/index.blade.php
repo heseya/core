@@ -3,15 +3,17 @@
 @section('title', 'Zamówienia')
 
 @section('buttons')
-<a href="/admin/orders/create" class="top-nav--button">
+@can('createOrders')
+<a href="{{ route('orders.create') }}" class="top-nav--button">
     <img class="icon" src="/img/icons/plus.svg">
 </a>
+@endcan
 @endsection
 
 @section('content')
 <ol class="list list--orders">
     @foreach ($orders as $order)
-        <a href="/admin/orders/{{ $order->code }}">
+        <a href="{{ route('orders.view', $order->code) }}">
             <li class="clickable">
                 <div>
                     <div>

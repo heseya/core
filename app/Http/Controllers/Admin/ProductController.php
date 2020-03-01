@@ -18,7 +18,7 @@ class ProductController extends Controller
     {
         $products = Product::paginate(16);
 
-        return response()->view('admin/products/index', [
+        return view('admin/products/index', [
             'products' => $products,
         ]);
     }
@@ -27,7 +27,7 @@ class ProductController extends Controller
     {
         $parsedown = new Parsedown();
 
-        return response()->view('admin/products/view', [
+        return view('admin/products/view', [
             'product' => $product,
             'description' => $parsedown->text($product->description),
         ]);
@@ -35,7 +35,7 @@ class ProductController extends Controller
 
     public function createForm()
     {
-        return response()->view('admin/products/form', [
+        return view('admin/products/form', [
             'brands' => Brand::all(),
             'categories' => Category::all(),
             'taxes' => Tax::all(),
@@ -61,12 +61,12 @@ class ProductController extends Controller
             }
         }
 
-        return redirect('/admin/products/' . $product->slug);
+        return redirect()->route('products.view', $product->slug);
     }
 
     public function updateForm(Product $product)
     {
-        return response()->view('admin/products/form', [
+        return view('admin/products/form', [
             'product' => $product,
             'brands' => Brand::all(),
             'categories' => Category::all(),
@@ -98,13 +98,13 @@ class ProductController extends Controller
             }
         }
 
-        return redirect('/admin/products/' . $product->slug);
+        return redirect()->route('products', $product->slug);
     }
 
     public function delete(Product $product)
     {
         $product->delete();
 
-        return redirect('/admin/products');
+        return redirect()->route('products');
     }
 }

@@ -9,7 +9,7 @@
 @section('content')
 <ol id="chats" class="list list--chat">
     @foreach ($chats as $chat)
-        <a href="/admin/chat/{{ $chat->id }}">
+        <a href="{{ route('chats.view', $chat->id) }}">
             <li class="clickable">
                 <div class="avatar">
                     <img src="{{ $chat->avatar() }}">

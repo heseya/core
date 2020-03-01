@@ -3,10 +3,10 @@
 @section('title', 'Asortyment')
 
 @section('buttons')
-<a href="/admin/items" class="top-nav--button">
+<a href="{{ route('items') }}" class="top-nav--button">
     <img class="icon" src="/img/icons/chest.svg">
 </a>
-<a href="/admin/products/create" class="top-nav--button">
+<a href="{{ route('products.create') }}" class="top-nav--button">
     <img class="icon" src="/img/icons/plus.svg">
 </a>
 @endsection
@@ -14,7 +14,7 @@
 @section('content')
 <div class="products-list">
     @foreach ($products as $product)
-        <a href="/admin/products/{{ $product->slug }}" class="product">
+        <a href="{{ route('products.view', $product->slug) }}" class="product">
             <div class="product__img">
                 @if (isset($product->gallery[0]))
                     <img src="{{ $product->gallery[0]->url }}" />

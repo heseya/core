@@ -1,20 +1,20 @@
 <?php
 
 // API routes, nie ma prefixu
-Route::get('/', 'Store\StaticController@index');
+Route::get('/', 'StaticController@index');
 
 // Store
-Route::get('products', 'Store\ProductController@index');
-Route::get('products/{product}', 'Store\ProductController@view');
+Route::get('products', 'ProductController@index');
+Route::get('products/{product}', 'ProductController@view');
 
-Route::get('orders/{order}', 'Store\OrderController@view');
-Route::get('orders/{order}/pay/{method}', 'Store\OrderController@pay');
+Route::get('orders/{order}', 'OrderController@view');
+Route::get('orders/{order}/pay/{method}', 'OrderController@pay');
 
-Route::get('pages', 'Store\PageController@index');
-Route::get('pages/{page}', 'Store\PageController@view');
+Route::get('pages', 'PageController@index');
+Route::get('pages/{page}', 'PageController@view');
 
-Route::get('brands', 'Store\StaticController@brands');
-Route::get('categories', 'Store\StaticController@categories');
+Route::get('brands', 'StaticController@brands');
+Route::get('categories', 'StaticController@categories');
 
 // External
 Route::prefix('furgonetka')->group(function () {

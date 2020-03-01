@@ -3,12 +3,12 @@
 @section('title', $item->name)
 
 @section('buttons')
-<a href="/admin/items/{{ $item->id }}/update" class="top-nav--button">
+<a href="{{ route('items.update', $item->id) }}" class="top-nav--button">
     <img class="icon" src="/img/icons/pencil.svg">
 </a>
 <button onclick="window.confirmModal(
         'Czy na pewno chcesz usunąć {{ $item->name }}?',
-        '/admin/items/{{ $item->id }}/delete'
+        '{{ route('items.delete'), $item->id) }}/delete'
     )" class="top-nav--button">
     <img class="icon" src="/img/icons/trash.svg">
 </button>
@@ -44,7 +44,7 @@
         <h3 class="margin--left">Powiązane produkty</h3>
         <div class="list">
             @foreach ($item->schemas as $schema)
-            <a href="/admin/products/{{ $schema->product->slug }}" class="cart__item">
+            <a href="{{ route('products.view', $schema->product->slug) }}" class="cart__item">
                 <div class="cart__img">
                 @if ($schema->product->gallery[0])
                     <img src="{{ $schema->product->gallery[0]->url }}">

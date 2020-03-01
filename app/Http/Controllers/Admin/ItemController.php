@@ -47,7 +47,7 @@ class ItemController extends Controller
             $item->photo()->associate($request->photos[0])->save();
         }
 
-        return redirect('/admin/items/' . $item->id);
+        return redirect()->route('items.view', $item->id);
     }
 
     public function updateForm(Item $item)
@@ -75,13 +75,13 @@ class ItemController extends Controller
             $item->photo()->associate($request->photos[0])->save();
         }
 
-        return redirect('/admin/items/' . $item->id);
+        return redirect()->route('items', $item->id);
     }
 
     public function delete(Item $item)
     {
         $item->delete();
 
-        return redirect('/admin/items');
+        return redirect()->route('items');
     }
 }

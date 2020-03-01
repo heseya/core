@@ -15,9 +15,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->bind('path.public', function () {
-            return base_path('public');
-        });
+        //
     }
 
     /**
@@ -30,6 +28,8 @@ class AppServiceProvider extends ServiceProvider
         Paginator::defaultView('admin/components/pagination');
 
         Relation::morphMap([
+            'user' => 'App\User',
+
             'photo' => 'App\Photo',
             'video' => 'App\Video',
         ]);

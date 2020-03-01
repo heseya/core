@@ -17,20 +17,14 @@ class AuthController extends Controller
      */
     protected $redirectTo = '/admin/orders';
 
-    // tylko dla niezalogowanych poza logout
-    public function __construct()
+    public function loginForm()
     {
-        $this->middleware('guest')->except('logout');
-    }
-
-    public function showLoginForm()
-    {
-        return response()->view('admin/auth/login');
+        return view('admin/auth/login');
     }
 
     public function logout()
     {
         Auth::logout();
-        return redirect('/admin/login');
+        return redirect()->route('login');
     }
 }

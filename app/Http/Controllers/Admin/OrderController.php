@@ -55,7 +55,7 @@ class OrderController extends Controller
             'user' => Auth::user()->name,
         ]);
 
-        return redirect('/admin/orders/' . $order->code);
+        return redirect()->route('orders.view', $order->code);
     }
 
     public function updateForm(Order $order)
@@ -82,7 +82,7 @@ class OrderController extends Controller
             'user' => Auth::user()->name,
         ]);
 
-        return redirect('/admin/orders/' . $order->code);
+        return redirect()->route('orders', $order->code);
     }
 
     public function updateStatus(Order $order, Request $request)

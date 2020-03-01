@@ -1,10 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Store;
+namespace App\Http\Controllers;
 
 use App\Page;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
 use App\Http\Resources\PageResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 

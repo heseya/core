@@ -13,14 +13,14 @@ class ChatController extends Controller
     {
         $chats = Chat::paginate(20);
 
-        return response()->view('admin/chat/index', [
+        return view('admin/chats/index', [
             'chats' => $chats,
         ]);
     }
 
     public function view(Chat $chat)
     {
-        return response()->view('admin/chat/view', [
+        return view('admin/chats/view', [
             'chat' => $chat
         ]);
     }
@@ -32,6 +32,6 @@ class ChatController extends Controller
             'user_id' => Auth::user()->id,
         ]);
 
-        return response()->redirectTo('/admin/chat/' . $chat->id);
+        return redirect()->route('chats.view', $chat->id);
     }
 }

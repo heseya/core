@@ -3,7 +3,7 @@
 @section('title', 'Dostęp do panelu')
 
 @section('buttons')
-<a href="/admin/settings/users/create" class="top-nav--button">
+<a href="{{ route('users.create') }}" class="top-nav--button">
     <img class="icon" src="/img/icons/plus.svg">
 </a>
 @endsection
@@ -11,7 +11,7 @@
 @section('content')
 <ol class="list">
     @foreach($users as $user)
-        <a href="/admin/settings/users/{{ $user->id }}">
+        <a href="{{ route('users.view', $user->id) }}">
             <li class="center clickable">
                 <img class="avatar" src="{{ $user->avatar() }}">
                 <span class="margin__left">

@@ -1,97 +1,120 @@
 <?php
 
-// prefix /admin
-Route::get('login', 'AuthController@showLoginForm')->name('login');
-Route::post('login', 'AuthController@login');
-Route::get('logout', 'AuthController@logout');
+Route::middleware('guest')->group(function () {
+    Route::get('login', 'AuthController@loginForm')->name('login');
+    Route::post('login', 'AuthController@login');
+});
 
 Route::middleware('auth')->group(function () {
 
+
+Route::get('logout', 'AuthController@logout')->name('logout');
+
     // Orders
     Route::prefix('orders')->group(function () {
-        Route::get('/', 'OrderController@index');
-        Route::get('create', 'OrderController@createForm');
-        Route::post('create', 'OrderController@create');
-        Route::get('{order}', 'OrderController@view');
-        Route::get('{order}/update', 'OrderController@updateForm');
-        Route::post('{order}/update', 'OrderController@update');
-        Route::post('{order}/status', 'OrderController@updateStatus');
+        Route::group(['middleware' => ['perm:createOrders']], function () {
+            Route::get('create', 'OrderController@createForm')->name('orders.create');
+            Route::post('create', 'OrderController@create');
+        });
+        Route::group(['middleware' => ['perm:viewOrders']], function () {
+            Route::get('/', 'OrderController@index')->name('orders');
+            Route::get('{order}', 'OrderController@view')->name('orders.view');
+        });
+        Route::group(['middleware' => ['perm:manageOrders']], function () {
+            Route::get('{order}/update', 'OrderController@updateForm')->name('orders.update');
+            Route::post('{order}/update', 'OrderController@update');
+            Route::post('{order}/status', 'OrderController@updateStatus')->name('orders.status');
+        });
     });
 
     // Products
     Route::prefix('products')->group(function () {
-        Route::get('/', 'ProductController@index');
-        Route::get('create', 'ProductController@createForm');
-        Route::post('create', 'ProductController@create');
-        Route::get('{product}', 'ProductController@view');
-        Route::get('{product}/update', 'ProductController@updateForm');
-        Route::post('{product}/update', 'ProductController@update');
-        Route::get('{product}/delete', 'ProductController@delete');
+        Route::group(['middleware' => ['perm:createProducts']], function () {
+            Route::get('create', 'ProductController@createForm')->name('products.create');
+            Route::post('create', 'ProductController@create');
+        });
+        Route::group(['middleware' => ['perm:viewProducts']], function () {
+            Route::get('/', 'ProductController@index')->name('products');
+            Route::get('{product}', 'ProductController@view')->name('products.view');
+        });
+        Route::group(['middleware' => ['perm:manageProducts']], function () {
+            Route::get('{product}/update', 'ProductController@updateForm')->name('products.update');
+            Route::post('{product}/update', 'ProductController@update');
+            Route::get('{product}/delete', 'ProductController@delete')->name('products.delete');
+        });
     });
 
     // Items
     Route::prefix('items')->group(function () {
-        Route::get('/', 'ItemController@index');
-        Route::get('create', 'ItemController@createForm');
+        Route::get('/', 'ItemController@index')->name('items');
+        Route::get('create', 'ItemController@createForm')->name('items.create');
         Route::post('create', 'ItemController@create');
-        Route::get('{item}', 'ItemController@view');
-        Route::get('{item}/update', 'ItemController@updateForm');
+        Route::get('{item}', 'ItemController@view')->name('items.view');
+        Route::get('{item}/update', 'ItemController@updateForm')->name('items.update');
         Route::post('{item}/update', 'ItemController@update');
-        Route::get('{item}/delete', 'ItemController@delete');
+        Route::get('{item}/delete', 'ItemController@delete')->name('items.delete');
     });
 
     // Chat
-    Route::prefix('chat')->group(function () {
-        Route::get('/', 'ChatController@index');
-        Route::get('{chat}', 'ChatController@view');
-        Route::post('{chat}', 'ChatController@send');
+    Route::prefix('chats')->group(function () {
+        Route::group(['middleware' => ['perm:viewChats']], function () {
+            Route::get('/', 'ChatController@index')->name('chats');
+            Route::get('{chat}', 'ChatController@view')->name('chats.view');
+        });
+        Route::group(['middleware' => ['perm:replyChats']], function () {
+            Route::post('{chat}', 'ChatController@send')->name('chats.send');
+        });
     });
 
-    Route::middleware('lang')->group(function () {
-        // Items
-        Route::prefix('pages')->group(function () {
-            Route::get('/', 'PageController@index');
-            Route::get('create', 'PageController@createForm');
+    // Items
+    Route::prefix('pages')->group(function () {
+        Route::group(['middleware' => ['perm:createPages']], function () {
+            Route::get('create', 'PageController@createForm')->name('pages.create');
             Route::post('create', 'PageController@create');
-            Route::get('{page}', 'PageController@view');
-            Route::get('{page}/update', 'PageController@updateForm');
+        });
+        Route::group(['middleware' => ['perm:viewPages']], function () {
+            Route::get('/', 'PageController@index')->name('pages');
+            Route::get('{page}', 'PageController@view')->name('pages.view');
+        });
+        Route::group(['middleware' => ['perm:managePages']], function () {
+            Route::get('{page}/update', 'PageController@updateForm')->name('pages.update');
             Route::post('{page}/update', 'PageController@update');
-            Route::get('{page}/delete', 'PageController@delete');
+            Route::get('{page}/delete', 'PageController@delete')->name('pages.delete');
         });
     });
 
     // Settings
     Route::prefix('settings')->group(function () {
 
-        Route::get('/', 'SettingsController@settings');
+        Route::get('/', 'SettingsController@settings')->name('settings');
 
-        Route::get('email', 'SettingsController@email');
-        Route::get('email/config', 'SettingsController@emailConfig');
-        Route::post('email/config', 'SettingsController@emailConfigStore');
-        Route::get('email/test', 'SettingsController@emailTest');
+        Route::group(['middleware' => ['perm:manageStore']], function () {
+            Route::get('email', 'SettingsController@email')->name('email');
+            Route::get('email/config', 'SettingsController@emailConfig');
+            Route::post('email/config', 'SettingsController@emailConfigStore');
+            Route::get('email/test', 'SettingsController@emailTest')->name('email.test');
 
-        Route::get('categories', 'SettingsController@categories');
-        Route::get('categories/create', 'SettingsController@categoryCreateForm');
-        Route::post('categories/create', 'SettingsController@categoryCreate');
-        Route::put('categories/create', 'SettingsController@categoryUpdate');
+            Route::get('categories', 'SettingsController@categories')->name('categories');
+            Route::get('categories/create', 'SettingsController@categoryCreateForm')->name('categories.create');
+            Route::post('categories/create', 'SettingsController@categoryCreate');
 
-        Route::get('brands', 'SettingsController@brands');
-        Route::get('brands/create', 'SettingsController@brandCreateForm');
-        Route::post('brands/create', 'SettingsController@brandCreate');
+            Route::get('brands', 'SettingsController@brands')->name('brands');
+            Route::get('brands/create', 'SettingsController@brandCreateForm')->name('brands.create');
+            Route::post('brands/create', 'SettingsController@brandCreate');
 
-        Route::prefix('users')->group(function () {
-            Route::get('/', 'UserController@index');
-            Route::get('create', 'UserController@createForm');
-            Route::post('create', 'UserController@create');
-            Route::get('{user}', 'UserController@view');
-            Route::post('{user}/rbac', 'UserController@rbac');
+            Route::get('furgonetka', 'SettingsController@furgonetka')->name('furgonetka');
         });
 
-        Route::get('info', 'SettingsController@info');
-        Route::get('docs', 'SettingsController@docs');
-        Route::get('notifications', 'SettingsController@notifications');
+        Route::prefix('users')->group(function () {
+            Route::get('/', 'UserController@index')->name('users');
+            Route::get('create', 'UserController@createForm')->name('users.create');
+            Route::post('create', 'UserController@create');
+            Route::get('{user}', 'UserController@view')->name('users.view');
+            Route::post('{user}/rbac', 'UserController@rbac')->name('users.rbac');
+        });
 
-        Route::get('furgonetka', 'SettingsController@furgonetka');
+        Route::get('info', 'SettingsController@info')->name('info');
+        Route::get('docs', 'SettingsController@docs')->name('docs');
 
         Route::prefix('facebook')->group(function () {
             Route::get('/', 'FacebookController@settings');

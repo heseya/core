@@ -18,15 +18,21 @@
         </li>
     </a> --}}
 
+    @can('manageStore')
     <li class="separator">Sklep</li>
-    <a href="/admin/settings/categories">
+    <a href="{{ route('categories') }}">
         <li class="clickable">
             <img class="icon" src="/img/icons/list.svg">Kategorie
         </li>
     </a>
-    <a href="/admin/settings/brands">
+    <a href="{{ route('brands') }}">
         <li class="clickable">
             <img class="icon" src="/img/icons/shield.svg">Marki
+        </li>
+    </a>
+    <a href="{{ route('email') }}">
+        <li class="clickable">
+            <img class="icon" src="/img/icons/email.svg">E-mail
         </li>
     </a>
     {{-- <a href="/admin/settings/delivery">
@@ -34,43 +40,39 @@
             <img class="icon" src="/img/icons/delivery.svg">Dostawa
         </li>
     </a> --}}
+    @endcan
 
     <li class="separator">Panel</li>
-    <a href="/admin/settings/email">
-        <li class="clickable">
-            <img class="icon" src="/img/icons/email.svg">E-mail
-        </li>
-    </a>
     {{-- <a href="/admin/settings/facebook">
         <li class="clickable">
             <img class="icon" src="/img/icons/facebook.svg">Facebook
         </li>
     </a> --}}
-    <a href="/admin/settings/users">
+    <a href="{{ route('users') }}">
         <li class="clickable">
             <img class="icon" src="/img/icons/accounts.svg">Dostęp do panelu
         </li>
     </a>
 
     <li class="separator">Integracje</li>
-    <a href="/admin/settings/furgonetka">
+    <a href="{{ route('furgonetka') }}">
         <li class="clickable">
             <img class="icon" src="/img/icons/delivery.svg">Furgonetka
         </li>
     </a>
 
     <li class="separator">Inne</li>
-    <a href="/admin/settings/docs">
+    <a href="{{ route('docs') }}">
         <li class="clickable">
             <img class="icon" src="/img/icons/book.svg">Dokumentacja API
         </li>
     </a>
-    <a href="/admin/settings/info">
+    <a href="{{ route('info') }}">
         <li class="clickable">
             <img class="icon" src="/img/icons/info.svg">Informacje o systemie
         </li>
     </a>
-    <a href="/admin/logout">
+    <a href="{{ route('logout') }}">
         <li class="clickable">
             <img class="icon" src="/img/icons/logout.svg">Wyloguj się
         </li>
