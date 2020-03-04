@@ -176,16 +176,6 @@ class InitDatabase extends Migration
             $table->foreign('item_id')->references('id')->on('items')->onDelete('cascade');
         });
 
-        Schema::create('chats', function (Blueprint $table) {
-            $table->increments('id');
-            $table->integer('client_id')->unsigned()->index();
-            $table->smallInteger('type');
-            $table->string('system_id', 128)->nullable();
-            $table->timestamps();
-
-            $table->foreign('client_id')->references('id')->on('clients');
-        });
-
         Schema::create('order_logs', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->integer('order_id')->unsigned()->index();
@@ -196,9 +186,20 @@ class InitDatabase extends Migration
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
         });
 
+        Schema::create('chats', function (Blueprint $table) {
+            $table->increments('id');
+            $table->integer('client_id')->unsigned()->nullable()->index();
+            $table->smallInteger('system')->default(0);
+            $table->string('external_id')->nullable();
+            $table->timestamps();
+
+            $table->foreign('client_id')->references('id')->on('clients');
+        });
+
         Schema::create('messages', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->text('content');
+            $table->string('external_id')->nullable();
             $table->integer('user_id')->unsigned()->nullable();
             $table->integer('chat_id')->unsigned();
             $table->timestamp('created_at')->useCurrent();

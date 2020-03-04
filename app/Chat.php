@@ -9,17 +9,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Chat extends Model
 {
+    const SYSTEM_INTERNAL = 0;
+    const SYSTEM_EMAIL = 1;
+
     protected $fillable = [
-        'type',
-        'system_id',
+        'system',
+        'external_id',
         'client_id',
     ];
-
-    // typy czatów        | system_id
-
-    // 0 - czat wbudowany | null
-    // 1 - e-mail         | adres e-mail
-    // 2 - facebook       | id z facebooka
 
     public function client()
     {
@@ -49,22 +46,13 @@ class Chat extends Model
     public function avatar(): string
     {
         switch($this->type) {
-            case 1:
+            case self::SYSTEM_EMAIL:
                 return '//www.gravatar.com/avatar/' . md5(strtolower(trim($this->system_id))) . '?d=mp&s=50x50';
                 break;
 
             default:
                 return '//www.gravatar.com/avatar/2?d=mp&s=50x50';
         }
-    }
-
-    public function typeName()
-    {
-        return [
-            0 => 'czat wewnętrzny',
-            1 => 'email',
-            2 => 'facebook',
-        ][$this->type];
     }
 
     public static function imap(): bool

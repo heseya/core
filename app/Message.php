@@ -10,8 +10,10 @@ class Message extends Model
     const UPDATED_AT = null;
 
     protected $fillable = [
+        'external_id',
         'content',
         'user_id',
+        'created_at',
     ];
 
     public function chat()

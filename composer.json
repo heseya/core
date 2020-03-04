@@ -13,7 +13,8 @@
         "mashape/unirest-php": "^3.0",
         "parsedown/laravel": "^1.2",
         "spatie/laravel-permission": "^3.6",
-        "spatie/laravel-translatable": "^4.2"
+        "spatie/laravel-translatable": "^4.2",
+        "webklex/laravel-imap": "^1.4"
     },
     "require-dev": {
         "beyondcode/laravel-dump-server": "^1.0",

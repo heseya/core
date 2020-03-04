@@ -22,7 +22,7 @@ class ChatSeeder extends Seeder
             ]);
 
             $client->chats()->save(new Chat([
-                'type' => rand(0, 2),
+                'system' => rand(0, 2),
             ]));
         }
     }

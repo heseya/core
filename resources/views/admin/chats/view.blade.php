@@ -1,6 +1,6 @@
 @extends('admin.layout')
 
-@section('title', $chat->client['name'])
+@section('title', $chat->client->name ?? $chat->external_id)
 
 @section('buttons')
 

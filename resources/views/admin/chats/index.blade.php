@@ -16,7 +16,7 @@
                 </div>
                 <div>
                     <div class="{{ $chat->unread ? 'unread' : '' }}">
-                        {{ $chat->client->name }}
+                        {{ $chat->client->name ?? $chat->external_id }}
                     </div>
                     <small>{!! $chat->snippet() !!}</small>
                 </div>
