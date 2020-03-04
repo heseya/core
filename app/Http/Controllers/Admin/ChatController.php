@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Chat;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Artisan;
 
 class ChatController extends Controller
 {
@@ -32,5 +33,12 @@ class ChatController extends Controller
         ]);
 
         return redirect()->route('chats.view', $chat->id);
+    }
+
+    public function sync()
+    {
+        Artisan::call('emails:sync');
+
+        return redirect()->route('chats');
     }
 }

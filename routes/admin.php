@@ -65,6 +65,7 @@ Route::get('logout', 'AuthController@logout')->name('logout');
     Route::prefix('chats')->group(function () {
         Route::group(['middleware' => ['perm:viewChats']], function () {
             Route::get('/', 'ChatController@index')->name('chats');
+            Route::get('sync', 'ChatController@sync')->name('chats.sync');
             Route::get('{chat}', 'ChatController@view')->name('chats.view');
         });
         Route::group(['middleware' => ['perm:replyChats']], function () {

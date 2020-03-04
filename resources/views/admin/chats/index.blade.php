@@ -3,7 +3,9 @@
 @section('title', 'Konwersacje')
 
 @section('buttons')
-
+<a href="{{ route('chats.sync') }}" class="top-nav--button">
+    <img class="icon" src="/img/icons/rotate.svg">
+</a>
 @endsection
 
 @section('content')
