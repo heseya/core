@@ -37,10 +37,10 @@ class Chat extends Model
         }
 
         if ($message->user_id === null) {
-            return '<spam class="unread">' . Str::limit($message->content, 40) . '</spam>';
+            return Str::limit(strip_tags($message->content), 40);
         }
 
-        return Str::limit($message->user->name . ': ' . $message->content, 40);
+        return Str::limit($message->user->name . ': ' . strip_tags($message->content), 40);
     }
 
     public function avatar(): string

@@ -46,14 +46,14 @@ class SyncEmails extends Command
 
         foreach ($emails as $email) {
 
-            $chat = Chat::firstOrNew([
+            $chat = Chat::firstOrCreate([
                 'system' => Chat::SYSTEM_EMAIL,
                 'external_id' => $email->from[0]->mail,
             ]);
 
             $message = $chat->messages()->firstOrCreate([
                 'external_id' => $email->message_id,
-                'content' => $email->bodies['text']->content ?? '',
+                'content' => $email->bodies['html']->content ?? '',
                 'created_at' => $email->date,
             ]);
 

@@ -3,7 +3,9 @@
 @section('title', $chat->client->name ?? $chat->external_id)
 
 @section('buttons')
-
+<button onclick="window.formatMails" class="top-nav--button">
+    <img class="icon" src="/img/icons/binoculars.svg">
+</button>
 @endsection
 
 @section('content')
@@ -11,7 +13,7 @@
     @foreach ($chat->messages as $message)
     <div class="message message--{{ empty($message->user_id) ? 'to' : 'from' }}">
         <div class="bubble">
-            {{ $message->content }}
+            {!! trim($message->content) !!}
         </div>
 
         <div class="info">
