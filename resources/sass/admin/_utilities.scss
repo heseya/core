@@ -55,6 +55,14 @@
   width: 100%;
 }
 
+.hidden-message {
+  display: none;
+}
+
+.hidden-message::after {
+  content: '...';
+}
+
 @media (min-width: $break) {
   .grid {
     &--2 {

@@ -1,8 +1,12 @@
 window.formatMails = function() {
-    console.log(document.querySelectorAll('.gmail_quote'));
 
-    document.querySelectorAll('.gmail_quote').forEach(tag => {
-        console.log(tag)
-        tag.style.display = 'none';
-    });
+    const tags = '.gmail_quote, .inpl-collapsed'
+
+    document.querySelectorAll(tags).forEach(tag => {
+        tag.classList.toggle('hidden-message')
+    })
+
+    document.querySelectorAll('.bubble').forEach(tag => {
+        tag.innerHTML = tag.innerHTML.replace(/^(\<br\>)+/, '')
+    })
 }
