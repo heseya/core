@@ -25,11 +25,8 @@ class ProductController extends Controller
 
     public function view(Product $product)
     {
-        $parsedown = new Parsedown();
-
         return view('admin.products.view', [
             'product' => $product,
-            'description' => $parsedown->text($product->description),
         ]);
     }
 

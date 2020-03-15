@@ -46,7 +46,7 @@
     <div class="column">
         <h2>{{ \App\Money::PLN($product->price) }}</h2>
         <div class="content">
-            {!! $description !!}
+            {!! $product->parsed_description !!}
         </div>
     </div>
 

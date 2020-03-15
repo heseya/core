@@ -41,4 +41,4 @@ Pisząc kod do tego projektu stosuj się do wszystkich zasad z (https://github.c
 Dodatkowo:
 - wszystkie pliki związane tylko z panelem trzymamy w osobnych folderach, tak zeby dało się je usunąc łatwo jak juz przejdziemy na Vue,
 - przy walidacji uzywaj stringów `'required|max:20'` zamiast tablic,
-- odwołania do autoryzacji przy uzyciu `auth()` zamiast `Auth::`.
+- odwołania do autoryzacji przy uzyciu `Auth::` zamiast `auth()`.
