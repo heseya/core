@@ -12,6 +12,7 @@
     max-width: 74%;
 
     .bubble {
+      isolation: isolate;
       border-radius: 18px;
       padding: 10px 16px;
       background: $grey-light;
@@ -26,11 +27,6 @@
 
     &--from {
       align-self: flex-end;
-
-      .bubble {
-        color: white;
-        background: #000;
-      }
 
       .info {
         text-align: right;

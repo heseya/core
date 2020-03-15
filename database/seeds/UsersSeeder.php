@@ -20,5 +20,21 @@ class UsersSeeder extends Seeder
         ]);
 
         $user->givePermissionTo('manageUsers');
+        $user->givePermissionTo('manageStore');
+
+        $user->givePermissionTo('viewProducts');
+        $user->givePermissionTo('manageProducts');
+        $user->givePermissionTo('createProducts');
+
+        $user->givePermissionTo('viewOrders');
+        $user->givePermissionTo('manageOrders');
+        $user->givePermissionTo('createOrders');
+
+        $user->givePermissionTo('viewChats');
+        $user->givePermissionTo('replyChats');
+        $user->givePermissionTo('createChats');
+
+        $user->givePermissionTo('viewPages');
+        $user->givePermissionTo('managePages');
     }
 }

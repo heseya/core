@@ -11,9 +11,9 @@
 @section('content')
 <ol class="list">
     @foreach($users as $user)
-        <a href="{{ route('users.view', $user->id) }}">
+        <a href="{{ route('users.view', $user) }}">
             <li class="center clickable">
-                <img class="avatar" src="{{ $user->avatar() }}">
+                <img class="avatar" src="{{ $user->avatar }}">
                 <span class="margin__left">
                     <div>
                         {{ $user->name }}

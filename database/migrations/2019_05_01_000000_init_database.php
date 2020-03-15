@@ -198,6 +198,7 @@ class InitDatabase extends Migration
 
         Schema::create('messages', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->boolean('received')->default(false);
             $table->text('content');
             $table->string('external_id')->nullable();
             $table->integer('user_id')->unsigned()->nullable();

@@ -52,6 +52,25 @@ class SyncEmails extends Command
             ]);
 
             $message = $chat->messages()->firstOrCreate([
+                'received' => true,
+                'external_id' => $email->message_id,
+                'content' => $email->bodies['html']->content ?? '',
+                'created_at' => $email->date,
+            ]);
+
+            $chat->save();
+        }
+
+        $emails = $client->getFolder('Sent')->messages()->all()->paginate(100);
+
+        foreach ($emails as $email) {
+
+            $chat = Chat::firstOrCreate([
+                'system' => Chat::SYSTEM_EMAIL,
+                'external_id' => $email->to[0]->mail,
+            ]);
+
+            $message = $chat->messages()->firstOrCreate([
                 'external_id' => $email->message_id,
                 'content' => $email->bodies['html']->content ?? '',
                 'created_at' => $email->date,

@@ -41,8 +41,8 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function avatar(): string
+    public function getAvatarAttribute(): string
     {
-        return '//www.gravatar.com/avatar/' . md5(strtolower(trim($this->email))) . '?d=mp';
+        return '//www.gravatar.com/avatar/' . md5(strtolower(trim($this->email))) . '?d=mp&s=50x50';
     }
 }
