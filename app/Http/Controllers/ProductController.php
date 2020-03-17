@@ -59,6 +59,7 @@ class ProductController extends Controller
             'description' => $product->parsed_description,
             'brand' => new BrandResource($product->brand),
             'category' => new CategoryResource($product->category),
+            'cover' => new MediaResource($product->gallery()->first()),
             'gallery' => MediaResource::collection($product->gallery),
             'schema' => $product->schema,
         ]);
