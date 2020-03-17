@@ -12,11 +12,12 @@
     max-width: 74%;
 
     .bubble {
-      isolation: isolate;
+      position: relative;
       border-radius: 18px;
       padding: 10px 16px;
       background: $grey-light;
       margin-bottom: 3px;
+      overflow: hidden;
     }
 
     .info {
@@ -32,6 +33,13 @@
         text-align: right;
       }
     }
+  }
+
+  .chat-image {
+    width: 100%;
+    border-radius: 10px;
+    margin-top: 6px;
+    margin-bottom: 3px;
   }
 
   .message--to + .message--from, .message--from + .message--to {
