@@ -11,17 +11,19 @@
 @section('content')
 <ol class="list">
     @foreach($categories as $category)
-        <li class="center">
-            <span class="margin__left">
-                <div>
-                    @if (!$category->public)
-                        <img class="small-img" src="/img/icons/locker.svg">
-                    @endif
-                    {{ $category->name }}
-                </div>
-                <small>/{{ $category->slug }}</small>
-            </span>
-        </li>
+        <a href="{{ route('categories.update', $category) }}">
+            <li class="center clickable">
+                <span class="margin__left">
+                    <div>
+                        @if (!$category->public)
+                            <img class="small-img" src="/img/icons/locker.svg">
+                        @endif
+                        {{ $category->name }}
+                    </div>
+                    <small>/{{ $category->slug }}</small>
+                </span>
+            </li>
+        </a>
     @endforeach
 </ol>
 @endsection

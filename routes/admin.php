@@ -105,9 +105,17 @@ Route::get('logout', 'AuthController@logout')->name('logout');
             Route::get('categories/create', 'SettingsController@categoryCreateForm')->name('categories.create');
             Route::post('categories/create', 'SettingsController@categoryCreate');
 
+            Route::get('categories/{category}/update', 'SettingsController@categoryUpdateForm')->name('categories.update');
+            Route::post('categories/{category}/update', 'SettingsController@categoryUpdate');
+            Route::get('categories/{category}/delete', 'SettingsController@categoryDelete')->name('categories.delete');
+
             Route::get('brands', 'SettingsController@brands')->name('brands');
             Route::get('brands/create', 'SettingsController@brandCreateForm')->name('brands.create');
             Route::post('brands/create', 'SettingsController@brandCreate');
+
+            Route::get('brands/{brand}/update', 'SettingsController@brandUpdateForm')->name('brands.update');
+            Route::post('brands/{brand}/update', 'SettingsController@brandUpdate');
+            Route::get('brands/{brand}/delete', 'SettingsController@brandDelete')->name('brands.delete');
 
             Route::get('furgonetka', 'SettingsController@furgonetka')->name('furgonetka');
         });

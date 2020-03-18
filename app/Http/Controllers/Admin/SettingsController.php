@@ -10,6 +10,7 @@ use App\Mail\Test;
 use App\Mail\NewAdmin;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -62,7 +63,14 @@ class SettingsController extends Controller
 
     public function categoryCreateForm()
     {
-        return view('admin.settings.categories.create');
+        return view('admin.settings.categories.form');
+    }
+
+    public function categoryUpdateForm(Category $category)
+    {
+        return view('admin.settings.categories.form', [
+            'category' => $category,
+        ]);
     }
 
     public function categoryCreate(Request $request)
@@ -72,7 +80,43 @@ class SettingsController extends Controller
             'slug' => 'required|string|unique:categories|regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
         ]);
 
-        Category::create($request->all());
+        $values = $request->all();
+        $values['public'] = $request->boolean('public');
+
+        Category::create($values);
+
+        return redirect()->route('categories');
+    }
+
+    public function categoryUpdate(Category $category, Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => [
+                'required',
+                'string',
+                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+                Rule::unique('categories')->ignore($category->slug, 'slug'),
+            ],
+        ]);
+
+        $values = $request->all();
+        $values['public'] = $request->boolean('public');
+
+        $category->update($values);
+
+        return redirect()->route('categories');
+    }
+
+    public function categoryDelete(Category $category)
+    {
+        if ($category->products()->exists()) {
+            return redirect()->back()->withErrors([
+                'has-products' => __('relations.category'),
+            ]);
+        }
+
+        $category->delete();
 
         return redirect()->route('categories');
     }
@@ -86,7 +130,14 @@ class SettingsController extends Controller
 
     public function brandCreateForm()
     {
-        return view('admin.settings.brands.create');
+        return view('admin.settings.brands.form');
+    }
+
+    public function brandUpdateForm(Brand $brand)
+    {
+        return view('admin.settings.brands.form', [
+            'brand' => $brand
+        ]);
     }
 
     public function brandCreate(Request $request)
@@ -96,14 +147,43 @@ class SettingsController extends Controller
             'slug' => 'required|string|unique:brands|regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
         ]);
 
-        Brand::create($request->all());
+        $values = $request->all();
+        $values['public'] = $request->boolean('public');
+
+        Brand::create($values);
 
         return redirect()->route('brands');
     }
 
-    public function brandUpdate(Request $request)
+    public function brandUpdate(Brand $brand, Request $request)
     {
-        Brand::update($request->all());
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => [
+                'required',
+                'string',
+                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+                Rule::unique('brands')->ignore($brand->slug, 'slug'),
+            ],
+        ]);
+
+        $values = $request->all();
+        $values['public'] = $request->boolean('public');
+
+        $brand->update($values);
+
+        return redirect()->route('brands');
+    }
+
+    public function brandDelete(Brand $brand)
+    {
+        if ($brand->products()->exists()) {
+            return redirect()->back()->withErrors([
+                'has-products' => __('relations.brand'),
+            ]);
+        }
+
+        $brand->delete();
 
         return redirect()->route('brands');
     }
