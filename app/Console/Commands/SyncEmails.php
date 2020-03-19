@@ -3,9 +3,12 @@
 namespace App\Console\Commands;
 
 use App\Chat;
+use App\Message as Email;
 use Webklex\IMAP\Message;
 use Illuminate\Console\Command;
 use Webklex\IMAP\Facades\Client;
+use App\Mail\Message as MailMessage;
+use Illuminate\Support\Facades\Mail;
 
 class SyncEmails extends Command
 {
@@ -49,13 +52,15 @@ class SyncEmails extends Command
             $this->saveEmail($email);
         }
 
+        $this->info('Incoming emails synced.');
+
         $emails = $client->getFolder('Sent')->messages()->all()->paginate(100);
 
         foreach ($emails as $email) {
             $this->saveEmail($email);
         }
 
-        $this->info('Emails synced.');
+        $this->info('Outgoing emails synced.');
     }
 
     /*
@@ -74,7 +79,7 @@ class SyncEmails extends Command
         // Zapisywanie wszystkich załączników
         foreach ($email->getAttachments() as $attachment) {
 
-            $attachment->save();
+            $attachment->save('public/storage');
 
             if (in_array($attachment->content_type, ['image/jpeg', 'image/png', 'image/gif'])) {
                 $html = '<img class="chat-image" src="' . asset('storage/' . $attachment->name) . '"/>';

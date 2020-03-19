@@ -205,8 +205,8 @@ class InitDatabase extends Migration
             $table->integer('chat_id')->unsigned();
             $table->timestamp('created_at')->useCurrent();
 
-            $table->foreign('user_id')->references('id')->on('users');
-            $table->foreign('chat_id')->references('id')->on('chats');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('chat_id')->references('id')->on('chats')->onDelete('cascade');
         });
 
         Schema::create('order_items', function (Blueprint $table) {
