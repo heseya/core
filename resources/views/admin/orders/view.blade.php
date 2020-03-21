@@ -63,6 +63,11 @@
 
         <h3>Metoda dostawy</h3>
         <div>{{ $order->delivery_method }}</div>
+
+        @isset($order->comment)
+            <h3>Komentarz klienta</h3>
+            <div>{{ $order->comment }}</div>
+        @endisset
     </div>
 
     <div class="column is-half">

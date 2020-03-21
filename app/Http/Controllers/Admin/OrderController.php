@@ -39,6 +39,7 @@ class OrderController extends Controller
             'code' => 'required|max:16',
             // 'client_id' => 'exists:clients,id',
             'deliveryAddress.country' => 'string|size:2',
+            'comment' => 'string|max:1000',
         ]);
 
         $order = new Order($request->all());
@@ -66,6 +67,14 @@ class OrderController extends Controller
 
     public function update(Order $order, Request $request)
     {
+        $request->validate([
+            'email' => 'required|email',
+            // 'code' => 'required|max:16', // Nie ma tego puki co
+            // 'client_id' => 'exists:clients,id',
+            'deliveryAddress.country' => 'string|size:2',
+            'comment' => 'string|max:1000',
+        ]);
+
         $order->fill($request->all());
 
         $order->delivery_address = null;

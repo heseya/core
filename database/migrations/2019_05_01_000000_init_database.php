@@ -133,6 +133,7 @@ class InitDatabase extends Migration
             $table->string('delivery_tracking')->nullable();
             $table->integer('delivery_address')->unsigned()->index()->nullable();
             $table->integer('invoice_address')->unsigned()->index()->nullable();
+            $table->string('comment', 1000)->nullable();
             $table->timestamps();
 
             // Relations
