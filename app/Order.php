@@ -18,6 +18,7 @@ class Order extends Model
         'delivery_method',
         'delivery_status',
         'delivery_tracking',
+        'comment',
     ];
 
     /**

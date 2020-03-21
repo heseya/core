@@ -40,6 +40,15 @@
                     <p class="help is-danger">{{ $message }}</p>
                 @enderror
             </div>
+            <div class="field">
+                <label class="label" for="comment">Komentarz klienta</label>
+                <div class="control">
+                    <textarea name="comment" class="textarea @error('comment') is-danger @enderror" rows="8">{{ old('comment') ?? $order->comment ?? '' }}</textarea>
+                </div>
+                @error('comment')
+                    <p class="help is-danger">{{ $message }}</p>
+                @enderror
+            </div>
         </div>
 
         <div class="column">
