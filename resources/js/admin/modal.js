@@ -17,3 +17,10 @@ window.infoModal = (content) => {
     document.getElementById('modal-content').innerText = content
     modal.classList.remove('modal--hidden')
 }
+
+window.htmlModal = (content) => {
+    let modal = document.getElementById('modal-html')
+
+    document.getElementById('modal-body').innerHTML = content
+    modal.classList.remove('modal--hidden')
+}

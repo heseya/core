@@ -24,6 +24,7 @@ Route::get('logout', 'AuthController@logout')->name('logout');
             Route::get('{order}/update', 'OrderController@updateForm')->name('orders.update');
             Route::post('{order}/update', 'OrderController@update');
             Route::post('{order}/status', 'OrderController@updateStatus')->name('orders.status');
+            Route::post('{order}/note', 'OrderController@createNote')->name('orders.note');
         });
     });
 

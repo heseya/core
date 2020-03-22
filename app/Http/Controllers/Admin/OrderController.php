@@ -62,6 +62,7 @@ class OrderController extends Controller
     {
         return view('admin.orders.form', [
             'order' => $order,
+            'notes' => json_encode($order->notes),
         ]);
     }
 
@@ -106,5 +107,25 @@ class OrderController extends Controller
         ]);
 
         return response()->json(null, 204);
+    }
+
+    public function createNote(Order $order, Request $request)
+    {
+        $request->validate([
+            'message' => 'required|string|max:1000',
+        ]);
+
+        $order->notes()->create([
+            'message' => $request->message,
+            'user_id' => auth()->user()->id,
+        ]);
+
+        // logi
+        $order->logs()->create([
+            'content' => 'Komentarz.',
+            'user' => auth()->user()->name,
+        ]);
+
+        return redirect()->route('orders.view', $order->code);
     }
 }
