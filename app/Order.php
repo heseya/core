@@ -87,4 +87,9 @@ class Order extends Model
     {
         return $this->hasMany(OrderLog::class)->orderBy('created_at', 'DESC');
     }
+
+    public function notes()
+    {
+        return $this->hasMany(OrderNote::class)->orderBy('created_at', 'DESC');
+    }
 }

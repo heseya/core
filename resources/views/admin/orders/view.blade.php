@@ -140,6 +140,37 @@
         </div>
     </div>
 
+    <div class="column is-half">
+        <h3>Notatki</h3>
+        <button onclick="window.htmlModal(
+            `<form action='{{ route('orders.note', $order) }}' method='POST'>
+                <input type='hidden' name='_token' value='{{ csrf_token() }}'>
+                <div class='field'>
+                    <label class='label' for='message'>Treść notatki</label>
+                    <div class='control'>
+                        <textarea name='message' class='textarea' rows='5'>{{ old('message') ?? '' }}</textarea>
+                    </div>
+                </div>
+                <button class='button is-black'>Dodaj</button>
+            </form>`)" class="top-nav--button">
+            <img class="icon" src="/img/icons/plus.svg">
+        </button>
+        @error('message')
+            <p class='help is-danger'>{{ $message }}</p>
+        @enderror
+        <div class="timeline">
+            @foreach ($order->notes as $note)
+                <div class="timeline__block">
+                    <div class="marker"></div>
+                    <div class="timeline-content">
+                        <p>{{ $note['message'] }}</p>
+                        <small>{{ $note->user['name'] }}, {{ $note['created_at'] }}</small>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+
 </div>
 
 <script>
