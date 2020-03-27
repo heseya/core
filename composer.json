@@ -7,6 +7,7 @@
         "facade/ignition": "^1.11",
         "fideloper/proxy": "^4.0",
         "fruitcake/laravel-cors": "^1.0",
+        "heseya/silverbox-client": "dev-master",
         "kalnoy/nestedset": "^5.0",
         "laravel/framework": "6.*",
         "laravel/tinker": "^1.0",
