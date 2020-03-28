@@ -15,7 +15,7 @@ class Message extends Mailable
      *
      * @return void
      */
-    public function __construct($content)
+    public function __construct(string $content)
     {
         $this->content = $content;
     }
@@ -27,9 +27,8 @@ class Message extends Mailable
      */
     public function build()
     {
-        return $this->text('mail/message', [
+        return $this->view('mail/message', [
             'content' => $this->content,
-        ])
-            ->subject('Nowa wiadomość');
+        ])->subject('Nowa wiadomość');
     }
 }

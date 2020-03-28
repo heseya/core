@@ -27,10 +27,12 @@ class ChatController extends Controller
 
     public function send(Request $request, Chat $chat)
     {
-        $chat->messages()->create([
+        $message = $chat->messages()->create([
             'content' => $request->message,
             'user_id' => auth()->user()->id,
         ]);
+
+        $message->send();
 
         return redirect()->route('chats.view', $chat->id);
     }

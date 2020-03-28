@@ -11,7 +11,7 @@
 @section('content')
 <div class="chat">
     @foreach ($chat->messages as $message)
-    <div class="message message--{{ empty($message->user_id) ? 'to' : 'from' }}">
+    <div class="message message--{{ $message->received ? 'to' : 'from' }}">
         <div class="bubble">
             {!! $message->content !!}
         </div>

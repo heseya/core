@@ -11,16 +11,16 @@
 @section('content')
 <ol id="chats" class="list list--chat">
     @foreach ($chats as $chat)
-        <a href="{{ route('chats.view', $chat->id) }}">
+        <a href="{{ route('chats.view', $chat) }}">
             <li class="clickable">
                 <div class="avatar">
-                    <img src="{{ $chat->avatar() }}">
+                    <img src="{{ $chat->avatar }}">
                 </div>
                 <div>
                     <div class="{{ $chat->unread ? 'unread' : '' }}">
                         {{ $chat->client->name ?? $chat->external_id }}
                     </div>
-                    <small>{{ $chat->snippet() }}</small>
+                    <small>{{ $chat->snippet }}</small>
                 </div>
             </li>
         </a>

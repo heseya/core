@@ -7,12 +7,12 @@
 @endsection
 
 @section('content')
-<form action="{{ route('users.rbac', $user->id) }}" method="post">
+<form action="{{ route('users.rbac', $user) }}" method="post">
     @csrf
 
     <ol class="list list--settings">
         <li class="center">
-            <img class="avatar" src="{{ $user->avatar() }}">
+            <img class="avatar" src="{{ $user->avatar }}">
             <span>
                 <div>{{ $user->name }}</div>
                 <small>{{ $user->email }}</small>

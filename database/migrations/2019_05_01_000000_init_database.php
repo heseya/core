@@ -210,14 +210,15 @@ class InitDatabase extends Migration
 
         Schema::create('messages', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->boolean('received')->default(false);
             $table->text('content');
             $table->string('external_id')->nullable();
             $table->integer('user_id')->unsigned()->nullable();
             $table->integer('chat_id')->unsigned();
             $table->timestamp('created_at')->useCurrent();
 
-            $table->foreign('user_id')->references('id')->on('users');
-            $table->foreign('chat_id')->references('id')->on('chats');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('chat_id')->references('id')->on('chats')->onDelete('cascade');
         });
 
         Schema::create('order_items', function (Blueprint $table) {
