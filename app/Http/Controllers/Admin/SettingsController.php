@@ -24,16 +24,6 @@ class SettingsController extends Controller
         ]);
     }
 
-    public function info()
-    {
-        return view('admin.settings.info');
-    }
-
-    public function docs()
-    {
-        return view('admin.settings.docs');
-    }
-
     public function email()
     {
         $email = config('mail.address');

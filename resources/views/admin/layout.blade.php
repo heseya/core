@@ -11,9 +11,9 @@
 <body>
 
     <nav class="nav">
-        <div class="logo">
+        {{-- <div class="logo">
             <img src="/img/logo.png">
-        </div>
+        </div> --}}
 
         @can('viewProducts')
         <a href="{{ route('products') }}">
@@ -79,7 +79,7 @@
 
     <div id="modal-html" class="modal modal--hidden">
         <div id="modal-body" class="modal__body">
-            
+
         </div>
         <div class="modal__bg" onclick="closeModal()"></div>
     </div>

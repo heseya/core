@@ -24,7 +24,7 @@ php artisan key:generate
 php artisan migrate --seed
 ```
 
-Seeder utworzy urzytkownika `jedrzej@heseya.com` z hasłem `secret`.
+Seeder utworzy urzytkownika `admin@example.com` z hasłem `secret`.
 
 Jak dostajesz błąd 403 prawdopodobnie nie masz uprawnień. Mozna je ustawić pod linkiem `/admin/settings/users`.
 

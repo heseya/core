@@ -7,7 +7,6 @@ use App\Product;
 use App\Category;
 use Faker\Factory;
 use Illuminate\Database\Seeder;
-use Bezhanov\Faker\ProviderCollectionHelper;
 
 class ProductsSeeder extends Seeder
 {
@@ -19,7 +18,6 @@ class ProductsSeeder extends Seeder
     public function run()
     {
         $faker = Factory::create('pl_PL');
-        ProviderCollectionHelper::addAllProvidersTo($faker);
 
         Tax::create([
             'id' => 1,

@@ -94,7 +94,7 @@ Route::get('logout', 'AuthController@logout')->name('logout');
     // Settings
     Route::prefix('settings')->group(function () {
 
-        Route::get('/', 'SettingsController@settings')->name('settings');
+        Route::view('/', 'admin.settings.main')->name('settings');
 
         Route::group(['middleware' => ['perm:manageStore']], function () {
             Route::get('email', 'SettingsController@email')->name('email');
@@ -129,8 +129,9 @@ Route::get('logout', 'AuthController@logout')->name('logout');
             Route::post('{user}/rbac', 'UserController@rbac')->name('users.rbac');
         });
 
-        Route::get('info', 'SettingsController@info')->name('info');
-        Route::get('docs', 'SettingsController@docs')->name('docs');
+        Route::view('/info', 'admin.settings.info')->name('info');
+        Route::view('/docs', 'admin.settings.docs')->name('docs');
+        Route::view('/integrations', 'admin.settings.integrations')->name('integrations');
 
         Route::prefix('facebook')->group(function () {
             Route::get('/', 'FacebookController@settings');

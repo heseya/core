@@ -3,7 +3,6 @@
 use App\Page;
 use Faker\Factory;
 use Illuminate\Database\Seeder;
-use Bezhanov\Faker\ProviderCollectionHelper;
 
 class PagesSeeder extends Seeder
 {
@@ -15,7 +14,6 @@ class PagesSeeder extends Seeder
     public function run()
     {
         $faker = Factory::create('pl_PL');
-        ProviderCollectionHelper::addAllProvidersTo($faker);
 
         Page::create([
             'name' => 'FAQ',

@@ -14,8 +14,8 @@ class UsersSeeder extends Seeder
     public function run()
     {
         $user = User::create([
-            'name' => 'Jędrzej Buliński',
-            'email' => 'jedrzej@heseya.com',
+            'name' => 'Wojtek Testowy',
+            'email' => 'admin@example.com',
             'password' => Hash::make('secret'),
         ]);
 
@@ -36,5 +36,8 @@ class UsersSeeder extends Seeder
 
         $user->givePermissionTo('viewPages');
         $user->givePermissionTo('managePages');
+
+
+        factory(User::class, 5)->create();
     }
 }

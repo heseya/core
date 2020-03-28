@@ -14,12 +14,11 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $middleware = [
-        \Fruitcake\Cors\HandleCors::class,
         \App\Http\Middleware\CheckForMaintenanceMode::class,
-        \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
-        \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         \App\Http\Middleware\TrustProxies::class,
+        \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
+        \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
     ];
 
     /**
@@ -39,10 +38,9 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-            'throttle:60,1',
-            'bindings',
-
+            \App\Http\Middleware\JsonResponse::class,
             \App\Http\Middleware\Language::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
 
@@ -77,7 +75,7 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $middlewarePriority = [
-        \Fruitcake\Cors\HandleCors::class,
+        \App\Http\Middleware\JsonResponse::class,
         \Illuminate\Session\Middleware\StartSession::class,
         \Illuminate\View\Middleware\ShareErrorsFromSession::class,
         \App\Http\Middleware\Authenticate::class,

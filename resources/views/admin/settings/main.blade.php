@@ -43,11 +43,6 @@
     @endcan
 
     <li class="separator">Panel</li>
-    {{-- <a href="/admin/settings/facebook">
-        <li class="clickable">
-            <img class="icon" src="/img/icons/facebook.svg">Facebook
-        </li>
-    </a> --}}
     <a href="{{ route('users') }}">
         <li class="clickable">
             <img class="icon" src="/img/icons/accounts.svg">Dostęp do panelu
@@ -55,9 +50,38 @@
     </a>
 
     <li class="separator">Integracje</li>
-    <a href="{{ route('furgonetka') }}">
+    @if (config('furgonetka.enabled'))
+        <a href="{{ route('furgonetka') }}">
+            <li class="clickable">
+                <img class="icon" src="/img/icons/delivery.svg">Furgonetka
+            </li>
+        </a>
+    @endif
+    {{-- <a href="/admin/settings/facebook">
         <li class="clickable">
-            <img class="icon" src="/img/icons/delivery.svg">Furgonetka
+            <img class="icon" src="/img/icons/facebook.svg">Facebook
+        </li>
+    </a> --}}
+    <a href="{{ route('integrations') }}">
+        <li class="clickable">
+            <img class="icon" src="/img/icons/earth.svg">Pozostałe integracje
+        </li>
+    </a>
+
+    <li class="separator">Pomoc</li>
+    <a href="https://support.heseya.com/t/poradniki" target="_blank">
+        <li class="clickable">
+            <img class="icon" src="/img/icons/trust.svg">Poradniki
+        </li>
+    </a>
+    <a href="https://support.heseya.com" target="_blank">
+        <li class="clickable">
+            <img class="icon" src="/img/icons/interaction.svg">Forum pomocy
+        </li>
+    </a>
+    <a href="mailto:admin@example.com">
+        <li class="clickable">
+            <img class="icon" src="/img/icons/headset.svg">Napisz do nas
         </li>
     </a>
 
