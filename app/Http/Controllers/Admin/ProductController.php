@@ -146,8 +146,9 @@ class ProductController extends Controller
 
         if (!$product->digital) {
             foreach ($product->schemas as $schema) {
-                if ($schema->name == NULL)
+                if ($schema->name == NULL) {
                     continue;
+                }
     
                 if ($request->filled('schema-old-' . $schema->id . '-name')) {
                     $request->validate([
@@ -181,8 +182,9 @@ class ProductController extends Controller
                                         ]
                                     ]);
                                 }
-                            } else
+                            } else {
                                 $schema->items()->detach($item->id);
+                            }
                         }
         
                         for ($i = 0; $i < $request->input('schema-old-' . $schema->id . '-items', 0); $i++) {
@@ -199,10 +201,12 @@ class ProductController extends Controller
                                 ]);
                             }
                         }
-                    } else
+                    } else {
                         $schema->items()->detach();
-                } else
+                    }
+                } else {
                     $schema->delete();
+                }
             }
 
             DB::transaction(function () use ($request, $product) {
@@ -237,8 +241,9 @@ class ProductController extends Controller
                     }
                 }
             });
-        } else
+        } else {
             $product->schemas()->delete();
+        }
 
         foreach ($request->photos as $photo) {
             if ($photo !== null) {
