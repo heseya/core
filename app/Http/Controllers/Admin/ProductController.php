@@ -77,9 +77,11 @@ class ProductController extends Controller
                                     "schema-$i-item-$j-id" => 'integer',
                                     "schema-$i-item-$j-price" => 'numeric',
                                 ]);        
-    
-                                $schema->items()->attach($request->input("schema-$i-item-$j-id"), [
-                                    'extra_price' => $request->input("schema-$i-item-$j-price", 0),
+                                
+                                $schema->items()->syncWithoutDetaching([
+                                    $request->input("schema-$i-item-$j-id") => [
+                                        'extra_price' => $request->input("schema-$i-item-$j-price", 0),
+                                    ]
                                 ]);
                             }
                         }
@@ -173,8 +175,10 @@ class ProductController extends Controller
                                 $request->input('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-id') != $item->id) {
                                     
                                     $schema->items()->detach($item->id);
-                                    $schema->items()->attach($request->input('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-id'), [
-                                        'extra_price' => $request->input('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-price', 0),
+                                    $schema->items()->syncWithoutDetaching([
+                                        $request->input('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-id') => [
+                                            'extra_price' => $request->input('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-price', 0),
+                                        ]
                                     ]);
                                 }
                             } else
@@ -222,9 +226,11 @@ class ProductController extends Controller
                                     "schema-$i-item-$j-id" => 'integer',
                                     "schema-$i-item-$j-price" => 'numeric',
                                 ]);        
-    
-                                $schema->items()->attach($request->input("schema-$i-item-$j-id"), [
-                                    'extra_price' => $request->input("schema-$i-item-$j-price", 0),
+                                
+                                $schema->items()->syncWithoutDetaching([
+                                    $request->input("schema-$i-item-$j-id") => [
+                                        'extra_price' => $request->input("schema-$i-item-$j-price", 0),
+                                    ]
                                 ]);
                             }
                         }

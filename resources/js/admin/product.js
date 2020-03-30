@@ -1,8 +1,6 @@
 const addSchema = document.getElementById('schema-add')
 const schemas = document.getElementById('schemas')
 
-let schemaCount = document.getElementById('schema-count')
-
 window.deleteSchema = (id, old = false) => document.getElementById(`schema-${old ? 'old-' : ''}${id}`).remove()
 window.deleteItem = (schemaId, itemId, oldSchema = false, newItem = false) => document.getElementById(
     `schema-${oldSchema ? 'old-' : ''}${schemaId}-item-${newItem ? 'new-' : ''}${itemId}`).remove()
@@ -88,6 +86,8 @@ window.addItem = (schemaId, old = false) => {
 }
 
 window.addSchema = () => {
+    let schemaCount = document.getElementById('schema-count')
+
     const schema = document.createElement('div')
     schema.id = 'schema-' + schemaCount.value
 

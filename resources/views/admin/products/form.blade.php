@@ -73,8 +73,8 @@
                 <div class="control">
                     <div class="select is-fullwidth">
                         <select id="digital" name="digital" oninput="changeProductType()">
-                            <option value="0" {{ (old('digital') ?? $product->digital) == 0 ? 'selected' : '' }}>Fizyczny</option>
-                            <option value="1" {{ (old('digital') ?? $product->digital) == 1 ? 'selected' : '' }}>Cyfrowy</option>
+                            <option value="0" {{ (old('digital') ?? $product->digital ?? 0) == 0 ? 'selected' : '' }}>Fizyczny</option>
+                            <option value="1" {{ (old('digital') ?? $product->digital ?? 0) == 1 ? 'selected' : '' }}>Cyfrowy</option>
                         </select>
                     </div>
                 </div>
@@ -137,7 +137,7 @@
         <label class="label">Zdjęcia</label>
         <div id="tabs" class="gallery"></div>
         <div class="columns has-no-margin-bottom" id="schema-button">
-            @if(!(old('digital') ?? $product->digital))
+            @if(!(old('digital') ?? $product->digital ?? false))
                 <div class="column">
                     <label class="label">Schematy</label>
                 </div>
@@ -264,13 +264,13 @@
                     @endif
                 @endforeach
             @endisset
-            <div style="display: none">
-                <select id="items-template">
-                    @foreach($items as $item)
-                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                    @endforeach
-                </select>
-            </div>
+        </div>
+        <div style="display: none">
+            <select id="items-template">
+                @foreach($items as $item)
+                    <option value="{{ $item->id }}">{{ $item->name }}</option>
+                @endforeach
+            </select>
         </div>
         <div>
             <br><button class="button is-black">Zapisz</button>
