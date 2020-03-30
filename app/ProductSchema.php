@@ -10,6 +10,8 @@ class ProductSchema extends Model
 {
     protected $fillable = [
         'name',
+        'type',
+        'required',
     ];
 
     public function product()
@@ -20,7 +22,7 @@ class ProductSchema extends Model
     public function items()
     {
         return $this->belongsToMany(Item::class, 'product_schema_item')
-            ->withPivot('extra_price')
+            ->withPivot('id', 'extra_price')
             ->orderBy('symbol');
     }
 }

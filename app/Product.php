@@ -19,6 +19,7 @@ class Product extends Model
         'slug',
         'price',
         'description',
+        'digital',
         'public',
         'tax_id',
         'brand_id',
@@ -50,7 +51,7 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function shema()
+    public function schemas()
     {
         return $this->hasMany(ProductSchema::class)->with('items');
     }

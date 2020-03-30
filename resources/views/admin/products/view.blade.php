@@ -51,7 +51,7 @@
     </div>
 
     <div class="column cart">
-        @foreach ($product->shema as $schema)
+        @foreach ($product->schemas as $schema)
             <h3>{{ $schema->name }} <small style="color: #aaa">{{ $schema->required ? 'wymagany' : '' }}</small></h3>
             <div class="list">
                 @foreach ($schema->items as $item)

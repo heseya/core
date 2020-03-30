@@ -18,7 +18,7 @@
 <div class="stats">
     <div class="stats__item">
         <img class="icon" src="/img/icons/code.svg">
-        {{ $item->symbol }}
+        {{ $item->symbol ?? 'BRAK' }}
     </div>
     <div class="stats__item">
         <img class="icon" src="/img/icons/chest.svg">
@@ -46,9 +46,9 @@
             @foreach ($item->schemas as $schema)
             <a href="{{ route('products.view', $schema->product->slug) }}" class="cart__item">
                 <div class="cart__img">
-                @if ($schema->product->gallery[0])
+                @isset ($schema->product->gallery[0])
                     <img src="{{ $schema->product->gallery[0]->url }}">
-                @endif
+                @endisset
                 </div>
                 <div class="cart__details">
                     <div>{{ $schema->product->name }}</div>
