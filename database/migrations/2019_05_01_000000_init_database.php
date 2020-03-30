@@ -74,7 +74,7 @@ class InitDatabase extends Migration
         Schema::create('items', function (Blueprint $table) {
             $table->increments('id');
             $table->json('name');
-            $table->string('symbol', 128)->index();
+            $table->string('symbol', 128)->index()->nullable();
             $table->integer('qty')->unsigned()->default(0);
             $table->smallInteger('category_id')->index()->unsigned()->nullable();
             $table->integer('photo_id')->unsigned()->index()->nullable();
@@ -93,6 +93,7 @@ class InitDatabase extends Migration
             $table->smallInteger('brand_id')->index()->unsigned();
             $table->smallInteger('category_id')->index()->unsigned();
             $table->json('description')->nullable();
+            $table->boolean('digital')->default(false);
             $table->boolean('public')->default(false);
             $table->timestamps();
 
@@ -159,7 +160,8 @@ class InitDatabase extends Migration
         Schema::create('product_schemas', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('product_id')->unsigned()->index();
-            $table->string('name');
+            $table->string('name')->nullable();
+            $table->integer('type')->unsigned()->default(0);
             $table->boolean('required')->default(0);
             $table->timestamps();
 
