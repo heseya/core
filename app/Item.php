@@ -32,8 +32,8 @@ class Item extends Model
         return $this->belongsTo(Photo::class);
     }
 
-    public function schemas()
+    public function schemaItems()
     {
-        return $this->belongsToMany(ProductSchema::class, 'product_schema_item');
+        return $this->hasMany(ProductSchemaItem::class);
     }
 }

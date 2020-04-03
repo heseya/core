@@ -37,10 +37,6 @@ class Order extends Model
 
         foreach ($this->items as $item) {
             $value += $item->price * $item->qty;
-
-            foreach ($item->descendants as $subItem) {
-                $value += $subItem->price * $item->qty;
-            }
         }
 
         return $value;
@@ -65,7 +61,7 @@ class Order extends Model
 
     public function items()
     {
-        return $this->belongsToMany(OrderItem::class, 'order_order_item');
+        return $this->hasMany(OrderItem::class);
     }
 
     public function deliveryAddress()
@@ -91,5 +87,10 @@ class Order extends Model
     public function notes()
     {
         return $this->hasMany(OrderNote::class)->orderBy('created_at', 'DESC');
+    }
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class)->using(OrderItem::class);
     }
 }

@@ -53,7 +53,12 @@ class Product extends Model
 
     public function schemas()
     {
-        return $this->hasMany(ProductSchema::class)->with('items');
+        return $this->hasMany(ProductSchema::class);
+    }
+
+    public function orders() 
+    {
+        return $this->belongsToMany(Order::class)->using(OrderItem::class);
     }
 
     /**

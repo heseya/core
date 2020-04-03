@@ -4,6 +4,7 @@ namespace App;
 
 use App\Item;
 use App\Product;
+use App\ProductSchemaItem;
 use Illuminate\Database\Eloquent\Model;
 
 class ProductSchema extends Model
@@ -19,10 +20,8 @@ class ProductSchema extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function items()
+    public function schemaItems()
     {
-        return $this->belongsToMany(Item::class, 'product_schema_item')
-            ->withPivot('id', 'extra_price')
-            ->orderBy('symbol');
+        return $this->hasMany(ProductSchemaItem::class)->with('item');
     }
 }
