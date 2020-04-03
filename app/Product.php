@@ -26,11 +26,6 @@ class Product extends Model
         'category_id',
     ];
 
-    public function getRouteKeyName(): string
-    {
-        return 'slug';
-    }
-
     public function gallery()
     {
         return $this->morphedByMany(Photo::class, 'media', 'product_gallery');

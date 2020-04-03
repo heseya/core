@@ -13,7 +13,7 @@
 @section('content')
 <ol class="list list--orders">
     @foreach ($orders as $order)
-        <a href="{{ route('orders.view', $order->code) }}">
+        <a href="{{ route('orders.view', $order) }}">
             <li class="clickable">
                 <div>
                     <div>

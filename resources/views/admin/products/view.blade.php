@@ -3,12 +3,12 @@
 @section('title', $product->name)
 
 @section('buttons')
-<a href="{{ route('products.update', $product->slug) }}" class="top-nav--button">
+<a href="{{ route('products.update', $product) }}" class="top-nav--button">
     <img class="icon" src="/img/icons/pencil.svg">
 </a>
 <button onclick="window.confirmModal(
         'Czy na pewno chcesz usunąć {{ $product->name }}?',
-        '{{ route('products.delete', $product->slug) }}'
+        '{{ route('products.delete', $product) }}'
     )" class="top-nav--button">
     <img class="icon" src="/img/icons/trash.svg">
 </button>
@@ -55,7 +55,7 @@
             <h3>{{ $schema->name }} <small style="color: #aaa">{{ $schema->required ? 'wymagany' : '' }}</small></h3>
             <div class="list">
                 @foreach ($schema->items as $item)
-                <a href="/admin/items/{{ $item->id }}" class="cart__item">
+                <a href="{{ route('items.view', $item) }}" class="cart__item">
                     <div class="cart__img">
                     @if ($item->photo)
                         <img src="{{ $item->photo->url }}">
