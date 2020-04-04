@@ -6,9 +6,12 @@ use App\Item;
 use App\Product;
 use App\ProductSchemaItem;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductSchema extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'name',
         'type',

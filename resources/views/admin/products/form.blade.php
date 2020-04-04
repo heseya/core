@@ -212,41 +212,41 @@
                             </div>
                             <div id="schema-old-{{ $schema->id }}-items">
                                 <input type="hidden" id="schema-old-{{ $schema->id }}-item-count" name="schema-old-{{ $schema->id }}-items" value="0">
-                                @foreach($schema->items as $item)
-                                    <div id="schema-old-{{ $schema->id }}-item-{{ $item->pivot->id }}" class="columns has-no-margin-bottom">
+                                @foreach($schema->schemaItems as $schemaItem)
+                                    <div id="schema-old-{{ $schema->id }}-item-{{ $schemaItem->id }}" class="columns has-no-margin-bottom">
                                         <div class="column">
                                             <div class="field">
-                                                <label class="label" for="schema-old-{{ $schema->id }}-item-{{ $item->pivot->id }}-id">Produkt</label>
+                                                <label class="label" for="schema-old-{{ $schema->id }}-item-{{ $schemaItem->id }}-id">Produkt</label>
                                                 <div class="control">
                                                     <div class="select is-fullwidth">
-                                                        <select name="schema-old-{{ $schema->id }}-item-{{ $item->pivot->id }}-id">
+                                                        <select name="schema-old-{{ $schema->id }}-item-{{ $schemaItem->id }}-id">
                                                             @foreach($items as $item_db)
-                                                                <option value="{{ $item_db->id }}" {{ (old('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-id')
-                                                                ?? $item->pivot->item_id) == $item_db->id ? 'selected' : '' }}>{{ $item_db->name }}</option>
+                                                                <option value="{{ $item_db->id }}" {{ (old('schema-old-' . $schema->id . '-item-' . $schemaItem->id . '-id')
+                                                                ?? $schemaItem->item_id) == $item_db->id ? 'selected' : '' }}>{{ $item_db->name }}</option>
                                                             @endforeach
                                                         </select>
                                                     </div>
                                                 </div>
-                                                @error('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-id')
+                                                @error('schema-old-' . $schema->id . '-item-' . $schemaItem->id . '-id')
                                                     <p class="help is-danger">{{ $message }}</p>
                                                 @enderror
                                             </div>
                                         </div>
                                         <div class="column">
                                             <div class="field">
-                                                <label class="label" for="schema-old-{{ $schema->id }}-item-{{ $item->pivot->id }}-price">Dodatkowa cena</label>
+                                                <label class="label" for="schema-old-{{ $schema->id }}-item-{{ $schemaItem->id }}-price">Dodatkowa cena</label>
                                                 <div class="control">
-                                                    <input type="number" name="schema-old-{{ $schema->id }}-item-{{ $item->pivot->id }}-price"
+                                                    <input type="number" name="schema-old-{{ $schema->id }}-item-{{ $schemaItem->id }}-price"
                                                     class="input @error('item-price') is-danger @enderror" required autocomplete="off" step="0.01"
-                                                    value="{{ old('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-price') ?? $item->pivot->extra_price ?? 0 }}">
+                                                    value="{{ old('schema-old-' . $schema->id . '-item-' . $schemaItem->id . '-price') ?? $schemaItem->extra_price ?? 0 }}">
                                                 </div>
-                                                @error('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-price')
+                                                @error('schema-old-' . $schema->id . '-item-' . $schemaItem->id . '-price')
                                                     <p class="help is-danger">{{ $message }}</p>
                                                 @enderror
                                             </div>
                                         </div>
                                         <div class="column">
-                                            <div class="top-nav--button" onclick="deleteItem({{ $schema->id }}, {{ $item->pivot->id }}, true)">
+                                            <div class="top-nav--button" onclick="deleteItem({{ $schema->id }}, {{ $schemaItem->id }}, true)">
                                                 <img class="icon" src="/img/icons/trash.svg">
                                             </div>
                                         </div>

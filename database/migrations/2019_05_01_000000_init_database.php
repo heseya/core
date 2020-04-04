@@ -79,6 +79,7 @@ class InitDatabase extends Migration
             $table->smallInteger('category_id')->index()->unsigned()->nullable();
             $table->integer('photo_id')->unsigned()->index()->nullable();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('restrict');
             $table->foreign('photo_id')->references('id')->on('photos')->onDelete('set null');
@@ -96,6 +97,7 @@ class InitDatabase extends Migration
             $table->boolean('digital')->default(false);
             $table->boolean('public')->default(false);
             $table->timestamps();
+            $table->softDeletes();
 
             $table->foreign('tax_id')->references('id')->on('taxes')->onDelete('restrict');
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('restrict');
@@ -164,6 +166,7 @@ class InitDatabase extends Migration
             $table->integer('type')->unsigned()->default(0);
             $table->boolean('required')->default(0);
             $table->timestamps();
+            $table->softDeletes();
 
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         });
@@ -175,6 +178,7 @@ class InitDatabase extends Migration
             $table->integer('item_id')->unsigned()->index()->nullable();
             $table->bigInteger('product_schema_id')->unsigned()->index();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->foreign('item_id')->references('id')->on('items')->onDelete('restrict');
             $table->foreign('product_schema_id')->references('id')->on('product_schemas')->onDelete('cascade');

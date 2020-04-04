@@ -78,10 +78,9 @@ class ProductController extends Controller
                                     "schema-$i-item-$j-price" => 'numeric',
                                 ]);        
                                 
-                                $schema->items()->syncWithoutDetaching([
-                                    $request->input("schema-$i-item-$j-id") => [
-                                        'extra_price' => $request->input("schema-$i-item-$j-price", 0),
-                                    ]
+                                $schema->schemaItems()->updateOrCreate([
+                                    'item_id' => $request->input("schema-$i-item-$j-id"),
+                                    'extra_price' => $request->input("schema-$i-item-$j-price", 0),
                                 ]);
                             }
                         }
@@ -94,8 +93,10 @@ class ProductController extends Controller
                     $schema = $product->schemas()->create([
                         'required' => true,
                     ]);
-                    $item = $schema->items()->create($request->all(), [
+                    $item = Item::create($request->all());
+                    $schemaItem = $schema->schemaItems()->create([
                         'extra_price' => 0,
+                        'item_id' => $item->id,
                     ]);
     
                     if (isset($request->photos[0]) && $request->photos[0] !== null) {
@@ -164,26 +165,37 @@ class ProductController extends Controller
                     ]);
     
                     if ($request->input('schema-old-' . $schema->id . '-type') == 0) {
-                        foreach ($schema->items as $item) {
-                            if ($request->filled('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-id')) {
+                        foreach ($schema->schemaItems as $schemaItem) {
+                            if ($request->filled('schema-old-' . $schema->id . '-item-' . $schemaItem->id . '-id')) {
                                 $request->validate([
-                                    'schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-id' => 'integer',
-                                    'schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-price' => 'numeric',
+                                    'schema-old-' . $schema->id . '-item-' . $schemaItem->id . '-id' => 'integer',
+                                    'schema-old-' . $schema->id . '-item-' . $schemaItem->id . '-price' => 'numeric',
                                 ]);
-        
-                                if ($request->input('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-id') == $item->id && 
-                                $request->input('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-price') != $item->pivot->extra_price ||
-                                $request->input('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-id') != $item->id) {
-                                    
-                                    $schema->items()->detach($item->id);
-                                    $schema->items()->syncWithoutDetaching([
-                                        $request->input('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-id') => [
-                                            'extra_price' => $request->input('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-price', 0),
-                                        ]
+
+                                $item_id = $request->input('schema-old-' . $schema->id . '-item-' . $schemaItem->id . '-id');
+                                $extra_price = $request->input('schema-old-' . $schema->id . '-item-' . $schemaItem->id . '-price', 0);
+
+                                if ($schemaItem->item_id != $item_id && $schemaItem->orderItem()->exists()) {
+                                    $schemaItem->delete();
+                                    $schema->schemaItems()->create([
+                                        'item_id' => $item_id,
+                                        'extra_price' => $extra_price,
+                                    ]);
+                                } else if ($schemaItem->item_id != $item_id || $schemaItem->extra_price != $extra_price) {
+                                    $oldItem = $schema->schemaItems()->onlyTrashed()->where('item_id', $item_id);
+                                    if ($oldItem->exists()) {
+                                        $schemaItem->forceDelete();
+                                        $oldItem->restore();
+                                        $schemaItem = $oldItem;
+                                    }
+
+                                    $schemaItem->update([
+                                        'item_id' => $item_id,
+                                        'extra_price' => $extra_price,
                                     ]);
                                 }
                             } else {
-                                $schema->items()->detach($item->id);
+                                $schemaItem->orderItem()->exists() ? $schemaItem->delete() : $schemaItem->forceDelete();
                             }
                         }
         
@@ -193,19 +205,36 @@ class ProductController extends Controller
                                     'schema-old-' . $schema->id . "-item-new-$i-id" => 'integer',
                                     'schema-old-' . $schema->id . "-item-new-$i-price" => 'numeric',
                                 ]);
-    
-                                $schema->items()->syncWithoutDetaching([
-                                    $request->input('schema-old-' . $schema->id . "-item-new-$i-id") => [
-                                        'extra_price' => $request->input('schema-old-' . $schema->id . "-item-new-$i-price", 0),
-                                    ]
-                                ]);
+
+                                $item_id = $request->input('schema-old-' . $schema->id . "-item-new-$i-id");
+                                $extra_price = $request->input('schema-old-' . $schema->id . "-item-new-$i-price", 0);
+                                $oldItem = $schema->schemaItems()->withTrashed()->where('item_id', $item_id);
+
+                                if ($oldItem->exists()) {
+                                    $oldItem->restore();
+
+                                    $oldItem->update([
+                                        'extra_price' => $extra_price,
+                                    ]);
+                                } else {
+                                    $schema->schemaItems()->create([
+                                        'item_id' => $item_id,
+                                        'extra_price' => $extra_price,
+                                    ]);
+                                }
                             }
                         }
                     } else {
-                        $schema->items()->detach();
+                        foreach ($schema->schemaItems as $schemaItem) {
+                            $schemaItem->orderItem()->exists() ? $schemaItem->delete() : $schemaItem->forceDelete();
+                        }
                     }
                 } else {
-                    $schema->delete();
+                    foreach ($schema->schemaItems as $schemaItem) {
+                        $schemaItem->orderItem()->exists() ? $schemaItem->delete() : $schemaItem->forceDelete();
+                    }
+                    
+                    $schema->schemaItems()->withTrashed()->exists() ? $schema->delete() : $schema->forceDelete();
                 }
             }
 
@@ -231,10 +260,9 @@ class ProductController extends Controller
                                     "schema-$i-item-$j-price" => 'numeric',
                                 ]);        
                                 
-                                $schema->items()->syncWithoutDetaching([
-                                    $request->input("schema-$i-item-$j-id") => [
-                                        'extra_price' => $request->input("schema-$i-item-$j-price", 0),
-                                    ]
+                                $schema->schemaItems()->updateOrCreate([
+                                    'item_id' => $request->input("schema-$i-item-$j-id"),
+                                    'extra_price' => $request->input("schema-$i-item-$j-price", 0),
                                 ]);
                             }
                         }
@@ -242,7 +270,13 @@ class ProductController extends Controller
                 }
             });
         } else {
-            $product->schemas()->delete();
+            foreach ($product->schemas as $schema) {
+                foreach ($schema->schemaItems as $schemaItem) {
+                    $schemaItem->orderItem()->exists() ? $schemaItem->delete() : $schemaItem->forceDelete();
+                }
+                
+                $schema->schemaItems()->withTrashed()->exists() ? $schema->delete() : $schema->forceDelete();
+            }
         }
 
         foreach ($request->photos as $photo) {
@@ -258,7 +292,15 @@ class ProductController extends Controller
 
     public function delete(Product $product)
     {
-        $product->delete();
+        foreach ($product->schemas as $schema) {
+            foreach ($schema->schemaItems as $schemaItem) {
+                $schemaItem->orderItem()->exists() ? $schemaItem->delete() : $schemaItem->forceDelete();
+            }
+            
+            $schema->schemaItems()->withTrashed()->exists() ? $schema->delete() : $schema->forceDelete();
+        }
+
+        $product->schemas()->withTrashed()->exists() ? $product->delete() : $product->forceDelete();
 
         return redirect()->route('products');
     }

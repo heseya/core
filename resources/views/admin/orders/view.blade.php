@@ -77,7 +77,7 @@
                 <ul class="menu-list">
                     <li>
                         <b>
-                            {{ $item->name }}
+                            {{ $item->product->name }}
                             @if ($item->qty != 1)
                                 <small class="cart__small">
                                     x {{ $item->qty }}
@@ -86,10 +86,11 @@
                         </b>
                         <small>{{ number_format($item->price, 2, ',', ' ') }} zł</small>
                         <ul>
-                            @foreach ($item->descendants as $subItem)
+                            @foreach ($item->schemaItems as $subItem)
                                 <li>
                                     &nbsp;&nbsp;&nbsp;&nbsp;
-                                    {{ $subItem->name }}
+                                    {{ $subItem->schema->name . ': ' . $subItem->item->name }}
+                                    @if(false)
                                     @if ($subItem->qty != 1)
                                         <small class="cart__small">
                                             x {{ $subItem->qty }}
@@ -98,7 +99,8 @@
                                     @if ($subItem->price != 0)
                                         <small>{{ number_format($subItem->price, 2, ',', ' ') }} zł</small>
                                     @endif
-                                    </li>
+                                    @endif
+                                </li>
                             @endforeach
                         </ul>
                     </li>
