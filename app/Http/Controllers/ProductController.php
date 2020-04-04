@@ -10,6 +10,7 @@ use App\Http\Resources\MediaResource;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\CategoryResource;
 use Illuminate\Database\Eloquent\Builder;
+use App\Http\Resources\ProductShortResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class ProductController extends Controller
@@ -45,23 +46,13 @@ class ProductController extends Controller
                 ->orWhere('name', 'LIKE', '%' . $request->q . '%');
         }
 
-        return ProductResource::collection(
+        return ProductShortResource::collection(
             $query->paginate(12)
         );
     }
 
-    public function view(Product $product): JsonResponse
+    public function view(Product $product): ProductResource
     {
-        return response()->json([
-            'slug' => $product->slug,
-            'name' => $product->name,
-            'price' => $product->price,
-            'description' => $product->parsed_description,
-            'brand' => new BrandResource($product->brand),
-            'category' => new CategoryResource($product->category),
-            'cover' => new MediaResource($product->gallery()->first()),
-            'gallery' => MediaResource::collection($product->gallery),
-            'schema' => $product->schema,
-        ]);
+        return new ProductResource($product);
     }
 }

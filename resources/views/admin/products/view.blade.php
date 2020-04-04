@@ -24,10 +24,6 @@
         <img class="icon" src="/img/icons/list.svg">
         {{ $product->category->name }}
     </div>
-    <div class="stats__item">
-        <img class="icon" src="/img/icons/tax.svg">
-        {{ $product->tax->name }}
-    </div>
 </div>
 
 

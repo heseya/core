@@ -15,13 +15,7 @@ class Chat extends Model
     protected $fillable = [
         'system',
         'external_id',
-        'client_id',
     ];
-
-    public function client()
-    {
-        return $this->belongsTo(Client::class);
-    }
 
     public function messages()
     {

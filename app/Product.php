@@ -3,17 +3,9 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Translatable\HasTranslations;
 
 class Product extends Model
 {
-    use HasTranslations;
-
-    public $translatable = [
-        'name',
-        'description',
-    ];
-
     protected $fillable = [
         'name',
         'slug',
@@ -21,7 +13,6 @@ class Product extends Model
         'description',
         'digital',
         'public',
-        'tax_id',
         'brand_id',
         'category_id',
     ];
@@ -29,11 +20,6 @@ class Product extends Model
     public function gallery()
     {
         return $this->morphedByMany(Photo::class, 'media', 'product_gallery');
-    }
-
-    public function tax()
-    {
-        return $this->belongsTo(Tax::class);
     }
 
     public function brand()

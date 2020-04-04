@@ -19,8 +19,6 @@ class InitDatabase extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->rememberToken();
-            $table->string('fb', 256)->nullable();
-            $table->string('fb_page', 256)->nullable();
             $table->timestamps();
         });
 
@@ -28,12 +26,6 @@ class InitDatabase extends Migration
             $table->string('email')->index();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
-        });
-
-        Schema::create('clients', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('name');
-            $table->timestamps();
         });
 
         Schema::create('photos', function (Blueprint $table) {
@@ -48,33 +40,26 @@ class InitDatabase extends Migration
             $table->timestamps();
         });
 
-        Schema::create('taxes', function (Blueprint $table) {
-            $table->tinyIncrements('id');
-            $table->string('name', 16);
-            $table->tinyInteger('value')->unsigned();
-            $table->timestamps();
-        });
-
         Schema::create('brands', function (Blueprint $table) {
             $table->smallIncrements('id');
-            $table->string('name', 80);
-            $table->string('slug', 80)->unique()->index();
+            $table->string('name');
+            $table->string('slug')->unique()->index();
             $table->boolean('public')->default(false);
             $table->timestamps();
         });
 
         Schema::create('categories', function (Blueprint $table) {
             $table->smallIncrements('id');
-            $table->json('name');
-            $table->string('slug', 80)->unique()->index();
+            $table->string('name');
+            $table->string('slug')->unique()->index();
             $table->boolean('public')->default(false);
             $table->timestamps();
         });
 
         Schema::create('items', function (Blueprint $table) {
             $table->increments('id');
-            $table->json('name');
-            $table->string('symbol', 128)->index()->nullable();
+            $table->string('name');
+            $table->string('symbol')->index()->nullable();
             $table->integer('qty')->unsigned()->default(0);
             $table->smallInteger('category_id')->index()->unsigned()->nullable();
             $table->integer('photo_id')->unsigned()->index()->nullable();
@@ -86,18 +71,16 @@ class InitDatabase extends Migration
 
         Schema::create('products', function (Blueprint $table) {
             $table->increments('id');
-            $table->json('name');
+            $table->string('name');
             $table->string('slug')->unique()->index();
             $table->float('price', 19, 4);
-            $table->tinyInteger('tax_id')->index()->unsigned();
             $table->smallInteger('brand_id')->index()->unsigned();
             $table->smallInteger('category_id')->index()->unsigned();
-            $table->json('description')->nullable();
+            $table->text('description')->nullable();
             $table->boolean('digital')->default(false);
             $table->boolean('public')->default(false);
             $table->timestamps();
 
-            $table->foreign('tax_id')->references('id')->on('taxes')->onDelete('restrict');
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('restrict');
             $table->foreign('brand_id')->references('id')->on('brands')->onDelete('restrict');
         });
@@ -125,8 +108,7 @@ class InitDatabase extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->increments('id');
             $table->string('code', 16)->unique();
-            $table->integer('client_id')->unsigned()->index()->nullable();
-            $table->string('email', 256);
+            $table->string('email');
             $table->tinyInteger('payment_status')->default(0);
             $table->tinyInteger('shop_status')->default(0);
             $table->smallInteger('delivery_method')->nullable();
@@ -138,7 +120,6 @@ class InitDatabase extends Migration
             $table->timestamps();
 
             // Relations
-            $table->foreign('client_id')->references('id')->on('clients')->onDelete('set null');
             $table->foreign('delivery_address')->references('id')->on('addresses')->onDelete('restrict');
             $table->foreign('invoice_address')->references('id')->on('addresses')->onDelete('restrict');
         });
@@ -202,12 +183,9 @@ class InitDatabase extends Migration
 
         Schema::create('chats', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('client_id')->unsigned()->nullable()->index();
             $table->smallInteger('system')->default(0);
             $table->string('external_id')->nullable();
             $table->timestamps();
-
-            $table->foreign('client_id')->references('id')->on('clients');
         });
 
         Schema::create('messages', function (Blueprint $table) {
@@ -243,10 +221,10 @@ class InitDatabase extends Migration
 
         Schema::create('pages', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('slug', 128)->unique()->index();
+            $table->string('slug')->unique()->index();
             $table->boolean('public')->default(false);
-            $table->json('name');
-            $table->json('content');
+            $table->string('name');
+            $table->text('content');
             $table->timestamps();
         });
     }

@@ -1,7 +1,7 @@
 <?php
 
-// API routes, nie ma prefixu
-Route::get('/', 'StaticController@index');
+// API routes, no prefixu
+Route::redirect('/', '/admin', 301);
 
 // Store
 Route::get('products', 'ProductController@index');

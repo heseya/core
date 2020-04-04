@@ -68,6 +68,9 @@
                 @enderror
             </div>
 
+        </div>
+        <div class="column">
+
             <div class="field">
                 <label class="label" for="type">Typ</label>
                 <div class="control">
@@ -83,37 +86,14 @@
                 @enderror
             </div>
 
-        </div>
-        <div class="column">
-
             <div class="columns has-no-margin-bottom">
                 <div class="column">
                     <div class="field">
-                        <label class="label" for="price">Cena brutto</label>
+                        <label class="label" for="price">Cena</label>
                         <div class="control">
                             <input type="number" step="0.01" name="price" class="input @error('price') is-danger @enderror" required autocomplete="off" value="{{ old('price') ?? $product->price ?? '' }}">
                         </div>
                         @error('price')
-                            <p class="help is-danger">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-
-                <div class="column">
-                    <div class="field">
-                        <label class="label" for="vat">VAT</label>
-                        <div class="control">
-                            <div class="select is-fullwidth">
-                                <select name="tax_id">
-                                @foreach($taxes as $tax)
-                                    <option value="{{ $tax['id'] }}" {{ $tax['id'] == (old('tax_id') ?? $product->tax_id ?? '') ? 'selected' : '' }}>
-                                        {{ $tax['name'] }}
-                                    </option>
-                                @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        @error('vat')
                             <p class="help is-danger">{{ $message }}</p>
                         @enderror
                     </div>
@@ -159,7 +139,7 @@
                                     <div class="field">
                                         <label class="label" for="schema-old-{{ $schema->id }}-name">Nazwa</label>
                                         <div class="control">
-                                            <input name="schema-old-{{ $schema->id }}-name" class="input @error('schema-old-' . $schema->id . '-name') is-danger @enderror" 
+                                            <input name="schema-old-{{ $schema->id }}-name" class="input @error('schema-old-' . $schema->id . '-name') is-danger @enderror"
                                             required autocomplete="off" value="{{ old('schema-old-' . $schema->id . '-name') ?? $schema['name'] }}">
                                         </div>
                                         @error('schema-old-' . $schema->id . 'name')

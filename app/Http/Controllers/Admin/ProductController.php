@@ -38,7 +38,6 @@ class ProductController extends Controller
         return view('admin.products.form', [
             'brands' => Brand::all(),
             'categories' => Category::all(),
-            'taxes' => Tax::all(),
             'items' => Item::all(),
         ]);
     }
@@ -51,7 +50,7 @@ class ProductController extends Controller
             'category_id' => 'required|integer',
             'price' => 'required',
         ]);
-        
+
         DB::transaction(function () use ($request) {
             $product = Product::create($request->all());
 
@@ -64,20 +63,20 @@ class ProductController extends Controller
                             "schema-$i-type" => 'required|integer',
                             "schema-$i-required" => 'required|boolean',
                         ]);
-    
+
                         $schema = $product->schemas()->create([
                             'name' => $request->input("schema-$i-name"),
                             'type' => $request->input("schema-$i-type"),
                             'required' => $request->boolean("schema-$i-required"),
                         ]);
-    
+
                         for ($j = 0; $j < $request->input("schema-$i-items", 0); $j++) {
                             if ($request->filled("schema-$i-item-$j-id")) {
                                 $request->validate([
                                     "schema-$i-item-$j-id" => 'integer',
                                     "schema-$i-item-$j-price" => 'numeric',
-                                ]);        
-                                
+                                ]);
+
                                 $schema->items()->syncWithoutDetaching([
                                     $request->input("schema-$i-item-$j-id") => [
                                         'extra_price' => $request->input("schema-$i-item-$j-price", 0),
@@ -85,11 +84,11 @@ class ProductController extends Controller
                                 ]);
                             }
                         }
-    
+
                         $schemas++;
                     }
                 }
-    
+
                 if ($schemas == 0) {
                     $schema = $product->schemas()->create([
                         'required' => true,
@@ -97,7 +96,7 @@ class ProductController extends Controller
                     $item = $schema->items()->create($request->all(), [
                         'extra_price' => 0,
                     ]);
-    
+
                     if (isset($request->photos[0]) && $request->photos[0] !== null) {
                         $item->photo()->associate($request->photos[0])->save();
                     }
@@ -122,7 +121,6 @@ class ProductController extends Controller
             'product' => $product,
             'brands' => Brand::all(),
             'categories' => Category::all(),
-            'taxes' => Tax::all(),
             'items' => Item::all(),
             'schemas' => $product->schemas,
         ]);
@@ -149,20 +147,20 @@ class ProductController extends Controller
                 if ($schema->name == NULL) {
                     continue;
                 }
-    
+
                 if ($request->filled('schema-old-' . $schema->id . '-name')) {
                     $request->validate([
                         'schema-old-' . $schema->id . '-name' => 'string|max:255',
                         'schema-old-' . $schema->id . '-type' => 'required|integer',
                         'schema-old-' . $schema->id . '-required' => 'required|boolean',
                     ]);
-    
+
                     $schema->update([
                         'name' => $request->input('schema-old-' . $schema->id . '-name'),
                         'type' => $request->input('schema-old-' . $schema->id . '-type'),
                         'required' => $request->boolean('schema-old-' . $schema->id . '-required'),
                     ]);
-    
+
                     if ($request->input('schema-old-' . $schema->id . '-type') == 0) {
                         foreach ($schema->items as $item) {
                             if ($request->filled('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-id')) {
@@ -170,11 +168,11 @@ class ProductController extends Controller
                                     'schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-id' => 'integer',
                                     'schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-price' => 'numeric',
                                 ]);
-        
-                                if ($request->input('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-id') == $item->id && 
+
+                                if ($request->input('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-id') == $item->id &&
                                 $request->input('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-price') != $item->pivot->extra_price ||
                                 $request->input('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-id') != $item->id) {
-                                    
+
                                     $schema->items()->detach($item->id);
                                     $schema->items()->syncWithoutDetaching([
                                         $request->input('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-id') => [
@@ -186,14 +184,14 @@ class ProductController extends Controller
                                 $schema->items()->detach($item->id);
                             }
                         }
-        
+
                         for ($i = 0; $i < $request->input('schema-old-' . $schema->id . '-items', 0); $i++) {
                             if ($request->filled('schema-old-' . $schema->id . "-item-new-$i-id")) {
                                 $request->validate([
                                     'schema-old-' . $schema->id . "-item-new-$i-id" => 'integer',
                                     'schema-old-' . $schema->id . "-item-new-$i-price" => 'numeric',
                                 ]);
-    
+
                                 $schema->items()->syncWithoutDetaching([
                                     $request->input('schema-old-' . $schema->id . "-item-new-$i-id") => [
                                         'extra_price' => $request->input('schema-old-' . $schema->id . "-item-new-$i-price", 0),
@@ -217,20 +215,20 @@ class ProductController extends Controller
                             "schema-$i-type" => 'required|integer',
                             "schema-$i-required" => 'required|boolean',
                         ]);
-    
+
                         $schema = $product->schemas()->create([
                             'name' => $request->input("schema-$i-name"),
                             'type' => $request->input("schema-$i-type"),
                             'required' => $request->boolean("schema-$i-required"),
                         ]);
-    
+
                         for ($j = 0; $j < $request->input("schema-$i-items", 0); $j++) {
                             if ($request->filled("schema-$i-item-$j-id")) {
                                 $request->validate([
                                     "schema-$i-item-$j-id" => 'integer',
                                     "schema-$i-item-$j-price" => 'numeric',
-                                ]);        
-                                
+                                ]);
+
                                 $schema->items()->syncWithoutDetaching([
                                     $request->input("schema-$i-item-$j-id") => [
                                         'extra_price' => $request->input("schema-$i-item-$j-price", 0),
