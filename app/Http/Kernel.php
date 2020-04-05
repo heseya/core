@@ -39,6 +39,7 @@ class Kernel extends HttpKernel
 
         'api' => [
             \App\Http\Middleware\JsonResponse::class,
+            \Fruitcake\Cors\HandleCors::class,
             \App\Http\Middleware\Language::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
@@ -75,6 +76,7 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $middlewarePriority = [
+        \Fruitcake\Cors\HandleCors::class,
         \App\Http\Middleware\JsonResponse::class,
         \Illuminate\Session\Middleware\StartSession::class,
         \Illuminate\View\Middleware\ShareErrorsFromSession::class,
