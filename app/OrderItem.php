@@ -12,7 +12,6 @@ class OrderItem extends Model
         'tax',
         'order_id',
         'product_id',
-        'product_schema_item_id',
     ];
 
     public function order()

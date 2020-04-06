@@ -7,6 +7,7 @@ Route::get('/', 'StaticController@index');
 Route::get('products', 'ProductController@index');
 Route::get('products/{product}', 'ProductController@view');
 
+Route::post('orders/create','OrderController@create');
 Route::get('orders/{order}', 'OrderController@view');
 Route::get('orders/{order}/pay/{method}', 'OrderController@pay');
 

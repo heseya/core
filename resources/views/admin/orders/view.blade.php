@@ -89,7 +89,8 @@
                             @foreach ($item->schemaItems as $subItem)
                                 <li>
                                     &nbsp;&nbsp;&nbsp;&nbsp;
-                                    {{ $subItem->schema->name . ': ' . $subItem->item->name }}
+                                    {{ $subItem->schema->name ? $subItem->schema->name : 'Przedmiot' . 
+                                    ': ' . ($subItem->item ? $subItem->item->name : $subItem->value) }}
                                     @if(false)
                                     @if ($subItem->qty != 1)
                                         <small class="cart__small">

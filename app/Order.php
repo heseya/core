@@ -11,6 +11,7 @@ class Order extends Model
     use Payable;
 
     protected $fillable = [
+        'code',
         'email',
         'client_id',
         'payment_status',
