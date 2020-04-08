@@ -33,6 +33,29 @@ Jak by coś nie działało związanego z cache (np. routing).
 php artisan optimize
 ```
 
+## Przygotowanie projektu w Docker
+Skopiuj `.env.example` do `.env`.
+
+Utwórz środowisko
+```
+docker-compose up
+```
+
+Uruchamianie środowiska nie przypinająć go do konsoli (lub z aplikacji)
+```
+docker-compose up -d
+```
+
+Zatrzymywanie środowiska (lub z aplikacji)
+```
+docker-compose stop
+```
+
+Wejście do kontenera (lub z aplikacji)
+```
+docker exec -it depth(lub inna nazwa katalogu projektu)_app_1 bash
+```
+
 ## Styl kodu
 Ustaw twoje IDE, zeby korzystało z pliku .editorconfig. W VS Code jest na to dodatek.
 
