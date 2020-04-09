@@ -43,15 +43,15 @@
     <div class="column is-half">
         <h3 class="margin--left">Powiązane produkty</h3>
         <div class="list">
-            @foreach ($item->schemas as $schema)
-            <a href="{{ route('products.view', $schema->product->slug) }}" class="cart__item">
+            @foreach ($item->schemaItems as $schemaItem)
+            <a href="{{ route('products.view', $schemaItem->schema->product->slug) }}" class="cart__item">
                 <div class="cart__img">
-                @isset ($schema->product->gallery[0])
-                    <img src="{{ $schema->product->gallery[0]->url }}">
+                @isset ($schemaItem->schema->product->gallery[0])
+                    <img src="{{ $schemaItem->schema->product->gallery[0]->url }}">
                 @endisset
                 </div>
                 <div class="cart__details">
-                    <div>{{ $schema->product->name }}</div>
+                    <div>{{ $schemaItem->schema->product->name }}</div>
                 </div>
             </a>
             @endforeach

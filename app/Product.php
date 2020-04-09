@@ -4,10 +4,11 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
-    use HasTranslations;
+    use HasTranslations, SoftDeletes;
 
     public $translatable = [
         'name',
@@ -53,7 +54,12 @@ class Product extends Model
 
     public function schemas()
     {
-        return $this->hasMany(ProductSchema::class)->with('items');
+        return $this->hasMany(ProductSchema::class);
+    }
+
+    public function orders() 
+    {
+        return $this->belongsToMany(Order::class)->using(OrderItem::class);
     }
 
     /**

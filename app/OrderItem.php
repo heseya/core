@@ -2,17 +2,30 @@
 
 namespace App;
 
-use Kalnoy\Nestedset\NodeTrait;
 use Illuminate\Database\Eloquent\Model;
 
 class OrderItem extends Model
 {
-    use NodeTrait;
-
     protected $fillable = [
-        'symbol',
-        'name',
         'qty',
         'price',
+        'tax',
+        'order_id',
+        'product_id',
     ];
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class)->withTrashed();
+    }
+
+    public function schemaItems()
+    {
+        return $this->belongsToMany(ProductSchemaItem::class)->withTrashed();
+    }
 }

@@ -6,10 +6,11 @@ use App\Category;
 use App\ProductSchema;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Item extends Model
 {
-    use HasTranslations;
+    use HasTranslations, SoftDeletes;
 
     public $translatable = [
         'name',
@@ -32,8 +33,8 @@ class Item extends Model
         return $this->belongsTo(Photo::class);
     }
 
-    public function schemas()
+    public function schemaItems()
     {
-        return $this->belongsToMany(ProductSchema::class, 'product_schema_item');
+        return $this->hasMany(ProductSchemaItem::class);
     }
 }
