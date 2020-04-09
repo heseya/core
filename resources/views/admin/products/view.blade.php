@@ -3,12 +3,12 @@
 @section('title', $product->name)
 
 @section('buttons')
-<a href="{{ route('products.update', $product->slug) }}" class="top-nav--button">
+<a href="{{ route('products.update', $product) }}" class="top-nav--button">
     <img class="icon" src="/img/icons/pencil.svg">
 </a>
 <button onclick="window.confirmModal(
         'Czy na pewno chcesz usunąć {{ $product->name }}?',
-        '{{ route('products.delete', $product->slug) }}'
+        '{{ route('products.delete', $product) }}'
     )" class="top-nav--button">
     <img class="icon" src="/img/icons/trash.svg">
 </button>
@@ -23,10 +23,6 @@
     <div class="stats__item">
         <img class="icon" src="/img/icons/list.svg">
         {{ $product->category->name }}
-    </div>
-    <div class="stats__item">
-        <img class="icon" src="/img/icons/tax.svg">
-        {{ $product->tax->name }}
     </div>
 </div>
 

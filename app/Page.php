@@ -3,17 +3,9 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Translatable\HasTranslations;
 
 class Page extends Model
 {
-    use HasTranslations;
-
-    public $translatable = [
-        'name',
-        'content',
-    ];
-
     /**
      * The attributes that are mass assignable.
      *
@@ -34,16 +26,6 @@ class Page extends Model
     protected $casts = [
         'public' => 'boolean',
     ];
-
-    /**
-     * Get the route key for the model.
-     *
-     * @return string
-     */
-    public function getRouteKeyName(): string
-    {
-        return 'slug';
-    }
 
     /**
      * MD content parser.

@@ -1,18 +1,18 @@
 <?php
 
-// API routes, nie ma prefixu
-Route::get('/', 'StaticController@index');
+// API routes, no prefixu
+Route::redirect('/', '/admin', 301);
 
 // Store
 Route::get('products', 'ProductController@index');
-Route::get('products/{product}', 'ProductController@view');
+Route::get('products/{product:slug}', 'ProductController@view');
 
 Route::post('orders/create','OrderController@create');
 Route::get('orders/{order}', 'OrderController@view');
 Route::get('orders/{order}/pay/{method}', 'OrderController@pay');
 
 Route::get('pages', 'PageController@index');
-Route::get('pages/{page}', 'PageController@view');
+Route::get('pages/{page:slug}', 'PageController@view');
 
 Route::get('brands', 'StaticController@brands');
 Route::get('categories', 'StaticController@categories');

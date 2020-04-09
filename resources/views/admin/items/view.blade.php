@@ -3,12 +3,12 @@
 @section('title', $item->name)
 
 @section('buttons')
-<a href="{{ route('items.update', $item->id) }}" class="top-nav--button">
+<a href="{{ route('items.update', $item) }}" class="top-nav--button">
     <img class="icon" src="/img/icons/pencil.svg">
 </a>
 <button onclick="window.confirmModal(
         'Czy na pewno chcesz usunąć {{ $item->name }}?',
-        '{{ route('items.delete', $item->id) }}/delete'
+        '{{ route('items.delete', $item) }}/delete'
     )" class="top-nav--button">
     <img class="icon" src="/img/icons/trash.svg">
 </button>

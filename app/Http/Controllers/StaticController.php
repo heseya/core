@@ -11,14 +11,6 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class StaticController extends Controller
 {
-    public function index(): JsonResponse
-    {
-        return response()->json([
-            'name' => config('app.name'),
-            'store_url' => config('app.store_url'),
-        ]);
-    }
-
     public function categories(): ResourceCollection
     {
         return CategoryResource::collection(

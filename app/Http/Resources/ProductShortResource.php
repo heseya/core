@@ -7,7 +7,7 @@ use App\Http\Resources\MediaResource;
 use App\Http\Resources\CategoryResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ProductResource extends JsonResource
+class ProductShortResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -21,12 +21,9 @@ class ProductResource extends JsonResource
             'slug' => $this->slug,
             'name' => $this->name,
             'price' => $this->price,
-            'description' => $this->parsed_description,
             'brand' => new BrandResource($this->brand),
             'category' => new CategoryResource($this->category),
             'cover' => new MediaResource($this->gallery()->first()),
-            'gallery' => MediaResource::collection($this->gallery),
-            'schema' => $this->schema,
         ];
     }
 }

@@ -22,24 +22,13 @@ class Product extends Model
         'description',
         'digital',
         'public',
-        'tax_id',
         'brand_id',
         'category_id',
     ];
 
-    public function getRouteKeyName(): string
-    {
-        return 'slug';
-    }
-
     public function gallery()
     {
         return $this->morphedByMany(Photo::class, 'media', 'product_gallery');
-    }
-
-    public function tax()
-    {
-        return $this->belongsTo(Tax::class);
     }
 
     public function brand()

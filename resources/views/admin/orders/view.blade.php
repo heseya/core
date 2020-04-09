@@ -9,11 +9,11 @@
 <a href="/admin/orders/{{ $order->id + 1 }}" class="top-nav--button">
     <img class="icon" src="/img/icons/right.svg">
 </a> --}}
-<a class="top-nav--button" onclick="payment('{{ $order->code }}')">
+<a class="top-nav--button" onclick="payment('{{ $order->id }}')">
     <img class="icon" src="/img/icons/cash.svg">
 </a>
 @can('manageOrders')
-<a href="{{ route('orders.update', $order->code) }}" class="top-nav--button">
+<a href="{{ route('orders.update', $order) }}" class="top-nav--button">
     <img class="icon" src="/img/icons/pencil.svg">
 </a>
 @endcan
