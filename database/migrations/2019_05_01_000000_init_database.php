@@ -152,9 +152,13 @@ class InitDatabase extends Migration
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         });
 
-        Schema::create('product_schema_item', function (Blueprint $table) {
-            $table->increments('id');
-            $table->float('extra_price', 19, 2);
+        Schema::create('product_schema_items', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->float('extra_price', 19, 4);
+            $table->string('value', 256)->nullable();
+            $table->integer('item_id')->unsigned()->index()->nullable();
+            $table->bigInteger('product_schema_id')->unsigned()->index();
+            $table->timestamps();
 
             $table->foreign('item_id')->references('id')->on('items')->onDelete('restrict');
             $table->foreign('product_schema_id')->references('id')->on('product_schemas')->onDelete('cascade');
@@ -198,7 +202,7 @@ class InitDatabase extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('order_item_id')->unsigned()->index();
             $table->bigInteger('product_schema_item_id')->unsigned()->index();
-            
+
             $table->foreign('order_item_id')->references('id')->on('order_items')->onDelete('cascade');
             $table->foreign('product_schema_item_id')->references('id')->on('product_schema_items')->onDelete('restrict');
         });
@@ -221,24 +225,6 @@ class InitDatabase extends Migration
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
             $table->foreign('chat_id')->references('id')->on('chats')->onDelete('cascade');
-        });
-
-        Schema::create('order_items', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->string('name');
-            $table->string('symbol')->nullable()->index();
-            $table->float('qty', 8, 4);
-            $table->float('price', 19, 2);
-            $table->nestedSet();
-            $table->timestamps();
-        });
-
-        Schema::create('order_order_item', function (Blueprint $table) {
-            $table->integer('order_id')->unsigned()->index();
-            $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
-
-            $table->bigInteger('order_item_id')->unsigned()->index();
-            $table->foreign('order_item_id')->references('id')->on('order_items')->onDelete('cascade');
         });
 
         Schema::create('pages', function (Blueprint $table) {

@@ -2,21 +2,28 @@
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
 
-use App\Product;
+use App\Category;
 use Illuminate\Support\Str;
 use Faker\Generator as Faker;
 use Bezhanov\Faker\ProviderCollectionHelper;
 
-$factory->define(Product::class, function (Faker $faker) {
+$factory->define(Category::class, function (Faker $faker) {
 
     ProviderCollectionHelper::addAllProvidersTo($faker);
 
-    $name = $faker->unique()->productName;
+    $name = $faker->unique()->randomElement([
+        'Akcesoria',
+        'Biżuteria',
+        'Narzędzia',
+        'Obuwie',
+        'Okulary',
+        'Ubrania',
+        'Zegarki',
+    ]);
 
     return [
         'name' => $name,
         'slug' => Str::slug($name),
-        'price' => round(rand(500, 6000), -2),
-        'description' => $faker->realText,
+        'public' => rand(0, 1),
     ];
 });

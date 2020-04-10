@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Brand;
 use App\Product;
+use App\Category;
 use Tests\TestCase;
 
 class ProductsApiTest extends TestCase
@@ -11,7 +13,13 @@ class ProductsApiTest extends TestCase
     {
         parent::setUp();
 
-        $this->product = factory(Product::class)->create();
+        $brand = factory(Brand::class)->create();
+        $category = factory(Category::class)->create();
+
+        $this->product = factory(Product::class)->create([
+            'brand_id' => $brand->id,
+            'category_id' => $category->id,
+        ]);
     }
 
     /**

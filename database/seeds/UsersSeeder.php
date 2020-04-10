@@ -37,7 +37,6 @@ class UsersSeeder extends Seeder
         $user->givePermissionTo('viewPages');
         $user->givePermissionTo('managePages');
 
-
         factory(User::class, 5)->create();
     }
 }

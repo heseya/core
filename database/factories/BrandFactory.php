@@ -2,21 +2,20 @@
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
 
-use App\Product;
+use App\Brand;
 use Illuminate\Support\Str;
 use Faker\Generator as Faker;
 use Bezhanov\Faker\ProviderCollectionHelper;
 
-$factory->define(Product::class, function (Faker $faker) {
+$factory->define(Brand::class, function (Faker $faker) {
 
     ProviderCollectionHelper::addAllProvidersTo($faker);
 
-    $name = $faker->unique()->productName;
+    $name = $faker->unique()->deviceManufacturer;
 
     return [
         'name' => $name,
         'slug' => Str::slug($name),
-        'price' => round(rand(500, 6000), -2),
-        'description' => $faker->realText,
+        'public' => rand(0, 1),
     ];
 });
