@@ -19,7 +19,7 @@ class SchemaResource extends JsonResource
             'name' => $this->name,
             'type' => $this->type,
             'required' => $this->required,
-            'items' => SchemaItemResource::collection($this->schemaItems),
+            'schemaItems' => SchemaItemResource::collection($this->schemaItems),
         ];
     }
 }

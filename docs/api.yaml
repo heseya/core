@@ -81,9 +81,9 @@ paths:
       operationId: 'App\Http\Controllers\ProductController::index'
       parameters:
         -
-          name: query
+          name: search
           in: query
-          description: 'Text input search.'
+          description: 'Full text search.'
           schema:
             type: string
         -
@@ -165,6 +165,19 @@ components:
           type: string
           example: 'Some error message.'
       type: object
+    Item:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          example: Chain
+        symbol:
+          type: string
+        qty:
+          type: float
+          example: 20
+      type: object
     Page:
       properties:
         id:
@@ -209,6 +222,38 @@ components:
           $ref: '#/components/schemas/Brand'
         category:
           $ref: '#/components/schemas/Category'
+        schemas:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductSchema'
+      type: object
+    ProductSchema:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          example: Chain
+        type:
+          type: integer
+        required:
+          type: boolean
+        schemaItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductSchemaItem'
+      type: object
+    ProductSchemaItem:
+      properties:
+        id:
+          type: integer
+        extra_price:
+          type: float
+          example: 19.99
+        value:
+          type: string
+        item:
+          $ref: '#/components/schemas/Item'
       type: object
     User:
       properties:

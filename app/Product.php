@@ -60,6 +60,15 @@ class Product extends Model
         'category_id',
     ];
 
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'public' => 'boolean',
+    ];
+
     public function gallery()
     {
         return $this->morphedByMany(Photo::class, 'media', 'product_gallery');
@@ -87,6 +96,13 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
+    /**
+     * @OA\Property(
+     *   property="schemas",
+     *   type="array",
+     *   @OA\Items(ref="#/components/schemas/ProductSchema"),
+     * )
+     */
     public function schemas()
     {
         return $this->hasMany(ProductSchema::class);
@@ -102,8 +118,8 @@ class Product extends Model
      *
      * @var array
      */
-    public function getParsedDescriptionAttribute(): string
+    public function getDescriptionAttribute($description): string
     {
-        return parsedown($this->description);
+        return parsedown($description);
     }
 }
