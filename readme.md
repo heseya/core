@@ -34,8 +34,6 @@ php artisan optimize
 ```
 
 ## Przygotowanie projektu w Docker
-Skopiuj `.env.example` do `.env`.
-
 Utwórz środowisko
 ```
 docker-compose up

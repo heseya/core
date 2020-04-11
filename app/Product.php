@@ -5,9 +5,49 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @OA\Schema()
+ */
 class Product extends Model
 {
     use SoftDeletes;
+
+    /**
+     * @OA\Property(
+     *   property="id",
+     *   type="integer",
+     * )
+     *
+     * @OA\Property(
+     *   property="name",
+     *   type="string",
+     *   example="Snake Ring",
+     * )
+     *
+     * @OA\Property(
+     *   property="slug",
+     *   type="string",
+     *   example="snake-ring",
+     * )
+     *
+     * @OA\Property(
+     *   property="price",
+     *   type="float",
+     *   example=229.99,
+     * )
+     *
+     * @OA\Property(
+     *   property="description",
+     *   type="string",
+     *   description="Description in html",
+     *   example="<p>Awesome stuff!</p>",
+     * )
+     *
+     * @OA\Property(
+     *   property="public",
+     *   type="boolean",
+     * )
+     */
 
     protected $fillable = [
         'name',
@@ -25,11 +65,23 @@ class Product extends Model
         return $this->morphedByMany(Photo::class, 'media', 'product_gallery');
     }
 
+    /**
+     * @OA\Property(
+     *   property="brand",
+     *   ref="#/components/schemas/Brand",
+     * )
+     */
     public function brand()
     {
         return $this->belongsTo(Brand::class);
     }
 
+    /**
+     * @OA\Property(
+     *   property="category",
+     *   ref="#/components/schemas/Category",
+     * )
+     */
     public function category()
     {
         return $this->belongsTo(Category::class);

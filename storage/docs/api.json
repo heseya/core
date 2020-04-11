@@ -1,0 +1,156 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Heseya Store API",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/products": {
+            "get": {
+                "summary": "list products",
+                "operationId": "App\\Http\\Controllers\\ProductController::index",
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Product"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{slug}": {
+            "get": {
+                "summary": "prodct info",
+                "operationId": "App\\Http\\Controllers\\ProductController::view",
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Product"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Brand": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Depth Steel"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "depth-steel"
+                    },
+                    "public": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "Category": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Rings & Sets"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "rings-and-sets"
+                    },
+                    "public": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "Product": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Snake Ring"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "snake-ring"
+                    },
+                    "price": {
+                        "type": "float",
+                        "example": 229.99
+                    },
+                    "description": {
+                        "description": "Description in html",
+                        "type": "string",
+                        "example": "<p>Awesome stuff!</p>"
+                    },
+                    "public": {
+                        "type": "boolean"
+                    },
+                    "brand": {
+                        "$ref": "#/components/schemas/Brand"
+                    },
+                    "category": {
+                        "$ref": "#/components/schemas/Category"
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "description": "User first and last name",
+                        "type": "string",
+                        "example": "Johny Mielony"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "info@hesyea.com"
+                    },
+                    "avatar": {
+                        "description": "Url to avatar",
+                        "type": "string",
+                        "example": "//www.gravatar.com/avatar/example.jpg"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    }
+}

@@ -1,8 +1,5 @@
 <?php
 
-// API routes, no prefixu
-Route::redirect('/', '/admin', 301);
-
 // Store
 Route::get('products', 'ProductController@index');
 Route::get('products/{product:slug}', 'ProductController@view');

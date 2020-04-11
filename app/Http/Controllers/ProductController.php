@@ -15,6 +15,26 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class ProductController extends Controller
 {
+    /**
+     * @OA\Get(
+     *   path="/products",
+     *   summary="list products",
+     *   @OA\Response(
+     *     response=200,
+     *     description="success",
+     *     @OA\MediaType(
+     *       mediaType="application/json",
+     *       @OA\Schema(
+     *         @OA\Property(
+     *           property="data",
+     *           type="array",
+     *             @OA\Items(ref="#/components/schemas/Product"),
+     *         )
+     *       )
+     *     )
+     *   )
+     * )
+     */
     public function index(Request $request): ResourceCollection
     {
         $request->validate([
@@ -51,6 +71,25 @@ class ProductController extends Controller
         );
     }
 
+    /**
+     * @OA\Get(
+     *   path="/products/{slug}",
+     *   summary="prodct info",
+     *   @OA\Response(
+     *     response=200,
+     *     description="success",
+     *     @OA\MediaType(
+     *       mediaType="application/json",
+     *       @OA\Schema(
+     *         @OA\Property(
+     *           property="data",
+     *           ref="#/components/schemas/Product"
+     *         )
+     *       )
+     *     )
+     *   )
+     * )
+     */
     public function view(Product $product): ProductResource
     {
         return new ProductResource($product);
