@@ -38,6 +38,7 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
+            'throttle:60,1',
             \App\Http\Middleware\JsonResponse::class,
             \Fruitcake\Cors\HandleCors::class,
             \App\Http\Middleware\Language::class,

@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class PageResource extends JsonResource
+class ErrorResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,11 +15,10 @@ class PageResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id' => $this->id,
-            'slug' => $this->slug,
-            'name' => $this->name,
-            'public' => $this->public,
-            'content' => $this->content,
+            'error' => [
+                'code' => $this->code,
+                'message' => $this->message,
+            ],
         ];
     }
 }

@@ -23,7 +23,7 @@ class User extends Authenticatable
      * @OA\Property(
      *   property="name",
      *   type="string",
-     *   description="User first and last name",
+     *   description="User first and last name.",
      *   example="Johny Mielony",
      * )
      *
@@ -65,7 +65,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Url to avatar
+     * Url to avatar.
      *
      * @return string
      * @OA\Property(

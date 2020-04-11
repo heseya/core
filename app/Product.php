@@ -39,7 +39,7 @@ class Product extends Model
      * @OA\Property(
      *   property="description",
      *   type="string",
-     *   description="Description in html",
+     *   description="Description in HTML.",
      *   example="<p>Awesome stuff!</p>",
      * )
      *

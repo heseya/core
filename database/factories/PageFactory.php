@@ -8,7 +8,7 @@ use Faker\Generator as Faker;
 
 $factory->define(Page::class, function (Faker $faker) {
 
-    $name = $faker->unique()->catchPhrase;
+    $name = $faker->unique()->country;
 
     return [
         'name' => $name,

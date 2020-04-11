@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Error;
 use App\Order;
 use App\Status;
-use App\Product;
 use App\Address;
+use App\Product;
 use App\ProductSchema;
 use App\ProductSchemaItem;
 use Illuminate\Support\Str;
@@ -27,21 +28,17 @@ class OrderController extends Controller
         ]);
     }
 
-    public function pay(Order $order, $method): JsonResponse
+    public function pay(Order $order, $method)
     {
         if (
             $order->payment_status !== 0 ||
             $order->shop_status === 3
         ) {
-            return response()->json([
-                'message' => 'Order not payable.',
-            ], 406);
+            return Error::abort('Order not payable.', 406);
         }
 
         if (!array_key_exists($method, config('payable.aliases'))) {
-            return response()->json([
-                'message' => 'Unkown payment method.',
-            ], 400);
+            return Error::abort('Unkown payment method.', 400);
         }
 
         $method_class = config('payable.aliases')[$method];
@@ -100,11 +97,11 @@ class OrderController extends Controller
                 'schemaItems' => 'array',
                 'customSchemas' => 'array',
             ])->validate();
-            
+
             foreach ($item['schemaItems'] as $id) {
                 $schemaItem = ProductSchemaItem::find($id);
                 if ($schemaItem == NULL || $schemaItem->item->qty < $item['qty']) {
-                    return abort(400, 'Invalid data.');
+                    return Error::abort('Invalid data.', 400);
                 }
             }
 
@@ -113,14 +110,14 @@ class OrderController extends Controller
                 $schemaItem = $product->schemas()->first()->schemaItems()->first();
 
                 if ($schemaItem->item->qty < $item['qty']) {
-                    return abort(400, 'Invalid data.');
+                    return Error::abort('Invalid data.', 400);
                 }
             }
 
             foreach ($item['customSchemas'] as $input) {
                 $schema = ProductSchema::find($input['schema_id']);
                 if ($schema == NULL || $schema->type == 0) {
-                    return abort(400, 'Invalid data.');
+                    return Error::abort('Invalid data.', 400);
                 }
 
                 Validator::make($input, [
@@ -128,11 +125,11 @@ class OrderController extends Controller
                 ])->validate();
             }
         }
-        
+
         do {
             $code = Str::upper(Str::random(6));
         } while (Order::firstWhere('code', $code));
-        
+
         $order = new Order([
             'code' => $code,
             'email' => $request->email,
@@ -140,9 +137,9 @@ class OrderController extends Controller
         ]);
 
         $order->delivery_address = Address::firstOrCreate($request->deliveryAddress)->id;
-        $order->invoice_address = $request->filled('invoiceAddress.name') ? 
+        $order->invoice_address = $request->filled('invoiceAddress.name') ?
             Address::firstOrCreate($request->invoiceAddress)->id : NULL;
-        
+
         $order->save();
 
         foreach ($request->items as $item) {
@@ -166,7 +163,7 @@ class OrderController extends Controller
                 $schemaItem = $product->schemas()->first()->schemaItems()->first();
                 $orderItem->schemaItems()->attach($schemaItem);
             }
-            
+
             foreach($item['customSchemas'] as $schema) {
                 $orderItem->schemaItems()->create([
                     'product_schema_id' => $schema['schema_id'],

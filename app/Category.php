@@ -39,8 +39,12 @@ class Category extends Model
         'public',
     ];
 
-    public function products()
-    {
-        return $this->hasMany(Product::class);
-    }
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'public' => 'boolean',
+    ];
 }

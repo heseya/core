@@ -2,9 +2,10 @@
 
 namespace App\Http\Resources;
 
+use App\Http\Resources\ItemResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class PageResource extends JsonResource
+class SchemaItemResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,10 +17,9 @@ class PageResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'slug' => $this->slug,
-            'name' => $this->name,
-            'public' => $this->public,
-            'content' => $this->content,
+            'value' => $this->value,
+            'extra_price' => $this->extra_price,
+            'item' => new ItemResource($this->item),
         ];
     }
 }

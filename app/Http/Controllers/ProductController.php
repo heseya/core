@@ -19,17 +19,39 @@ class ProductController extends Controller
      * @OA\Get(
      *   path="/products",
      *   summary="list products",
+     *   tags={"Products"},
+     *   @OA\Parameter(
+     *     name="search",
+     *     in="query",
+     *     description="Full text search.",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="brand",
+     *     in="query",
+     *     description="Brand slug.",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="category",
+     *     in="query",
+     *     description="Category slug.",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
      *   @OA\Response(
      *     response=200,
-     *     description="success",
-     *     @OA\MediaType(
-     *       mediaType="application/json",
-     *       @OA\Schema(
-     *         @OA\Property(
-     *           property="data",
-     *           type="array",
-     *             @OA\Items(ref="#/components/schemas/Product"),
-     *         )
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         type="array",
+     *         @OA\Items(ref="#/components/schemas/Product"),
      *       )
      *     )
      *   )
@@ -38,9 +60,9 @@ class ProductController extends Controller
     public function index(Request $request): ResourceCollection
     {
         $request->validate([
-            'brand' => ['string', 'max:80'],
-            'category' => ['string', 'max:80'],
-            'q' => ['string', 'max:80'],
+            'brand' => ['string', 'max:255'],
+            'category' => ['string', 'max:255'],
+            'search' => ['string', 'max:255'],
         ]);
 
         $query = Product::with([
@@ -61,9 +83,17 @@ class ProductController extends Controller
             });
         }
 
-        if ($request->q) {
-            $query->where('slug', 'LIKE', '%' . $request->q . '%')
-                ->orWhere('name', 'LIKE', '%' . $request->q . '%');
+        if ($request->search) {
+            $query->where('slug', 'LIKE', '%' . $request->search . '%')
+                ->orWhere('name', 'LIKE', '%' . $request->search . '%')
+                ->orWhereHas('brand', function (Builder $query) use ($request) {
+                    return $query->where('name', 'LIKE', '%' . $request->search . '%')
+                        ->orWhere('slug', 'LIKE', '%' . $request->search . '%');
+                })
+                ->orWhereHas('category', function (Builder $query) use ($request) {
+                    return $query->where('name', 'LIKE', '%' . $request->search . '%')
+                        ->orWhere('slug', 'LIKE', '%' . $request->search . '%');
+                });
         }
 
         return ProductShortResource::collection(
@@ -75,16 +105,14 @@ class ProductController extends Controller
      * @OA\Get(
      *   path="/products/{slug}",
      *   summary="prodct info",
+     *   tags={"Products"},
      *   @OA\Response(
      *     response=200,
-     *     description="success",
-     *     @OA\MediaType(
-     *       mediaType="application/json",
-     *       @OA\Schema(
-     *         @OA\Property(
-     *           property="data",
-     *           ref="#/components/schemas/Product"
-     *         )
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/Product"
      *       )
      *     )
      *   )

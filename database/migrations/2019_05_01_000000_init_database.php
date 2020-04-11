@@ -159,6 +159,7 @@ class InitDatabase extends Migration
             $table->integer('item_id')->unsigned()->index()->nullable();
             $table->bigInteger('product_schema_id')->unsigned()->index();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->foreign('item_id')->references('id')->on('items')->onDelete('restrict');
             $table->foreign('product_schema_id')->references('id')->on('product_schemas')->onDelete('cascade');

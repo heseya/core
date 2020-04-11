@@ -18,6 +18,15 @@ class ProductSchema extends Model
         'required',
     ];
 
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'required' => 'boolean',
+    ];
+
     public function product()
     {
         return $this->belongsTo(Product::class);

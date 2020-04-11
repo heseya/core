@@ -1,0 +1,228 @@
+openapi: 3.0.0
+info:
+  title: 'Heseya Store API'
+  version: 1.0.0
+paths:
+  /brands:
+    get:
+      tags:
+        - Brands
+      summary: 'list brands'
+      operationId: 'App\Http\Controllers\BrandController::index'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Brand'
+                type: object
+  /categories:
+    get:
+      tags:
+        - Categories
+      summary: 'list categories'
+      operationId: 'App\Http\Controllers\CategoryController::index'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Category'
+                type: object
+  /pages:
+    get:
+      tags:
+        - Pages
+      summary: 'list page'
+      operationId: 'App\Http\Controllers\PageController::index'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Page'
+                type: object
+  '/pages/{slug}':
+    get:
+      tags:
+        - Pages
+      summary: 'single page'
+      operationId: 'App\Http\Controllers\PageController::view'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Page'
+                type: object
+  /products:
+    get:
+      tags:
+        - Products
+      summary: 'list products'
+      operationId: 'App\Http\Controllers\ProductController::index'
+      parameters:
+        -
+          name: query
+          in: query
+          description: 'Text input search.'
+          schema:
+            type: string
+        -
+          name: brand
+          in: query
+          description: 'Brand slug.'
+          schema:
+            type: string
+        -
+          name: category
+          in: query
+          description: 'Category slug.'
+          schema:
+            type: string
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                type: object
+  '/products/{slug}':
+    get:
+      tags:
+        - Products
+      summary: 'prodct info'
+      operationId: 'App\Http\Controllers\ProductController::view'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Product'
+                type: object
+components:
+  schemas:
+    Brand:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          example: 'Depth Steel'
+        slug:
+          type: string
+          example: depth-steel
+        public:
+          type: boolean
+      type: object
+    Category:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          example: 'Rings & Sets'
+        slug:
+          type: string
+          example: rings-and-sets
+        public:
+          type: boolean
+      type: object
+    Error:
+      properties:
+        code:
+          description: 'Http response code.'
+          type: integer
+          example: 500
+        message:
+          description: 'Error message.'
+          type: string
+          example: 'Some error message.'
+      type: object
+    Page:
+      properties:
+        id:
+          type: integer
+        slug:
+          type: string
+          example: terms-and-conditions
+        name:
+          type: string
+          example: 'Terms & Conditions'
+        public:
+          type: boolean
+        content:
+          description: 'HTML page content.'
+          type: string
+          example: '<h1>Hello World</h1>'
+        content_raw:
+          description: 'Raw MD content.'
+          type: string
+          example: '# Hello World!'
+      type: object
+    Product:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          example: 'Snake Ring'
+        slug:
+          type: string
+          example: snake-ring
+        price:
+          type: float
+          example: 229.99
+        description:
+          description: 'Description in HTML.'
+          type: string
+          example: '<p>Awesome stuff!</p>'
+        public:
+          type: boolean
+        brand:
+          $ref: '#/components/schemas/Brand'
+        category:
+          $ref: '#/components/schemas/Category'
+      type: object
+    User:
+      properties:
+        id:
+          type: integer
+        name:
+          description: 'User first and last name.'
+          type: string
+          example: 'Johny Mielony'
+        email:
+          type: string
+          example: info@hesyea.com
+        avatar:
+          description: 'Url to avatar.'
+          type: string
+          example: //www.gravatar.com/avatar/example.jpg
+      type: object
