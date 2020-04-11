@@ -37,10 +37,6 @@ require __DIR__ . '/../vendor/autoload.php';
 
 $app = require_once __DIR__ . '/../bootstrap/app.php';
 
-// zmiana na public_html
-$app->bind('path.public', function () {
-    return __DIR__;
-});
 /*
 |--------------------------------------------------------------------------
 | Run The Application
@@ -56,7 +52,7 @@ $app->bind('path.public', function () {
 $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
 
 $response = $kernel->handle(
-    $request = Illuminate\Http\Request::capture()
+    $request = App\Http\Requests\Request::capture()
 );
 
 $response->send();
