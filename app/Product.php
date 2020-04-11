@@ -66,7 +66,8 @@ class Product extends Model
      * @var array
      */
     protected $casts = [
-        'public' => 'boolean',
+        'price' => 'float',
+        'public' => 'bool',
     ];
 
     public function gallery()

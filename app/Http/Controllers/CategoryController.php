@@ -29,7 +29,7 @@ class CategoryController extends Controller
     public function index(): ResourceCollection
     {
         return CategoryResource::collection(
-            Category::where(['public' => 1])->get()
+            Category::where(['public' => true])->get()
         );
     }
 }

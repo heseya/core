@@ -22,6 +22,7 @@ class ProductShortResource extends JsonResource
             'slug' => $this->slug,
             'name' => $this->name,
             'price' => $this->price,
+            'public' => $this->public,
             'brand' => new BrandResource($this->brand),
             'category' => new CategoryResource($this->category),
             'cover' => new MediaResource($this->gallery()->first()),

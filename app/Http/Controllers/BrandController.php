@@ -29,7 +29,7 @@ class BrandController extends Controller
     public function index(): ResourceCollection
     {
         return BrandResource::collection(
-            Brand::where(['public' => 1])->get()
+            Brand::where(['public' => true])->get()
         );
     }
 }

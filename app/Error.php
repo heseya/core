@@ -41,8 +41,6 @@ class Error
         $error->message = $message;
         $error->code = $code;
 
-        JsonResource::withoutWrapping();
-
         return (new ErrorResource($error))
             ->response()
             ->setStatusCode($error->code);

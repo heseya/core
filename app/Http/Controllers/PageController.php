@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Page;
+use App\Error;
 use App\Http\Resources\PageResource;
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class PageController extends Controller
@@ -51,10 +51,10 @@ class PageController extends Controller
      *   )
      * )
      */
-    public function view(Page $page): JsonResource
+    public function view(Page $page)
     {
         if ($page->public !== true) {
-            abort(403);
+            return Error::abort('Unauthorized.', 401);
         }
 
         return new PageResource($page);
