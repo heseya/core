@@ -84,6 +84,7 @@ class OrderController extends Controller
                 'invoiceAddress.name' => 'required|string|max:255',
                 'invoiceAddress.phone' => 'required|string|max:20',
                 'invoiceAddress.address' => 'required|string|max:255',
+                'invoiceAddress.nip' => 'required|string|max:10',
                 'invoiceAddress.zip' => 'required|string|max:16',
                 'invoiceAddress.city' => 'required|string|max:255',
                 'invoiceAddress.country' => 'required|string|size:2',
