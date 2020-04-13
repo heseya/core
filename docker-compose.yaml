@@ -6,6 +6,7 @@ services:
     ports:
     - 80:80
     volumes:
+    - vendor-volume:/usr/src/app/vendor
     - .:/usr/src/app
     command:
     - bash
@@ -18,16 +19,21 @@ services:
         touch /usr/src/init
       fi
       exec apache2-foreground
-  mysql:
+  mysql_service:
     image: mysql:8.0
     restart: always
     ports:
-    - 3306:3306
+    - ${DB_PORT}:3306
     environment:
-      MYSQL_ROOT_PASSWORD: secret
-      MYSQL_DATABASE: store
+      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
   adminer:
     image: adminer
     restart: always
     ports:
     - 81:8080
+
+volumes: 
+  vendor-volume:

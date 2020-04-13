@@ -54,6 +54,11 @@ Wejście do kontenera (lub z aplikacji)
 docker exec -it depth(lub inna nazwa katalogu projektu)_app_1 bash
 ```
 
+Skasowanie środowiska
+```
+docker-compose down -v
+```
+
 ## Styl kodu
 Ustaw twoje IDE, zeby korzystało z pliku .editorconfig. W VS Code jest na to dodatek.
 
