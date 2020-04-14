@@ -101,7 +101,7 @@ class InitDatabase extends Migration
             $table->string('name')->nullable();
             $table->string('phone', 20)->nullable();
             $table->string('address')->nullable();
-            $table->string('nip', 10)->nullable();
+            $table->string('vat', 15)->nullable();
             $table->string('zip', 16)->nullable();
             $table->string('city')->nullable();
             $table->string('country', 2)->nullable();
