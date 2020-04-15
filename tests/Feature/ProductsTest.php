@@ -13,13 +13,56 @@ class ProductsTest extends TestCase
     {
         parent::setUp();
 
-        $brand = factory(Brand::class)->create();
-        $category = factory(Category::class)->create();
+        $brand = factory(Brand::class)->create(['public' => true]);
+        $category = factory(Category::class)->create(['public' => true]);
 
         $this->product = factory(Product::class)->create([
             'brand_id' => $brand->id,
             'category_id' => $category->id,
+            'public' => true,
         ]);
+
+        // Hidden
+        $brand_hidden = factory(Brand::class)->create(['public' => false]);
+        $category_hidden = factory(Category::class)->create(['public' => false]);
+
+        $this->hidden_products = [
+            factory(Product::class)->create([
+                'brand_id' => $brand->id,
+                'category_id' => $category->id,
+                'public' => false,
+            ]),
+            factory(Product::class)->create([
+                'brand_id' => $brand_hidden->id,
+                'category_id' => $category->id,
+                'public' => true,
+            ]),
+            factory(Product::class)->create([
+                'brand_id' => $brand->id,
+                'category_id' => $category_hidden->id,
+                'public' => true,
+            ]),
+            factory(Product::class)->create([
+                'brand_id' => $brand_hidden->id,
+                'category_id' => $category_hidden->id,
+                'public' => true,
+            ]),
+            factory(Product::class)->create([
+                'brand_id' => $brand_hidden->id,
+                'category_id' => $category->id,
+                'public' => false,
+            ]),
+            factory(Product::class)->create([
+                'brand_id' => $brand->id,
+                'category_id' => $category_hidden->id,
+                'public' => false,
+            ]),
+            factory(Product::class)->create([
+                'brand_id' => $brand_hidden->id,
+                'category_id' => $category_hidden->id,
+                'public' => false,
+            ]),
+        ];
 
         /**
          * Expected short response
@@ -64,6 +107,7 @@ class ProductsTest extends TestCase
 
         $response
             ->assertStatus(200)
+            ->assertJsonCount(1, 'data') // Shoud show only public products.
             ->assertJson(['data' => [
                 0 => $this->expected_short,
             ]]);
@@ -79,5 +123,22 @@ class ProductsTest extends TestCase
         $response
             ->assertStatus(200)
             ->assertExactJson(['data' => $this->expected]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testViewHidden()
+    {
+        foreach ($this->hidden_products as $product) {
+            $response = $this->get('/products/' . $product->slug);
+
+            $response
+                ->assertStatus(401)
+                ->assertJsonStructure(['error' => [
+                    'code',
+                    'message',
+                ]]);
+        }
     }
 }

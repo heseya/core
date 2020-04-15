@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Error;
 use App\Product;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -71,6 +72,11 @@ class ProductController extends Controller
             'gallery',
         ]);
 
+        $query
+            ->where('public', true)
+            ->whereHas('brand', fn (Builder $query) => $query->where('public', true))
+            ->whereHas('category', fn (Builder $query) => $query->where('public', true));
+
         if ($request->brand) {
             $query->whereHas('brand', function (Builder $query) use ($request) {
                 return $query->where('slug', $request->brand);
@@ -84,7 +90,8 @@ class ProductController extends Controller
         }
 
         if ($request->search) {
-            $query->where('slug', 'LIKE', '%' . $request->search . '%')
+            $query
+                ->where('slug', 'LIKE', '%' . $request->search . '%')
                 ->orWhere('name', 'LIKE', '%' . $request->search . '%')
                 ->orWhereHas('brand', function (Builder $query) use ($request) {
                     return $query->where('name', 'LIKE', '%' . $request->search . '%')
@@ -118,8 +125,12 @@ class ProductController extends Controller
      *   )
      * )
      */
-    public function view(Product $product): ProductResource
+    public function view(Product $product)
     {
+        if ($product->isPublic() !== true) {
+            return Error::abort('Unauthorized.', 401);
+        }
+
         return new ProductResource($product);
     }
 }
