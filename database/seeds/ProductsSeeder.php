@@ -23,16 +23,18 @@ class ProductsSeeder extends Seeder
         factory(Product::class, 50)->create([
             'category_id' => rand(1, 3),
             'brand_id' => rand(1, 4),
+            'public' => true,
         ]);
 
         factory(Product::class, 50)->create([
             'category_id' => rand(3, 5),
             'brand_id' => rand(4, 6),
+            'public' => true,
         ]);
 
-        factory(Product::class, 50)->create([
-            'category_id' => rand(1, 5),
-            'brand_id' => rand(1, 6),
+        factory(Product::class, 200)->create([
+            'category_id' => rand(1, 4),
+            'brand_id' => rand(1, 5),
         ]);
     }
 }
