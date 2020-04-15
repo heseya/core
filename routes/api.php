@@ -18,6 +18,7 @@ Route::get('pages/{page:slug}', 'PageController@view');
 
 Route::get('brands', 'BrandController@index');
 Route::get('categories', 'CategoryController@index');
+Route::get('shipping-methods', 'ShippingMethodController@index');
 
 // External
 Route::prefix('furgonetka')->group(function () {

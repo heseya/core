@@ -198,6 +198,35 @@
                     }
                 }
             }
+        },
+        "/shipping-methods": {
+            "get": {
+                "tags": [
+                    "Shipping"
+                ],
+                "summary": "list shipping methods",
+                "operationId": "App\\Http\\Controllers\\ShippingMethodController::index",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ShippingMethod"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -381,6 +410,25 @@
                     },
                     "item": {
                         "$ref": "#/components/schemas/Item"
+                    }
+                },
+                "type": "object"
+            },
+            "ShippingMethod": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Next Day Courier"
+                    },
+                    "price": {
+                        "type": "float",
+                        "example": 10.99
+                    },
+                    "public": {
+                        "type": "boolean"
                     }
                 },
                 "type": "object"
