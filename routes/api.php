@@ -8,7 +8,7 @@ Route::get('products/{product:slug}', 'ProductController@view');
 Route::put('products/id:{product}', 'ProductController@update');
 Route::put('products/{product:slug}', 'ProductController@update');
 
-Route::post('orders/create','OrderController@create');
+Route::post('orders','OrderController@create');
 Route::get('orders/{order:code}', 'OrderController@view');
 Route::get('orders/{order:code}/pay/{method}', 'OrderController@pay');
 
