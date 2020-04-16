@@ -123,4 +123,12 @@ class Product extends Model
     {
         return parsedown($description);
     }
+
+    /**
+     * @return bool
+     */
+    public function isPublic(): bool
+    {
+        return $this->public && $this->brand->public && $this->category->public;
+    }
 }
