@@ -27,7 +27,7 @@ class Page extends Model
      *   example="Terms & Conditions",
      * )
      *
-     *   @OA\Property(
+     * @OA\Property(
      *   property="public",
      *   type="boolean",
      * )

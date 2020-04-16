@@ -63,6 +63,13 @@ paths:
         - Pages
       summary: 'single page'
       operationId: 'App\Http\Controllers\PageController::view'
+      parameters:
+        -
+          name: slug
+          in: query
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: Success
@@ -116,6 +123,13 @@ paths:
         - Products
       summary: 'prodct info'
       operationId: 'App\Http\Controllers\ProductController::view'
+      parameters:
+        -
+          name: slug
+          in: query
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: Success
@@ -125,6 +139,72 @@ paths:
                 properties:
                   data:
                     $ref: '#/components/schemas/Product'
+                type: object
+  /shipping-methods:
+    get:
+      tags:
+        - Shipping
+      summary: 'list shipping methods'
+      operationId: 'App\Http\Controllers\ShippingMethodController::index'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ShippingMethod'
+                type: object
+    post:
+      tags:
+        - Shipping
+      summary: 'add new shipping method'
+      operationId: 'App\Http\Controllers\ShippingMethodController::create'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShippingMethod'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ShippingMethod'
+                type: object
+  '/shipping-methods/id:{id}':
+    put:
+      tags:
+        - Shipping
+      summary: 'update shipping method'
+      operationId: 'App\Http\Controllers\ShippingMethodController::update'
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShippingMethod'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ShippingMethod'
                 type: object
 components:
   schemas:
@@ -254,6 +334,19 @@ components:
           type: string
         item:
           $ref: '#/components/schemas/Item'
+      type: object
+    ShippingMethod:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          example: 'Next Day Courier'
+        price:
+          type: float
+          example: 10.99
+        public:
+          type: boolean
       type: object
     User:
       properties:

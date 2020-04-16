@@ -96,6 +96,14 @@ class InitDatabase extends Migration
             $table->morphs('media');
         });
 
+        Schema::create('shipping_methods', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->float('price', 19, 4);
+            $table->boolean('public')->default(false);
+            $table->timestamps();
+        });
+
         Schema::create('addresses', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name')->nullable();
