@@ -106,6 +106,14 @@ class ProductController extends Controller
      *   path="/products/{slug}",
      *   summary="prodct info",
      *   tags={"Products"},
+     *   @OA\Parameter(
+     *     name="slug",
+     *     in="query",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *     )
+     *   ),
      *   @OA\Response(
      *     response=200,
      *     description="Success",

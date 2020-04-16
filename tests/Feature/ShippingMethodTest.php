@@ -46,4 +46,53 @@ class ShippingMethodTest extends TestCase
                 0 => $this->expected,
             ]]);
     }
+
+    /**
+     * @return void
+     */
+    public function testCreate()
+    {
+        $shipping_method = [
+            'name' => 'Test',
+            'price' => 1.23,
+            'public' => true,
+        ];
+
+        $response = $this->post('/shipping-methods', $shipping_method);
+
+        $response
+            ->assertStatus(201)
+            ->assertJson(['data' => $shipping_method]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testUpdate()
+    {
+        $shipping_method = [
+            'name' => 'Test',
+            'price' => 1.23,
+            'public' => true,
+        ];
+
+        $response = $this->put(
+            '/shipping-methods/id:' . $this->shipping_method->id,
+            $shipping_method,
+        );
+
+        $response
+            ->assertStatus(200)
+            ->assertJson(['data' => $shipping_method]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testDelete()
+    {
+        $response = $this->delete('/shipping-methods/id:' . $this->shipping_method->id);
+
+        $response->assertStatus(204);
+    }
 }

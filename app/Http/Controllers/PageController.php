@@ -39,6 +39,14 @@ class PageController extends Controller
      *   path="/pages/{slug}",
      *   summary="single page",
      *   tags={"Pages"},
+     *   @OA\Parameter(
+     *     name="slug",
+     *     in="query",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *     )
+     *   ),
      *   @OA\Response(
      *     response=200,
      *     description="Success",

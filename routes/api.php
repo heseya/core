@@ -19,6 +19,9 @@ Route::get('pages/{page:slug}', 'PageController@view');
 Route::get('brands', 'BrandController@index');
 Route::get('categories', 'CategoryController@index');
 Route::get('shipping-methods', 'ShippingMethodController@index');
+Route::post('shipping-methods', 'ShippingMethodController@create');
+Route::put('shipping-methods/id:{shipping_method:id}', 'ShippingMethodController@update');
+Route::delete('shipping-methods/id:{shipping_method:id}', 'ShippingMethodController@delete');
 
 // External
 Route::prefix('furgonetka')->group(function () {

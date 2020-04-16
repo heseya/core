@@ -63,6 +63,13 @@ paths:
         - Pages
       summary: 'single page'
       operationId: 'App\Http\Controllers\PageController::view'
+      parameters:
+        -
+          name: slug
+          in: query
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: Success
@@ -116,6 +123,13 @@ paths:
         - Products
       summary: 'prodct info'
       operationId: 'App\Http\Controllers\ProductController::view'
+      parameters:
+        -
+          name: slug
+          in: query
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: Success
@@ -143,6 +157,54 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/ShippingMethod'
+                type: object
+    post:
+      tags:
+        - Shipping
+      summary: 'add new shipping method'
+      operationId: 'App\Http\Controllers\ShippingMethodController::create'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShippingMethod'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ShippingMethod'
+                type: object
+  '/shipping-methods/id:{id}':
+    put:
+      tags:
+        - Shipping
+      summary: 'update shipping method'
+      operationId: 'App\Http\Controllers\ShippingMethodController::update'
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShippingMethod'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ShippingMethod'
                 type: object
 components:
   schemas:
