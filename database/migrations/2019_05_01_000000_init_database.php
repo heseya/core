@@ -122,7 +122,7 @@ class InitDatabase extends Migration
             $table->string('email');
             $table->tinyInteger('payment_status')->default(0);
             $table->tinyInteger('shop_status')->default(0);
-            $table->smallInteger('delivery_method')->nullable();
+            $table->smallInteger('shipping_method')->unsigned();
             $table->tinyInteger('delivery_status')->default(0);
             $table->string('delivery_tracking')->nullable();
             $table->integer('delivery_address')->unsigned()->index()->nullable();

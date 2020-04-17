@@ -26,6 +26,11 @@ class Order extends Model
      * )
      *
      * @OA\Property(
+     *   property="shipping_method",
+     *   type="integer",
+     * )
+     *
+     * @OA\Property(
      *   property="comment",
      *   type="string",
      *   example="asap plz",
@@ -36,6 +41,7 @@ class Order extends Model
         'code',
         'email',
         'client_id',
+        'shipping_method',
         'payment_status',
         'shop_status',
         'delivery_method',
@@ -76,7 +82,7 @@ class Order extends Model
      * @OA\Property(
      *   property="items",
      *   type="array",
-     *   @OA\Items(ref="#/components/schemas/Item"),
+     *   @OA\Items(ref="#/components/schemas/OrderItem"),
      * )
      */
     public function items()
@@ -84,11 +90,23 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    /**
+     * @OA\Property(
+     *   property="delivery_address",
+     *   ref="#/components/schemas/Address",
+     * )
+     */
     public function deliveryAddress()
     {
         return $this->hasOne(Address::class, 'id', 'delivery_address');
     }
 
+    /**
+     * @OA\Property(
+     *   property="invoice_address",
+     *   ref="#/components/schemas/Address",
+     * )
+     */
     public function invoiceAddress()
     {
         return $this->hasOne(Address::class, 'id', 'invoice_address');

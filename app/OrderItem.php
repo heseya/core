@@ -4,8 +4,24 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @OA\Schema()
+ */
 class OrderItem extends Model
 {
+    /**
+     * @OA\Property(
+     *   property="product_id",
+     *   type="integer",
+     * )
+     *
+     * @OA\Property(
+     *   property="qty",
+     *   type="float",
+     *   example="12.34",
+     * )
+     */
+
     protected $fillable = [
         'qty',
         'price',
@@ -24,6 +40,13 @@ class OrderItem extends Model
         return $this->belongsTo(Product::class)->withTrashed();
     }
 
+    /**
+     * @OA\Property(
+     *   property="schema_items",
+     *   type="array",
+     *   @OA\Items(ref="#/components/schemas/ProductSchemaItem"),
+     * )
+     */
     public function schemaItems()
     {
         return $this->belongsToMany(ProductSchemaItem::class)->withTrashed();

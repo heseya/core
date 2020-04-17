@@ -65,29 +65,52 @@ class OrderController extends Controller
         ]);
     }
 
+    /**
+     * @OA\Post(
+     *   path="/orders",
+     *   summary="add new order",
+     *   tags={"Orders"},
+     *   @OA\RequestBody(
+     *     ref="#/components/requestBodies/OrderCreate",
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/Order",
+     *       )
+     *     )
+     *   )
+     * )
+     */
     public function create(Request $request): JsonResponse
     {
         $request->validate([
             'email' => 'required|email',
-            'comment' => 'string|max:1000',
+            'comment' => 'string|max:1000|nullable',
             'items' => 'required|array|min:1',
-            'deliveryAddress.name' => 'required|string|max:255',
-            'deliveryAddress.phone' => 'required|string|max:20',
-            'deliveryAddress.address' => 'required|string|max:255',
-            'deliveryAddress.zip' => 'required|string|max:16',
-            'deliveryAddress.city' => 'required|string|max:255',
-            'deliveryAddress.country' => 'required|string|size:2',
+            'shipping_method' => 'required|integer',
+            'is_statute_accepted' => 'accepted',
+            'delivery_address.name' => 'required|string|max:255',
+            'delivery_address.phone' => 'required|string|max:20',
+            'delivery_address.address' => 'required|string|max:255',
+            'delivery_address.vat' => 'string|max:15|nullable',
+            'delivery_address.zip' => 'required|string|max:16',
+            'delivery_address.city' => 'required|string|max:255',
+            'delivery_address.country' => 'required|string|size:2',
         ]);
 
-        if ($request->filled('invoiceAddress.name')) {
+        if ($request->filled('invoice_address.name')) {
             $request->validate([
-                'invoiceAddress.name' => 'required|string|max:255',
-                'invoiceAddress.phone' => 'required|string|max:20',
-                'invoiceAddress.address' => 'required|string|max:255',
-                'invoiceAddress.vat' => 'required|string|max:15',
-                'invoiceAddress.zip' => 'required|string|max:16',
-                'invoiceAddress.city' => 'required|string|max:255',
-                'invoiceAddress.country' => 'required|string|size:2',
+                'invoice_address.name' => 'required|string|max:255',
+                'invoice_address.phone' => 'required|string|max:20',
+                'invoice_address.address' => 'required|string|max:255',
+                'invoice_address.vat' => 'string|max:15|nullable',
+                'invoice_address.zip' => 'required|string|max:16',
+                'invoice_address.city' => 'required|string|max:255',
+                'invoice_address.country' => 'required|string|size:2',
             ]);
         }
 
@@ -95,18 +118,18 @@ class OrderController extends Controller
             Validator::make($item, [
                 'product_id' => 'required|exists:products,id',
                 'qty' => 'required|integer',
-                'schemaItems' => 'array',
-                'customSchemas' => 'array',
+                'schema_items' => 'array',
+                'custom_schemas' => 'array',
             ])->validate();
 
-            foreach ($item['schemaItems'] as $id) {
+            foreach ($item['schema_items'] as $id) {
                 $schemaItem = ProductSchemaItem::find($id);
                 if ($schemaItem == NULL || $schemaItem->item->qty < $item['qty']) {
                     return Error::abort('Invalid data.', 400);
                 }
             }
 
-            if (count($item['schemaItems']) === 0) {
+            if (count($item['schema_items']) === 0) {
                 $product = Product::find($item['product_id']);
                 $schemaItem = $product->schemas()->first()->schemaItems()->first();
 
@@ -115,7 +138,7 @@ class OrderController extends Controller
                 }
             }
 
-            foreach ($item['customSchemas'] as $input) {
+            foreach ($item['custom_schemas'] as $input) {
                 $schema = ProductSchema::find($input['schema_id']);
                 if ($schema == NULL || $schema->type == 0) {
                     return Error::abort('Invalid data.', 400);
@@ -137,9 +160,9 @@ class OrderController extends Controller
             'comment' => $request->comment,
         ]);
 
-        $order->delivery_address = Address::firstOrCreate($request->deliveryAddress)->id;
-        $order->invoice_address = $request->filled('invoiceAddress.name') ?
-            Address::firstOrCreate($request->invoiceAddress)->id : NULL;
+        $order->delivery_address = Address::firstOrCreate($request->delivery_address)->id;
+        $order->invoice_address = $request->filled('invoice_address.name') ?
+            Address::firstOrCreate($request->invoice_address)->id : NULL;
 
         $order->save();
 
@@ -147,7 +170,7 @@ class OrderController extends Controller
             $product = Product::find($item['product_id']);
             $price = $product->price;
 
-            foreach($item['schemaItems'] as $id) {
+            foreach($item['schema_items'] as $id) {
                 $price += ProductSchemaItem::find($id)->extra_price;
             }
 
@@ -158,14 +181,14 @@ class OrderController extends Controller
                 'price' => $price < 0 ? 0 : $price,
             ]);
 
-            $orderItem->schemaItems()->sync($item['schemaItems']);
+            $orderItem->schemaItems()->sync($item['schema_items']);
 
-            if (count($item['schemaItems']) === 0) {
+            if (count($item['schema_items']) === 0) {
                 $schemaItem = $product->schemas()->first()->schemaItems()->first();
                 $orderItem->schemaItems()->attach($schemaItem);
             }
 
-            foreach($item['customSchemas'] as $schema) {
+            foreach($item['custom_schemas'] as $schema) {
                 $orderItem->schemaItems()->create([
                     'product_schema_id' => $schema['schema_id'],
                     'value' => $schema['value'],
