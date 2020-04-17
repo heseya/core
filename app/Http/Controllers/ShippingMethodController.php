@@ -54,7 +54,10 @@ class ShippingMethodController extends Controller
      *         ref="#/components/schemas/ShippingMethod",
      *       )
      *     )
-     *   )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
      * )
      */
     public function create(Request $request): JsonResource
@@ -97,7 +100,10 @@ class ShippingMethodController extends Controller
      *         ref="#/components/schemas/ShippingMethod",
      *       )
      *     )
-     *   )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
      * )
      */
     public function update(ShippingMethod $shipping_method, Request $request): JsonResource
@@ -129,7 +135,10 @@ class ShippingMethodController extends Controller
      *   @OA\Response(
      *     response=204,
      *     description="Success",
-     *   )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
      * )
      */
     public function delete(ShippingMethod $shipping_method)

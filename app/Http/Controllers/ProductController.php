@@ -111,7 +111,7 @@ class ProductController extends Controller
     /**
      * @OA\Get(
      *   path="/products/{slug}",
-     *   summary="prodct info",
+     *   summary="single product view",
      *   tags={"Products"},
      *   @OA\Parameter(
      *     name="slug",
@@ -131,6 +131,35 @@ class ProductController extends Controller
      *       )
      *     )
      *   )
+     * )
+     */
+
+    /**
+     * @OA\Get(
+     *   path="/products/id:{id}",
+     *   summary="alias",
+     *   tags={"Products"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="query",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="integer",
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/Product"
+     *       )
+     *     )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
      * )
      */
     public function view(Product $product)

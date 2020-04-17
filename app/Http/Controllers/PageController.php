@@ -37,7 +37,7 @@ class PageController extends Controller
     /**
      * @OA\Get(
      *   path="/pages/{slug}",
-     *   summary="single page",
+     *   summary="single page view",
      *   tags={"Pages"},
      *   @OA\Parameter(
      *     name="slug",
@@ -57,6 +57,35 @@ class PageController extends Controller
      *       )
      *     )
      *   )
+     * )
+     */
+
+    /**
+     * @OA\Get(
+     *   path="/pages/id:{id}",
+     *   summary="alias",
+     *   tags={"Pages"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="query",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="integer",
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/Page"
+     *       )
+     *     )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
      * )
      */
     public function view(Page $page)

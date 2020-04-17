@@ -61,8 +61,7 @@ paths:
     get:
       tags:
         - Pages
-      summary: 'single page'
-      operationId: 'App\Http\Controllers\PageController::view'
+      summary: 'single page view'
       parameters:
         -
           name: slug
@@ -80,6 +79,32 @@ paths:
                   data:
                     $ref: '#/components/schemas/Page'
                 type: object
+  '/pages/id:{id}':
+    get:
+      tags:
+        - Pages
+      summary: alias
+      operationId: 'App\Http\Controllers\PageController::view'
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Page'
+                type: object
+      security:
+        -
+          oauth: []
   /products:
     get:
       tags:
@@ -121,8 +146,7 @@ paths:
     get:
       tags:
         - Products
-      summary: 'prodct info'
-      operationId: 'App\Http\Controllers\ProductController::view'
+      summary: 'single product view'
       parameters:
         -
           name: slug
@@ -140,6 +164,32 @@ paths:
                   data:
                     $ref: '#/components/schemas/Product'
                 type: object
+  '/products/id:{id}':
+    get:
+      tags:
+        - Products
+      summary: alias
+      operationId: 'App\Http\Controllers\ProductController::view'
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Product'
+                type: object
+      security:
+        -
+          oauth: []
   /shipping-methods:
     get:
       tags:
@@ -178,6 +228,9 @@ paths:
                   data:
                     $ref: '#/components/schemas/ShippingMethod'
                 type: object
+      security:
+        -
+          oauth: []
   '/shipping-methods/id:{id}':
     put:
       tags:
@@ -206,6 +259,27 @@ paths:
                   data:
                     $ref: '#/components/schemas/ShippingMethod'
                 type: object
+      security:
+        -
+          oauth: []
+    delete:
+      tags:
+        - Shipping
+      summary: 'delete shipping method'
+      operationId: 'App\Http\Controllers\ShippingMethodController::delete'
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: Success
+      security:
+        -
+          oauth: []
 components:
   schemas:
     Brand:
@@ -257,6 +331,21 @@ components:
         qty:
           type: float
           example: 20
+      type: object
+    Order:
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+          example: admin@example.com
+        comment:
+          type: string
+          example: 'asap plz'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Item'
       type: object
     Page:
       properties:
@@ -364,3 +453,10 @@ components:
           type: string
           example: //www.gravatar.com/avatar/example.jpg
       type: object
+  securitySchemes:
+    oauth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: 'https://depth.space/oauth'
+          scopes: []

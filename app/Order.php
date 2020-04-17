@@ -6,9 +6,31 @@ use App\Payment;
 use App\Payment\Payable;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @OA\Schema()
+ */
 class Order extends Model
 {
     use Payable;
+
+    /**
+     * @OA\Property(
+     *   property="id",
+     *   type="integer",
+     * )
+     *
+     * @OA\Property(
+     *   property="email",
+     *   type="string",
+     *   example="admin@example.com",
+     * )
+     *
+     * @OA\Property(
+     *   property="comment",
+     *   type="string",
+     *   example="asap plz",
+     * )
+     */
 
     protected $fillable = [
         'code',
@@ -50,6 +72,13 @@ class Order extends Model
         return false;
     }
 
+    /**
+     * @OA\Property(
+     *   property="items",
+     *   type="array",
+     *   @OA\Items(ref="#/components/schemas/Item"),
+     * )
+     */
     public function items()
     {
         return $this->hasMany(OrderItem::class);
