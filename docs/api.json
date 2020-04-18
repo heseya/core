@@ -592,12 +592,12 @@
                         "type": "string",
                         "example": "admin@example.com"
                     },
-                    "shipping_method": {
-                        "type": "integer"
-                    },
                     "comment": {
                         "type": "string",
                         "example": "asap plz"
+                    },
+                    "shipping_method": {
+                        "$ref": "#/components/schemas/ShippingMethod"
                     },
                     "items": {
                         "type": "array",
@@ -795,7 +795,7 @@
                                     "type": "string",
                                     "example": "admin@example.com"
                                 },
-                                "shipping_method": {
+                                "shipping_method_id": {
                                     "type": "integer"
                                 },
                                 "comment": {

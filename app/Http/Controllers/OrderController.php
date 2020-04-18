@@ -8,10 +8,13 @@ use App\Status;
 use App\Address;
 use App\Product;
 use App\ProductSchema;
+use App\ShippingMethod;
 use App\ProductSchemaItem;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Http\Resources\OrderResource;
+use App\Http\Requests\OrderCreateRequest;
 use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
@@ -85,33 +88,12 @@ class OrderController extends Controller
      *   )
      * )
      */
-    public function create(Request $request): JsonResponse
+    public function create(OrderCreateRequest $request): JsonResponse
     {
-        $request->validate([
-            'email' => 'required|email',
-            'comment' => 'string|max:1000|nullable',
-            'items' => 'required|array|min:1',
-            'shipping_method' => 'required|integer',
-            'is_statute_accepted' => 'accepted',
-            'delivery_address.name' => 'required|string|max:255',
-            'delivery_address.phone' => 'required|string|max:20',
-            'delivery_address.address' => 'required|string|max:255',
-            'delivery_address.vat' => 'string|max:15|nullable',
-            'delivery_address.zip' => 'required|string|max:16',
-            'delivery_address.city' => 'required|string|max:255',
-            'delivery_address.country' => 'required|string|size:2',
-        ]);
+        $shipping_method = ShippingMethod::find($request->shipping_method_id);
 
-        if ($request->filled('invoice_address.name')) {
-            $request->validate([
-                'invoice_address.name' => 'required|string|max:255',
-                'invoice_address.phone' => 'required|string|max:20',
-                'invoice_address.address' => 'required|string|max:255',
-                'invoice_address.vat' => 'string|max:15|nullable',
-                'invoice_address.zip' => 'required|string|max:16',
-                'invoice_address.city' => 'required|string|max:255',
-                'invoice_address.country' => 'required|string|size:2',
-            ]);
+        if ($shipping_method === null) {
+            return Error::abort('Invalid shipping method.', 400);
         }
 
         foreach ($request->items as $item) {
@@ -123,30 +105,40 @@ class OrderController extends Controller
             ])->validate();
 
             foreach ($item['schema_items'] as $id) {
-                $schemaItem = ProductSchemaItem::find($id);
-                if ($schemaItem == NULL || $schemaItem->item->qty < $item['qty']) {
-                    return Error::abort('Invalid data.', 400);
-                }
-            }
 
-            if (count($item['schema_items']) === 0) {
-                $product = Product::find($item['product_id']);
-                $schemaItem = $product->schemas()->first()->schemaItems()->first();
+                $schemaItem = ProductSchemaItem::find($id);
+
+                if ($schemaItem === null) {
+                    return Error::abort('Schema item with ID ' . $id . ' not exist.' , 400);
+                }
 
                 if ($schemaItem->item->qty < $item['qty']) {
-                    return Error::abort('Invalid data.', 400);
+                    return Error::abort('Niewystarczająca ilość ' . $schemaItem->item->name, 400);
                 }
             }
 
-            foreach ($item['custom_schemas'] as $input) {
-                $schema = ProductSchema::find($input['schema_id']);
-                if ($schema == NULL || $schema->type == 0) {
-                    return Error::abort('Invalid data.', 400);
-                }
+            if (isset($item['custom_schemas'])) {
+                if (count($item['schema_items']) === 0) {
+                    $product = Product::find($item['product_id']);
+                    $schemaItem = $product->schemas()->first()->schemaItems()->first();
 
-                Validator::make($input, [
-                    'value' => 'required|string|max:256',
-                ])->validate();
+                    if ($schemaItem->item->qty < $item['qty']) {
+                        return Error::abort('Invalid data.', 400);
+                    }
+                }
+            }
+
+            if (isset($item['custom_schemas'])) {
+                foreach ($item['custom_schemas'] as $input) {
+                    $schema = ProductSchema::find($input['schema_id']);
+                    if ($schema == NULL || $schema->type == 0) {
+                        return Error::abort('Invalid data.', 400);
+                    }
+
+                    Validator::make($input, [
+                        'value' => 'required|string|max:256',
+                    ])->validate();
+                }
             }
         }
 
@@ -158,6 +150,8 @@ class OrderController extends Controller
             'code' => $code,
             'email' => $request->email,
             'comment' => $request->comment,
+            'shipping_method_id' => $shipping_method->id,
+            'shipping_price' => $shipping_method->price,
         ]);
 
         $order->delivery_address = Address::firstOrCreate($request->delivery_address)->id;
@@ -177,7 +171,6 @@ class OrderController extends Controller
             $orderItem = $order->items()->create([
                 'product_id' => $product->id,
                 'qty' => $item['qty'],
-                'tax' => $product->tax->value,
                 'price' => $price < 0 ? 0 : $price,
             ]);
 
@@ -188,12 +181,14 @@ class OrderController extends Controller
                 $orderItem->schemaItems()->attach($schemaItem);
             }
 
-            foreach($item['custom_schemas'] as $schema) {
-                $orderItem->schemaItems()->create([
-                    'product_schema_id' => $schema['schema_id'],
-                    'value' => $schema['value'],
-                    'extra_price' => 0,
-                ]);
+            if (isset($item['custom_schemas'])) {
+                foreach($item['custom_schemas'] as $schema) {
+                    $orderItem->schemaItems()->create([
+                        'product_schema_id' => $schema['schema_id'],
+                        'value' => $schema['value'],
+                        'extra_price' => 0,
+                    ]);
+                }
             }
         }
 
@@ -203,8 +198,8 @@ class OrderController extends Controller
             'user' => 'API',
         ]);
 
-        return response()->json([
-            'status' => 200,
-        ]);
+        return (new OrderResource($order))
+            ->response()
+            ->setStatusCode(202);
     }
 }

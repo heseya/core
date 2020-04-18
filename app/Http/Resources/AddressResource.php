@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class SchemaResource extends JsonResource
+class AddressResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,9 +17,12 @@ class SchemaResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'type' => $this->type,
-            'required' => $this->required,
-            'schema_items' => SchemaItemResource::collection($this->schemaItems),
+            'address' => $this->address,
+            'vat' => $this->vat,
+            'zip' => $this->zip,
+            'city' => $this->city,
+            'country' => $this->country,
+            'phone' => $this->phone,
         ];
     }
 }

@@ -59,7 +59,7 @@ class ProductSchema extends Model
 
     /**
      * @OA\Property(
-     *   property="schemaItems",
+     *   property="schema_items",
      *   type="array",
      *   @OA\Items(ref="#/components/schemas/ProductSchemaItem"),
      * )

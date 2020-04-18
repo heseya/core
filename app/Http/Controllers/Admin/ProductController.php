@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use Auth;
-use App\Tax;
 use App\Item;
 use App\Brand;
 use Parsedown;
@@ -75,8 +74,8 @@ class ProductController extends Controller
                                 $request->validate([
                                     "schema-$i-item-$j-id" => 'integer',
                                     "schema-$i-item-$j-price" => 'numeric',
-                                ]);        
-                                
+                                ]);
+
                                 $schema->schemaItems()->updateOrCreate([
                                     'item_id' => $request->input("schema-$i-item-$j-id"),
                                     'extra_price' => $request->input("schema-$i-item-$j-price", 0),
@@ -169,11 +168,11 @@ class ProductController extends Controller
                                     'schema-old-' . $schema->id . '-item-' . $schemaItem->id . '-id' => 'integer',
                                     'schema-old-' . $schema->id . '-item-' . $schemaItem->id . '-price' => 'numeric',
                                 ]);
-        
-                                if ($request->input('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-id') == $item->id && 
+
+                                if ($request->input('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-id') == $item->id &&
                                 $request->input('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-price') != $item->pivot->extra_price ||
                                 $request->input('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-id') != $item->id) {
-                                    
+
                                     $schema->items()->detach($item->id);
                                     $schema->items()->syncWithoutDetaching([
                                         $request->input('schema-old-' . $schema->id . '-item-' . $item->pivot->id . '-id') => [
@@ -204,7 +203,7 @@ class ProductController extends Controller
                                     'schema-old-' . $schema->id . "-item-new-$i-id" => 'integer',
                                     'schema-old-' . $schema->id . "-item-new-$i-price" => 'numeric',
                                 ]);
-    
+
                                 $schema->items()->syncWithoutDetaching([
                                     $request->input('schema-old-' . $schema->id . "-item-new-$i-id") => [
                                         'extra_price' => $request->input('schema-old-' . $schema->id . "-item-new-$i-price", 0),
@@ -221,7 +220,7 @@ class ProductController extends Controller
                     foreach ($schema->schemaItems as $schemaItem) {
                         $schemaItem->orderItem()->exists() ? $schemaItem->delete() : $schemaItem->forceDelete();
                     }
-                    
+
                     $schema->schemaItems()->withTrashed()->exists() ? $schema->delete() : $schema->forceDelete();
                 }
             }
@@ -246,8 +245,8 @@ class ProductController extends Controller
                                 $request->validate([
                                     "schema-$i-item-$j-id" => 'integer',
                                     "schema-$i-item-$j-price" => 'numeric',
-                                ]);        
-                                
+                                ]);
+
                                 $schema->items()->syncWithoutDetaching([
                                     $request->input("schema-$i-item-$j-id") => [
                                         'extra_price' => $request->input("schema-$i-item-$j-price", 0),
@@ -263,7 +262,7 @@ class ProductController extends Controller
                 foreach ($schema->schemaItems as $schemaItem) {
                     $schemaItem->orderItem()->exists() ? $schemaItem->delete() : $schemaItem->forceDelete();
                 }
-                
+
                 $schema->schemaItems()->withTrashed()->exists() ? $schema->delete() : $schema->forceDelete();
             }
         }
@@ -285,7 +284,7 @@ class ProductController extends Controller
             foreach ($schema->schemaItems as $schemaItem) {
                 $schemaItem->orderItem()->exists() ? $schemaItem->delete() : $schemaItem->forceDelete();
             }
-            
+
             $schema->schemaItems()->withTrashed()->exists() ? $schema->delete() : $schema->forceDelete();
         }
 

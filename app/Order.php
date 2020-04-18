@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Payment;
+use App\ShippingMethod;
 use App\Payment\Payable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -26,11 +27,6 @@ class Order extends Model
      * )
      *
      * @OA\Property(
-     *   property="shipping_method",
-     *   type="integer",
-     * )
-     *
-     * @OA\Property(
      *   property="comment",
      *   type="string",
      *   example="asap plz",
@@ -41,12 +37,11 @@ class Order extends Model
         'code',
         'email',
         'client_id',
-        'shipping_method',
+        'shipping_method_id',
+        'shipping_price',
         'payment_status',
         'shop_status',
-        'delivery_method',
-        'delivery_status',
-        'delivery_tracking',
+        'shipping_status',
         'comment',
     ];
 
@@ -69,13 +64,15 @@ class Order extends Model
         }
     }
 
-    public function canChangePaymentStatus(): boolean
+    /**
+     * @OA\Property(
+     *   property="shipping_method",
+     *   ref="#/components/schemas/ShippingMethod",
+     * )
+     */
+    public function shippingMethod()
     {
-        if ($this->payment_method === null) {
-            return true;
-        }
-
-        return false;
+        return $this->hasOne(ShippingMethod::class, 'id', 'shipping_method_id');
     }
 
     /**

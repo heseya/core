@@ -1,5 +1,9 @@
 <?php
 
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
 /**
  * @OA\RequestBody(
  *   request="OrderCreate",
@@ -10,7 +14,7 @@
  *       example="admin@example.com",
  *     ),
  *     @OA\Property(
- *       property="shipping_method",
+ *       property="shipping_method_id",
  *       type="integer",
  *     ),
  *     @OA\Property(
@@ -70,3 +74,33 @@
  *   )
  * )
  */
+class OrderCreateRequest extends FormRequest
+{
+    public function rules()
+    {
+        return [
+            'email' => 'required|email',
+            'comment' => 'string|max:1000|nullable',
+            'shipping_method_id' => 'required|integer',
+            'is_statute_accepted' => 'accepted',
+
+            'items' => 'required|array|min:1',
+
+            'delivery_address.name' => 'required|string|max:255',
+            'delivery_address.phone' => 'required|string|max:20',
+            'delivery_address.address' => 'required|string|max:255',
+            'delivery_address.vat' => 'string|max:15|nullable',
+            'delivery_address.zip' => 'required|string|max:16',
+            'delivery_address.city' => 'required|string|max:255',
+            'delivery_address.country' => 'required|string|size:2',
+
+            'invoice_address.name' => 'string|max:255|nullable',
+            'invoice_address.phone' => 'string|max:20|nullable',
+            'invoice_address.address' => 'string|max:255|nullable',
+            'invoice_address.vat' => 'string|max:15|nullable',
+            'invoice_address.zip' => 'string|max:16|nullable',
+            'invoice_address.city' => 'string|max:255|nullable',
+            'invoice_address.country' => 'string|size:2|nullable',
+        ];
+    }
+}

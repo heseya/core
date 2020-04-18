@@ -97,7 +97,7 @@ class InitDatabase extends Migration
         });
 
         Schema::create('shipping_methods', function (Blueprint $table) {
-            $table->increments('id');
+            $table->smallIncrements('id');
             $table->string('name');
             $table->float('price', 19, 4);
             $table->boolean('public')->default(false);
@@ -120,9 +120,10 @@ class InitDatabase extends Migration
             $table->increments('id');
             $table->string('code', 16)->unique();
             $table->string('email');
+            $table->smallInteger('shipping_method_id')->unsigned();
+            $table->float('shipping_price', 19, 4);
             $table->tinyInteger('payment_status')->default(0);
             $table->tinyInteger('shop_status')->default(0);
-            $table->smallInteger('shipping_method')->unsigned();
             $table->tinyInteger('delivery_status')->default(0);
             $table->string('delivery_tracking')->nullable();
             $table->integer('delivery_address')->unsigned()->index()->nullable();
@@ -131,6 +132,7 @@ class InitDatabase extends Migration
             $table->timestamps();
 
             // Relations
+            $table->foreign('shipping_method_id')->references('id')->on('shipping_methods')->onDelete('restrict');
             $table->foreign('delivery_address')->references('id')->on('addresses')->onDelete('restrict');
             $table->foreign('invoice_address')->references('id')->on('addresses')->onDelete('restrict');
         });
@@ -199,7 +201,6 @@ class InitDatabase extends Migration
             $table->bigIncrements('id');
             $table->float('qty', 8, 4);
             $table->float('price', 19, 4);
-            $table->string('tax', 2);
             $table->integer('order_id')->unsigned()->index();
             $table->integer('product_id')->unsigned()->index();
             $table->timestamps();
@@ -259,7 +260,6 @@ class InitDatabase extends Migration
         Schema::dropIfExists('clients');
         Schema::dropIfExists('photos');
         Schema::dropIfExists('videos');
-        Schema::dropIfExists('taxes');
         Schema::dropIfExists('brands');
         Schema::dropIfExists('categories');
         Schema::dropIfExists('items');

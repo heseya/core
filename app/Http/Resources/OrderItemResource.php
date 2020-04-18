@@ -2,9 +2,11 @@
 
 namespace App\Http\Resources;
 
+use App\Http\Resources\ProductResource;
+use App\Http\Resources\SchemaItemResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class SchemaResource extends JsonResource
+class OrderItemResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,10 +17,9 @@ class SchemaResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'type' => $this->type,
-            'required' => $this->required,
+            'qty' => $this->qty,
+            'price' => $this->price,
+            'product' => new ProductResource($this->product),
             'schema_items' => SchemaItemResource::collection($this->schemaItems),
         ];
     }
