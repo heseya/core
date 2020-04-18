@@ -577,7 +577,7 @@
                         "type": "string"
                     },
                     "qty": {
-                        "type": "float",
+                        "type": "number",
                         "example": 20
                     }
                 },
@@ -620,7 +620,7 @@
                         "type": "integer"
                     },
                     "qty": {
-                        "type": "float",
+                        "type": "number",
                         "example": "12.34"
                     },
                     "schema_items": {
@@ -675,7 +675,7 @@
                         "example": "snake-ring"
                     },
                     "price": {
-                        "type": "float",
+                        "type": "number",
                         "example": 229.99
                     },
                     "description": {
@@ -731,7 +731,7 @@
                         "type": "integer"
                     },
                     "extra_price": {
-                        "type": "float",
+                        "type": "number",
                         "example": 19.99
                     },
                     "value": {
@@ -753,7 +753,7 @@
                         "example": "Next Day Courier"
                     },
                     "price": {
-                        "type": "float",
+                        "type": "number",
                         "example": 10.99
                     },
                     "public": {
@@ -813,7 +813,7 @@
                                                 "type": "integer"
                                             },
                                             "qty": {
-                                                "type": "float"
+                                                "type": "number"
                                             },
                                             "schema_items": {
                                                 "type": "array",

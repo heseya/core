@@ -20,7 +20,7 @@ class ProductSchemaItem extends Model
      *
      * @OA\Property(
      *   property="extra_price",
-     *   type="float",
+     *   type="number",
      *   example=19.99,
      * )
      *

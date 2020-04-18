@@ -373,7 +373,7 @@ components:
         symbol:
           type: string
         qty:
-          type: float
+          type: number
           example: 20
       type: object
     Order:
@@ -402,7 +402,7 @@ components:
         product_id:
           type: integer
         qty:
-          type: float
+          type: number
           example: '12.34'
         schema_items:
           type: array
@@ -441,7 +441,7 @@ components:
           type: string
           example: snake-ring
         price:
-          type: float
+          type: number
           example: 229.99
         description:
           description: 'Description in HTML.'
@@ -479,7 +479,7 @@ components:
         id:
           type: integer
         extra_price:
-          type: float
+          type: number
           example: 19.99
         value:
           type: string
@@ -494,7 +494,7 @@ components:
           type: string
           example: 'Next Day Courier'
         price:
-          type: float
+          type: number
           example: 10.99
         public:
           type: boolean
@@ -538,7 +538,7 @@ components:
                     product_id:
                       type: integer
                     qty:
-                      type: float
+                      type: number
                     schema_items:
                       type: array
                       items:

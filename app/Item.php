@@ -33,7 +33,7 @@ class Item extends Model
      *
      * @OA\Property(
      *   property="qty",
-     *   type="float",
+     *   type="number",
      *   example=20,
      * )
      */

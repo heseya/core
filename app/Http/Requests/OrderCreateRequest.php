@@ -33,7 +33,7 @@
  *         ),
  *         @OA\Property(
  *           property="qty",
- *           type="float",
+ *           type="number",
  *         ),
  *         @OA\Property(
  *           property="schema_items",

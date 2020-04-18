@@ -32,7 +32,7 @@ class Product extends Model
      *
      * @OA\Property(
      *   property="price",
-     *   type="float",
+     *   type="number",
      *   example=229.99,
      * )
      *

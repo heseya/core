@@ -17,7 +17,7 @@ class OrderItem extends Model
      *
      * @OA\Property(
      *   property="qty",
-     *   type="float",
+     *   type="number",
      *   example="12.34",
      * )
      */
