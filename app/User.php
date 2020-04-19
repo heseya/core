@@ -2,14 +2,37 @@
 
 namespace App;
 
+use Laravel\Passport\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
+/**
+ * @OA\Schema()
+ */
 class User extends Authenticatable
 {
-    use HasRoles;
-    use Notifiable;
+    use HasApiTokens, HasRoles, Notifiable;
+
+    /**
+     * @OA\Property(
+     *   property="id",
+     *   type="integer",
+     * )
+     *
+     * @OA\Property(
+     *   property="name",
+     *   type="string",
+     *   description="User first and last name.",
+     *   example="Johny Mielony",
+     * )
+     *
+     * @OA\Property(
+     *   property="email",
+     *   type="string",
+     *   example="info@hesyea.com",
+     * )
+     */
 
     /**
      * The attributes that are mass assignable.
@@ -41,8 +64,18 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function avatar(): string
+    /**
+     * Url to avatar.
+     *
+     * @return string
+     * @OA\Property(
+     *   property="avatar",
+     *   type="string",
+     *   example="//www.gravatar.com/avatar/example.jpg",
+     * )
+     */
+    public function getAvatarAttribute(): string
     {
-        return '//www.gravatar.com/avatar/' . md5(strtolower(trim($this->email))) . '?d=mp';
+        return '//www.gravatar.com/avatar/' . md5(strtolower(trim($this->email))) . '?d=mp&s=50x50';
     }
 }

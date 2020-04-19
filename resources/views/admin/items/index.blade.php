@@ -11,7 +11,7 @@
 @section('content')
 <ol class="list list--chat">
     @foreach ($items as $item)
-        <a href="{{ route('items.view', $item->id) }}">
+        <a href="{{ route('items.view', $item) }}">
             <li class="clickable">
                 <div class="avatar">
                     @if ($item->photo)

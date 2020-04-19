@@ -3,12 +3,12 @@
 @section('title', $item->name)
 
 @section('buttons')
-<a href="{{ route('items.update', $item->id) }}" class="top-nav--button">
+<a href="{{ route('items.update', $item) }}" class="top-nav--button">
     <img class="icon" src="/img/icons/pencil.svg">
 </a>
 <button onclick="window.confirmModal(
         'Czy na pewno chcesz usunąć {{ $item->name }}?',
-        '{{ route('items.delete', $item->id) }}/delete'
+        '{{ route('items.delete', $item) }}/delete'
     )" class="top-nav--button">
     <img class="icon" src="/img/icons/trash.svg">
 </button>
@@ -18,7 +18,7 @@
 <div class="stats">
     <div class="stats__item">
         <img class="icon" src="/img/icons/code.svg">
-        {{ $item->symbol }}
+        {{ $item->symbol ?? 'BRAK' }}
     </div>
     <div class="stats__item">
         <img class="icon" src="/img/icons/chest.svg">
@@ -43,15 +43,15 @@
     <div class="column is-half">
         <h3 class="margin--left">Powiązane produkty</h3>
         <div class="list">
-            @foreach ($item->schemas as $schema)
-            <a href="{{ route('products.view', $schema->product->slug) }}" class="cart__item">
+            @foreach ($item->schemaItems as $schemaItem)
+            <a href="{{ route('products.view', $schemaItem->schema->product->slug) }}" class="cart__item">
                 <div class="cart__img">
-                @if ($schema->product->gallery[0])
-                    <img src="{{ $schema->product->gallery[0]->url }}">
-                @endif
+                @isset ($schemaItem->schema->product->gallery[0])
+                    <img src="{{ $schemaItem->schema->product->gallery[0]->url }}">
+                @endisset
                 </div>
                 <div class="cart__details">
-                    <div>{{ $schema->product->name }}</div>
+                    <div>{{ $schemaItem->schema->product->name }}</div>
                 </div>
             </a>
             @endforeach

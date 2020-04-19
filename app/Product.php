@@ -3,56 +3,115 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Translatable\HasTranslations;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @OA\Schema()
+ */
 class Product extends Model
 {
-    use HasTranslations;
+    use SoftDeletes;
 
-    public $translatable = [
-        'name',
-        'description',
-    ];
+    /**
+     * @OA\Property(
+     *   property="id",
+     *   type="integer",
+     * )
+     *
+     * @OA\Property(
+     *   property="name",
+     *   type="string",
+     *   example="Snake Ring",
+     * )
+     *
+     * @OA\Property(
+     *   property="slug",
+     *   type="string",
+     *   example="snake-ring",
+     * )
+     *
+     * @OA\Property(
+     *   property="price",
+     *   type="number",
+     *   example=229.99,
+     * )
+     *
+     * @OA\Property(
+     *   property="description",
+     *   type="string",
+     *   description="Description in HTML.",
+     *   example="<p>Awesome stuff!</p>",
+     * )
+     *
+     * @OA\Property(
+     *   property="public",
+     *   type="boolean",
+     * )
+     */
 
     protected $fillable = [
         'name',
         'slug',
         'price',
         'description',
+        'digital',
         'public',
-        'tax_id',
         'brand_id',
         'category_id',
     ];
 
-    public function getRouteKeyName(): string
-    {
-        return 'slug';
-    }
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'price' => 'float',
+        'public' => 'bool',
+    ];
 
     public function gallery()
     {
         return $this->morphedByMany(Photo::class, 'media', 'product_gallery');
     }
 
-    public function tax()
-    {
-        return $this->belongsTo(Tax::class);
-    }
-
+    /**
+     * @OA\Property(
+     *   property="brand",
+     *   ref="#/components/schemas/Brand",
+     * )
+     */
     public function brand()
     {
         return $this->belongsTo(Brand::class);
     }
 
+    /**
+     * @OA\Property(
+     *   property="category",
+     *   ref="#/components/schemas/Category",
+     * )
+     */
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
 
-    public function shema()
+    /**
+     * @OA\Property(
+     *   property="schemas",
+     *   type="array",
+     *   @OA\Items(ref="#/components/schemas/ProductSchema"),
+     * )
+     */
+    public function schemas()
     {
-        return $this->hasMany(ProductSchema::class)->with('items');
+        return $this->hasMany(ProductSchema::class);
+    }
+
+    public function orders()
+    {
+        return $this->belongsToMany(Order::class)->using(OrderItem::class);
     }
 
     /**
@@ -60,8 +119,16 @@ class Product extends Model
      *
      * @var array
      */
-    public function getParsedDescriptionAttribute(): string
+    public function getDescriptionAttribute($description): string
     {
-        return parsedown($this->description);
+        return parsedown($description);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPublic(): bool
+    {
+        return $this->public && $this->brand->public && $this->category->public;
     }
 }

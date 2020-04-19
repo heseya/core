@@ -3,29 +3,97 @@
 namespace App\Http\Controllers;
 
 use App\Page;
-use Illuminate\Http\JsonResponse;
+use App\Error;
 use App\Http\Resources\PageResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class PageController extends Controller
 {
+    /**
+     * @OA\Get(
+     *   path="/pages",
+     *   summary="list page",
+     *   tags={"Pages"},
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         type="array",
+     *         @OA\Items(ref="#/components/schemas/Page"),
+     *       )
+     *     )
+     *   )
+     * )
+     */
     public function index(): ResourceCollection
     {
         return PageResource::collection(
-            Page::where('public', true)->simplePaginate(14)
+            Page::where('public', true)->simplePaginate(14),
         );
     }
 
-    public function view(Page $page): JsonResponse
+    /**
+     * @OA\Get(
+     *   path="/pages/{slug}",
+     *   summary="single page view",
+     *   tags={"Pages"},
+     *   @OA\Parameter(
+     *     name="slug",
+     *     in="query",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/Page"
+     *       )
+     *     )
+     *   )
+     * )
+     */
+
+    /**
+     * @OA\Get(
+     *   path="/pages/id:{id}",
+     *   summary="alias",
+     *   tags={"Pages"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="query",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="integer",
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/Page"
+     *       )
+     *     )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function view(Page $page)
     {
         if ($page->public !== true) {
-            abort(403);
+            return Error::abort('Unauthorized.', 401);
         }
 
-        return response()->json([
-            'name' => $page->name,
-            'slug' => $page->slug,
-            'content' => $page->parsed_content,
-        ]);
+        return new PageResource($page);
     }
 }

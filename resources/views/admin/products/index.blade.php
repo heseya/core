@@ -14,7 +14,7 @@
 @section('content')
 <div class="products-list">
     @foreach ($products as $product)
-        <a href="{{ route('products.view', $product->slug) }}" class="product">
+        <a href="{{ route('products.view', $product) }}" class="product">
             <div class="product__img">
                 @if (isset($product->gallery[0]))
                     <img src="{{ $product->gallery[0]->url }}" />

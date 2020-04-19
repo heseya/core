@@ -9,11 +9,11 @@
 <a href="/admin/orders/{{ $order->id + 1 }}" class="top-nav--button">
     <img class="icon" src="/img/icons/right.svg">
 </a> --}}
-<a class="top-nav--button" onclick="payment('{{ $order->code }}')">
+<a class="top-nav--button" onclick="payment('{{ $order->id }}')">
     <img class="icon" src="/img/icons/cash.svg">
 </a>
 @can('manageOrders')
-<a href="{{ route('orders.update', $order->code) }}" class="top-nav--button">
+<a href="{{ route('orders.update', $order) }}" class="top-nav--button">
     <img class="icon" src="/img/icons/pencil.svg">
 </a>
 @endcan
@@ -63,6 +63,11 @@
 
         <h3>Metoda dostawy</h3>
         <div>{{ $order->delivery_method }}</div>
+
+        @isset($order->comment)
+            <h3>Komentarz klienta</h3>
+            <div>{{ $order->comment }}</div>
+        @endisset
     </div>
 
     <div class="column is-half">
@@ -72,7 +77,7 @@
                 <ul class="menu-list">
                     <li>
                         <b>
-                            {{ $item->name }}
+                            {{ $item->product->name }}
                             @if ($item->qty != 1)
                                 <small class="cart__small">
                                     x {{ $item->qty }}
@@ -81,10 +86,12 @@
                         </b>
                         <small>{{ number_format($item->price, 2, ',', ' ') }} zł</small>
                         <ul>
-                            @foreach ($item->descendants as $subItem)
+                            @foreach ($item->schemaItems as $subItem)
                                 <li>
                                     &nbsp;&nbsp;&nbsp;&nbsp;
-                                    {{ $subItem->name }}
+                                    {{ $subItem->schema->name ? $subItem->schema->name : 'Przedmiot' . 
+                                    ': ' . ($subItem->item ? $subItem->item->name : $subItem->value) }}
+                                    @if(false)
                                     @if ($subItem->qty != 1)
                                         <small class="cart__small">
                                             x {{ $subItem->qty }}
@@ -93,7 +100,8 @@
                                     @if ($subItem->price != 0)
                                         <small>{{ number_format($subItem->price, 2, ',', ' ') }} zł</small>
                                     @endif
-                                    </li>
+                                    @endif
+                                </li>
                             @endforeach
                         </ul>
                     </li>
@@ -129,6 +137,37 @@
                     <div class="timeline-content">
                         <p>{{ $log['content'] }}</p>
                         <small>{{ $log['user'] }}, {{ $log['created_at'] }}</small>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+
+    <div class="column is-half">
+        <h3>Notatki</h3>
+        <button onclick="window.htmlModal(
+            `<form action='{{ route('orders.note', $order) }}' method='POST'>
+                <input type='hidden' name='_token' value='{{ csrf_token() }}'>
+                <div class='field'>
+                    <label class='label' for='message'>Treść notatki</label>
+                    <div class='control'>
+                        <textarea name='message' class='textarea' rows='5'>{{ old('message') ?? '' }}</textarea>
+                    </div>
+                </div>
+                <button class='button is-black'>Dodaj</button>
+            </form>`)" class="top-nav--button">
+            <img class="icon" src="/img/icons/plus.svg">
+        </button>
+        @error('message')
+            <p class='help is-danger'>{{ $message }}</p>
+        @enderror
+        <div class="timeline">
+            @foreach ($order->notes as $note)
+                <div class="timeline__block">
+                    <div class="marker"></div>
+                    <div class="timeline-content">
+                        <p>{{ $note['message'] }}</p>
+                        <small>{{ $note->user['name'] }}, {{ $note['created_at'] }}</small>
                     </div>
                 </div>
             @endforeach

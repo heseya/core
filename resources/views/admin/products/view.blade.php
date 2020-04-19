@@ -3,12 +3,12 @@
 @section('title', $product->name)
 
 @section('buttons')
-<a href="{{ route('products.update', $product->slug) }}" class="top-nav--button">
+<a href="{{ route('products.update', $product) }}" class="top-nav--button">
     <img class="icon" src="/img/icons/pencil.svg">
 </a>
 <button onclick="window.confirmModal(
         'Czy na pewno chcesz usunąć {{ $product->name }}?',
-        '{{ route('products.delete', $product->slug) }}'
+        '{{ route('products.delete', $product) }}'
     )" class="top-nav--button">
     <img class="icon" src="/img/icons/trash.svg">
 </button>
@@ -23,10 +23,6 @@
     <div class="stats__item">
         <img class="icon" src="/img/icons/list.svg">
         {{ $product->category->name }}
-    </div>
-    <div class="stats__item">
-        <img class="icon" src="/img/icons/tax.svg">
-        {{ $product->tax->name }}
     </div>
 </div>
 
@@ -51,26 +47,26 @@
     </div>
 
     <div class="column cart">
-        @foreach ($product->shema as $schema)
+        @foreach ($product->schemas as $schema)
             <h3>{{ $schema->name }} <small style="color: #aaa">{{ $schema->required ? 'wymagany' : '' }}</small></h3>
             <div class="list">
-                @foreach ($schema->items as $item)
-                <a href="/admin/items/{{ $item->id }}" class="cart__item">
-                    <div class="cart__img">
-                    @if ($item->photo)
-                        <img src="{{ $item->photo->url }}">
-                    @endif
-                    </div>
-                    <div class="cart__details">
-                        <div>{{ $item->name }} <small>x {{ $item->qty }}</small></div>
-                        <small>
-                            {{ $item->symbol }}
-                            @if ($item->pivot->extraPrice > 0)
-                            | + {{ \App\Money::PLN($item->pivot->extraPrice) }}
-                            @endif
-                        </small>
-                    </div>
-                </a>
+                @foreach ($schema->schemaItems as $schemaItem)
+                    <a href="/admin/items/{{ $schemaItem->item->id }}" class="cart__item">
+                        <div class="cart__img">
+                        @if ($schemaItem->item->photo)
+                            <img src="{{ $schemaItem->item->photo->url }}">
+                        @endif
+                        </div>
+                        <div class="cart__details">
+                            <div>{{ $schemaItem->item->name }} <small>x {{ $schemaItem->item->qty }}</small></div>
+                            <small>
+                                {{ $schemaItem->item->symbol }}
+                                @if ($schemaItem->extra_price > 0)
+                                | + {{ \App\Money::PLN($schemaItem->extra_price) }}
+                                @endif
+                            </small>
+                        </div>
+                    </a>
                 @endforeach
             </div>
         @endforeach

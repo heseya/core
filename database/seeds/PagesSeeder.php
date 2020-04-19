@@ -1,9 +1,7 @@
 <?php
 
 use App\Page;
-use Faker\Factory;
 use Illuminate\Database\Seeder;
-use Bezhanov\Faker\ProviderCollectionHelper;
 
 class PagesSeeder extends Seeder
 {
@@ -14,21 +12,27 @@ class PagesSeeder extends Seeder
      */
     public function run()
     {
-        $faker = Factory::create('pl_PL');
-        ProviderCollectionHelper::addAllProvidersTo($faker);
+        factory(Page::class, 10)->create();
 
-        Page::create([
-            'name' => 'FAQ',
-            'slug' => 'faq',
+        factory(Page::class)->create([
+            'name' => 'Regulamin',
+            'slug' => 'regulamin',
             'public' => true,
-            'content' => $faker->paragraph(),
+            'content' => file_get_contents(__DIR__ . '/../pages/statute.md'),
         ]);
 
-        Page::create([
-            'name' => 'Requlamin',
-            'slug' => 'statute',
+        factory(Page::class)->create([
+            'name' => 'Polityka prywatności',
+            'slug' => 'prywatnosc',
             'public' => true,
-            'content' => $faker->paragraph(),
+            'content' => file_get_contents(__DIR__ . '/../pages/privacy.md'),
+        ]);
+
+        factory(Page::class)->create([
+            'name' => 'O nas',
+            'slug' => 'o-nas',
+            'public' => true,
+            'content' => file_get_contents(__DIR__ . '/../pages/about.md'),
         ]);
     }
 }

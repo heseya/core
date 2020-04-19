@@ -5,15 +5,38 @@ namespace App;
 use App\Category;
 use App\ProductSchema;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Translatable\HasTranslations;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @OA\Schema()
+ */
 class Item extends Model
 {
-    use HasTranslations;
+    use SoftDeletes;
 
-    public $translatable = [
-        'name',
-    ];
+    /**
+     * @OA\Property(
+     *   property="id",
+     *   type="integer",
+     * )
+     *
+     * @OA\Property(
+     *   property="name",
+     *   type="string",
+     *   example="Chain",
+     * )
+     *
+     * @OA\Property(
+     *   property="symbol",
+     *   type="string",
+     * )
+     *
+     * @OA\Property(
+     *   property="qty",
+     *   type="number",
+     *   example=20,
+     * )
+     */
 
     protected $fillable = [
         'name',
@@ -32,8 +55,8 @@ class Item extends Model
         return $this->belongsTo(Photo::class);
     }
 
-    public function schemas()
+    public function schemaItems()
     {
-        return $this->belongsToMany(ProductSchema::class, 'product_schema_item');
+        return $this->hasMany(ProductSchemaItem::class);
     }
 }

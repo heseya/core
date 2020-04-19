@@ -11,7 +11,7 @@
 @section('content')
 <ol class="list">
     @foreach($pages as $page)
-        <a href="{{ route('pages.view', $page->slug) }}">
+        <a href="{{ route('pages.view', $page) }}">
             <li class="center clickable">
                 <span class="margin__left">
                     <div>

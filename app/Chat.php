@@ -15,20 +15,14 @@ class Chat extends Model
     protected $fillable = [
         'system',
         'external_id',
-        'client_id',
     ];
-
-    public function client()
-    {
-        return $this->belongsTo(Client::class);
-    }
 
     public function messages()
     {
         return $this->hasMany(Message::class)->orderBy('created_at', 'DESC');
     }
 
-    public function snippet()
+    public function getSnippetAttribute()
     {
         $message = $this->messages()->first();
 
@@ -36,23 +30,16 @@ class Chat extends Model
             return null;
         }
 
-        if ($message->user_id === null) {
-            return Str::limit(strip_tags($message->content), 40);
+        if ($message->received === false) {
+            $message->content = 'Ty: ' . $message->content;
         }
 
-        return Str::limit($message->user->name . ': ' . strip_tags($message->content), 40);
+        return Str::limit(str_replace('&nbsp;', '', strip_tags($message->content)), 50);
     }
 
-    public function avatar(): string
+    public function getAvatarAttribute(): string
     {
-        switch($this->type) {
-            case self::SYSTEM_EMAIL:
-                return '//www.gravatar.com/avatar/' . md5(strtolower(trim($this->system_id))) . '?d=mp&s=50x50';
-                break;
-
-            default:
-                return '//www.gravatar.com/avatar/2?d=mp&s=50x50';
-        }
+        return '//www.gravatar.com/avatar/' . md5(strtolower(trim($this->external_id))) . '?d=mp&s=50x50';
     }
 
     public static function imap(): bool

@@ -8,13 +8,6 @@
 
 @section('content')
 <ol class="list list--settings">
-    <li class="center">
-        <img class="avatar" src="//www.gravatar.com/avatar/{{ $gravatar }}?d=retro">
-        <span>
-            <div>{{ $name }}</div>
-            <small>{{ $email }}</small>
-        </span>
-    </li>
     @if ($imap == false)
         <li>
             <img class="icon" src="/img/icons/warning.svg">

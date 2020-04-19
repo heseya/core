@@ -39,6 +39,7 @@ class OrderController extends Controller
             'code' => 'required|max:16',
             // 'client_id' => 'exists:clients,id',
             'deliveryAddress.country' => 'string|size:2',
+            'comment' => 'string|max:1000',
         ]);
 
         $order = new Order($request->all());
@@ -61,11 +62,20 @@ class OrderController extends Controller
     {
         return view('admin.orders.form', [
             'order' => $order,
+            'notes' => json_encode($order->notes),
         ]);
     }
 
     public function update(Order $order, Request $request)
     {
+        $request->validate([
+            'email' => 'required|email',
+            // 'code' => 'required|max:16', // Nie ma tego puki co
+            // 'client_id' => 'exists:clients,id',
+            'deliveryAddress.country' => 'string|size:2',
+            'comment' => 'string|max:1000',
+        ]);
+
         $order->fill($request->all());
 
         $order->delivery_address = null;
@@ -97,5 +107,25 @@ class OrderController extends Controller
         ]);
 
         return response()->json(null, 204);
+    }
+
+    public function createNote(Order $order, Request $request)
+    {
+        $request->validate([
+            'message' => 'required|string|max:1000',
+        ]);
+
+        $order->notes()->create([
+            'message' => $request->message,
+            'user_id' => auth()->user()->id,
+        ]);
+
+        // logi
+        $order->logs()->create([
+            'content' => 'Komentarz.',
+            'user' => auth()->user()->name,
+        ]);
+
+        return redirect()->route('orders.view', $order->code);
     }
 }

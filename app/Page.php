@@ -3,16 +3,35 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Translatable\HasTranslations;
 
+/**
+ * @OA\Schema()
+ */
 class Page extends Model
 {
-    use HasTranslations;
-
-    public $translatable = [
-        'name',
-        'content',
-    ];
+    /**
+     * @OA\Property(
+     *   property="id",
+     *   type="integer",
+     * )
+     *
+     * @OA\Property(
+     *   property="slug",
+     *   type="string",
+     *   example="terms-and-conditions",
+     * )
+     *
+     * @OA\Property(
+     *   property="name",
+     *   type="string",
+     *   example="Terms & Conditions",
+     * )
+     *
+     * @OA\Property(
+     *   property="public",
+     *   type="boolean",
+     * )
+     */
 
     /**
      * The attributes that are mass assignable.
@@ -36,22 +55,34 @@ class Page extends Model
     ];
 
     /**
-     * Get the route key for the model.
+     * HTML page content.
      *
      * @return string
+     *
+     * @OA\Property(
+     *   property="content",
+     *   type="string",
+     *   example="<h1>Hello World</h1>",
+     * )
      */
-    public function getRouteKeyName(): string
+    public function getContentAttribute($content): string
     {
-        return 'slug';
+        return parsedown($content);
     }
 
     /**
-     * MD content parser.
+     * Raw MD content.
      *
-     * @var array
+     * @return string
+     *
+     * @OA\Property(
+     *   property="content_raw",
+     *   type="string",
+     *   example="# Hello World!",
+     * )
      */
-    public function getParsedContentAttribute(): string
+    public function getContentRawAttribute($content): string
     {
-        return parsedown($this->content);
+        return $content;
     }
 }
