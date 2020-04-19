@@ -27,33 +27,15 @@ class Item extends Model
      * )
      *
      * @OA\Property(
-     *   property="symbol",
+     *   property="sku",
      *   type="string",
-     * )
-     *
-     * @OA\Property(
-     *   property="qty",
-     *   type="number",
-     *   example=20,
      * )
      */
 
     protected $fillable = [
         'name',
-        'symbol',
-        'qty',
-        'category_id',
+        'sku',
     ];
-
-    public function category()
-    {
-        return $this->belongsTo(Category::class);
-    }
-
-    public function photo()
-    {
-        return $this->belongsTo(Photo::class);
-    }
 
     public function schemaItems()
     {

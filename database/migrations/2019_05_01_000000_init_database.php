@@ -59,15 +59,10 @@ class InitDatabase extends Migration
         Schema::create('items', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
-            $table->string('symbol')->index()->nullable();
+            $table->string('sku')->index()->unique()->nullable();
             $table->integer('qty')->unsigned()->default(0);
-            $table->smallInteger('category_id')->index()->unsigned()->nullable();
-            $table->integer('photo_id')->unsigned()->index()->nullable();
             $table->timestamps();
             $table->softDeletes();
-
-            $table->foreign('category_id')->references('id')->on('categories')->onDelete('restrict');
-            $table->foreign('photo_id')->references('id')->on('photos')->onDelete('set null');
         });
 
         Schema::create('products', function (Blueprint $table) {
