@@ -257,7 +257,7 @@
                     "Orders"
                 ],
                 "summary": "orders list",
-                "operationId": "App\\Http\\Controllers\\OrderController::view",
+                "operationId": "App\\Http\\Controllers\\OrderController::index",
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -426,8 +426,25 @@
                     }
                 ],
                 "responses": {
-                    "302": {
-                        "description": "Redirect to payment"
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "redirectUrl": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -958,6 +975,9 @@
                             "failed",
                             "canceled"
                         ]
+                    },
+                    "summary": {
+                        "type": "number"
                     },
                     "shipping_method": {
                         "$ref": "#/components/schemas/ShippingMethod"

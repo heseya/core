@@ -140,7 +140,8 @@ class InitDatabase extends Migration
             $table->string('status', 32)->nullable();
             $table->string('currency', 3);
             $table->float('amount', 19, 4);
-            $table->string('url', 1000)->nullable();
+            $table->string('redirectUrl', 1000)->nullable();
+            $table->string('continueUrl', 1000)->nullable();
             $table->timestamps();
 
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('restrict');

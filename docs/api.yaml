@@ -162,7 +162,7 @@ paths:
       tags:
         - Orders
       summary: 'orders list'
-      operationId: 'App\Http\Controllers\OrderController::view'
+      operationId: 'App\Http\Controllers\OrderController::index'
       responses:
         200:
           description: Success
@@ -273,8 +273,18 @@ paths:
           schema:
             type: string
       responses:
-        302:
-          description: 'Redirect to payment'
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    properties:
+                      redirectUrl:
+                        type: string
+                    type: object
+                type: object
   /pages:
     get:
       tags:
@@ -622,6 +632,8 @@ components:
             - proggress
             - failed
             - canceled
+        summary:
+          type: number
         shipping_method:
           $ref: '#/components/schemas/ShippingMethod'
         items:

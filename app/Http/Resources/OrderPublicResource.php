@@ -19,6 +19,7 @@ class OrderPublicResource extends JsonResource
             'payment_status' => $this->payment_status,
             'shop_status' => $this->shop_status,
             'delivery_status' => $this->delivery_status,
+            'created_at' => $this->created_at,
         ];
     }
 }

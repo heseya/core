@@ -281,13 +281,24 @@ class OrderController extends Controller
      *     )
      *   ),
      *   @OA\Response(
-     *     response=302,
-     *     description="Redirect to payment",
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         @OA\Property(
+     *           property="redirectUrl",
+     *           type="string"
+     *         )
+     *       )
+     *     )
      *   )
      * )
      */
-    public function pay(Order $order, $method)
+    public function pay(Order $order, $method, Request $request)
     {
+        $method = 'paynow';
+
         if (
             $order->payment_status !== 0 ||
             $order->shop_status === 3
@@ -301,25 +312,17 @@ class OrderController extends Controller
 
         $method_class = config('payable.aliases')[$method];
 
-        $payment = $order->payments()
-            ->where('method', $method)
-            ->where('status', 'NEW')
-            ->first();
-
-        if (empty($payment)) {
-            $payment = $order->payments()->create([
-                'method' => $method,
-                'amount' => $order->summary(),
-                'currency' => 'PLN',
-            ]);
-
-            $payment->update(
-                $method_class::generateUrl($payment)
-            );
-        }
-
-        return response()->json([
-            'url' => $payment->url,
+        $payment = $order->payments()->create([
+            'method' => $method,
+            'amount' => $order->summary,
+            'continueUrl' => $request->continue ?? null,
+            'currency' => 'PLN',
         ]);
+
+        $payment->update($method_class::generateUrl($payment));
+
+        return response()->json(['data' => [
+            'redirectUrl' => $payment->redirectUrl,
+        ]]);
     }
 }

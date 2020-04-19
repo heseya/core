@@ -8,7 +8,6 @@
         "fideloper/proxy": "^4.0",
         "fruitcake/laravel-cors": "^1.0",
         "heseya/silverbox-client": "dev-master",
-        "kalnoy/nestedset": "^5.0",
         "laravel/framework": "7.0",
         "laravel/passport": "^8.4",
         "laravel/tinker": "^2.0",

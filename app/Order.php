@@ -38,13 +38,13 @@ class Order extends Model
      *   enum={"waiting", "proggress", "failed", "canceled"},
      * )
      *
-     *  @OA\Property(
+     * @OA\Property(
      *   property="shop_status",
      *   type="string",
      *   enum={"waiting", "proggress", "failed", "canceled"},
      * )
      *
-     *  @OA\Property(
+     * @OA\Property(
      *   property="shipping_status",
      *   type="string",
      *   enum={"waiting", "proggress", "failed", "canceled"},
@@ -63,12 +63,22 @@ class Order extends Model
         'comment',
     ];
 
-    public function summary()
+    /**
+     * @OA\Property(
+     *   property="summary",
+     *   type="number",
+     * )
+    */
+    public function getSummaryAttribute()
     {
         $value = 0;
 
         foreach ($this->items as $item) {
             $value += $item->price * $item->qty;
+
+            foreach ($item->schemaItems as $schema_item) {
+                $value += $schema_item->extra_price;
+            }
         }
 
         return $value;

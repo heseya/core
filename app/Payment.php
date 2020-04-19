@@ -13,7 +13,8 @@ class Payment extends Model
         'status',
         'currency',
         'amount',
-        'url',
+        'redirectUrl',
+        'continueUrl',
     ];
 
     public function order()
