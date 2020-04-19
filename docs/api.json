@@ -89,7 +89,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
             },
             "post": {
                 "tags": [
@@ -140,7 +145,7 @@
                 "parameters": [
                     {
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -179,7 +184,7 @@
                 "parameters": [
                     {
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -227,7 +232,7 @@
                 "parameters": [
                     {
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "integer"

@@ -57,6 +57,9 @@ paths:
                     items:
                       $ref: '#/components/schemas/Item'
                 type: object
+      security:
+        -
+          oauth: []
     post:
       tags:
         - Items
@@ -89,7 +92,7 @@ paths:
       parameters:
         -
           name: id
-          in: query
+          in: path
           required: true
           schema:
             type: integer
@@ -114,7 +117,7 @@ paths:
       parameters:
         -
           name: id
-          in: query
+          in: path
           required: true
           schema:
             type: integer
@@ -144,7 +147,7 @@ paths:
       parameters:
         -
           name: id
-          in: query
+          in: path
           required: true
           schema:
             type: integer

@@ -28,7 +28,10 @@ class ItemController extends Controller
      *         @OA\Items(ref="#/components/schemas/Item"),
      *       )
      *     )
-     *   )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
      * )
      */
     public function index(): ResourceCollection
@@ -45,7 +48,7 @@ class ItemController extends Controller
      *   tags={"Items"},
      *   @OA\Parameter(
      *     name="id",
-     *     in="query",
+     *     in="path",
      *     required=true,
      *     @OA\Schema(
      *       type="integer",
@@ -117,7 +120,7 @@ class ItemController extends Controller
      *   tags={"Items"},
      *   @OA\Parameter(
      *     name="id",
-     *     in="query",
+     *     in="path",
      *     required=true,
      *     @OA\Schema(
      *       type="integer",
@@ -166,7 +169,7 @@ class ItemController extends Controller
      *   tags={"Items"},
      *   @OA\Parameter(
      *     name="id",
-     *     in="query",
+     *     in="path",
      *     required=true,
      *     @OA\Schema(
      *       type="integer",
