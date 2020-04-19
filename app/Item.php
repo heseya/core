@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Deposit;
 use App\Category;
 use App\ProductSchema;
 use Illuminate\Database\Eloquent\Model;
@@ -36,6 +37,22 @@ class Item extends Model
         'name',
         'sku',
     ];
+
+    public function getQuantityAttribute (): float
+    {
+        $deposits = $this->deposits()->sum('quantity');
+        $withdrawals = 0;
+        foreach ($this->schemaItems()->with('orderItems')->get() as $schemaItem) {
+            $withdrawals += $schemaItem->orderItems()->sum('qty');
+        }
+
+        return $deposits - $withdrawals;
+    }
+
+    public function deposits()
+    {
+        return $this->hasMany(Deposit::class);
+    }
 
     public function schemaItems()
     {

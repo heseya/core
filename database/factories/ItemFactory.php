@@ -13,6 +13,5 @@ $factory->define(Item::class, function (Faker $faker) {
     return [
         'name' => $faker->unique()->productName,
         'sku' => $faker->regexify('[A-Z0-9]{4}\/[A-Z0-9]{2}'),
-        'qty' => rand(0, 50),
     ];
 });

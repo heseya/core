@@ -193,7 +193,7 @@ class ProductController extends Controller
                                     ]);
                                 }
                             } else {
-                                $schemaItem->orderItem()->exists() ? $schemaItem->delete() : $schemaItem->forceDelete();
+                                $schemaItem->orderItems()->exists() ? $schemaItem->delete() : $schemaItem->forceDelete();
                             }
                         }
 
@@ -213,12 +213,12 @@ class ProductController extends Controller
                         }
                     } else {
                         foreach ($schema->schemaItems as $schemaItem) {
-                            $schemaItem->orderItem()->exists() ? $schemaItem->delete() : $schemaItem->forceDelete();
+                            $schemaItem->orderItems()->exists() ? $schemaItem->delete() : $schemaItem->forceDelete();
                         }
                     }
                 } else {
                     foreach ($schema->schemaItems as $schemaItem) {
-                        $schemaItem->orderItem()->exists() ? $schemaItem->delete() : $schemaItem->forceDelete();
+                        $schemaItem->orderItems()->exists() ? $schemaItem->delete() : $schemaItem->forceDelete();
                     }
 
                     $schema->schemaItems()->withTrashed()->exists() ? $schema->delete() : $schema->forceDelete();
@@ -260,7 +260,7 @@ class ProductController extends Controller
         } else {
             foreach ($product->schemas as $schema) {
                 foreach ($schema->schemaItems as $schemaItem) {
-                    $schemaItem->orderItem()->exists() ? $schemaItem->delete() : $schemaItem->forceDelete();
+                    $schemaItem->orderItems()->exists() ? $schemaItem->delete() : $schemaItem->forceDelete();
                 }
 
                 $schema->schemaItems()->withTrashed()->exists() ? $schema->delete() : $schema->forceDelete();
@@ -282,7 +282,7 @@ class ProductController extends Controller
     {
         foreach ($product->schemas as $schema) {
             foreach ($schema->schemaItems as $schemaItem) {
-                $schemaItem->orderItem()->exists() ? $schemaItem->delete() : $schemaItem->forceDelete();
+                $schemaItem->orderItems()->exists() ? $schemaItem->delete() : $schemaItem->forceDelete();
             }
 
             $schema->schemaItems()->withTrashed()->exists() ? $schema->delete() : $schema->forceDelete();

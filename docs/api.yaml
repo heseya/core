@@ -39,6 +39,83 @@ paths:
                     items:
                       $ref: '#/components/schemas/Category'
                 type: object
+  /deposits:
+    get:
+      tags:
+        - Deposits
+      summary: 'list deposits'
+      operationId: 'App\Http\Controllers\DepositController::index'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Deposit'
+                type: object
+      security:
+        -
+          oauth: []
+  '/items/id:{id}/deposits':
+    get:
+      tags:
+        - Deposits
+      summary: 'list item deposits'
+      operationId: 'App\Http\Controllers\DepositController::view'
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Deposit'
+                type: object
+      security:
+        -
+          oauth: []
+    post:
+      tags:
+        - Deposits
+      summary: 'add new deposit'
+      operationId: 'App\Http\Controllers\DepositController::create'
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Deposit'
+      responses:
+        201:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Deposit'
+                type: object
+      security:
+        -
+          oauth: []
   /items:
     get:
       tags:
@@ -162,7 +239,7 @@ paths:
       tags:
         - Orders
       summary: 'orders list'
-      operationId: 'App\Http\Controllers\OrderController::view'
+      operationId: 'App\Http\Controllers\OrderController::index'
       responses:
         200:
           description: Success
@@ -569,6 +646,16 @@ components:
           example: rings-and-sets
         public:
           type: boolean
+      type: object
+    Deposit:
+      properties:
+        id:
+          type: integer
+        quantity:
+          type: float
+          example: '12.5'
+        item_id:
+          type: integer
       type: object
     Error:
       properties:
