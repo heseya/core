@@ -31,6 +31,24 @@ class Order extends Model
      *   type="string",
      *   example="asap plz",
      * )
+     *
+     * @OA\Property(
+     *   property="payment_status",
+     *   type="string",
+     *   enum={"waiting", "proggress", "failed", "canceled"},
+     * )
+     *
+     *  @OA\Property(
+     *   property="shop_status",
+     *   type="string",
+     *   enum={"waiting", "proggress", "failed", "canceled"},
+     * )
+     *
+     *  @OA\Property(
+     *   property="shipping_status",
+     *   type="string",
+     *   enum={"waiting", "proggress", "failed", "canceled"},
+     * )
      */
 
     protected $fillable = [

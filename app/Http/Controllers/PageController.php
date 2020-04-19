@@ -41,7 +41,7 @@ class PageController extends Controller
      *   tags={"Pages"},
      *   @OA\Parameter(
      *     name="slug",
-     *     in="query",
+     *     in="path",
      *     required=true,
      *     @OA\Schema(
      *       type="string",
@@ -67,7 +67,7 @@ class PageController extends Controller
      *   tags={"Pages"},
      *   @OA\Parameter(
      *     name="id",
-     *     in="query",
+     *     in="path",
      *     required=true,
      *     @OA\Schema(
      *       type="integer",

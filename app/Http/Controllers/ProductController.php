@@ -115,7 +115,7 @@ class ProductController extends Controller
      *   tags={"Products"},
      *   @OA\Parameter(
      *     name="slug",
-     *     in="query",
+     *     in="path",
      *     required=true,
      *     @OA\Schema(
      *       type="string",
@@ -141,7 +141,7 @@ class ProductController extends Controller
      *   tags={"Products"},
      *   @OA\Parameter(
      *     name="id",
-     *     in="query",
+     *     in="path",
      *     required=true,
      *     @OA\Schema(
      *       type="integer",

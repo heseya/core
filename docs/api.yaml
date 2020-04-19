@@ -40,6 +40,26 @@ paths:
                       $ref: '#/components/schemas/Category'
                 type: object
   /orders:
+    get:
+      tags:
+        - Orders
+      summary: 'orders list'
+      operationId: 'App\Http\Controllers\OrderController::view'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+                type: object
+      security:
+        -
+          oauth: []
     post:
       tags:
         - Orders
@@ -57,6 +77,86 @@ paths:
                   data:
                     $ref: '#/components/schemas/Order'
                 type: object
+  '/orders/id:{id}':
+    get:
+      tags:
+        - Orders
+      summary: 'order view'
+      operationId: 'App\Http\Controllers\OrderController::view'
+      parameters:
+        -
+          name: code
+          in: path
+          required: true
+          schema:
+            type: string
+            example: D3PT88
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Order'
+                type: object
+      security:
+        -
+          oauth: []
+  '/orders/{code}':
+    get:
+      tags:
+        - Orders
+      summary: 'public order view'
+      operationId: 'App\Http\Controllers\OrderController::viewPublic'
+      parameters:
+        -
+          name: code
+          in: path
+          required: true
+          schema:
+            type: string
+            example: D3PT88
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Order'
+                type: object
+  '/orders/{code}/pay/{payment_method}':
+    get:
+      tags:
+        - Orders
+      summary: 'redirect to payment'
+      operationId: 'App\Http\Controllers\OrderController::pay'
+      parameters:
+        -
+          name: code
+          in: path
+          required: true
+          schema:
+            type: string
+        -
+          name: payment_method
+          in: path
+          required: true
+          schema:
+            type: string
+        -
+          name: continue
+          in: query
+          description: 'URL that the buyer will be redirected to, after making payment'
+          required: true
+          schema:
+            type: string
+      responses:
+        302:
+          description: 'Redirect to payment'
   /pages:
     get:
       tags:
@@ -83,7 +183,7 @@ paths:
       parameters:
         -
           name: slug
-          in: query
+          in: path
           required: true
           schema:
             type: string
@@ -106,7 +206,7 @@ paths:
       parameters:
         -
           name: id
-          in: query
+          in: path
           required: true
           schema:
             type: integer
@@ -168,7 +268,7 @@ paths:
       parameters:
         -
           name: slug
-          in: query
+          in: path
           required: true
           schema:
             type: string
@@ -191,7 +291,7 @@ paths:
       parameters:
         -
           name: id
-          in: query
+          in: path
           required: true
           schema:
             type: integer
@@ -258,7 +358,7 @@ paths:
       parameters:
         -
           name: id
-          in: query
+          in: path
           required: true
           schema:
             type: integer
@@ -288,7 +388,7 @@ paths:
       parameters:
         -
           name: id
-          in: query
+          in: path
           required: true
           schema:
             type: integer
@@ -386,6 +486,27 @@ components:
         comment:
           type: string
           example: 'asap plz'
+        payment_status:
+          type: string
+          enum:
+            - waiting
+            - proggress
+            - failed
+            - canceled
+        shop_status:
+          type: string
+          enum:
+            - waiting
+            - proggress
+            - failed
+            - canceled
+        shipping_status:
+          type: string
+          enum:
+            - waiting
+            - proggress
+            - failed
+            - canceled
         shipping_method:
           $ref: '#/components/schemas/ShippingMethod'
         items:
@@ -469,7 +590,7 @@ components:
           type: integer
         required:
           type: boolean
-        schemaItems:
+        schema_items:
           type: array
           items:
             $ref: '#/components/schemas/ProductSchemaItem'

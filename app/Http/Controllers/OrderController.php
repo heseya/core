@@ -16,56 +16,103 @@ use Illuminate\Http\JsonResponse;
 use App\Http\Resources\OrderResource;
 use App\Http\Requests\OrderCreateRequest;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Resources\OrderPublicResource;
 
 class OrderController extends Controller
 {
-    public function view(Order $order): JsonResponse
+    /**
+     * @OA\Get(
+     *   path="/orders",
+     *   summary="orders list",
+     *   tags={"Orders"},
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         type="array",
+     *         @OA\Items(
+     *           ref="#/components/schemas/Order",
+     *         )
+     *       )
+     *     )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function index()
     {
-        return response()->json([
-            'code' => $order->code,
-            'statuses' => [
-                'payment' => Status::payment($order->payment_status),
-                'shop' => Status::shop($order->shop_status),
-                'delivery' => Status::delivery($order->delivery_status),
-            ],
-        ]);
+        $orders = Order::paginate(15);
+
+        return OrderResource::collection($orders);
     }
 
-    public function pay(Order $order, $method)
+    /**
+     * @OA\Get(
+     *   path="/orders/id:{id}",
+     *   summary="order view",
+     *   tags={"Orders"},
+     *   @OA\Parameter(
+     *     name="code",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *       example="D3PT88",
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/Order",
+     *       )
+     *     )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function view(Order $order)
     {
-        if (
-            $order->payment_status !== 0 ||
-            $order->shop_status === 3
-        ) {
-            return Error::abort('Order not payable.', 406);
-        }
+        return new OrderResource($order);
+    }
 
-        if (!array_key_exists($method, config('payable.aliases'))) {
-            return Error::abort('Unkown payment method.', 400);
-        }
-
-        $method_class = config('payable.aliases')[$method];
-
-        $payment = $order->payments()
-            ->where('method', $method)
-            ->where('status', 'NEW')
-            ->first();
-
-        if (empty($payment)) {
-            $payment = $order->payments()->create([
-                'method' => $method,
-                'amount' => $order->summary(),
-                'currency' => 'PLN',
-            ]);
-
-            $payment->update(
-                $method_class::generateUrl($payment)
-            );
-        }
-
-        return response()->json([
-            'url' => $payment->url,
-        ]);
+    /**
+     * @OA\Get(
+     *   path="/orders/{code}",
+     *   summary="public order view",
+     *   tags={"Orders"},
+     *   @OA\Parameter(
+     *     name="code",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *       example="D3PT88",
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/Order",
+     *       )
+     *     )
+     *   )
+     * )
+     */
+    public function viewPublic(Order $order)
+    {
+        return new OrderPublicResource($order);
     }
 
     /**
@@ -198,8 +245,81 @@ class OrderController extends Controller
             'user' => 'API',
         ]);
 
-        return (new OrderResource($order))
+        return (new OrderPublicResource($order))
             ->response()
-            ->setStatusCode(202);
+            ->setStatusCode(201);
+    }
+
+    /**
+     * @OA\Get(
+     *   path="/orders/{code}/pay/{payment_method}",
+     *   summary="redirect to payment",
+     *   tags={"Orders"},
+     *   @OA\Parameter(
+     *     name="code",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *     )
+     *   ),
+     *   @OA\Parameter(
+     *     name="payment_method",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *     )
+     *   ),
+     *   @OA\Parameter(
+     *     name="continue",
+     *     in="query",
+     *     description="URL that the buyer will be redirected to, after making payment",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=302,
+     *     description="Redirect to payment",
+     *   )
+     * )
+     */
+    public function pay(Order $order, $method)
+    {
+        if (
+            $order->payment_status !== 0 ||
+            $order->shop_status === 3
+        ) {
+            return Error::abort('Order not payable.', 406);
+        }
+
+        if (!array_key_exists($method, config('payable.aliases'))) {
+            return Error::abort('Unkown payment method.', 400);
+        }
+
+        $method_class = config('payable.aliases')[$method];
+
+        $payment = $order->payments()
+            ->where('method', $method)
+            ->where('status', 'NEW')
+            ->first();
+
+        if (empty($payment)) {
+            $payment = $order->payments()->create([
+                'method' => $method,
+                'amount' => $order->summary(),
+                'currency' => 'PLN',
+            ]);
+
+            $payment->update(
+                $method_class::generateUrl($payment)
+            );
+        }
+
+        return response()->json([
+            'url' => $payment->url,
+        ]);
     }
 }

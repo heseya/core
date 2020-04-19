@@ -80,7 +80,7 @@ class ShippingMethodController extends Controller
      *   tags={"Shipping"},
      *   @OA\Parameter(
      *     name="id",
-     *     in="query",
+     *     in="path",
      *     required=true,
      *     @OA\Schema(
      *       type="integer",
@@ -126,7 +126,7 @@ class ShippingMethodController extends Controller
      *   tags={"Shipping"},
      *   @OA\Parameter(
      *     name="id",
-     *     in="query",
+     *     in="path",
      *     required=true,
      *     @OA\Schema(
      *       type="integer",

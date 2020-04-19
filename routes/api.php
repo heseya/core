@@ -8,8 +8,10 @@ Route::get('products/{product:slug}', 'ProductController@view');
 Route::put('products/id:{product:id}', 'ProductController@update');
 Route::put('products/{product:slug}', 'ProductController@update');
 
+Route::get('orders', 'OrderController@index');
 Route::post('orders','OrderController@create');
-Route::get('orders/{order:code}', 'OrderController@view');
+Route::get('orders/id:{order:id}', 'OrderController@view');
+Route::get('orders/{order:code}', 'OrderController@viewPublic');
 Route::get('orders/{order:code}/pay/{method}', 'OrderController@pay');
 
 Route::get('pages', 'PageController@index');
