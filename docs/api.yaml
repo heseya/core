@@ -39,6 +39,121 @@ paths:
                     items:
                       $ref: '#/components/schemas/Category'
                 type: object
+  /items:
+    get:
+      tags:
+        - Items
+      summary: 'list items'
+      operationId: 'App\Http\Controllers\ItemController::index'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Item'
+                type: object
+    post:
+      tags:
+        - Items
+      summary: 'add new item'
+      operationId: 'App\Http\Controllers\ItemController::create'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Item'
+      responses:
+        201:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Item'
+                type: object
+      security:
+        -
+          oauth: []
+  '/items/id:{id}':
+    get:
+      tags:
+        - Items
+      summary: 'view item'
+      operationId: 'App\Http\Controllers\ItemController::view'
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Item'
+                type: object
+      security:
+        -
+          oauth: []
+    put:
+      tags:
+        - Items
+      summary: 'update item'
+      operationId: 'App\Http\Controllers\ItemController::update'
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Item'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Item'
+                type: object
+      security:
+        -
+          oauth: []
+    delete:
+      tags:
+        - Items
+      summary: 'delete item'
+      operationId: 'App\Http\Controllers\ItemController::delete'
+      parameters:
+        -
+          name: id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: Success
+      security:
+        -
+          oauth: []
   /orders:
     post:
       tags:
@@ -370,11 +485,8 @@ components:
         name:
           type: string
           example: Chain
-        symbol:
+        sku:
           type: string
-        qty:
-          type: number
-          example: 20
       type: object
     Order:
       properties:
@@ -469,7 +581,7 @@ components:
           type: integer
         required:
           type: boolean
-        schemaItems:
+        schema_items:
           type: array
           items:
             $ref: '#/components/schemas/ProductSchemaItem'

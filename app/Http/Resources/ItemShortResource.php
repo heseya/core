@@ -6,8 +6,7 @@ use App\Http\Resources\MediaResource;
 use App\Http\Resources\CategoryResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-// For future expansion
-class ItemResource extends JsonResource
+class ItemShortResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

@@ -23,6 +23,12 @@ Route::post('shipping-methods', 'ShippingMethodController@create');
 Route::put('shipping-methods/id:{shipping_method:id}', 'ShippingMethodController@update');
 Route::delete('shipping-methods/id:{shipping_method:id}', 'ShippingMethodController@delete');
 
+Route::get('items', 'ItemController@index');
+Route::post('items', 'ItemController@create');
+Route::get('items/id:{item:id}', 'ItemController@view');
+Route::put('items/id:{item:id}', 'ItemController@update');
+Route::delete('items/id:{item:id}', 'ItemController@delete');
+
 // External
 Route::prefix('furgonetka')->group(function () {
     Route::post('webhook', 'External\FurgonetkaController@webhook');
