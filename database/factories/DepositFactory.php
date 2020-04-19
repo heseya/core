@@ -11,6 +11,6 @@ $factory->define(Deposit::class, function (Faker $faker) {
     ProviderCollectionHelper::addAllProvidersTo($faker);
 
     return [
-        'quantity' => rand(0, 50),
+        'quantity' => rand(1, 20),
     ];
 });
