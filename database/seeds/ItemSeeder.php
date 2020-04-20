@@ -1,6 +1,7 @@
 <?php
 
 use App\Item;
+use App\Deposit;
 use Illuminate\Database\Seeder;
 
 class ItemSeeder extends Seeder
@@ -12,6 +13,8 @@ class ItemSeeder extends Seeder
      */
     public function run()
     {
-        factory(Item::class, 100)->create();
+        factory(Item::class, 100)->create()->each(function ($item) {
+            $item->deposits()->saveMany(factory(Deposit::class, rand(0, 2))->make());
+        });
     }
 }

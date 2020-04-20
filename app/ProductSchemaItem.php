@@ -53,7 +53,7 @@ class ProductSchemaItem extends Model
         return $this->belongsTo(Item::class)->withTrashed();
     }
 
-    public function orderItem()
+    public function orderItems()
     {
         return $this->belongsToMany(OrderItem::class);
     }

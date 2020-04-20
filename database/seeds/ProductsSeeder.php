@@ -2,6 +2,7 @@
 
 use App\Item;
 use App\Brand;
+use App\Deposit;
 use App\Product;
 use App\Category;
 use App\ProductSchema;
@@ -30,7 +31,9 @@ class ProductsSeeder extends Seeder
         ])->each(function ($product) {
             $product->schemas()->saveMany(factory(ProductSchema::class, rand(0, 4))->make())->each(function ($schema) {
                 $schema->schemaItems()->saveMany(factory(ProductSchemaItem::class, rand(1, 3))->make())->each(function ($schemaItem) {
-                    $schemaItem->item()->associate(factory(Item::class)->create())->save();
+                    $item = factory(Item::class)->create();
+                    $item->deposits()->saveMany(factory(Deposit::class, rand(0, 2))->make());
+                    $schemaItem->item()->associate($item)->save();
                 });
             });
         });
@@ -42,7 +45,9 @@ class ProductsSeeder extends Seeder
         ])->each(function ($product) {
             $product->schemas()->saveMany(factory(ProductSchema::class, rand(0, 4))->make())->each(function ($schema) {
                 $schema->schemaItems()->saveMany(factory(ProductSchemaItem::class, rand(1, 3))->make())->each(function ($schemaItem) {
-                    $schemaItem->item()->associate(factory(Item::class)->create())->save();
+                    $item = factory(Item::class)->create();
+                    $item->deposits()->saveMany(factory(Deposit::class, rand(0, 2))->make());
+                    $schemaItem->item()->associate($item)->save();
                 });
             });
         });

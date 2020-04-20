@@ -60,9 +60,17 @@ class InitDatabase extends Migration
             $table->increments('id');
             $table->string('name');
             $table->string('sku')->index()->unique()->nullable();
-            $table->integer('qty')->unsigned()->default(0);
             $table->timestamps();
             $table->softDeletes();
+        });
+
+        Schema::create('deposits', function (Blueprint $table) {
+            $table->increments('id');
+            $table->float('quantity', 8, 4);
+            $table->integer('item_id')->index()->unsigned();
+            $table->timestamps();
+
+            $table->foreign('item_id')->references('id')->on('items')->onDelete('restrict');
         });
 
         Schema::create('products', function (Blueprint $table) {

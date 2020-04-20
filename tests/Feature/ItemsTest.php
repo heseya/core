@@ -2,8 +2,9 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Item;
+use App\Deposit;
+use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -15,13 +16,18 @@ class ItemsTest extends TestCase
 
         $this->item = factory(Item::class)->create();
 
+        $deposit = factory(Deposit::class)->create([
+            'item_id' => $this->item->id,
+        ]);
+
         /**
          * Expected response
          */
         $this->expected = [
             'id' => $this->item->id,
             'name' => $this->item->name,
-            'sku' => $this->item->sku
+            'sku' => $this->item->sku,
+            'quantity' => $this->item->quantity,
         ];
     }
 

@@ -20,6 +20,7 @@ class ItemShortResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'sku' => $this->sku,
+            'quantity' => $this->quantity,
         ];
     }
 }
