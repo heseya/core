@@ -65,6 +65,17 @@ Ustaw twoje IDE, zeby korzystało z pliku .editorconfig. W VS Code jest na to do
 Pisząc kod do tego projektu stosuj się do wszystkich zasad z (https://github.com/maciejjeziorski/laravel-best-practices-pl).
 
 Dodatkowo:
-- wszystkie pliki związane tylko z panelem trzymamy w osobnych folderach, tak zeby dało się je usunąc łatwo jak juz przejdziemy na Vue,
 - przy walidacji uzywaj stringów `'required|max:20'` zamiast tablic,
 - odwołania do autoryzacji przy uzyciu `Auth::` zamiast `auth()`.
+
+## Dokumentacja
+Dokumentacje piszemy z użyciem [Swagger-PHP](http://zircote.github.io/swagger-php/).
+
+Wygenerowanie dokuentacji
+```
+php artisan l5-swagger:generate
+```
+
+Wygenerowana dokumentacja jest dostępna pod linkiem `/docs`.
+
+Lokalnie polecam ustawić sobie `L5_SWAGGER_GENERATE_ALWAYS` w .env na `true`, wtedy dokumentacja będzie generowana przy każdym odświeżeniu.

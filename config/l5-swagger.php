@@ -180,7 +180,7 @@ return [
     |--------------------------------------------------------------------------
      */
 
-    'generate_yaml_copy' => env('L5_SWAGGER_GENERATE_YAML_COPY', true),
+    'generate_yaml_copy' => env('L5_SWAGGER_GENERATE_YAML_COPY', false),
 
     /*
     |--------------------------------------------------------------------------
