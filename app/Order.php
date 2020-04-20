@@ -71,7 +71,7 @@ class Order extends Model
     */
     public function getSummaryAttribute()
     {
-        $value = 0;
+        $value = $this->shipping_price;
 
         foreach ($this->items as $item) {
             $value += $item->price * $item->qty;
