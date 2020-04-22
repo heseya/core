@@ -71,12 +71,12 @@ class ShippingMethodTest extends TestCase
     public function testUpdate()
     {
         $shipping_method = [
-            'name' => 'Test',
-            'price' => 1.23,
-            'public' => true,
+            'name' => 'Test ',
+            'price' => 5.23,
+            'public' => false,
         ];
 
-        $response = $this->put(
+        $response = $this->patch(
             '/shipping-methods/id:' . $this->shipping_method->id,
             $shipping_method,
         );

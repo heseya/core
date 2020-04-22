@@ -106,7 +106,7 @@ class ItemsTest extends TestCase
             'sku' => 'TES/T2',
         ];
 
-        $response = $this->put(
+        $response = $this->patch(
             '/items/id:' . $this->item->id,
             $item,
         );
