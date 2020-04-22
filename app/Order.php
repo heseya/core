@@ -4,7 +4,6 @@ namespace App;
 
 use App\Payment;
 use App\ShippingMethod;
-use App\Payment\Payable;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -12,8 +11,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Order extends Model
 {
-    use Payable;
-
     /**
      * @OA\Property(
      *   property="id",

@@ -12,7 +12,7 @@ Route::get('orders', 'OrderController@index');
 Route::post('orders','OrderController@create');
 Route::get('orders/id:{order:id}', 'OrderController@view');
 Route::get('orders/{order:code}', 'OrderController@viewPublic');
-Route::get('orders/{order:code}/pay/{method}', 'OrderController@pay');
+Route::get('orders/{order:code}/pay/{method}', 'PayController@pay');
 
 Route::get('pages', 'PageController@index');
 Route::get('pages/id:{page:id}', 'PageController@view');
