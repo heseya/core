@@ -35,6 +35,8 @@ Route::get('deposits', 'DepositController@index');
 Route::get('items/id:{item:id}/deposits', 'DepositController@view');
 Route::post('items/id:{item:id}/deposits', 'DepositController@create');
 
+Route::post('media', 'MediaController@upload');
+
 // External
 Route::prefix('furgonetka')->group(function () {
     Route::post('webhook', 'External\FurgonetkaController@webhook');
