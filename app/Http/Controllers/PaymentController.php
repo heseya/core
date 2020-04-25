@@ -6,6 +6,7 @@ use Error;
 use App\Order;
 use App\Http\Requests\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\PaymentResource;
 use App\Http\Resources\OrderPublicResource;
 
 class PaymentController extends Controller
@@ -46,10 +47,7 @@ class PaymentController extends Controller
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         @OA\Property(
-     *           property="redirectUrl",
-     *           type="string"
-     *         )
+     *         ref="#/components/schemas/Payment",
      *       )
      *     )
      *   )
@@ -79,8 +77,36 @@ class PaymentController extends Controller
 
         $payment->update($method_class::generateUrl($payment));
 
-        return response()->json(['data' => [
-            'redirectUrl' => $payment->redirectUrl,
-        ]]);
+        return new PaymentResource($payment);
+    }
+
+    /**
+     * @OA\Post(
+     *   path="/payments/{payment_method}",
+     *   summary="Update payment status by payment provider",
+     *   tags={"Payments"},
+     *   @OA\Parameter(
+     *     name="payment_method",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *   )
+     * )
+     */
+    public function receive(string $method, Request $request)
+    {
+        if (!array_key_exists($method, config('payable.aliases'))) {
+            return Error::abort('Unkown payment method.', 400);
+        }
+
+        $method_class = config('payable.aliases')[$method];
+
+        return $method_class::translateNotification($request);
     }
 }
