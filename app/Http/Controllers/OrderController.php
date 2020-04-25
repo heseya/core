@@ -250,6 +250,80 @@ class OrderController extends Controller
             ->setStatusCode(201);
     }
 
+    /**
+     * @OA\Post(
+     *   path="/orders/verify",
+     *   summary="verify cart",
+     *   tags={"Orders"},
+     *   @OA\RequestBody(
+     *     request="OrderCreate",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="items",
+     *         type="array",
+     *         @OA\Items(
+     *           type="object",
+     *           @OA\Property(
+     *             property="cartitem_id",
+     *             type="string",
+     *           ),
+     *           @OA\Property(
+     *             property="product_id",
+     *             type="integer",
+     *           ),
+     *           @OA\Property(
+     *             property="quantity",
+     *             type="number",
+     *           ),
+     *           @OA\Property(
+     *             property="schema_items",
+     *             type="array",
+     *             @OA\Items(
+     *               type="integer"
+     *             )
+     *           ),
+     *           @OA\Property(
+     *             property="custom_schemas",
+     *             type="array",
+     *             @OA\Items(
+     *               type="object",
+     *               @OA\Property(
+     *                 property="schema_id",
+     *                 type="integer",
+     *               ),
+     *               @OA\Property(
+     *                 property="value",
+     *                 type="string",
+     *               )
+     *             )
+     *           )
+     *         )
+     *       )
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         type="array",
+     *         @OA\Items(
+     *           type="object",
+     *           @OA\Property(
+     *             property="cartitem_id",
+     *             type="string",
+     *           ),
+     *           @OA\Property(
+     *             property="enough",
+     *             type="boolean",
+     *           )
+     *         )
+     *       )
+     *     )
+     *   )
+     * )
+     */
     public function verify(Request $request): JsonResponse
     {
         $cartItems = [];
@@ -311,6 +385,30 @@ class OrderController extends Controller
                         break;
                     }
                 }
+            }
+
+            if ($quit) {
+                continue;
+            }
+
+            foreach ($customSchemas as $input) {
+                $schema = ProductSchema::find($input['schema_id']);
+
+                if ($schema == NULL || $schema->type == 0) {
+                    $quit = true;
+                    break;
+                }
+
+                $productId = $schema->product->id;
+                
+                if ($item['product_id'] != $productId) {
+                    $quit = true;
+                    break;
+                }
+
+                Validator::make($input, [
+                    'value' => 'required|string|max:256',
+                ])->validate();
             }
 
             if ($quit) {
@@ -397,23 +495,6 @@ class OrderController extends Controller
                 if (!in_array($cartItemId, $itemUsers[$itemId])) {
                     array_push($itemUsers[$itemId], $cartItemId);
                 }
-            }
-
-            foreach ($customSchemas as $input) {
-                $schema = ProductSchema::find($input['schema_id']);
-
-                if ($schema == NULL || $schema->type == 0) {
-                    $quit = true;
-                    break;
-                }
-
-                Validator::make($input, [
-                    'value' => 'required|string|max:256',
-                ])->validate();
-            }
-
-            if ($quit) {
-                continue;
             }
 
             $cartItems[$cartItemId] = [
