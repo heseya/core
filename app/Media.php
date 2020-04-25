@@ -21,8 +21,8 @@ class Media extends Model
      *
      * @OA\Property(
      *   property="type",
-     *   type="integer",
-     *   example=1,
+     *   type="string",
+     *   example="photo",
      * )
      *
      * @OA\Property(
