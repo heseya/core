@@ -70,9 +70,9 @@ class Product extends Model
         'public' => 'bool',
     ];
 
-    public function gallery()
+    public function media()
     {
-        return $this->morphedByMany(Photo::class, 'media', 'product_gallery');
+        return $this->belongsToMany(Photo::class, 'media', 'product_media');
     }
 
     /**

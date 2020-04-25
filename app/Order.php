@@ -4,7 +4,6 @@ namespace App;
 
 use App\Payment;
 use App\ShippingMethod;
-use App\Payment\Payable;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -12,8 +11,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Order extends Model
 {
-    use Payable;
-
     /**
      * @OA\Property(
      *   property="id",
@@ -71,7 +68,7 @@ class Order extends Model
     */
     public function getSummaryAttribute()
     {
-        $value = 0;
+        $value = $this->shipping_price;
 
         foreach ($this->items as $item) {
             $value += $item->price * $item->qty;
