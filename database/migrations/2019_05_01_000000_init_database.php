@@ -28,18 +28,6 @@ class InitDatabase extends Migration
             $table->timestamp('created_at')->nullable();
         });
 
-        Schema::create('photos', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('url');
-            $table->timestamps();
-        });
-
-        Schema::create('videos', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('url');
-            $table->timestamps();
-        });
-
         Schema::create('brands', function (Blueprint $table) {
             $table->smallIncrements('id');
             $table->string('name');
@@ -90,13 +78,21 @@ class InitDatabase extends Migration
             $table->foreign('brand_id')->references('id')->on('brands')->onDelete('restrict');
         });
 
-        Schema::create('product_gallery', function (Blueprint $table) {
-            $table->increments('id');
+        Schema::create('media', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->tinyInteger('type');
+            $table->string('url');
+            $table->timestamps();
+        });
+
+        Schema::create('product_media', function (Blueprint $table) {
+            $table->bigIncrements('id');
+
+            $table->bigInteger('media_id')->unsigned()->index();
+            $table->foreign('media_id')->references('id')->on('media')->onDelete('cascade');
 
             $table->integer('product_id')->unsigned()->index();
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
-
-            $table->morphs('media');
         });
 
         Schema::create('shipping_methods', function (Blueprint $table) {
@@ -262,8 +258,6 @@ class InitDatabase extends Migration
         Schema::dropIfExists('users');
         Schema::dropIfExists('password_resets');
         Schema::dropIfExists('clients');
-        Schema::dropIfExists('photos');
-        Schema::dropIfExists('videos');
         Schema::dropIfExists('brands');
         Schema::dropIfExists('categories');
         Schema::dropIfExists('items');
