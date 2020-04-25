@@ -14,6 +14,8 @@ Route::get('orders/id:{order:id}', 'OrderController@view');
 Route::get('orders/{order:code}', 'OrderController@viewPublic');
 Route::get('orders/{order:code}/pay/{method}', 'PaymentController@pay');
 
+Route::get('payments/{method}', 'PaymentController@receive');
+
 Route::get('pages', 'PageController@index');
 Route::get('pages/id:{page:id}', 'PageController@view');
 Route::get('pages/{page:slug}', 'PageController@view');
