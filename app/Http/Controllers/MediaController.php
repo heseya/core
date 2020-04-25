@@ -43,7 +43,7 @@ class MediaController extends Controller
     public function upload(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:jpeg,bmp,png',
+            'file' => 'required|file|mimes:jpeg,png,gif,bmp',
         ]);
 
         $silverbox = new Silverbox(config('silverbox.host'));
@@ -56,6 +56,8 @@ class MediaController extends Controller
             'url' => rtrim(config('silverbox.host'). '/') . '/' . $response[0]->path,
         ]);
 
-        return new MediaResource($media);
+        return (new MediaResource($media))
+            ->response()
+            ->setStatusCode(201);
     }
 }
