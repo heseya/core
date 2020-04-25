@@ -36,7 +36,7 @@ use Illuminate\Foundation\Http\FormRequest;
  *           type="integer",
  *         ),
  *         @OA\Property(
- *           property="qty",
+ *           property="quantity",
  *           type="number",
  *         ),
  *         @OA\Property(

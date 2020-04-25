@@ -71,7 +71,7 @@ class Order extends Model
         $value = $this->shipping_price;
 
         foreach ($this->items as $item) {
-            $value += $item->price * $item->qty;
+            $value += $item->price * $item->quantity;
 
             foreach ($item->schemaItems as $schema_item) {
                 $value += $schema_item->extra_price;

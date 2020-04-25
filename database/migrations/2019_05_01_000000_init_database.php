@@ -199,7 +199,7 @@ class InitDatabase extends Migration
 
         Schema::create('order_items', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->float('qty', 8, 4);
+            $table->float('quantity', 8, 4);
             $table->float('price', 19, 4);
             $table->integer('order_id')->unsigned()->index();
             $table->integer('product_id')->unsigned()->index();
