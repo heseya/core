@@ -250,6 +250,183 @@ class OrderController extends Controller
             ->setStatusCode(201);
     }
 
+    public function verify(Request $request): JsonResponse
+    {
+        $cartItems = [];
+        $itemCounts = [];
+        $itemUsers = [];
+        $usedSchemas = [];
+
+        foreach ($request->items as $item) {
+            Validator::make($item, [
+                'product_id' => 'required|exists:products,id',
+                'quantity' => 'required|numeric',
+                'schema_items' => 'array|nullable',
+                'custom_schemas' => 'array|nullable',
+            ])->validate();
+
+            $product = Product::find($item['product_id']);
+
+            if (!$product->public) {
+                continue;
+            }
+
+            if (!$product->schemas()->where('required', 1)->where('type', 0)->exists()) {
+                continue;
+            }
+
+            $schemaItems = $item['schema_items'] ?? [];
+            $customSchemas = $item['custom_schemas'] ?? [];
+
+            $schemas = $product->schemas()->where('required', 1)->get();
+
+            $quit = false;
+            foreach ($schemas as $schema) {
+                if ($schema->name == NULL) {
+                    $schemaItem = $schema->schemaItems()->first();
+
+                    if (!in_array($schemaItem->id, $schemaItems)) {
+                        array_push($schemaItems, $schemaItem->id);
+                    }
+                    
+                    continue;
+                }
+
+                if ($schema->type == 0 && !$schema->schemaItems()->whereIn(
+                    'id', $schemaItems)->exists()) {
+                    
+                    $quit = true;
+                    break;
+                }
+
+                if ($schema->type > 1) {
+                    function thisSchema ($value) {
+                        return $value['schema_id'] == $schema->id;
+                    }
+
+                    $hasSchema = array_filter($customSchemas, 'thisSchema');
+
+                    if (!$hasSchema) {
+                        $quit = true;
+                        break;
+                    }
+                }
+            }
+
+            if ($quit) {
+                continue;
+            }
+
+            $currentItemCounts = [];
+            $stock = [];
+
+            foreach ($schemaItems as $id) {
+                $schemaItem = ProductSchemaItem::find($id);
+
+                if ($schemaItem === null) {
+                    $quit = true;
+                    break;
+                }
+
+                $schema = $schemaItem->schema;
+
+                if ($schema->type != 0) {
+                    $quit = true;
+                    break;
+                }
+                
+                $productId = $schema->product->id;
+                
+                if ($item['product_id'] != $productId) {
+                    $quit = true;
+                    break;
+                }
+
+                if (in_array($schema->id, $usedSchemas)) {
+                    $quit = true;
+                    break;
+                } else {
+                    array_push($usedSchemas, $schema->id);
+                }
+
+                $itemId = $schemaItem->item->id;
+
+                if (!isset($currentItemCounts[$itemId])) {
+                    $currentItemCounts[$itemId] = 0;
+                }
+
+                $currentItemCounts[$itemId] += $item['quantity'];
+
+                if (!isset($itemUsers[$itemId])) {
+                    $itemUsers[$itemId] = [];
+                }
+
+                if ($schemaItem->item->quantity <= 0) {
+                    $quit = true;
+                    break;
+                }
+
+                $stock[$itemId] = $schemaItem->item->quantity;
+            }
+
+            if ($quit) {
+                continue;
+            }
+
+            $enough = true;
+
+            foreach ($currentItemCounts as $key => $value) {
+                if (!isset($itemCounts[$key])) {
+                    $itemCounts[$key] = 0;
+                }
+
+                $itemCounts[$key] += $value;
+
+                if ($stock[$key] < $itemCounts[$key]) {
+                    foreach ($itemUsers[$itemId] as $cartItem) {
+                        $cartItems[$cartItem]['enough'] = false;
+                    }
+    
+                    $enough = false;
+                }
+            }
+
+            $cartItemId = $item['cartitem_id'];
+            
+            if (!$quit) {
+                if (!in_array($cartItemId, $itemUsers[$itemId])) {
+                    array_push($itemUsers[$itemId], $cartItemId);
+                }
+            }
+
+            foreach ($customSchemas as $input) {
+                $schema = ProductSchema::find($input['schema_id']);
+
+                if ($schema == NULL || $schema->type == 0) {
+                    $quit = true;
+                    break;
+                }
+
+                Validator::make($input, [
+                    'value' => 'required|string|max:256',
+                ])->validate();
+            }
+
+            if ($quit) {
+                continue;
+            }
+
+            $cartItems[$cartItemId] = [
+                'cartitem_id' => $cartItemId,
+                'enough' => $enough,
+            ];
+        }
+
+        $cartItems = array_values($cartItems);
+
+        return response()->json(['data' => $cartItems]);
+    }
+
     /**
      * @OA\Get(
      *   path="/orders/{code}/pay/{payment_method}",

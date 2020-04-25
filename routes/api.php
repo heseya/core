@@ -10,6 +10,7 @@ Route::put('products/{product:slug}', 'ProductController@update');
 
 Route::get('orders', 'OrderController@index');
 Route::post('orders','OrderController@create');
+Route::post('orders/verify','OrderController@verify');
 Route::get('orders/id:{order:id}', 'OrderController@view');
 Route::get('orders/{order:code}', 'OrderController@viewPublic');
 Route::get('orders/{order:code}/pay/{method}', 'OrderController@pay');
