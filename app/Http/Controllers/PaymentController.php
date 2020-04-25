@@ -8,7 +8,7 @@ use App\Http\Requests\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\OrderPublicResource;
 
-class OrderController extends Controller
+class PaymentController extends Controller
 {
     /**
      * @OA\Get(
@@ -55,10 +55,8 @@ class OrderController extends Controller
      *   )
      * )
      */
-    public function pay(Order $order, $method, Request $request)
+    public function pay(Order $order, string $method, Request $request)
     {
-        $method = 'paynow';
-
         if (
             $order->payment_status !== 0 ||
             $order->shop_status === 3

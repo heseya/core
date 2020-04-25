@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Payment;
+namespace App\Payments;
 
 use App\Payment;
 use Illuminate\Http\Request;
