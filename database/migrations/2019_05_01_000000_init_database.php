@@ -148,7 +148,7 @@ class InitDatabase extends Migration
             $table->string('method', 16);
             $table->string('status', 32)->nullable();
             $table->string('currency', 3);
-            $table->float('amount', 19, 4);
+            $table->float('amount', 19, 2);
             $table->string('redirectUrl', 1000)->nullable();
             $table->string('continueUrl', 1000)->nullable();
             $table->timestamps();

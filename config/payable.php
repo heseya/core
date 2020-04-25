@@ -3,8 +3,13 @@
 return [
 
     'aliases' => [
-        'paynow' => App\Payment\PayNow::class,
+
+        'paynow' => App\Payments\PayNow::class,
+
+        'bluemedia' => App\Payments\Bluemedia::class,
+
         // 'cinkciarz' => App\Payment\Cinkciarz::class,
+
     ],
 
 ];
