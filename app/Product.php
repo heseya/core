@@ -68,11 +68,12 @@ class Product extends Model
     protected $casts = [
         'price' => 'float',
         'public' => 'bool',
+        'digital' => 'bool',
     ];
 
     public function media()
     {
-        return $this->belongsToMany(Photo::class, 'media', 'product_media');
+        return $this->belongsToMany(Media::class, 'product_media');
     }
 
     /**

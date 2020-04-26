@@ -24,11 +24,12 @@ class ProductResource extends JsonResource
             'name' => $this->name,
             'price' => $this->price,
             'public' => $this->public,
+            'digital' => $this->digital,
             'description' => $this->description,
             'brand' => new BrandResource($this->brand),
             'category' => new CategoryResource($this->category),
-            'cover' => new MediaResource($this->gallery()->first()),
-            'gallery' => MediaResource::collection($this->gallery),
+            'cover' => new MediaResource($this->media()->first()),
+            'gallery' => MediaResource::collection($this->media),
             'schemas' => SchemaResource::collection($this->schemas),
         ];
     }

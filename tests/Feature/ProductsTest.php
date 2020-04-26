@@ -73,6 +73,7 @@ class ProductsTest extends TestCase
             'slug' => $this->product->slug,
             'price' => $this->product->price,
             'public' => (bool) $this->product->public,
+            'digital' => (bool) $this->product->digital,
             'brand' => [
                 'id' => $this->product->brand->id,
                 'name' => $this->product->brand->name,
@@ -140,5 +141,61 @@ class ProductsTest extends TestCase
                     'message',
                 ]]);
         }
+    }
+
+    /**
+     * @return void
+     */
+    public function testCreate()
+    {
+        $response = $this->post('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'brand_id' => $this->product->brand->id,
+            'category_id' => $this->product->category->id,
+            'description' => 'Description',
+            'digital' => false,
+            'public' => true,
+        ]);
+
+        $response
+            ->assertStatus(201)
+            ->assertJson(['data' => [
+                "slug" => "test",
+                "name" => "Test",
+                "price" => 100,
+                "public" => true,
+                "digital" => false,
+                "description" => "<p>Description</p>",
+                'brand' => [
+                    'id' => $this->product->brand->id,
+                    'name' => $this->product->brand->name,
+                    'slug' => $this->product->brand->slug,
+                    'public' => (bool) $this->product->brand->public,
+                ],
+                'category' => [
+                    'id' => $this->product->category->id,
+                    'name' => $this->product->category->name,
+                    'slug' => $this->product->category->slug,
+                    'public' => (bool) $this->product->category->public,
+                ],
+                "cover" => null,
+                "gallery" => [],
+                "schemas" => [[
+                    "name" => null,
+                    "type" => 0,
+                    "required" => true,
+                    "schema_items" => [[
+                        "value" => null,
+                        "extra_price" => 0,
+                        "item" => [
+                            "name" => "Test",
+                            "sku" => null,
+                            "quantity" => 0
+                        ]
+                    ]]
+                ]]
+            ]]);
     }
 }
