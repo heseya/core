@@ -16,14 +16,14 @@ class OrderItem extends Model
      * )
      *
      * @OA\Property(
-     *   property="qty",
+     *   property="quantity",
      *   type="number",
      *   example="12.34",
      * )
      */
 
     protected $fillable = [
-        'qty',
+        'quantity',
         'price',
         'order_id',
         'product_id',

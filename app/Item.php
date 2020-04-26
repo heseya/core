@@ -43,7 +43,7 @@ class Item extends Model
         $deposits = $this->deposits()->sum('quantity');
         $withdrawals = 0;
         foreach ($this->schemaItems()->with('orderItems')->get() as $schemaItem) {
-            $withdrawals += $schemaItem->orderItems()->sum('qty');
+            $withdrawals += $schemaItem->orderItems()->sum('quantity');
         }
 
         return $deposits - $withdrawals;

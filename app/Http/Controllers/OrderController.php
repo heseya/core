@@ -143,50 +143,156 @@ class OrderController extends Controller
             return Error::abort('Invalid shipping method.', 400);
         }
 
+        $itemCounts = [];
+        $usedSchemas = [];
+
+        $indexedSchemaItems = [];
+
+        $cartItems = 0;
+
         foreach ($request->items as $item) {
             Validator::make($item, [
                 'product_id' => 'required|exists:products,id',
-                'qty' => 'required|integer',
-                'schema_items' => 'array',
-                'custom_schemas' => 'array',
+                'quantity' => 'required|numeric',
+                'schema_items' => 'array|nullable',
+                'custom_schemas' => 'array|nullable',
             ])->validate();
 
-            foreach ($item['schema_items'] as $id) {
+            $product = Product::find($item['product_id']);
 
+            if (!$product->public) {
+                return Error::abort(
+                    'Product with ID ' . $product->id . ' is does not exist.',
+                    400,
+                );
+            }
+
+            if (!$product->schemas()->where('required', true)->where('type', 0)->exists()) {
+                return Error::abort(
+                    'Product with ID ' . $product->id . ' is invalid.',
+                    400,
+                );
+            }
+
+            $schemaItems = $item['schema_items'] ?? [];
+            $customSchemas = $item['custom_schemas'] ?? [];
+
+            $schemas = $product->schemas()->where('required', 1)->get();
+
+            foreach ($schemas as $schema) {
+                if ($schema->name === null) {
+                    $schemaItem = $schema->schemaItems()->first();
+
+                    if (!in_array($schemaItem->id, $schemaItems)) {
+                        array_push($schemaItems, $schemaItem->id);
+                    }
+
+                    continue;
+                }
+
+                if ($schema->type === 0 && !$schema->schemaItems()->whereIn(
+                    'id', $schemaItems)->exists()) {
+                    
+                    return Error::abort(
+                        'No required schema items present.',
+                        400,
+                    );
+                }
+
+                if ($schema->type > 1) {
+                    function thisSchema ($value) {
+                        return $value['schema_id'] === $schema->id;
+                    }
+
+                    $hasSchema = array_filter($customSchemas, 'thisSchema');
+
+                    if (!$hasSchema) {
+                        return Error::abort(
+                            'No required custom schemas present.',
+                            400,
+                        );
+                    }
+                }
+            }
+
+            foreach ($customSchemas as $input) {
+                $schema = ProductSchema::find($input['schema_id']);
+
+                if ($schema === null || $schema->type === 0) {
+                    return Error::abort(
+                        'Custom schema with ID ' . $id . ' does not exist.',
+                        400,
+                    );
+                }
+
+                $productId = $schema->product->id;
+                
+                if ($item['product_id'] !== $productId) {
+                    return Error::abort(
+                        'Custom schema with ID ' . $id . ' does not exist.',
+                        400,
+                    );
+                }
+
+                Validator::make($input, [
+                    'value' => 'required|string|max:256',
+                ])->validate();
+            }
+
+            foreach ($schemaItems as $id) {
                 $schemaItem = ProductSchemaItem::find($id);
 
                 if ($schemaItem === null) {
-                    return Error::abort('Schema item with ID ' . $id . ' not exist.' , 400);
+                    return Error::abort(
+                        'Schema item with ID ' . $id . ' does not exist.',
+                        400,
+                    );
                 }
 
-                if ($schemaItem->item->qty < $item['qty']) {
-                    return Error::abort('Niewystarczająca ilość ' . $schemaItem->item->name, 400);
+                $schema = $schemaItem->schema;
+
+                if ($schema->type !== 0) {
+                    return Error::abort(
+                        'Schema item with ID ' . $id . ' does not exist.',
+                        400,
+                    );
+                }
+
+                $productId = $schema->product->id;
+
+                if ($item['product_id'] !== $productId) {
+                    return Error::abort(
+                        'Schema item with ID ' . $id . ' does not exist.',
+                        400,
+                    );
+                }
+
+                if (in_array($schema->id, $usedSchemas)) {
+                    return Error::abort(
+                        'Schema with ID ' . $schema->id . ' used twice.',
+                        400,
+                    );
+                } else {
+                    array_push($usedSchemas, $schema->id);
+                }
+
+                $itemId = $schemaItem->item->id;
+
+                if (!isset($itemCounts[$itemId])) {
+                    $itemCounts[$itemId] = 0;
+                }
+                
+                $itemCounts[$itemId] += $item['quantity'];
+
+                if ($schemaItem->item->quantity < $itemCounts[$itemId]) {
+                    return Error::abort(
+                        'Insufficient quantity of ' . $schemaItem->item->name,
+                        400,
+                    );
                 }
             }
 
-            if (isset($item['custom_schemas'])) {
-                if (count($item['schema_items']) === 0) {
-                    $product = Product::find($item['product_id']);
-                    $schemaItem = $product->schemas()->first()->schemaItems()->first();
-
-                    if ($schemaItem->item->qty < $item['qty']) {
-                        return Error::abort('Invalid data.', 400);
-                    }
-                }
-            }
-
-            if (isset($item['custom_schemas'])) {
-                foreach ($item['custom_schemas'] as $input) {
-                    $schema = ProductSchema::find($input['schema_id']);
-                    if ($schema == NULL || $schema->type == 0) {
-                        return Error::abort('Invalid data.', 400);
-                    }
-
-                    Validator::make($input, [
-                        'value' => 'required|string|max:256',
-                    ])->validate();
-                }
-            }
+            $indexedSchemaItems[$cartItems++] = $schemaItems;
         }
 
         do {
@@ -203,30 +309,28 @@ class OrderController extends Controller
 
         $order->delivery_address = Address::firstOrCreate($request->delivery_address)->id;
         $order->invoice_address = $request->filled('invoice_address.name') ?
-            Address::firstOrCreate($request->invoice_address)->id : NULL;
+            Address::firstOrCreate($request->invoice_address)->id : null;
 
         $order->save();
 
+        $cartItems = 0;
+        
         foreach ($request->items as $item) {
             $product = Product::find($item['product_id']);
             $price = $product->price;
+            $schemaItems = $indexedSchemaItems[$cartItems++];
 
-            foreach($item['schema_items'] as $id) {
+            foreach ($schemaItems as $id) {
                 $price += ProductSchemaItem::find($id)->extra_price;
             }
 
             $orderItem = $order->items()->create([
                 'product_id' => $product->id,
-                'qty' => $item['qty'],
+                'quantity' => $item['quantity'],
                 'price' => $price < 0 ? 0 : $price,
             ]);
 
-            $orderItem->schemaItems()->sync($item['schema_items']);
-
-            if (count($item['schema_items']) === 0) {
-                $schemaItem = $product->schemas()->first()->schemaItems()->first();
-                $orderItem->schemaItems()->attach($schemaItem);
-            }
+            $orderItem->schemaItems()->sync($schemaItems);
 
             if (isset($item['custom_schemas'])) {
                 foreach($item['custom_schemas'] as $schema) {
@@ -345,7 +449,7 @@ class OrderController extends Controller
                 continue;
             }
 
-            if (!$product->schemas()->where('required', 1)->where('type', 0)->exists()) {
+            if (!$product->schemas()->where('required', true)->where('type', 0)->exists()) {
                 continue;
             }
 
@@ -356,7 +460,7 @@ class OrderController extends Controller
 
             $quit = false;
             foreach ($schemas as $schema) {
-                if ($schema->name == NULL) {
+                if ($schema->name === null) {
                     $schemaItem = $schema->schemaItems()->first();
 
                     if (!in_array($schemaItem->id, $schemaItems)) {
@@ -366,7 +470,7 @@ class OrderController extends Controller
                     continue;
                 }
 
-                if ($schema->type == 0 && !$schema->schemaItems()->whereIn(
+                if ($schema->type === 0 && !$schema->schemaItems()->whereIn(
                     'id', $schemaItems)->exists()) {
                     
                     $quit = true;
@@ -375,7 +479,7 @@ class OrderController extends Controller
 
                 if ($schema->type > 1) {
                     function thisSchema ($value) {
-                        return $value['schema_id'] == $schema->id;
+                        return $value['schema_id'] === $schema->id;
                     }
 
                     $hasSchema = array_filter($customSchemas, 'thisSchema');
@@ -394,14 +498,14 @@ class OrderController extends Controller
             foreach ($customSchemas as $input) {
                 $schema = ProductSchema::find($input['schema_id']);
 
-                if ($schema == NULL || $schema->type == 0) {
+                if ($schema === null || $schema->type === 0) {
                     $quit = true;
                     break;
                 }
 
                 $productId = $schema->product->id;
                 
-                if ($item['product_id'] != $productId) {
+                if ($item['product_id'] !== $productId) {
                     $quit = true;
                     break;
                 }
@@ -428,14 +532,14 @@ class OrderController extends Controller
 
                 $schema = $schemaItem->schema;
 
-                if ($schema->type != 0) {
+                if ($schema->type !== 0) {
                     $quit = true;
                     break;
                 }
                 
                 $productId = $schema->product->id;
                 
-                if ($item['product_id'] != $productId) {
+                if ($item['product_id'] !== $productId) {
                     $quit = true;
                     break;
                 }

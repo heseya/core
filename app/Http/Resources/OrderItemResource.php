@@ -17,7 +17,7 @@ class OrderItemResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'qty' => $this->qty,
+            'quantity' => $this->quantity,
             'price' => $this->price,
             'product' => new ProductResource($this->product),
             'schema_items' => SchemaItemResource::collection($this->schemaItems),
