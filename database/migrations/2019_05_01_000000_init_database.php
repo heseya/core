@@ -64,18 +64,23 @@ class InitDatabase extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
-            $table->string('slug')->unique()->index();
+            $table->string('slug')->index();
             $table->float('price', 19, 4);
             $table->smallInteger('brand_id')->index()->unsigned();
             $table->smallInteger('category_id')->index()->unsigned();
+            $table->integer('user_id')->index()->unsigned()->nullable();
+            $table->integer('original_id')->index()->unsigned()->nullable();
             $table->text('description')->nullable();
             $table->boolean('digital')->default(false);
             $table->boolean('public')->default(false);
             $table->timestamps();
             $table->softDeletes();
 
+            $table->unique(['slug', 'deleted_at']);
+
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('restrict');
             $table->foreign('brand_id')->references('id')->on('brands')->onDelete('restrict');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
         });
 
         Schema::create('media', function (Blueprint $table) {

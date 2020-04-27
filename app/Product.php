@@ -58,6 +58,8 @@ class Product extends Model
         'public',
         'brand_id',
         'category_id',
+        'original_id',
+        'user_id',
     ];
 
     /**

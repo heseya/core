@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Item;
 use App\Brand;
 use App\Product;
 use App\Category;
@@ -20,6 +21,26 @@ class ProductsTest extends TestCase
             'brand_id' => $brand->id,
             'category_id' => $category->id,
             'public' => true,
+        ]);
+
+        $this->product->update([
+            'original_id' => $this->product->id,
+        ]);
+
+        $schema = $this->product->schemas()->create([
+            'name' => null,
+            'type' => 0,
+            'required' => true,
+        ]);
+
+        $this->item = Item::create([
+            'name' => $this->product->name,
+            'sku' => null,
+        ]);
+
+        $schema->schemaItems()->create([
+            'item_id' => $this->item->id,
+            'extra_price' => 0,
         ]);
 
         // Hidden
@@ -95,8 +116,58 @@ class ProductsTest extends TestCase
         $this->expected = array_merge($this->expected_short, [
             'description' => $this->product->description,
             'gallery' => [],
-            'schemas' => [],
+            'schemas' => [[
+                'name' => null,
+                'type' => 0,
+                'required' => true,
+                'schema_items' => [[
+                    'value' => null,
+                    'extra_price' => 0,
+                    'item' => [
+                        'name' => $this->product->name,
+                        'sku' => null,
+                        'quantity' => 0
+                    ]
+                ]]
+            ]],
         ]);
+
+        $this->expectedUpdated = [
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150,
+            'public' => false,
+            'digital' => false,
+            'brand' => [
+                'id' => $this->product->brand->id,
+                'name' => $this->product->brand->name,
+                'slug' => $this->product->brand->slug,
+                'public' => (bool) $this->product->brand->public,
+            ],
+            'category' => [
+                'id' => $this->product->category->id,
+                'name' => $this->product->category->name,
+                'slug' => $this->product->category->slug,
+                'public' => (bool) $this->product->category->public,
+            ],
+            'cover' => null,
+            'description' => '<p>New description</p>',
+            'gallery' => [],
+            'schemas' => [[
+                'name' => null,
+                'type' => 0,
+                'required' => true,
+                'schema_items' => [[
+                    'value' => null,
+                    'extra_price' => 0,
+                    'item' => [
+                        'name' => $this->product->name,
+                        'sku' => null,
+                        'quantity' => 0
+                    ]
+                ]]
+            ]],
+        ];
     }
 
     /**
@@ -123,7 +194,7 @@ class ProductsTest extends TestCase
 
         $response
             ->assertStatus(200)
-            ->assertExactJson(['data' => $this->expected]);
+            ->assertJson(['data' => $this->expected]);
     }
 
     /**
@@ -159,15 +230,17 @@ class ProductsTest extends TestCase
             'public' => true,
         ]);
 
+        $this->createdId = $response->json()['data']['id'];
+
         $response
             ->assertStatus(201)
             ->assertJson(['data' => [
-                "slug" => "test",
-                "name" => "Test",
-                "price" => 100,
-                "public" => true,
-                "digital" => false,
-                "description" => "<p>Description</p>",
+                'slug' => 'test',
+                'name' => 'Test',
+                'price' => 100,
+                'public' => true,
+                'digital' => false,
+                'description' => '<p>Description</p>',
                 'brand' => [
                     'id' => $this->product->brand->id,
                     'name' => $this->product->brand->name,
@@ -180,22 +253,56 @@ class ProductsTest extends TestCase
                     'slug' => $this->product->category->slug,
                     'public' => (bool) $this->product->category->public,
                 ],
-                "cover" => null,
-                "gallery" => [],
-                "schemas" => [[
-                    "name" => null,
-                    "type" => 0,
-                    "required" => true,
-                    "schema_items" => [[
-                        "value" => null,
-                        "extra_price" => 0,
-                        "item" => [
-                            "name" => "Test",
-                            "sku" => null,
-                            "quantity" => 0
+                'cover' => null,
+                'gallery' => [],
+                'schemas' => [[
+                    'name' => null,
+                    'type' => 0,
+                    'required' => true,
+                    'schema_items' => [[
+                        'value' => null,
+                        'extra_price' => 0,
+                        'item' => [
+                            'name' => 'Test',
+                            'sku' => null,
+                            'quantity' => 0
                         ]
                     ]]
                 ]]
             ]]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testUpdate()
+    {
+        $response = $this->put('/products/id:' . $this->product->id, [
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150.00,
+            'brand_id' => $this->product->brand->id,
+            'category_id' => $this->product->category->id,
+            'description' => 'New description',
+            'digital' => false,
+            'public' => false,
+            'schemas' => [
+                [
+                    'name' => null,
+                    'type' => 0,
+                    'required' => true,
+                    'items' => [
+                        [
+                            'item_id' => $this->item->id,
+                            'extra_price' => 0
+                        ]
+                    ]
+                ]	
+            ]
+        ]);
+
+        $response
+            ->assertStatus(200)
+            ->assertJson(['data' => $this->expectedUpdated]);
     }
 }

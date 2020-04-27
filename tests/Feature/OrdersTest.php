@@ -54,6 +54,6 @@ class OrdersTest extends TestCase
 
         $response
             ->assertStatus(200)
-            ->assertExactJson(['data' => $this->expected]);
+            ->assertJson(['data' => $this->expected]);
     }
 }
