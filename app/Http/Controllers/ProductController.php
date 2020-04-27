@@ -69,7 +69,8 @@ class ProductController extends Controller
 
         $query = Product::with([
             'brand',
-            'category'
+            'category',
+            'media',
         ]);
 
         $query
