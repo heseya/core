@@ -5,8 +5,7 @@ Route::get('products', 'ProductController@index');
 Route::post('products', 'ProductController@create');
 Route::get('products/id:{product:id}', 'ProductController@view');
 Route::get('products/{product:slug}', 'ProductController@view');
-Route::patch('products/id:{product:id}', 'ProductController@update');
-Route::patch('products/{product:slug}', 'ProductController@update');
+Route::put('products/id:{product:id}', 'ProductController@update');
 
 Route::get('orders', 'OrderController@index');
 Route::post('orders','OrderController@create');
