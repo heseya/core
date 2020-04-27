@@ -30,6 +30,7 @@ class PagesTest extends TestCase
             'slug' => $this->page->slug,
             'public' => $this->page->public,
             'content' => $this->page->content,
+            'content_raw' => $this->page->content_raw,
         ];
     }
 
@@ -73,5 +74,62 @@ class PagesTest extends TestCase
                 'code',
                 'message',
             ]]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testCreate()
+    {
+        $page = [
+            'name' => 'Test',
+            'slug' => 'test-test',
+            'public' => true,
+            'content' => '# hello world',
+        ];
+
+        $response = $this->post('/pages', $page);
+
+        $page['content_raw'] = $page['content'];
+        unset($page['content']);
+
+        $response
+        ->assertJson(['data' => $page])
+        ->assertStatus(201);
+    }
+
+    /**
+     * @return void
+     */
+    public function testUpdate()
+    {
+        $page = [
+            'name' => 'Test 2',
+            'slug' => 'test-2',
+            'public' => false,
+            'content' => '# hello wor',
+        ];
+
+        $response = $this->patch(
+            '/pages/id:' . $this->page->id,
+            $page,
+        );
+
+        $page['content_raw'] = $page['content'];
+        unset($page['content']);
+
+        $response
+            ->assertStatus(200)
+            ->assertJson(['data' => $page]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testDelete()
+    {
+        $response = $this->delete('/pages/id:' . $this->page->id);
+
+        $response->assertStatus(204);
     }
 }

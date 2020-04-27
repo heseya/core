@@ -46,4 +46,53 @@ class CategoriesTest extends TestCase
                 0 => $this->expected,
             ]]);
     }
+
+    /**
+     * @return void
+     */
+    public function testCreate()
+    {
+        $category = [
+            'name' => 'Test',
+            'slug' => 'test-test',
+            'public' => true,
+        ];
+
+        $response = $this->post('/categories', $category);
+
+        $response
+            ->assertStatus(201)
+            ->assertJson(['data' => $category]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testUpdate()
+    {
+        $category = [
+            'name' => 'Test 2',
+            'slug' => 'test-2',
+            'public' => false,
+        ];
+
+        $response = $this->patch(
+            '/categories/id:' . $this->category->id,
+            $category,
+        );
+
+        $response
+            ->assertStatus(200)
+            ->assertJson(['data' => $category]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testDelete()
+    {
+        $response = $this->delete('/categories/id:' . $this->category->id);
+
+        $response->assertStatus(204);
+    }
 }

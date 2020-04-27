@@ -29,6 +29,14 @@ class OrdersTest extends TestCase
             'shop_status' => $this->order->shop_status,
             'delivery_status' => $this->order->delivery_status,
         ];
+
+        $this->expectedStructure = [
+            'code',
+            'payment_status',
+            'shop_status',
+            'delivery_status',
+            'created_at',
+        ];
     }
 
     /**
@@ -40,6 +48,9 @@ class OrdersTest extends TestCase
 
         $response
             ->assertStatus(200)
+            ->assertJsonStructure(['data' => [
+                0 => $this->expectedStructure
+            ]])
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
@@ -54,6 +65,7 @@ class OrdersTest extends TestCase
 
         $response
             ->assertStatus(200)
+            ->assertJsonStructure(['data' => $this->expectedStructure])
             ->assertJson(['data' => $this->expected]);
     }
 }

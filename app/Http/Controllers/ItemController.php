@@ -114,7 +114,7 @@ class ItemController extends Controller
     }
 
     /**
-     * @OA\Put(
+     * @OA\Patch(
      *   path="/items/id:{id}",
      *   summary="update item",
      *   tags={"Items"},

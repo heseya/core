@@ -74,7 +74,7 @@ class ShippingMethodController extends Controller
     }
 
     /**
-     * @OA\Put(
+     * @OA\Patch(
      *   path="/shipping-methods/id:{id}",
      *   summary="update shipping method",
      *   tags={"Shipping"},
