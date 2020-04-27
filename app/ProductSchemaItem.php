@@ -34,7 +34,6 @@ class ProductSchemaItem extends Model
         'extra_price',
         'value',
         'item_id',
-        'product_schema_id',
     ];
 
     public function schema()
