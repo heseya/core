@@ -46,4 +46,53 @@ class BrandsTest extends TestCase
                 0 => $this->expected,
             ]]);
     }
+
+    /**
+     * @return void
+     */
+    public function testCreate()
+    {
+        $brand = [
+            'name' => 'Test',
+            'slug' => 'test-test',
+            'public' => true,
+        ];
+
+        $response = $this->post('/brands', $brand);
+
+        $response
+            ->assertStatus(201)
+            ->assertJson(['data' => $brand]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testUpdate()
+    {
+        $brand = [
+            'name' => 'Test 2',
+            'slug' => 'test-2',
+            'public' => false,
+        ];
+
+        $response = $this->patch(
+            '/brands/id:' . $this->brand->id,
+            $brand,
+        );
+
+        $response
+            ->assertStatus(200)
+            ->assertJson(['data' => $brand]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testDelete()
+    {
+        $response = $this->delete('/brands/id:' . $this->brand->id);
+
+        $response->assertStatus(204);
+    }
 }

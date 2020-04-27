@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Category;
+use Illuminate\Http\Request;
 use App\Http\Resources\CategoryResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
@@ -31,5 +32,120 @@ class CategoryController extends Controller
         return CategoryResource::collection(
             Category::where(['public' => true])->get()
         );
+    }
+
+    /**
+     * @OA\Post(
+     *   path="/categories",
+     *   summary="add new category",
+     *   tags={"Categories"},
+     *   @OA\RequestBody(
+     *     @OA\JsonContent(
+     *       ref="#/components/schemas/Category",
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/Category",
+     *       )
+     *     )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function create(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|max:255',
+            'public' => 'boolean',
+        ]);
+
+        $category = Category::create($request->all());
+
+        return (new CategoryResource($category))
+            ->response()
+            ->setStatusCode(201);
+    }
+
+    /**
+     * @OA\Patch(
+     *   path="/categories/id:{id}",
+     *   summary="update category",
+     *   tags={"Categories"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="integer",
+     *     )
+     *   ),
+     *   @OA\RequestBody(
+     *     @OA\JsonContent(
+     *       ref="#/components/schemas/Category",
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/Category",
+     *       )
+     *     )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function update(Category $category, Request $request)
+    {
+        $request->validate([
+            'name' => 'string|max:255',
+            'price' => 'string|max:255',
+            'public' => 'boolean',
+        ]);
+
+        $category->update($request->all());
+
+        return new CategoryResource($category);
+    }
+
+    /**
+     * @OA\Delete(
+     *   path="/categories/id:{id}",
+     *   summary="delete category",
+     *   tags={"Categories"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="integer",
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=204,
+     *     description="Success",
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function delete(Category $category)
+    {
+        $category->delete();
+
+        return response()->json(null, 204);
     }
 }
