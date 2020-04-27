@@ -71,7 +71,7 @@ class ShippingMethodTest extends TestCase
     public function testUpdate()
     {
         $shipping_method = [
-            'name' => 'Test ',
+            'name' => 'Test 2',
             'price' => 5.23,
             'public' => false,
         ];
