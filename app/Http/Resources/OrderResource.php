@@ -25,6 +25,7 @@ class OrderResource extends JsonResource
             'email' => $this->email,
             'comment' => $this->comment,
             'summary' => $this->summary,
+            'created_at' => $this->created_at,
             'payment_status' => $this->payment_status,
             'shop_status' => $this->shop_status,
             'delivery_status' => $this->delivery_status,

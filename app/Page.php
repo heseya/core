@@ -83,6 +83,6 @@ class Page extends Model
      */
     public function getContentRawAttribute($content): string
     {
-        return $content;
+        return $this->attributes['content'];
     }
 }

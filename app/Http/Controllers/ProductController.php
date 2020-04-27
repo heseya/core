@@ -62,9 +62,9 @@ class ProductController extends Controller
     public function index(Request $request): ResourceCollection
     {
         $request->validate([
-            'brand' => ['string', 'max:255'],
-            'category' => ['string', 'max:255'],
-            'search' => ['string', 'max:255'],
+            'brand' => 'string|max:255',
+            'category' => 'string|max:255',
+            'search' => 'string|max:255',
         ]);
 
         $query = Product::with([
@@ -104,7 +104,7 @@ class ProductController extends Controller
         }
 
         return ProductShortResource::collection(
-            $query->paginate(12)
+            $query->paginate(12),
         );
     }
 
