@@ -244,6 +244,13 @@ class ProductController extends Controller
      *             )
      *           )
      *         )
+     *       ),
+     *       @OA\Property(
+     *         property="media",
+     *         type="array",
+     *         @OA\Items(
+     *           type="integer",
+     *         )
      *       )
      *     )
      *   ),
@@ -357,6 +364,8 @@ class ProductController extends Controller
                 ]);
             }
         }
+
+        $product->media()->sync($media);
         
         return (new ProductResource($product))
             ->response()
@@ -365,9 +374,17 @@ class ProductController extends Controller
 
     /**
      * @OA\Put(
-     *   path="/products",
-     *   summary="create product",
+     *   path="/products/id:{id}",
+     *   summary="update product",
      *   tags={"Products"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="integer",
+     *     )
+     *   ),
      *   @OA\RequestBody(
      *     @OA\JsonContent(
      *       @OA\Property(
@@ -435,11 +452,18 @@ class ProductController extends Controller
      *             )
      *           )
      *         )
+     *       ),
+     *       @OA\Property(
+     *         property="media",
+     *         type="array",
+     *         @OA\Items(
+     *           type="integer",
+     *         )
      *       )
      *     )
      *   ),
      *   @OA\Response(
-     *     response=201,
+     *     response=200,
      *     description="Success",
      *     @OA\JsonContent(
      *       @OA\Property(
@@ -541,6 +565,8 @@ class ProductController extends Controller
                 ]);
             }
         }
+
+        $product->media()->sync($media);
         
         return (new ProductResource($product))
             ->response()
