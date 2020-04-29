@@ -29,8 +29,8 @@ class PagesTest extends TestCase
             'name' => $this->page->name,
             'slug' => $this->page->slug,
             'public' => $this->page->public,
-            'content' => $this->page->content,
-            'content_raw' => $this->page->content_raw,
+            'content_md' => $this->page->content_md,
+            'content_html' => parsedown($this->page->content_md),
         ];
     }
 
@@ -85,13 +85,11 @@ class PagesTest extends TestCase
             'name' => 'Test',
             'slug' => 'test-test',
             'public' => true,
-            'content' => '# hello world',
+            'content_md' => '# hello world',
+            'content_html' => '<h1>hello world</h1>',
         ];
 
         $response = $this->post('/pages', $page);
-
-        $page['content_raw'] = $page['content'];
-        unset($page['content']);
 
         $response
         ->assertJson(['data' => $page])
@@ -107,16 +105,14 @@ class PagesTest extends TestCase
             'name' => 'Test 2',
             'slug' => 'test-2',
             'public' => false,
-            'content' => '# hello wor',
+            'content_md' => '# hello world 2',
+            'content_html' => '<h1>hello world 2</h1>',
         ];
 
         $response = $this->patch(
             '/pages/id:' . $this->page->id,
             $page,
         );
-
-        $page['content_raw'] = $page['content'];
-        unset($page['content']);
 
         $response
             ->assertStatus(200)
