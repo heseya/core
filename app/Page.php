@@ -31,6 +31,12 @@ class Page extends Model
      *   property="public",
      *   type="boolean",
      * )
+     *
+     * @OA\Property(
+     *   property="content_md",
+     *   type="string",
+     *   example="# Hello World!",
+     * )
      */
 
     /**
@@ -42,7 +48,7 @@ class Page extends Model
         'name',
         'slug',
         'public',
-        'content',
+        'content_md',
     ];
 
     /**
@@ -55,34 +61,18 @@ class Page extends Model
     ];
 
     /**
-     * HTML page content.
-     *
-     * @return string
+     * Content in HTML.
      *
      * @OA\Property(
-     *   property="content",
+     *   property="content_html",
      *   type="string",
-     *   example="<h1>Hello World</h1>",
+     *   example="<h1>Awesome stuff!</h1>",
      * )
-     */
-    public function getContentAttribute($content): string
-    {
-        return parsedown($content);
-    }
-
-    /**
-     * Raw MD content.
      *
-     * @return string
-     *
-     * @OA\Property(
-     *   property="content_raw",
-     *   type="string",
-     *   example="# Hello World!",
-     * )
+     * @var string
      */
-    public function getContentRawAttribute($content): string
+    public function getContentHtmlAttribute(): string
     {
-        return $this->attributes['content'];
+        return parsedown($this->content_md);
     }
 }
