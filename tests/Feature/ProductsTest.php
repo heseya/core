@@ -280,7 +280,7 @@ class ProductsTest extends TestCase
      */
     public function testUpdate()
     {
-        $response = $this->put('/products/id:' . $this->product->id, [
+        $response = $this->patch('/products/id:' . $this->product->id, [
             'name' => 'Updated',
             'slug' => 'updated',
             'price' => 150.00,
