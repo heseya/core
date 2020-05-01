@@ -37,10 +37,10 @@ class Product extends Model
      * )
      *
      * @OA\Property(
-     *   property="description",
+     *   property="description_md",
      *   type="string",
-     *   description="Description in HTML.",
-     *   example="<p>Awesome stuff!</p>",
+     *   description="Description in MD.",
+     *   example="# Awesome stuff!",
      * )
      *
      * @OA\Property(
@@ -53,7 +53,7 @@ class Product extends Model
         'name',
         'slug',
         'price',
-        'description',
+        'description_md',
         'digital',
         'public',
         'brand_id',
@@ -118,13 +118,19 @@ class Product extends Model
     }
 
     /**
-     * MD description parser.
+     * Description in HTML.
      *
-     * @var array
+     * @OA\Property(
+     *   property="description_html",
+     *   type="string",
+     *   example="<h1>Awesome stuff!</h1>",
+     * )
+     *
+     * @var string
      */
-    public function getDescriptionAttribute($description): string
+    public function getDescriptionHtmlAttribute(): string
     {
-        return parsedown($description);
+        return parsedown($this->description_md);
     }
 
     /**

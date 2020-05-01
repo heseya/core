@@ -114,7 +114,8 @@ class ProductsTest extends TestCase
          * Expected full response
          */
         $this->expected = array_merge($this->expected_short, [
-            'description' => $this->product->description,
+            'description_md' => $this->product->description_md,
+            'description_html' => parsedown($this->product->description_md),
             'gallery' => [],
             'schemas' => [[
                 'name' => null,
@@ -151,7 +152,8 @@ class ProductsTest extends TestCase
                 'public' => (bool) $this->product->category->public,
             ],
             'cover' => null,
-            'description' => '<p>New description</p>',
+            'description_md' => '# New description',
+            'description_html' => '<h1>New description</h1>',
             'gallery' => [],
             'schemas' => [[
                 'name' => null,
@@ -225,7 +227,7 @@ class ProductsTest extends TestCase
             'price' => 100.00,
             'brand_id' => $this->product->brand->id,
             'category_id' => $this->product->category->id,
-            'description' => 'Description',
+            'description_md' => '# Description',
             'digital' => false,
             'public' => true,
         ]);
@@ -240,7 +242,8 @@ class ProductsTest extends TestCase
                 'price' => 100,
                 'public' => true,
                 'digital' => false,
-                'description' => '<p>Description</p>',
+                'description_md' => '# Description',
+                'description_html' => '<h1>Description</h1>',
                 'brand' => [
                     'id' => $this->product->brand->id,
                     'name' => $this->product->brand->name,
@@ -277,13 +280,13 @@ class ProductsTest extends TestCase
      */
     public function testUpdate()
     {
-        $response = $this->put('/products/id:' . $this->product->id, [
+        $response = $this->patch('/products/id:' . $this->product->id, [
             'name' => 'Updated',
             'slug' => 'updated',
             'price' => 150.00,
             'brand_id' => $this->product->brand->id,
             'category_id' => $this->product->category->id,
-            'description' => 'New description',
+            'description_md' => '# New description',
             'digital' => false,
             'public' => false,
             'schemas' => [
@@ -297,7 +300,7 @@ class ProductsTest extends TestCase
                             'extra_price' => 0
                         ]
                     ]
-                ]	
+                ]
             ]
         ]);
 

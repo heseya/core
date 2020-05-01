@@ -277,7 +277,7 @@ class ProductController extends Controller
             'price' => 'required|numeric',
             'brand_id' => 'required|integer|exists:brands,id',
             'category_id' => 'required|integer|exists:categories,id',
-            'description' => 'string',
+            'description_md' => 'string|nullable',
             'digital' => 'required|boolean',
             'public' => 'required|boolean',
             'schemas' => 'array|nullable',
@@ -285,7 +285,7 @@ class ProductController extends Controller
         ]);
 
         $schemas = isset($request->schemas) ? $request->schemas : [];
-        
+
         foreach ($schemas as $schema) {
             Validator::make($schema, [
                 'name' => 'required|string|max:255',
@@ -309,7 +309,7 @@ class ProductController extends Controller
 
         foreach ($media as $id) {
             $thisMedia = Media::find($id);
-            
+
             if ($thisMedia === null) {
                 return Error::abort(
                     'Media with ID ' . $id . ' does not exist.',
@@ -366,7 +366,7 @@ class ProductController extends Controller
         }
 
         $product->media()->sync($media);
-        
+
         return (new ProductResource($product))
             ->response()
             ->setStatusCode(201);
@@ -490,7 +490,7 @@ class ProductController extends Controller
             'price' => 'required|numeric',
             'brand_id' => 'required|integer|exists:brands,id',
             'category_id' => 'required|integer|exists:categories,id',
-            'description' => 'string',
+            'description_md' => 'string|nullable',
             'digital' => 'required|boolean',
             'public' => 'required|boolean',
             'schemas' => 'required|array|min:1',
@@ -498,7 +498,7 @@ class ProductController extends Controller
         ]);
 
         $schemas = $request->schemas;
-        
+
         foreach ($schemas as $schema) {
             Validator::make($schema, [
                 'name' => 'nullable|string|max:255',
@@ -530,7 +530,7 @@ class ProductController extends Controller
 
         foreach ($media as $id) {
             $thisMedia = Media::find($id);
-            
+
             if ($thisMedia === null) {
                 return Error::abort(
                     'Media with ID ' . $id . ' does not `exist`.',
@@ -567,7 +567,7 @@ class ProductController extends Controller
         }
 
         $product->media()->sync($media);
-        
+
         return (new ProductResource($product))
             ->response()
             ->setStatusCode(200);

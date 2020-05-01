@@ -14,6 +14,6 @@ $factory->define(Page::class, function (Faker $faker) {
         'name' => $name,
         'slug' => Str::slug($name),
         'public' => rand(0, 1),
-        'content' => $faker->sentence(20),
+        'content_md' => $faker->sentence(20),
     ];
 });

@@ -129,7 +129,7 @@ class PageController extends Controller
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255',
             'public' => 'boolean',
-            'content' => 'required|string',
+            'content_md' => 'string|nullable',
         ]);
 
         $page = Page::create($request->all());
@@ -178,7 +178,7 @@ class PageController extends Controller
             'name' => 'string|max:255',
             'price' => 'string|max:255',
             'public' => 'boolean',
-            'content' => 'string',
+            'content_md' => 'string|nullable',
         ]);
 
         $page->update($request->all());

@@ -70,7 +70,7 @@ class InitDatabase extends Migration
             $table->smallInteger('category_id')->index()->unsigned();
             $table->integer('user_id')->index()->unsigned()->nullable();
             $table->integer('original_id')->index()->unsigned()->nullable();
-            $table->text('description')->nullable();
+            $table->text('description_md')->nullable();
             $table->boolean('digital')->default(false);
             $table->boolean('public')->default(false);
             $table->timestamps();
@@ -248,7 +248,7 @@ class InitDatabase extends Migration
             $table->string('slug')->unique()->index();
             $table->boolean('public')->default(false);
             $table->string('name');
-            $table->text('content');
+            $table->text('content_md');
             $table->timestamps();
         });
     }
