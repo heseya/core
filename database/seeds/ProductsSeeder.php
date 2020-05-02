@@ -2,6 +2,7 @@
 
 use App\Item;
 use App\Brand;
+use App\Media;
 use App\Deposit;
 use App\Product;
 use App\Category;
@@ -52,52 +53,58 @@ class ProductsSeeder extends Seeder
             });
         }
 
-        factory(Product::class, 25)->create([
-            'category_id' => rand(1, 3),
-            'brand_id' => rand(1, 4),
-            'public' => true,
-        ])->each('simpleProduct');
-
-        factory(Product::class, 25)->create([
-            'category_id' => rand(1, 3),
-            'brand_id' => rand(1, 4),
-            'public' => false,
-        ])->each('simpleProduct');
+        function media ($product) {
+            for ($i = 0; $i < rand(0, 5); $i++) {
+                $product->media()->save(factory(Media::class)->make());
+            }
+        }
 
         factory(Product::class, 25)->create([
             'category_id' => rand(1, 3),
             'brand_id' => rand(1, 4),
             'public' => true,
-        ])->each('complexProduct');
+        ])->each('simpleProduct')->each('media');
 
         factory(Product::class, 25)->create([
             'category_id' => rand(1, 3),
             'brand_id' => rand(1, 4),
             'public' => false,
-        ])->each('complexProduct');
+        ])->each('simpleProduct')->each('media');
+
+        factory(Product::class, 25)->create([
+            'category_id' => rand(1, 3),
+            'brand_id' => rand(1, 4),
+            'public' => true,
+        ])->each('complexProduct')->each('media');
+
+        factory(Product::class, 25)->create([
+            'category_id' => rand(1, 3),
+            'brand_id' => rand(1, 4),
+            'public' => false,
+        ])->each('complexProduct')->each('media');
 
         factory(Product::class, 25)->create([
             'category_id' => rand(3, 5),
             'brand_id' => rand(4, 6),
             'public' => true,
-        ])->each('simpleProduct');
+        ])->each('simpleProduct')->each('media');
 
         factory(Product::class, 25)->create([
             'category_id' => rand(3, 5),
             'brand_id' => rand(4, 6),
             'public' => false,
-        ])->each('simpleProduct');
+        ])->each('simpleProduct')->each('media');
 
         factory(Product::class, 25)->create([
             'category_id' => rand(3, 5),
             'brand_id' => rand(4, 6),
             'public' => true,
-        ])->each('complexProduct');
+        ])->each('complexProduct')->each('media');
 
         factory(Product::class, 25)->create([
             'category_id' => rand(3, 5),
             'brand_id' => rand(4, 6),
             'public' => false,
-        ])->each('complexProduct');
+        ])->each('complexProduct')->each('media');
     }
 }
