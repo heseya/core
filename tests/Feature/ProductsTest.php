@@ -308,4 +308,16 @@ class ProductsTest extends TestCase
             ->assertStatus(200)
             ->assertJson(['data' => $this->expectedUpdated]);
     }
+
+     /**
+     * @return void
+     */
+    public function testDelete()
+    {
+        $response = $this->delete('/products/id:' . $this->product->id);
+        $response->assertStatus(204);
+
+        $response = $this->get('/products/id:' . $this->product->id);
+        $response->assertStatus(404);
+    }
 }

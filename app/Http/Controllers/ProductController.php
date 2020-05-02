@@ -200,7 +200,7 @@ class ProductController extends Controller
      *         type="integer",
      *       ),
      *       @OA\Property(
-     *         property="description",
+     *         property="description_md",
      *         type="string",
      *       ),
      *       @OA\Property(
@@ -373,7 +373,7 @@ class ProductController extends Controller
     }
 
     /**
-     * @OA\Put(
+     * @OA\Patch(
      *   path="/products/id:{id}",
      *   summary="update product",
      *   tags={"Products"},
@@ -408,7 +408,7 @@ class ProductController extends Controller
      *         type="integer",
      *       ),
      *       @OA\Property(
-     *         property="description",
+     *         property="description_md",
      *         type="string",
      *       ),
      *       @OA\Property(
@@ -571,5 +571,34 @@ class ProductController extends Controller
         return (new ProductResource($product))
             ->response()
             ->setStatusCode(200);
+    }
+
+    /**
+     * @OA\Delete(
+     *   path="/products/id:{id}",
+     *   summary="delete product",
+     *   tags={"Products"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="integer",
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=204,
+     *     description="Success",
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function delete(Product $product)
+    {
+        $product->delete();
+
+        return response()->json(null, 204);
     }
 }
