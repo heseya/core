@@ -6,6 +6,7 @@ Route::post('products', 'ProductController@create');
 Route::get('products/id:{product:id}', 'ProductController@view');
 Route::get('products/{product:slug}', 'ProductController@view');
 Route::patch('products/id:{product:id}', 'ProductController@update');
+Route::delete('products/id:{product:id}', 'ProductController@delete');
 
 Route::get('orders', 'OrderController@index');
 Route::post('orders','OrderController@create');
