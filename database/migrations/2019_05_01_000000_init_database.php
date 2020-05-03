@@ -145,7 +145,7 @@ class InitDatabase extends Migration
             $table->integer('order_id')->unsigned()->index();
             $table->string('external_id')->index()->nullable();
             $table->string('method', 16);
-            $table->string('status', 32)->nullable();
+            $table->tinyInteger('status')->default(0);
             $table->string('currency', 3);
             $table->float('amount', 19, 2);
             $table->string('redirectUrl', 1000)->nullable();
