@@ -9,6 +9,10 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Payment extends Model
 {
+    const STATUS_PENDING = 0;
+    const STATUS_PAYED = 1;
+    const STATUS_FAILURE = 2;
+
     /**
      * @OA\Property(
      *   property="id",
