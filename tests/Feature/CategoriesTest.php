@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Brand;
+use App\Product;
 use App\Category;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -94,5 +96,22 @@ class CategoriesTest extends TestCase
         $response = $this->delete('/categories/id:' . $this->category->id);
 
         $response->assertStatus(204);
+    }
+
+    /**
+     * @return void
+     */
+    public function testDeleteWithRelations()
+    {
+        $this->category = factory(Category::class)->create();
+        $this->brand = factory(Brand::class)->create();
+        factory(Product::class)->create([
+            'category_id' => $this->category->id,
+            'brand_id' => $this->brand->id,
+        ]);
+
+        $response = $this->delete('/categories/id:' . $this->category->id);
+
+        $response->assertStatus(400);
     }
 }
