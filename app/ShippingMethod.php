@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Order;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -53,4 +54,9 @@ class ShippingMethod extends Model
         'price' => 'float',
         'public' => 'boolean',
     ];
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }

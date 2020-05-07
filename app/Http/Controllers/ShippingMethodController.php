@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Error;
 use App\ShippingMethod;
 use Illuminate\Http\Request;
 use App\Http\Resources\ShippingMethodResource;
@@ -143,6 +144,12 @@ class ShippingMethodController extends Controller
      */
     public function delete(ShippingMethod $shipping_method)
     {
+        if ($shipping_method->orders()->count() > 0) {
+            return Error::abort("Shipping method can't be deleted, because has relations.",
+                400,
+            );
+        }
+
         $shipping_method->delete();
 
         return response()->json(null, 204);
