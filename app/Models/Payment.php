@@ -44,13 +44,13 @@ class Payment extends Model
      * )
      *
      * @OA\Property(
-     *   property="redirectUrl",
+     *   property="redirect_url",
      *   type="string",
      *   example="https://pay.heseya.com/DS62SA",
      * )
      *
      * @OA\Property(
-     *   property="continueUrl",
+     *   property="continue_url",
      *   type="string",
      *   example="https://store.heseya.com/done/43SYK1",
      * )
@@ -61,8 +61,8 @@ class Payment extends Model
         'status',
         'currency',
         'amount',
-        'redirectUrl',
-        'continueUrl',
+        'redirect_url',
+        'continue_url',
     ];
 
     public function order()

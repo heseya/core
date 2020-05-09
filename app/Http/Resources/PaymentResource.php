@@ -20,8 +20,8 @@ class PaymentResource extends JsonResource
             'status' => $this->status,
             'currency' => $this->currency,
             'amount' => $this->amount,
-            'redirectUrl' => $this->redirectUrl,
-            'continueUrl' => $this->continueUrl,
-        ]
+            'redirect_url' => $this->redirect_url,
+            'continue_url' => $this->continue_url,
+        ];
     }
 }

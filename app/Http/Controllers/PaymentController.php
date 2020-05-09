@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Error;
+use App\Error;
 use App\Order;
 use App\Http\Requests\Request;
 use App\Http\Controllers\Controller;
@@ -36,7 +36,6 @@ class PaymentController extends Controller
      *     name="continue",
      *     in="query",
      *     description="URL that the buyer will be redirected to, after making payment",
-     *     required=true,
      *     @OA\Schema(
      *       type="string",
      *     )
@@ -71,7 +70,7 @@ class PaymentController extends Controller
         $payment = $order->payments()->create([
             'method' => $method,
             'amount' => $order->summary,
-            'continueUrl' => $request->continue ?? null,
+            'continue_url' => $request->continue ?? null,
             'currency' => 'PLN',
         ]);
 

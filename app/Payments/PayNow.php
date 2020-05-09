@@ -3,6 +3,8 @@
 namespace App\Payments;
 
 use App\Payment;
+use Paynow\Client;
+use Paynow\Environment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -10,48 +12,40 @@ class PayNow implements PaymentMethod
 {
     public static function generateUrl(Payment $payment): array
     {
-        $body = [
+        $client = new Client(
+            config('paynow.api_key'),
+            config('paynow.signature_key'),
+            Environment::SANDBOX,
+        );
+        $orderReference = $payment->id;
+        $idempotencyKey = uniqid($orderReference . '_');
+
+        $paymentData = [
             'amount' => $payment->amount * 100,
             'currency' => 'PLN',
             'externalId' => $payment->order->code,
-            'description' => 'Zakupki na Depth',
+            'description' => 'Zakupy w sklepie internetowym.',
             'buyer' => [
                 'email' => $payment->order->email,
             ],
         ];
 
         if ($payment->continueUrl !== null) {
-            $body['continueUrl'] = $payment->continueUrl;
+            $paymentData['continueUrl'] = $payment->continueUrl;
         }
 
-        $signature = self::hash($body, config('paynow.signature_key'));
-
-        $response = Http::withHeaders([
-            'Api-Key' => config('paynow.api_key'),
-            'Signature' => $signature,
-            'Idempotency-Key' => $payment->order->code . '/' . $payment->id,
-            'Api-Version' => 'latest',
-            'Host' => 'api.sandbox.paynow.pl',
-            'Accept' => 'application/json',
-            'Content-Type' => 'application/json',
-        ])->post('https://api.sandbox.paynow.pl/v1/payments', $body);
-
-        $response = $response->json();
-
-        if (isset($response['statusCode'])) {
-            dd($response); // Testowo
+        try {
+            $response = new \Paynow\Service\Payment($client);
+            $result = $response->authorize($paymentData, $idempotencyKey);
+        } catch (PaynowException $exception) {
+            return false;
         }
 
         return [
-            'redirectUrl' => $response['redirectUrl'],
-            'external_id' => $response['paymentId'],
-            'status' => $response['status'],
+            'redirect_url' => $result->redirectUrl,
+            'external_id' => $result->paymentId,
+            'status' => $result->status === 'NEW' ? Payment::STATUS_PENDING : null,
         ];
-    }
-
-    protected static function hash($body, $key): string
-    {
-        return base64_encode(hash_hmac('sha256', json_encode($body), $key, true));
     }
 
     public static function translateNotification(Request $request): array
