@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Item;
 use App\Deposit;
 use Tests\TestCase;
+use Laravel\Passport\Passport;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -33,9 +34,14 @@ class DepositsTest extends TestCase
     public function testIndex()
     {
         $response = $this->get('/deposits');
+        $response->assertUnauthorized();
+
+        Passport::actingAs($this->user);
+
+        $response = $this->get('/deposits');
 
         $response
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJsonCount(1, 'data') // Only one item xD
             ->assertJson(['data' => [
                 0 => $this->expected,
@@ -48,9 +54,14 @@ class DepositsTest extends TestCase
     public function testView()
     {
         $response = $this->get('/items/id:' . $this->item->id . '/deposits');
+        $response->assertUnauthorized();
+
+        Passport::actingAs($this->user);
+
+        $response = $this->get('/items/id:' . $this->item->id . '/deposits');
 
         $response
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJsonCount(1, 'data') // Only one item xD
             ->assertJson(['data' => [
                 0 => $this->expected,
@@ -62,17 +73,22 @@ class DepositsTest extends TestCase
      */
     public function testCreate()
     {
+        $response = $this->post('/items/id:' . $this->item->id . '/deposits');
+        $response->assertUnauthorized();
+
+        Passport::actingAs($this->user);
+
         $deposit = [
             'quantity' => '12.5',
         ];
 
         $response = $this->post(
-            '/items/id:' . $this->item->id . '/deposits', 
+            '/items/id:' . $this->item->id . '/deposits',
             $deposit,
         );
 
         $response
-            ->assertStatus(201)
+            ->assertCreated()
             ->assertJson(['data' => $deposit + [
                 'item_id' => $this->item->id
             ]]);

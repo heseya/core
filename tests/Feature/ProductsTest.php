@@ -7,6 +7,7 @@ use App\Brand;
 use App\Product;
 use App\Category;
 use Tests\TestCase;
+use Laravel\Passport\Passport;
 
 class ProductsTest extends TestCase
 {
@@ -180,7 +181,7 @@ class ProductsTest extends TestCase
         $response = $this->get('/products');
 
         $response
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJsonCount(1, 'data') // Shoud show only public products.
             ->assertJson(['data' => [
                 0 => $this->expected_short,
@@ -195,7 +196,7 @@ class ProductsTest extends TestCase
         $response = $this->get('/products/' . $this->product->slug);
 
         $response
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJson(['data' => $this->expected]);
     }
 
@@ -208,7 +209,7 @@ class ProductsTest extends TestCase
             $response = $this->get('/products/' . $product->slug);
 
             $response
-                ->assertStatus(401)
+                ->assertUnauthorized()
                 ->assertJsonStructure(['error' => [
                     'code',
                     'message',
@@ -221,6 +222,11 @@ class ProductsTest extends TestCase
      */
     public function testCreate()
     {
+        $response = $this->post('/products');
+        $response->assertUnauthorized();
+
+        Passport::actingAs($this->user);
+
         $response = $this->post('/products', [
             'name' => 'Test',
             'slug' => 'test',
@@ -235,7 +241,7 @@ class ProductsTest extends TestCase
         $this->createdId = $response->json()['data']['id'];
 
         $response
-            ->assertStatus(201)
+            ->assertCreated()
             ->assertJson(['data' => [
                 'slug' => 'test',
                 'name' => 'Test',
@@ -280,6 +286,11 @@ class ProductsTest extends TestCase
      */
     public function testUpdate()
     {
+        $response = $this->patch('/products/id:' . $this->product->id);
+        $response->assertUnauthorized();
+
+        Passport::actingAs($this->user);
+
         $response = $this->patch('/products/id:' . $this->product->id, [
             'name' => 'Updated',
             'slug' => 'updated',
@@ -305,7 +316,7 @@ class ProductsTest extends TestCase
         ]);
 
         $response
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJson(['data' => $this->expectedUpdated]);
     }
 
@@ -315,9 +326,14 @@ class ProductsTest extends TestCase
     public function testDelete()
     {
         $response = $this->delete('/products/id:' . $this->product->id);
-        $response->assertStatus(204);
+        $response->assertUnauthorized();
+
+        Passport::actingAs($this->user);
+
+        $response = $this->delete('/products/id:' . $this->product->id);
+        $response->assertNoContent();
 
         $response = $this->get('/products/id:' . $this->product->id);
-        $response->assertStatus(404);
+        $response->assertNotFound();
     }
 }

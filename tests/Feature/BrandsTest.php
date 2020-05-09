@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Brand;
 use Tests\TestCase;
+use Laravel\Passport\Passport;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -40,7 +41,7 @@ class BrandsTest extends TestCase
         $response = $this->get('/brands');
 
         $response
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJsonCount(1, 'data') // Shoud show only public brands.
             ->assertJson(['data' => [
                 0 => $this->expected,
@@ -52,6 +53,11 @@ class BrandsTest extends TestCase
      */
     public function testCreate()
     {
+        $response = $this->post('/brands');
+        $response->assertUnauthorized();
+
+        Passport::actingAs($this->user);
+
         $brand = [
             'name' => 'Test',
             'slug' => 'test-test',
@@ -61,7 +67,7 @@ class BrandsTest extends TestCase
         $response = $this->post('/brands', $brand);
 
         $response
-            ->assertStatus(201)
+            ->assertCreated()
             ->assertJson(['data' => $brand]);
     }
 
@@ -70,6 +76,11 @@ class BrandsTest extends TestCase
      */
     public function testUpdate()
     {
+        $response = $this->patch('/brands/id:' . $this->brand->id);
+        $response->assertUnauthorized();
+
+        Passport::actingAs($this->user);
+
         $brand = [
             'name' => 'Test 2',
             'slug' => 'test-2',
@@ -82,7 +93,7 @@ class BrandsTest extends TestCase
         );
 
         $response
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJson(['data' => $brand]);
     }
 
@@ -92,7 +103,12 @@ class BrandsTest extends TestCase
     public function testDelete()
     {
         $response = $this->delete('/brands/id:' . $this->brand->id);
+        $response->assertUnauthorized();
 
-        $response->assertStatus(204);
+        Passport::actingAs($this->user);
+
+        $response = $this->delete('/brands/id:' . $this->brand->id);
+
+        $response->assertNoContent();
     }
 }

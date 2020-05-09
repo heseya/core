@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
+use Laravel\Passport\Passport;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -10,6 +11,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class MediaTest extends TestCase
 {
+    public function testUploadUnauthorized()
+    {
+        $response = $this->post('/media');
+        $response->assertUnauthorized();
+    }
+
     /**
      * @return void
      */
@@ -65,12 +72,14 @@ class MediaTest extends TestCase
      */
     protected function upload($file)
     {
+        Passport::actingAs($this->user);
+
         $response = $this->post('/media', [
             'file' => $file,
         ]);
 
         $response
-            ->assertStatus(201)
+            ->assertCreated()
             ->assertJsonStructure(['data' => [
                 'id',
                 'type',

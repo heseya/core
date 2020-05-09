@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Page;
 use Tests\TestCase;
+use Laravel\Passport\Passport;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -42,7 +43,7 @@ class PagesTest extends TestCase
         $response = $this->get('/pages');
 
         $response
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJsonCount(1, 'data') // Shoud show only public pages.
             ->assertJson(['data' => [
                 0 => $this->expected,
@@ -57,7 +58,7 @@ class PagesTest extends TestCase
         $response = $this->get('/pages/' . $this->page->slug);
 
         $response
-            ->assertStatus(200)
+            ->assertOk()
             ->assertExactJson(['data' => $this->expected]);
     }
 
@@ -67,13 +68,7 @@ class PagesTest extends TestCase
     public function testViewHidden()
     {
         $response = $this->get('/pages/' . $this->page_hidden->slug);
-
-        $response
-            ->assertStatus(401)
-            ->assertJsonStructure(['error' => [
-                'code',
-                'message',
-            ]]);
+        $response->assertUnauthorized();
     }
 
     /**
@@ -81,6 +76,11 @@ class PagesTest extends TestCase
      */
     public function testCreate()
     {
+        $response = $this->post('/pages');
+        $response->assertUnauthorized();
+
+        Passport::actingAs($this->user);
+
         $page = [
             'name' => 'Test',
             'slug' => 'test-test',
@@ -93,7 +93,7 @@ class PagesTest extends TestCase
 
         $response
         ->assertJson(['data' => $page])
-        ->assertStatus(201);
+        ->assertCreated();
     }
 
     /**
@@ -101,6 +101,11 @@ class PagesTest extends TestCase
      */
     public function testUpdate()
     {
+        $response = $this->patch('/pages/id:' . $this->page->id);
+        $response->assertUnauthorized();
+
+        Passport::actingAs($this->user);
+
         $page = [
             'name' => 'Test 2',
             'slug' => 'test-2',
@@ -115,7 +120,7 @@ class PagesTest extends TestCase
         );
 
         $response
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJson(['data' => $page]);
     }
 
@@ -124,8 +129,12 @@ class PagesTest extends TestCase
      */
     public function testDelete()
     {
-        $response = $this->delete('/pages/id:' . $this->page->id);
+        $response = $this->patch('/pages/id:' . $this->page->id);
+        $response->assertUnauthorized();
 
-        $response->assertStatus(204);
+        Passport::actingAs($this->user);
+
+        $response = $this->delete('/pages/id:' . $this->page->id);
+        $response->assertNoContent();
     }
 }
