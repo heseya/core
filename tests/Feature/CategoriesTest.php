@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Category;
 use Tests\TestCase;
+use Laravel\Passport\Passport;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -40,7 +41,7 @@ class CategoriesTest extends TestCase
         $response = $this->get('/categories');
 
         $response
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJsonCount(1, 'data') // Shoud show only public categories.
             ->assertJson(['data' => [
                 0 => $this->expected,
@@ -52,6 +53,11 @@ class CategoriesTest extends TestCase
      */
     public function testCreate()
     {
+        $response = $this->post('/categories');
+        $response->assertUnauthorized();
+
+        Passport::actingAs($this->user);
+
         $category = [
             'name' => 'Test',
             'slug' => 'test-test',
@@ -61,7 +67,7 @@ class CategoriesTest extends TestCase
         $response = $this->post('/categories', $category);
 
         $response
-            ->assertStatus(201)
+            ->assertCreated()
             ->assertJson(['data' => $category]);
     }
 
@@ -70,6 +76,11 @@ class CategoriesTest extends TestCase
      */
     public function testUpdate()
     {
+        $response = $this->patch('/categories/id:' . $this->category->id,);
+        $response->assertUnauthorized();
+
+        Passport::actingAs($this->user);
+
         $category = [
             'name' => 'Test 2',
             'slug' => 'test-2',
@@ -82,7 +93,7 @@ class CategoriesTest extends TestCase
         );
 
         $response
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJson(['data' => $category]);
     }
 
@@ -92,7 +103,12 @@ class CategoriesTest extends TestCase
     public function testDelete()
     {
         $response = $this->delete('/categories/id:' . $this->category->id);
+        $response->assertUnauthorized();
 
-        $response->assertStatus(204);
+        Passport::actingAs($this->user);
+
+        $response = $this->delete('/categories/id:' . $this->category->id);
+
+        $response->assertNoContent();
     }
 }

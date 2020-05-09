@@ -4,7 +4,7 @@ Route::post('login', 'AuthController@login');
 
 Route::prefix('products')->group(function () {
     Route::get(null, 'ProductController@index');
-    Route::post(null, 'ProductController@create');
+    Route::post(null, 'ProductController@create')->middleware('auth:api');
     Route::get('id:{product:id}', 'ProductController@view')->middleware('auth:api');
     Route::get('{product:slug}', 'ProductController@view');
     Route::patch('id:{product:id}', 'ProductController@update')->middleware('auth:api');
@@ -22,7 +22,7 @@ Route::prefix('orders')->group(function () {
 
 Route::prefix('pages')->group(function () {
     Route::get(null, 'PageController@index');
-    Route::post(null, 'PageController@create');
+    Route::post(null, 'PageController@create')->middleware('auth:api');
     Route::get('id:{page:id}', 'PageController@view')->middleware('auth:api');
     Route::get('{page:slug}', 'PageController@view');
     Route::patch('id:{page:id}', 'PageController@update')->middleware('auth:api');

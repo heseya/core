@@ -43,7 +43,8 @@ class ProductsSeeder extends Seeder
             ]);
         }
 
-        function complexProduct ($product) {
+        function complexProduct($product)
+        {
             $product->schemas()->saveMany(factory(ProductSchema::class, rand(0, 4))->make())->each(function ($schema) {
                 $schema->schemaItems()->saveMany(factory(ProductSchemaItem::class, rand(1, 3))->make())->each(function ($schemaItem) {
                     $item = factory(Item::class)->create();
@@ -53,9 +54,11 @@ class ProductsSeeder extends Seeder
             });
         }
 
-        function media ($product) {
+        function media($product)
+        {
             for ($i = 0; $i < rand(0, 5); $i++) {
-                $product->media()->save(factory(Media::class)->make());
+                $media = factory(Media::class)->create();
+                $product->media()->attach($media);
             }
         }
 

@@ -20,10 +20,12 @@ class AuthController extends Controller
      *       @OA\Property(
      *         property="email",
      *         type="string",
+     *         example="admin@example.com",
      *       ),
      *       @OA\Property(
      *         property="password",
      *         type="string",
+     *         example="secret",
      *       ),
      *     )
      *   ),

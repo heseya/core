@@ -1,4 +1,4 @@
-# Heseya Shop System 2.0
+# Heseya Store API
 
 ## Przygotowanie projektu
 ```
@@ -24,9 +24,12 @@ php artisan key:generate
 php artisan migrate --seed
 ```
 
-Seeder utworzy urzytkownika `admin@example.com` z hasłem `secret`.
+Po migracji odpal instalacje passporta.
+```
+php artisan passport:install
+```
 
-Jak dostajesz błąd 403 prawdopodobnie nie masz uprawnień. Mozna je ustawić pod linkiem `/admin/settings/users`.
+Seeder utworzy użytkownika `admin@example.com` z hasłem `secret`.
 
 Jak by coś nie działało związanego z cache (np. routing).
 ```
