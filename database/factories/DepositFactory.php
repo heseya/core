@@ -2,7 +2,7 @@
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
 
-use App\Deposit;
+use App\Models\Deposit;
 use Faker\Generator as Faker;
 use Bezhanov\Faker\ProviderCollectionHelper;
 

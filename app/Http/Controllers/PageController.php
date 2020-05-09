@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Page;
-use App\Error;
+use App\Models\Page;
+use App\Exceptions\Error;
 use Illuminate\Http\Request;
 use App\Http\Resources\PageResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;

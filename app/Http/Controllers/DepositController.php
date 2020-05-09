@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Item;
-use App\Deposit;
+use App\Models\Item;
+use App\Models\Deposit;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\DepositResource;

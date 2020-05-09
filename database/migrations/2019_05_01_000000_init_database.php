@@ -260,24 +260,6 @@ class InitDatabase extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_resets');
-        Schema::dropIfExists('clients');
-        Schema::dropIfExists('brands');
-        Schema::dropIfExists('categories');
-        Schema::dropIfExists('items');
-        Schema::dropIfExists('products');
-        Schema::dropIfExists('product_gallery');
-        Schema::dropIfExists('addresses');
-        Schema::dropIfExists('orders');
-        Schema::dropIfExists('payments');
-        Schema::dropIfExists('product_schemas');
-        Schema::dropIfExists('product_schema_item');
-        Schema::dropIfExists('chats');
-        Schema::dropIfExists('order_logs');
-        Schema::dropIfExists('messages');
-        Schema::dropIfExists('order_items');
-        Schema::dropIfExists('order_order_item');
-        Schema::dropIfExists('pages');
+        return false;
     }
 }

@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Item;
-use App\Deposit;
+use App\Models\Item;
+use App\Models\Deposit;
 use Tests\TestCase;
 use Laravel\Passport\Passport;
 use Illuminate\Foundation\Testing\WithFaker;

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Page;
+use App\Models\Page;
 use Tests\TestCase;
 use Laravel\Passport\Passport;
 use Illuminate\Foundation\Testing\WithFaker;

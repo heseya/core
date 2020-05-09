@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Order;
+use App\Models\Order;
 use Tests\TestCase;
-use App\ShippingMethod;
+use App\Models\ShippingMethod;
 use Laravel\Passport\Passport;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -117,7 +117,10 @@ class ShippingMethodTest extends TestCase
      */
     public function testDeleteWithRelations()
     {
+        Passport::actingAs($this->user);
+
         $this->shipping_method = factory(ShippingMethod::class)->create();
+
         factory(Order::class)->create([
             'shipping_method_id' => $this->shipping_method->id,
         ]);

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Media;
+use App\Models\Media;
 use Heseya\Silverbox;
 use Illuminate\Http\Request;
 use App\Http\Resources\MediaResource;

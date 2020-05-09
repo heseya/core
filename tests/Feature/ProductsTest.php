@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Item;
-use App\Brand;
-use App\Product;
-use App\Category;
+use App\Models\Item;
+use App\Models\Brand;
+use App\Models\Product;
+use App\Models\Category;
 use Tests\TestCase;
 use Laravel\Passport\Passport;
 

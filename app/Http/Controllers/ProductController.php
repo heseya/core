@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Item;
-use App\Media;
-use App\Error;
-use App\Product;
+use App\Models\Item;
+use App\Models\Media;
+use App\Models\Product;
+use App\Exceptions\Error;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\ProductResource;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\ProductShortResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 

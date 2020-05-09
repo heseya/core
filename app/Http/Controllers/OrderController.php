@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Error;
-use App\Order;
-use App\Status;
-use App\Address;
-use App\Product;
-use App\ProductSchema;
-use App\ShippingMethod;
-use App\ProductSchemaItem;
+use App\Models\Order;
+use App\Models\Address;
+use App\Models\Product;
+use App\Exceptions\Error;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\ProductSchema;
+use App\Models\ShippingMethod;
+use App\Models\ProductSchemaItem;
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\OrderResource;
 use App\Http\Requests\OrderCreateRequest;
@@ -192,7 +191,7 @@ class OrderController extends Controller
 
                 if ($schema->type === 0 && !$schema->schemaItems()->whereIn(
                     'id', $schemaItems)->exists()) {
-                    
+
                     return Error::abort(
                         'No required schema items present.',
                         400,
@@ -226,7 +225,7 @@ class OrderController extends Controller
                 }
 
                 $productId = $schema->product->id;
-                
+
                 if ($item['product_id'] !== $productId) {
                     return Error::abort(
                         'Custom schema with ID ' . $id . ' does not exist.',
@@ -281,7 +280,7 @@ class OrderController extends Controller
                 if (!isset($itemCounts[$itemId])) {
                     $itemCounts[$itemId] = 0;
                 }
-                
+
                 $itemCounts[$itemId] += $item['quantity'];
 
                 if ($schemaItem->item->quantity < $itemCounts[$itemId]) {
@@ -314,7 +313,7 @@ class OrderController extends Controller
         $order->save();
 
         $cartItems = 0;
-        
+
         foreach ($request->items as $item) {
             $product = Product::find($item['product_id']);
             $price = $product->price;
@@ -466,13 +465,13 @@ class OrderController extends Controller
                     if (!in_array($schemaItem->id, $schemaItems)) {
                         array_push($schemaItems, $schemaItem->id);
                     }
-                    
+
                     continue;
                 }
 
                 if ($schema->type === 0 && !$schema->schemaItems()->whereIn(
                     'id', $schemaItems)->exists()) {
-                    
+
                     $quit = true;
                     break;
                 }
@@ -504,7 +503,7 @@ class OrderController extends Controller
                 }
 
                 $productId = $schema->product->id;
-                
+
                 if ($item['product_id'] !== $productId) {
                     $quit = true;
                     break;
@@ -536,9 +535,9 @@ class OrderController extends Controller
                     $quit = true;
                     break;
                 }
-                
+
                 $productId = $schema->product->id;
-                
+
                 if ($item['product_id'] !== $productId) {
                     $quit = true;
                     break;
@@ -588,13 +587,13 @@ class OrderController extends Controller
                     foreach ($itemUsers[$itemId] as $cartItem) {
                         $cartItems[$cartItem]['enough'] = false;
                     }
-    
+
                     $enough = false;
                 }
             }
 
             $cartItemId = $item['cartitem_id'];
-            
+
             if (!$quit) {
                 if (!in_array($cartItemId, $itemUsers[$itemId])) {
                     array_push($itemUsers[$itemId], $cartItemId);

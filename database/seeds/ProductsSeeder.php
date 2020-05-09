@@ -1,14 +1,14 @@
 <?php
 
-use App\Item;
-use App\Brand;
-use App\Media;
-use App\Deposit;
-use App\Product;
-use App\Category;
-use App\ProductSchema;
-use App\ProductSchemaItem;
+use App\Models\Item;
+use App\Models\Brand;
+use App\Models\Media;
+use App\Models\Deposit;
+use App\Models\Product;
+use App\Models\Category;
+use App\Models\ProductSchema;
 use Illuminate\Database\Seeder;
+use App\Models\ProductSchemaItem;
 
 class ProductsSeeder extends Seeder
 {

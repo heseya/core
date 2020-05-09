@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Order;
+use App\Models\Order;
 use Tests\TestCase;
-use App\ShippingMethod;
+use App\Models\ShippingMethod;
 use Laravel\Passport\Passport;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;

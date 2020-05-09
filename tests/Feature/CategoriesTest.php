@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Brand;
-use App\Product;
-use App\Category;
+use App\Models\Brand;
+use App\Models\Product;
+use App\Models\Category;
 use Tests\TestCase;
 use Laravel\Passport\Passport;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -119,8 +119,11 @@ class CategoriesTest extends TestCase
      */
     public function testDeleteWithRelations()
     {
+        Passport::actingAs($this->user);
+
         $this->category = factory(Category::class)->create();
         $this->brand = factory(Brand::class)->create();
+
         factory(Product::class)->create([
             'category_id' => $this->category->id,
             'brand_id' => $this->brand->id,

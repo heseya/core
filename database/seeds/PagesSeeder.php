@@ -1,6 +1,6 @@
 <?php
 
-use App\Page;
+use App\Models\Page;
 use Illuminate\Database\Seeder;
 
 class PagesSeeder extends Seeder
