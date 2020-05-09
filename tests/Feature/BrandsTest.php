@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Brand;
+use App\Product;
+use App\Category;
 use Tests\TestCase;
 use Laravel\Passport\Passport;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -110,5 +112,22 @@ class BrandsTest extends TestCase
         $response = $this->delete('/brands/id:' . $this->brand->id);
 
         $response->assertNoContent();
+    }
+
+    /**
+     * @return void
+     */
+    public function testDeleteWithRelations()
+    {
+        $this->brand = factory(Brand::class)->create();
+        $this->category = factory(Category::class)->create();
+        factory(Product::class)->create([
+            'brand_id' => $this->brand->id,
+            'category_id' => $this->category->id,
+        ]);
+
+        $response = $this->delete('/brands/id:' . $this->brand->id);
+
+        $response->assertStatus(400);
     }
 }

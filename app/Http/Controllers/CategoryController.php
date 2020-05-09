@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Error;
 use App\Category;
 use Illuminate\Http\Request;
 use App\Http\Resources\CategoryResource;
@@ -144,6 +145,12 @@ class CategoryController extends Controller
      */
     public function delete(Category $category)
     {
+        if ($category->products()->count() > 0) {
+            return Error::abort("Category can't be deleted, because has relations.",
+                400,
+            );
+        }
+
         $category->delete();
 
         return response()->json(null, 204);

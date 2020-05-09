@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Brand;
+use App\Error;
 use Illuminate\Http\Request;
 use App\Http\Resources\BrandResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -144,6 +145,12 @@ class BrandController extends Controller
      */
     public function delete(Brand $brand)
     {
+        if ($brand->products()->count() > 0) {
+            return Error::abort("Brand can't be deleted, because has relations.",
+                400,
+            );
+        }
+
         $brand->delete();
 
         return response()->json(null, 204);

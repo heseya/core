@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Order;
 use Tests\TestCase;
 use App\ShippingMethod;
 use Laravel\Passport\Passport;
@@ -109,5 +110,20 @@ class ShippingMethodTest extends TestCase
 
         $response = $this->delete('/shipping-methods/id:' . $this->shipping_method->id);
         $response->assertStatus(204);
+    }
+
+    /**
+     * @return void
+     */
+    public function testDeleteWithRelations()
+    {
+        $this->shipping_method = factory(ShippingMethod::class)->create();
+        factory(Order::class)->create([
+            'shipping_method_id' => $this->shipping_method->id,
+        ]);
+
+        $response = $this->delete('/shipping-methods/id:' . $this->shipping_method->id);
+
+        $response->assertStatus(400);
     }
 }
