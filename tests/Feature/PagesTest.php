@@ -41,13 +41,19 @@ class PagesTest extends TestCase
     public function testIndex()
     {
         $response = $this->get('/pages');
-
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Shoud show only public pages.
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
+
+        Passport::actingAs($this->user);
+
+        $response = $this->get('/pages');
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data'); // Shoud show all pages.
     }
 
     /**
@@ -56,7 +62,16 @@ class PagesTest extends TestCase
     public function testView()
     {
         $response = $this->get('/pages/' . $this->page->slug);
+        $response
+            ->assertOk()
+            ->assertExactJson(['data' => $this->expected]);
 
+        $response = $this->get('/pages/id:' . $this->page->id);
+        $response->assertUnauthorized();
+
+        Passport::actingAs($this->user);
+
+        $response = $this->get('/pages/id:' . $this->page->id);
         $response
             ->assertOk()
             ->assertExactJson(['data' => $this->expected]);
@@ -69,6 +84,11 @@ class PagesTest extends TestCase
     {
         $response = $this->get('/pages/' . $this->page_hidden->slug);
         $response->assertUnauthorized();
+
+        Passport::actingAs($this->user);
+
+        $response = $this->get('/pages/' . $this->page_hidden->slug);
+        $response->assertOk();
     }
 
     /**
@@ -90,10 +110,9 @@ class PagesTest extends TestCase
         ];
 
         $response = $this->post('/pages', $page);
-
         $response
-        ->assertJson(['data' => $page])
-        ->assertCreated();
+            ->assertJson(['data' => $page])
+            ->assertCreated();
     }
 
     /**

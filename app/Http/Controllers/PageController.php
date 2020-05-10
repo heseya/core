@@ -6,6 +6,7 @@ use App\Models\Page;
 use App\Exceptions\Error;
 use Illuminate\Http\Request;
 use App\Http\Resources\PageResource;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class PageController extends Controller
@@ -30,9 +31,14 @@ class PageController extends Controller
      */
     public function index(): ResourceCollection
     {
-        return PageResource::collection(
-            Page::where('public', true)->simplePaginate(14),
-        );
+        $query = Page::select();
+
+        if (!Auth::check()) {
+            $query->where('public', true);
+        }
+
+
+        return PageResource::collection($query->simplePaginate(14));
     }
 
     /**
@@ -91,7 +97,7 @@ class PageController extends Controller
      */
     public function view(Page $page)
     {
-        if ($page->public !== true) {
+        if (!Auth::check() && $page->public !== true) {
             return Error::abort('Unauthorized.', 401);
         }
 
