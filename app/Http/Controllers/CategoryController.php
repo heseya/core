@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Exceptions\Error;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\CategoryResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
@@ -30,9 +31,13 @@ class CategoryController extends Controller
      */
     public function index(): ResourceCollection
     {
-        return CategoryResource::collection(
-            Category::where(['public' => true])->get()
-        );
+        $query = Category::select();
+
+        if (!Auth::check()) {
+            $query->where('public', true);
+        }
+
+        return CategoryResource::collection($query->get());
     }
 
     /**

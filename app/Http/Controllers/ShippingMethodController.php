@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\Error;
 use Illuminate\Http\Request;
 use App\Models\ShippingMethod;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ShippingMethodResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -31,9 +32,13 @@ class ShippingMethodController extends Controller
      */
     public function index(): ResourceCollection
     {
-        return ShippingMethodResource::collection(
-            ShippingMethod::where('public', true)->get(),
-        );
+        $query = ShippingMethod::select();
+
+        if (!Auth::check()) {
+            $query->where('public', true);
+        }
+
+        return ShippingMethodResource::collection($query->get());
     }
 
     /**

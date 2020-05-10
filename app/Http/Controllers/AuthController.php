@@ -59,12 +59,12 @@ class AuthController extends Controller
             'password' => 'required|string|max:255',
         ]);
 
-        if (Auth::attempt([
+        if (Auth::guard('web')->attempt([
             'email' => $request->email,
             'password' => $request->password,
         ])) {
 
-            $user = Auth::user();
+            $user = Auth::guard('web')->user();
             $token = $user->createToken('Admin')->accessToken;
 
             return response()->json(['data' => [
