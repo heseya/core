@@ -85,9 +85,15 @@ class PagesTest extends TestCase
         $response = $this->get('/pages/' . $this->page_hidden->slug);
         $response->assertUnauthorized();
 
+        $response = $this->get('/pages/id:' . $this->page_hidden->id);
+        $response->assertUnauthorized();
+
         Passport::actingAs($this->user);
 
         $response = $this->get('/pages/' . $this->page_hidden->slug);
+        $response->assertOk();
+
+        $response = $this->get('/pages/id:' . $this->page_hidden->id);
         $response->assertOk();
     }
 
