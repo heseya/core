@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Brand;
 use App\Exceptions\Error;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\BrandResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
@@ -30,9 +31,13 @@ class BrandController extends Controller
      */
     public function index(): ResourceCollection
     {
-        return BrandResource::collection(
-            Brand::where(['public' => true])->get()
-        );
+        $query = Brand::select();
+
+        if (!Auth::check()) {
+            $query->where('public', true);
+        }
+
+        return BrandResource::collection($query->get());
     }
 
     /**

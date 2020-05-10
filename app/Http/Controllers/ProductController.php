@@ -9,6 +9,7 @@ use App\Exceptions\Error;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ProductResource;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Validator;
@@ -73,10 +74,12 @@ class ProductController extends Controller
             'media',
         ]);
 
-        $query
-            ->where('public', true)
-            ->whereHas('brand', fn (Builder $subQuery) => $subQuery->where('public', true))
-            ->whereHas('category', fn (Builder $subQuery) => $subQuery->where('public', true));
+        if (!Auth::check()) {
+            $query
+                ->where('public', true)
+                ->whereHas('brand', fn (Builder $subQuery) => $subQuery->where('public', true))
+                ->whereHas('category', fn (Builder $subQuery) => $subQuery->where('public', true));
+        }
 
         if ($request->brand) {
             $query->whereHas('brand', function (Builder $query) use ($request) {
@@ -103,6 +106,8 @@ class ProductController extends Controller
                         ->orWhere('slug', 'LIKE', '%' . $request->search . '%');
                 });
         }
+
+        $query->orderBy('id');
 
         return ProductShortResource::collection(
             $query->paginate(12),
@@ -165,7 +170,7 @@ class ProductController extends Controller
      */
     public function view(Product $product)
     {
-        if ($product->isPublic() !== true) {
+        if (!Auth::check() && $product->isPublic() !== true) {
             return Error::abort('Unauthorized.', 401);
         }
 

@@ -186,6 +186,14 @@ class ProductsTest extends TestCase
             ->assertJson(['data' => [
                 0 => $this->expected_short,
             ]]);
+
+        Passport::actingAs($this->user);
+
+        $response = $this->get('/products');
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(count($this->hidden_products) + 1, 'data'); // Shoud show all products.
     }
 
     /**
@@ -198,6 +206,28 @@ class ProductsTest extends TestCase
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
+
+        $response = $this->get('/products/' . $this->hidden_products[0]->slug);
+        $response->assertUnauthorized();
+    }
+
+    /**
+     * @return void
+     */
+    public function testViewAdmin()
+    {
+        $response = $this->get('/products/id:' . $this->product->id);
+        $response->assertUnauthorized();
+
+        Passport::actingAs($this->user);
+
+        $response = $this->get('/products/id:' . $this->product->id);
+        $response
+            ->assertOk()
+            ->assertJson(['data' => $this->expected]);
+
+        $response = $this->get('/products/id:' . $this->hidden_products[0]->id);
+        $response->assertOk();
     }
 
     /**
