@@ -47,6 +47,11 @@ class Product extends Model
      *   property="public",
      *   type="boolean",
      * )
+     *
+     * @OA\Property(
+     *   property="visible",
+     *   type="boolean",
+     * )
      */
 
     protected $fillable = [

@@ -24,6 +24,7 @@ class ProductResource extends JsonResource
             'name' => $this->name,
             'price' => $this->price,
             'public' => $this->public,
+            'visible' => $this->isPublic(),
             'digital' => $this->digital,
             'user_id' => $this->user_id,
             'original_id' => $this->original_id,
