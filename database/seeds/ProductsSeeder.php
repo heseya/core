@@ -37,6 +37,8 @@ class ProductsSeeder extends Seeder
                 'sku' => null,
             ]);
 
+            $item->deposits()->saveMany(factory(Deposit::class, rand(0, 2))->make());
+
             $schema->schemaItems()->create([
                 'item_id' => $item->id,
                 'extra_price' => 0,
