@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Error;
-use App\Order;
+use App\Models\Order;
+use App\Exceptions\Error;
 use App\Http\Requests\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PaymentResource;

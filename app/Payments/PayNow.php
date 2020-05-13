@@ -2,8 +2,8 @@
 
 namespace App\Payments;
 
-use App\Payment;
 use Paynow\Client;
+use App\Models\Payment;
 use Paynow\Environment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;

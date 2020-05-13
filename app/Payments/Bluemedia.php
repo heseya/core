@@ -2,8 +2,8 @@
 
 namespace App\Payments;
 
-use App\Payment;
 use SimpleXMLElement;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 
 class Bluemedia implements PaymentMethod
@@ -26,7 +26,7 @@ class Bluemedia implements PaymentMethod
             '&Hash=' . $hash;
 
         return [
-            'redirectUrl' => $url,
+            'redirect_url' => $url,
         ];
     }
 
