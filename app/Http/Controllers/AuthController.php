@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -74,5 +75,69 @@ class AuthController extends Controller
         } else {
             return Error::abort('Invalid credentials.', 400);
         }
+    }
+
+    
+    /**
+     * @OA\Patch(
+     *   path="/user/password",
+     *   summary="Change password",
+     *   tags={"Auth"},
+     *   @OA\RequestBody(
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="password",
+     *         type="string",
+     *         example="secret",
+     *       ),
+     *       @OA\Property(
+     *         property="password_new",
+     *         type="string",
+     *         example="xsw@!QAZ34",
+     *       ),
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         type="object",
+     *         @OA\Property(
+     *           property="messgae",
+     *           type="string",
+     *           example="OK",
+     *         ),
+     *       )
+     *     )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'password' => 'required|string|max:255',
+            'password_new' => 'required|string|max:255|min:10',
+        ]);
+
+        $user = Auth::user();
+
+        if (!Hash::check($request->password, $user->password)) {
+            return Error::abort('Invalid credentials.', 400);
+        }
+
+        $hash = Hash::make($request->password_new);
+
+        $user->update([
+            'password' => $hash,
+        ]);
+
+        return response()->json(['data' => [
+            'message' => 'OK',
+        ]], 200);
     }
 }

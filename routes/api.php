@@ -1,6 +1,7 @@
 <?php
 
 Route::post('login', 'AuthController@login');
+Route::patch('/user/password', 'AuthController@changePassword')->middleware('auth:api');
 
 Route::prefix('products')->group(function () {
     Route::get(null, 'ProductController@index');
