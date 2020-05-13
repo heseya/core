@@ -24,6 +24,23 @@ class OrderController extends Controller
      *   path="/orders",
      *   summary="orders list",
      *   tags={"Orders"},
+     *   @OA\Parameter(
+     *     name="search",
+     *     in="query",
+     *     description="Full text search.",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="sort",
+     *     in="query",
+     *     description="Sorting string.",
+     *     @OA\Schema(
+     *       type="string",
+     *       example="code:asc,created_at:desc,id"
+     *     ),
+     *   ),
      *   @OA\Response(
      *     response=200,
      *     description="Success",
@@ -42,11 +59,43 @@ class OrderController extends Controller
      *   }
      * )
      */
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::paginate(15);
+        $request->validate([
+            'search' => 'string|max:255',
+            'sort' => 'string',
+        ]);
 
-        return OrderResource::collection($orders);
+        $query = Order::select();
+
+        if ($request->search) {
+            $query
+                ->where('code', 'LIKE', '%' . $request->search . '%')
+                ->orWhere('email', 'LIKE', '%' . $request->search . '%');
+        }
+
+        if ($request->sort) {
+            $sort = explode(',', $request->sort);
+
+            foreach ($sort as $option) {
+                $option = explode(':', $option);
+
+                Validator::make($option, [
+                    '0' => 'required|in:code,created_at,id',
+                    '1' => 'in:asc,desc',
+                ])->validate();
+
+                $order = count($option) > 1 ? $option[1] : 'asc';
+                $query->orderBy($option[0], $order);
+            }
+
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $query = $query->paginate(15);
+
+        return OrderResource::collection($query);
     }
 
     /**
