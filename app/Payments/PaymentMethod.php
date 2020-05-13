@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Payment;
+namespace App\Payments;
 
-use App\Payment;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 
 interface PaymentMethod

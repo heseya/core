@@ -17,8 +17,10 @@ Route::prefix('orders')->group(function () {
     Route::post('verify','OrderController@verify');
     Route::get('id:{order:id}', 'OrderController@view')->middleware('auth:api');
     Route::get('{order:code}', 'OrderController@viewPublic');
-    Route::get('{order:code}/pay/{method}', 'PayController@pay');
+    Route::get('{order:code}/pay/{method}', 'PaymentController@pay');
 });
+
+Route::get('payments/{method}', 'PaymentController@receive');
 
 Route::prefix('pages')->group(function () {
     Route::get(null, 'PageController@index');

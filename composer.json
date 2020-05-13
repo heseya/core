@@ -13,6 +13,7 @@
         "laravel/tinker": "^2.0",
         "laravel/ui": "^2.0",
         "parsedown/laravel": "^1.2",
+        "pay-now/paynow-php-sdk": "^1.0",
         "webklex/laravel-imap": "^1.4"
     },
     "require-dev": {
