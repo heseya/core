@@ -47,6 +47,15 @@ class ProductController extends Controller
      *       type="string",
      *     ),
      *   ),
+     *   @OA\Parameter(
+     *     name="sort",
+     *     in="query",
+     *     description="Sorting string.",
+     *     @OA\Schema(
+     *       type="string",
+     *       example="price:asc,created_at:desc,name"
+     *     ),
+     *   ),
      *   @OA\Response(
      *     response=200,
      *     description="Success",
@@ -66,6 +75,7 @@ class ProductController extends Controller
             'brand' => 'string|max:255',
             'category' => 'string|max:255',
             'search' => 'string|max:255',
+            'sort' => 'string',
         ]);
 
         $query = Product::with([
@@ -107,7 +117,24 @@ class ProductController extends Controller
                 });
         }
 
-        $query->orderBy('id');
+        if ($request->sort) {
+            $sort = explode(',', $request->sort);
+
+            foreach ($sort as $option) {
+                $option = explode(':', $option);
+
+                Validator::make($option, [
+                    '0' => 'required|in:price,name,created_at,id',
+                    '1' => 'in:asc,desc',
+                ])->validate();
+
+                $order = count($option) > 1 ? $option[1] : 'asc';
+                $query->orderBy($option[0], $order);
+            }
+
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
 
         return ProductShortResource::collection(
             $query->paginate(12),
