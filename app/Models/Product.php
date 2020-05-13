@@ -139,7 +139,7 @@ class Product extends Model
     }
 
     /**
-     * Weather product is available.
+     * Whether product is available.
      *
      * @OA\Property(
      *   property="available",
