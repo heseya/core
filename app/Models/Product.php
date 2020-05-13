@@ -139,6 +139,22 @@ class Product extends Model
     }
 
     /**
+     * Whether product is available.
+     *
+     * @OA\Property(
+     *   property="available",
+     *   type="boolean",
+     * )
+     *
+     * @var bool
+     */
+    public function getAvailableAttribute(): bool
+    {
+        return $this->schemas()->exists() ? $this->schemas()->first()
+            ->schemaItems()->first()->item->quantity > 0 : false;
+    }
+
+    /**
      * @return bool
      */
     public function isPublic(): bool

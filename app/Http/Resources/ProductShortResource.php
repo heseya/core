@@ -24,6 +24,7 @@ class ProductShortResource extends JsonResource
             'price' => $this->price,
             'public' => $this->public,
             'visible' => $this->isPublic(),
+            'available' => $this->available,
             'digital' => $this->digital,
             'brand' => new BrandResource($this->brand),
             'category' => new CategoryResource($this->category),
