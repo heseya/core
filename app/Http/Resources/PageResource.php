@@ -19,7 +19,8 @@ class PageResource extends JsonResource
             'slug' => $this->slug,
             'name' => $this->name,
             'public' => $this->public,
-            'content' => $this->content,
+            'content_md' => $this->content_md,
+            'content_html' => $this->content_html,
         ];
     }
 }

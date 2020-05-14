@@ -1,7 +1,7 @@
 <?php
 
-use App\Chat;
-use App\Message;
+use App\Models\Chat;
+use App\Models\Message;
 use Illuminate\Database\Seeder;
 
 class ChatSeeder extends Seeder

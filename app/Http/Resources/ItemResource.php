@@ -6,6 +6,7 @@ use App\Http\Resources\MediaResource;
 use App\Http\Resources\CategoryResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+// For future expansion
 class ItemResource extends JsonResource
 {
     /**
@@ -19,9 +20,8 @@ class ItemResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'qty' => $this->qty,
-            'category' => new CategoryResource($this->category),
-            'cover' => new MediaResource($this->photo),
+            'sku' => $this->sku,
+            'quantity' => $this->quantity,
         ];
     }
 }

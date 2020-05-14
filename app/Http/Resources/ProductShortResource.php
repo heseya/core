@@ -23,9 +23,12 @@ class ProductShortResource extends JsonResource
             'name' => $this->name,
             'price' => $this->price,
             'public' => $this->public,
+            'visible' => $this->isPublic(),
+            'available' => $this->available,
+            'digital' => $this->digital,
             'brand' => new BrandResource($this->brand),
             'category' => new CategoryResource($this->category),
-            'cover' => new MediaResource($this->gallery()->first()),
+            'cover' => new MediaResource($this->media()->first()),
         ];
     }
 }

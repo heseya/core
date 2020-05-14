@@ -28,18 +28,6 @@ class InitDatabase extends Migration
             $table->timestamp('created_at')->nullable();
         });
 
-        Schema::create('photos', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('url');
-            $table->timestamps();
-        });
-
-        Schema::create('videos', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('url');
-            $table->timestamps();
-        });
-
         Schema::create('brands', function (Blueprint $table) {
             $table->smallIncrements('id');
             $table->string('name');
@@ -59,41 +47,57 @@ class InitDatabase extends Migration
         Schema::create('items', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
-            $table->string('symbol')->index()->nullable();
-            $table->integer('qty')->unsigned()->default(0);
-            $table->smallInteger('category_id')->index()->unsigned()->nullable();
-            $table->integer('photo_id')->unsigned()->index()->nullable();
+            $table->string('sku')->index()->unique()->nullable();
             $table->timestamps();
             $table->softDeletes();
+        });
 
-            $table->foreign('category_id')->references('id')->on('categories')->onDelete('restrict');
-            $table->foreign('photo_id')->references('id')->on('photos')->onDelete('set null');
+        Schema::create('deposits', function (Blueprint $table) {
+            $table->increments('id');
+            $table->float('quantity', 8, 4);
+            $table->integer('item_id')->index()->unsigned();
+            $table->timestamps();
+
+            $table->foreign('item_id')->references('id')->on('items')->onDelete('restrict');
         });
 
         Schema::create('products', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
-            $table->string('slug')->unique()->index();
+            $table->string('slug')->index();
             $table->float('price', 19, 4);
             $table->smallInteger('brand_id')->index()->unsigned();
             $table->smallInteger('category_id')->index()->unsigned();
-            $table->text('description')->nullable();
+            $table->integer('user_id')->index()->unsigned()->nullable();
+            $table->integer('original_id')->index()->unsigned()->nullable();
+            $table->text('description_md')->nullable();
             $table->boolean('digital')->default(false);
             $table->boolean('public')->default(false);
             $table->timestamps();
             $table->softDeletes();
 
+            $table->unique(['slug', 'deleted_at']);
+
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('restrict');
             $table->foreign('brand_id')->references('id')->on('brands')->onDelete('restrict');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
         });
 
-        Schema::create('product_gallery', function (Blueprint $table) {
-            $table->increments('id');
+        Schema::create('media', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->tinyInteger('type');
+            $table->string('url');
+            $table->timestamps();
+        });
+
+        Schema::create('product_media', function (Blueprint $table) {
+            $table->bigIncrements('id');
+
+            $table->bigInteger('media_id')->unsigned()->index();
+            $table->foreign('media_id')->references('id')->on('media')->onDelete('cascade');
 
             $table->integer('product_id')->unsigned()->index();
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
-
-            $table->morphs('media');
         });
 
         Schema::create('shipping_methods', function (Blueprint $table) {
@@ -126,15 +130,15 @@ class InitDatabase extends Migration
             $table->tinyInteger('shop_status')->default(0);
             $table->tinyInteger('delivery_status')->default(0);
             $table->string('delivery_tracking')->nullable();
-            $table->integer('delivery_address')->unsigned()->index()->nullable();
-            $table->integer('invoice_address')->unsigned()->index()->nullable();
+            $table->integer('delivery_address_id')->unsigned()->index()->nullable();
+            $table->integer('invoice_address_id')->unsigned()->index()->nullable();
             $table->string('comment', 1000)->nullable();
             $table->timestamps();
 
             // Relations
             $table->foreign('shipping_method_id')->references('id')->on('shipping_methods')->onDelete('restrict');
-            $table->foreign('delivery_address')->references('id')->on('addresses')->onDelete('restrict');
-            $table->foreign('invoice_address')->references('id')->on('addresses')->onDelete('restrict');
+            $table->foreign('delivery_address_id')->references('id')->on('addresses')->onDelete('restrict');
+            $table->foreign('invoice_address_id')->references('id')->on('addresses')->onDelete('restrict');
         });
 
         Schema::create('payments', function (Blueprint $table) {
@@ -142,10 +146,11 @@ class InitDatabase extends Migration
             $table->integer('order_id')->unsigned()->index();
             $table->string('external_id')->index()->nullable();
             $table->string('method', 16);
-            $table->string('status', 32)->nullable();
+            $table->tinyInteger('status')->default(0);
             $table->string('currency', 3);
-            $table->float('amount', 19, 4);
-            $table->string('url', 1000)->nullable();
+            $table->float('amount', 19, 2);
+            $table->string('redirect_url', 1000)->nullable();
+            $table->string('continue_url', 1000)->nullable();
             $table->timestamps();
 
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('restrict');
@@ -199,7 +204,7 @@ class InitDatabase extends Migration
 
         Schema::create('order_items', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->float('qty', 8, 4);
+            $table->float('quantity', 8, 4);
             $table->float('price', 19, 4);
             $table->integer('order_id')->unsigned()->index();
             $table->integer('product_id')->unsigned()->index();
@@ -243,7 +248,7 @@ class InitDatabase extends Migration
             $table->string('slug')->unique()->index();
             $table->boolean('public')->default(false);
             $table->string('name');
-            $table->text('content');
+            $table->text('content_md');
             $table->timestamps();
         });
     }
@@ -255,26 +260,6 @@ class InitDatabase extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_resets');
-        Schema::dropIfExists('clients');
-        Schema::dropIfExists('photos');
-        Schema::dropIfExists('videos');
-        Schema::dropIfExists('brands');
-        Schema::dropIfExists('categories');
-        Schema::dropIfExists('items');
-        Schema::dropIfExists('products');
-        Schema::dropIfExists('product_gallery');
-        Schema::dropIfExists('addresses');
-        Schema::dropIfExists('orders');
-        Schema::dropIfExists('payments');
-        Schema::dropIfExists('product_schemas');
-        Schema::dropIfExists('product_schema_item');
-        Schema::dropIfExists('chats');
-        Schema::dropIfExists('order_logs');
-        Schema::dropIfExists('messages');
-        Schema::dropIfExists('order_items');
-        Schema::dropIfExists('order_order_item');
-        Schema::dropIfExists('pages');
+        return false;
     }
 }

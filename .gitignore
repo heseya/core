@@ -5,6 +5,7 @@
 /public/mix-manifest.json
 /storage/*.key
 /vendor
+/docs
 .env
 .phpunit.result.cache
 npm-debug.log

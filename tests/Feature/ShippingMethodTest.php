@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\Order;
 use Tests\TestCase;
-use App\ShippingMethod;
+use App\Models\ShippingMethod;
+use Laravel\Passport\Passport;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -40,7 +42,7 @@ class ShippingMethodTest extends TestCase
         $response = $this->get('/shipping-methods');
 
         $response
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJsonCount(1, 'data') // Shoud show only public shipping methods.
             ->assertJson(['data' => [
                 0 => $this->expected,
@@ -52,6 +54,11 @@ class ShippingMethodTest extends TestCase
      */
     public function testCreate()
     {
+        $response = $this->post('/shipping-methods');
+        $response->assertUnauthorized();
+
+        Passport::actingAs($this->user);
+
         $shipping_method = [
             'name' => 'Test',
             'price' => 1.23,
@@ -61,7 +68,7 @@ class ShippingMethodTest extends TestCase
         $response = $this->post('/shipping-methods', $shipping_method);
 
         $response
-            ->assertStatus(201)
+            ->assertCreated()
             ->assertJson(['data' => $shipping_method]);
     }
 
@@ -70,13 +77,18 @@ class ShippingMethodTest extends TestCase
      */
     public function testUpdate()
     {
+        $response = $this->patch('/shipping-methods/id:' . $this->shipping_method->id);
+        $response->assertUnauthorized();
+
+        Passport::actingAs($this->user);
+
         $shipping_method = [
-            'name' => 'Test',
-            'price' => 1.23,
-            'public' => true,
+            'name' => 'Test 2',
+            'price' => 5.23,
+            'public' => false,
         ];
 
-        $response = $this->put(
+        $response = $this->patch(
             '/shipping-methods/id:' . $this->shipping_method->id,
             $shipping_method,
         );
@@ -92,7 +104,29 @@ class ShippingMethodTest extends TestCase
     public function testDelete()
     {
         $response = $this->delete('/shipping-methods/id:' . $this->shipping_method->id);
+        $response->assertUnauthorized();
 
+        Passport::actingAs($this->user);
+
+        $response = $this->delete('/shipping-methods/id:' . $this->shipping_method->id);
         $response->assertStatus(204);
+    }
+
+    /**
+     * @return void
+     */
+    public function testDeleteWithRelations()
+    {
+        Passport::actingAs($this->user);
+
+        $this->shipping_method = factory(ShippingMethod::class)->create();
+
+        factory(Order::class)->create([
+            'shipping_method_id' => $this->shipping_method->id,
+        ]);
+
+        $response = $this->delete('/shipping-methods/id:' . $this->shipping_method->id);
+
+        $response->assertStatus(400);
     }
 }
