@@ -39,7 +39,6 @@ class DepositsTest extends TestCase
         Passport::actingAs($this->user);
 
         $response = $this->get('/deposits');
-
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Only one item xD
@@ -59,7 +58,6 @@ class DepositsTest extends TestCase
         Passport::actingAs($this->user);
 
         $response = $this->get('/items/id:' . $this->item->id . '/deposits');
-
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Only one item xD
@@ -86,7 +84,6 @@ class DepositsTest extends TestCase
             '/items/id:' . $this->item->id . '/deposits',
             $deposit,
         );
-
         $response
             ->assertCreated()
             ->assertJson(['data' => $deposit + [

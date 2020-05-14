@@ -40,7 +40,6 @@ class ShippingMethodTest extends TestCase
     public function testIndex()
     {
         $response = $this->get('/shipping-methods');
-
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Shoud show only public shipping methods.
@@ -66,7 +65,6 @@ class ShippingMethodTest extends TestCase
         ];
 
         $response = $this->post('/shipping-methods', $shipping_method);
-
         $response
             ->assertCreated()
             ->assertJson(['data' => $shipping_method]);
@@ -92,7 +90,6 @@ class ShippingMethodTest extends TestCase
             '/shipping-methods/id:' . $this->shipping_method->id,
             $shipping_method,
         );
-
         $response
             ->assertStatus(200)
             ->assertJson(['data' => $shipping_method]);
@@ -126,7 +123,6 @@ class ShippingMethodTest extends TestCase
         ]);
 
         $response = $this->delete('/shipping-methods/id:' . $this->shipping_method->id);
-
         $response->assertStatus(400);
     }
 }

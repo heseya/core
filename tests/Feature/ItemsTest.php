@@ -43,7 +43,6 @@ class ItemsTest extends TestCase
         Passport::actingAs($this->user);
 
         $response = $this->get('/items');
-
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Only one item xD
@@ -63,7 +62,6 @@ class ItemsTest extends TestCase
         Passport::actingAs($this->user);
 
         $response = $this->get('/items/id:' . $this->item->id);
-
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
@@ -85,7 +83,6 @@ class ItemsTest extends TestCase
         ];
 
         $response = $this->post('/items', $item);
-
         $response
             ->assertCreated()
             ->assertJson(['data' => $item]);
@@ -96,7 +93,6 @@ class ItemsTest extends TestCase
         ];
 
         $response = $this->post('/items', $item);
-
         $response
             ->assertCreated()
             ->assertJson(['data' => $item]);
@@ -106,7 +102,6 @@ class ItemsTest extends TestCase
         ];
 
         $response = $this->post('/items', $item);
-
         $response
             ->assertCreated()
             ->assertJson(['data' => $item + ['sku' => NULL]]);
@@ -131,7 +126,6 @@ class ItemsTest extends TestCase
             '/items/id:' . $this->item->id,
             $item,
         );
-
         $response
             ->assertOk()
             ->assertJson(['data' => $item]);

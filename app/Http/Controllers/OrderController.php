@@ -13,7 +13,7 @@ use App\Models\ShippingMethod;
 use App\Models\ProductSchemaItem;
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\OrderResource;
-use App\Http\Requests\OrderCreateRequest;
+use \Illuminate\Http\Request\OrderCreateRequest;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\OrderPublicResource;
 

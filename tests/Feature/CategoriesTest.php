@@ -41,7 +41,6 @@ class CategoriesTest extends TestCase
     public function testIndex()
     {
         $response = $this->get('/categories');
-
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Shoud show only public categories.
@@ -67,7 +66,6 @@ class CategoriesTest extends TestCase
         ];
 
         $response = $this->post('/categories', $category);
-
         $response
             ->assertCreated()
             ->assertJson(['data' => $category]);
@@ -78,7 +76,7 @@ class CategoriesTest extends TestCase
      */
     public function testUpdate()
     {
-        $response = $this->patch('/categories/id:' . $this->category->id,);
+        $response = $this->patch('/categories/id:' . $this->category->id);
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
@@ -93,7 +91,6 @@ class CategoriesTest extends TestCase
             '/categories/id:' . $this->category->id,
             $category,
         );
-
         $response
             ->assertOk()
             ->assertJson(['data' => $category]);
@@ -110,7 +107,6 @@ class CategoriesTest extends TestCase
         Passport::actingAs($this->user);
 
         $response = $this->delete('/categories/id:' . $this->category->id);
-
         $response->assertNoContent();
     }
 
@@ -130,7 +126,6 @@ class CategoriesTest extends TestCase
         ]);
 
         $response = $this->delete('/categories/id:' . $this->category->id);
-
         $response->assertStatus(400);
     }
 }

@@ -51,7 +51,6 @@ class OrdersTest extends TestCase
         Passport::actingAs($this->user);
 
         $response = $this->get('/orders');
-
         $response
             ->assertOk()
             ->assertJsonStructure(['data' => [
@@ -68,7 +67,6 @@ class OrdersTest extends TestCase
     public function testViewPublic()
     {
         $response = $this->get('/orders/' . $this->order->code);
-
         $response
             ->assertOk()
             ->assertJsonStructure(['data' => $this->expectedStructure])

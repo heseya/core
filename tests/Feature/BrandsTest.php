@@ -41,7 +41,6 @@ class BrandsTest extends TestCase
     public function testIndex()
     {
         $response = $this->get('/brands');
-
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Shoud show only public brands.
@@ -67,7 +66,6 @@ class BrandsTest extends TestCase
         ];
 
         $response = $this->post('/brands', $brand);
-
         $response
             ->assertCreated()
             ->assertJson(['data' => $brand]);
@@ -93,7 +91,6 @@ class BrandsTest extends TestCase
             '/brands/id:' . $this->brand->id,
             $brand,
         );
-
         $response
             ->assertOk()
             ->assertJson(['data' => $brand]);
@@ -110,7 +107,6 @@ class BrandsTest extends TestCase
         Passport::actingAs($this->user);
 
         $response = $this->delete('/brands/id:' . $this->brand->id);
-
         $response->assertNoContent();
     }
 
@@ -130,7 +126,6 @@ class BrandsTest extends TestCase
         ]);
 
         $response = $this->delete('/brands/id:' . $this->brand->id);
-
         $response->assertStatus(400);
     }
 }

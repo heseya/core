@@ -77,7 +77,6 @@ class MediaTest extends TestCase
         $response = $this->post('/media', [
             'file' => $file,
         ]);
-
         $response
             ->assertCreated()
             ->assertJsonStructure(['data' => [

@@ -305,7 +305,7 @@ class ProductController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:products',
+            'slug' => 'required|string|max:255|unique:products|alpha_dash',
             'price' => 'required|numeric',
             'brand_id' => 'required|integer|exists:brands,id',
             'category_id' => 'required|integer|exists:categories,id',
@@ -517,6 +517,7 @@ class ProductController extends Controller
                 'required',
                 'string',
                 'max:255',
+                'alpha_dash',
                 Rule::unique('products')->ignore($product->slug, 'slug'),
             ],
             'price' => 'required|numeric',

@@ -77,7 +77,7 @@ class AuthController extends Controller
         }
     }
 
-    
+
     /**
      * @OA\Patch(
      *   path="/user/password",

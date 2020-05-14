@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Exceptions\Error;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\CategoryResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -69,7 +70,7 @@ class CategoryController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:categories|alpha_dash',
             'public' => 'boolean',
         ]);
 
@@ -117,8 +118,14 @@ class CategoryController extends Controller
     {
         $request->validate([
             'name' => 'string|max:255',
-            'price' => 'string|max:255',
             'public' => 'boolean',
+            'slug' => [
+                'required',
+                'string',
+                'max:255',
+                'alpha_dash',
+                Rule::unique('categories')->ignore($category->slug, 'slug'),
+            ],
         ]);
 
         $category->update($request->all());

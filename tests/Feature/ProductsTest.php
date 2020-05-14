@@ -180,7 +180,6 @@ class ProductsTest extends TestCase
     public function testIndex()
     {
         $response = $this->get('/products');
-
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Shoud show only public products.
@@ -191,7 +190,6 @@ class ProductsTest extends TestCase
         Passport::actingAs($this->user);
 
         $response = $this->get('/products');
-
         $response
             ->assertOk()
             ->assertJsonCount(count($this->hidden_products) + 1, 'data'); // Shoud show all products.
@@ -203,7 +201,6 @@ class ProductsTest extends TestCase
     public function testView()
     {
         $response = $this->get('/products/' . $this->product->slug);
-
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
@@ -238,7 +235,6 @@ class ProductsTest extends TestCase
     {
         foreach ($this->hidden_products as $product) {
             $response = $this->get('/products/' . $product->slug);
-
             $response
                 ->assertUnauthorized()
                 ->assertJsonStructure(['error' => [
