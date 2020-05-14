@@ -130,15 +130,15 @@ class InitDatabase extends Migration
             $table->tinyInteger('shop_status')->default(0);
             $table->tinyInteger('delivery_status')->default(0);
             $table->string('delivery_tracking')->nullable();
-            $table->integer('delivery_address')->unsigned()->index()->nullable();
-            $table->integer('invoice_address')->unsigned()->index()->nullable();
+            $table->integer('delivery_address_id')->unsigned()->index()->nullable();
+            $table->integer('invoice_address_id')->unsigned()->index()->nullable();
             $table->string('comment', 1000)->nullable();
             $table->timestamps();
 
             // Relations
             $table->foreign('shipping_method_id')->references('id')->on('shipping_methods')->onDelete('restrict');
-            $table->foreign('delivery_address')->references('id')->on('addresses')->onDelete('restrict');
-            $table->foreign('invoice_address')->references('id')->on('addresses')->onDelete('restrict');
+            $table->foreign('delivery_address_id')->references('id')->on('addresses')->onDelete('restrict');
+            $table->foreign('invoice_address_id')->references('id')->on('addresses')->onDelete('restrict');
         });
 
         Schema::create('payments', function (Blueprint $table) {

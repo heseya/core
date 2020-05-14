@@ -55,6 +55,8 @@ class Order extends Model
         'payment_status',
         'shop_status',
         'shipping_status',
+        'delivery_address_id',
+        'invoice_address_id',
         'comment',
     ];
 
@@ -69,14 +71,10 @@ class Order extends Model
         $value = $this->shipping_price;
 
         foreach ($this->items as $item) {
-            $value += $item->price * $item->quantity;
-
-            foreach ($item->schemaItems as $schema_item) {
-                $value += $schema_item->extra_price;
-            }
+            $value += ($item->price * $item->quantity);
         }
 
-        return $value;
+        return round($value, 2);
     }
 
     public function saveItems($items)
@@ -118,7 +116,7 @@ class Order extends Model
      */
     public function deliveryAddress()
     {
-        return $this->hasOne(Address::class, 'id', 'delivery_address');
+        return $this->hasOne(Address::class, 'id', 'delivery_address_id');
     }
 
     /**
@@ -129,7 +127,7 @@ class Order extends Model
      */
     public function invoiceAddress()
     {
-        return $this->hasOne(Address::class, 'id', 'invoice_address');
+        return $this->hasOne(Address::class, 'id', 'invoice_address_id');
     }
 
     public function payments()
