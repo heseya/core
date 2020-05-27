@@ -31,12 +31,14 @@ class AuthTest extends TestCase
             ->assertStatus(200)
             ->assertJsonStructure(['data' => [
                 'token',
+                'expires_at',
                 'user' => [
                     'id',
                     'email',
                     'name',
                     'avatar',
                 ],
+                'scopes' => [],
             ]]);
     }
 }
