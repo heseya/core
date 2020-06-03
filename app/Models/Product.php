@@ -135,7 +135,7 @@ class Product extends Model
      */
     public function getDescriptionHtmlAttribute(): string
     {
-        return parsedown($this->description_md);
+        return parsedown(strip_tags($this->description_md));
     }
 
     /**
