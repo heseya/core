@@ -18,7 +18,7 @@ class SchemaItemResource extends Resource
             'id' => $this->id,
             'value' => $this->value,
             'extra_price' => $this->extra_price,
-            'item' => new ItemResource($this->item),
+            'item' => ItemResource::make($this->item),
         ];
     }
 }

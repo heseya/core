@@ -28,10 +28,10 @@ class OrderResource extends Resource
             'payment_status' => $this->payment_status,
             'shop_status' => $this->shop_status,
             'delivery_status' => $this->delivery_status,
-            'shipping_method' => new ShippingMethodResource($this->shippingMethod),
+            'shipping_method' => ShippingMethodResource::make($this->shippingMethod),
             'items' => OrderItemResource::collection($this->items),
-            'delivery_address' => new AddressResource($this->deliveryAddress),
-            'invoice_address' => new AddressResource($this->invoiceAddress),
+            'delivery_address' => AddressResource::make($this->deliveryAddress),
+            'invoice_address' => AddressResource::make($this->invoiceAddress),
         ];
     }
 }
