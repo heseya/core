@@ -2,9 +2,6 @@
 
 namespace App\Exceptions;
 
-use App\Http\Resources\ErrorResource;
-use Illuminate\Http\Resources\Json\JsonResource;
-
 /**
  * @OA\Schema()
  */
@@ -41,7 +38,7 @@ class Error
         $error->message = $message;
         $error->code = $code;
 
-        return (new ErrorResource($error))
+        return ErrorResource::make($error)
             ->response()
             ->setStatusCode($error->code);
     }

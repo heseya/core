@@ -80,12 +80,12 @@ class AuthController extends Controller
             return response()->json(['data' => [
                 'token' => $token->accessToken,
                 'expires_at' => $token->token->expires_at,
-                'user' => new UserResource($user),
+                'user' => UserResource::make($user),
                 'scopes' => $token->token->scopes,
             ]], 200);
-        } else {
-            return Error::abort('Invalid credentials.', 400);
         }
+
+        return Error::abort('Invalid credentials.', 400);
     }
 
 

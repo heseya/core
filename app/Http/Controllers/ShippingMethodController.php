@@ -8,7 +8,6 @@ use App\Models\ShippingMethod;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ShippingMethodResource;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class ShippingMethodController extends Controller
 {
@@ -30,7 +29,7 @@ class ShippingMethodController extends Controller
      *   )
      * )
      */
-    public function index(): ResourceCollection
+    public function index()
     {
         $query = ShippingMethod::select();
 
@@ -76,7 +75,7 @@ class ShippingMethodController extends Controller
 
         $shipping_method = ShippingMethod::create($request->all());
 
-        return new ShippingMethodResource($shipping_method);
+        return ShippingMethodResource::make($shipping_method);
     }
 
     /**
@@ -122,7 +121,7 @@ class ShippingMethodController extends Controller
 
         $shipping_method->update($request->all());
 
-        return new ShippingMethodResource($shipping_method);
+        return ShippingMethodResource::make($shipping_method);
     }
 
     /**

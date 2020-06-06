@@ -76,7 +76,7 @@ class PaymentController extends Controller
 
         $payment->update($method_class::generateUrl($payment));
 
-        return new PaymentResource($payment);
+        return PaymentResource::make($payment);
     }
 
     /**

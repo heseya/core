@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\BrandResource;
-use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class BrandController extends Controller
 {
@@ -30,7 +29,7 @@ class BrandController extends Controller
      *   )
      * )
      */
-    public function index(): ResourceCollection
+    public function index()
     {
         $query = Brand::select();
 
@@ -76,7 +75,7 @@ class BrandController extends Controller
 
         $brand = Brand::create($request->all());
 
-        return (new BrandResource($brand))
+        return BrandResource::make($brand)
             ->response()
             ->setStatusCode(201);
     }
@@ -130,7 +129,7 @@ class BrandController extends Controller
 
         $brand->update($request->all());
 
-        return new BrandResource($brand);
+        return BrandResource::make($brand);
     }
 
     /**

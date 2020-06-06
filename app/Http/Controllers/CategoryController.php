@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\CategoryResource;
-use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class CategoryController extends Controller
 {
@@ -30,7 +29,7 @@ class CategoryController extends Controller
      *   )
      * )
      */
-    public function index(): ResourceCollection
+    public function index()
     {
         $query = Category::select();
 
@@ -76,7 +75,7 @@ class CategoryController extends Controller
 
         $category = Category::create($request->all());
 
-        return (new CategoryResource($category))
+        return CategoryResource::make($category)
             ->response()
             ->setStatusCode(201);
     }
@@ -130,7 +129,7 @@ class CategoryController extends Controller
 
         $category->update($request->all());
 
-        return new CategoryResource($category);
+        return CategoryResource::make($category);
     }
 
     /**

@@ -129,7 +129,7 @@ class OrderController extends Controller
      */
     public function view(Order $order)
     {
-        return new OrderResource($order);
+        return OrderResource::make($order);
     }
 
     /**
@@ -160,7 +160,7 @@ class OrderController extends Controller
      */
     public function viewPublic(Order $order)
     {
-        return new OrderPublicResource($order);
+        return OrderPublicResource::make($order);
     }
 
     /**
@@ -397,7 +397,7 @@ class OrderController extends Controller
             'user' => 'API',
         ]);
 
-        return (new OrderPublicResource($order))
+        return OrderPublicResource::make($order)
             ->response()
             ->setStatusCode(201);
     }

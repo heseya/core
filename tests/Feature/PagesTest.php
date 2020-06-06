@@ -64,7 +64,7 @@ class PagesTest extends TestCase
         $response = $this->get('/pages/' . $this->page->slug);
         $response
             ->assertOk()
-            ->assertExactJson(['data' => $this->expected]);
+            ->assertJson(['data' => $this->expected]);
 
         $response = $this->get('/pages/id:' . $this->page->id);
         $response->assertUnauthorized();
@@ -74,7 +74,7 @@ class PagesTest extends TestCase
         $response = $this->get('/pages/id:' . $this->page->id);
         $response
             ->assertOk()
-            ->assertExactJson(['data' => $this->expected]);
+            ->assertJson(['data' => $this->expected]);
     }
 
     /**
