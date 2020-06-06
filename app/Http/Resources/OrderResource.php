@@ -5,9 +5,8 @@ namespace App\Http\Resources;
 use App\Http\Resources\AddressResource;
 use App\Http\Resources\OrderItemResource;
 use App\Http\Resources\ShippingMethodResource;
-use Illuminate\Http\Resources\Json\JsonResource;
 
-class OrderResource extends JsonResource
+class OrderResource extends Resource
 {
     /**
      * Transform the resource into an array.
@@ -15,7 +14,7 @@ class OrderResource extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function toArray($request)
+    public function base($request): array
     {
         $this->shippingMethod->price = $this->shipping_price;
 

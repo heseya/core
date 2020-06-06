@@ -3,9 +3,8 @@
 namespace App\Http\Resources;
 
 use App\Http\Resources\ItemResource;
-use Illuminate\Http\Resources\Json\JsonResource;
 
-class SchemaItemResource extends JsonResource
+class SchemaItemResource extends Resource
 {
     /**
      * Transform the resource into an array.
@@ -13,7 +12,7 @@ class SchemaItemResource extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function toArray($request)
+    public function base($request): array
     {
         return [
             'id' => $this->id,
