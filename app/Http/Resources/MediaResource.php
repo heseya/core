@@ -2,9 +2,7 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Resources\Json\JsonResource;
-
-class MediaResource extends JsonResource
+class MediaResource extends Resource
 {
     /**
      * Transform the resource into an array.
@@ -12,11 +10,12 @@ class MediaResource extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function toArray($request)
+    public function base($request): array
     {
         return [
+            'id' => $this->id,
+            'type' => 'photo',
             'url' => $this->url,
-            'type' => $this->pivot->media_type,
         ];
     }
 }

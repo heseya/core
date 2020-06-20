@@ -13,7 +13,7 @@ return [
     |
      */
 
-    'name' => env('APP_NAME', 'Depth'),
+    'name' => env('APP_NAME', 'Heseya Store'),
 
     /*
     |--------------------------------------------------------------------------
@@ -53,6 +53,7 @@ return [
      */
 
     'url' => env('APP_URL', 'https://secure.example.com'),
+
     'store_url' => rtrim(env('APP_STORE_URL', 'https://example.com'), '/'),
 
     'asset_url' => env('ASSET_URL', null),
@@ -167,7 +168,7 @@ return [
          * Package Service Providers...
          */
         L5Swagger\L5SwaggerServiceProvider::class,
-        Spatie\Permission\PermissionServiceProvider::class,
+        Laravel\Passport\PassportServiceProvider::class,
         Parsedown\Providers\ParsedownServiceProvider::class,
         // SammyK\LaravelFacebookSdk\LaravelFacebookSdkServiceProvider::class,
 

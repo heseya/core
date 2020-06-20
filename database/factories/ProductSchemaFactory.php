@@ -2,7 +2,7 @@
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
 
-use App\ProductSchema;
+use App\Models\ProductSchema;
 use Faker\Generator as Faker;
 
 $factory->define(ProductSchema::class, function (Faker $faker) {

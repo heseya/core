@@ -17,7 +17,6 @@ class DatabaseSeeder extends Seeder
             ->call(ShippingMethodSeeder::class)
             ->call(OrdersSeeder::class)
             ->call(PagesSeeder::class)
-            ->call(RbacSeeder::class)
             ->call(UsersSeeder::class)
             ->call(ChatSeeder::class);
     }

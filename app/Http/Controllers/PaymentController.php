@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Error;
-use App\Order;
-use App\Http\Requests\Request;
+use App\Models\Order;
+use App\Exceptions\Error;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PaymentResource;
 use App\Http\Resources\OrderPublicResource;
@@ -36,7 +36,6 @@ class PaymentController extends Controller
      *     name="continue",
      *     in="query",
      *     description="URL that the buyer will be redirected to, after making payment",
-     *     required=true,
      *     @OA\Schema(
      *       type="string",
      *     )
@@ -71,13 +70,13 @@ class PaymentController extends Controller
         $payment = $order->payments()->create([
             'method' => $method,
             'amount' => $order->summary,
-            'continueUrl' => $request->continue ?? null,
+            'continue_url' => $request->continue ?? null,
             'currency' => 'PLN',
         ]);
 
         $payment->update($method_class::generateUrl($payment));
 
-        return new PaymentResource($payment);
+        return PaymentResource::make($payment);
     }
 
     /**

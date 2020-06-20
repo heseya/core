@@ -2,7 +2,7 @@
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
 
-use App\Page;
+use App\Models\Page;
 use Illuminate\Support\Str;
 use Faker\Generator as Faker;
 
@@ -14,6 +14,6 @@ $factory->define(Page::class, function (Faker $faker) {
         'name' => $name,
         'slug' => Str::slug($name),
         'public' => rand(0, 1),
-        'content' => $faker->realText(2000),
+        'content_md' => $faker->sentence(20),
     ];
 });

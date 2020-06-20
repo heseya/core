@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Chat;
-use App\Message as Email;
+use App\Models\Chat;
+use App\Models\Message as Email;
 use Webklex\IMAP\Message;
 use Illuminate\Console\Command;
 use Webklex\IMAP\Facades\Client;
@@ -17,7 +17,7 @@ class SyncEmails extends Command
      *
      * @var string
      */
-    protected $signature = 'emails:sync';
+    protected $signature = 'email:sync';
 
     /**
      * The console command description.

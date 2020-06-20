@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Item;
-use App\Deposit;
+use App\Models\Item;
+use App\Models\Deposit;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\DepositResource;
-use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class DepositController extends Controller
 {
@@ -32,7 +31,7 @@ class DepositController extends Controller
      *   }
      * )
      */
-    public function index(): ResourceCollection
+    public function index()
     {
         return DepositResource::collection(
             Deposit::paginate(12),
@@ -67,7 +66,7 @@ class DepositController extends Controller
      *   }
      * )
      */
-    public function view(Item $item): ResourceCollection
+    public function view(Item $item)
     {
         return DepositResource::collection(
             $item->deposits()->paginate(12),
@@ -115,7 +114,7 @@ class DepositController extends Controller
 
         $deposit = $item->deposits()->create($request->all());
 
-        return (new DepositResource($deposit))
+        return DepositResource::make($deposit)
             ->response()
             ->setStatusCode(201);
     }

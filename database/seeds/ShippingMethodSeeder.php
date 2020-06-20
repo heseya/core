@@ -1,6 +1,6 @@
 <?php
 
-use App\ShippingMethod;
+use App\Models\ShippingMethod;
 use Illuminate\Database\Seeder;
 
 class ShippingMethodSeeder extends Seeder

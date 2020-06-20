@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\ShippingMethod;
+use App\Exceptions\Error;
 use Illuminate\Http\Request;
+use App\Models\ShippingMethod;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ShippingMethodResource;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class ShippingMethodController extends Controller
 {
@@ -28,11 +29,15 @@ class ShippingMethodController extends Controller
      *   )
      * )
      */
-    public function index(): ResourceCollection
+    public function index()
     {
-        return ShippingMethodResource::collection(
-            ShippingMethod::where('public', true)->get(),
-        );
+        $query = ShippingMethod::select();
+
+        if (!Auth::check()) {
+            $query->where('public', true);
+        }
+
+        return ShippingMethodResource::collection($query->get());
     }
 
     /**
@@ -70,11 +75,11 @@ class ShippingMethodController extends Controller
 
         $shipping_method = ShippingMethod::create($request->all());
 
-        return new ShippingMethodResource($shipping_method);
+        return ShippingMethodResource::make($shipping_method);
     }
 
     /**
-     * @OA\Put(
+     * @OA\Patch(
      *   path="/shipping-methods/id:{id}",
      *   summary="update shipping method",
      *   tags={"Shipping"},
@@ -116,7 +121,7 @@ class ShippingMethodController extends Controller
 
         $shipping_method->update($request->all());
 
-        return new ShippingMethodResource($shipping_method);
+        return ShippingMethodResource::make($shipping_method);
     }
 
     /**
@@ -143,6 +148,13 @@ class ShippingMethodController extends Controller
      */
     public function delete(ShippingMethod $shipping_method)
     {
+        if ($shipping_method->orders()->count() > 0) {
+            return Error::abort(
+                "Shipping method can't be deleted, because has relations.",
+                400,
+            );
+        }
+
         $shipping_method->delete();
 
         return response()->json(null, 204);

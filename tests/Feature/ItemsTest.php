@@ -2,9 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Item;
-use App\Deposit;
+use App\Models\Item;
+use App\Models\Deposit;
 use Tests\TestCase;
+use Laravel\Passport\Passport;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -37,9 +38,13 @@ class ItemsTest extends TestCase
     public function testIndex()
     {
         $response = $this->get('/items');
+        $response->assertUnauthorized();
 
+        Passport::actingAs($this->user);
+
+        $response = $this->get('/items');
         $response
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJsonCount(1, 'data') // Only one item xD
             ->assertJson(['data' => [
                 0 => $this->expected,
@@ -52,9 +57,13 @@ class ItemsTest extends TestCase
     public function testView()
     {
         $response = $this->get('/items/id:' . $this->item->id);
+        $response->assertUnauthorized();
 
+        Passport::actingAs($this->user);
+
+        $response = $this->get('/items/id:' . $this->item->id);
         $response
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJson(['data' => $this->expected]);
     }
 
@@ -63,15 +72,19 @@ class ItemsTest extends TestCase
      */
     public function testCreate()
     {
+        $response = $this->post('/items');
+        $response->assertUnauthorized();
+
+        Passport::actingAs($this->user);
+
         $item = [
             'name' => 'Test',
             'sku' => 'TES/T1',
         ];
 
         $response = $this->post('/items', $item);
-
         $response
-            ->assertStatus(201)
+            ->assertCreated()
             ->assertJson(['data' => $item]);
 
         $item = [
@@ -80,9 +93,8 @@ class ItemsTest extends TestCase
         ];
 
         $response = $this->post('/items', $item);
-
         $response
-            ->assertStatus(201)
+            ->assertCreated()
             ->assertJson(['data' => $item]);
 
         $item = [
@@ -90,9 +102,8 @@ class ItemsTest extends TestCase
         ];
 
         $response = $this->post('/items', $item);
-
         $response
-            ->assertStatus(201)
+            ->assertCreated()
             ->assertJson(['data' => $item + ['sku' => NULL]]);
     }
 
@@ -101,18 +112,22 @@ class ItemsTest extends TestCase
      */
     public function testUpdate()
     {
+        $response = $this->patch('/items/id:' . $this->item->id);
+        $response->assertUnauthorized();
+
+        Passport::actingAs($this->user);
+
         $item = [
             'name' => 'Test 2',
             'sku' => 'TES/T2',
         ];
 
-        $response = $this->put(
+        $response = $this->patch(
             '/items/id:' . $this->item->id,
             $item,
         );
-
         $response
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJson(['data' => $item]);
     }
 
@@ -122,7 +137,11 @@ class ItemsTest extends TestCase
     public function testDelete()
     {
         $response = $this->delete('/items/id:' . $this->item->id);
+        $response->assertUnauthorized();
 
-        $response->assertStatus(204);
+        Passport::actingAs($this->user);
+
+        $response = $this->delete('/items/id:' . $this->item->id);
+        $response->assertNoContent();
     }
 }

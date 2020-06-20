@@ -2,9 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Order;
+use App\Models\Order;
 use Tests\TestCase;
-use App\ShippingMethod;
+use App\Models\ShippingMethod;
+use Laravel\Passport\Passport;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -29,6 +30,14 @@ class OrdersTest extends TestCase
             'shop_status' => $this->order->shop_status,
             'delivery_status' => $this->order->delivery_status,
         ];
+
+        $this->expectedStructure = [
+            'code',
+            'payment_status',
+            'shop_status',
+            'delivery_status',
+            'created_at',
+        ];
     }
 
     /**
@@ -37,9 +46,16 @@ class OrdersTest extends TestCase
     public function testIndex()
     {
         $response = $this->get('/orders');
+        $response->assertUnauthorized();
 
+        Passport::actingAs($this->user);
+
+        $response = $this->get('/orders');
         $response
-            ->assertStatus(200)
+            ->assertOk()
+            ->assertJsonStructure(['data' => [
+                0 => $this->expectedStructure
+            ]])
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
@@ -51,9 +67,9 @@ class OrdersTest extends TestCase
     public function testViewPublic()
     {
         $response = $this->get('/orders/' . $this->order->code);
-
         $response
-            ->assertStatus(200)
-            ->assertExactJson(['data' => $this->expected]);
+            ->assertOk()
+            ->assertJsonStructure(['data' => $this->expectedStructure])
+            ->assertJson(['data' => $this->expected]);
     }
 }

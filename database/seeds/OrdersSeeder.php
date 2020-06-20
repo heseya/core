@@ -1,8 +1,10 @@
 <?php
 
-use App\Order;
-use App\Address;
+use App\Models\Order;
+use App\Models\Address;
+use App\Models\OrderItem;
 use Illuminate\Database\Seeder;
+use App\Models\ProductSchemaItem;
 
 class OrdersSeeder extends Seeder
 {
@@ -19,6 +21,17 @@ class OrdersSeeder extends Seeder
             if (rand(0, 1)) {
                 $order->invoiceAddress()->save(factory(Address::class)->make());
             }
+
+            $items = factory(OrderItem::class, rand(1, 3))->make();
+            $order->items()->saveMany($items);
+
+            $items->each(function ($item) {
+
+                if ($item->product->schemas()->first()) {
+                    $item->schemaItems()->attach($item->product->schemas()->first()->id);
+                    $item->save();
+                }
+            });
         });
     }
 }

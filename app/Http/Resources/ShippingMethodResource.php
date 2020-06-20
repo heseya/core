@@ -2,9 +2,7 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Resources\Json\JsonResource;
-
-class ShippingMethodResource extends JsonResource
+class ShippingMethodResource extends Resource
 {
     /**
      * Transform the resource into an array.
@@ -12,7 +10,7 @@ class ShippingMethodResource extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function toArray($request)
+    public function base($request): array
     {
         return [
             'id' => $this->id,

@@ -1,7 +1,7 @@
 <?php
 
-use App\Item;
-use App\Deposit;
+use App\Models\Item;
+use App\Models\Deposit;
 use Illuminate\Database\Seeder;
 
 class ItemSeeder extends Seeder
