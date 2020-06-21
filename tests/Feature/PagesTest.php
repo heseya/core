@@ -2,11 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\Page;
 use Tests\TestCase;
+use App\Models\Page;
 use Laravel\Passport\Passport;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class PagesTest extends TestCase
 {

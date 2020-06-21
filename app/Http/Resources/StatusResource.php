@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources;
 
-class ItemResource extends Resource
+class StatusResource extends Resource
 {
     /**
      * Transform the resource into an array.
@@ -15,8 +15,8 @@ class ItemResource extends Resource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'sku' => $this->sku,
-            'quantity' => $this->quantity,
+            'color' => $this->color,
+            'description' => $this->description,
         ];
     }
 }

@@ -26,24 +26,6 @@ class Order extends Model
      *   type="string",
      *   example="asap plz",
      * )
-     *
-     * @OA\Property(
-     *   property="payment_status",
-     *   type="string",
-     *   enum={"waiting", "proggress", "failed", "canceled"},
-     * )
-     *
-     * @OA\Property(
-     *   property="shop_status",
-     *   type="string",
-     *   enum={"waiting", "proggress", "failed", "canceled"},
-     * )
-     *
-     * @OA\Property(
-     *   property="shipping_status",
-     *   type="string",
-     *   enum={"waiting", "proggress", "failed", "canceled"},
-     * )
      */
 
     protected $fillable = [
@@ -52,9 +34,7 @@ class Order extends Model
         'client_id',
         'shipping_method_id',
         'shipping_price',
-        'payment_status',
-        'shop_status',
-        'shipping_status',
+        'status_id',
         'delivery_address_id',
         'invoice_address_id',
         'comment',
@@ -87,6 +67,17 @@ class Order extends Model
 
     /**
      * @OA\Property(
+     *   property="status",
+     *   ref="#/components/schemas/Status",
+     * )
+     */
+    public function status()
+    {
+        return $this->belongsTo(Status::class);
+    }
+
+    /**
+     * @OA\Property(
      *   property="shipping_method",
      *   ref="#/components/schemas/ShippingMethod",
      * )
@@ -94,18 +85,6 @@ class Order extends Model
     public function shippingMethod()
     {
         return $this->hasOne(ShippingMethod::class, 'id', 'shipping_method_id');
-    }
-
-    /**
-     * @OA\Property(
-     *   property="items",
-     *   type="array",
-     *   @OA\Items(ref="#/components/schemas/OrderItem"),
-     * )
-     */
-    public function items()
-    {
-        return $this->hasMany(OrderItem::class);
     }
 
     /**
@@ -128,6 +107,18 @@ class Order extends Model
     public function invoiceAddress()
     {
         return $this->hasOne(Address::class, 'id', 'invoice_address_id');
+    }
+
+    /**
+     * @OA\Property(
+     *   property="items",
+     *   type="array",
+     *   @OA\Items(ref="#/components/schemas/OrderItem"),
+     * )
+     */
+    public function items()
+    {
+        return $this->hasMany(OrderItem::class);
     }
 
     public function payments()

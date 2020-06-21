@@ -2,13 +2,11 @@
 
 namespace Tests\Feature;
 
+use Tests\TestCase;
 use App\Models\Brand;
 use App\Models\Product;
 use App\Models\Category;
-use Tests\TestCase;
 use Laravel\Passport\Passport;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CategoriesTest extends TestCase
 {

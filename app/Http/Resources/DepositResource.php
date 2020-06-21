@@ -2,9 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\MediaResource;
-use App\Http\Resources\CategoryResource;
-
 class DepositResource extends Resource
 {
     /**

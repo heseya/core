@@ -2,10 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\AddressResource;
-use App\Http\Resources\OrderItemResource;
-use App\Http\Resources\ShippingMethodResource;
-
 class OrderResource extends Resource
 {
     /**
@@ -22,16 +18,20 @@ class OrderResource extends Resource
             'id' => $this->id,
             'code' => $this->code,
             'email' => $this->email,
-            'comment' => $this->comment,
             'summary' => $this->summary,
             'created_at' => $this->created_at,
-            'payment_status' => $this->payment_status,
-            'shop_status' => $this->shop_status,
-            'delivery_status' => $this->delivery_status,
+            'status' => StatusResource::make($this->status),
             'shipping_method' => ShippingMethodResource::make($this->shippingMethod),
-            'items' => OrderItemResource::collection($this->items),
             'delivery_address' => AddressResource::make($this->deliveryAddress),
+        ];
+    }
+
+    public function view($request): array
+    {
+        return [
             'invoice_address' => AddressResource::make($this->invoiceAddress),
+            'comment' => $this->comment,
+            'items' => OrderItemResource::collection($this->items),
         ];
     }
 }

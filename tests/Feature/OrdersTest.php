@@ -26,16 +26,17 @@ class OrdersTest extends TestCase
          */
         $this->expected = [
             'code' => $this->order->code,
-            'payment_status' => $this->order->payment_status,
-            'shop_status' => $this->order->shop_status,
-            'delivery_status' => $this->order->delivery_status,
+            'status' => [
+                'id' => $this->order->status->id,
+                'name' => $this->order->status->name,
+                'color' => $this->order->status->color,
+                'description' => $this->order->status->description,
+            ],
         ];
 
         $this->expectedStructure = [
             'code',
-            'payment_status',
-            'shop_status',
-            'delivery_status',
+            'status',
             'created_at',
         ];
     }

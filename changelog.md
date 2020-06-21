@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
+- Simplified and customizable statuses system.
 - Resource can show other data if it is are single or collection. (Resources 2.0)
 
 
