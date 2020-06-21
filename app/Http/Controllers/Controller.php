@@ -14,7 +14,7 @@ class Controller extends BaseController
     /**
      * @OA\Info(
      *   title="Heseya Store API",
-     *   version="1.0.0",
+     *   version="1.0.1",
      * )
      */
 
@@ -25,7 +25,7 @@ class Controller extends BaseController
      *   securityScheme="oauth",
      *   @OA\Flow(
      *     flow="implicit",
-     *     authorizationUrl="https://depth.space/oauth",
+     *     authorizationUrl="https://dev.***REMOVED***/login",
      *     scopes={}
      *   )
      * )

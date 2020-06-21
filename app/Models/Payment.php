@@ -20,6 +20,12 @@ class Payment extends Model
      * )
      *
      * @OA\Property(
+     *   property="external_id",
+     *   type="string",
+     *   example="D2spSDJ21LSA",
+     * )
+     *
+     * @OA\Property(
      *   property="method",
      *   type="string",
      *   example="heseya",

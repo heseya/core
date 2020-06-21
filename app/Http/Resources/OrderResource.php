@@ -19,6 +19,8 @@ class OrderResource extends Resource
             'code' => $this->code,
             'email' => $this->email,
             'summary' => $this->summary,
+            'payed' => $this->payed,
+            'is_payed' => $this->isPayed(),
             'created_at' => $this->created_at,
             'status' => StatusResource::make($this->status),
             'shipping_method' => ShippingMethodResource::make($this->shippingMethod),
@@ -32,6 +34,7 @@ class OrderResource extends Resource
             'invoice_address' => AddressResource::make($this->invoiceAddress),
             'comment' => $this->comment,
             'items' => OrderItemResource::collection($this->items),
+            'payments' => PaymentResource::collection($this->payments),
         ];
     }
 }

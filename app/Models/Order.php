@@ -46,7 +46,7 @@ class Order extends Model
      *   type="number",
      * )
     */
-    public function getSummaryAttribute()
+    public function getSummaryAttribute(): float
     {
         $value = $this->shipping_price;
 
@@ -57,12 +57,24 @@ class Order extends Model
         return round($value, 2);
     }
 
-    public function saveItems($items)
+    /**
+     * Summary amount of payed.
+     *
+     * @return float
+     */
+    public function getPayedAttribute(): float
     {
-        foreach ($items as $item) {
-            $item = OrderItem::create($item);
-            $this->items()->save($item);
-        }
+        return $this->payments()
+            ->where('status', Payment::STATUS_PAYED)
+            ->sum('amount');
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPayed(): bool
+    {
+        return $this->summary === $this->payed;
     }
 
     /**
@@ -121,6 +133,13 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    /**
+     * @OA\Property(
+     *   property="payments",
+     *   type="array",
+     *   @OA\Items(ref="#/components/schemas/Payment"),
+     * )
+     */
     public function payments()
     {
         return $this->hasMany(Payment::class);
@@ -139,5 +158,16 @@ class Order extends Model
     public function products()
     {
         return $this->belongsToMany(Product::class)->using(OrderItem::class);
+    }
+
+    /**
+     * @param $items
+     */
+    public function saveItems($items): void
+    {
+        foreach ($items as $item) {
+            $item = OrderItem::create($item);
+            $this->items()->save($item);
+        }
     }
 }

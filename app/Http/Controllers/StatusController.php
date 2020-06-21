@@ -65,9 +65,9 @@ class StatusController extends Controller
     public function create(Request $request): JsonResource
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:60',
             'color' => 'required|string|size:6',
-            'description' => 'string|nullable',
+            'description' => 'string|max:255|nullable',
         ]);
 
         $status = Status::create($request->all());
@@ -111,9 +111,9 @@ class StatusController extends Controller
     public function update(Status $status, Request $request): JsonResource
     {
         $request->validate([
-            'name' => 'string|max:255',
+            'name' => 'string|max:60',
             'color' => 'string|size:6',
-            'description' => 'string|nullable',
+            'description' => 'string|max:255|nullable',
         ]);
 
         $status->update($request->all());

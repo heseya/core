@@ -2,8 +2,9 @@
 
 namespace App\Payments;
 
-use App\Payment;
+use Exception;
 use SimpleXMLElement;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 
 class Bluemedia implements PaymentMethod
@@ -26,7 +27,7 @@ class Bluemedia implements PaymentMethod
             '&Hash=' . $hash;
 
         return [
-            'redirectUrl' => $url,
+            'redirect_url' => $url,
         ];
     }
 
@@ -35,7 +36,7 @@ class Bluemedia implements PaymentMethod
         try {
             $itn = new SimpleXMLElement(base64_decode($request->getContent()));
         } catch (Exception $e) {
-            return self::response($payment_id, 'NOTCONFIRMED');
+            return self::response('XXX', 'NOTCONFIRMED');
         }
 
         // dd($itn);
@@ -92,18 +93,20 @@ class Bluemedia implements PaymentMethod
             config('bluemedia.key'),
         );
 
-        return response('<?xml version="1.0"?>
-        <confirmationList>
-            <serviceID>' . config('bluemedia.service_id') . '</serviceID>
-                <transactionsConfirmations>
-                    <transactionConfirmed>
-                    <orderID>' . $payment_id . '</orderID>
-                    <confirmation>' . $confirmation . '</confirmation>
-                    </transactionConfirmed>
-                </transactionsConfirmations>
-            <hash>' . $hash . '</hash>
-        </confirmationList>', 200, [
-            'Content-Type' => 'application/xml',
-        ]);
+        return response(
+            '<?xml version="1.0"?>
+            <confirmationList>
+                <serviceID>' . config('bluemedia.service_id') . '</serviceID>
+                    <transactionsConfirmations>
+                        <transactionConfirmed>
+                        <orderID>' . $payment_id . '</orderID>
+                        <confirmation>' . $confirmation . '</confirmation>
+                        </transactionConfirmed>
+                    </transactionsConfirmations>
+                <hash>' . $hash . '</hash>
+            </confirmationList>',
+            200,
+            ['Content-Type' => 'application/xml'],
+        );
     }
 }

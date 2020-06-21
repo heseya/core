@@ -6,7 +6,6 @@ use Paynow\Client;
 use App\Models\Payment;
 use Paynow\Environment;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 
 class PayNow implements PaymentMethod
 {
@@ -34,12 +33,8 @@ class PayNow implements PaymentMethod
             $paymentData['continueUrl'] = $payment->continueUrl;
         }
 
-        try {
-            $response = new \Paynow\Service\Payment($client);
-            $result = $response->authorize($paymentData, $idempotencyKey);
-        } catch (PaynowException $exception) {
-            return false;
-        }
+        $response = new \Paynow\Service\Payment($client);
+        $result = $response->authorize($paymentData, $idempotencyKey);
 
         return [
             'redirect_url' => $result->redirectUrl,
