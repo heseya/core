@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Resource can show other data if it is are single or collection. (Resources 2.0)
+- Content was hidden from pages index.
 
 
 ## [1.0.1] - 2020-06-03

@@ -17,6 +17,12 @@ class PageResource extends Resource
             'slug' => $this->slug,
             'name' => $this->name,
             'public' => $this->public,
+        ];
+    }
+
+    public function view($request): array
+    {
+        return [
             'content_md' => $this->content_md,
             'content_html' => $this->content_html,
         ];
