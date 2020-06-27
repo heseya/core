@@ -12,18 +12,15 @@ class OrderResource extends Resource
      */
     public function base($request): array
     {
-        $this->shippingMethod->price = $this->shipping_price;
-
         return [
             'id' => $this->id,
             'code' => $this->code,
             'email' => $this->email,
             'summary' => $this->summary,
-            'payed' => $this->payed,
-            'is_payed' => $this->isPayed(),
+            'summary_payed' => $this->payed,
+            'payed' => $this->isPayed(),
             'created_at' => $this->created_at,
             'status' => StatusResource::make($this->status),
-            'shipping_method' => ShippingMethodResource::make($this->shippingMethod),
             'delivery_address' => AddressResource::make($this->deliveryAddress),
         ];
     }

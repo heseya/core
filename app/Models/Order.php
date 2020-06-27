@@ -32,8 +32,6 @@ class Order extends Model
         'code',
         'email',
         'client_id',
-        'shipping_method_id',
-        'shipping_price',
         'status_id',
         'delivery_address_id',
         'invoice_address_id',
@@ -60,9 +58,14 @@ class Order extends Model
     /**
      * Summary amount of payed.
      *
+     * @OA\Property(
+     *   property="summary_payed",
+     *   type="number",
+     * )
+     *
      * @return float
      */
-    public function getPayedAttribute(): float
+    public function getPayedAmountAttribute(): float
     {
         return $this->payments()
             ->where('status', Payment::STATUS_PAYED)
@@ -70,6 +73,11 @@ class Order extends Model
     }
 
     /**
+     * @OA\Property(
+     *   property="payed",
+     *   type="bolean",
+     * )
+     *
      * @return bool
      */
     public function isPayed(): bool
@@ -86,17 +94,6 @@ class Order extends Model
     public function status()
     {
         return $this->belongsTo(Status::class);
-    }
-
-    /**
-     * @OA\Property(
-     *   property="shipping_method",
-     *   ref="#/components/schemas/ShippingMethod",
-     * )
-     */
-    public function shippingMethod()
-    {
-        return $this->hasOne(ShippingMethod::class, 'id', 'shipping_method_id');
     }
 
     /**

@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- PayNow integration.
+
 ### Changed
 - Simplified and customizable statuses system.
 - Resource can show other data if it is are single or collection. (Resources 2.0)

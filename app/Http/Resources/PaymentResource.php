@@ -16,9 +16,8 @@ class PaymentResource extends Resource
             'id' => $this->id,
             'external_id' => $this->external_id,
             'method' => $this->method,
-            'status' => $this->status,
+            'payed' => $this->payed,
             'amount' => $this->amount,
-            'currency' => $this->currency,
             'redirect_url' => $this->redirect_url,
             'continue_url' => $this->continue_url,
         ];

@@ -73,8 +73,8 @@ class PaymentController extends Controller
         $payment = $order->payments()->create([
             'method' => $method,
             'amount' => $order->summary - $order->payed,
+            'payed' => false,
             'continue_url' => $request->continue ?? null,
-            'currency' => 'PLN',
         ]);
 
         try {

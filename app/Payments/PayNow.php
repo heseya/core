@@ -20,8 +20,8 @@ class PayNow implements PaymentMethod
         $idempotencyKey = uniqid($orderReference . '_');
 
         $paymentData = [
-            'amount' => $payment->amount * 100,
-            'currency' => 'PLN',
+            'amount' => (int) $payment->amount * 100,
+            'currency' => $payment->order->currency,
             'externalId' => $payment->order->code,
             'description' => 'Zakupy w sklepie internetowym.',
             'buyer' => [
@@ -39,7 +39,6 @@ class PayNow implements PaymentMethod
         return [
             'redirect_url' => $result->redirectUrl,
             'external_id' => $result->paymentId,
-            'status' => $result->status === 'NEW' ? Payment::STATUS_PENDING : null,
         ];
     }
 

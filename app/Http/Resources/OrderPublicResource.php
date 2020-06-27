@@ -15,7 +15,7 @@ class OrderPublicResource extends Resource
         return [
             'code' => $this->code,
             'status' => StatusResource::make($this->status),
-            'is_payed' => $this->isPayed(),
+            'payed' => $this->isPayed(),
             'created_at' => $this->created_at,
         ];
     }

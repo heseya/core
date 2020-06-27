@@ -30,13 +30,13 @@ class OrdersTest extends TestCase
                 'color' => $this->order->status->color,
                 'description' => $this->order->status->description,
             ],
-            'is_payed' => $this->order->isPayed(),
+            'payed' => $this->order->isPayed(),
         ];
 
         $this->expectedStructure = [
             'code',
             'status',
-            'is_payed',
+            'payed',
             'created_at',
         ];
     }
