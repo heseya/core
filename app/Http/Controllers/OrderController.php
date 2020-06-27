@@ -13,7 +13,7 @@ use App\Models\ShippingMethod;
 use App\Models\ProductSchemaItem;
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\OrderResource;
-use \Illuminate\Http\Request\OrderCreateRequest;
+use App\Http\Requests\OrderCreateRequest;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\OrderPublicResource;
 
@@ -345,7 +345,7 @@ class OrderController extends Controller
 
         do {
             $code = Str::upper(Str::random(6));
-        } while (Order::firstWhere('code', $code));
+        } while (Order::where('code', $code)->exists());
 
         $order = new Order([
             'code' => $code,
