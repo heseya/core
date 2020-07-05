@@ -60,6 +60,10 @@ class PaymentController extends Controller
      */
     public function pay(Order $order, string $method, Request $request)
     {
+        $request->validate([
+            'continue' => 'required|string',
+        ]);
+
         if ($order->isPayed()) {
             return Error::abort('Order is already paid.', 406);
         }
@@ -74,12 +78,13 @@ class PaymentController extends Controller
             'method' => $method,
             'amount' => $order->summary - $order->payed,
             'payed' => false,
-            'continue_url' => $request->continue ?? null,
+            'continue_url' => $request->continue,
         ]);
 
         try {
             $payment->update($method_class::generateUrl($payment));
         } catch (Throwable $e) {
+            return $e;
             return Error::abort('Cannot generate payment url.', 500);
         }
 
