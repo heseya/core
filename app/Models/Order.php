@@ -26,35 +26,13 @@ class Order extends Model
      *   type="string",
      *   example="asap plz",
      * )
-     *
-     * @OA\Property(
-     *   property="payment_status",
-     *   type="string",
-     *   enum={"waiting", "proggress", "failed", "canceled"},
-     * )
-     *
-     * @OA\Property(
-     *   property="shop_status",
-     *   type="string",
-     *   enum={"waiting", "proggress", "failed", "canceled"},
-     * )
-     *
-     * @OA\Property(
-     *   property="shipping_status",
-     *   type="string",
-     *   enum={"waiting", "proggress", "failed", "canceled"},
-     * )
      */
 
     protected $fillable = [
         'code',
         'email',
         'client_id',
-        'shipping_method_id',
-        'shipping_price',
-        'payment_status',
-        'shop_status',
-        'shipping_status',
+        'status_id',
         'delivery_address_id',
         'invoice_address_id',
         'comment',
@@ -66,7 +44,7 @@ class Order extends Model
      *   type="number",
      * )
     */
-    public function getSummaryAttribute()
+    public function getSummaryAttribute(): float
     {
         $value = $this->shipping_price;
 
@@ -77,35 +55,45 @@ class Order extends Model
         return round($value, 2);
     }
 
-    public function saveItems($items)
+    /**
+     * Summary amount of payed.
+     *
+     * @OA\Property(
+     *   property="summary_payed",
+     *   type="number",
+     * )
+     *
+     * @return float
+     */
+    public function getPayedAmountAttribute(): float
     {
-        foreach ($items as $item) {
-            $item = OrderItem::create($item);
-            $this->items()->save($item);
-        }
+        return $this->payments()
+            ->where('status', Payment::STATUS_PAYED)
+            ->sum('amount');
     }
 
     /**
      * @OA\Property(
-     *   property="shipping_method",
-     *   ref="#/components/schemas/ShippingMethod",
+     *   property="payed",
+     *   type="bolean",
      * )
+     *
+     * @return bool
      */
-    public function shippingMethod()
+    public function isPayed(): bool
     {
-        return $this->hasOne(ShippingMethod::class, 'id', 'shipping_method_id');
+        return $this->summary === $this->payed;
     }
 
     /**
      * @OA\Property(
-     *   property="items",
-     *   type="array",
-     *   @OA\Items(ref="#/components/schemas/OrderItem"),
+     *   property="status",
+     *   ref="#/components/schemas/Status",
      * )
      */
-    public function items()
+    public function status()
     {
-        return $this->hasMany(OrderItem::class);
+        return $this->belongsTo(Status::class);
     }
 
     /**
@@ -130,6 +118,25 @@ class Order extends Model
         return $this->hasOne(Address::class, 'id', 'invoice_address_id');
     }
 
+    /**
+     * @OA\Property(
+     *   property="items",
+     *   type="array",
+     *   @OA\Items(ref="#/components/schemas/OrderItem"),
+     * )
+     */
+    public function items()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * @OA\Property(
+     *   property="payments",
+     *   type="array",
+     *   @OA\Items(ref="#/components/schemas/Payment"),
+     * )
+     */
     public function payments()
     {
         return $this->hasMany(Payment::class);
@@ -148,5 +155,16 @@ class Order extends Model
     public function products()
     {
         return $this->belongsToMany(Product::class)->using(OrderItem::class);
+    }
+
+    /**
+     * @param $items
+     */
+    public function saveItems($items): void
+    {
+        foreach ($items as $item) {
+            $item = OrderItem::create($item);
+            $this->items()->save($item);
+        }
     }
 }

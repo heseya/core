@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources;
 
-class OrderPublicResource extends Resource
+class StatusResource extends Resource
 {
     /**
      * Transform the resource into an array.
@@ -13,10 +13,10 @@ class OrderPublicResource extends Resource
     public function base($request): array
     {
         return [
-            'code' => $this->code,
-            'status' => StatusResource::make($this->status),
-            'payed' => $this->isPayed(),
-            'created_at' => $this->created_at,
+            'id' => $this->id,
+            'name' => $this->name,
+            'color' => $this->color,
+            'description' => $this->description,
         ];
     }
 }

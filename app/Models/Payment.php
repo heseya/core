@@ -9,14 +9,16 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Payment extends Model
 {
-    const STATUS_PENDING = 0;
-    const STATUS_PAYED = 1;
-    const STATUS_FAILURE = 2;
-
     /**
      * @OA\Property(
      *   property="id",
      *   type="integer",
+     * )
+     *
+     * @OA\Property(
+     *   property="external_id",
+     *   type="string",
+     *   example="D2spSDJ21LSA",
      * )
      *
      * @OA\Property(
@@ -26,15 +28,8 @@ class Payment extends Model
      * )
      *
      * @OA\Property(
-     *   property="status",
-     *   type="string",
-     *   example="payed",
-     * )
-     *
-     * @OA\Property(
-     *   property="currency",
-     *   type="string",
-     *   example="PLN",
+     *   property="payed",
+     *   type="boolean",
      * )
      *
      * @OA\Property(
@@ -58,11 +53,15 @@ class Payment extends Model
     protected $fillable = [
         'external_id',
         'method',
-        'status',
-        'currency',
+        'payed',
         'amount',
         'redirect_url',
         'continue_url',
+    ];
+
+    protected $casts = [
+        'payed' => 'boolean',
+        'amount' => 'float',
     ];
 
     public function order()

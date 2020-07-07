@@ -2,11 +2,12 @@
 
 namespace Tests\Feature;
 
+
+use Tests\TestCase;
 use App\Models\Item;
 use App\Models\Brand;
 use App\Models\Product;
 use App\Models\Category;
-use Tests\TestCase;
 use Laravel\Passport\Passport;
 
 class ProductsTest extends TestCase

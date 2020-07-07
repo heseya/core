@@ -2,12 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\Order;
 use Tests\TestCase;
+use App\Models\Order;
 use App\Models\ShippingMethod;
 use Laravel\Passport\Passport;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class OrdersTest extends TestCase
 {
@@ -26,16 +24,19 @@ class OrdersTest extends TestCase
          */
         $this->expected = [
             'code' => $this->order->code,
-            'payment_status' => $this->order->payment_status,
-            'shop_status' => $this->order->shop_status,
-            'delivery_status' => $this->order->delivery_status,
+            'status' => [
+                'id' => $this->order->status->id,
+                'name' => $this->order->status->name,
+                'color' => $this->order->status->color,
+                'description' => $this->order->status->description,
+            ],
+            'payed' => $this->order->isPayed(),
         ];
 
         $this->expectedStructure = [
             'code',
-            'payment_status',
-            'shop_status',
-            'delivery_status',
+            'status',
+            'payed',
             'created_at',
         ];
     }

@@ -4,7 +4,6 @@ namespace App\Http\Resources;
 
 use Countable;
 use IteratorAggregate;
-use App\Http\Resources\Resource;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Http\Resources\CollectsResources;
 use Illuminate\Http\Resources\Json\PaginatedResourceResponse;

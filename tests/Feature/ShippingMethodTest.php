@@ -6,8 +6,6 @@ use App\Models\Order;
 use Tests\TestCase;
 use App\Models\ShippingMethod;
 use Laravel\Passport\Passport;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ShippingMethodTest extends TestCase
 {

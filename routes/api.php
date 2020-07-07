@@ -18,7 +18,7 @@ Route::prefix('orders')->group(function () {
     Route::post('verify','OrderController@verify');
     Route::get('id:{order:id}', 'OrderController@view')->middleware('auth:api');
     Route::get('{order:code}', 'OrderController@viewPublic');
-    Route::get('{order:code}/pay/{method}', 'PaymentController@pay');
+    Route::post('{order:code}/pay/{method}', 'PaymentController@pay');
 });
 
 Route::get('payments/{method}', 'PaymentController@receive');
@@ -53,15 +53,24 @@ Route::prefix('shipping-methods')->group(function () {
     Route::delete('id:{shipping_method:id}', 'ShippingMethodController@delete')->middleware('auth:api');
 });
 
-Route::prefix('items')->middleware('auth:api')->group(function () {
-    Route::get(null, 'ItemController@index');
-    Route::post(null, 'ItemController@create');
-    Route::get('id:{item:id}', 'ItemController@view');
-    Route::patch('id:{item:id}', 'ItemController@update');
-    Route::delete('id:{item:id}', 'ItemController@delete');
+Route::middleware('auth:api')->group(function () {
+    Route::prefix('items')->group(function () {
+        Route::get(null, 'ItemController@index');
+        Route::post(null, 'ItemController@create');
+        Route::get('id:{item:id}', 'ItemController@view');
+        Route::patch('id:{item:id}', 'ItemController@update');
+        Route::delete('id:{item:id}', 'ItemController@delete');
 
-    Route::get('id:{item:id}/deposits', 'DepositController@view');
-    Route::post('id:{item:id}/deposits', 'DepositController@create');
+        Route::get('id:{item:id}/deposits', 'DepositController@view');
+        Route::post('id:{item:id}/deposits', 'DepositController@create');
+    });
+
+    Route::prefix('statuses')->group(function () {
+        Route::get(null, 'StatusController@index');
+        Route::post(null, 'StatusController@create');
+        Route::patch('id:{status:id}', 'StatusController@update');
+        Route::delete('id:{status:id}', 'StatusController@delete');
+    });
 });
 
 Route::get('deposits', 'DepositController@index')->middleware('auth:api');

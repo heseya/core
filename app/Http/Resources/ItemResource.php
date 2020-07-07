@@ -2,10 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\MediaResource;
-use App\Http\Resources\CategoryResource;
-
-// For future expansion
 class ItemResource extends Resource
 {
     /**

@@ -6,7 +6,6 @@ use Paynow\Client;
 use App\Models\Payment;
 use Paynow\Environment;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 
 class PayNow implements PaymentMethod
 {
@@ -21,8 +20,8 @@ class PayNow implements PaymentMethod
         $idempotencyKey = uniqid($orderReference . '_');
 
         $paymentData = [
-            'amount' => $payment->amount * 100,
-            'currency' => 'PLN',
+            'amount' => (int) $payment->amount * 100,
+            'currency' => $payment->order->currency,
             'externalId' => $payment->order->code,
             'description' => 'Zakupy w sklepie internetowym.',
             'buyer' => [
@@ -34,17 +33,12 @@ class PayNow implements PaymentMethod
             $paymentData['continueUrl'] = $payment->continueUrl;
         }
 
-        try {
-            $response = new \Paynow\Service\Payment($client);
-            $result = $response->authorize($paymentData, $idempotencyKey);
-        } catch (PaynowException $exception) {
-            return false;
-        }
+        $response = new \Paynow\Service\Payment($client);
+        $result = $response->authorize($paymentData, $idempotencyKey);
 
         return [
             'redirect_url' => $result->redirectUrl,
             'external_id' => $result->paymentId,
-            'status' => $result->status === 'NEW' ? Payment::STATUS_PENDING : null,
         ];
     }
 

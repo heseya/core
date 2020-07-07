@@ -2,9 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\ProductResource;
-use App\Http\Resources\SchemaItemResource;
-
 class OrderItemResource extends Resource
 {
     /**
