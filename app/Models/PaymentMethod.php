@@ -1,5 +1,6 @@
 <?php
 
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -7,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @OA\Schema()
  */
-class ShippingMethod extends Model
+class PaymentMethod extends Model
 {
     /**
      * @OA\Property(
@@ -18,13 +19,7 @@ class ShippingMethod extends Model
      * @OA\Property(
      *   property="name",
      *   type="string",
-     *   example="Next Day Courier",
-     * )
-     *
-     * @OA\Property(
-     *   property="price",
-     *   type="number",
-     *   example=10.99,
+     *   example="Heseya Pay",
      * )
      *
      * @OA\Property(
@@ -40,7 +35,6 @@ class ShippingMethod extends Model
      */
     protected $fillable = [
         'name',
-        'price',
         'public',
     ];
 
@@ -50,22 +44,11 @@ class ShippingMethod extends Model
      * @var array
      */
     protected $casts = [
-        'price' => 'float',
         'public' => 'boolean',
     ];
 
-    public function orders()
+    public function shippingMethods()
     {
-        return $this->hasMany(Order::class);
-    }
-
-    public function paymentMethods()
-    {
-        return $this->belongsToMany(PaymentMethod::class, 'shipping_method_payment_method');
-    }
-
-    public function paymentMethodsPublic()
-    {
-        return $this->paymentMethods()->where('public', true);
+        return $this->belongsToMany(ShippingMethod::class, 'shipping_method_payment_method');
     }
 }

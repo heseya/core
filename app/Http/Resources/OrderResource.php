@@ -16,6 +16,7 @@ class OrderResource extends Resource
             'id' => $this->id,
             'code' => $this->code,
             'email' => $this->email,
+            'currency' => $this->currency,
             'summary' => $this->summary,
             'summary_payed' => $this->payed,
             'payed' => $this->isPayed(),
@@ -29,6 +30,11 @@ class OrderResource extends Resource
     {
         return [
             'invoice_address' => AddressResource::make($this->invoiceAddress),
+            'shopping_method' => [
+                'id' => $this->shippingMethod->id,
+                'name' => $this->shippingMethod->name,
+                'price' => $this->shipping_price,
+            ],
             'comment' => $this->comment,
             'items' => OrderItemResource::collection($this->items),
             'payments' => PaymentResource::collection($this->payments),

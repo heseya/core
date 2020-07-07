@@ -351,6 +351,7 @@ class OrderController extends Controller
             'code' => $code,
             'email' => $request->email,
             'comment' => $request->comment,
+            'currency' => 'PLN',
             'shipping_method_id' => $shipping_method->id,
             'shipping_price' => $shipping_method->price,
         ]);

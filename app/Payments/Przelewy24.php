@@ -2,17 +2,18 @@
 
 namespace App\Payments;
 
+use App\Exceptions\Error;
 use App\Models\Payment;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Exception;
 
 class Przelewy24 implements PaymentMethod
 {
     public static function generateUrl(Payment $payment): array
     {
         $fields = [
-            'sessionId' => "$payment->id",
+            'sessionId' => (string) $payment->id,
             'merchantId' => config('przelewy24.merchant_id'),
             'amount' => (int) $payment->amount * 100,
             'currency' => $payment->order->currency,
@@ -25,7 +26,7 @@ class Przelewy24 implements PaymentMethod
             config('przelewy24.pos_id'),
             config('przelewy24.secret_id'),
         )->post(
-            config('przelewy24.url') . '/transaction/register', 
+            config('przelewy24.url') . '/transaction/register',
             $fields + [
                 'posId' => config('przelewy24.pos_id'),
                 'description' => 'Zakupy w sklepie internetowym.',
@@ -40,10 +41,8 @@ class Przelewy24 implements PaymentMethod
             ],
         );
 
-        echo json_encode($response->json());
-
         if ($response->failed()) {
-            throw new Exception("Cannot generate payment url");
+            throw new Exception($response->json());
         }
 
         return [
@@ -125,7 +124,7 @@ class Przelewy24 implements PaymentMethod
     private static function sign(array $fields): string
     {
         $json = json_encode(
-            $fields, 
+            $fields,
             JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES,
         );
 

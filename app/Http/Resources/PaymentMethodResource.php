@@ -2,12 +2,12 @@
 
 namespace App\Http\Resources;
 
-class ShippingMethodResource extends Resource
+class PaymentMethodResource extends Resource
 {
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return array
      */
     public function base($request): array
@@ -15,9 +15,7 @@ class ShippingMethodResource extends Resource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'price' => $this->price,
             'public' => $this->public,
-            'payment_methods' => PaymentMethodResource::collection($this->paymentMethods),
         ];
     }
 }

@@ -4,6 +4,7 @@
     "description": "Heseya Shop System",
     "require": {
         "php": "^7.4",
+        "ext-json": "*",
         "ext-simplexml": "*",
         "darkaonline/l5-swagger": "^7.0",
         "fideloper/proxy": "^4.0",

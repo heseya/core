@@ -81,7 +81,7 @@ class OrderCreateRequest extends FormRequest
         return [
             'email' => 'required|email',
             'comment' => 'string|max:1000|nullable',
-            'shipping_method_id' => 'required|integer',
+            'shipping_method_id' => 'required|integer|exists:shipping_methods,id',
             'is_statute_accepted' => 'accepted',
 
             'items' => 'required|array|min:1',

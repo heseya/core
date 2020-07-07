@@ -101,12 +101,29 @@ class InitDatabase extends Migration
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         });
 
+        Schema::create('payment_methods', function (Blueprint $table) {
+            $table->tinyIncrements('id');
+            $table->string('name');
+            $table->boolean('public')->default(false);
+            $table->timestamps();
+        });
+
         Schema::create('shipping_methods', function (Blueprint $table) {
-            $table->smallIncrements('id');
+            $table->tinyIncrements('id');
             $table->string('name');
             $table->float('price', 19, 4);
             $table->boolean('public')->default(false);
             $table->timestamps();
+        });
+
+        Schema::create('shipping_method_payment_method', function (Blueprint $table) {
+            $table->smallIncrements('id');
+
+            $table->tinyInteger('shipping_method_id')->unsigned()->index();
+            $table->foreign('shipping_method_id')->references('id')->on('shipping_methods')->onDelete('cascade');
+
+            $table->tinyInteger('payment_method_id')->unsigned()->index();
+            $table->foreign('payment_method_id')->references('id')->on('payment_methods')->onDelete('cascade');
         });
 
         Schema::create('addresses', function (Blueprint $table) {
@@ -136,12 +153,15 @@ class InitDatabase extends Migration
             $table->string('currency', 3);
             $table->string('comment', 1000)->nullable();
             $table->tinyInteger('status_id')->unsigned()->nullable();
+            $table->tinyInteger('shipping_method_id')->unsigned()->nullable();
+            $table->float('shipping_price', 19, 4);
             $table->integer('delivery_address_id')->unsigned()->index()->nullable();
             $table->integer('invoice_address_id')->unsigned()->index()->nullable();
             $table->timestamps();
 
             // Relations
             $table->foreign('status_id')->references('id')->on('statuses')->onDelete('set null');
+            $table->foreign('shipping_method_id')->references('id')->on('shipping_methods')->onDelete('restrict');
             $table->foreign('delivery_address_id')->references('id')->on('addresses')->onDelete('restrict');
             $table->foreign('invoice_address_id')->references('id')->on('addresses')->onDelete('restrict');
         });

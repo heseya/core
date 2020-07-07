@@ -3,19 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\Error;
-use Illuminate\Http\Request;
+use App\Http\Resources\PaymentMethodResource;
+use App\Models\PaymentMethod;
 use App\Models\ShippingMethod;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Resources\ShippingMethodResource;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
 
-class ShippingMethodController extends Controller
+class PaymentMethodController extends Controller
 {
     /**
      * @OA\Get(
-     *   path="/shipping-methods",
-     *   summary="list shipping methods",
-     *   tags={"Shipping"},
+     *   path="/payment-methods",
+     *   summary="list payment methods",
+     *   tags={"Payments"},
      *   @OA\Response(
      *     response=200,
      *     description="Success",
@@ -23,35 +24,36 @@ class ShippingMethodController extends Controller
      *       @OA\Property(
      *         property="data",
      *         type="array",
-     *         @OA\Items(ref="#/components/schemas/ShippingMethod"),
+     *         @OA\Items(ref="#/components/schemas/PaymentMethod"),
      *       )
      *     )
      *   )
      * )
      */
-    public function index()
+    public function index(?int $shippingMethod = null): JsonResource
     {
-        $query = ShippingMethod::select();
-
-        if (Auth::check()) {
-            $query->with('paymentMethods');
+        if ($shippingMethod) {
+            $shippingMethod = ShippingMethod::findOrFail($shippingMethod);
+            $query = $shippingMethod->payments();
         } else {
-            $query
-                ->with(['paymentMethods' => fn ($q) => $q->where('public', true)])
-                ->where('public', true);
+            $query = PaymentMethod::select();
         }
 
-        return ShippingMethodResource::collection($query->get());
+        if (!Auth::check()) {
+            $query->where('public', true);
+        }
+
+        return PaymentMethodResource::collection($query->get());
     }
 
     /**
      * @OA\Post(
-     *   path="/shipping-methods",
-     *   summary="add new shipping method",
-     *   tags={"Shipping"},
+     *   path="/payment-methods",
+     *   summary="add new payment method",
+     *   tags={"Payments"},
      *   @OA\RequestBody(
      *     @OA\JsonContent(
-     *       ref="#/components/schemas/ShippingMethod",
+     *       ref="#/components/schemas/PaymentMethod",
      *     ),
      *   ),
      *   @OA\Response(
@@ -60,7 +62,7 @@ class ShippingMethodController extends Controller
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/ShippingMethod",
+     *         ref="#/components/schemas/PaymentMethod",
      *       )
      *     )
      *   ),
@@ -73,20 +75,19 @@ class ShippingMethodController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric',
             'public' => 'boolean',
         ]);
 
-        $shipping_method = ShippingMethod::create($request->all());
+        $payment_method = PaymentMethod::create($request->all());
 
-        return ShippingMethodResource::make($shipping_method);
+        return PaymentMethodResource::make($payment_method);
     }
 
     /**
      * @OA\Patch(
-     *   path="/shipping-methods/id:{id}",
-     *   summary="update shipping method",
-     *   tags={"Shipping"},
+     *   path="/payment-methods/id:{id}",
+     *   summary="update payment method",
+     *   tags={"Payments"},
      *   @OA\Parameter(
      *     name="id",
      *     in="path",
@@ -97,7 +98,7 @@ class ShippingMethodController extends Controller
      *   ),
      *   @OA\RequestBody(
      *     @OA\JsonContent(
-     *       ref="#/components/schemas/ShippingMethod",
+     *       ref="#/components/schemas/PaymentMethod",
      *     ),
      *   ),
      *   @OA\Response(
@@ -106,7 +107,7 @@ class ShippingMethodController extends Controller
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/ShippingMethod",
+     *         ref="#/components/schemas/PaymentMethod",
      *       )
      *     )
      *   ),
@@ -115,24 +116,23 @@ class ShippingMethodController extends Controller
      *   }
      * )
      */
-    public function update(ShippingMethod $shipping_method, Request $request): JsonResource
+    public function update(PaymentMethod $payment_method, Request $request): JsonResource
     {
         $request->validate([
             'name' => 'string|max:255',
-            'price' => 'numeric',
             'public' => 'boolean',
         ]);
 
-        $shipping_method->update($request->all());
+        $payment_method->update($request->all());
 
-        return ShippingMethodResource::make($shipping_method);
+        return PaymentMethodResource::make($payment_method);
     }
 
     /**
      * @OA\Delete(
-     *   path="/shipping-methods/id:{id}",
-     *   summary="delete shipping method",
-     *   tags={"Shipping"},
+     *   path="/payment-methods/id:{id}",
+     *   summary="delete payment method",
+     *   tags={"Payments"},
      *   @OA\Parameter(
      *     name="id",
      *     in="path",
@@ -150,16 +150,9 @@ class ShippingMethodController extends Controller
      *   }
      * )
      */
-    public function delete(ShippingMethod $shipping_method)
+    public function delete(PaymentMethod $payment_method)
     {
-        if ($shipping_method->orders()->count() > 0) {
-            return Error::abort(
-                "Shipping method can't be deleted, because has relations.",
-                400,
-            );
-        }
-
-        $shipping_method->delete();
+        $payment_method->delete();
 
         return response()->json(null, 204);
     }

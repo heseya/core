@@ -12,7 +12,7 @@ use Throwable;
 class PaymentController extends Controller
 {
     /**
-     * @OA\Get(
+     * @OA\Post(
      *   path="/orders/{code}/pay/{payment_method}",
      *   summary="redirect to payment",
      *   tags={"Orders"},
@@ -84,7 +84,6 @@ class PaymentController extends Controller
         try {
             $payment->update($method_class::generateUrl($payment));
         } catch (Throwable $e) {
-            return $e;
             return Error::abort('Cannot generate payment url.', 500);
         }
 

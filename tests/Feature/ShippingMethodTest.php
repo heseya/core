@@ -2,13 +2,17 @@
 
 namespace Tests\Feature;
 
-use App\Models\Order;
 use Tests\TestCase;
+use App\Models\Order;
 use App\Models\ShippingMethod;
 use Laravel\Passport\Passport;
 
 class ShippingMethodTest extends TestCase
 {
+    public ShippingMethod $shipping_method;
+    public ShippingMethod $shipping_method_hidden;
+    public array $expected;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -40,7 +44,7 @@ class ShippingMethodTest extends TestCase
         $response = $this->get('/shipping-methods');
         $response
             ->assertOk()
-            ->assertJsonCount(1, 'data') // Shoud show only public shipping methods.
+            ->assertJsonCount(1, 'data') // Should show only public shipping methods.
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);

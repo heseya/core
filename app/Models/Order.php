@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @OA\Schema()
@@ -33,6 +34,8 @@ class Order extends Model
         'email',
         'client_id',
         'status_id',
+        'shipping_method_id',
+        'shipping_price',
         'delivery_address_id',
         'invoice_address_id',
         'comment',
@@ -94,6 +97,17 @@ class Order extends Model
     public function status()
     {
         return $this->belongsTo(Status::class);
+    }
+
+    /**
+     * @OA\Property(
+     *   property="shipping_method",
+     *   ref="#/components/schemas/ShippingMethod",
+     * )
+     */
+    public function shippingMethod()
+    {
+        return $this->belongsTo(ShippingMethod::class);
     }
 
     /**
