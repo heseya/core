@@ -10,14 +10,16 @@ use Illuminate\Support\Facades\Http;
 
 class Przelewy24 implements PaymentMethod
 {
+    const API_VER = 'v1';
+
     public static function generateUrl(Payment $payment): array
     {
         $fields = [
             'sessionId' => (string) $payment->id,
-            'merchantId' => config('przelewy24.merchant_id'),
+            'merchantId' => (int) config('przelewy24.merchant_id'),
             'amount' => (int) $payment->amount * 100,
-            'currency' => $payment->order->currency,
-            'crc' => config('przelewy24.crc'),
+            'currency' => (string) $payment->order->currency,
+            'crc' => (string) config('przelewy24.crc'),
         ];
 
         $sign = self::sign($fields);
@@ -26,10 +28,10 @@ class Przelewy24 implements PaymentMethod
             config('przelewy24.pos_id'),
             config('przelewy24.secret_id'),
         )->post(
-            config('przelewy24.url') . '/transaction/register',
-            $fields + [
+            config('przelewy24.url') . '/api/' . self::API_VER . '/transaction/register',
+            array_merge($fields, [
                 'posId' => config('przelewy24.pos_id'),
-                'description' => 'Zakupy w sklepie internetowym.',
+                'description' => 'Zamówienie ' . $payment->order->code,
                 'email' => $payment->order->email,
                 'country' => 'PL',
                 'language' => 'pl',
@@ -38,22 +40,22 @@ class Przelewy24 implements PaymentMethod
                 'timeLimit' => 0,
                 'transferLabel' => 'Zamówienie ' . $payment->order->code,
                 'sign' => $sign,
-            ],
+            ]),
         );
 
         if ($response->failed()) {
-            throw new Exception($response->json());
+            throw new Exception('Przelewy24 request error');
         }
 
         return [
-            'redirect_url' => $response['data']['token'],
+            'redirect_url' => config('przelewy24.url') . '/trnRequest/' . $response['data']['token'],
         ];
     }
 
     public static function translateNotification(Request $request)
     {
         $request->validate([
-            'sessionId' => 'required|number|exists:payments,id',
+            'sessionId' => 'required|integer|exists:payments,id',
         ]);
 
         $payment = Payment::find($request->sesionId)->with('order');
@@ -61,11 +63,11 @@ class Przelewy24 implements PaymentMethod
         $amount = (int) $payment->amount * 100;
 
         $validated = $request->validate([
-            'merchantId' => 'required|number|in:' . config('przelewy24.merchant_id'),
-            'posId' => 'required|number|in:' . config('przelewy24.pos_id'),
-            'sessionId' => 'required|number',
-            'amount' => 'required|number|in:' . $amount,
-            'originAmount' => 'required|number|in:' . $amount,
+            'merchantId' => 'required|integer|in:' . config('przelewy24.merchant_id'),
+            'posId' => 'required|integer|in:' . config('przelewy24.pos_id'),
+            'sessionId' => 'required',
+            'amount' => 'required|integer|in:' . $amount,
+            'originAmount' => 'required|integer|in:' . $amount,
             'currency' => 'required|string|in:' . $payment->order->currency,
             'orderId' => 'required|number',
             'methodId' => 'required|number',
@@ -87,7 +89,7 @@ class Przelewy24 implements PaymentMethod
         ]);
 
         if ($validated['sign'] != $sign) {
-            return Error::abort('Invalid payment!', 400);
+            return Error::abort('Invalid payment', 400);
         }
 
         $sign = self::sign([
@@ -101,7 +103,7 @@ class Przelewy24 implements PaymentMethod
         $response = Http::withBasicAuth(
             config('przelewy24.pos_id'),
             config('przelewy24.secret_id'),
-        )->post(config('przelewy24.url') . '/transaction/verify', [
+        )->post(config('przelewy24.url') . '/api/' . self::API_VER . '/transaction/verify', [
             'merchantId' => $validated['merchantId'],
             'posId' => $validated['posId'],
             'sessionId' => $validated['sessionId'],
@@ -112,7 +114,7 @@ class Przelewy24 implements PaymentMethod
         ]);
 
         if ($response->failed()) {
-            return Error::abort('Cannot verify payment!', 400);
+            return Error::abort('Cannot verify payment', 400);
         }
 
         $payment->update([
@@ -123,10 +125,7 @@ class Przelewy24 implements PaymentMethod
 
     private static function sign(array $fields): string
     {
-        $json = json_encode(
-            $fields,
-            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES,
-        );
+        $json = json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         return hash('sha384', $json);
     }
