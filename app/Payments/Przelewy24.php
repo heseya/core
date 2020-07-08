@@ -31,14 +31,14 @@ class Przelewy24 implements PaymentMethod
             config('przelewy24.url') . '/api/' . self::API_VER . '/transaction/register',
             array_merge($fields, [
                 'posId' => config('przelewy24.pos_id'),
-                'description' => 'Zamówienie ' . $payment->order->code,
+                'description' => 'Zamowienie ' . $payment->order->code,
                 'email' => $payment->order->email,
                 'country' => 'PL',
                 'language' => 'pl',
                 'urlReturn' => $payment->continue_url,
                 'urlStatus' => config('app.url') . '/payments/przelewy24',
                 'timeLimit' => 0,
-                'transferLabel' => 'Zamówienie ' . $payment->order->code,
+                'transferLabel' => 'Zamowienie ' . $payment->order->code,
                 'sign' => $sign,
             ]),
         );
