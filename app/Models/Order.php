@@ -32,13 +32,13 @@ class Order extends Model
     protected $fillable = [
         'code',
         'email',
-        'client_id',
+        'currency',
+        'comment',
         'status_id',
         'shipping_method_id',
         'shipping_price',
         'delivery_address_id',
         'invoice_address_id',
-        'comment',
     ];
 
     /**

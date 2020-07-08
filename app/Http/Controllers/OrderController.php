@@ -356,8 +356,8 @@ class OrderController extends Controller
             'shipping_price' => $shipping_method->price,
         ]);
 
-        $order->delivery_address = Address::firstOrCreate($request->delivery_address)->id;
-        $order->invoice_address = $request->filled('invoice_address.name') ?
+        $order->delivery_address_id = Address::firstOrCreate($request->delivery_address)->id;
+        $order->invoice_address_id = $request->filled('invoice_address.name') ?
             Address::firstOrCreate($request->invoice_address)->id : null;
 
         $order->save();
