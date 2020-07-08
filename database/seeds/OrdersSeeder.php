@@ -3,6 +3,7 @@
 use App\Models\Order;
 use App\Models\Address;
 use App\Models\OrderItem;
+use App\Models\Payment;
 use Illuminate\Database\Seeder;
 use App\Models\ProductSchemaItem;
 
@@ -32,6 +33,10 @@ class OrdersSeeder extends Seeder
                     $item->save();
                 }
             });
+
+            for ($i = 0; $i < rand(0, 5); $i++) {
+                $order->payments()->save(factory(Payment::class)->make());
+            }
         });
     }
 }
