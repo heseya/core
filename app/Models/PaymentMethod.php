@@ -21,6 +21,11 @@ class PaymentMethod extends Model
      *   type="string",
      *   example="Heseya Pay",
      * )
+     * @OA\Property(
+     *   property="alias",
+     *   type="string",
+     *   example="heseya",
+     * )
      *
      * @OA\Property(
      *   property="public",
@@ -35,6 +40,7 @@ class PaymentMethod extends Model
      */
     protected $fillable = [
         'name',
+        'alias',
         'public',
     ];
 

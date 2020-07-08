@@ -75,6 +75,7 @@ class PaymentMethodController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'alias' => 'required|string|max:255',
             'public' => 'boolean',
         ]);
 
@@ -120,6 +121,7 @@ class PaymentMethodController extends Controller
     {
         $request->validate([
             'name' => 'string|max:255',
+            'alias' => 'string|max:255',
             'public' => 'boolean',
         ]);
 

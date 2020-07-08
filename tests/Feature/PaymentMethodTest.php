@@ -73,6 +73,7 @@ class PaymentMethodTest extends TestCase
 
         $payment_method = [
             'name' => 'Test',
+            'alias' => 'test',
             'public' => true,
         ];
 
@@ -94,6 +95,7 @@ class PaymentMethodTest extends TestCase
 
         $payment_method = [
             'name' => 'Test 2',
+            'alias' => 'test2',
             'public' => false,
         ];
 

@@ -15,6 +15,7 @@ class PaymentMethodResource extends Resource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'alias' => $this->alias,
             'public' => $this->public,
         ];
     }

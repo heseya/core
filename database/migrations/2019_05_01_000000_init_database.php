@@ -104,6 +104,7 @@ class InitDatabase extends Migration
         Schema::create('payment_methods', function (Blueprint $table) {
             $table->tinyIncrements('id');
             $table->string('name');
+            $table->string('alias');
             $table->boolean('public')->default(false);
             $table->timestamps();
         });
