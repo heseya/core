@@ -153,7 +153,10 @@ class Order extends Model
      */
     public function payments()
     {
-        return $this->hasMany(Payment::class);
+        return $this
+            ->hasMany(Payment::class)
+            ->orderBy('payed', 'DESC')
+            ->orderBy('updated_at', 'DESC');
     }
 
     public function logs()
