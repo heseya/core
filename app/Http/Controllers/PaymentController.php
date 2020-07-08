@@ -32,13 +32,15 @@ class PaymentController extends Controller
      *       type="string",
      *     )
      *   ),
-     *   @OA\Parameter(
-     *     name="continue",
-     *     in="query",
-     *     description="URL that the buyer will be redirected to, after making payment",
-     *     @OA\Schema(
-     *       type="string",
-     *     )
+     *   @OA\RequestBody(
+     *     request="OrderCreate",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="continue_url",
+     *         type="string",
+     *         description="URL that the buyer will be redirected to, after making payment",
+     *       ),
+     *     ),
      *   ),
      *   @OA\Response(
      *     response=200,
@@ -61,7 +63,7 @@ class PaymentController extends Controller
     public function pay(Order $order, string $method, Request $request)
     {
         $request->validate([
-            'continue' => 'required|string',
+            'continue_url' => 'required|string',
         ]);
 
         if ($order->isPayed()) {
@@ -78,7 +80,7 @@ class PaymentController extends Controller
             'method' => $method,
             'amount' => $order->summary - $order->payed,
             'payed' => false,
-            'continue_url' => $request->continue,
+            'continue_url' => $request->continue_url,
         ]);
 
         try {
