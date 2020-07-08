@@ -75,9 +75,12 @@ class ShippingMethodController extends Controller
             'name' => 'required|string|max:255',
             'price' => 'required|numeric',
             'public' => 'boolean',
+            'payment_methods' => 'array',
+            'payment_methods.*' => 'exists:payment_methods,id',
         ]);
 
         $shipping_method = ShippingMethod::create($request->all());
+        $shipping_method->paymentMethods()->sync($request->get('payment_methods', []));
 
         return ShippingMethodResource::make($shipping_method);
     }
@@ -121,9 +124,12 @@ class ShippingMethodController extends Controller
             'name' => 'string|max:255',
             'price' => 'numeric',
             'public' => 'boolean',
+            'payment_methods' => 'array',
+            'payment_methods.*' => 'exists:payment_methods,id',
         ]);
 
         $shipping_method->update($request->all());
+        $shipping_method->paymentMethods()->sync($request->get('payment_methods', []));
 
         return ShippingMethodResource::make($shipping_method);
     }
