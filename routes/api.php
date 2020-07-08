@@ -17,6 +17,7 @@ Route::prefix('orders')->group(function () {
     Route::post(null,'OrderController@create');
     Route::post('verify','OrderController@verify');
     Route::get('id:{order:id}', 'OrderController@view')->middleware('auth:api');
+    Route::post('id:{order:id}/status', 'OrderController@changeStatus')->middleware('auth:api');
     Route::get('{order:code}', 'OrderController@viewPublic');
     Route::post('{order:code}/pay/{method}', 'PaymentController@pay');
 });

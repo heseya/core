@@ -660,4 +660,50 @@ class OrderController extends Controller
 
         return response()->json(['data' => $cartItems]);
     }
+
+
+    /**
+     * @OA\Post(
+     *   path="/orders/id:{id}/status",
+     *   summary="change order status",
+     *   tags={"Orders"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="id",
+     *       example="2",
+     *     ),
+     *   ),
+     *   @OA\RequestBody(
+     *     request="OrderCreate",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="status_id",
+     *         type="integer",
+     *       ),
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=204,
+     *     description="Success",
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function changeStatus(Order $order, Request $request)
+    {
+        $request->validate([
+            'status_id' => 'required|integer|exists:statuses,id',
+        ]);
+
+        $order->update([
+            'status_id' => $request->status_id,
+        ]);
+
+        return response()->json(null, 204);
+    }
 }
