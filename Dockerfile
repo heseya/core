@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     zlib1g-dev \
     libzip-dev \
+    libxml2-dev \
     zip \
     unzip
 
@@ -14,6 +15,7 @@ RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl
 RUN docker-php-ext-install imap
 
 RUN docker-php-ext-install pdo_mysql
+RUN docker-php-ext-install soap
 
 RUN docker-php-ext-configure gd --with-jpeg
 RUN docker-php-ext-install gd
