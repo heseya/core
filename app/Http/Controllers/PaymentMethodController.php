@@ -17,6 +17,13 @@ class PaymentMethodController extends Controller
      *   path="/payment-methods",
      *   summary="list payment methods",
      *   tags={"Payments"},
+     *   @OA\Parameter(
+     *     name="shipping_method_id",
+     *     in="query",
+     *     @OA\Schema(
+     *       type="integer",
+     *     )
+     *   ),
      *   @OA\Response(
      *     response=200,
      *     description="Success",
@@ -30,11 +37,15 @@ class PaymentMethodController extends Controller
      *   )
      * )
      */
-    public function index(?int $shippingMethod = null): JsonResource
+    public function index(Request $request): JsonResource
     {
-        if ($shippingMethod) {
-            $shippingMethod = ShippingMethod::findOrFail($shippingMethod);
-            $query = $shippingMethod->payments();
+         $request->validate([
+            'shipping_method_id' => 'integer|exists:shipping_methods,id',
+        ]);
+
+        if ($request->shipping_method_id) {
+            $shipping_method = ShippingMethod::find($request->shipping_method_id);
+            $query = $shipping_method->paymentMethods();
         } else {
             $query = PaymentMethod::select();
         }

@@ -59,6 +59,13 @@ class ShippingMethod extends Model
         return $this->hasMany(Order::class);
     }
 
+    /**
+     * @OA\Property(
+     *   property="payment_methods",
+     *   type="array",
+     *   @OA\Items(ref="#/components/schemas/PaymentMethod"),
+     * )
+     */
     public function paymentMethods()
     {
         return $this->belongsToMany(PaymentMethod::class, 'shipping_method_payment_method');
