@@ -61,6 +61,13 @@ Route::prefix('payment-methods')->group(function () {
     Route::delete('id:{payment_method:id}', 'PaymentMethodController@delete')->middleware('auth:api');
 });
 
+Route::prefix('packages')->middleware('auth:api')->group(function () {
+    Route::get(null, 'PackageController@index');
+    Route::post(null, 'PackageController@create');
+    Route::patch('id:{package:id}', 'PackageController@update');
+    Route::delete('id:{package:id}', 'PackageController@delete');
+});
+
 Route::middleware('auth:api')->group(function () {
     Route::prefix('items')->group(function () {
         Route::get(null, 'ItemController@index');
