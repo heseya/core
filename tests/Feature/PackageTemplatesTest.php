@@ -3,16 +3,16 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
-use App\Models\Package;
+use App\Models\PackageTemplate;
 use Laravel\Passport\Passport;
 
-class PackagesTest extends TestCase
+class PackageTemplatesTest extends TestCase
 {
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->package = factory(Package::class)->create();
+        $this->package = factory(PackageTemplate::class)->create();
 
         /**
          * Expected response
@@ -32,12 +32,12 @@ class PackagesTest extends TestCase
      */
     public function testIndex()
     {
-        $response = $this->post('/packages');
+        $response = $this->post('/package-templates');
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->get('/packages');
+        $response = $this->get('/package-templates');
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -50,7 +50,7 @@ class PackagesTest extends TestCase
      */
     public function testCreate()
     {
-        $response = $this->post('/packages');
+        $response = $this->post('/package-templates');
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
@@ -63,7 +63,7 @@ class PackagesTest extends TestCase
             'depth' => 2,
         ];
 
-        $response = $this->post('/packages', $package);
+        $response = $this->post('/package-templates', $package);
         $response
             ->assertCreated()
             ->assertJson(['data' => $package]);
@@ -74,13 +74,13 @@ class PackagesTest extends TestCase
      */
     public function testUpdate()
     {
-        $response = $this->patch('/packages/id:' . $this->package->id);
+        $response = $this->patch('/package-templates/id:' . $this->package->id);
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
         $package = [
-            'name' => 'Package big',
+            'name' => 'PackageTemplate big',
             'weight' => 5.7,
             'width' => 50,
             'height' => 30,
@@ -88,7 +88,7 @@ class PackagesTest extends TestCase
         ];
 
         $response = $this->patch(
-            '/packages/id:' . $this->package->id,
+            '/package-templates/id:' . $this->package->id,
             $package,
         );
 
@@ -102,12 +102,12 @@ class PackagesTest extends TestCase
      */
     public function testDelete()
     {
-        $response = $this->delete('/packages/id:' . $this->package->id);
+        $response = $this->delete('/package-templates/id:' . $this->package->id);
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->delete('/packages/id:' . $this->package->id);
+        $response = $this->delete('/package-templates/id:' . $this->package->id);
         $response->assertNoContent();
     }
 }

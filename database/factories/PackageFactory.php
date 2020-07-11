@@ -2,10 +2,10 @@
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
 
-use App\Models\Package;
+use App\Models\PackageTemplate;
 use Faker\Generator as Faker;
 
-$factory->define(Package::class, function (Faker $faker) {
+$factory->define(PackageTemplate::class, function (Faker $faker) {
 
     $name = $faker->unique()->name;
 

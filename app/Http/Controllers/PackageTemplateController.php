@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Package;
-use App\Exceptions\Error;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Swagger\PackageTemplateControllerSwagger;
 use App\Http\Resources\PackageResource;
-use App\Http\Controllers\Swagger\PackageControllerSwagger;
+use App\Models\PackageTemplate;
+use Illuminate\Http\Request;
 
-class PackageController extends Controller implements PackageControllerSwagger
+class PackageTemplateController extends Controller implements PackageTemplateControllerSwagger
 {
     public function index()
     {
-        $packages = Package::all();
+        $packages = PackageTemplate::all();
 
         return PackageResource::collection($packages);
     }
@@ -27,14 +26,14 @@ class PackageController extends Controller implements PackageControllerSwagger
             'depth' => 'required|integer',
         ]);
 
-        $package = Package::create($validated);
+        $package = PackageTemplate::create($validated);
 
         return PackageResource::make($package)
             ->response()
             ->setStatusCode(201);
     }
 
-    public function update(Package $package, Request $request)
+    public function update(PackageTemplate $package, Request $request)
     {
         $validated = $request->validate([
             'name' => 'string|max:255',
@@ -49,7 +48,7 @@ class PackageController extends Controller implements PackageControllerSwagger
         return PackageResource::make($package);
     }
 
-    public function delete(Package $package)
+    public function delete(PackageTemplate $package)
     {
         $package->delete();
 

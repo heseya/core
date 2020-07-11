@@ -277,7 +277,7 @@ class InitDatabase extends Migration
             $table->timestamps();
         });
 
-        Schema::create('packages', function (Blueprint $table) {
+        Schema::create('package_templates', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
             $table->float('weight');

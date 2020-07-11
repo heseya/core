@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Swagger;
 
-use App\Models\Package;
+use App\Models\PackageTemplate;
 use Illuminate\Http\Request;
 
-interface PackageControllerSwagger
+interface PackageTemplateControllerSwagger
 {
     /**
      * @OA\Get(
-     *   path="/packages",
+     *   path="/package-templates",
      *   summary="list packages",
      *   tags={"Packages"},
      *   @OA\Response(
@@ -32,7 +32,7 @@ interface PackageControllerSwagger
 
     /**
      * @OA\Post(
-     *   path="/packages",
+     *   path="/package-templates",
      *   summary="add new package",
      *   tags={"Packages"},
      *   @OA\RequestBody(
@@ -59,7 +59,7 @@ interface PackageControllerSwagger
 
     /**
      * @OA\Patch(
-     *   path="/packages/id:{id}",
+     *   path="/package-templates/id:{id}",
      *   summary="update package",
      *   tags={"Packages"},
      *   @OA\Parameter(
@@ -90,11 +90,11 @@ interface PackageControllerSwagger
      *   }
      * )
      */
-    public function update(Package $package, Request $request);
+    public function update(PackageTemplate $package, Request $request);
 
     /**
      * @OA\Delete(
-     *   path="/packages/id:{id}",
+     *   path="/package-templates/id:{id}",
      *   summary="delete package",
      *   tags={"Packages"},
      *   @OA\Parameter(
@@ -114,5 +114,5 @@ interface PackageControllerSwagger
      *   }
      * )
      */
-    public function delete(Package $package);
+    public function delete(PackageTemplate $package);
 }

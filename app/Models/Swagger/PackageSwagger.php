@@ -4,7 +4,7 @@ namespace App\Models\Swagger;
 
 /**
  * @OA\Schema(
- *   title="Package"
+ *   title="PackageTemplate"
  * )
  */
 interface PackageSwagger
@@ -34,14 +34,14 @@ interface PackageSwagger
      *   description="Width in cm",
      *   example=10,
      * )
-     * 
+     *
      * @OA\Property(
      *   property="height",
      *   type="integer",
      *   description="Height in cm",
      *   example=20,
      * )
-     * 
+     *
      * @OA\Property(
      *   property="depth",
      *   type="integer",

@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\Package;
+use App\Models\PackageTemplate;
 use Illuminate\Database\Seeder;
 
-class PackageSeeder extends Seeder
+class PackageTemplateSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -12,6 +12,6 @@ class PackageSeeder extends Seeder
      */
     public function run()
     {
-        factory(Package::class, rand(3, 6))->create();
+        factory(PackageTemplate::class, rand(3, 6))->create();
     }
 }
