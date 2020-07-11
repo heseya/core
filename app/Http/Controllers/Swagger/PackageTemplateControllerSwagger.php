@@ -19,7 +19,7 @@ interface PackageTemplateControllerSwagger
      *       @OA\Property(
      *         property="data",
      *         type="array",
-     *         @OA\Items(ref="#/components/schemas/PackageSwagger"),
+     *         @OA\Items(ref="#/components/schemas/PackageTemplateSwagger"),
      *       )
      *     )
      *   ),
@@ -37,7 +37,7 @@ interface PackageTemplateControllerSwagger
      *   tags={"Packages"},
      *   @OA\RequestBody(
      *     @OA\JsonContent(
-     *       ref="#/components/schemas/PackageSwagger",
+     *       ref="#/components/schemas/PackageTemplateSwagger",
      *     ),
      *   ),
      *   @OA\Response(
@@ -46,7 +46,7 @@ interface PackageTemplateControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/PackageSwagger",
+     *         ref="#/components/schemas/PackageTemplateSwagger",
      *       )
      *     )
      *   ),
@@ -72,7 +72,7 @@ interface PackageTemplateControllerSwagger
      *   ),
      *   @OA\RequestBody(
      *     @OA\JsonContent(
-     *       ref="#/components/schemas/PackageSwagger",
+     *       ref="#/components/schemas/PackageTemplateSwagger",
      *     ),
      *   ),
      *   @OA\Response(
@@ -81,7 +81,7 @@ interface PackageTemplateControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/PackageSwagger",
+     *         ref="#/components/schemas/PackageTemplateSwagger",
      *       )
      *     )
      *   ),

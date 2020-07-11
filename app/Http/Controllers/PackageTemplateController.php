@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Swagger\PackageTemplateControllerSwagger;
-use App\Http\Resources\PackageResource;
+use App\Http\Resources\PackageTemplateResource;
 use App\Models\PackageTemplate;
 use Illuminate\Http\Request;
 
@@ -13,7 +13,7 @@ class PackageTemplateController extends Controller implements PackageTemplateCon
     {
         $packages = PackageTemplate::all();
 
-        return PackageResource::collection($packages);
+        return PackageTemplateResource::collection($packages);
     }
 
     public function create(Request $request)
@@ -28,7 +28,7 @@ class PackageTemplateController extends Controller implements PackageTemplateCon
 
         $package = PackageTemplate::create($validated);
 
-        return PackageResource::make($package)
+        return PackageTemplateResource::make($package)
             ->response()
             ->setStatusCode(201);
     }
@@ -45,7 +45,7 @@ class PackageTemplateController extends Controller implements PackageTemplateCon
 
         $package->update($validated);
 
-        return PackageResource::make($package);
+        return PackageTemplateResource::make($package);
     }
 
     public function delete(PackageTemplate $package)

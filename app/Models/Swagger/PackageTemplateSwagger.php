@@ -7,7 +7,7 @@ namespace App\Models\Swagger;
  *   title="PackageTemplate"
  * )
  */
-interface PackageSwagger
+interface PackageTemplateSwagger
 {
     /**
      * @OA\Property(

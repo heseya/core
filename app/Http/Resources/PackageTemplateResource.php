@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources;
 
-class PackageResource extends Resource
+class PackageTemplateResource extends Resource
 {
     /**
      * Transform the resource into an array.
