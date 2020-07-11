@@ -165,7 +165,7 @@ return [
         Illuminate\View\ViewServiceProvider::class,
 
         /*
-         * Package Service Providers...
+         * PackageTemplate Service Providers...
          */
         L5Swagger\L5SwaggerServiceProvider::class,
         Laravel\Passport\PassportServiceProvider::class,
