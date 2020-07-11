@@ -3,13 +3,9 @@
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
 
 use App\Models\Package;
-use Illuminate\Support\Str;
 use Faker\Generator as Faker;
-use Bezhanov\Faker\ProviderCollectionHelper;
 
 $factory->define(Package::class, function (Faker $faker) {
-
-    ProviderCollectionHelper::addAllProvidersTo($faker);
 
     $name = $faker->unique()->name;
 
