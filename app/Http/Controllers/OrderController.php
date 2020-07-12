@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ChangeStatus;
+use App\Mail\NewOrder;
 use App\Models\Order;
 use App\Models\Address;
 use App\Models\Product;
 use App\Exceptions\Error;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\ProductSchema;
@@ -392,6 +395,8 @@ class OrderController extends Controller
             }
         }
 
+        Mail::to($order->email)->send(new NewOrder($order));
+
         // logi
         $order->logs()->create([
             'content' => 'Utworzenie zamówienia.',
@@ -703,6 +708,8 @@ class OrderController extends Controller
         $order->update([
             'status_id' => $request->status_id,
         ]);
+
+        Mail::to($order->email)->send(new ChangeStatus($order));
 
         return response()->json(null, 204);
     }

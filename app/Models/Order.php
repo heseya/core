@@ -71,7 +71,7 @@ class Order extends Model
     public function getPayedAmountAttribute(): float
     {
         return $this->payments()
-            ->where('status', Payment::STATUS_PAYED)
+            ->where('payed', true)
             ->sum('amount');
     }
 
