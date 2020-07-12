@@ -2,11 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\Page;
 use Tests\TestCase;
+use App\Models\Page;
 use Laravel\Passport\Passport;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class PagesTest extends TestCase
 {
@@ -30,9 +28,12 @@ class PagesTest extends TestCase
             'name' => $this->page->name,
             'slug' => $this->page->slug,
             'public' => $this->page->public,
+        ];
+
+        $this->expected_view = array_merge($this->expected, [
             'content_md' => $this->page->content_md,
             'content_html' => parsedown($this->page->content_md),
-        ];
+        ]);
     }
 
     /**
@@ -64,7 +65,7 @@ class PagesTest extends TestCase
         $response = $this->get('/pages/' . $this->page->slug);
         $response
             ->assertOk()
-            ->assertExactJson(['data' => $this->expected]);
+            ->assertJson(['data' => $this->expected_view]);
 
         $response = $this->get('/pages/id:' . $this->page->id);
         $response->assertUnauthorized();
@@ -74,7 +75,7 @@ class PagesTest extends TestCase
         $response = $this->get('/pages/id:' . $this->page->id);
         $response
             ->assertOk()
-            ->assertExactJson(['data' => $this->expected]);
+            ->assertJson(['data' => $this->expected_view]);
     }
 
     /**

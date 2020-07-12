@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Brand;
 use App\Exceptions\Error;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\BrandResource;
-use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class BrandController extends Controller
 {
@@ -29,7 +29,7 @@ class BrandController extends Controller
      *   )
      * )
      */
-    public function index(): ResourceCollection
+    public function index()
     {
         $query = Brand::select();
 
@@ -69,13 +69,13 @@ class BrandController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:brands|alpha_dash',
             'public' => 'boolean',
         ]);
 
         $brand = Brand::create($request->all());
 
-        return (new BrandResource($brand))
+        return BrandResource::make($brand)
             ->response()
             ->setStatusCode(201);
     }
@@ -117,13 +117,19 @@ class BrandController extends Controller
     {
         $request->validate([
             'name' => 'string|max:255',
-            'price' => 'string|max:255',
             'public' => 'boolean',
+            'slug' => [
+                'required',
+                'string',
+                'max:255',
+                'alpha_dash',
+                Rule::unique('brands')->ignore($brand->slug, 'slug'),
+            ],
         ]);
 
         $brand->update($request->all());
 
-        return new BrandResource($brand);
+        return BrandResource::make($brand);
     }
 
     /**

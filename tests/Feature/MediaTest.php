@@ -5,9 +5,6 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use Laravel\Passport\Passport;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class MediaTest extends TestCase
 {
@@ -77,7 +74,6 @@ class MediaTest extends TestCase
         $response = $this->post('/media', [
             'file' => $file,
         ]);
-
         $response
             ->assertCreated()
             ->assertJsonStructure(['data' => [

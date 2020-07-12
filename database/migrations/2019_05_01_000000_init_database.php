@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
@@ -100,12 +101,30 @@ class InitDatabase extends Migration
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         });
 
+        Schema::create('payment_methods', function (Blueprint $table) {
+            $table->tinyIncrements('id');
+            $table->string('name');
+            $table->string('alias');
+            $table->boolean('public')->default(false);
+            $table->timestamps();
+        });
+
         Schema::create('shipping_methods', function (Blueprint $table) {
-            $table->smallIncrements('id');
+            $table->tinyIncrements('id');
             $table->string('name');
             $table->float('price', 19, 4);
             $table->boolean('public')->default(false);
             $table->timestamps();
+        });
+
+        Schema::create('shipping_method_payment_method', function (Blueprint $table) {
+            $table->smallIncrements('id');
+
+            $table->tinyInteger('shipping_method_id')->unsigned()->index();
+            $table->foreign('shipping_method_id')->references('id')->on('shipping_methods')->onDelete('cascade');
+
+            $table->tinyInteger('payment_method_id')->unsigned()->index();
+            $table->foreign('payment_method_id')->references('id')->on('payment_methods')->onDelete('cascade');
         });
 
         Schema::create('addresses', function (Blueprint $table) {
@@ -120,22 +139,29 @@ class InitDatabase extends Migration
             $table->timestamps();
         });
 
+        Schema::create('statuses', function (Blueprint $table) {
+            $table->tinyIncrements('id');
+            $table->string('name', 60);
+            $table->string('color', 8);
+            $table->string('description')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('orders', function (Blueprint $table) {
             $table->increments('id');
             $table->string('code', 16)->unique();
             $table->string('email');
-            $table->smallInteger('shipping_method_id')->unsigned();
+            $table->string('currency', 3);
+            $table->string('comment', 1000)->nullable();
+            $table->tinyInteger('status_id')->unsigned()->nullable();
+            $table->tinyInteger('shipping_method_id')->unsigned()->nullable();
             $table->float('shipping_price', 19, 4);
-            $table->tinyInteger('payment_status')->default(0);
-            $table->tinyInteger('shop_status')->default(0);
-            $table->tinyInteger('delivery_status')->default(0);
-            $table->string('delivery_tracking')->nullable();
             $table->integer('delivery_address_id')->unsigned()->index()->nullable();
             $table->integer('invoice_address_id')->unsigned()->index()->nullable();
-            $table->string('comment', 1000)->nullable();
             $table->timestamps();
 
             // Relations
+            $table->foreign('status_id')->references('id')->on('statuses')->onDelete('set null');
             $table->foreign('shipping_method_id')->references('id')->on('shipping_methods')->onDelete('restrict');
             $table->foreign('delivery_address_id')->references('id')->on('addresses')->onDelete('restrict');
             $table->foreign('invoice_address_id')->references('id')->on('addresses')->onDelete('restrict');
@@ -146,9 +172,8 @@ class InitDatabase extends Migration
             $table->integer('order_id')->unsigned()->index();
             $table->string('external_id')->index()->nullable();
             $table->string('method', 16);
-            $table->tinyInteger('status')->default(0);
-            $table->string('currency', 3);
-            $table->float('amount', 19, 2);
+            $table->boolean('payed')->default(false);
+            $table->float('amount', 19, 4);
             $table->string('redirect_url', 1000)->nullable();
             $table->string('continue_url', 1000)->nullable();
             $table->timestamps();
@@ -251,15 +276,36 @@ class InitDatabase extends Migration
             $table->text('content_md');
             $table->timestamps();
         });
-    }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
-        return false;
+        Schema::create('package_templates', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->float('weight');
+            $table->integer('width');
+            $table->integer('height');
+            $table->integer('depth');
+            $table->timestamps();
+        });
+
+        DB::table('statuses')->insert([
+            'id' => 1,
+            'name' => 'Nowe',
+            'color' => 'ffd600',
+            'description' => 'Twoje zamówienie zostało zapisane w systemie!',
+        ]);
+
+        DB::table('statuses')->insert([
+            'id' => 2,
+            'name' => 'Wysłane',
+            'color' => '1faa00',
+            'description' => 'Zamówienie zostało wysłane i niedługo znajdzie się w Twoich rękach :)',
+        ]);
+
+        DB::table('statuses')->insert([
+            'id' => 3,
+            'name' => 'Anulowane',
+            'color' => 'a30000',
+            'description' => 'Twoje zamówienie zostało anulowane, jeśli uważasz, że to błąd, skontaktuj się z nami.',
+        ]);
     }
 }

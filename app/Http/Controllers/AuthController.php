@@ -42,9 +42,18 @@ class AuthController extends Controller
      *           type="string",
      *         ),
      *         @OA\Property(
+     *           property="expires_at",
+     *           type="string",
+     *         ),
+     *         @OA\Property(
      *           property="user",
      *           ref="#/components/schemas/User"
-     *         )
+     *         ),
+     *         @OA\Property(
+     *           property="scopes",
+     *           type="array",
+     *           items="",
+     *         ),
      *       )
      *     )
      *   ),
@@ -66,18 +75,20 @@ class AuthController extends Controller
         ])) {
 
             $user = Auth::guard('web')->user();
-            $token = $user->createToken('Admin')->accessToken;
+            $token = $user->createToken('Admin');
 
             return response()->json(['data' => [
-                'token' => $token,
-                'user' => new UserResource($user),
+                'token' => $token->accessToken,
+                'expires_at' => $token->token->expires_at,
+                'user' => UserResource::make($user),
+                'scopes' => $token->token->scopes,
             ]], 200);
-        } else {
-            return Error::abort('Invalid credentials.', 400);
         }
+
+        return Error::abort('Invalid credentials.', 400);
     }
 
-    
+
     /**
      * @OA\Patch(
      *   path="/user/password",

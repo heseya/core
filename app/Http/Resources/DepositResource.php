@@ -2,11 +2,7 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\MediaResource;
-use App\Http\Resources\CategoryResource;
-use Illuminate\Http\Resources\Json\JsonResource;
-
-class DepositResource extends JsonResource
+class DepositResource extends Resource
 {
     /**
      * Transform the resource into an array.
@@ -14,7 +10,7 @@ class DepositResource extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function toArray($request)
+    public function base($request): array
     {
         return [
             'id' => $this->id,

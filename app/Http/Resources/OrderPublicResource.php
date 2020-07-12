@@ -2,9 +2,7 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Resources\Json\JsonResource;
-
-class OrderPublicResource extends JsonResource
+class OrderPublicResource extends Resource
 {
     /**
      * Transform the resource into an array.
@@ -12,13 +10,13 @@ class OrderPublicResource extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function toArray($request)
+    public function base($request): array
     {
         return [
             'code' => $this->code,
-            'payment_status' => $this->payment_status,
-            'shop_status' => $this->shop_status,
-            'delivery_status' => $this->delivery_status,
+            'status' => StatusResource::make($this->status),
+            'payed' => $this->isPayed(),
+            'shipping_method_id' => $this->shipping_method_id,
             'created_at' => $this->created_at,
         ];
     }

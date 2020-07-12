@@ -8,6 +8,8 @@ return [
 
         'bluemedia' => App\Payments\Bluemedia::class,
 
+        'przelewy24' => App\Payments\Przelewy24::class,
+
         // 'cinkciarz' => App\Payment\Cinkciarz::class,
 
     ],

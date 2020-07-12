@@ -13,8 +13,6 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ProductResource;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Validator;
-use App\Http\Resources\ProductShortResource;
-use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class ProductController extends Controller
 {
@@ -69,7 +67,7 @@ class ProductController extends Controller
      *   )
      * )
      */
-    public function index(Request $request): ResourceCollection
+    public function index(Request $request)
     {
         $request->validate([
             'brand' => 'string|max:255',
@@ -136,7 +134,7 @@ class ProductController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
-        return ProductShortResource::collection(
+        return ProductResource::collection(
             $query->paginate(12),
         );
     }
@@ -201,7 +199,7 @@ class ProductController extends Controller
             return Error::abort('Unauthorized.', 401);
         }
 
-        return new ProductResource($product);
+        return ProductResource::make($product);
     }
 
     /**
@@ -305,7 +303,7 @@ class ProductController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:products',
+            'slug' => 'required|string|max:255|unique:products|alpha_dash',
             'price' => 'required|numeric',
             'brand_id' => 'required|integer|exists:brands,id',
             'category_id' => 'required|integer|exists:categories,id',
@@ -399,7 +397,7 @@ class ProductController extends Controller
 
         $product->media()->sync($media);
 
-        return (new ProductResource($product))
+        return ProductResource::make($product)
             ->response()
             ->setStatusCode(201);
     }
@@ -517,6 +515,7 @@ class ProductController extends Controller
                 'required',
                 'string',
                 'max:255',
+                'alpha_dash',
                 Rule::unique('products')->ignore($product->slug, 'slug'),
             ],
             'price' => 'required|numeric',
@@ -600,7 +599,7 @@ class ProductController extends Controller
 
         $product->media()->sync($media);
 
-        return (new ProductResource($product))
+        return ProductResource::make($product)
             ->response()
             ->setStatusCode(200);
     }

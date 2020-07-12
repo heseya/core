@@ -7,7 +7,6 @@ use App\Exceptions\Error;
 use Illuminate\Http\Request;
 use App\Http\Resources\PageResource;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class PageController extends Controller
 {
@@ -29,7 +28,7 @@ class PageController extends Controller
      *   )
      * )
      */
-    public function index(): ResourceCollection
+    public function index()
     {
         $query = Page::select();
 
@@ -101,7 +100,7 @@ class PageController extends Controller
             return Error::abort('Unauthorized.', 401);
         }
 
-        return new PageResource($page);
+        return PageResource::make($page);
     }
 
      /**
@@ -140,7 +139,7 @@ class PageController extends Controller
 
         $page = Page::create($request->all());
 
-        return (new PageResource($page))
+        return PageResource::make($page)
             ->response()
             ->setStatusCode(201);
     }
@@ -189,7 +188,7 @@ class PageController extends Controller
 
         $page->update($request->all());
 
-        return new PageResource($page);
+        return PageResource::make($page);
     }
 
     /**

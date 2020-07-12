@@ -2,12 +2,7 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\MediaResource;
-use App\Http\Resources\CategoryResource;
-use Illuminate\Http\Resources\Json\JsonResource;
-
-// For future expansion
-class ItemResource extends JsonResource
+class ItemResource extends Resource
 {
     /**
      * Transform the resource into an array.
@@ -15,7 +10,7 @@ class ItemResource extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function toArray($request)
+    public function base($request): array
     {
         return [
             'id' => $this->id,

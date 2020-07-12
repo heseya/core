@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ChangeStatus;
+use App\Mail\NewOrder;
 use App\Models\Order;
 use App\Models\Address;
 use App\Models\Product;
 use App\Exceptions\Error;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\ProductSchema;
@@ -129,7 +132,7 @@ class OrderController extends Controller
      */
     public function view(Order $order)
     {
-        return new OrderResource($order);
+        return OrderResource::make($order);
     }
 
     /**
@@ -160,7 +163,7 @@ class OrderController extends Controller
      */
     public function viewPublic(Order $order)
     {
-        return new OrderPublicResource($order);
+        return OrderPublicResource::make($order);
     }
 
     /**
@@ -345,18 +348,19 @@ class OrderController extends Controller
 
         do {
             $code = Str::upper(Str::random(6));
-        } while (Order::firstWhere('code', $code));
+        } while (Order::where('code', $code)->exists());
 
         $order = new Order([
             'code' => $code,
             'email' => $request->email,
             'comment' => $request->comment,
+            'currency' => 'PLN',
             'shipping_method_id' => $shipping_method->id,
             'shipping_price' => $shipping_method->price,
         ]);
 
-        $order->delivery_address = Address::firstOrCreate($request->delivery_address)->id;
-        $order->invoice_address = $request->filled('invoice_address.name') ?
+        $order->delivery_address_id = Address::firstOrCreate($request->delivery_address)->id;
+        $order->invoice_address_id = $request->filled('invoice_address.name') ?
             Address::firstOrCreate($request->invoice_address)->id : null;
 
         $order->save();
@@ -391,13 +395,15 @@ class OrderController extends Controller
             }
         }
 
+        Mail::to($order->email)->send(new NewOrder($order));
+
         // logi
         $order->logs()->create([
             'content' => 'Utworzenie zamówienia.',
             'user' => 'API',
         ]);
 
-        return (new OrderPublicResource($order))
+        return OrderPublicResource::make($order)
             ->response()
             ->setStatusCode(201);
     }
@@ -658,5 +664,53 @@ class OrderController extends Controller
         $cartItems = array_values($cartItems);
 
         return response()->json(['data' => $cartItems]);
+    }
+
+
+    /**
+     * @OA\Post(
+     *   path="/orders/id:{id}/status",
+     *   summary="change order status",
+     *   tags={"Orders"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="id",
+     *       example="2",
+     *     ),
+     *   ),
+     *   @OA\RequestBody(
+     *     request="OrderCreate",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="status_id",
+     *         type="integer",
+     *       ),
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=204,
+     *     description="Success",
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function changeStatus(Order $order, Request $request)
+    {
+        $request->validate([
+            'status_id' => 'required|integer|exists:statuses,id',
+        ]);
+
+        $order->update([
+            'status_id' => $request->status_id,
+        ]);
+
+        Mail::to($order->email)->send(new ChangeStatus($order));
+
+        return response()->json(null, 204);
     }
 }

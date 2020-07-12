@@ -8,7 +8,6 @@ use App\Models\ShippingMethod;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ShippingMethodResource;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class ShippingMethodController extends Controller
 {
@@ -30,12 +29,16 @@ class ShippingMethodController extends Controller
      *   )
      * )
      */
-    public function index(): ResourceCollection
+    public function index()
     {
         $query = ShippingMethod::select();
 
-        if (!Auth::check()) {
-            $query->where('public', true);
+        if (Auth::check()) {
+            $query->with('paymentMethods');
+        } else {
+            $query
+                ->with(['paymentMethods' => fn ($q) => $q->where('public', true)])
+                ->where('public', true);
         }
 
         return ShippingMethodResource::collection($query->get());
@@ -72,11 +75,14 @@ class ShippingMethodController extends Controller
             'name' => 'required|string|max:255',
             'price' => 'required|numeric',
             'public' => 'boolean',
+            'payment_methods' => 'array',
+            'payment_methods.*' => 'exists:payment_methods,id',
         ]);
 
         $shipping_method = ShippingMethod::create($request->all());
+        $shipping_method->paymentMethods()->sync($request->get('payment_methods', []));
 
-        return new ShippingMethodResource($shipping_method);
+        return ShippingMethodResource::make($shipping_method);
     }
 
     /**
@@ -118,11 +124,14 @@ class ShippingMethodController extends Controller
             'name' => 'string|max:255',
             'price' => 'numeric',
             'public' => 'boolean',
+            'payment_methods' => 'array',
+            'payment_methods.*' => 'exists:payment_methods,id',
         ]);
 
         $shipping_method->update($request->all());
+        $shipping_method->paymentMethods()->sync($request->get('payment_methods', []));
 
-        return new ShippingMethodResource($shipping_method);
+        return ShippingMethodResource::make($shipping_method);
     }
 
     /**

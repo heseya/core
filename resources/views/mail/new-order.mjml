@@ -1,0 +1,49 @@
+<mjml>
+  <mj-body background-color="#F4F4F4">
+    <mj-section background-color="#ffffff" background-repeat="repeat" padding-bottom="0px" padding-top="20px" text-align="center">
+      <mj-column>
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="32px" line-height="22px" padding-bottom="20px" padding-top="0px" padding="10px 25px">{{ config('app.name') }}</mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#ffffff" background-repeat="repeat" background-size="auto" padding-bottom="0px" padding-top="30px" padding="20px 0" text-align="center">
+      <mj-column>
+        <mj-text align="left" color="#55575d" font-family="Arial, sans-serif" font-size="30px" line-height="22px" padding-bottom="10px" padding-top="10px" padding="10px 25px">
+          <p style="line-height: 30px; margin: 10px 0; text-align: center; color:#151e23; font-size:30p; font-family:Georgia,Helvetica,Arial,sans-serif">Potwierdzenie złożenia zamówienia nr {{ $order->code }}</p>
+        </mj-text>
+        <mj-text align="left" color="#333" font-family="Arial, sans-serif" font-size="16px" line-height="22px" padding-bottom="10px" padding-top="10px" padding="10px 25px">
+          <p> Drogi kliencie,<br /> Dziękujemy za złożenie zamówienia. Status zamówienia możesz śledzić na naszej stronie internetowej. Gdy zmieni się status otrzymasz również osobnego maila.<br /><br /> Poniżej znajdują się szczegóły Twojego zamówienia: </p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#ffffff" padding-bottom="0">
+      <mj-column>
+        <mj-table>
+          <tr style="border-bottom:1px solid #ecedee;text-align:left;padding:15px 0;">
+            <th style="padding: 0 15px 0 0;">Produkt</th>
+            <th style="padding: 0 15px;">Ilość</th>
+            <th style="padding: 0 0 0 15px;">Suma</th>
+          </tr>
+          
+   			 @foreach ($order->items as $item)
+          <tr>
+            <td style="padding: 0 15px 0 0;">{{ $item->product->name }}</td>
+            <td style="padding: 0 15px;">{{ $item->quantity }}</td>
+            <td style="padding: 0 0 0 15px;">{{ $item->price }} {{ $order->currency }}</td>
+          </tr>
+          @endforeach
+        </mj-table>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#ffffff" background-repeat="repeat" background-size="auto" padding-bottom="0px" text-align="center">
+      <mj-column>
+        <mj-text align="right" color="#000" font-family="Arial, sans-serif" font-size="14px" line-height="22px">
+          <p>
+            Wartość zamówienia: <b>{{ $order->summary - $order->shipping_price }} {{ $order->currency }}</b><br />
+            Koszt dostawy: <b>{{ $order->shipping_price }} {{ $order->currency }}</b><br />
+          </p>
+          <p style="font-size: 20px">Razem: <b>{{ $order->summary }} {{ $order->currency }}</b><br /></p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

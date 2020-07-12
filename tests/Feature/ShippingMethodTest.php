@@ -2,15 +2,17 @@
 
 namespace Tests\Feature;
 
-use App\Models\Order;
 use Tests\TestCase;
+use App\Models\Order;
 use App\Models\ShippingMethod;
 use Laravel\Passport\Passport;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ShippingMethodTest extends TestCase
 {
+    public ShippingMethod $shipping_method;
+    public ShippingMethod $shipping_method_hidden;
+    public array $expected;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -40,10 +42,9 @@ class ShippingMethodTest extends TestCase
     public function testIndex()
     {
         $response = $this->get('/shipping-methods');
-
         $response
             ->assertOk()
-            ->assertJsonCount(1, 'data') // Shoud show only public shipping methods.
+            ->assertJsonCount(1, 'data') // Should show only public shipping methods.
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
@@ -66,7 +67,6 @@ class ShippingMethodTest extends TestCase
         ];
 
         $response = $this->post('/shipping-methods', $shipping_method);
-
         $response
             ->assertCreated()
             ->assertJson(['data' => $shipping_method]);
@@ -92,7 +92,6 @@ class ShippingMethodTest extends TestCase
             '/shipping-methods/id:' . $this->shipping_method->id,
             $shipping_method,
         );
-
         $response
             ->assertStatus(200)
             ->assertJson(['data' => $shipping_method]);
@@ -126,7 +125,6 @@ class ShippingMethodTest extends TestCase
         ]);
 
         $response = $this->delete('/shipping-methods/id:' . $this->shipping_method->id);
-
         $response->assertStatus(400);
     }
 }

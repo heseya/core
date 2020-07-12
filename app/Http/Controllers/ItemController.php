@@ -7,9 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\ItemResource;
-use App\Http\Resources\ItemShortResource;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class ItemController extends Controller
 {
@@ -34,9 +32,9 @@ class ItemController extends Controller
      *   }
      * )
      */
-    public function index(): ResourceCollection
+    public function index()
     {
-        return ItemShortResource::collection(
+        return ItemResource::collection(
             Item::paginate(12),
         );
     }
@@ -71,7 +69,7 @@ class ItemController extends Controller
      */
     public function view(Item $item): JsonResource
     {
-        return new ItemResource($item);
+        return ItemResource::make($item);
     }
 
     /**
@@ -108,7 +106,7 @@ class ItemController extends Controller
 
         $item = Item::create($request->all());
 
-        return (new ItemResource($item))
+        return ItemResource::make($item)
             ->response()
             ->setStatusCode(201);
     }
@@ -159,7 +157,7 @@ class ItemController extends Controller
 
         $item->update($request->all());
 
-        return new ItemResource($item);
+        return ItemResource::make($item);
     }
 
     /**

@@ -6,7 +6,6 @@ use App\Models\Media;
 use Heseya\Silverbox;
 use Illuminate\Http\Request;
 use App\Http\Resources\MediaResource;
-use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class MediaController extends Controller
 {
@@ -56,7 +55,7 @@ class MediaController extends Controller
             'url' => rtrim(config('silverbox.host'). '/') . '/' . $response[0]->path,
         ]);
 
-        return (new MediaResource($media))
+        return MediaResource::make($media)
             ->response()
             ->setStatusCode(201);
     }

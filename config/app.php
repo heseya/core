@@ -53,6 +53,7 @@ return [
      */
 
     'url' => env('APP_URL', 'https://secure.example.com'),
+
     'store_url' => rtrim(env('APP_STORE_URL', 'https://example.com'), '/'),
 
     'asset_url' => env('ASSET_URL', null),
@@ -164,7 +165,7 @@ return [
         Illuminate\View\ViewServiceProvider::class,
 
         /*
-         * Package Service Providers...
+         * PackageTemplate Service Providers...
          */
         L5Swagger\L5SwaggerServiceProvider::class,
         Laravel\Passport\PassportServiceProvider::class,

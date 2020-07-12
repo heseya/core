@@ -4,15 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Exceptions\Error;
-use App\Http\Requests\Request;
-use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use App\Http\Resources\PaymentResource;
-use App\Http\Resources\OrderPublicResource;
+use Throwable;
 
 class PaymentController extends Controller
 {
     /**
-     * @OA\Get(
+     * @OA\Post(
      *   path="/orders/{code}/pay/{payment_method}",
      *   summary="redirect to payment",
      *   tags={"Orders"},
@@ -32,13 +32,15 @@ class PaymentController extends Controller
      *       type="string",
      *     )
      *   ),
-     *   @OA\Parameter(
-     *     name="continue",
-     *     in="query",
-     *     description="URL that the buyer will be redirected to, after making payment",
-     *     @OA\Schema(
-     *       type="string",
-     *     )
+     *   @OA\RequestBody(
+     *     request="OrderCreate",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="continue_url",
+     *         type="string",
+     *         description="URL that the buyer will be redirected to, after making payment",
+     *       ),
+     *     ),
      *   ),
      *   @OA\Response(
      *     response=200,
@@ -51,32 +53,43 @@ class PaymentController extends Controller
      *     )
      *   )
      * )
+     *
+     * @param Order $order
+     * @param string $method
+     * @param Request $request
+     *
+     * @return PaymentResource|JsonResponse|object
      */
     public function pay(Order $order, string $method, Request $request)
     {
-        if (
-            $order->payment_status !== 0 ||
-            $order->shop_status === 3
-        ) {
-            return Error::abort('Order not payable.', 406);
+        $request->validate([
+            'continue_url' => 'required|string',
+        ]);
+
+        if ($order->isPayed()) {
+            return Error::abort('Order is already paid.', 406);
         }
 
         if (!array_key_exists($method, config('payable.aliases'))) {
-            return Error::abort('Unkown payment method.', 400);
+            return Error::abort('Unknown payment method.', 400);
         }
 
         $method_class = config('payable.aliases')[$method];
 
         $payment = $order->payments()->create([
             'method' => $method,
-            'amount' => $order->summary,
-            'continue_url' => $request->continue ?? null,
-            'currency' => 'PLN',
+            'amount' => $order->summary - $order->payed,
+            'payed' => false,
+            'continue_url' => $request->continue_url,
         ]);
 
-        $payment->update($method_class::generateUrl($payment));
+        try {
+            $payment->update($method_class::generateUrl($payment));
+        } catch (Throwable $e) {
+            return Error::abort('Cannot generate payment url.', 500);
+        }
 
-        return new PaymentResource($payment);
+        return PaymentResource::make($payment);
     }
 
     /**
@@ -97,11 +110,16 @@ class PaymentController extends Controller
      *     description="Success",
      *   )
      * )
+     *
+     * @param string $method
+     * @param Request $request
+     *
+     * @return JsonResponse|object
      */
     public function receive(string $method, Request $request)
     {
         if (!array_key_exists($method, config('payable.aliases'))) {
-            return Error::abort('Unkown payment method.', 400);
+            return Error::abort('Unknown payment method.', 400);
         }
 
         $method_class = config('payable.aliases')[$method];

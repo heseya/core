@@ -2,9 +2,7 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Resources\Json\JsonResource;
-
-class PageResource extends JsonResource
+class PageResource extends Resource
 {
     /**
      * Transform the resource into an array.
@@ -12,13 +10,19 @@ class PageResource extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function toArray($request)
+    public function base($request): array
     {
         return [
             'id' => $this->id,
             'slug' => $this->slug,
             'name' => $this->name,
             'public' => $this->public,
+        ];
+    }
+
+    public function view($request): array
+    {
+        return [
             'content_md' => $this->content_md,
             'content_html' => $this->content_html,
         ];
