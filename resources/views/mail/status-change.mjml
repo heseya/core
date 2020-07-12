@@ -1,0 +1,59 @@
+<mjml>
+  <mj-body background-color="#F4F4F4" color="#55575d" font-family="Arial, sans-serif">
+    <mj-section background-color="#ffffff" background-repeat="repeat" padding-bottom="0px" padding-top="20px" text-align="center" vertical-align="top">
+      <mj-column>
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="32px" line-height="22px" padding-bottom="20px" padding-top="0px" padding="10px 25px">
+          Shop name
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#ffffff" background-repeat="repeat" background-size="auto" padding-bottom="0px" padding-top="30px" padding="20px 0" text-align="center" vertical-align="top">
+      <mj-column>
+        <mj-text align="left" color="#55575d" font-family="Arial, sans-serif" font-size="30px" line-height="22px" padding-bottom="10px" padding-top="10px" padding="10px 25px">
+          <p style="line-height: 30px; margin: 10px 0; text-align: center; color:#151e23; font-size:30p; font-family:Georgia,Helvetica,Arial,sans-serif">Status twojego zamówienia nr XDXD zmienił się</p>
+        </mj-text>
+        <mj-text align="left" color="#333" font-family="Arial, sans-serif" font-size="16px" line-height="22px" padding-bottom="10px" padding-top="10px" padding="10px 25px">
+          <p>
+            Drogi kliencie,<br />
+            Status twojego zamówienia zmienił się z <b>Nowe</b> na <b>W trakcie realizacji</b><br /><br />
+            Szegóły zamówienia:
+          </p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#ffffff" padding-bottom="0">
+      <mj-column>
+        <mj-table>
+          <tr style="border-bottom:1px solid #ecedee;text-align:left;padding:15px 0;">
+            <th style="padding: 0 15px 0 0;">Produkt</th>
+            <th style="padding: 0 15px;">Sztuk</th>
+            <th style="padding: 0 0 0 15px;">Suma</th>
+          </tr>
+          <tr>
+            <td style="padding: 0 15px 0 0;">Koszulka</td>
+            <td style="padding: 0 15px;">1</td>
+            <td style="padding: 0 0 0 15px;">50 PLN</td>
+          </tr>
+        </mj-table>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#ffffff" background-repeat="repeat" background-size="auto" padding-bottom="0px" text-align="center" vertical-align="top">
+      <mj-column>
+        <mj-text align="right" color="#000" font-family="Arial, sans-serif" font-size="14px" line-height="22px">
+          <p>
+            Wartość zamówienia: <b>200 PLN</b><br />
+            Koszt dostawy: <b>20 PLN</b><br />
+          </p>
+          <p style="font-size: 20px">Razem: <b>220 PLN</b><br /></p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#ffffff" background-repeat="repeat" padding="20px 0" text-align="center" vertical-align="top">
+      <mj-column>
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="12px" line-height="18px" padding-bottom="20px" padding-top="0px" padding="10px 25px">
+          Jeśli masz pytania związane z zamówieniem lub z jakimikolwiek innymi sprawami związanymi z www.dupa.pl informacje możesz otrzymać po wysłaniu maila na adres: <a href="mailto:dupa@dupa.pl">dupa@dupa.pl</a>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
