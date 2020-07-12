@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\Address;
 use App\Models\Product;
 use App\Exceptions\Error;
+use App\Models\Status;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -357,6 +358,7 @@ class OrderController extends Controller
             'currency' => 'PLN',
             'shipping_method_id' => $shipping_method->id,
             'shipping_price' => $shipping_method->price,
+            'status_id' => Status::orderBy('id')->first()->id,
         ]);
 
         $order->delivery_address_id = Address::firstOrCreate($request->delivery_address)->id;
