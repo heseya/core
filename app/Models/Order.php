@@ -27,7 +27,7 @@ class Order extends Model
      *   type="string",
      *   example="asap plz",
      * )
-     * 
+     *
      * @OA\Property(
      *   property="shipping_number",
      *   type="string",
@@ -92,7 +92,7 @@ class Order extends Model
      */
     public function isPayed(): bool
     {
-        return $this->summary === $this->payed;
+        return $this->summary === $this->payedAmount;
     }
 
     /**
