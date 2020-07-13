@@ -17,11 +17,13 @@ class OrdersSeeder extends Seeder
     public function run()
     {
         factory(Order::class, 50)->create()->each(function ($order) {
-            $order->deliveryAddress()->save(factory(Address::class)->make());
+            $order->delivery_address_id = factory(Address::class)->create()->id;
 
             if (rand(0, 1)) {
-                $order->invoiceAddress()->save(factory(Address::class)->make());
+                $order->invoice_address_id = factory(Address::class)->create()->id;
             }
+
+            $order->save();
 
             $items = factory(OrderItem::class, rand(1, 3))->make();
             $order->items()->saveMany($items);
