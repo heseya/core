@@ -277,6 +277,16 @@ class InitDatabase extends Migration
             $table->timestamps();
         });
 
+        Schema::create('package_templates', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->float('weight');
+            $table->integer('width');
+            $table->integer('height');
+            $table->integer('depth');
+            $table->timestamps();
+        });
+
         DB::table('statuses')->insert([
             'id' => 1,
             'name' => 'Nowe',
