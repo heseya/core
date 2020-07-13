@@ -9,9 +9,13 @@ $factory->define(Address::class, function (Faker $faker) {
     return [
         'name' => $faker->firstName . ' ' . $faker->lastName,
         'phone' => $faker->phoneNumber,
-        'address' => $faker->streetAddress,
-        'zip' => $faker->postcode,
-        'city' => $faker->city,
-        'country' => $faker->countryCode,
+        'address' => 'Nowogrodzka 84/86',
+        'zip' => '02-018',
+        'city' => 'Warszawa',
+        'country' =>'PL',
+        // 'address' => $faker->streetAddress,
+        // 'zip' => $faker->postcode,
+        // 'city' => $faker->city,
+        // 'country' => rand(0, 3) ? 'PL' : $faker->countryCode,
     ];
 });

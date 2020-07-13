@@ -8,14 +8,17 @@ use App\Models\OrderLog;
 use App\Exceptions\Error;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\PackageTemplate;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Swagger\FurgonetkaControllerSwagger;
 use SoapClient;
 use Exception;
 
-class FurgonetkaController extends Controller
+class FurgonetkaController extends Controller implements FurgonetkaControllerSwagger
 {
     /**
      * Odbieranie statusów przesyłek z Furgonetka.pl w formacie JSON
@@ -69,12 +72,27 @@ class FurgonetkaController extends Controller
     public function createPackage(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'orders' => 'required|array|min:1',
-            'orders.*' => 'integer|exists:orders,id',
+            'order_id' => 'required|integer',
+            'package_template_id' => 'required|integer',
         ]);
 
+        $order = Order::findOrFail($validated['order_id']);
+        $packageTemplate = PackageTemplate::findOrFail($validated['package_template_id']);
+
+        $validator = Validator::make($order->deliveryAddress->toArray(), [
+            'country' => 'required|in:PL',
+            'phone' => 'required|phone:PL'
+        ]);
+
+        if ($validator->fails()) {
+            return Error::abort(
+                'Order address not in Poland/invalid phone number' . $order->deliveryAddress->phoneSimple,
+                502,
+            );
+        }
+
         try {
-            $client = new SoapClient('http://biznes-test.furgonetka.pl/api/soap/v2?wsdl', [
+            $client = new SoapClient(config('furgonetka.api_url'), [
                 'trace' => true,
                 'cache_wsdl' => false,
             ]);
@@ -119,133 +137,131 @@ class FurgonetkaController extends Controller
 
         $services = $services->services->item;
 
-        foreach ($validated['orders'] as $orderId) {
-            $order = Order::findOrFail($orderId);
-
-            $service_type = Str::slug($order->shippingMethod->name);
-        
-            foreach ($services as $service) {
-                if ($service->type === $service_type) {
-                    $service_id = $service->id;
-                    break;
-                }
-            }
-        
-            if (!isset($service_id)) {
-                return Error::abort(
-                    'Could not get carriers matching shipping method',
-                    502,
-                );
-            }
-            
-            $regulations = $client->getRegulations([
-                'data' => [
-                    'auth' => $auth,
-                ],
-            ])->getRegulationsResult;
-        
-            if (!$regulations->services) {
-                return Error::abort(
-                    'Could not get regulations list',
-                    502,
-                );
-            }
-            
-            $regulations = $regulations->services->item;
-            
-            foreach ($regulations as $service) {
-                if ($service->service_type === $service_type) {
-                    $regulations_accept = $service->version;
-                    break;
-                }
-            }
-        
-            if (!isset($regulations_accept)) {
-                return Error::abort(
-                    'Could not get regulation for specified carrier',
-                    502,
-                );
-            }
-        
-            $packageData = [
-                'data' => [
-                    'auth' => $auth,
-                    'partner_reference_number' => $order->code,
-                    'service_id' => $service_id,
-                    'type' => 'package',
-                    'regulations_accept' => $regulations_accept,
-                    'request_collection' => false,
-                    // Nie ma danych wysyłającego jeszcze na sklepie
-                    'sender' => [
-                        'name' => 'Jan Kowalski',
-                        'email' => 'jan@kowalski.pl',
-                        'street' => 'Polna 1/2',
-                        'postcode' => '82-300',
-                        'city' => 'Elbląg',
-                        'phone' => '+48 500 999 888',
-                    ],
-                    // Seedowane zamówienia nie mają adresu więc lipa
-                    'receiver' => [
-                        'name' => $order->deliveryAddress->name,
-                        'street' => $order->deliveryAddress->address,
-                        'postcode' => $order->deliveryAddress->zip,
-                        'city' => $order->deliveryAddress->city,
-                        'phone' => $order->deliveryAddress->phone,
-                    ],
-                    'label' => [
-                        'file_format' => 'pdf',
-                        'page_format' => 'a4',
-                    ],
-                    'parcels' => [
-                        // Zamówienie wymaga rozmiarów i wagi RIP
-                        [
-                            'width' => 10,
-                            'height' => 20,
-                            'depth' => 30,
-                            'value' => 555,
-                            'weight' => 11,
-                            'value' => $order->summary,
-                            'description' => 'Opis zamówienia',
-                        ],
-                    ],
-                ],
-            ];
-        
-            $validate = $client->validatePackage($packageData)->validatePackageResult;
-        
-            if (!empty($validate->errors)) {
-                print_r($validate);
-                return Error::abort(
-                    'Invalid package',
-                    502,
-                );
-            }
-        
-            $package = $client->createPackage($packageData)->createPackageResult;
-        
-            if (!empty($package->errors)) {
-                return Error::abort(
-                    'Couldnt create package',
-                    502,
-                );
+        $service_type = Str::slug($order->shippingMethod->name);
+    
+        foreach ($services as $service) {
+            if ($service->type === $service_type) {
+                $service_id = $service->id;
+                break;
             }
         }
+    
+        if (!isset($service_id)) {
+            return Error::abort(
+                'Could not get carriers matching shipping method',
+                502,
+            );
+        }
+        
+        $regulations = $client->getRegulations([
+            'data' => [
+                'auth' => $auth,
+            ],
+        ])->getRegulationsResult;
+    
+        if (!$regulations->services) {
+            return Error::abort(
+                'Could not get regulations list',
+                502,
+            );
+        }
+        
+        $regulations = $regulations->services->item;
+        
+        foreach ($regulations as $service) {
+            if ($service->service_type === $service_type) {
+                $regulations_accept = $service->version;
+                break;
+            }
+        }
+    
+        if (!isset($regulations_accept)) {
+            return Error::abort(
+                'Could not get regulation for specified carrier',
+                502,
+            );
+        }
+    
+        $packageData = [
+            'data' => [
+                'auth' => $auth,
+                'partner_reference_number' => $order->code,
+                'service_id' => $service_id,
+                'type' => 'package',
+                'regulations_accept' => $regulations_accept,
+                'request_collection' => false,
+                // Nie ma danych wysyłającego jeszcze na sklepie
+                'sender' => [
+                    'name' => 'Jan Kowalski',
+                    'email' => 'jan@kowalski.pl',
+                    'street' => 'Polna 1/2',
+                    'postcode' => '82-300',
+                    'city' => 'Elbląg',
+                    'phone' => '+48 500 999 888',
+                ],
+                'receiver' => [
+                    'email' => $order->email,
+                    'name' => $order->deliveryAddress->name,
+                    'street' => $order->deliveryAddress->address,
+                    'postcode' => $order->deliveryAddress->zip,
+                    'city' => $order->deliveryAddress->city,
+                    'phone' => $order->deliveryAddress->phoneSimple,
+                ],
+                'label' => [
+                    'file_format' => 'pdf',
+                    'page_format' => 'a4',
+                ],
+                'parcels' => [
+                    [
+                        'width' => $packageTemplate->width,
+                        'height' => $packageTemplate->height,
+                        'depth' => $packageTemplate->depth,
+                        'value' => $order->summary,
+                        'weight' => $packageTemplate->weight,
+                        'value' => $order->summary,
+                        'description' => 'Zamówienie ' . $order->code,
+                    ],
+                ],
+            ],
+        ];
+    
+        $validate = $client->validatePackage($packageData)->validatePackageResult;
+    
+        if (!empty($validate->errors)) {
+            return Error::abort(
+                $validate->errors->item,
+                502,
+            );
+        }
+    
+        $package = $client->createPackage($packageData)->createPackageResult;
+    
+        if (!empty($package->errors)) {
+            return Error::abort(
+                $package->errors->item,
+                502,
+            );
+        }
+
+        $order->update([
+            'shipping_number' => $package->parcels->item->package_no,
+        ]);
 
         return response()->json([
-            'status' => 'OK',
+            'shipping_number' => $package->parcels->item->package_no,
         ], 201);
     }
 
     private function getApiKey($refresh = false) : string {
         if (Storage::missing('furgonetka.key') || $refresh) {
             $response = Http::withBasicAuth(
-                'heseyashop-bae48caf4ee3b764010e7dea5de79e95',
-                '1760a14fbc361ad93c823a5a2f46911a3cd19939ded5abeced1990d1e306f7f5',
-            )->asForm()->post('https://konto-test.furgonetka.pl/oauth/token', [
+                config('furgonetka.client_id'),
+                config('furgonetka.client_secret'),
+            )->asForm()->post(config('furgonetka.auth_url') . '/oauth/token', [
                 'grant_type' => 'password',
                 'scope' => 'api',
-                'username' => 'bartek@heseya.com',
-                'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+                'username' => config('furgonetka.login'),
+                'password' => config('furgonetka.password'),
             ]);
 
             Storage::put('furgonetka.key', $response->json()['access_token'], 'private');

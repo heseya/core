@@ -95,5 +95,5 @@ Route::post('media', 'MediaController@upload')->middleware('auth:api');
 // External
 Route::prefix('furgonetka')->group(function () {
     Route::post('webhook', 'External\FurgonetkaController@webhook');
-    Route::post('create-package', 'External\FurgonetkaController@createPackage');
+    Route::post('create-package', 'External\FurgonetkaController@createPackage')->middleware('auth:api');
 });

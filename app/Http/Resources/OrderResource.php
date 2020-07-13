@@ -38,6 +38,7 @@ class OrderResource extends Resource
             'comment' => $this->comment,
             'items' => OrderItemResource::collection($this->items),
             'payments' => PaymentResource::collection($this->payments),
+            'shipping_number' => $this->shipping_number,
         ];
     }
 }
