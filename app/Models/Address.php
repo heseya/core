@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Propaganistas\LaravelPhone\PhoneNumber;
 
 /**
  * @OA\Schema()
@@ -71,5 +72,17 @@ class Address extends Model
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function getPhoneSimpleAttribute()
+    {
+        $phone = PhoneNumber::make(
+            $this->phone,
+            $this->country,
+        );
+
+        return $phone->formatForMobileDialingInCountry(
+            $this->country,
+        );
     }
 }

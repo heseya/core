@@ -27,6 +27,12 @@ class Order extends Model
      *   type="string",
      *   example="asap plz",
      * )
+     * 
+     * @OA\Property(
+     *   property="shipping_number",
+     *   type="string",
+     *   example="chch234chch1j3c23",
+     * )
      */
 
     protected $fillable = [
@@ -39,6 +45,7 @@ class Order extends Model
         'shipping_price',
         'delivery_address_id',
         'invoice_address_id',
+        'shipping_number',
     ];
 
     /**

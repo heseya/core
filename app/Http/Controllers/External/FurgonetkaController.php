@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Swagger\FurgonetkaControllerSwagger;
 use SoapClient;
 use Exception;
@@ -78,8 +79,20 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
         $order = Order::findOrFail($validated['order_id']);
         $packageTemplate = PackageTemplate::findOrFail($validated['package_template_id']);
 
+        $validator = Validator::make($order->deliveryAddress->toArray(), [
+            'country' => 'required|in:PL',
+            'phone' => 'required|phone:PL'
+        ]);
+
+        if ($validator->fails()) {
+            return Error::abort(
+                'Order address not in Poland/invalid phone number' . $order->deliveryAddress->phoneSimple,
+                502,
+            );
+        }
+
         try {
-            $client = new SoapClient('http://biznes-test.furgonetka.pl/api/soap/v2?wsdl', [
+            $client = new SoapClient(config('furgonetka.api_url'), [
                 'trace' => true,
                 'cache_wsdl' => false,
             ]);
@@ -192,7 +205,7 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
                     'street' => $order->deliveryAddress->address,
                     'postcode' => $order->deliveryAddress->zip,
                     'city' => $order->deliveryAddress->city,
-                    'phone' => $order->deliveryAddress->phone,
+                    'phone' => $order->deliveryAddress->phoneSimple,
                 ],
                 'label' => [
                     'file_format' => 'pdf',
@@ -216,7 +229,7 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
     
         if (!empty($validate->errors)) {
             return Error::abort(
-                'Invalid package or reciever data',
+                $validate->errors->item,
                 502,
             );
         }
@@ -225,24 +238,30 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
     
         if (!empty($package->errors)) {
             return Error::abort(
-                'Couldnt create package',
+                $package->errors->item,
                 502,
             );
         }
 
-        return response()->json(null, 204);
+        $order->update([
+            'shipping_number' => $package->parcels->item->package_no,
+        ]);
+
+        return response()->json([
+            'shipping_number' => $package->parcels->item->package_no,
+        ], 201);
     }
 
     private function getApiKey($refresh = false) : string {
         if (Storage::missing('furgonetka.key') || $refresh) {
             $response = Http::withBasicAuth(
-                'heseyashop-bae48caf4ee3b764010e7dea5de79e95',
-                '1760a14fbc361ad93c823a5a2f46911a3cd19939ded5abeced1990d1e306f7f5',
-            )->asForm()->post('https://konto-test.furgonetka.pl/oauth/token', [
+                config('furgonetka.client_id'),
+                config('furgonetka.client_secret'),
+            )->asForm()->post(config('furgonetka.auth_url') . '/oauth/token', [
                 'grant_type' => 'password',
                 'scope' => 'api',
-                'username' => 'bartek@heseya.com',
-                'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+                'username' => config('furgonetka.login'),
+                'password' => config('furgonetka.password'),
             ]);
 
             Storage::put('furgonetka.key', $response->json()['access_token'], 'private');
