@@ -30,7 +30,7 @@ class OrderResource extends Resource
     {
         return [
             'invoice_address' => AddressResource::make($this->invoiceAddress),
-            'shopping_method' => [
+            'shipping_method' => [
                 'id' => $this->shippingMethod->id,
                 'name' => $this->shippingMethod->name,
                 'price' => $this->shipping_price,
