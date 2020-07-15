@@ -38,10 +38,18 @@ class Item extends Model
     public function getQuantityAttribute (): float
     {
         $deposits = $this->deposits()->sum('quantity');
-        $withdrawals = 0;
-        foreach ($this->schemaItems()->with('orderItems')->get() as $schemaItem) {
-            $withdrawals += $schemaItem->orderItems()->sum('quantity');
-        }
+        $withdrawals = $this->schemaItems()
+            ->join(
+                'order_item_product_schema_item', 
+                'product_schema_items.id', 
+                '=', 
+                'order_item_product_schema_item.product_schema_item_id'
+            )->join(
+                'order_items',
+                'order_items.id',
+                '=',
+                'order_item_product_schema_item.order_item_id'
+            )->sum('quantity');
 
         return $deposits - $withdrawals;
     }

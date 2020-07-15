@@ -185,19 +185,20 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
         $packageData = [
             'data' => [
                 'auth' => $auth,
-                'partner_reference_number' => $order->code,
+                'partner_reference_number' => $order->code . '_' . date("d-m-Y_H-i-s"),
                 'service_id' => $service_id,
                 'type' => 'package',
                 'regulations_accept' => $regulations_accept,
                 'request_collection' => false,
                 // Nie ma danych wysyłającego jeszcze na sklepie
                 'sender' => [
-                    'name' => 'Jan Kowalski',
-                    'email' => 'jan@kowalski.pl',
-                    'street' => 'Polna 1/2',
-                    'postcode' => '82-300',
-                    'city' => 'Elbląg',
-                    'phone' => '+48 500 999 888',
+                    'name' => 'Dawid Sandecki',
+                    'email' => 'trafikadawidsandecki@gmail.com',
+                    'street' => 'Gdańska 57',
+                    'postcode' => '85-006',
+                    'city' => 'Bydgoszcz',
+                    'phone' => '+48 668 861 592',
+                    'company' => 'Trafika',
                 ],
                 'receiver' => [
                     'email' => $order->email,
