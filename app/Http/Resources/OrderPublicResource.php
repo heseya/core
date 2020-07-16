@@ -2,15 +2,17 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Request;
+
 class OrderPublicResource extends Resource
 {
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param Request $request
      * @return array
      */
-    public function base($request): array
+    public function base(Request $request): array
     {
         return [
             'code' => $this->code,

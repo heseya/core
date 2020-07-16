@@ -2,15 +2,17 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Request;
+
 class PageResource extends Resource
 {
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param Request $request
      * @return array
      */
-    public function base($request): array
+    public function base(Request $request): array
     {
         return [
             'id' => $this->id,
@@ -20,7 +22,7 @@ class PageResource extends Resource
         ];
     }
 
-    public function view($request): array
+    public function view(Request $request): array
     {
         return [
             'content_md' => $this->content_md,

@@ -2,15 +2,17 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Request;
+
 class OrderResource extends Resource
 {
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param Request $request
      * @return array
      */
-    public function base($request): array
+    public function base(Request $request): array
     {
         return [
             'id' => $this->id,
@@ -26,7 +28,7 @@ class OrderResource extends Resource
         ];
     }
 
-    public function view($request): array
+    public function view(Request $request): array
     {
         return [
             'invoice_address' => AddressResource::make($this->invoiceAddress),

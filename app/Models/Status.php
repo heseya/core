@@ -18,13 +18,19 @@ class Status extends Model
      * @OA\Property(
      *   property="name",
      *   type="string",
-     *   example="Gotowe",
+     *   example="Cancel",
      * )
      *
      * @OA\Property(
      *   property="color",
      *   type="string",
-     *   example="",
+     *   example="8f022c",
+     * )
+     *
+     * @OA\Property(
+     *   property="description",
+     *   type="string",
+     *   example="Your order has been cancelled!",
      * )
      */
     protected $fillable = [

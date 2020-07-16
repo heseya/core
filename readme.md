@@ -1,42 +1,31 @@
 # Heseya Store API
 
-## Przygotowanie projektu
+## Project setup
 ```
 composer i
-npm i
-npm run dev
 ```
 
-Do js i scss alternatywnie
-```
-npm run prod
-```
-lub
-```
-npm run watch
-```
+Copy `.env.example` to `.env`.
 
-Skopiuj `.env.example` do `.env`.
-
-Wygeneruj klucz aplikacji i odpal migracje z seederem.
+Create application key and run migrations with seeder.
 ```
 php artisan key:generate
 php artisan migrate --seed
 ```
 
-Po migracji odpal instalacje passporta.
+After migration run passport install.
 ```
 php artisan passport:install
 ```
 
-Seeder utworzy użytkownika `admin@example.com` z hasłem `secret`.
+Seeder creates user `admin@example.com` with password `secret`.
 
-Jak by coś nie działało związanego z cache (np. routing).
+When something not working with cache (like routing).
 ```
 php artisan optimize
 ```
 
-## Przygotowanie projektu w Docker
+## Docker
 Utwórz środowisko
 ```
 docker-compose up
@@ -54,7 +43,7 @@ docker-compose stop
 
 Wejście do kontenera (lub z aplikacji)
 ```
-docker exec -it depth(lub inna nazwa katalogu projektu)_app_1 bash
+docker exec -it store-api(lub inna nazwa katalogu projektu)_app_1 bash
 ```
 
 Skasowanie środowiska
@@ -62,23 +51,35 @@ Skasowanie środowiska
 docker-compose down -v
 ```
 
-## Styl kodu
-Ustaw twoje IDE, zeby korzystało z pliku .editorconfig. W VS Code jest na to dodatek.
+## Code style
+Set your IDE to use the .editorconfig file. There is an extension for this in VS Code.
 
-Pisząc kod do tego projektu stosuj się do wszystkich zasad z (https://github.com/maciejjeziorski/laravel-best-practices-pl).
+When writing the code for this project, follow rules from [Laravel best practices](https://github.com/alexeymezenin/laravel-best-practices).
 
-Dodatkowo:
-- przy walidacji uzywaj stringów `'required|max:20'` zamiast tablic,
-- odwołania do autoryzacji przy uzyciu `Auth::` zamiast `auth()`.
+Additional:
+- all variables in this project should be `snake_case` and functions (relations too) `camelCase`,
+- variables containing links like `avatar_url` should always end with `_url`.
 
-## Dokumentacja
-Dokumentacje piszemy z użyciem [Swagger-PHP](http://zircote.github.io/swagger-php/).
 
-Wygenerowanie dokuentacji
+## Docs
+Write documentation using [Swagger-PHP](http://zircote.github.io/swagger-php/).
+
+Generating documentation:
 ```
 php artisan l5-swagger:generate
 ```
 
-Wygenerowana dokumentacja jest dostępna pod linkiem `/docs`.
+The generated documentation is available at `/docs`.
 
-Lokalnie polecam ustawić sobie `L5_SWAGGER_GENERATE_ALWAYS` w .env na `true`, wtedy dokumentacja będzie generowana przy każdym odświeżeniu.
+Locally I recommend set `L5_SWAGGER_GENERATE_ALWAYS` option in .env to `true`, then the documentation will be generated with every refresh.
+
+
+## Release checklist
+This project uses [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html)
+
+- [ ] Check if migrations work,
+- [ ] Check if all tests pass,
+- [ ] Write down all changes to `changelog.md`,
+- [ ] Change version in `config/app.php`,
+- [ ] Change version in `app/Http/Controllers/Controller.php` (Swagger),
+- [ ] Create a version tag on the master branch.

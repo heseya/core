@@ -17,6 +17,14 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Application Version
+    |--------------------------------------------------------------------------
+     */
+
+    'ver' => '1.0.6',
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |
@@ -54,9 +62,9 @@ return [
 
     'url' => env('APP_URL', 'https://secure.example.com'),
 
-    'store_url' => rtrim(env('APP_STORE_URL', 'https://example.com'), '/'),
+    'store_url' => env('APP_STORE_URL', 'https://example.com'),
 
-    'asset_url' => env('ASSET_URL', null),
+    'admin_url' => env('APP_ADMIN_URL', 'https://admin.example.com'),
 
     /*
     |--------------------------------------------------------------------------

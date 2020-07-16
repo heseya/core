@@ -86,11 +86,11 @@ Route::middleware('auth:api')->group(function () {
         Route::patch('id:{status:id}', 'StatusController@update');
         Route::delete('id:{status:id}', 'StatusController@delete');
     });
+
+    Route::get('deposits', 'DepositController@index');
+
+    Route::post('media', 'MediaController@upload');
 });
-
-Route::get('deposits', 'DepositController@index')->middleware('auth:api');
-
-Route::post('media', 'MediaController@upload')->middleware('auth:api');
 
 // External
 Route::prefix('furgonetka')->group(function () {
