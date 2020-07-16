@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\Swagger;
 
-use App\Models\PackageTemplate;
+use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-interface PackageTemplateControllerSwagger
+interface BrandControllerSwagger
 {
     /**
      * @OA\Get(
-     *   path="/package-templates",
-     *   summary="list packages",
-     *   tags={"Packages"},
+     *   path="/brands",
+     *   summary="list brands",
+     *   tags={"Brands"},
      *   @OA\Response(
      *     response=200,
      *     description="Success",
@@ -20,25 +20,22 @@ interface PackageTemplateControllerSwagger
      *       @OA\Property(
      *         property="data",
      *         type="array",
-     *         @OA\Items(ref="#/components/schemas/PackageTemplateSwagger"),
+     *         @OA\Items(ref="#/components/schemas/Brand"),
      *       )
      *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
+     *   )
      * )
      */
     public function index(): JsonResource;
 
     /**
      * @OA\Post(
-     *   path="/package-templates",
-     *   summary="add new package",
-     *   tags={"Packages"},
+     *   path="/brands",
+     *   summary="add new brand",
+     *   tags={"Brands"},
      *   @OA\RequestBody(
      *     @OA\JsonContent(
-     *       ref="#/components/schemas/PackageTemplateSwagger",
+     *       ref="#/components/schemas/Brand",
      *     ),
      *   ),
      *   @OA\Response(
@@ -47,7 +44,7 @@ interface PackageTemplateControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/PackageTemplateSwagger",
+     *         ref="#/components/schemas/Brand",
      *       )
      *     )
      *   ),
@@ -60,9 +57,9 @@ interface PackageTemplateControllerSwagger
 
     /**
      * @OA\Patch(
-     *   path="/package-templates/id:{id}",
-     *   summary="update package",
-     *   tags={"Packages"},
+     *   path="/brands/id:{id}",
+     *   summary="update brand",
+     *   tags={"Brands"},
      *   @OA\Parameter(
      *     name="id",
      *     in="path",
@@ -73,7 +70,7 @@ interface PackageTemplateControllerSwagger
      *   ),
      *   @OA\RequestBody(
      *     @OA\JsonContent(
-     *       ref="#/components/schemas/PackageTemplateSwagger",
+     *       ref="#/components/schemas/Brand",
      *     ),
      *   ),
      *   @OA\Response(
@@ -82,7 +79,7 @@ interface PackageTemplateControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/PackageTemplateSwagger",
+     *         ref="#/components/schemas/Brand",
      *       )
      *     )
      *   ),
@@ -91,13 +88,13 @@ interface PackageTemplateControllerSwagger
      *   }
      * )
      */
-    public function update(PackageTemplate $package, Request $request): JsonResource;
+    public function update(Brand $brand, Request $request): JsonResource;
 
     /**
      * @OA\Delete(
-     *   path="/package-templates/id:{id}",
-     *   summary="delete package",
-     *   tags={"Packages"},
+     *   path="/brands/id:{id}",
+     *   summary="delete brand",
+     *   tags={"Brands"},
      *   @OA\Parameter(
      *     name="id",
      *     in="path",
@@ -115,5 +112,5 @@ interface PackageTemplateControllerSwagger
      *   }
      * )
      */
-    public function destroy(PackageTemplate $package);
+    public function destroy(Brand $brand);
 }

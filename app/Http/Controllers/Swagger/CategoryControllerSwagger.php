@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\Swagger;
 
-use App\Models\PackageTemplate;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-interface PackageTemplateControllerSwagger
+interface CategoryControllerSwagger
 {
     /**
      * @OA\Get(
-     *   path="/package-templates",
-     *   summary="list packages",
-     *   tags={"Packages"},
+     *   path="/categories",
+     *   summary="list categories",
+     *   tags={"Categories"},
      *   @OA\Response(
      *     response=200,
      *     description="Success",
@@ -20,25 +20,22 @@ interface PackageTemplateControllerSwagger
      *       @OA\Property(
      *         property="data",
      *         type="array",
-     *         @OA\Items(ref="#/components/schemas/PackageTemplateSwagger"),
+     *         @OA\Items(ref="#/components/schemas/Category"),
      *       )
      *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
+     *   )
      * )
      */
     public function index(): JsonResource;
 
     /**
      * @OA\Post(
-     *   path="/package-templates",
-     *   summary="add new package",
-     *   tags={"Packages"},
+     *   path="/categories",
+     *   summary="add new category",
+     *   tags={"Categories"},
      *   @OA\RequestBody(
      *     @OA\JsonContent(
-     *       ref="#/components/schemas/PackageTemplateSwagger",
+     *       ref="#/components/schemas/Category",
      *     ),
      *   ),
      *   @OA\Response(
@@ -47,7 +44,7 @@ interface PackageTemplateControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/PackageTemplateSwagger",
+     *         ref="#/components/schemas/Category",
      *       )
      *     )
      *   ),
@@ -60,9 +57,9 @@ interface PackageTemplateControllerSwagger
 
     /**
      * @OA\Patch(
-     *   path="/package-templates/id:{id}",
-     *   summary="update package",
-     *   tags={"Packages"},
+     *   path="/categories/id:{id}",
+     *   summary="update category",
+     *   tags={"Categories"},
      *   @OA\Parameter(
      *     name="id",
      *     in="path",
@@ -73,7 +70,7 @@ interface PackageTemplateControllerSwagger
      *   ),
      *   @OA\RequestBody(
      *     @OA\JsonContent(
-     *       ref="#/components/schemas/PackageTemplateSwagger",
+     *       ref="#/components/schemas/Category",
      *     ),
      *   ),
      *   @OA\Response(
@@ -82,7 +79,7 @@ interface PackageTemplateControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/PackageTemplateSwagger",
+     *         ref="#/components/schemas/Category",
      *       )
      *     )
      *   ),
@@ -91,13 +88,13 @@ interface PackageTemplateControllerSwagger
      *   }
      * )
      */
-    public function update(PackageTemplate $package, Request $request): JsonResource;
+    public function update(Category $category, Request $request): JsonResource;
 
     /**
      * @OA\Delete(
-     *   path="/package-templates/id:{id}",
-     *   summary="delete package",
-     *   tags={"Packages"},
+     *   path="/categories/id:{id}",
+     *   summary="delete category",
+     *   tags={"Categories"},
      *   @OA\Parameter(
      *     name="id",
      *     in="path",
@@ -115,5 +112,5 @@ interface PackageTemplateControllerSwagger
      *   }
      * )
      */
-    public function destroy(PackageTemplate $package);
+    public function destroy(Category $category);
 }

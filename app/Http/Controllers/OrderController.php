@@ -2,68 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\Error;
+use App\Http\Controllers\Swagger\OrderControllerSwagger;
+use App\Http\Requests\OrderCreateRequest;
+use App\Http\Resources\OrderPublicResource;
+use App\Http\Resources\OrderResource;
 use App\Mail\ChangeStatus;
 use App\Mail\NewOrder;
-use App\Models\Order;
 use App\Models\Address;
+use App\Models\Order;
 use App\Models\Product;
-use App\Exceptions\Error;
-use App\Models\Status;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
 use App\Models\ProductSchema;
-use App\Models\ShippingMethod;
 use App\Models\ProductSchemaItem;
-use Illuminate\Http\JsonResponse;
-use App\Http\Resources\OrderResource;
-use App\Http\Requests\OrderCreateRequest;
+use App\Models\ShippingMethod;
+use App\Models\Status;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
-use App\Http\Resources\OrderPublicResource;
+use Illuminate\Support\Str;
 
-class OrderController extends Controller
+class OrderController extends Controller implements OrderControllerSwagger
 {
-    /**
-     * @OA\Get(
-     *   path="/orders",
-     *   summary="orders list",
-     *   tags={"Orders"},
-     *   @OA\Parameter(
-     *     name="search",
-     *     in="query",
-     *     description="Full text search.",
-     *     @OA\Schema(
-     *       type="string",
-     *     ),
-     *   ),
-     *   @OA\Parameter(
-     *     name="sort",
-     *     in="query",
-     *     description="Sorting string.",
-     *     @OA\Schema(
-     *       type="string",
-     *       example="code:asc,created_at:desc,id"
-     *     ),
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         type="array",
-     *         @OA\Items(
-     *           ref="#/components/schemas/Order",
-     *         )
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function index(Request $request)
+    public function index(Request $request): JsonResource
     {
         $request->validate([
             'search' => 'string|max:255',
@@ -102,92 +63,17 @@ class OrderController extends Controller
         return OrderResource::collection($query);
     }
 
-    /**
-     * @OA\Get(
-     *   path="/orders/id:{id}",
-     *   summary="order view",
-     *   tags={"Orders"},
-     *   @OA\Parameter(
-     *     name="code",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="string",
-     *       example="D3PT88",
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Order",
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function view(Order $order)
+    public function show(Order $order): JsonResource
     {
         return OrderResource::make($order);
     }
 
-    /**
-     * @OA\Get(
-     *   path="/orders/{code}",
-     *   summary="public order view",
-     *   tags={"Orders"},
-     *   @OA\Parameter(
-     *     name="code",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="string",
-     *       example="D3PT88",
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Order",
-     *       )
-     *     )
-     *   )
-     * )
-     */
-    public function viewPublic(Order $order)
+    public function showPublic(Order $order): JsonResource
     {
         return OrderPublicResource::make($order);
     }
 
-    /**
-     * @OA\Post(
-     *   path="/orders",
-     *   summary="add new order",
-     *   tags={"Orders"},
-     *   @OA\RequestBody(
-     *     ref="#/components/requestBodies/OrderCreate",
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Order",
-     *       )
-     *     )
-     *   )
-     * )
-     */
-    public function create(OrderCreateRequest $request): JsonResponse
+    public function store(OrderCreateRequest $request)
     {
         $shipping_method = ShippingMethod::find($request->shipping_method_id);
 
@@ -410,81 +296,7 @@ class OrderController extends Controller
             ->setStatusCode(201);
     }
 
-    /**
-     * @OA\Post(
-     *   path="/orders/verify",
-     *   summary="verify cart",
-     *   tags={"Orders"},
-     *   @OA\RequestBody(
-     *     request="OrderCreate",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="items",
-     *         type="array",
-     *         @OA\Items(
-     *           type="object",
-     *           @OA\Property(
-     *             property="cartitem_id",
-     *             type="string",
-     *           ),
-     *           @OA\Property(
-     *             property="product_id",
-     *             type="integer",
-     *           ),
-     *           @OA\Property(
-     *             property="quantity",
-     *             type="number",
-     *           ),
-     *           @OA\Property(
-     *             property="schema_items",
-     *             type="array",
-     *             @OA\Items(
-     *               type="integer"
-     *             )
-     *           ),
-     *           @OA\Property(
-     *             property="custom_schemas",
-     *             type="array",
-     *             @OA\Items(
-     *               type="object",
-     *               @OA\Property(
-     *                 property="schema_id",
-     *                 type="integer",
-     *               ),
-     *               @OA\Property(
-     *                 property="value",
-     *                 type="string",
-     *               )
-     *             )
-     *           )
-     *         )
-     *       )
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         type="array",
-     *         @OA\Items(
-     *           type="object",
-     *           @OA\Property(
-     *             property="cartitem_id",
-     *             type="string",
-     *           ),
-     *           @OA\Property(
-     *             property="enough",
-     *             type="boolean",
-     *           )
-     *         )
-     *       )
-     *     )
-     *   )
-     * )
-     */
-    public function verify(Request $request): JsonResponse
+    public function verify(Request $request)
     {
         $cartItems = [];
         $itemCounts = [];
@@ -668,40 +480,7 @@ class OrderController extends Controller
         return response()->json(['data' => $cartItems]);
     }
 
-
-    /**
-     * @OA\Post(
-     *   path="/orders/id:{id}/status",
-     *   summary="change order status",
-     *   tags={"Orders"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="id",
-     *       example="2",
-     *     ),
-     *   ),
-     *   @OA\RequestBody(
-     *     request="OrderCreate",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="status_id",
-     *         type="integer",
-     *       ),
-     *     ),
-     *   ),
-     *   @OA\Response(
-     *     response=204,
-     *     description="Success",
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function changeStatus(Order $order, Request $request)
+    public function updateStatus(Order $order, Request $request)
     {
         $request->validate([
             'status_id' => 'required|integer|exists:statuses,id',

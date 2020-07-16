@@ -3,33 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\Error;
-use Illuminate\Http\Request;
-use App\Models\ShippingMethod;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Swagger\ShippingMethodControllerSwagger;
 use App\Http\Resources\ShippingMethodResource;
+use App\Models\ShippingMethod;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
 
-class ShippingMethodController extends Controller
+class ShippingMethodController extends Controller implements ShippingMethodControllerSwagger
 {
-    /**
-     * @OA\Get(
-     *   path="/shipping-methods",
-     *   summary="list shipping methods",
-     *   tags={"Shipping"},
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         type="array",
-     *         @OA\Items(ref="#/components/schemas/ShippingMethod"),
-     *       )
-     *     )
-     *   )
-     * )
-     */
-    public function index()
+    public function index(): JsonResource
     {
         $query = ShippingMethod::select();
 
@@ -44,34 +27,9 @@ class ShippingMethodController extends Controller
         return ShippingMethodResource::collection($query->get());
     }
 
-    /**
-     * @OA\Post(
-     *   path="/shipping-methods",
-     *   summary="add new shipping method",
-     *   tags={"Shipping"},
-     *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       ref="#/components/schemas/ShippingMethod",
-     *     ),
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/ShippingMethod",
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function create(Request $request): JsonResource
+    public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric',
             'public' => 'boolean',
@@ -79,48 +37,17 @@ class ShippingMethodController extends Controller
             'payment_methods.*' => 'exists:payment_methods,id',
         ]);
 
-        $shipping_method = ShippingMethod::create($request->all());
+        $shipping_method = ShippingMethod::create($validated);
         $shipping_method->paymentMethods()->sync($request->get('payment_methods', []));
 
-        return ShippingMethodResource::make($shipping_method);
+        return ShippingMethodResource::make($shipping_method)
+            ->response()
+            ->setStatusCode(201);
     }
 
-    /**
-     * @OA\Patch(
-     *   path="/shipping-methods/id:{id}",
-     *   summary="update shipping method",
-     *   tags={"Shipping"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer",
-     *     )
-     *   ),
-     *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       ref="#/components/schemas/ShippingMethod",
-     *     ),
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/ShippingMethod",
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
     public function update(ShippingMethod $shipping_method, Request $request): JsonResource
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'string|max:255',
             'price' => 'numeric',
             'public' => 'boolean',
@@ -128,35 +55,13 @@ class ShippingMethodController extends Controller
             'payment_methods.*' => 'exists:payment_methods,id',
         ]);
 
-        $shipping_method->update($request->all());
+        $shipping_method->update($validated);
         $shipping_method->paymentMethods()->sync($request->get('payment_methods', []));
 
         return ShippingMethodResource::make($shipping_method);
     }
 
-    /**
-     * @OA\Delete(
-     *   path="/shipping-methods/id:{id}",
-     *   summary="delete shipping method",
-     *   tags={"Shipping"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer",
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=204,
-     *     description="Success",
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function delete(ShippingMethod $shipping_method)
+    public function destroy(ShippingMethod $shipping_method)
     {
         if ($shipping_method->orders()->count() > 0) {
             return Error::abort(

@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\Swagger;
 
-use App\Models\PackageTemplate;
+use App\Models\Status;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-interface PackageTemplateControllerSwagger
+interface StatusControllerSwagger
 {
     /**
      * @OA\Get(
-     *   path="/package-templates",
-     *   summary="list packages",
-     *   tags={"Packages"},
+     *   path="/statuses",
+     *   summary="list statuses",
+     *   tags={"Statuses"},
      *   @OA\Response(
      *     response=200,
      *     description="Success",
@@ -20,7 +20,7 @@ interface PackageTemplateControllerSwagger
      *       @OA\Property(
      *         property="data",
      *         type="array",
-     *         @OA\Items(ref="#/components/schemas/PackageTemplateSwagger"),
+     *         @OA\Items(ref="#/components/schemas/Status"),
      *       )
      *     )
      *   ),
@@ -33,12 +33,12 @@ interface PackageTemplateControllerSwagger
 
     /**
      * @OA\Post(
-     *   path="/package-templates",
-     *   summary="add new package",
-     *   tags={"Packages"},
+     *   path="/statuses",
+     *   summary="add new status",
+     *   tags={"Statuses"},
      *   @OA\RequestBody(
      *     @OA\JsonContent(
-     *       ref="#/components/schemas/PackageTemplateSwagger",
+     *       ref="#/components/schemas/Status",
      *     ),
      *   ),
      *   @OA\Response(
@@ -47,7 +47,7 @@ interface PackageTemplateControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/PackageTemplateSwagger",
+     *         ref="#/components/schemas/Status",
      *       )
      *     )
      *   ),
@@ -56,13 +56,13 @@ interface PackageTemplateControllerSwagger
      *   }
      * )
      */
-    public function store(Request $request);
+    public function store(Request $request): JsonResource;
 
     /**
      * @OA\Patch(
-     *   path="/package-templates/id:{id}",
-     *   summary="update package",
-     *   tags={"Packages"},
+     *   path="/statuses/id:{id}",
+     *   summary="update status",
+     *   tags={"Statuses"},
      *   @OA\Parameter(
      *     name="id",
      *     in="path",
@@ -73,7 +73,7 @@ interface PackageTemplateControllerSwagger
      *   ),
      *   @OA\RequestBody(
      *     @OA\JsonContent(
-     *       ref="#/components/schemas/PackageTemplateSwagger",
+     *       ref="#/components/schemas/Status",
      *     ),
      *   ),
      *   @OA\Response(
@@ -82,7 +82,7 @@ interface PackageTemplateControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/PackageTemplateSwagger",
+     *         ref="#/components/schemas/Status",
      *       )
      *     )
      *   ),
@@ -91,13 +91,13 @@ interface PackageTemplateControllerSwagger
      *   }
      * )
      */
-    public function update(PackageTemplate $package, Request $request): JsonResource;
+    public function update(Status $status, Request $request): JsonResource;
 
     /**
      * @OA\Delete(
-     *   path="/package-templates/id:{id}",
-     *   summary="delete package",
-     *   tags={"Packages"},
+     *   path="/statuses/id:{id}",
+     *   summary="delete status",
+     *   tags={"Statuses"},
      *   @OA\Parameter(
      *     name="id",
      *     in="path",
@@ -115,5 +115,5 @@ interface PackageTemplateControllerSwagger
      *   }
      * )
      */
-    public function destroy(PackageTemplate $package);
+    public function destroy(Status $status);
 }

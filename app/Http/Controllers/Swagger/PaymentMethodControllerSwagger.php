@@ -2,17 +2,24 @@
 
 namespace App\Http\Controllers\Swagger;
 
-use App\Models\PackageTemplate;
+use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-interface PackageTemplateControllerSwagger
+interface PaymentMethodControllerSwagger
 {
     /**
      * @OA\Get(
-     *   path="/package-templates",
-     *   summary="list packages",
-     *   tags={"Packages"},
+     *   path="/payment-methods",
+     *   summary="list payment methods",
+     *   tags={"Payments"},
+     *   @OA\Parameter(
+     *     name="shipping_method_id",
+     *     in="query",
+     *     @OA\Schema(
+     *       type="integer",
+     *     )
+     *   ),
      *   @OA\Response(
      *     response=200,
      *     description="Success",
@@ -20,25 +27,22 @@ interface PackageTemplateControllerSwagger
      *       @OA\Property(
      *         property="data",
      *         type="array",
-     *         @OA\Items(ref="#/components/schemas/PackageTemplateSwagger"),
+     *         @OA\Items(ref="#/components/schemas/PaymentMethod"),
      *       )
      *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
+     *   )
      * )
      */
-    public function index(): JsonResource;
+    public function index(Request $request): JsonResource;
 
     /**
      * @OA\Post(
-     *   path="/package-templates",
-     *   summary="add new package",
-     *   tags={"Packages"},
+     *   path="/payment-methods",
+     *   summary="add new payment method",
+     *   tags={"Payments"},
      *   @OA\RequestBody(
      *     @OA\JsonContent(
-     *       ref="#/components/schemas/PackageTemplateSwagger",
+     *       ref="#/components/schemas/PaymentMethod",
      *     ),
      *   ),
      *   @OA\Response(
@@ -47,7 +51,7 @@ interface PackageTemplateControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/PackageTemplateSwagger",
+     *         ref="#/components/schemas/PaymentMethod",
      *       )
      *     )
      *   ),
@@ -60,9 +64,9 @@ interface PackageTemplateControllerSwagger
 
     /**
      * @OA\Patch(
-     *   path="/package-templates/id:{id}",
-     *   summary="update package",
-     *   tags={"Packages"},
+     *   path="/payment-methods/id:{id}",
+     *   summary="update payment method",
+     *   tags={"Payments"},
      *   @OA\Parameter(
      *     name="id",
      *     in="path",
@@ -73,7 +77,7 @@ interface PackageTemplateControllerSwagger
      *   ),
      *   @OA\RequestBody(
      *     @OA\JsonContent(
-     *       ref="#/components/schemas/PackageTemplateSwagger",
+     *       ref="#/components/schemas/PaymentMethod",
      *     ),
      *   ),
      *   @OA\Response(
@@ -82,7 +86,7 @@ interface PackageTemplateControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/PackageTemplateSwagger",
+     *         ref="#/components/schemas/PaymentMethod",
      *       )
      *     )
      *   ),
@@ -91,13 +95,13 @@ interface PackageTemplateControllerSwagger
      *   }
      * )
      */
-    public function update(PackageTemplate $package, Request $request): JsonResource;
+    public function update(PaymentMethod $payment_method, Request $request): JsonResource;
 
     /**
      * @OA\Delete(
-     *   path="/package-templates/id:{id}",
-     *   summary="delete package",
-     *   tags={"Packages"},
+     *   path="/payment-methods/id:{id}",
+     *   summary="delete payment method",
+     *   tags={"Payments"},
      *   @OA\Parameter(
      *     name="id",
      *     in="path",
@@ -115,5 +119,5 @@ interface PackageTemplateControllerSwagger
      *   }
      * )
      */
-    public function destroy(PackageTemplate $package);
+    public function destroy(PaymentMethod $payment_method);
 }
