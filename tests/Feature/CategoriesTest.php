@@ -2,14 +2,19 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\Brand;
-use App\Models\Product;
 use App\Models\Category;
+use App\Models\Product;
 use Laravel\Passport\Passport;
+use Tests\TestCase;
 
 class CategoriesTest extends TestCase
 {
+    private Category $category;
+    private Category $category_hidden;
+
+    private array $expected;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -26,7 +31,7 @@ class CategoriesTest extends TestCase
          * Expected response
          */
         $this->expected = [
-            'id' => $this->category->id,
+            'id' => $this->category->getKey(),
             'name' => $this->category->name,
             'slug' => $this->category->slug,
             'public' => $this->category->public,
@@ -38,7 +43,7 @@ class CategoriesTest extends TestCase
      */
     public function testIndex()
     {
-        $response = $this->get('/categories');
+        $response = $this->getJson('/categories');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Shoud show only public categories.
@@ -52,7 +57,7 @@ class CategoriesTest extends TestCase
      */
     public function testCreate()
     {
-        $response = $this->post('/categories');
+        $response = $this->postJson('/categories');
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
@@ -63,7 +68,7 @@ class CategoriesTest extends TestCase
             'public' => true,
         ];
 
-        $response = $this->post('/categories', $category);
+        $response = $this->postJson('/categories', $category);
         $response
             ->assertCreated()
             ->assertJson(['data' => $category]);
@@ -74,7 +79,7 @@ class CategoriesTest extends TestCase
      */
     public function testUpdate()
     {
-        $response = $this->patch('/categories/id:' . $this->category->id);
+        $response = $this->patchJson('/categories/id:' . $this->category->getKey());
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
@@ -85,8 +90,8 @@ class CategoriesTest extends TestCase
             'public' => false,
         ];
 
-        $response = $this->patch(
-            '/categories/id:' . $this->category->id,
+        $response = $this->patchJson(
+            '/categories/id:' . $this->category->getKey(),
             $category,
         );
         $response
@@ -99,12 +104,12 @@ class CategoriesTest extends TestCase
      */
     public function testDelete()
     {
-        $response = $this->delete('/categories/id:' . $this->category->id);
+        $response = $this->deleteJson('/categories/id:' . $this->category->getKey());
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->delete('/categories/id:' . $this->category->id);
+        $response = $this->deleteJson('/categories/id:' . $this->category->getKey());
         $response->assertNoContent();
     }
 
@@ -116,14 +121,14 @@ class CategoriesTest extends TestCase
         Passport::actingAs($this->user);
 
         $this->category = factory(Category::class)->create();
-        $this->brand = factory(Brand::class)->create();
+        $brand = factory(Brand::class)->create();
 
         factory(Product::class)->create([
-            'category_id' => $this->category->id,
-            'brand_id' => $this->brand->id,
+            'category_id' => $this->category->getKey(),
+            'brand_id' => $brand->getKey(),
         ]);
 
-        $response = $this->delete('/categories/id:' . $this->category->id);
+        $response = $this->delete('/categories/id:' . $this->category->getKey());
         $response->assertStatus(400);
     }
 }

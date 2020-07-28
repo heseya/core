@@ -15,7 +15,7 @@ class ShippingMethodResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => $this->getKey(),
             'name' => $this->name,
             'price' => $this->price,
             'public' => $this->public,

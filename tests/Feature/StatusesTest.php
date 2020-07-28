@@ -2,24 +2,30 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\Status;
 use Laravel\Passport\Passport;
+use Tests\TestCase;
 
 class StatusesTest extends TestCase
 {
+    /**
+     * Zmienna status jest zarezerwowana przez TestCase.
+     */
+    private Status $status_model;
+
+    private array $expected;
+
     public function setUp(): void
     {
         parent::setUp();
 
-        // zmienna status jest zarezerwowana przez TestCase
         $this->status_model = factory(Status::class)->create();
 
         /**
          * Expected response
          */
         $this->expected = [
-            'id' => $this->status_model->id,
+            'id' => $this->status_model->getKey(),
             'name' => $this->status_model->name,
             'color' => $this->status_model->color,
             'description' => $this->status_model->description,
@@ -31,12 +37,12 @@ class StatusesTest extends TestCase
      */
     public function testIndex()
     {
-        $response = $this->get('/statuses');
+        $response = $this->getJson('/statuses');
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->get('/statuses');
+        $response = $this->getJson('/statuses');
         $response
             ->assertOk()
             ->assertJsonCount(4, 'data') // domyślne statusy z migracji + ten utworzony teraz
@@ -50,18 +56,18 @@ class StatusesTest extends TestCase
      */
     public function testCreate()
     {
-        $response = $this->post('/statuses');
+        $response = $this->postJson('/statuses');
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
         $status = [
-            'name' => 'Testowy Status',
+            'name' => 'Test Status',
             'color' => 'ffffff',
             'description' => 'To jest status testowy.',
         ];
 
-        $response = $this->post('/statuses', $status);
+        $response = $this->postJson('/statuses', $status);
         $response
             ->assertCreated()
             ->assertJson(['data' => $status]);
@@ -72,19 +78,19 @@ class StatusesTest extends TestCase
      */
     public function testUpdate()
     {
-        $response = $this->patch('/statuses/id:' . $this->status_model->id);
+        $response = $this->patchJson('/statuses/id:' . $this->status_model->getKey());
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
         $status = [
-            'name' => 'Status Testowy 2',
+            'name' => 'Test Status 2',
             'color' => '444444',
             'description' => 'Testowy opis testowego statusu 2.',
         ];
 
-        $response = $this->patch(
-            '/statuses/id:' . $this->status_model->id,
+        $response = $this->patchJson(
+            '/statuses/id:' . $this->status_model->getKey(),
             $status,
         );
         $response
@@ -97,12 +103,12 @@ class StatusesTest extends TestCase
      */
     public function testDelete()
     {
-        $response = $this->delete('/statuses/id:' . $this->status_model->id);
+        $response = $this->deleteJson('/statuses/id:' . $this->status_model->getKey());
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->delete('/statuses/id:' . $this->status_model->id);
-        $response->assertStatus(204);
+        $response = $this->deleteJson('/statuses/id:' . $this->status_model->getKey());
+        $response->assertNoContent();
     }
 }

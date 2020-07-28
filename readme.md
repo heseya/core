@@ -26,27 +26,27 @@ php artisan optimize
 ```
 
 ## Docker
-Utwórz środowisko
+Create an environment
 ```
 docker-compose up
 ```
 
-Uruchamianie środowiska nie przypinająć go do konsoli (lub z aplikacji)
+Do not clip the environment to the console (or from the application)
 ```
 docker-compose up -d
 ```
 
-Zatrzymywanie środowiska (lub z aplikacji)
+Stopping the environment (or from applications)
 ```
 docker-compose stop
 ```
 
-Wejście do kontenera (lub z aplikacji)
+Entry to the container (or from the application)
 ```
-docker exec -it store-api(lub inna nazwa katalogu projektu)_app_1 bash
+docker exec -it store-api_app_1 bash
 ```
 
-Skasowanie środowiska
+Deleting the environment
 ```
 docker-compose down -v
 ```
@@ -58,7 +58,12 @@ When writing the code for this project, follow rules from [Laravel best practice
 
 Additional:
 - all variables in this project should be `snake_case` and functions (relations too) `camelCase`,
-- variables containing links like `avatar_url` should always end with `_url`.
+- variables containing links like `avatar_url` should always end with `_url`,
+- all models must have in uuid4 format,
+- all resources must contains id (uuid),
+- always get model id by getKey() method,
+- in tests use `getJson()`, `postJson()` etc.
+- in tests use `assertOk()`, `assertCreated()` etc.
 
 
 ## Docs

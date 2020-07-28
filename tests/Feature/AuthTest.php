@@ -18,7 +18,7 @@ class AuthTest extends TestCase
      */
     public function testLogin()
     {
-        $response = $this->post('/login', [
+        $response = $this->postJson('/login', [
             'email' => $this->user->email,
             'password' => $this->password,
         ]);

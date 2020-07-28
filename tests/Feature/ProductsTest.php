@@ -2,16 +2,24 @@
 
 namespace Tests\Feature;
 
-
-use Tests\TestCase;
-use App\Models\Item;
 use App\Models\Brand;
-use App\Models\Product;
 use App\Models\Category;
+use App\Models\Item;
+use App\Models\Product;
 use Laravel\Passport\Passport;
+use Tests\TestCase;
 
 class ProductsTest extends TestCase
 {
+    private Product $product;
+    private Item $item;
+
+    private array $hidden_products;
+
+    private array $expected;
+    private array $expected_short;
+    private array $expected_updated;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -20,13 +28,13 @@ class ProductsTest extends TestCase
         $category = factory(Category::class)->create(['public' => true]);
 
         $this->product = factory(Product::class)->create([
-            'brand_id' => $brand->id,
-            'category_id' => $category->id,
+            'brand_id' => $brand->getKey(),
+            'category_id' => $category->getKey(),
             'public' => true,
         ]);
 
         $this->product->update([
-            'original_id' => $this->product->id,
+            'original_id' => $this->product->getKey(),
         ]);
 
         $schema = $this->product->schemas()->create([
@@ -41,7 +49,7 @@ class ProductsTest extends TestCase
         ]);
 
         $schema->schemaItems()->create([
-            'item_id' => $this->item->id,
+            'item_id' => $this->item->getKey(),
             'extra_price' => 0,
         ]);
 
@@ -51,38 +59,38 @@ class ProductsTest extends TestCase
 
         $this->hidden_products = [
             factory(Product::class)->create([
-                'brand_id' => $brand->id,
-                'category_id' => $category->id,
+                'brand_id' => $brand->getKey(),
+                'category_id' => $category->getKey(),
                 'public' => false,
             ]),
             factory(Product::class)->create([
-                'brand_id' => $brand_hidden->id,
-                'category_id' => $category->id,
+                'brand_id' => $brand_hidden->getKey(),
+                'category_id' => $category->getKey(),
                 'public' => true,
             ]),
             factory(Product::class)->create([
-                'brand_id' => $brand->id,
-                'category_id' => $category_hidden->id,
+                'brand_id' => $brand->getKey(),
+                'category_id' => $category_hidden->getKey(),
                 'public' => true,
             ]),
             factory(Product::class)->create([
-                'brand_id' => $brand_hidden->id,
-                'category_id' => $category_hidden->id,
+                'brand_id' => $brand_hidden->getKey(),
+                'category_id' => $category_hidden->getKey(),
                 'public' => true,
             ]),
             factory(Product::class)->create([
-                'brand_id' => $brand_hidden->id,
-                'category_id' => $category->id,
+                'brand_id' => $brand_hidden->getKey(),
+                'category_id' => $category->getKey(),
                 'public' => false,
             ]),
             factory(Product::class)->create([
-                'brand_id' => $brand->id,
-                'category_id' => $category_hidden->id,
+                'brand_id' => $brand->getKey(),
+                'category_id' => $category_hidden->getKey(),
                 'public' => false,
             ]),
             factory(Product::class)->create([
-                'brand_id' => $brand_hidden->id,
-                'category_id' => $category_hidden->id,
+                'brand_id' => $brand_hidden->getKey(),
+                'category_id' => $category_hidden->getKey(),
                 'public' => false,
             ]),
         ];
@@ -91,7 +99,7 @@ class ProductsTest extends TestCase
          * Expected short response
          */
         $this->expected_short = [
-            'id' => $this->product->id,
+            'id' => $this->product->getKey(),
             'name' => $this->product->name,
             'slug' => $this->product->slug,
             'price' => $this->product->price,
@@ -99,13 +107,13 @@ class ProductsTest extends TestCase
             'public' => (bool) $this->product->public,
             'digital' => (bool) $this->product->digital,
             'brand' => [
-                'id' => $this->product->brand->id,
+                'id' => $this->product->brand->getKey(),
                 'name' => $this->product->brand->name,
                 'slug' => $this->product->brand->slug,
                 'public' => (bool) $this->product->brand->public,
             ],
             'category' => [
-                'id' => $this->product->category->id,
+                'id' => $this->product->category->getKey(),
                 'name' => $this->product->category->name,
                 'slug' => $this->product->category->slug,
                 'public' => (bool) $this->product->category->public,
@@ -130,26 +138,26 @@ class ProductsTest extends TestCase
                     'item' => [
                         'name' => $this->product->name,
                         'sku' => null,
-                        'quantity' => 0
-                    ]
-                ]]
+                        'quantity' => 0,
+                    ],
+                ]],
             ]],
         ]);
 
-        $this->expectedUpdated = [
+        $this->expected_updated = [
             'name' => 'Updated',
             'slug' => 'updated',
             'price' => 150,
             'public' => false,
             'digital' => false,
             'brand' => [
-                'id' => $this->product->brand->id,
+                'id' => $this->product->brand->getKey(),
                 'name' => $this->product->brand->name,
                 'slug' => $this->product->brand->slug,
                 'public' => (bool) $this->product->brand->public,
             ],
             'category' => [
-                'id' => $this->product->category->id,
+                'id' => $this->product->category->getKey(),
                 'name' => $this->product->category->name,
                 'slug' => $this->product->category->slug,
                 'public' => (bool) $this->product->category->public,
@@ -168,9 +176,9 @@ class ProductsTest extends TestCase
                     'item' => [
                         'name' => $this->product->name,
                         'sku' => null,
-                        'quantity' => 0
-                    ]
-                ]]
+                        'quantity' => 0,
+                    ],
+                ]],
             ]],
         ];
     }
@@ -180,20 +188,20 @@ class ProductsTest extends TestCase
      */
     public function testIndex()
     {
-        $response = $this->get('/products');
+        $response = $this->getJson('/products');
         $response
             ->assertOk()
-            ->assertJsonCount(1, 'data') // Shoud show only public products.
+            ->assertJsonCount(1, 'data') // Should show only public products.
             ->assertJson(['data' => [
                 0 => $this->expected_short,
             ]]);
 
         Passport::actingAs($this->user);
 
-        $response = $this->get('/products');
+        $response = $this->getJson('/products');
         $response
             ->assertOk()
-            ->assertJsonCount(count($this->hidden_products) + 1, 'data'); // Shoud show all products.
+            ->assertJsonCount(count($this->hidden_products) + 1, 'data'); // Should show all products.
     }
 
     /**
@@ -201,12 +209,12 @@ class ProductsTest extends TestCase
      */
     public function testView()
     {
-        $response = $this->get('/products/' . $this->product->slug);
+        $response = $this->getJson('/products/' . $this->product->slug);
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
 
-        $response = $this->get('/products/' . $this->hidden_products[0]->slug);
+        $response = $this->getJson('/products/' . $this->hidden_products[0]->slug);
         $response->assertUnauthorized();
     }
 
@@ -215,17 +223,17 @@ class ProductsTest extends TestCase
      */
     public function testViewAdmin()
     {
-        $response = $this->get('/products/id:' . $this->product->id);
+        $response = $this->getJson('/products/id:' . $this->product->getKey());
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->get('/products/id:' . $this->product->id);
+        $response = $this->getJson('/products/id:' . $this->product->getKey());
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
 
-        $response = $this->get('/products/id:' . $this->hidden_products[0]->id);
+        $response = $this->getJson('/products/id:' . $this->hidden_products[0]->getKey());
         $response->assertOk();
     }
 
@@ -235,7 +243,7 @@ class ProductsTest extends TestCase
     public function testViewHidden()
     {
         foreach ($this->hidden_products as $product) {
-            $response = $this->get('/products/' . $product->slug);
+            $response = $this->getJson('/products/' . $product->slug);
             $response
                 ->assertUnauthorized()
                 ->assertJsonStructure(['error' => [
@@ -250,23 +258,21 @@ class ProductsTest extends TestCase
      */
     public function testCreate()
     {
-        $response = $this->post('/products');
+        $response = $this->postJson('/products');
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->post('/products', [
+        $response = $this->postJson('/products', [
             'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
-            'brand_id' => $this->product->brand->id,
-            'category_id' => $this->product->category->id,
+            'brand_id' => $this->product->brand->getKey(),
+            'category_id' => $this->product->category->getKey(),
             'description_md' => '# Description',
             'digital' => false,
             'public' => true,
         ]);
-
-        $this->createdId = $response->json()['data']['id'];
 
         $response
             ->assertCreated()
@@ -279,13 +285,13 @@ class ProductsTest extends TestCase
                 'description_md' => '# Description',
                 'description_html' => '<h1>Description</h1>',
                 'brand' => [
-                    'id' => $this->product->brand->id,
+                    'id' => $this->product->brand->getKey(),
                     'name' => $this->product->brand->name,
                     'slug' => $this->product->brand->slug,
                     'public' => (bool) $this->product->brand->public,
                 ],
                 'category' => [
-                    'id' => $this->product->category->id,
+                    'id' => $this->product->category->getKey(),
                     'name' => $this->product->category->name,
                     'slug' => $this->product->category->slug,
                     'public' => (bool) $this->product->category->public,
@@ -302,10 +308,10 @@ class ProductsTest extends TestCase
                         'item' => [
                             'name' => 'Test',
                             'sku' => null,
-                            'quantity' => 0
-                        ]
-                    ]]
-                ]]
+                            'quantity' => 0,
+                        ],
+                    ]],
+                ]],
             ]]);
     }
 
@@ -314,17 +320,17 @@ class ProductsTest extends TestCase
      */
     public function testUpdate()
     {
-        $response = $this->patch('/products/id:' . $this->product->id);
+        $response = $this->patchJson('/products/id:' . $this->product->getKey());
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->patch('/products/id:' . $this->product->id, [
+        $response = $this->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'Updated',
             'slug' => 'updated',
             'price' => 150.00,
-            'brand_id' => $this->product->brand->id,
-            'category_id' => $this->product->category->id,
+            'brand_id' => $this->product->brand->getKey(),
+            'category_id' => $this->product->category->getKey(),
             'description_md' => '# New description',
             'digital' => false,
             'public' => false,
@@ -335,17 +341,17 @@ class ProductsTest extends TestCase
                     'required' => true,
                     'items' => [
                         [
-                            'item_id' => $this->item->id,
-                            'extra_price' => 0
-                        ]
-                    ]
-                ]
-            ]
+                            'item_id' => $this->item->getKey(),
+                            'extra_price' => 0,
+                        ],
+                    ],
+                ],
+            ],
         ]);
 
         $response
             ->assertOk()
-            ->assertJson(['data' => $this->expectedUpdated]);
+            ->assertJson(['data' => $this->expected_updated]);
     }
 
      /**
@@ -353,15 +359,15 @@ class ProductsTest extends TestCase
      */
     public function testDelete()
     {
-        $response = $this->delete('/products/id:' . $this->product->id);
+        $response = $this->deleteJson('/products/id:' . $this->product->getKey());
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->delete('/products/id:' . $this->product->id);
+        $response = $this->deleteJson('/products/id:' . $this->product->getKey());
         $response->assertNoContent();
 
-        $response = $this->get('/products/id:' . $this->product->id);
+        $response = $this->getJson('/products/id:' . $this->product->getKey());
         $response->assertNotFound();
     }
 }

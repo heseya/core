@@ -90,7 +90,7 @@ class OrderController extends Controller implements OrderControllerSwagger
 
         foreach ($request->items as $item) {
             Validator::make($item, [
-                'product_id' => 'required|exists:products,id',
+                'product_id' => 'required|uuid|exists:products,id',
                 'quantity' => 'required|numeric',
                 'schema_items' => 'array|nullable',
                 'custom_schemas' => 'array|nullable',
@@ -305,7 +305,7 @@ class OrderController extends Controller implements OrderControllerSwagger
 
         foreach ($request->items as $item) {
             Validator::make($item, [
-                'product_id' => 'required|exists:products,id',
+                'product_id' => 'required|uuid|exists:products,id',
                 'quantity' => 'required|numeric',
                 'schema_items' => 'array|nullable',
                 'custom_schemas' => 'array|nullable',
@@ -483,7 +483,7 @@ class OrderController extends Controller implements OrderControllerSwagger
     public function updateStatus(Order $order, Request $request)
     {
         $request->validate([
-            'status_id' => 'required|integer|exists:statuses,id',
+            'status_id' => 'required|uuid|exists:statuses,id',
         ]);
 
         $order->update([

@@ -15,7 +15,7 @@ class StatusResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => $this->getKey(),
             'name' => $this->name,
             'color' => $this->color,
             'description' => $this->description,

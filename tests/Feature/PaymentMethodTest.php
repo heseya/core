@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\PaymentMethod;
 use App\Models\ShippingMethod;
 use Laravel\Passport\Passport;
+use Tests\TestCase;
 
 class PaymentMethodTest extends TestCase
 {
@@ -13,6 +13,7 @@ class PaymentMethodTest extends TestCase
     public PaymentMethod $payment_method_related;
     public PaymentMethod $payment_method_hidden;
     public ShippingMethod $shipping_method;
+
     public array $expected;
 
     public function setUp(): void
@@ -41,7 +42,7 @@ class PaymentMethodTest extends TestCase
          * Expected response
          */
         $this->expected = [
-            'id' => $this->payment_method->id,
+            'id' => $this->payment_method->getKey(),
             'name' => $this->payment_method->name,
             'public' => $this->payment_method->public,
         ];
@@ -52,7 +53,7 @@ class PaymentMethodTest extends TestCase
      */
     public function testIndex()
     {
-        $response = $this->get('/payment-methods');
+        $response = $this->getJson('/payment-methods');
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data') // Should show only public payment methods.
@@ -66,7 +67,7 @@ class PaymentMethodTest extends TestCase
      */
     public function testCreate()
     {
-        $response = $this->post('/payment-methods');
+        $response = $this->postJson('/payment-methods');
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
@@ -77,7 +78,7 @@ class PaymentMethodTest extends TestCase
             'public' => true,
         ];
 
-        $response = $this->post('/payment-methods', $payment_method);
+        $response = $this->postJson('/payment-methods', $payment_method);
         $response
             ->assertCreated()
             ->assertJson(['data' => $payment_method]);
@@ -88,7 +89,7 @@ class PaymentMethodTest extends TestCase
      */
     public function testUpdate()
     {
-        $response = $this->patch('/payment-methods/id:' . $this->payment_method->id);
+        $response = $this->patchJson('/payment-methods/id:' . $this->payment_method->getKey());
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
@@ -99,12 +100,12 @@ class PaymentMethodTest extends TestCase
             'public' => false,
         ];
 
-        $response = $this->patch(
-            '/payment-methods/id:' . $this->payment_method->id,
+        $response = $this->patchJson(
+            '/payment-methods/id:' . $this->payment_method->getKey(),
             $payment_method,
         );
         $response
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJson(['data' => $payment_method]);
     }
 
@@ -113,12 +114,12 @@ class PaymentMethodTest extends TestCase
      */
     public function testDelete()
     {
-        $response = $this->delete('/payment-methods/id:' . $this->payment_method->id);
+        $response = $this->deleteJson('/payment-methods/id:' . $this->payment_method->getKey());
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->delete('/payment-methods/id:' . $this->payment_method->id);
-        $response->assertStatus(204);
+        $response = $this->deleteJson('/payment-methods/id:' . $this->payment_method->getKey());
+        $response->assertNoContent();
     }
 }

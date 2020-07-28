@@ -15,7 +15,7 @@ class UserResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => $this->getKey(),
             'email' => $this->email,
             'name' => $this->name,
             'avatar' => $this->avatar,

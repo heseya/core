@@ -104,8 +104,8 @@ class ProductController extends Controller implements ProductControllerSwagger
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:products|alpha_dash',
             'price' => 'required|numeric',
-            'brand_id' => 'required|integer|exists:brands,id',
-            'category_id' => 'required|integer|exists:categories,id',
+            'brand_id' => 'required|uuid|exists:brands,id',
+            'category_id' => 'required|uuid|exists:categories,id',
             'description_md' => 'string|nullable',
             'digital' => 'required|boolean',
             'public' => 'required|boolean',
@@ -128,7 +128,7 @@ class ProductController extends Controller implements ProductControllerSwagger
 
             foreach ($items as $item) {
                 Validator::make($item, [
-                    'item_id' => 'required|integer|exists:items,id',
+                    'item_id' => 'required|uuid|exists:items,id',
                     'extra_price' => 'required|numeric',
                 ])->validate();
             }
@@ -213,8 +213,8 @@ class ProductController extends Controller implements ProductControllerSwagger
                 Rule::unique('products')->ignore($product->slug, 'slug'),
             ],
             'price' => 'required|numeric',
-            'brand_id' => 'required|integer|exists:brands,id',
-            'category_id' => 'required|integer|exists:categories,id',
+            'brand_id' => 'required|uuid|exists:brands,id',
+            'category_id' => 'required|uuid|exists:categories,id',
             'description_md' => 'string|nullable',
             'digital' => 'required|boolean',
             'public' => 'required|boolean',
@@ -237,7 +237,7 @@ class ProductController extends Controller implements ProductControllerSwagger
 
             foreach ($items as $item) {
                 Validator::make($item, [
-                    'item_id' => 'required|integer|exists:items,id',
+                    'item_id' => 'required|uuid|exists:items,id',
                     'extra_price' => 'required|numeric',
                 ])->validate();
             }

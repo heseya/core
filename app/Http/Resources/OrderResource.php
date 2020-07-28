@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\ShippingMethod;
 use Illuminate\Http\Request;
 
 class OrderResource extends Resource
@@ -15,7 +16,7 @@ class OrderResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => $this->getKey(),
             'code' => $this->code,
             'email' => $this->email,
             'currency' => $this->currency,
@@ -23,8 +24,8 @@ class OrderResource extends Resource
             'summary_payed' => $this->payed,
             'payed' => $this->isPayed(),
             'created_at' => $this->created_at,
-            'status' => StatusResource::make($this->status),
-            'delivery_address' => AddressResource::make($this->deliveryAddress),
+            'status' => $this->status ? StatusResource::make($this->status) : null,
+            'delivery_address' => $this->deliveryAddress ? AddressResource::make($this->deliveryAddress) : null,
         ];
     }
 
@@ -32,11 +33,7 @@ class OrderResource extends Resource
     {
         return [
             'invoice_address' => AddressResource::make($this->invoiceAddress),
-            'shipping_method' => [
-                'id' => $this->shippingMethod->id,
-                'name' => $this->shippingMethod->name,
-                'price' => $this->shipping_price,
-            ],
+            'shipping_method' => ShippingMethodResource::make($this->shippingMethod),
             'comment' => $this->comment,
             'items' => OrderItemResource::collection($this->items),
             'payments' => PaymentResource::collection($this->payments),

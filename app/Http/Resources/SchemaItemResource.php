@@ -15,7 +15,7 @@ class SchemaItemResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => $this->getKey(),
             'value' => $this->value,
             'extra_price' => $this->extra_price,
             'item' => ItemResource::make($this->item),

@@ -15,7 +15,7 @@ class BrandResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => $this->getKey(),
             'slug' => $this->slug,
             'name' => $this->name,
             'public' => $this->public,

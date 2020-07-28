@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -40,9 +39,9 @@ class Item extends Model
         $deposits = $this->deposits()->sum('quantity');
         $withdrawals = $this->schemaItems()
             ->join(
-                'order_item_product_schema_item', 
-                'product_schema_items.id', 
-                '=', 
+                'order_item_product_schema_item',
+                'product_schema_items.id',
+                '=',
                 'order_item_product_schema_item.product_schema_item_id'
             )->join(
                 'order_items',

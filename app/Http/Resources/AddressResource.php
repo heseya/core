@@ -15,7 +15,7 @@ class AddressResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => $this->getKey(),
             'name' => $this->name,
             'address' => $this->address,
             'vat' => $this->vat,

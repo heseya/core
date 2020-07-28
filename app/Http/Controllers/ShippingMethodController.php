@@ -34,7 +34,7 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
             'price' => 'required|numeric',
             'public' => 'boolean',
             'payment_methods' => 'array',
-            'payment_methods.*' => 'exists:payment_methods,id',
+            'payment_methods.*' => 'uuid|exists:payment_methods,id',
         ]);
 
         $shipping_method = ShippingMethod::create($validated);
@@ -52,7 +52,7 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
             'price' => 'numeric',
             'public' => 'boolean',
             'payment_methods' => 'array',
-            'payment_methods.*' => 'exists:payment_methods,id',
+            'payment_methods.*' => 'uuid|exists:payment_methods,id',
         ]);
 
         $shipping_method->update($validated);

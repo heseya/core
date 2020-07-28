@@ -15,7 +15,7 @@ class MediaResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => $this->getKey(),
             'type' => 'photo',
             'url' => $this->url,
         ];

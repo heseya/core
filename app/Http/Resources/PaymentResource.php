@@ -15,7 +15,7 @@ class PaymentResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => $this->getKey(),
             'external_id' => $this->external_id,
             'method' => $this->method,
             'payed' => $this->payed,

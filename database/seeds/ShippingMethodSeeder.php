@@ -14,7 +14,9 @@ class ShippingMethodSeeder extends Seeder
     public function run()
     {
         factory(ShippingMethod::class, 3)->create(['public' => true])->each(function ($shipping_method) {
-            $shipping_method->paymentMethods()->saveMany(factory(PaymentMethod::class, rand(1, 3))->make());
+
+            $payment_methods = factory(PaymentMethod::class, rand(1, 3))->create();
+            $shipping_method->paymentMethods()->sync($payment_methods);
         });
         factory(ShippingMethod::class)->create(['public' => false]);
     }

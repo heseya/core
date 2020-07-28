@@ -15,6 +15,7 @@ class OrderPublicResource extends Resource
     public function base(Request $request): array
     {
         return [
+            'id' => $this->getKey(),
             'code' => $this->code,
             'status' => StatusResource::make($this->status),
             'payed' => $this->isPayed(),

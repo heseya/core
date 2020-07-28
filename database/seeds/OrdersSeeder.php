@@ -4,8 +4,9 @@ use App\Models\Order;
 use App\Models\Address;
 use App\Models\OrderItem;
 use App\Models\Payment;
+use App\Models\ShippingMethod;
+use App\Models\Status;
 use Illuminate\Database\Seeder;
-use App\Models\ProductSchemaItem;
 
 class OrdersSeeder extends Seeder
 {
@@ -16,11 +17,18 @@ class OrdersSeeder extends Seeder
      */
     public function run()
     {
-        factory(Order::class, 50)->create()->each(function ($order) {
-            $order->delivery_address_id = factory(Address::class)->create()->id;
+        $shipping_methods = ShippingMethod::all();
+        $statuses = Status::all();
+
+        factory(Order::class, 50)->create()->each(function ($order) use ($shipping_methods, $statuses) {
+
+            $order->shipping_method_id = $shipping_methods->random()->getKey();
+            $order->status_id = $statuses->random()->getKey();
+
+            $order->delivery_address_id = factory(Address::class)->create()->getKey();
 
             if (rand(0, 1)) {
-                $order->invoice_address_id = factory(Address::class)->create()->id;
+                $order->invoice_address_id = factory(Address::class)->create()->getKey();
             }
 
             $order->save();
@@ -30,10 +38,12 @@ class OrdersSeeder extends Seeder
 
             $items->each(function ($item) {
 
-                if ($item->product->schemas()->first()) {
-                    $item->schemaItems()->attach($item->product->schemas()->first()->id);
-                    $item->save();
-                }
+//                $schema = $item->product->schemas()->inRandomOrder()->first();
+//
+//                if ($schema) {
+//                    $item->schemaItems()->sync($schema->getKey());
+//                    $item->save();
+//                }
             });
 
             for ($i = 0; $i < rand(0, 5); $i++) {
