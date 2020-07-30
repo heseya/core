@@ -18,7 +18,7 @@ class AuthController extends Controller implements AuthControllerSwagger
             'password' => 'required|string|max:255',
         ]);
 
-        if (Auth::guard('web')->attempt([
+        if (!Auth::guard('web')->attempt([
             'email' => $request->email,
             'password' => $request->password,
         ])) {
