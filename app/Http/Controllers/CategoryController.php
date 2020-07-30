@@ -63,7 +63,7 @@ class CategoryController extends Controller implements CategoryControllerSwagger
         if ($category->products()->count() > 0) {
             return Error::abort(
                 "Category can't be deleted, because has relations.",
-                400,
+                409,
             );
         }
 

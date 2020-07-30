@@ -39,34 +39,34 @@ class ProductController extends Controller implements ProductControllerSwagger
                 ->whereHas('category', fn (Builder $subQuery) => $subQuery->where('public', true));
         }
 
-        if ($request->brand) {
+        if ($request->input('brand')) {
             $query->whereHas('brand', function (Builder $query) use ($request) {
-                return $query->where('slug', $request->brand);
+                return $query->where('slug', $request->input('brand'));
             });
         }
 
-        if ($request->category) {
+        if ($request->input('category')) {
             $query->whereHas('category', function (Builder $query) use ($request) {
-                return $query->where('slug', $request->category);
+                return $query->where('slug', $request->input('category'));
             });
         }
 
         if ($request->search) {
             $query
-                ->where('slug', 'LIKE', '%' . $request->search . '%')
-                ->orWhere('name', 'LIKE', '%' . $request->search . '%')
+                ->where('slug', 'LIKE', '%' . $request->input('search') . '%')
+                ->orWhere('name', 'LIKE', '%' . $request->input('search') . '%')
                 ->orWhereHas('brand', function (Builder $query) use ($request) {
-                    return $query->where('name', 'LIKE', '%' . $request->search . '%')
-                        ->orWhere('slug', 'LIKE', '%' . $request->search . '%');
+                    return $query->where('name', 'LIKE', '%' . $request->input('search') . '%')
+                        ->orWhere('slug', 'LIKE', '%' . $request->input('search') . '%');
                 })
                 ->orWhereHas('category', function (Builder $query) use ($request) {
-                    return $query->where('name', 'LIKE', '%' . $request->search . '%')
-                        ->orWhere('slug', 'LIKE', '%' . $request->search . '%');
+                    return $query->where('name', 'LIKE', '%' . $request->input('search') . '%')
+                        ->orWhere('slug', 'LIKE', '%' . $request->input('search') . '%');
                 });
         }
 
-        if ($request->sort) {
-            $sort = explode(',', $request->sort);
+        if ($request->input('sort')) {
+            $sort = explode(',', $request->input('sort'));
 
             foreach ($sort as $option) {
                 $option = explode(':', $option);
@@ -142,7 +142,7 @@ class ProductController extends Controller implements ProductControllerSwagger
             if ($thisMedia === null) {
                 return Error::abort(
                     'Media with ID ' . $id . ' does not exist.',
-                    400,
+                    404,
                 );
             }
         }
@@ -165,7 +165,7 @@ class ProductController extends Controller implements ProductControllerSwagger
             ]);
 
             $item = Item::create([
-                'name' => $request->name,
+                'name' => $request->input('name'),
                 'sku' => null,
             ]);
 
@@ -259,7 +259,7 @@ class ProductController extends Controller implements ProductControllerSwagger
             if ($thisMedia === null) {
                 return Error::abort(
                     'Media with ID ' . $id . ' does not `exist`.',
-                    400,
+                    404,
                 );
             }
         }
@@ -293,9 +293,7 @@ class ProductController extends Controller implements ProductControllerSwagger
 
         $product->media()->sync($media);
 
-        return ProductResource::make($product)
-            ->response()
-            ->setStatusCode(200);
+        return ProductResource::make($product);
     }
 
     public function destroy(Product $product)

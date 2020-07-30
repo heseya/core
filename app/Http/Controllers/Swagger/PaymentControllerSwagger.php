@@ -41,8 +41,8 @@ interface PaymentControllerSwagger
      *     ),
      *   ),
      *   @OA\Response(
-     *     response=200,
-     *     description="Success",
+     *     response=201,
+     *     description="Created",
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",

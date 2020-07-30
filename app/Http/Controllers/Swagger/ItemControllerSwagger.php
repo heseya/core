@@ -73,7 +73,7 @@ interface ItemControllerSwagger
      *   ),
      *   @OA\Response(
      *     response=201,
-     *     description="Success",
+     *     description="Created",
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",

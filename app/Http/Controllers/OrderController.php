@@ -75,11 +75,7 @@ class OrderController extends Controller implements OrderControllerSwagger
 
     public function store(OrderCreateRequest $request)
     {
-        $shipping_method = ShippingMethod::find($request->shipping_method_id);
-
-        if ($shipping_method === null) {
-            return Error::abort('Invalid shipping method.', 400);
-        }
+        $shipping_method = ShippingMethod::findOrFail($request->input('shipping_method_id'));
 
         $itemCounts = [];
         $usedSchemas = [];
@@ -88,7 +84,7 @@ class OrderController extends Controller implements OrderControllerSwagger
 
         $cartItems = 0;
 
-        foreach ($request->items as $item) {
+        foreach ($request->input('items', []) as $item) {
             Validator::make($item, [
                 'product_id' => 'required|uuid|exists:products,id',
                 'quantity' => 'required|numeric',
@@ -96,19 +92,19 @@ class OrderController extends Controller implements OrderControllerSwagger
                 'custom_schemas' => 'array|nullable',
             ])->validate();
 
-            $product = Product::find($item['product_id']);
+            $product = Product::findOrFail($item['product_id']);
 
-            if (!$product->public) {
+            if (!$product->isPublic()) {
                 return Error::abort(
                     'Product with ID ' . $product->id . ' is does not exist.',
-                    400,
+                    404,
                 );
             }
 
             if (!$product->schemas()->where('required', true)->where('type', 0)->exists()) {
                 return Error::abort(
                     'Product with ID ' . $product->id . ' is invalid.',
-                    400,
+                    409,
                 );
             }
 
@@ -159,7 +155,7 @@ class OrderController extends Controller implements OrderControllerSwagger
                 if ($schema === null || $schema->type === 0) {
                     return Error::abort(
                         'Custom schema with ID ' . $id . ' does not exist.',
-                        400,
+                        404,
                     );
                 }
 
@@ -168,7 +164,7 @@ class OrderController extends Controller implements OrderControllerSwagger
                 if ($item['product_id'] !== $productId) {
                     return Error::abort(
                         'Custom schema with ID ' . $id . ' does not exist.',
-                        400,
+                        404,
                     );
                 }
 
@@ -178,21 +174,14 @@ class OrderController extends Controller implements OrderControllerSwagger
             }
 
             foreach ($schemaItems as $id) {
-                $schemaItem = ProductSchemaItem::find($id);
-
-                if ($schemaItem === null) {
-                    return Error::abort(
-                        'Schema item with ID ' . $id . ' does not exist.',
-                        400,
-                    );
-                }
+                $schemaItem = ProductSchemaItem::findOrFail($id);
 
                 $schema = $schemaItem->schema;
 
                 if ($schema->type !== 0) {
                     return Error::abort(
                         'Schema item with ID ' . $id . ' does not exist.',
-                        400,
+                        404,
                     );
                 }
 
@@ -201,7 +190,7 @@ class OrderController extends Controller implements OrderControllerSwagger
                 if ($item['product_id'] !== $productId) {
                     return Error::abort(
                         'Schema item with ID ' . $id . ' does not exist.',
-                        400,
+                        404,
                     );
                 }
 
@@ -244,7 +233,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             'currency' => 'PLN',
             'shipping_method_id' => $shipping_method->id,
             'shipping_price' => $shipping_method->price,
-            'status_id' => Status::orderBy('id')->first()->id,
+            'status_id' => Status::select('id')->orderBy('id')->first()->id,
         ]);
 
         $order->delivery_address_id = Address::firstOrCreate($request->delivery_address)->id;
@@ -256,7 +245,7 @@ class OrderController extends Controller implements OrderControllerSwagger
         $cartItems = 0;
 
         foreach ($request->items as $item) {
-            $product = Product::find($item['product_id']);
+            $product = Product::findOrFail($item['product_id']);
             $price = $product->price;
             $schemaItems = $indexedSchemaItems[$cartItems++];
 
@@ -303,7 +292,7 @@ class OrderController extends Controller implements OrderControllerSwagger
         $itemUsers = [];
         $usedSchemas = [];
 
-        foreach ($request->items as $item) {
+        foreach ($request->input('items') as $item) {
             Validator::make($item, [
                 'product_id' => 'required|uuid|exists:products,id',
                 'quantity' => 'required|numeric',
@@ -313,7 +302,7 @@ class OrderController extends Controller implements OrderControllerSwagger
 
             $product = Product::find($item['product_id']);
 
-            if (!$product->public) {
+            if (!$product->isPublic()) {
                 continue;
             }
 
@@ -487,7 +476,7 @@ class OrderController extends Controller implements OrderControllerSwagger
         ]);
 
         $order->update([
-            'status_id' => $request->status_id,
+            'status_id' => $request->input('status_id'),
         ]);
 
         Mail::to($order->email)->send(new ChangeStatus($order));

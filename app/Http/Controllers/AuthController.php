@@ -19,22 +19,21 @@ class AuthController extends Controller implements AuthControllerSwagger
         ]);
 
         if (Auth::guard('web')->attempt([
-            'email' => $request->email,
-            'password' => $request->password,
+            'email' => $request->input('email'),
+            'password' => $request->input('password'),
         ])) {
-
-            $user = Auth::guard('web')->user();
-            $token = $user->createToken('Admin');
-
-            return response()->json(['data' => [
-                'token' => $token->accessToken,
-                'expires_at' => $token->token->expires_at,
-                'user' => UserResource::make($user),
-                'scopes' => $token->token->scopes,
-            ]], 200);
+            return Error::abort('Invalid credentials.', 400);
         }
 
-        return Error::abort('Invalid credentials.', 400);
+        $user = Auth::guard('web')->user();
+        $token = $user->createToken('Admin');
+
+        return response()->json(['data' => [
+            'token' => $token->accessToken,
+            'expires_at' => $token->token->expires_at,
+            'user' => UserResource::make($user),
+            'scopes' => $token->token->scopes,
+        ]], 200);
     }
 
     public function changePassword(Request $request)
@@ -46,16 +45,17 @@ class AuthController extends Controller implements AuthControllerSwagger
 
         $user = Auth::user();
 
-        if (!Hash::check($request->password, $user->password)) {
+        if (!Hash::check($request->input('password'), $user->password)) {
             return Error::abort('Invalid credentials.', 400);
         }
 
-        $hash = Hash::make($request->password_new);
+        $hash = Hash::make($request->input('password_new'));
 
         $user->update([
             'password' => $hash,
         ]);
 
+        // W przyszłości koniecznie zmienić na 204
         return response()->json(['data' => [
             'message' => 'OK',
         ]], 200);

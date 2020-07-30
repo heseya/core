@@ -63,7 +63,7 @@ class BrandController extends Controller implements BrandControllerSwagger
         if ($brand->products()->count() > 0) {
             return Error::abort(
                 "Brand can't be deleted, because has relations.",
-                400,
+                409,
             );
         }
 

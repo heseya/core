@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Swagger\StatusControllerSwagger;
 use App\Http\Resources\StatusResource;
 use App\Models\Status;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -17,7 +18,7 @@ class StatusController extends Controller implements StatusControllerSwagger
         return StatusResource::collection($query->get());
     }
 
-    public function store(Request $request): JsonResource
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:60',
@@ -27,7 +28,9 @@ class StatusController extends Controller implements StatusControllerSwagger
 
         $status = Status::create($validated);
 
-        return StatusResource::make($status);
+        return StatusResource::make($status)
+            ->response()
+            ->setStatusCode(201);
     }
 
     public function update(Status $status, Request $request): JsonResource

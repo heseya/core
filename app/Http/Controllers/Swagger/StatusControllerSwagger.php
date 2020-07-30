@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Swagger;
 
 use App\Models\Status;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -42,8 +43,8 @@ interface StatusControllerSwagger
      *     ),
      *   ),
      *   @OA\Response(
-     *     response=200,
-     *     description="Success",
+     *     response=201,
+     *     description="Created",
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
@@ -56,7 +57,7 @@ interface StatusControllerSwagger
      *   }
      * )
      */
-    public function store(Request $request): JsonResource;
+    public function store(Request $request): JsonResponse;
 
     /**
      * @OA\Patch(

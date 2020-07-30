@@ -38,7 +38,7 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
         ]);
 
         $shipping_method = ShippingMethod::create($validated);
-        $shipping_method->paymentMethods()->sync($request->get('payment_methods', []));
+        $shipping_method->paymentMethods()->sync($request->input('payment_methods', []));
 
         return ShippingMethodResource::make($shipping_method)
             ->response()
@@ -56,7 +56,7 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
         ]);
 
         $shipping_method->update($validated);
-        $shipping_method->paymentMethods()->sync($request->get('payment_methods', []));
+        $shipping_method->paymentMethods()->sync($request->input('payment_methods', []));
 
         return ShippingMethodResource::make($shipping_method);
     }
@@ -66,7 +66,7 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
         if ($shipping_method->orders()->count() > 0) {
             return Error::abort(
                 "Shipping method can't be deleted, because has relations.",
-                400,
+                409,
             );
         }
 

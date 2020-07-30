@@ -18,8 +18,8 @@ class PaymentMethodController extends Controller implements PaymentMethodControl
             'shipping_method_id' => 'integer|exists:shipping_methods,id',
         ]);
 
-        if ($request->shipping_method_id) {
-            $shipping_method = ShippingMethod::find($request->shipping_method_id);
+        if ($request->input('shipping_method_id')) {
+            $shipping_method = ShippingMethod::find($request->input('shipping_method_id'));
             $query = $shipping_method->paymentMethods();
         } else {
             $query = PaymentMethod::select();

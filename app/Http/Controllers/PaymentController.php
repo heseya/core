@@ -18,11 +18,11 @@ class PaymentController extends Controller implements PaymentControllerSwagger
         ]);
 
         if ($order->isPayed()) {
-            return Error::abort('Order is already paid.', 406);
+            return Error::abort('Order is already paid.', 409);
         }
 
         if (!array_key_exists($method, config('payable.aliases'))) {
-            return Error::abort('Unknown payment method.', 400);
+            return Error::abort('Unknown payment method.', 404);
         }
 
         $method_class = config('payable.aliases')[$method];
@@ -31,7 +31,7 @@ class PaymentController extends Controller implements PaymentControllerSwagger
             'method' => $method,
             'amount' => $order->summary - $order->payed,
             'payed' => false,
-            'continue_url' => $request->continue_url,
+            'continue_url' => $request->input('continue_url'),
         ]);
 
         try {
@@ -40,13 +40,15 @@ class PaymentController extends Controller implements PaymentControllerSwagger
             return Error::abort('Cannot generate payment url.', 500);
         }
 
-        return PaymentResource::make($payment);
+        return PaymentResource::make($payment)
+            ->response()
+            ->setStatusCode(201);
     }
 
     public function update(string $method, Request $request)
     {
         if (!array_key_exists($method, config('payable.aliases'))) {
-            return Error::abort('Unknown payment method.', 400);
+            return Error::abort('Unknown payment method.', 404);
         }
 
         $method_class = config('payable.aliases')[$method];
