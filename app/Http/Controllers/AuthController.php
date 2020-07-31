@@ -18,9 +18,9 @@ class AuthController extends Controller implements AuthControllerSwagger
             'password' => 'required|string|max:255',
         ]);
 
-        if (Auth::guard('web')->attempt([
-            'email' => $request->input('email'),
-            'password' => $request->input('password'),
+        if (!Auth::guard('web')->attempt([
+            'email' => $request->email,
+            'password' => $request->password,
         ])) {
             return Error::abort('Invalid credentials.', 400);
         }
