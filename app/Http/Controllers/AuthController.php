@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\AuthControllerSwagger;
+use App\Http\Resources\AuthResource;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,8 +20,8 @@ class AuthController extends Controller implements AuthControllerSwagger
         ]);
 
         if (!Auth::guard('web')->attempt([
-            'email' => $request->email,
-            'password' => $request->password,
+            'email' => $request->input('email'),
+            'password' => $request->input('password'),
         ])) {
             return Error::abort('Invalid credentials.', 400);
         }
@@ -28,12 +29,7 @@ class AuthController extends Controller implements AuthControllerSwagger
         $user = Auth::guard('web')->user();
         $token = $user->createToken('Admin');
 
-        return response()->json(['data' => [
-            'token' => $token->accessToken,
-            'expires_at' => $token->token->expires_at,
-            'user' => UserResource::make($user),
-            'scopes' => $token->token->scopes,
-        ]], 200);
+        return AuthResource::make($token);
     }
 
     public function changePassword(Request $request)
@@ -55,9 +51,6 @@ class AuthController extends Controller implements AuthControllerSwagger
             'password' => $hash,
         ]);
 
-        // W przyszłości koniecznie zmienić na 204
-        return response()->json(['data' => [
-            'message' => 'OK',
-        ]], 200);
+        return response()->json(null, 204);
     }
 }

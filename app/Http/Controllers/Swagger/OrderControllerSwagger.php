@@ -118,8 +118,8 @@ interface OrderControllerSwagger
      *     ref="#/components/requestBodies/OrderCreate",
      *   ),
      *   @OA\Response(
-     *     response=200,
-     *     description="Success",
+     *     response=201,
+     *     description="Created",
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
@@ -183,8 +183,8 @@ interface OrderControllerSwagger
      *     )
      *   ),
      *   @OA\Response(
-     *     response=201,
-     *     description="Created",
+     *     response=200,
+     *     description="Success",
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",

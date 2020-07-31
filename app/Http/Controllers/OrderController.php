@@ -233,7 +233,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             'currency' => 'PLN',
             'shipping_method_id' => $shipping_method->id,
             'shipping_price' => $shipping_method->price,
-            'status_id' => Status::select('id')->orderBy('id')->first()->id,
+            'status_id' => Status::select('id')->orderBy('created_at')->first()->id,
         ]);
 
         $order->delivery_address_id = Address::firstOrCreate($request->delivery_address)->id;
@@ -481,6 +481,6 @@ class OrderController extends Controller implements OrderControllerSwagger
 
         Mail::to($order->email)->send(new ChangeStatus($order));
 
-        return response()->json(null, 204);
+        return OrderResource::make($order);
     }
 }
