@@ -45,6 +45,7 @@ class Kernel extends HttpKernel
     protected $routeMiddleware = [
         'auth' => \App\Http\Middleware\Authenticate::class,
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
+        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
     ];
 
