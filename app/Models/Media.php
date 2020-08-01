@@ -7,9 +7,9 @@ namespace App\Models;
  */
 class Media extends Model
 {
-    const OTHER = 0;
-    const PHOTO = 1;
-    const VIDEO = 2;
+    public const OTHER = 0;
+    public const PHOTO = 1;
+    public const VIDEO = 2;
 
     /**
      * The table associated with the model.

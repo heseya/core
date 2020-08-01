@@ -15,17 +15,19 @@ class Resource extends JsonResource
      */
     public function with($request)
     {
-        return ['meta' => [
-            'currency' => [
-                'name' => 'Polski Złoty',
-                'symbol' => 'PLN',
-                'decimals' => 2,
+        return [
+            'meta' => [
+                'currency' => [
+                    'name' => 'Polski Złoty',
+                    'symbol' => 'PLN',
+                    'decimals' => 2,
+                ],
+                'language' => [
+                    'name' => 'Polski',
+                    'symbol' => 'PL-pl',
+                ],
             ],
-            'language' => [
-                'name' => 'Polski',
-                'symbol' => 'PL-pl',
-            ],
-        ]];
+        ];
     }
 
     public function base(Request $request): array
@@ -57,12 +59,12 @@ class Resource extends JsonResource
                 $this->base($request),
                 $this->index($request),
             );
-        } else {
-            return array_merge(
-                $this->base($request),
-                $this->view($request),
-            );
         }
+
+        return array_merge(
+            $this->base($request),
+            $this->view($request),
+        );
     }
 
     /**

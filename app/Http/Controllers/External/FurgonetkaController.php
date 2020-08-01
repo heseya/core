@@ -51,7 +51,7 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
 
         if (!empty($order)) {
 
-            $status = new Status;
+            $status = new Status();
             $order->update([
                 'delivery_status' => $status->furgonetka_status[$request->tracking['state']],
             ]);
@@ -106,7 +106,7 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
         $auth = [
             'access_token' => $this->getApiKey(),
         ];
-        
+
         $services = $client->getServices([
             'data' => [
                 'auth' => $auth,
@@ -114,7 +114,7 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
         ])->getServicesResult;
 
         if (
-            $services->errors && 
+            $services->errors &&
             $services->errors->item->message === 'Error authorization'
         ) {
             $auth = [
@@ -127,7 +127,7 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
                 ],
             ])->getServicesResult;
         }
-        
+
         if (!$services->services) {
             return Error::abort(
                 'Could not get carriers list',
@@ -138,50 +138,50 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
         $services = $services->services->item;
 
         $service_type = Str::slug($order->shippingMethod->name);
-    
+
         foreach ($services as $service) {
             if ($service->type === $service_type) {
                 $service_id = $service->id;
                 break;
             }
         }
-    
+
         if (!isset($service_id)) {
             return Error::abort(
                 'Could not get carriers matching shipping method',
                 502,
             );
         }
-        
+
         $regulations = $client->getRegulations([
             'data' => [
                 'auth' => $auth,
             ],
         ])->getRegulationsResult;
-    
+
         if (!$regulations->services) {
             return Error::abort(
                 'Could not get regulations list',
                 502,
             );
         }
-        
+
         $regulations = $regulations->services->item;
-        
+
         foreach ($regulations as $service) {
             if ($service->service_type === $service_type) {
                 $regulations_accept = $service->version;
                 break;
             }
         }
-    
+
         if (!isset($regulations_accept)) {
             return Error::abort(
                 'Could not get regulation for specified carrier',
                 502,
             );
         }
-    
+
         $packageData = [
             'data' => [
                 'auth' => $auth,
@@ -225,18 +225,18 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
                 ],
             ],
         ];
-    
+
         $validate = $client->validatePackage($packageData)->validatePackageResult;
-    
+
         if (!empty($validate->errors)) {
             return Error::abort(
                 $validate->errors->item,
                 502,
             );
         }
-    
+
         $package = $client->createPackage($packageData)->createPackageResult;
-    
+
         if (!empty($package->errors)) {
             return Error::abort(
                 $package->errors->item,

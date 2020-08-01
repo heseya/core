@@ -2,9 +2,11 @@
     "name": "heseya/shop",
     "type": "project",
     "description": "Heseya Shop System",
+    "license": "proprietary",
     "require": {
         "php": "^7.4",
         "ext-json": "*",
+        "ext-soap": "*",
         "ext-simplexml": "*",
         "laravel/framework": "^7.0.0",
         "laravel/passport": "^9.0.0",

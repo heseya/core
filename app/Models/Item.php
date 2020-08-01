@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -53,12 +54,12 @@ class Item extends Model
         return $deposits - $withdrawals;
     }
 
-    public function deposits()
+    public function deposits (): HasMany
     {
         return $this->hasMany(Deposit::class);
     }
 
-    public function schemaItems()
+    public function schemaItems (): HasMany
     {
         return $this->hasMany(ProductSchemaItem::class);
     }

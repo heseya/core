@@ -14,7 +14,7 @@ class PaymentMethodController extends Controller implements PaymentMethodControl
 {
     public function index(Request $request): JsonResource
     {
-         $request->validate([
+        $request->validate([
             'shipping_method_id' => 'integer|exists:shipping_methods,id',
         ]);
 

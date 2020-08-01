@@ -113,7 +113,7 @@ class ProductController extends Controller implements ProductControllerSwagger
             'media' => 'array|nullable',
         ]);
 
-        $schemas = isset($request->schemas) ? $request->schemas : [];
+        $schemas = $request->schemas ?? [];
 
         foreach ($schemas as $schema) {
             Validator::make($schema, [
@@ -124,7 +124,7 @@ class ProductController extends Controller implements ProductControllerSwagger
                 'items' => 'exclude_unless:type,0|required|array|min:1',
             ])->validate();
 
-            $items = isset($schema['items']) ? $schema['items'] : [];
+            $items = $schema['items'] ?? [];
 
             foreach ($items as $item) {
                 Validator::make($item, [
@@ -134,7 +134,7 @@ class ProductController extends Controller implements ProductControllerSwagger
             }
         }
 
-        $media = isset($request->media) ? $request->media : [];
+        $media = $request->media ?? [];
 
         foreach ($media as $id) {
             $thisMedia = Media::find($id);

@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Mail;
 
 class Message extends Model
 {
-    const UPDATED_AT = null;
+    private const UPDATED_AT = null;
 
     protected $fillable = [
         'received',
