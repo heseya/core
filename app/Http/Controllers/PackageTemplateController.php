@@ -29,9 +29,7 @@ class PackageTemplateController extends Controller implements PackageTemplateCon
 
         $package = PackageTemplate::create($validated);
 
-        return PackageTemplateResource::make($package)
-            ->response()
-            ->setStatusCode(201);
+        return PackageTemplateResource::make($package);
     }
 
     public function update(PackageTemplate $package, Request $request): JsonResource

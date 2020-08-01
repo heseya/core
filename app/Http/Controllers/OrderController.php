@@ -280,9 +280,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             'user' => 'API',
         ]);
 
-        return OrderPublicResource::make($order)
-            ->response()
-            ->setStatusCode(201);
+        return OrderPublicResource::make($order);
     }
 
     public function verify(Request $request)

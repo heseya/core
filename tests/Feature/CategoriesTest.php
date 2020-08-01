@@ -129,6 +129,6 @@ class CategoriesTest extends TestCase
         ]);
 
         $response = $this->delete('/categories/id:' . $this->category->getKey());
-        $response->assertStatus(400);
+        $response->assertStatus(409);
     }
 }

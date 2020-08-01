@@ -34,9 +34,7 @@ class CategoryController extends Controller implements CategoryControllerSwagger
 
         $category = Category::create($validated);
 
-        return CategoryResource::make($category)
-            ->response()
-            ->setStatusCode(201);
+        return CategoryResource::make($category);
     }
 
     public function update(Category $category, Request $request): JsonResource

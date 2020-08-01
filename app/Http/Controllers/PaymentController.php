@@ -40,9 +40,7 @@ class PaymentController extends Controller implements PaymentControllerSwagger
             return Error::abort('Cannot generate payment url.', 500);
         }
 
-        return PaymentResource::make($payment)
-            ->response()
-            ->setStatusCode(201);
+        return PaymentResource::make($payment);
     }
 
     public function update(string $method, Request $request)

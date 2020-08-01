@@ -34,9 +34,7 @@ class BrandController extends Controller implements BrandControllerSwagger
 
         $brand = Brand::create($validated);
 
-        return BrandResource::make($brand)
-            ->response()
-            ->setStatusCode(201);
+        return BrandResource::make($brand);
     }
 
     public function update(Brand $brand, Request $request): JsonResource

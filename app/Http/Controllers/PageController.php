@@ -43,9 +43,7 @@ class PageController extends Controller implements PageControllerSwagger
 
         $page = Page::create($validated);
 
-        return PageResource::make($page)
-            ->response()
-            ->setStatusCode(201);
+        return PageResource::make($page);
     }
 
     public function update(Page $page, Request $request): JsonResource

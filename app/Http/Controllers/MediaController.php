@@ -26,8 +26,6 @@ class MediaController extends Controller implements MediaControllerSwagger
             'url' => rtrim(config('silverbox.host'). '/') . '/' . $response[0]->path,
         ]);
 
-        return MediaResource::make($media)
-            ->response()
-            ->setStatusCode(201);
+        return MediaResource::make($media);
     }
 }

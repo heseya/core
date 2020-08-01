@@ -129,6 +129,6 @@ class BrandsTest extends TestCase
         ]);
 
         $response = $this->deleteJson('/brands/id:' . $this->brand->getKey());
-        $response->assertStatus(400);
+        $response->assertStatus(409);
     }
 }

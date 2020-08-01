@@ -40,9 +40,7 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
         $shipping_method = ShippingMethod::create($validated);
         $shipping_method->paymentMethods()->sync($request->input('payment_methods', []));
 
-        return ShippingMethodResource::make($shipping_method)
-            ->response()
-            ->setStatusCode(201);
+        return ShippingMethodResource::make($shipping_method);
     }
 
     public function update(ShippingMethod $shipping_method, Request $request): JsonResource

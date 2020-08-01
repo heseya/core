@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\AuthControllerSwagger;
 use App\Http\Resources\AuthResource;
-use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;

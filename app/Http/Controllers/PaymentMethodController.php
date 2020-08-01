@@ -42,9 +42,7 @@ class PaymentMethodController extends Controller implements PaymentMethodControl
 
         $payment_method = PaymentMethod::create($validated);
 
-        return PaymentMethodResource::make($payment_method)
-            ->response()
-            ->setStatusCode(201);
+        return PaymentMethodResource::make($payment_method);
     }
 
     public function update(PaymentMethod $payment_method, Request $request): JsonResource

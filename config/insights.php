@@ -50,7 +50,7 @@ return [
     |
     */
 
-    'ide' => null,
+    'ide' => 'phpstorm',
     /*
     |--------------------------------------------------------------------------
     | Configuration
@@ -73,7 +73,6 @@ return [
     ],
 
     'remove' => [
-        AlphabeticallySortedUsesSniff::class,
         DeclareStrictTypesSniff::class,
         DisallowMixedTypeHintSniff::class,
         ForbiddenDefineFunctions::class,

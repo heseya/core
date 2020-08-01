@@ -9,7 +9,6 @@
         "laravel/framework": "^7.0.0",
         "laravel/passport": "^9.0.0",
         "laravel/tinker": "^2.0.0",
-        "laravel/ui": "^2.1.0",
         "fruitcake/laravel-cors": "^2.0.1",
         "fideloper/proxy": "^4.0.0",
         "darkaonline/l5-swagger": "^7.0",

@@ -32,9 +32,7 @@ class ItemController extends Controller implements ItemControllerSwagger
 
         $item = Item::create($validated);
 
-        return ItemResource::make($item)
-            ->response()
-            ->setStatusCode(201);
+        return ItemResource::make($item);
     }
 
     public function update(Item $item, Request $request): JsonResource

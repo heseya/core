@@ -196,9 +196,7 @@ class ProductController extends Controller implements ProductControllerSwagger
 
         $product->media()->sync($media);
 
-        return ProductResource::make($product)
-            ->response()
-            ->setStatusCode(201);
+        return ProductResource::make($product);
     }
 
     public function update(Product $product, Request $request)
@@ -293,7 +291,9 @@ class ProductController extends Controller implements ProductControllerSwagger
 
         $product->media()->sync($media);
 
-        return ProductResource::make($product);
+        return ProductResource::make($product)
+            ->response()
+            ->setStatusCode(200);
     }
 
     public function destroy(Product $product)

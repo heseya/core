@@ -18,7 +18,7 @@ class AuthResource extends Resource
         return [
             'token' => $this->accessToken,
             'expires_at' => $this->token->expires_at,
-            'user_id' => UserResource::make(User::find($this->token->user_id)), // :/
+            'user' => UserResource::make(User::find($this->token->user_id)), // :/
             'scopes' => $this->token->scopes,
         ];
     }
