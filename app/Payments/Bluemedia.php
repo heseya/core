@@ -2,10 +2,10 @@
 
 namespace App\Payments;
 
-use Exception;
-use SimpleXMLElement;
 use App\Models\Payment;
+use Exception;
 use Illuminate\Http\Request;
+use SimpleXMLElement;
 
 class Bluemedia implements PaymentMethod
 {

@@ -2,72 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\Error;
+use App\Http\Controllers\Swagger\ProductControllerSwagger;
+use App\Http\Resources\ProductResource;
 use App\Models\Item;
 use App\Models\Media;
 use App\Models\Product;
-use App\Exceptions\Error;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Resources\ProductResource;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
-class ProductController extends Controller
+class ProductController extends Controller implements ProductControllerSwagger
 {
-    /**
-     * @OA\Get(
-     *   path="/products",
-     *   summary="list products",
-     *   tags={"Products"},
-     *   @OA\Parameter(
-     *     name="search",
-     *     in="query",
-     *     description="Full text search.",
-     *     @OA\Schema(
-     *       type="string",
-     *     ),
-     *   ),
-     *   @OA\Parameter(
-     *     name="brand",
-     *     in="query",
-     *     description="Brand slug.",
-     *     @OA\Schema(
-     *       type="string",
-     *     ),
-     *   ),
-     *   @OA\Parameter(
-     *     name="category",
-     *     in="query",
-     *     description="Category slug.",
-     *     @OA\Schema(
-     *       type="string",
-     *     ),
-     *   ),
-     *   @OA\Parameter(
-     *     name="sort",
-     *     in="query",
-     *     description="Sorting string.",
-     *     @OA\Schema(
-     *       type="string",
-     *       example="price:asc,created_at:desc,name"
-     *     ),
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         type="array",
-     *         @OA\Items(ref="#/components/schemas/Product"),
-     *       )
-     *     )
-     *   )
-     * )
-     */
-    public function index(Request $request)
+    public function index(Request $request): JsonResource
     {
         $request->validate([
             'brand' => 'string|max:255',
@@ -89,34 +39,34 @@ class ProductController extends Controller
                 ->whereHas('category', fn (Builder $subQuery) => $subQuery->where('public', true));
         }
 
-        if ($request->brand) {
+        if ($request->input('brand')) {
             $query->whereHas('brand', function (Builder $query) use ($request) {
-                return $query->where('slug', $request->brand);
+                return $query->where('slug', $request->input('brand'));
             });
         }
 
-        if ($request->category) {
+        if ($request->input('category')) {
             $query->whereHas('category', function (Builder $query) use ($request) {
-                return $query->where('slug', $request->category);
+                return $query->where('slug', $request->input('category'));
             });
         }
 
         if ($request->search) {
             $query
-                ->where('slug', 'LIKE', '%' . $request->search . '%')
-                ->orWhere('name', 'LIKE', '%' . $request->search . '%')
+                ->where('slug', 'LIKE', '%' . $request->input('search') . '%')
+                ->orWhere('name', 'LIKE', '%' . $request->input('search') . '%')
                 ->orWhereHas('brand', function (Builder $query) use ($request) {
-                    return $query->where('name', 'LIKE', '%' . $request->search . '%')
-                        ->orWhere('slug', 'LIKE', '%' . $request->search . '%');
+                    return $query->where('name', 'LIKE', '%' . $request->input('search') . '%')
+                        ->orWhere('slug', 'LIKE', '%' . $request->input('search') . '%');
                 })
                 ->orWhereHas('category', function (Builder $query) use ($request) {
-                    return $query->where('name', 'LIKE', '%' . $request->search . '%')
-                        ->orWhere('slug', 'LIKE', '%' . $request->search . '%');
+                    return $query->where('name', 'LIKE', '%' . $request->input('search') . '%')
+                        ->orWhere('slug', 'LIKE', '%' . $request->input('search') . '%');
                 });
         }
 
-        if ($request->sort) {
-            $sort = explode(',', $request->sort);
+        if ($request->input('sort')) {
+            $sort = explode(',', $request->input('sort'));
 
             foreach ($sort as $option) {
                 $option = explode(':', $option);
@@ -139,61 +89,7 @@ class ProductController extends Controller
         );
     }
 
-    /**
-     * @OA\Get(
-     *   path="/products/{slug}",
-     *   summary="single product view",
-     *   tags={"Products"},
-     *   @OA\Parameter(
-     *     name="slug",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="string",
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Product"
-     *       )
-     *     )
-     *   )
-     * )
-     */
-
-    /**
-     * @OA\Get(
-     *   path="/products/id:{id}",
-     *   summary="alias",
-     *   tags={"Products"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer",
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Product"
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function view(Product $product)
+    public function show(Product $product)
     {
         if (!Auth::check() && $product->isPublic() !== true) {
             return Error::abort('Unauthorized.', 401);
@@ -202,111 +98,14 @@ class ProductController extends Controller
         return ProductResource::make($product);
     }
 
-    /**
-     * @OA\Post(
-     *   path="/products",
-     *   summary="create product",
-     *   tags={"Products"},
-     *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="name",
-     *         type="string",
-     *       ),
-     *       @OA\Property(
-     *         property="slug",
-     *         type="string",
-     *       ),
-     *       @OA\Property(
-     *         property="price",
-     *         type="number",
-     *       ),
-     *       @OA\Property(
-     *         property="brand_id",
-     *         type="integer",
-     *       ),
-     *       @OA\Property(
-     *         property="category_id",
-     *         type="integer",
-     *       ),
-     *       @OA\Property(
-     *         property="description_md",
-     *         type="string",
-     *       ),
-     *       @OA\Property(
-     *         property="digital",
-     *         type="boolean",
-     *       ),
-     *       @OA\Property(
-     *         property="public",
-     *         type="boolean",
-     *       ),
-     *       @OA\Property(
-     *         property="schemas",
-     *         type="array",
-     *         @OA\Items(
-     *           type="object",
-     *           @OA\Property(
-     *             property="name",
-     *             type="string",
-     *           ),
-     *           @OA\Property(
-     *             property="type",
-     *             type="integer",
-     *           ),
-     *           @OA\Property(
-     *             property="required",
-     *             type="boolean",
-     *           ),
-     *           @OA\Property(
-     *             property="items",
-     *             type="array",
-     *             @OA\Items(
-     *               type="object",
-     *               @OA\Property(
-     *                 property="item_id",
-     *                 type="integer",
-     *               ),
-     *               @OA\Property(
-     *                 property="extra_price",
-     *                 type="number",
-     *               )
-     *             )
-     *           )
-     *         )
-     *       ),
-     *       @OA\Property(
-     *         property="media",
-     *         type="array",
-     *         @OA\Items(
-     *           type="integer",
-     *         )
-     *       )
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=201,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Product"
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function create(Request $request)
+    public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:products|alpha_dash',
             'price' => 'required|numeric',
-            'brand_id' => 'required|integer|exists:brands,id',
-            'category_id' => 'required|integer|exists:categories,id',
+            'brand_id' => 'required|uuid|exists:brands,id',
+            'category_id' => 'required|uuid|exists:categories,id',
             'description_md' => 'string|nullable',
             'digital' => 'required|boolean',
             'public' => 'required|boolean',
@@ -314,7 +113,7 @@ class ProductController extends Controller
             'media' => 'array|nullable',
         ]);
 
-        $schemas = isset($request->schemas) ? $request->schemas : [];
+        $schemas = $request->schemas ?? [];
 
         foreach ($schemas as $schema) {
             Validator::make($schema, [
@@ -325,17 +124,17 @@ class ProductController extends Controller
                 'items' => 'exclude_unless:type,0|required|array|min:1',
             ])->validate();
 
-            $items = isset($schema['items']) ? $schema['items'] : [];
+            $items = $schema['items'] ?? [];
 
             foreach ($items as $item) {
                 Validator::make($item, [
-                    'item_id' => 'required|integer|exists:items,id',
+                    'item_id' => 'required|uuid|exists:items,id',
                     'extra_price' => 'required|numeric',
                 ])->validate();
             }
         }
 
-        $media = isset($request->media) ? $request->media : [];
+        $media = $request->media ?? [];
 
         foreach ($media as $id) {
             $thisMedia = Media::find($id);
@@ -343,7 +142,7 @@ class ProductController extends Controller
             if ($thisMedia === null) {
                 return Error::abort(
                     'Media with ID ' . $id . ' does not exist.',
-                    400,
+                    404,
                 );
             }
         }
@@ -366,7 +165,7 @@ class ProductController extends Controller
             ]);
 
             $item = Item::create([
-                'name' => $request->name,
+                'name' => $request->input('name'),
                 'sku' => null,
             ]);
 
@@ -390,123 +189,16 @@ class ProductController extends Controller
             foreach ($schema['items'] as $item) {
                 $newSchema->schemaItems()->create([
                     'item_id' => $item['item_id'],
-                    'extra_price' => $item_id['extra_price'],
+                    'extra_price' => $item['extra_price'],
                 ]);
             }
         }
 
         $product->media()->sync($media);
 
-        return ProductResource::make($product)
-            ->response()
-            ->setStatusCode(201);
+        return ProductResource::make($product);
     }
 
-    /**
-     * @OA\Patch(
-     *   path="/products/id:{id}",
-     *   summary="update product",
-     *   tags={"Products"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer",
-     *     )
-     *   ),
-     *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="name",
-     *         type="string",
-     *       ),
-     *       @OA\Property(
-     *         property="slug",
-     *         type="string",
-     *       ),
-     *       @OA\Property(
-     *         property="price",
-     *         type="number",
-     *       ),
-     *       @OA\Property(
-     *         property="brand_id",
-     *         type="integer",
-     *       ),
-     *       @OA\Property(
-     *         property="category_id",
-     *         type="integer",
-     *       ),
-     *       @OA\Property(
-     *         property="description_md",
-     *         type="string",
-     *       ),
-     *       @OA\Property(
-     *         property="digital",
-     *         type="boolean",
-     *       ),
-     *       @OA\Property(
-     *         property="public",
-     *         type="boolean",
-     *       ),
-     *       @OA\Property(
-     *         property="schemas",
-     *         type="array",
-     *         @OA\Items(
-     *           type="object",
-     *           @OA\Property(
-     *             property="name",
-     *             type="string",
-     *           ),
-     *           @OA\Property(
-     *             property="type",
-     *             type="integer",
-     *           ),
-     *           @OA\Property(
-     *             property="required",
-     *             type="boolean",
-     *           ),
-     *           @OA\Property(
-     *             property="items",
-     *             type="array",
-     *             @OA\Items(
-     *               type="object",
-     *               @OA\Property(
-     *                 property="item_id",
-     *                 type="integer",
-     *               ),
-     *               @OA\Property(
-     *                 property="extra_price",
-     *                 type="number",
-     *               )
-     *             )
-     *           )
-     *         )
-     *       ),
-     *       @OA\Property(
-     *         property="media",
-     *         type="array",
-     *         @OA\Items(
-     *           type="integer",
-     *         )
-     *       )
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Product"
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
     public function update(Product $product, Request $request)
     {
         $request->validate([
@@ -519,8 +211,8 @@ class ProductController extends Controller
                 Rule::unique('products')->ignore($product->slug, 'slug'),
             ],
             'price' => 'required|numeric',
-            'brand_id' => 'required|integer|exists:brands,id',
-            'category_id' => 'required|integer|exists:categories,id',
+            'brand_id' => 'required|uuid|exists:brands,id',
+            'category_id' => 'required|uuid|exists:categories,id',
             'description_md' => 'string|nullable',
             'digital' => 'required|boolean',
             'public' => 'required|boolean',
@@ -543,7 +235,7 @@ class ProductController extends Controller
 
             foreach ($items as $item) {
                 Validator::make($item, [
-                    'item_id' => 'required|integer|exists:items,id',
+                    'item_id' => 'required|uuid|exists:items,id',
                     'extra_price' => 'required|numeric',
                 ])->validate();
             }
@@ -565,7 +257,7 @@ class ProductController extends Controller
             if ($thisMedia === null) {
                 return Error::abort(
                     'Media with ID ' . $id . ' does not `exist`.',
-                    400,
+                    404,
                 );
             }
         }
@@ -604,29 +296,7 @@ class ProductController extends Controller
             ->setStatusCode(200);
     }
 
-    /**
-     * @OA\Delete(
-     *   path="/products/id:{id}",
-     *   summary="delete product",
-     *   tags={"Products"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer",
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=204,
-     *     description="Success",
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function delete(Product $product)
+    public function destroy(Product $product)
     {
         $product->delete();
 

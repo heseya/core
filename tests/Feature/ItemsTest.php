@@ -2,20 +2,24 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\Item;
 use App\Models\Deposit;
+use App\Models\Item;
 use Laravel\Passport\Passport;
+use Tests\TestCase;
 
 class ItemsTest extends TestCase
 {
+    private Item $item;
+
+    private array $expected;
+
     public function setUp(): void
     {
         parent::setUp();
 
         $this->item = factory(Item::class)->create();
 
-        $deposit = factory(Deposit::class)->create([
+        factory(Deposit::class)->create([
             'item_id' => $this->item->id,
         ]);
 
@@ -23,7 +27,7 @@ class ItemsTest extends TestCase
          * Expected response
          */
         $this->expected = [
-            'id' => $this->item->id,
+            'id' => $this->item->getKey(),
             'name' => $this->item->name,
             'sku' => $this->item->sku,
             'quantity' => $this->item->quantity,
@@ -35,15 +39,15 @@ class ItemsTest extends TestCase
      */
     public function testIndex()
     {
-        $response = $this->get('/items');
+        $response = $this->getJson('/items');
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->get('/items');
+        $response = $this->getJson('/items');
         $response
             ->assertOk()
-            ->assertJsonCount(1, 'data') // Only one item xD
+            ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
@@ -54,12 +58,12 @@ class ItemsTest extends TestCase
      */
     public function testView()
     {
-        $response = $this->get('/items/id:' . $this->item->id);
+        $response = $this->getJson('/items/id:' . $this->item->getKey());
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->get('/items/id:' . $this->item->id);
+        $response = $this->getJson('/items/id:' . $this->item->getKey());
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
@@ -70,7 +74,7 @@ class ItemsTest extends TestCase
      */
     public function testCreate()
     {
-        $response = $this->post('/items');
+        $response = $this->postJson('/items');
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
@@ -80,7 +84,7 @@ class ItemsTest extends TestCase
             'sku' => 'TES/T1',
         ];
 
-        $response = $this->post('/items', $item);
+        $response = $this->postJson('/items', $item);
         $response
             ->assertCreated()
             ->assertJson(['data' => $item]);
@@ -90,7 +94,7 @@ class ItemsTest extends TestCase
             'sku' => NULL,
         ];
 
-        $response = $this->post('/items', $item);
+        $response = $this->postJson('/items', $item);
         $response
             ->assertCreated()
             ->assertJson(['data' => $item]);
@@ -99,7 +103,7 @@ class ItemsTest extends TestCase
             'name' => 'Test no sku',
         ];
 
-        $response = $this->post('/items', $item);
+        $response = $this->postJson('/items', $item);
         $response
             ->assertCreated()
             ->assertJson(['data' => $item + ['sku' => NULL]]);
@@ -110,7 +114,7 @@ class ItemsTest extends TestCase
      */
     public function testUpdate()
     {
-        $response = $this->patch('/items/id:' . $this->item->id);
+        $response = $this->patchJson('/items/id:' . $this->item->getKey());
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
@@ -120,8 +124,8 @@ class ItemsTest extends TestCase
             'sku' => 'TES/T2',
         ];
 
-        $response = $this->patch(
-            '/items/id:' . $this->item->id,
+        $response = $this->patchJson(
+            '/items/id:' . $this->item->getKey(),
             $item,
         );
         $response
@@ -134,12 +138,12 @@ class ItemsTest extends TestCase
      */
     public function testDelete()
     {
-        $response = $this->delete('/items/id:' . $this->item->id);
+        $response = $this->deleteJson('/items/id:' . $this->item->getKey());
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->delete('/items/id:' . $this->item->id);
+        $response = $this->deleteJson('/items/id:' . $this->item->getKey());
         $response->assertNoContent();
     }
 }

@@ -10,6 +10,11 @@ use Laravel\Passport\Passport;
 
 class BrandsTest extends TestCase
 {
+    private Brand $brand;
+    private Brand $brand_hidden;
+
+    private array $expected;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -26,7 +31,7 @@ class BrandsTest extends TestCase
          * Expected response
          */
         $this->expected = [
-            'id' => $this->brand->id,
+            'id' => $this->brand->getKey(),
             'name' => $this->brand->name,
             'slug' => $this->brand->slug,
             'public' => $this->brand->public,
@@ -38,10 +43,10 @@ class BrandsTest extends TestCase
      */
     public function testIndex()
     {
-        $response = $this->get('/brands');
+        $response = $this->getJson('/brands');
         $response
             ->assertOk()
-            ->assertJsonCount(1, 'data') // Shoud show only public brands.
+            ->assertJsonCount(1, 'data') // Should show only public brands.
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
@@ -52,7 +57,7 @@ class BrandsTest extends TestCase
      */
     public function testCreate()
     {
-        $response = $this->post('/brands');
+        $response = $this->postJson('/brands');
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
@@ -63,7 +68,7 @@ class BrandsTest extends TestCase
             'public' => true,
         ];
 
-        $response = $this->post('/brands', $brand);
+        $response = $this->postJson('/brands', $brand);
         $response
             ->assertCreated()
             ->assertJson(['data' => $brand]);
@@ -74,7 +79,7 @@ class BrandsTest extends TestCase
      */
     public function testUpdate()
     {
-        $response = $this->patch('/brands/id:' . $this->brand->id);
+        $response = $this->patchJson('/brands/id:' . $this->brand->getKey());
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
@@ -85,8 +90,8 @@ class BrandsTest extends TestCase
             'public' => false,
         ];
 
-        $response = $this->patch(
-            '/brands/id:' . $this->brand->id,
+        $response = $this->patchJson(
+            '/brands/id:' . $this->brand->getKey(),
             $brand,
         );
         $response
@@ -99,12 +104,12 @@ class BrandsTest extends TestCase
      */
     public function testDelete()
     {
-        $response = $this->delete('/brands/id:' . $this->brand->id);
+        $response = $this->deleteJson('/brands/id:' . $this->brand->getKey());
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->delete('/brands/id:' . $this->brand->id);
+        $response = $this->deleteJson('/brands/id:' . $this->brand->getKey());
         $response->assertNoContent();
     }
 
@@ -116,14 +121,14 @@ class BrandsTest extends TestCase
         Passport::actingAs($this->user);
 
         $this->brand = factory(Brand::class)->create();
-        $this->category = factory(Category::class)->create();
+        $category = factory(Category::class)->create();
 
         factory(Product::class)->create([
-            'brand_id' => $this->brand->id,
-            'category_id' => $this->category->id,
+            'brand_id' => $this->brand->getKey(),
+            'category_id' => $category->getKey(),
         ]);
 
-        $response = $this->delete('/brands/id:' . $this->brand->id);
-        $response->assertStatus(400);
+        $response = $this->deleteJson('/brands/id:' . $this->brand->getKey());
+        $response->assertStatus(409);
     }
 }

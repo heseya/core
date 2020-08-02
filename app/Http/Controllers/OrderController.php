@@ -2,68 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\Error;
+use App\Http\Controllers\Swagger\OrderControllerSwagger;
+use App\Http\Requests\OrderCreateRequest;
+use App\Http\Resources\OrderPublicResource;
+use App\Http\Resources\OrderResource;
 use App\Mail\ChangeStatus;
 use App\Mail\NewOrder;
-use App\Models\Order;
 use App\Models\Address;
+use App\Models\Order;
 use App\Models\Product;
-use App\Exceptions\Error;
-use App\Models\Status;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
 use App\Models\ProductSchema;
-use App\Models\ShippingMethod;
 use App\Models\ProductSchemaItem;
-use Illuminate\Http\JsonResponse;
-use App\Http\Resources\OrderResource;
-use App\Http\Requests\OrderCreateRequest;
+use App\Models\ShippingMethod;
+use App\Models\Status;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
-use App\Http\Resources\OrderPublicResource;
+use Illuminate\Support\Str;
 
-class OrderController extends Controller
+class OrderController extends Controller implements OrderControllerSwagger
 {
-    /**
-     * @OA\Get(
-     *   path="/orders",
-     *   summary="orders list",
-     *   tags={"Orders"},
-     *   @OA\Parameter(
-     *     name="search",
-     *     in="query",
-     *     description="Full text search.",
-     *     @OA\Schema(
-     *       type="string",
-     *     ),
-     *   ),
-     *   @OA\Parameter(
-     *     name="sort",
-     *     in="query",
-     *     description="Sorting string.",
-     *     @OA\Schema(
-     *       type="string",
-     *       example="code:asc,created_at:desc,id"
-     *     ),
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         type="array",
-     *         @OA\Items(
-     *           ref="#/components/schemas/Order",
-     *         )
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function index(Request $request)
+    public function index(Request $request): JsonResource
     {
         $request->validate([
             'search' => 'string|max:255',
@@ -102,98 +63,19 @@ class OrderController extends Controller
         return OrderResource::collection($query);
     }
 
-    /**
-     * @OA\Get(
-     *   path="/orders/id:{id}",
-     *   summary="order view",
-     *   tags={"Orders"},
-     *   @OA\Parameter(
-     *     name="code",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="string",
-     *       example="D3PT88",
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Order",
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function view(Order $order)
+    public function show(Order $order): JsonResource
     {
         return OrderResource::make($order);
     }
 
-    /**
-     * @OA\Get(
-     *   path="/orders/{code}",
-     *   summary="public order view",
-     *   tags={"Orders"},
-     *   @OA\Parameter(
-     *     name="code",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="string",
-     *       example="D3PT88",
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Order",
-     *       )
-     *     )
-     *   )
-     * )
-     */
-    public function viewPublic(Order $order)
+    public function showPublic(Order $order): JsonResource
     {
         return OrderPublicResource::make($order);
     }
 
-    /**
-     * @OA\Post(
-     *   path="/orders",
-     *   summary="add new order",
-     *   tags={"Orders"},
-     *   @OA\RequestBody(
-     *     ref="#/components/requestBodies/OrderCreate",
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Order",
-     *       )
-     *     )
-     *   )
-     * )
-     */
-    public function create(OrderCreateRequest $request): JsonResponse
+    public function store(OrderCreateRequest $request)
     {
-        $shipping_method = ShippingMethod::find($request->shipping_method_id);
-
-        if ($shipping_method === null) {
-            return Error::abort('Invalid shipping method.', 400);
-        }
+        $shipping_method = ShippingMethod::findOrFail($request->input('shipping_method_id'));
 
         $itemCounts = [];
         $usedSchemas = [];
@@ -202,27 +84,27 @@ class OrderController extends Controller
 
         $cartItems = 0;
 
-        foreach ($request->items as $item) {
+        foreach ($request->input('items', []) as $item) {
             Validator::make($item, [
-                'product_id' => 'required|exists:products,id',
+                'product_id' => 'required|uuid|exists:products,id',
                 'quantity' => 'required|numeric',
                 'schema_items' => 'array|nullable',
                 'custom_schemas' => 'array|nullable',
             ])->validate();
 
-            $product = Product::find($item['product_id']);
+            $product = Product::findOrFail($item['product_id']);
 
-            if (!$product->public) {
+            if (!$product->isPublic()) {
                 return Error::abort(
                     'Product with ID ' . $product->id . ' is does not exist.',
-                    400,
+                    404,
                 );
             }
 
             if (!$product->schemas()->where('required', true)->where('type', 0)->exists()) {
                 return Error::abort(
                     'Product with ID ' . $product->id . ' is invalid.',
-                    400,
+                    409,
                 );
             }
 
@@ -273,7 +155,7 @@ class OrderController extends Controller
                 if ($schema === null || $schema->type === 0) {
                     return Error::abort(
                         'Custom schema with ID ' . $id . ' does not exist.',
-                        400,
+                        404,
                     );
                 }
 
@@ -282,7 +164,7 @@ class OrderController extends Controller
                 if ($item['product_id'] !== $productId) {
                     return Error::abort(
                         'Custom schema with ID ' . $id . ' does not exist.',
-                        400,
+                        404,
                     );
                 }
 
@@ -292,21 +174,14 @@ class OrderController extends Controller
             }
 
             foreach ($schemaItems as $id) {
-                $schemaItem = ProductSchemaItem::find($id);
-
-                if ($schemaItem === null) {
-                    return Error::abort(
-                        'Schema item with ID ' . $id . ' does not exist.',
-                        400,
-                    );
-                }
+                $schemaItem = ProductSchemaItem::findOrFail($id);
 
                 $schema = $schemaItem->schema;
 
                 if ($schema->type !== 0) {
                     return Error::abort(
                         'Schema item with ID ' . $id . ' does not exist.',
-                        400,
+                        404,
                     );
                 }
 
@@ -315,7 +190,7 @@ class OrderController extends Controller
                 if ($item['product_id'] !== $productId) {
                     return Error::abort(
                         'Schema item with ID ' . $id . ' does not exist.',
-                        400,
+                        404,
                     );
                 }
 
@@ -358,7 +233,7 @@ class OrderController extends Controller
             'currency' => 'PLN',
             'shipping_method_id' => $shipping_method->id,
             'shipping_price' => $shipping_method->price,
-            'status_id' => Status::orderBy('id')->first()->id,
+            'status_id' => Status::select('id')->orderBy('created_at')->first()->id,
         ]);
 
         $order->delivery_address_id = Address::firstOrCreate($request->delivery_address)->id;
@@ -370,7 +245,7 @@ class OrderController extends Controller
         $cartItems = 0;
 
         foreach ($request->items as $item) {
-            $product = Product::find($item['product_id']);
+            $product = Product::findOrFail($item['product_id']);
             $price = $product->price;
             $schemaItems = $indexedSchemaItems[$cartItems++];
 
@@ -405,95 +280,19 @@ class OrderController extends Controller
             'user' => 'API',
         ]);
 
-        return OrderPublicResource::make($order)
-            ->response()
-            ->setStatusCode(201);
+        return OrderPublicResource::make($order);
     }
 
-    /**
-     * @OA\Post(
-     *   path="/orders/verify",
-     *   summary="verify cart",
-     *   tags={"Orders"},
-     *   @OA\RequestBody(
-     *     request="OrderCreate",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="items",
-     *         type="array",
-     *         @OA\Items(
-     *           type="object",
-     *           @OA\Property(
-     *             property="cartitem_id",
-     *             type="string",
-     *           ),
-     *           @OA\Property(
-     *             property="product_id",
-     *             type="integer",
-     *           ),
-     *           @OA\Property(
-     *             property="quantity",
-     *             type="number",
-     *           ),
-     *           @OA\Property(
-     *             property="schema_items",
-     *             type="array",
-     *             @OA\Items(
-     *               type="integer"
-     *             )
-     *           ),
-     *           @OA\Property(
-     *             property="custom_schemas",
-     *             type="array",
-     *             @OA\Items(
-     *               type="object",
-     *               @OA\Property(
-     *                 property="schema_id",
-     *                 type="integer",
-     *               ),
-     *               @OA\Property(
-     *                 property="value",
-     *                 type="string",
-     *               )
-     *             )
-     *           )
-     *         )
-     *       )
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         type="array",
-     *         @OA\Items(
-     *           type="object",
-     *           @OA\Property(
-     *             property="cartitem_id",
-     *             type="string",
-     *           ),
-     *           @OA\Property(
-     *             property="enough",
-     *             type="boolean",
-     *           )
-     *         )
-     *       )
-     *     )
-     *   )
-     * )
-     */
-    public function verify(Request $request): JsonResponse
+    public function verify(Request $request)
     {
         $cartItems = [];
         $itemCounts = [];
         $itemUsers = [];
         $usedSchemas = [];
 
-        foreach ($request->items as $item) {
+        foreach ($request->input('items') as $item) {
             Validator::make($item, [
-                'product_id' => 'required|exists:products,id',
+                'product_id' => 'required|uuid|exists:products,id',
                 'quantity' => 'required|numeric',
                 'schema_items' => 'array|nullable',
                 'custom_schemas' => 'array|nullable',
@@ -501,7 +300,7 @@ class OrderController extends Controller
 
             $product = Product::find($item['product_id']);
 
-            if (!$product->public) {
+            if (!$product->isPublic()) {
                 continue;
             }
 
@@ -668,51 +467,18 @@ class OrderController extends Controller
         return response()->json(['data' => $cartItems]);
     }
 
-
-    /**
-     * @OA\Post(
-     *   path="/orders/id:{id}/status",
-     *   summary="change order status",
-     *   tags={"Orders"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="id",
-     *       example="2",
-     *     ),
-     *   ),
-     *   @OA\RequestBody(
-     *     request="OrderCreate",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="status_id",
-     *         type="integer",
-     *       ),
-     *     ),
-     *   ),
-     *   @OA\Response(
-     *     response=204,
-     *     description="Success",
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function changeStatus(Order $order, Request $request)
+    public function updateStatus(Order $order, Request $request)
     {
         $request->validate([
-            'status_id' => 'required|integer|exists:statuses,id',
+            'status_id' => 'required|uuid|exists:statuses,id',
         ]);
 
         $order->update([
-            'status_id' => $request->status_id,
+            'status_id' => $request->input('status_id'),
         ]);
 
         Mail::to($order->email)->send(new ChangeStatus($order));
 
-        return response()->json(null, 204);
+        return OrderResource::make($order);
     }
 }

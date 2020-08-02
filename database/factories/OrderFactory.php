@@ -10,8 +10,6 @@ $factory->define(Order::class, function (Faker $faker) {
         'code' => $faker->regexify('[A-Z0-9]{6}'),
         'email' => $faker->unique()->safeEmail,
         'currency' => rand(0, 9) < 1 ? $faker->currencyCode : 'PLN',
-        'status_id' => rand(1, 3),
-        'shipping_method_id' => rand(1, 4),
         'shipping_price' => rand(8, 20) + 0.99,
     ];
 });

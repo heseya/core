@@ -2,21 +2,29 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\Order;
 use App\Models\ShippingMethod;
+use App\Models\Status;
 use Laravel\Passport\Passport;
+use Tests\TestCase;
 
 class OrdersTest extends TestCase
 {
+    private Order $order;
+
+    private array $expected;
+    private array $expected_structure;
+
     public function setUp(): void
     {
         parent::setUp();
 
         $shippingMethod = factory(ShippingMethod::class)->create();
+        $status = factory(Status::class)->create();
 
         $this->order = factory(Order::class)->create([
-            'shipping_method_id' => $shippingMethod->id,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
         ]);
 
         /**
@@ -25,15 +33,15 @@ class OrdersTest extends TestCase
         $this->expected = [
             'code' => $this->order->code,
             'status' => [
-                'id' => $this->order->status->id,
-                'name' => $this->order->status->name,
-                'color' => $this->order->status->color,
-                'description' => $this->order->status->description,
+                'id' => $status->getKey(),
+                'name' => $status->name,
+                'color' => $status->color,
+                'description' => $status->description,
             ],
             'payed' => $this->order->isPayed(),
         ];
 
-        $this->expectedStructure = [
+        $this->expected_structure = [
             'code',
             'status',
             'payed',
@@ -46,16 +54,16 @@ class OrdersTest extends TestCase
      */
     public function testIndex()
     {
-        $response = $this->get('/orders');
+        $response = $this->getJson('/orders');
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->get('/orders');
+        $response = $this->getJson('/orders');
         $response
             ->assertOk()
             ->assertJsonStructure(['data' => [
-                0 => $this->expectedStructure
+                0 => $this->expected_structure,
             ]])
             ->assertJson(['data' => [
                 0 => $this->expected,
@@ -67,10 +75,10 @@ class OrdersTest extends TestCase
      */
     public function testViewPublic()
     {
-        $response = $this->get('/orders/' . $this->order->code);
+        $response = $this->getJson('/orders/' . $this->order->code);
         $response
             ->assertOk()
-            ->assertJsonStructure(['data' => $this->expectedStructure])
+            ->assertJsonStructure(['data' => $this->expected_structure])
             ->assertJson(['data' => $this->expected]);
     }
 }

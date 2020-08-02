@@ -2,12 +2,18 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\Page;
 use Laravel\Passport\Passport;
+use Tests\TestCase;
 
 class PagesTest extends TestCase
 {
+    private Page $page;
+    private Page $page_hidden;
+
+    private array $expected;
+    private array $expected_view;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -24,7 +30,7 @@ class PagesTest extends TestCase
          * Expected response
          */
         $this->expected = [
-            'id' => $this->page->id,
+            'id' => $this->page->getKey(),
             'name' => $this->page->name,
             'slug' => $this->page->slug,
             'public' => $this->page->public,
@@ -41,20 +47,20 @@ class PagesTest extends TestCase
      */
     public function testIndex()
     {
-        $response = $this->get('/pages');
+        $response = $this->getJson('/pages');
         $response
             ->assertOk()
-            ->assertJsonCount(1, 'data') // Shoud show only public pages.
+            ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
 
         Passport::actingAs($this->user);
 
-        $response = $this->get('/pages');
+        $response = $this->getJson('/pages');
         $response
             ->assertOk()
-            ->assertJsonCount(2, 'data'); // Shoud show all pages.
+            ->assertJsonCount(2, 'data');
     }
 
     /**
@@ -62,17 +68,17 @@ class PagesTest extends TestCase
      */
     public function testView()
     {
-        $response = $this->get('/pages/' . $this->page->slug);
+        $response = $this->getJson('/pages/' . $this->page->slug);
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected_view]);
 
-        $response = $this->get('/pages/id:' . $this->page->id);
+        $response = $this->getJson('/pages/id:' . $this->page->getKey());
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->get('/pages/id:' . $this->page->id);
+        $response = $this->getJson('/pages/id:' . $this->page->getKey());
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected_view]);
@@ -83,18 +89,18 @@ class PagesTest extends TestCase
      */
     public function testViewHidden()
     {
-        $response = $this->get('/pages/' . $this->page_hidden->slug);
+        $response = $this->getJson('/pages/' . $this->page_hidden->slug);
         $response->assertUnauthorized();
 
-        $response = $this->get('/pages/id:' . $this->page_hidden->id);
+        $response = $this->getJson('/pages/id:' . $this->page_hidden->getKey());
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->get('/pages/' . $this->page_hidden->slug);
+        $response = $this->getJson('/pages/' . $this->page_hidden->slug);
         $response->assertOk();
 
-        $response = $this->get('/pages/id:' . $this->page_hidden->id);
+        $response = $this->getJson('/pages/id:' . $this->page_hidden->getKey());
         $response->assertOk();
     }
 
@@ -103,7 +109,7 @@ class PagesTest extends TestCase
      */
     public function testCreate()
     {
-        $response = $this->post('/pages');
+        $response = $this->postJson('/pages');
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
@@ -116,7 +122,7 @@ class PagesTest extends TestCase
             'content_html' => '<h1>hello world</h1>',
         ];
 
-        $response = $this->post('/pages', $page);
+        $response = $this->postJson('/pages', $page);
         $response
             ->assertJson(['data' => $page])
             ->assertCreated();
@@ -127,7 +133,7 @@ class PagesTest extends TestCase
      */
     public function testUpdate()
     {
-        $response = $this->patch('/pages/id:' . $this->page->id);
+        $response = $this->patchJson('/pages/id:' . $this->page->getKey());
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
@@ -140,8 +146,8 @@ class PagesTest extends TestCase
             'content_html' => '<h1>hello world 2</h1>',
         ];
 
-        $response = $this->patch(
-            '/pages/id:' . $this->page->id,
+        $response = $this->patchJson(
+            '/pages/id:' . $this->page->getKey(),
             $page,
         );
 
@@ -155,12 +161,12 @@ class PagesTest extends TestCase
      */
     public function testDelete()
     {
-        $response = $this->patch('/pages/id:' . $this->page->id);
+        $response = $this->patchJson('/pages/id:' . $this->page->getKey());
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->delete('/pages/id:' . $this->page->id);
+        $response = $this->deleteJson('/pages/id:' . $this->page->getKey());
         $response->assertNoContent();
     }
 }

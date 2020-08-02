@@ -4,11 +4,10 @@ namespace App\Models;
 
 use App\Mail\Message as MailMessage;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Database\Eloquent\Model;
 
 class Message extends Model
 {
-    const UPDATED_AT = null;
+    private const UPDATED_AT = null;
 
     protected $fillable = [
         'received',

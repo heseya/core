@@ -57,7 +57,7 @@ class Collection extends Resource implements Countable, IteratorAggregate
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function toArray($request, $index = false): array
+    public function toArray($request, bool $index = false): array
     {
         return $this->collection->map->toArray($request, true)->all();
     }

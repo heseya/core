@@ -2,44 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Swagger\MediaControllerSwagger;
+use App\Http\Resources\MediaResource;
 use App\Models\Media;
 use Heseya\Silverbox;
 use Illuminate\Http\Request;
-use App\Http\Resources\MediaResource;
 
-class MediaController extends Controller
+class MediaController extends Controller implements MediaControllerSwagger
 {
-    /**
-     * @OA\Post(
-     *   path="/media",
-     *   summary="upload new file",
-     *   tags={"Media"},
-     *   @OA\RequestBody(
-     *     @OA\MediaType(
-     *       mediaType="multipart/form-data",
-     *       @OA\Schema(
-     *         @OA\Property(
-     *           property="file",
-     *           description="File.",
-     *           type="binary",
-     *         ),
-     *       ),
-     *     ),
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         type="array",
-     *         @OA\Items(ref="#/components/schemas/Media"),
-     *       )
-     *     )
-     *   )
-     * )
-     */
-    public function upload(Request $request)
+    public function store(Request $request)
     {
         $request->validate([
             'file' => 'required|file|mimes:jpeg,png,gif,bmp',
@@ -55,8 +26,6 @@ class MediaController extends Controller
             'url' => rtrim(config('silverbox.host'). '/') . '/' . $response[0]->path,
         ]);
 
-        return MediaResource::make($media)
-            ->response()
-            ->setStatusCode(201);
+        return MediaResource::make($media);
     }
 }

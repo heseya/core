@@ -2,10 +2,9 @@
 
 namespace App\Providers;
 
-use Schema;
-use Illuminate\Pagination\Paginator;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\ServiceProvider;
+use Laravel\Passport\Passport;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -16,7 +15,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        Passport::ignoreMigrations();
     }
 
     /**
@@ -26,8 +25,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Schema::defaultStringLength(191);
-
         Relation::morphMap([
             'user' => 'App\User',
         ]);

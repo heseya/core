@@ -3,12 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Models\Chat;
-use App\Models\Message as Email;
-use Webklex\IMAP\Message;
 use Illuminate\Console\Command;
 use Webklex\IMAP\Facades\Client;
-use App\Mail\Message as MailMessage;
-use Illuminate\Support\Facades\Mail;
+use Webklex\IMAP\Message;
 
 class SyncEmails extends Command
 {
@@ -87,7 +84,7 @@ class SyncEmails extends Command
                 $html = '<a class="chat-attachment" href="' . asset('storage/' . $attachment->name) . '">' . $attachment->name . '</a>';
             }
 
-            $message = $chat->messages()->firstOrCreate([
+            $chat->messages()->firstOrCreate([
                 'received' => true,
                 'external_id' => $email->message_id,
                 'content' => $html,

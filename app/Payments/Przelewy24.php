@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Http;
 
 class Przelewy24 implements PaymentMethod
 {
-    const API_VER = 'v1';
+    private const API_VER = 'v1';
 
     public static function generateUrl(Payment $payment): array
     {

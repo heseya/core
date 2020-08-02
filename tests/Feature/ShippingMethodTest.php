@@ -2,15 +2,16 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\Order;
 use App\Models\ShippingMethod;
 use Laravel\Passport\Passport;
+use Tests\TestCase;
 
 class ShippingMethodTest extends TestCase
 {
     public ShippingMethod $shipping_method;
     public ShippingMethod $shipping_method_hidden;
+
     public array $expected;
 
     public function setUp(): void
@@ -29,7 +30,7 @@ class ShippingMethodTest extends TestCase
          * Expected response
          */
         $this->expected = [
-            'id' => $this->shipping_method->id,
+            'id' => $this->shipping_method->getKey(),
             'name' => $this->shipping_method->name,
             'price' => $this->shipping_method->price,
             'public' => $this->shipping_method->public,
@@ -41,7 +42,7 @@ class ShippingMethodTest extends TestCase
      */
     public function testIndex()
     {
-        $response = $this->get('/shipping-methods');
+        $response = $this->getJson('/shipping-methods');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public shipping methods.
@@ -55,7 +56,7 @@ class ShippingMethodTest extends TestCase
      */
     public function testCreate()
     {
-        $response = $this->post('/shipping-methods');
+        $response = $this->postJson('/shipping-methods');
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
@@ -66,7 +67,7 @@ class ShippingMethodTest extends TestCase
             'public' => true,
         ];
 
-        $response = $this->post('/shipping-methods', $shipping_method);
+        $response = $this->postJson('/shipping-methods', $shipping_method);
         $response
             ->assertCreated()
             ->assertJson(['data' => $shipping_method]);
@@ -77,7 +78,7 @@ class ShippingMethodTest extends TestCase
      */
     public function testUpdate()
     {
-        $response = $this->patch('/shipping-methods/id:' . $this->shipping_method->id);
+        $response = $this->patchJson('/shipping-methods/id:' . $this->shipping_method->getKey());
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
@@ -88,12 +89,12 @@ class ShippingMethodTest extends TestCase
             'public' => false,
         ];
 
-        $response = $this->patch(
-            '/shipping-methods/id:' . $this->shipping_method->id,
+        $response = $this->patchJson(
+            '/shipping-methods/id:' . $this->shipping_method->getKey(),
             $shipping_method,
         );
         $response
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJson(['data' => $shipping_method]);
     }
 
@@ -102,13 +103,13 @@ class ShippingMethodTest extends TestCase
      */
     public function testDelete()
     {
-        $response = $this->delete('/shipping-methods/id:' . $this->shipping_method->id);
+        $response = $this->deleteJson('/shipping-methods/id:' . $this->shipping_method->getKey());
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->delete('/shipping-methods/id:' . $this->shipping_method->id);
-        $response->assertStatus(204);
+        $response = $this->deleteJson('/shipping-methods/id:' . $this->shipping_method->getKey());
+        $response->assertNoContent();
     }
 
     /**
@@ -121,10 +122,10 @@ class ShippingMethodTest extends TestCase
         $this->shipping_method = factory(ShippingMethod::class)->create();
 
         factory(Order::class)->create([
-            'shipping_method_id' => $this->shipping_method->id,
+            'shipping_method_id' => $this->shipping_method->getKey(),
         ]);
 
-        $response = $this->delete('/shipping-methods/id:' . $this->shipping_method->id);
-        $response->assertStatus(400);
+        $response = $this->deleteJson('/shipping-methods/id:' . $this->shipping_method->getKey());
+        $response->assertStatus(409);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Swagger;
 
 use App\Models\PackageTemplate;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 interface PackageTemplateControllerSwagger
 {
@@ -28,7 +29,7 @@ interface PackageTemplateControllerSwagger
      *   }
      * )
      */
-    public function index();
+    public function index(): JsonResource;
 
     /**
      * @OA\Post(
@@ -41,8 +42,8 @@ interface PackageTemplateControllerSwagger
      *     ),
      *   ),
      *   @OA\Response(
-     *     response=200,
-     *     description="Success",
+     *     response=201,
+     *     description="Created",
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
@@ -55,7 +56,7 @@ interface PackageTemplateControllerSwagger
      *   }
      * )
      */
-    public function create(Request $request);
+    public function store(Request $request);
 
     /**
      * @OA\Patch(
@@ -90,7 +91,7 @@ interface PackageTemplateControllerSwagger
      *   }
      * )
      */
-    public function update(PackageTemplate $package, Request $request);
+    public function update(PackageTemplate $package, Request $request): JsonResource;
 
     /**
      * @OA\Delete(
@@ -114,5 +115,5 @@ interface PackageTemplateControllerSwagger
      *   }
      * )
      */
-    public function delete(PackageTemplate $package);
+    public function destroy(PackageTemplate $package);
 }

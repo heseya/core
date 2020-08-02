@@ -98,7 +98,7 @@ class FacebookController extends Controller
 
         return response()->view('admin/settings/facebook', [
             'user_fb' => $user_fb,
-            'page' => isset($page) ? $page : null,
+            'page' => $page ?? null,
             'user' => $user,
         ]);
     }

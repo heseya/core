@@ -19,11 +19,15 @@ class ProductsSeeder extends Seeder
      */
     public function run()
     {
-        factory(Category::class, 3)->create(['public' => true]);
-        factory(Brand::class, 4)->create(['public' => true]);
+        $categories = array_merge(
+            factory(Category::class, 3)->create(['public' => true])->all(),
+            factory(Category::class, 2)->create(['public' => false])->all(),
+        );
 
-        factory(Category::class, 2)->create(['public' => false]);
-        factory(Brand::class, 2)->create(['public' => false]);
+        $brands = array_merge(
+            factory(Brand::class, 4)->create(['public' => true])->all(),
+            factory(Brand::class, 2)->create(['public' => false])->all(),
+        );
 
         function simpleProduct ($product) {
             $schema = $product->schemas()->create([
@@ -40,7 +44,7 @@ class ProductsSeeder extends Seeder
             $item->deposits()->saveMany(factory(Deposit::class, rand(0, 2))->make());
 
             $schema->schemaItems()->create([
-                'item_id' => $item->id,
+                'item_id' => $item->getKey(),
                 'extra_price' => 0,
             ]);
         }
@@ -65,50 +69,50 @@ class ProductsSeeder extends Seeder
         }
 
         factory(Product::class, 25)->create([
-            'category_id' => rand(1, 3),
-            'brand_id' => rand(1, 4),
+            'category_id' => $categories[rand(0, 2)]->getKey(),
+            'brand_id' => $brands[rand(0, 3)]->getKey(),
             'public' => true,
         ])->each('simpleProduct')->each('media');
 
         factory(Product::class, 25)->create([
-            'category_id' => rand(1, 3),
-            'brand_id' => rand(1, 4),
+            'category_id' => $categories[rand(0, 2)]->getKey(),
+            'brand_id' => $brands[rand(0, 3)]->getKey(),
             'public' => false,
         ])->each('simpleProduct')->each('media');
 
         factory(Product::class, 25)->create([
-            'category_id' => rand(1, 3),
-            'brand_id' => rand(1, 4),
+            'category_id' => $categories[rand(0, 2)]->getKey(),
+            'brand_id' => $brands[rand(0, 3)]->getKey(),
             'public' => true,
         ])->each('complexProduct')->each('media');
 
         factory(Product::class, 25)->create([
-            'category_id' => rand(1, 3),
-            'brand_id' => rand(1, 4),
+            'category_id' => $categories[rand(0, 2)]->getKey(),
+            'brand_id' => $brands[rand(0, 3)]->getKey(),
             'public' => false,
         ])->each('complexProduct')->each('media');
 
         factory(Product::class, 25)->create([
-            'category_id' => rand(3, 5),
-            'brand_id' => rand(4, 6),
+            'category_id' => $categories[rand(0, 2)]->getKey(),
+            'brand_id' => $brands[rand(0, 3)]->getKey(),
             'public' => true,
         ])->each('simpleProduct')->each('media');
 
         factory(Product::class, 25)->create([
-            'category_id' => rand(3, 5),
-            'brand_id' => rand(4, 6),
+            'category_id' => $categories[rand(2, 4)]->getKey(),
+            'brand_id' => $brands[rand(3, 5)]->getKey(),
             'public' => false,
         ])->each('simpleProduct')->each('media');
 
         factory(Product::class, 25)->create([
-            'category_id' => rand(3, 5),
-            'brand_id' => rand(4, 6),
+            'category_id' => $categories[rand(2, 4)]->getKey(),
+            'brand_id' => $brands[rand(3, 5)]->getKey(),
             'public' => true,
         ])->each('complexProduct')->each('media');
 
         factory(Product::class, 25)->create([
-            'category_id' => rand(3, 5),
-            'brand_id' => rand(4, 6),
+            'category_id' => $categories[rand(2, 4)]->getKey(),
+            'brand_id' => $brands[rand(3, 5)]->getKey(),
             'public' => false,
         ])->each('complexProduct')->each('media');
     }

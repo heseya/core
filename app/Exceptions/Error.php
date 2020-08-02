@@ -34,7 +34,7 @@ class Error
      * @param int $code Http code.
      */
     public static function abort($message = 'Internal Server Error', $code = 500) {
-        $error = new self;
+        $error = new self();
         $error->message = $message;
         $error->code = $code;
 

@@ -2,15 +2,15 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Laravel\Passport\Passport;
 use Illuminate\Http\UploadedFile;
+use Laravel\Passport\Passport;
+use Tests\TestCase;
 
 class MediaTest extends TestCase
 {
     public function testUploadUnauthorized()
     {
-        $response = $this->post('/media');
+        $response = $this->postJson('/media');
         $response->assertUnauthorized();
     }
 
@@ -65,15 +65,18 @@ class MediaTest extends TestCase
     }
 
     /**
+     * @param UploadedFile $file
+     *
      * @return void
      */
-    protected function upload($file)
+    private function upload(UploadedFile $file)
     {
         Passport::actingAs($this->user);
 
-        $response = $this->post('/media', [
+        $response = $this->postJson('/media', [
             'file' => $file,
         ]);
+
         $response
             ->assertCreated()
             ->assertJsonStructure(['data' => [
