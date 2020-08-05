@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\ProductControllerSwagger;
+use App\Http\Requests\ProductIndexRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Item;
 use App\Models\Media;
@@ -17,15 +18,8 @@ use Illuminate\Validation\Rule;
 
 class ProductController extends Controller implements ProductControllerSwagger
 {
-    public function index(Request $request): JsonResource
+    public function index(ProductIndexRequest $request): JsonResource
     {
-        $request->validate([
-            'brand' => 'string|max:255',
-            'category' => 'string|max:255',
-            'search' => 'string|max:255',
-            'sort' => 'string',
-        ]);
-
         $query = Product::with([
             'brand',
             'category',

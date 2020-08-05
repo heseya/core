@@ -15,7 +15,7 @@ class BrandController extends Controller implements BrandControllerSwagger
 {
     public function index(): JsonResource
     {
-        $query = Brand::select();
+        $query = Brand::query();
 
         if (!Auth::check()) {
             $query->where('public', true);

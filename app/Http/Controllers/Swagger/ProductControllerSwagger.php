@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Swagger;
 
+use App\Http\Requests\ProductIndexRequest;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -59,7 +60,7 @@ interface ProductControllerSwagger
      *   )
      * )
      */
-    public function index(Request $request): JsonResource;
+    public function index(ProductIndexRequest $request): JsonResource;
 
     /**
      * @OA\Get(

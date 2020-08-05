@@ -23,7 +23,7 @@ class Model extends \Illuminate\Database\Eloquent\Model
     public static function boot()
     {
         static::creating(function ($model) {
-            if (! $model->getKey()) {
+            if (!$model->getKey()) {
                 $model->{$model->getKeyName()} = (string) Str::uuid();
             }
         });

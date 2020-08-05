@@ -12,9 +12,7 @@ class StatusController extends Controller implements StatusControllerSwagger
 {
     public function index(): JsonResource
     {
-        $query = Status::select();
-
-        return StatusResource::collection($query->get());
+        return StatusResource::collection(Status::all());
     }
 
     public function store(Request $request): JsonResource

@@ -31,7 +31,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             'sort' => 'string',
         ]);
 
-        $query = Order::select();
+        $query = Order::query();
 
         if ($request->search) {
             $query

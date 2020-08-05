@@ -15,7 +15,7 @@ class CategoryController extends Controller implements CategoryControllerSwagger
 {
     public function index(): JsonResource
     {
-        $query = Category::select();
+        $query = Category::query();
 
         if (!Auth::check()) {
             $query->where('public', true);
