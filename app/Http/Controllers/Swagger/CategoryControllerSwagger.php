@@ -26,7 +26,7 @@ interface CategoryControllerSwagger
      *   )
      * )
      */
-    public function index(): JsonResource;
+    public function index(Request $request): JsonResource;
 
     /**
      * @OA\Post(

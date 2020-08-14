@@ -13,9 +13,9 @@ use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller implements CategoryControllerSwagger
 {
-    public function index(): JsonResource
+    public function index(Request $request): JsonResource
     {
-        $query = Category::query();
+        $query = Category::search($request->all());
 
         if (!Auth::check()) {
             $query->where('public', true);
