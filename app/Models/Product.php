@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\SearchTypes\ProductSearch;
+use App\SearchTypes\WhereHasSlug;
+use Heseya\Searchable\Searches\Like;
+use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -9,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Product extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, Searchable;
 
     /**
      * @OA\Property(
@@ -74,6 +78,15 @@ class Product extends Model
         'price' => 'float',
         'public' => 'bool',
         'digital' => 'bool',
+    ];
+
+    protected array $searchable = [
+        'name' => Like::class,
+        'slug' => Like::class,
+        'public',
+        'brand' => WhereHasSlug::class,
+        'category' => WhereHasSlug::class,
+        'search' => ProductSearch::class,
     ];
 
     public function media()

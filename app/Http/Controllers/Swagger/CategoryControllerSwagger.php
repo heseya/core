@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Swagger;
 
+use App\Http\Requests\CategoryIndexRequest;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -26,7 +27,7 @@ interface CategoryControllerSwagger
      *   )
      * )
      */
-    public function index(Request $request): JsonResource;
+    public function index(CategoryIndexRequest $request): JsonResource;
 
     /**
      * @OA\Post(

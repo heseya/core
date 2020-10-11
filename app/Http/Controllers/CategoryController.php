@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\CategoryControllerSwagger;
+use App\Http\Requests\CategoryIndexRequest;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use Illuminate\Http\Request;
@@ -13,9 +14,9 @@ use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller implements CategoryControllerSwagger
 {
-    public function index(Request $request): JsonResource
+    public function index(CategoryIndexRequest $request): JsonResource
     {
-        $query = Category::search($request->all());
+        $query = Category::search($request->validated());
 
         if (!Auth::check()) {
             $query->where('public', true);

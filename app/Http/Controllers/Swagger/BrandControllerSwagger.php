@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Swagger;
 
+use App\Http\Requests\BrandIndexRequest;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -26,7 +27,7 @@ interface BrandControllerSwagger
      *   )
      * )
      */
-    public function index(): JsonResource;
+    public function index(BrandIndexRequest $request): JsonResource;
 
     /**
      * @OA\Post(
