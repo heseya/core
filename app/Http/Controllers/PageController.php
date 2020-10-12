@@ -14,13 +14,15 @@ class PageController extends Controller implements PageControllerSwagger
 {
     public function index(): JsonResource
     {
-        $query = Page::select();
+        $query = Page::query();
 
         if (!Auth::check()) {
             $query->where('public', true);
         }
 
-        return PageResource::collection($query->simplePaginate(14));
+        return PageResource::collection(
+            $query->paginate(14),
+        );
     }
 
     public function show(Page $page)

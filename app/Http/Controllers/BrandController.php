@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\BrandControllerSwagger;
+use App\Http\Requests\BrandIndexRequest;
 use App\Http\Resources\BrandResource;
 use App\Models\Brand;
 use Illuminate\Http\Request;
@@ -13,9 +14,9 @@ use Illuminate\Validation\Rule;
 
 class BrandController extends Controller implements BrandControllerSwagger
 {
-    public function index(): JsonResource
+    public function index(BrandIndexRequest $request): JsonResource
     {
-        $query = Brand::select();
+        $query = Brand::search($request->validated());
 
         if (!Auth::check()) {
             $query->where('public', true);

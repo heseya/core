@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\ProductControllerSwagger;
+use App\Http\Requests\ProductIndexRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Item;
 use App\Models\Media;
@@ -17,16 +18,9 @@ use Illuminate\Validation\Rule;
 
 class ProductController extends Controller implements ProductControllerSwagger
 {
-    public function index(Request $request): JsonResource
+    public function index(ProductIndexRequest $request): JsonResource
     {
-        $request->validate([
-            'brand' => 'string|max:255',
-            'category' => 'string|max:255',
-            'search' => 'string|max:255',
-            'sort' => 'string',
-        ]);
-
-        $query = Product::with([
+        $query = Product::search($request->validated())->with([
             'brand',
             'category',
             'media',
@@ -37,32 +31,6 @@ class ProductController extends Controller implements ProductControllerSwagger
                 ->where('public', true)
                 ->whereHas('brand', fn (Builder $subQuery) => $subQuery->where('public', true))
                 ->whereHas('category', fn (Builder $subQuery) => $subQuery->where('public', true));
-        }
-
-        if ($request->input('brand')) {
-            $query->whereHas('brand', function (Builder $query) use ($request) {
-                return $query->where('slug', $request->input('brand'));
-            });
-        }
-
-        if ($request->input('category')) {
-            $query->whereHas('category', function (Builder $query) use ($request) {
-                return $query->where('slug', $request->input('category'));
-            });
-        }
-
-        if ($request->search) {
-            $query
-                ->where('slug', 'LIKE', '%' . $request->input('search') . '%')
-                ->orWhere('name', 'LIKE', '%' . $request->input('search') . '%')
-                ->orWhereHas('brand', function (Builder $query) use ($request) {
-                    return $query->where('name', 'LIKE', '%' . $request->input('search') . '%')
-                        ->orWhere('slug', 'LIKE', '%' . $request->input('search') . '%');
-                })
-                ->orWhereHas('category', function (Builder $query) use ($request) {
-                    return $query->where('name', 'LIKE', '%' . $request->input('search') . '%')
-                        ->orWhere('slug', 'LIKE', '%' . $request->input('search') . '%');
-                });
         }
 
         if ($request->input('sort')) {

@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use Heseya\Searchable\Searches\Like;
+use Heseya\Searchable\Traits\Searchable;
+
 /**
  * @OA\Schema()
  */
 class Brand extends Model
 {
+    use Searchable;
+
     /**
      * @OA\Property(
      *   property="id",
@@ -34,6 +39,12 @@ class Brand extends Model
     protected $fillable = [
         'name',
         'slug',
+        'public',
+    ];
+
+    protected $searchable = [
+        'name' => Like::class,
+        'slug' => Like::class,
         'public',
     ];
 

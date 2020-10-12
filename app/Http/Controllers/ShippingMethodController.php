@@ -14,7 +14,7 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
 {
     public function index(): JsonResource
     {
-        $query = ShippingMethod::select();
+        $query = ShippingMethod::query();
 
         if (Auth::check()) {
             $query->with('paymentMethods');
