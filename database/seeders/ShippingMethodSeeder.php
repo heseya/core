@@ -1,5 +1,7 @@
 <?php
 
+namespace Database\Seeders;
+
 use App\Models\PaymentMethod;
 use App\Models\ShippingMethod;
 use Illuminate\Database\Seeder;
@@ -13,11 +15,12 @@ class ShippingMethodSeeder extends Seeder
      */
     public function run()
     {
-        factory(ShippingMethod::class, 3)->create(['public' => true])->each(function ($shipping_method) {
+        ShippingMethod::factory()->count(3)->create(['public' => true])->each(function ($shipping_method) {
 
-            $payment_methods = factory(PaymentMethod::class, rand(1, 3))->create();
+            $payment_methods = PaymentMethod::factory()->count(rand(1, 3))->create();
             $shipping_method->paymentMethods()->sync($payment_methods);
         });
-        factory(ShippingMethod::class)->create(['public' => false]);
+
+        ShippingMethod::factory()->create(['public' => false]);
     }
 }

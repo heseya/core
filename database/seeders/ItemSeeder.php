@@ -1,7 +1,9 @@
 <?php
 
-use App\Models\Item;
+namespace Database\Seeders;
+
 use App\Models\Deposit;
+use App\Models\Item;
 use Illuminate\Database\Seeder;
 
 class ItemSeeder extends Seeder
@@ -13,8 +15,9 @@ class ItemSeeder extends Seeder
      */
     public function run()
     {
-        factory(Item::class, 100)->create()->each(function ($item) {
-            $item->deposits()->saveMany(factory(Deposit::class, rand(0, 2))->make());
-        });
+        Item::factory()
+            ->has(Deposit::factory()->count(rand(0, 2)))
+            ->count(100)
+            ->create();
     }
 }

@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * @OA\Schema()
  */
 class Brand extends Model
 {
-    use Searchable;
+    use Searchable, HasFactory;
 
     /**
      * @OA\Property(

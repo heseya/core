@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Str;
 
 class Chat extends Model
 {
+    use HasFactory;
+
     const SYSTEM_INTERNAL = 0;
     const SYSTEM_EMAIL = 1;
 

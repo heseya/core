@@ -1,5 +1,7 @@
 <?php
 
+namespace Database\Seeders;
+
 use App\Models\Page;
 use Illuminate\Database\Seeder;
 
@@ -12,23 +14,23 @@ class PagesSeeder extends Seeder
      */
     public function run()
     {
-        factory(Page::class, 10)->create();
+        Page::factory()->count(10)->create();
 
-        factory(Page::class)->create([
+        Page::factory()->create([
             'name' => 'Regulamin',
             'slug' => 'regulamin',
             'public' => true,
             'content_md' => file_get_contents(__DIR__ . '/../pages/statute.md'),
         ]);
 
-        factory(Page::class)->create([
+        Page::factory()->create([
             'name' => 'Polityka prywatności',
             'slug' => 'prywatnosc',
             'public' => true,
             'content_md' => file_get_contents(__DIR__ . '/../pages/privacy.md'),
         ]);
 
-        factory(Page::class)->create([
+        Page::factory()->create([
             'name' => 'O nas',
             'slug' => 'o-nas',
             'public' => true,

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class ProductSchemaItem extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasFactory;
 
     /**
      * @OA\Property(

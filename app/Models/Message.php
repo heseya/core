@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use App\Mail\Message as MailMessage;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Mail;
 
 class Message extends Model
 {
+    use HasFactory;
+
     public const UPDATED_AT = null;
 
     protected $fillable = [

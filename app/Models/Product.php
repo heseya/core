@@ -6,6 +6,7 @@ use App\SearchTypes\ProductSearch;
 use App\SearchTypes\WhereHasSlug;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Product extends Model
 {
-    use SoftDeletes, Searchable;
+    use SoftDeletes, Searchable, HasFactory;
 
     /**
      * @OA\Property(

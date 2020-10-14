@@ -1,0 +1,2939 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Heseya Store API",
+        "version": "1.0.1"
+    },
+    "paths": {
+        "/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login",
+                "operationId": "App\\Http\\Controllers\\Swagger\\AuthControllerSwagger::login",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "admin@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "secret"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "token": {
+                                                    "type": "string"
+                                                },
+                                                "expires_at": {
+                                                    "type": "string"
+                                                },
+                                                "user": {
+                                                    "$ref": "#/components/schemas/User"
+                                                },
+                                                "scopes": {
+                                                    "type": "array",
+                                                    "items": ""
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/user/password": {
+            "patch": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Change password",
+                "operationId": "App\\Http\\Controllers\\Swagger\\AuthControllerSwagger::changePassword",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "password": {
+                                        "type": "string",
+                                        "example": "secret"
+                                    },
+                                    "password_new": {
+                                        "type": "string",
+                                        "example": "xsw@!QAZ34"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "messgae": {
+                                                    "type": "string",
+                                                    "example": "OK"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/brands": {
+            "get": {
+                "tags": [
+                    "Brands"
+                ],
+                "summary": "list brands",
+                "operationId": "App\\Http\\Controllers\\Swagger\\BrandControllerSwagger::index",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Brand"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Brands"
+                ],
+                "summary": "add new brand",
+                "operationId": "App\\Http\\Controllers\\Swagger\\BrandControllerSwagger::store",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Brand"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Brand"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/brands/id:{id}": {
+            "delete": {
+                "tags": [
+                    "Brands"
+                ],
+                "summary": "delete brand",
+                "operationId": "App\\Http\\Controllers\\Swagger\\BrandControllerSwagger::destroy",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Brands"
+                ],
+                "summary": "update brand",
+                "operationId": "App\\Http\\Controllers\\Swagger\\BrandControllerSwagger::update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Brand"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Brand"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/categories": {
+            "get": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "list categories",
+                "operationId": "App\\Http\\Controllers\\Swagger\\CategoryControllerSwagger::index",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Category"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "add new category",
+                "operationId": "App\\Http\\Controllers\\Swagger\\CategoryControllerSwagger::store",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Category"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Category"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/categories/id:{id}": {
+            "delete": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "delete category",
+                "operationId": "App\\Http\\Controllers\\Swagger\\CategoryControllerSwagger::destroy",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "update category",
+                "operationId": "App\\Http\\Controllers\\Swagger\\CategoryControllerSwagger::update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Category"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Category"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/deposits": {
+            "get": {
+                "tags": [
+                    "Deposits"
+                ],
+                "summary": "list deposits",
+                "operationId": "App\\Http\\Controllers\\Swagger\\DepositControllerSwagger::index",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Deposit"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/items/id:{id}/deposits": {
+            "get": {
+                "tags": [
+                    "Deposits"
+                ],
+                "summary": "list item deposits",
+                "operationId": "App\\Http\\Controllers\\Swagger\\DepositControllerSwagger::show",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Deposit"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Deposits"
+                ],
+                "summary": "add new deposit",
+                "operationId": "App\\Http\\Controllers\\Swagger\\DepositControllerSwagger::store",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Deposit"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Deposit"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/furgonetka/create-package": {
+            "post": {
+                "tags": [
+                    "Furgonetka"
+                ],
+                "summary": "creates package on furgonetka",
+                "operationId": "App\\Http\\Controllers\\Swagger\\FurgonetkaControllerSwagger::createPackage",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "order_id": {
+                                        "type": "integer"
+                                    },
+                                    "package_template_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/items": {
+            "get": {
+                "tags": [
+                    "Items"
+                ],
+                "summary": "list items",
+                "operationId": "App\\Http\\Controllers\\Swagger\\ItemControllerSwagger::index",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Item"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Items"
+                ],
+                "summary": "add new item",
+                "operationId": "App\\Http\\Controllers\\Swagger\\ItemControllerSwagger::store",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Item"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Item"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/items/id:{id}": {
+            "get": {
+                "tags": [
+                    "Items"
+                ],
+                "summary": "view item",
+                "operationId": "App\\Http\\Controllers\\Swagger\\ItemControllerSwagger::show",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Item"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Items"
+                ],
+                "summary": "delete item",
+                "operationId": "App\\Http\\Controllers\\Swagger\\ItemControllerSwagger::destroy",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Items"
+                ],
+                "summary": "update item",
+                "operationId": "App\\Http\\Controllers\\Swagger\\ItemControllerSwagger::update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Item"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Item"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/media": {
+            "post": {
+                "tags": [
+                    "Media"
+                ],
+                "summary": "upload new file",
+                "operationId": "App\\Http\\Controllers\\Swagger\\MediaControllerSwagger::store",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "file": {
+                                        "description": "File.",
+                                        "type": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Media"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/orders": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "orders list",
+                "operationId": "App\\Http\\Controllers\\Swagger\\OrderControllerSwagger::index",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Full text search.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting string.",
+                        "schema": {
+                            "type": "string",
+                            "example": "code:asc,created_at:desc,id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Order"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "add new order",
+                "operationId": "App\\Http\\Controllers\\Swagger\\OrderControllerSwagger::store",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/OrderCreate"
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Order"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/id:{id}": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "order view",
+                "operationId": "App\\Http\\Controllers\\Swagger\\OrderControllerSwagger::show",
+                "parameters": [
+                    {
+                        "name": "code",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "D3PT88"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Order"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/orders/{code}": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "public order view",
+                "operationId": "App\\Http\\Controllers\\Swagger\\OrderControllerSwagger::showPublic",
+                "parameters": [
+                    {
+                        "name": "code",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "D3PT88"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Order"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/verify": {
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "verify cart",
+                "operationId": "App\\Http\\Controllers\\Swagger\\OrderControllerSwagger::verify",
+                "requestBody": {
+                    "request": "OrderCreate",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "cartitem_id": {
+                                                    "type": "string"
+                                                },
+                                                "product_id": {
+                                                    "type": "integer"
+                                                },
+                                                "quantity": {
+                                                    "type": "number"
+                                                },
+                                                "schema_items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "integer"
+                                                    }
+                                                },
+                                                "custom_schemas": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "schema_id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "value": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "cartitem_id": {
+                                                        "type": "string"
+                                                    },
+                                                    "enough": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/id:{id}/status": {
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "change order status",
+                "operationId": "App\\Http\\Controllers\\Swagger\\OrderControllerSwagger::updateStatus",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "id",
+                            "example": "2"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "request": "OrderCreate",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "status_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/package-templates": {
+            "get": {
+                "tags": [
+                    "Packages"
+                ],
+                "summary": "list packages",
+                "operationId": "App\\Http\\Controllers\\Swagger\\PackageTemplateControllerSwagger::index",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PackageTemplateSwagger"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Packages"
+                ],
+                "summary": "add new package",
+                "operationId": "App\\Http\\Controllers\\Swagger\\PackageTemplateControllerSwagger::store",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PackageTemplateSwagger"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/PackageTemplateSwagger"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/package-templates/id:{id}": {
+            "delete": {
+                "tags": [
+                    "Packages"
+                ],
+                "summary": "delete package",
+                "operationId": "App\\Http\\Controllers\\Swagger\\PackageTemplateControllerSwagger::destroy",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Packages"
+                ],
+                "summary": "update package",
+                "operationId": "App\\Http\\Controllers\\Swagger\\PackageTemplateControllerSwagger::update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PackageTemplateSwagger"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/PackageTemplateSwagger"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/pages": {
+            "get": {
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "list page",
+                "operationId": "App\\Http\\Controllers\\Swagger\\PageControllerSwagger::index",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Page"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "add new page",
+                "operationId": "App\\Http\\Controllers\\Swagger\\PageControllerSwagger::store",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Page"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Page"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/pages/{slug}": {
+            "get": {
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "single page view",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Page"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/pages/id:{id}": {
+            "get": {
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "alias",
+                "operationId": "App\\Http\\Controllers\\Swagger\\PageControllerSwagger::show",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Page"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "delete page",
+                "operationId": "App\\Http\\Controllers\\Swagger\\PageControllerSwagger::destroy",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "update page",
+                "operationId": "App\\Http\\Controllers\\Swagger\\PageControllerSwagger::update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Page"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Page"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/orders/{code}/pay/{payment_method}": {
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "redirect to payment",
+                "operationId": "App\\Http\\Controllers\\Swagger\\PaymentControllerSwagger::store",
+                "parameters": [
+                    {
+                        "name": "code",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "payment_method",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "request": "OrderCreate",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "continue_url": {
+                                        "description": "URL that the buyer will be redirected to, after making payment",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Payment"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/{payment_method}": {
+            "post": {
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Update payment status by payment provider",
+                "operationId": "App\\Http\\Controllers\\Swagger\\PaymentControllerSwagger::update",
+                "parameters": [
+                    {
+                        "name": "payment_method",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/payment-methods": {
+            "get": {
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "list payment methods",
+                "operationId": "App\\Http\\Controllers\\Swagger\\PaymentMethodControllerSwagger::index",
+                "parameters": [
+                    {
+                        "name": "shipping_method_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PaymentMethod"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "add new payment method",
+                "operationId": "App\\Http\\Controllers\\Swagger\\PaymentMethodControllerSwagger::store",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PaymentMethod"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/PaymentMethod"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/payment-methods/id:{id}": {
+            "delete": {
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "delete payment method",
+                "operationId": "App\\Http\\Controllers\\Swagger\\PaymentMethodControllerSwagger::destroy",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "update payment method",
+                "operationId": "App\\Http\\Controllers\\Swagger\\PaymentMethodControllerSwagger::update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PaymentMethod"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/PaymentMethod"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/products": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "list products",
+                "operationId": "App\\Http\\Controllers\\Swagger\\ProductControllerSwagger::index",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Full text search.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "brand",
+                        "in": "query",
+                        "description": "Brand slug.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "description": "Category slug.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sorting string.",
+                        "schema": {
+                            "type": "string",
+                            "example": "price:asc,created_at:desc,name"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Product"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "create product",
+                "operationId": "App\\Http\\Controllers\\Swagger\\ProductControllerSwagger::store",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "slug": {
+                                        "type": "string"
+                                    },
+                                    "price": {
+                                        "type": "number"
+                                    },
+                                    "brand_id": {
+                                        "type": "integer"
+                                    },
+                                    "category_id": {
+                                        "type": "integer"
+                                    },
+                                    "description_md": {
+                                        "type": "string"
+                                    },
+                                    "digital": {
+                                        "type": "boolean"
+                                    },
+                                    "public": {
+                                        "type": "boolean"
+                                    },
+                                    "schemas": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "integer"
+                                                },
+                                                "required": {
+                                                    "type": "boolean"
+                                                },
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "item_id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "extra_price": {
+                                                                "type": "number"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "media": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Product"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/products/{slug}": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "single product view",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Product"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/products/id:{id}": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "alias",
+                "operationId": "App\\Http\\Controllers\\Swagger\\ProductControllerSwagger::show",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Product"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "delete product",
+                "operationId": "App\\Http\\Controllers\\Swagger\\ProductControllerSwagger::destroy",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "update product",
+                "operationId": "App\\Http\\Controllers\\Swagger\\ProductControllerSwagger::update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "slug": {
+                                        "type": "string"
+                                    },
+                                    "price": {
+                                        "type": "number"
+                                    },
+                                    "brand_id": {
+                                        "type": "integer"
+                                    },
+                                    "category_id": {
+                                        "type": "integer"
+                                    },
+                                    "description_md": {
+                                        "type": "string"
+                                    },
+                                    "digital": {
+                                        "type": "boolean"
+                                    },
+                                    "public": {
+                                        "type": "boolean"
+                                    },
+                                    "schemas": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "type": {
+                                                    "type": "integer"
+                                                },
+                                                "required": {
+                                                    "type": "boolean"
+                                                },
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "item_id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "extra_price": {
+                                                                "type": "number"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "media": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Product"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/shipping-methods": {
+            "get": {
+                "tags": [
+                    "Shipping"
+                ],
+                "summary": "list shipping methods",
+                "operationId": "App\\Http\\Controllers\\Swagger\\ShippingMethodControllerSwagger::index",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ShippingMethod"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Shipping"
+                ],
+                "summary": "add new shipping method",
+                "operationId": "App\\Http\\Controllers\\Swagger\\ShippingMethodControllerSwagger::store",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ShippingMethod"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/ShippingMethod"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/shipping-methods/id:{id}": {
+            "delete": {
+                "tags": [
+                    "Shipping"
+                ],
+                "summary": "delete shipping method",
+                "operationId": "App\\Http\\Controllers\\Swagger\\ShippingMethodControllerSwagger::destroy",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Shipping"
+                ],
+                "summary": "update shipping method",
+                "operationId": "App\\Http\\Controllers\\Swagger\\ShippingMethodControllerSwagger::update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ShippingMethod"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/ShippingMethod"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/statuses": {
+            "get": {
+                "tags": [
+                    "Statuses"
+                ],
+                "summary": "list statuses",
+                "operationId": "App\\Http\\Controllers\\Swagger\\StatusControllerSwagger::index",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Status"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Statuses"
+                ],
+                "summary": "add new status",
+                "operationId": "App\\Http\\Controllers\\Swagger\\StatusControllerSwagger::store",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Status"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Status"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        },
+        "/statuses/id:{id}": {
+            "delete": {
+                "tags": [
+                    "Statuses"
+                ],
+                "summary": "delete status",
+                "operationId": "App\\Http\\Controllers\\Swagger\\StatusControllerSwagger::destroy",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success"
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Statuses"
+                ],
+                "summary": "update status",
+                "operationId": "App\\Http\\Controllers\\Swagger\\StatusControllerSwagger::update",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Status"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/Status"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "oauth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Error": {
+                "properties": {
+                    "code": {
+                        "description": "Http response code.",
+                        "type": "integer",
+                        "example": 500
+                    },
+                    "message": {
+                        "description": "Error message.",
+                        "type": "string",
+                        "example": "Some error message."
+                    }
+                },
+                "type": "object"
+            },
+            "Address": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Johny Mielony"
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "Gdańska 89/1"
+                    },
+                    "vat": {
+                        "type": "string",
+                        "example": "9571099580"
+                    },
+                    "zip": {
+                        "type": "string",
+                        "example": "80-200"
+                    },
+                    "city": {
+                        "type": "string",
+                        "example": "Bydgoszcz"
+                    },
+                    "country": {
+                        "type": "string",
+                        "example": "PL"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+48543234123"
+                    }
+                },
+                "type": "object"
+            },
+            "Brand": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Depth Steel"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "depth-steel"
+                    },
+                    "public": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "Category": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Rings & Sets"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "rings-and-sets"
+                    },
+                    "public": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "Deposit": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "quantity": {
+                        "type": "float",
+                        "example": "12.5"
+                    },
+                    "item_id": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "Item": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Chain"
+                    },
+                    "sku": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "Media": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "photo"
+                    },
+                    "url": {
+                        "type": "string",
+                        "example": "https://cdn.heseya.com/image.jpg"
+                    }
+                },
+                "type": "object"
+            },
+            "Order": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "admin@example.com"
+                    },
+                    "comment": {
+                        "type": "string",
+                        "example": "asap plz"
+                    },
+                    "shipping_number": {
+                        "type": "string",
+                        "example": "chch234chch1j3c23"
+                    },
+                    "summary": {
+                        "type": "number"
+                    },
+                    "summary_payed": {
+                        "description": "Summary amount of payed.",
+                        "type": "number"
+                    },
+                    "payed": {
+                        "type": "bolean"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/Status"
+                    },
+                    "shipping_method": {
+                        "$ref": "#/components/schemas/ShippingMethod"
+                    },
+                    "delivery_address": {
+                        "$ref": "#/components/schemas/Address"
+                    },
+                    "invoice_address": {
+                        "$ref": "#/components/schemas/Address"
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OrderItem"
+                        }
+                    },
+                    "payments": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Payment"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "OrderItem": {
+                "properties": {
+                    "product_id": {
+                        "type": "integer"
+                    },
+                    "quantity": {
+                        "type": "number",
+                        "example": "12.34"
+                    },
+                    "schema_items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ProductSchemaItem"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "Page": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "terms-and-conditions"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Terms & Conditions"
+                    },
+                    "public": {
+                        "type": "boolean"
+                    },
+                    "content_md": {
+                        "type": "string",
+                        "example": "# Hello World!"
+                    },
+                    "content_html": {
+                        "description": "Content in HTML.",
+                        "type": "string",
+                        "example": "<h1>Awesome stuff!</h1>"
+                    }
+                },
+                "type": "object"
+            },
+            "Payment": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "external_id": {
+                        "type": "string",
+                        "example": "D2spSDJ21LSA"
+                    },
+                    "method": {
+                        "type": "string",
+                        "example": "heseya"
+                    },
+                    "payed": {
+                        "type": "boolean"
+                    },
+                    "amount": {
+                        "type": "number",
+                        "example": 80.92
+                    },
+                    "redirect_url": {
+                        "type": "string",
+                        "example": "https://pay.heseya.com/DS62SA"
+                    },
+                    "continue_url": {
+                        "type": "string",
+                        "example": "https://store.heseya.com/done/43SYK1"
+                    }
+                },
+                "type": "object"
+            },
+            "PaymentMethod": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Heseya Pay"
+                    },
+                    "alias": {
+                        "type": "string",
+                        "example": "heseya"
+                    },
+                    "public": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "Product": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Snake Ring"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "snake-ring"
+                    },
+                    "price": {
+                        "type": "number",
+                        "example": 229.99
+                    },
+                    "description_md": {
+                        "description": "Description in MD.",
+                        "type": "string",
+                        "example": "# Awesome stuff!"
+                    },
+                    "public": {
+                        "type": "boolean"
+                    },
+                    "visible": {
+                        "type": "boolean"
+                    },
+                    "brand": {
+                        "$ref": "#/components/schemas/Brand"
+                    },
+                    "category": {
+                        "$ref": "#/components/schemas/Category"
+                    },
+                    "schemas": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ProductSchema"
+                        }
+                    },
+                    "description_html": {
+                        "description": "Description in HTML.",
+                        "type": "string",
+                        "example": "<h1>Awesome stuff!</h1>"
+                    },
+                    "available": {
+                        "description": "Whether product is available.",
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "ProductSchema": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Chain"
+                    },
+                    "type": {
+                        "type": "integer"
+                    },
+                    "required": {
+                        "type": "boolean"
+                    },
+                    "schema_items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ProductSchemaItem"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "ProductSchemaItem": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "extra_price": {
+                        "type": "number",
+                        "example": 19.99
+                    },
+                    "value": {
+                        "type": "string"
+                    },
+                    "item": {
+                        "$ref": "#/components/schemas/Item"
+                    }
+                },
+                "type": "object"
+            },
+            "ShippingMethod": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Next Day Courier"
+                    },
+                    "price": {
+                        "type": "number",
+                        "example": 10.99
+                    },
+                    "public": {
+                        "type": "boolean"
+                    },
+                    "payment_methods": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PaymentMethod"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "Status": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Cancel"
+                    },
+                    "color": {
+                        "type": "string",
+                        "example": "8f022c"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Your order has been cancelled!"
+                    }
+                },
+                "type": "object"
+            },
+            "PackageTemplateSwagger": {
+                "title": "PackageTemplate",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Small package"
+                    },
+                    "wieght": {
+                        "description": "Weight in kg",
+                        "type": "number",
+                        "example": 5.7
+                    },
+                    "width": {
+                        "description": "Width in cm",
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "height": {
+                        "description": "Height in cm",
+                        "type": "integer",
+                        "example": 20
+                    },
+                    "depth": {
+                        "description": "Depth in cm",
+                        "type": "integer",
+                        "example": 30
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "description": "User first and last name.",
+                        "type": "string",
+                        "example": "Johny Mielony"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "info@hesyea.com"
+                    },
+                    "avatar": {
+                        "description": "Url to avatar.",
+                        "type": "string",
+                        "example": "//www.gravatar.com/avatar/example.jpg"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "requestBodies": {
+            "OrderCreate": {
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "email": {
+                                    "type": "string",
+                                    "example": "admin@example.com"
+                                },
+                                "shipping_method_id": {
+                                    "type": "integer"
+                                },
+                                "comment": {
+                                    "type": "string",
+                                    "example": "asap plz"
+                                },
+                                "is_statute_accepted": {
+                                    "type": "boolean"
+                                },
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "product_id": {
+                                                "type": "integer"
+                                            },
+                                            "quantity": {
+                                                "type": "number"
+                                            },
+                                            "schema_items": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "custom_schemas": {
+                                                "type": "array",
+                                                "items": {
+                                                    "properties": {
+                                                        "schema_id": {
+                                                            "type": "integer"
+                                                        },
+                                                        "value": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "delivery_address": {
+                                    "$ref": "#/components/schemas/Address"
+                                },
+                                "invoice_address": {
+                                    "$ref": "#/components/schemas/Address"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "oauth": {
+                "type": "oauth2",
+                "flows": {
+                    "implicit": {
+                        "authorizationUrl": "https://dev.***REMOVED***/login",
+                        "scopes": {}
+                    }
+                }
+            }
+        }
+    },
+    "security": [
+        []
+    ]
+}

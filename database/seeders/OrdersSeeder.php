@@ -1,7 +1,9 @@
 <?php
 
-use App\Models\Order;
+namespace Database\Seeders;
+
 use App\Models\Address;
+use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\ShippingMethod;
@@ -20,20 +22,20 @@ class OrdersSeeder extends Seeder
         $shipping_methods = ShippingMethod::all();
         $statuses = Status::all();
 
-        factory(Order::class, 50)->create()->each(function ($order) use ($shipping_methods, $statuses) {
+        Order::factory()->count(50)->create()->each(function ($order) use ($shipping_methods, $statuses) {
 
             $order->shipping_method_id = $shipping_methods->random()->getKey();
             $order->status_id = $statuses->random()->getKey();
 
-            $order->delivery_address_id = factory(Address::class)->create()->getKey();
+            $order->delivery_address_id = Address::factory()->create()->getKey();
 
             if (rand(0, 1)) {
-                $order->invoice_address_id = factory(Address::class)->create()->getKey();
+                $order->invoice_address_id = Address::factory()->create()->getKey();
             }
 
             $order->save();
 
-            $items = factory(OrderItem::class, rand(1, 3))->make();
+            $items = OrderItem::factory()->count(rand(1, 3))->make();
             $order->items()->saveMany($items);
 
             $items->each(function ($item) {
@@ -47,7 +49,7 @@ class OrdersSeeder extends Seeder
             });
 
             for ($i = 0; $i < rand(0, 5); $i++) {
-                $order->payments()->save(factory(Payment::class)->make());
+                $order->payments()->save(Payment::factory()->make());
             }
         });
     }
