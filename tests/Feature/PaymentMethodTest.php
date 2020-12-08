@@ -27,25 +27,14 @@ class PaymentMethodTest extends TestCase
         $this->payment_method_related = factory(PaymentMethod::class)->create([
             'public' => true,
         ]);
-
         $this->shipping_method = factory(ShippingMethod::class)->create([
             'public' => true,
         ]);
-
         $this->payment_method_related->shippingMethods()->attach($this->shipping_method);
 
         $this->payment_method_hidden = factory(PaymentMethod::class)->create([
             'public' => false,
         ]);
-
-        /**
-         * Expected response
-         */
-        $this->expected = [
-            'id' => $this->payment_method->getKey(),
-            'name' => $this->payment_method->name,
-            'public' => $this->payment_method->public,
-        ];
     }
 
     /**
@@ -57,9 +46,8 @@ class PaymentMethodTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data') // Should show only public payment methods.
-            ->assertJson(['data' => [
-                0 => $this->expected,
-            ]]);
+            ->assertJsonFragment(['id' => $this->payment_method->getKey()])
+            ->assertJsonFragment(['id' => $this->payment_method_related->getKey()]);
     }
 
     /**
