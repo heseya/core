@@ -21,7 +21,7 @@ abstract class TestCase extends BaseTestCase
 
         Artisan::call('passport:install');
 
-        $this->user = factory(User::class)->create([
+        $this->user = User::factory()->create([
             'password' => Hash::make($this->password),
         ]);
     }

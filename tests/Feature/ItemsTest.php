@@ -17,9 +17,9 @@ class ItemsTest extends TestCase
     {
         parent::setUp();
 
-        $this->item = factory(Item::class)->create();
+        $this->item = Item::factory()->create();
 
-        factory(Deposit::class)->create([
+        Deposit::factory()->create([
             'item_id' => $this->item->id,
         ]);
 

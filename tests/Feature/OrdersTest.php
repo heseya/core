@@ -19,10 +19,10 @@ class OrdersTest extends TestCase
     {
         parent::setUp();
 
-        $shippingMethod = factory(ShippingMethod::class)->create();
-        $status = factory(Status::class)->create();
+        $shippingMethod = ShippingMethod::factory()->create();
+        $status = Status::factory()->create();
 
-        $this->order = factory(Order::class)->create([
+        $this->order = Order::factory()->create([
             'shipping_method_id' => $shippingMethod->getKey(),
             'status_id' => $status->getKey(),
         ]);

@@ -20,19 +20,19 @@ class PaymentMethodTest extends TestCase
     {
         parent::setUp();
 
-        $this->payment_method = factory(PaymentMethod::class)->create([
+        $this->payment_method = PaymentMethod::factory()->create([
             'public' => true,
         ]);
 
-        $this->payment_method_related = factory(PaymentMethod::class)->create([
+        $this->payment_method_related = PaymentMethod::factory()->create([
             'public' => true,
         ]);
-        $this->shipping_method = factory(ShippingMethod::class)->create([
+        $this->shipping_method = ShippingMethod::factory()->create([
             'public' => true,
         ]);
         $this->payment_method_related->shippingMethods()->attach($this->shipping_method);
 
-        $this->payment_method_hidden = factory(PaymentMethod::class)->create([
+        $this->payment_method_hidden = PaymentMethod::factory()->create([
             'public' => false,
         ]);
     }

@@ -24,10 +24,10 @@ class ProductsTest extends TestCase
     {
         parent::setUp();
 
-        $brand = factory(Brand::class)->create(['public' => true]);
-        $category = factory(Category::class)->create(['public' => true]);
+        $brand = Brand::factory()->create(['public' => true]);
+        $category = Category::factory()->create(['public' => true]);
 
-        $this->product = factory(Product::class)->create([
+        $this->product = Product::factory()->create([
             'brand_id' => $brand->getKey(),
             'category_id' => $category->getKey(),
             'public' => true,
@@ -54,41 +54,41 @@ class ProductsTest extends TestCase
         ]);
 
         // Hidden
-        $brand_hidden = factory(Brand::class)->create(['public' => false]);
-        $category_hidden = factory(Category::class)->create(['public' => false]);
+        $brand_hidden = Brand::factory()->create(['public' => false]);
+        $category_hidden = Category::factory()->create(['public' => false]);
 
         $this->hidden_products = [
-            factory(Product::class)->create([
+            Product::factory()->create([
                 'brand_id' => $brand->getKey(),
                 'category_id' => $category->getKey(),
                 'public' => false,
             ]),
-            factory(Product::class)->create([
+            Product::factory()->create([
                 'brand_id' => $brand_hidden->getKey(),
                 'category_id' => $category->getKey(),
                 'public' => true,
             ]),
-            factory(Product::class)->create([
+            Product::factory()->create([
                 'brand_id' => $brand->getKey(),
                 'category_id' => $category_hidden->getKey(),
                 'public' => true,
             ]),
-            factory(Product::class)->create([
+            Product::factory()->create([
                 'brand_id' => $brand_hidden->getKey(),
                 'category_id' => $category_hidden->getKey(),
                 'public' => true,
             ]),
-            factory(Product::class)->create([
+            Product::factory()->create([
                 'brand_id' => $brand_hidden->getKey(),
                 'category_id' => $category->getKey(),
                 'public' => false,
             ]),
-            factory(Product::class)->create([
+            Product::factory()->create([
                 'brand_id' => $brand->getKey(),
                 'category_id' => $category_hidden->getKey(),
                 'public' => false,
             ]),
-            factory(Product::class)->create([
+            Product::factory()->create([
                 'brand_id' => $brand_hidden->getKey(),
                 'category_id' => $category_hidden->getKey(),
                 'public' => false,

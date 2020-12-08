@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\Brand;
-use App\Models\Product;
 use App\Models\Category;
+use App\Models\Product;
 use Laravel\Passport\Passport;
+use Tests\TestCase;
 
 class BrandsTest extends TestCase
 {
@@ -19,11 +19,11 @@ class BrandsTest extends TestCase
     {
         parent::setUp();
 
-        $this->brand = factory(Brand::class)->create([
+        $this->brand = Brand::factory()->create([
             'public' => true,
         ]);
 
-        $this->brand_hidden = factory(Brand::class)->create([
+        $this->brand_hidden = Brand::factory()->create([
             'public' => false,
         ]);
 
@@ -120,10 +120,10 @@ class BrandsTest extends TestCase
     {
         Passport::actingAs($this->user);
 
-        $this->brand = factory(Brand::class)->create();
-        $category = factory(Category::class)->create();
+        $this->brand = Brand::factory()->create();
+        $category = Category::factory()->create();
 
-        factory(Product::class)->create([
+        Product::factory()->create([
             'brand_id' => $this->brand->getKey(),
             'category_id' => $category->getKey(),
         ]);
