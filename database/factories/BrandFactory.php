@@ -22,7 +22,7 @@ class BrandFactory extends Factory
      */
     public function definition()
     {
-        $name = $this->faker->unique()->words(rand(1, 2));
+        $name = $this->faker->unique()->sentence(rand(1, 2));
 
         return [
             'name' => $name,

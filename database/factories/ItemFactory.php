@@ -22,7 +22,7 @@ class ItemFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->unique()->words(rand(1, 3)),
+            'name' => $this->faker->unique()->sentence(rand(1, 3)),
             'sku' => $this->faker->regexify('[A-Z0-9]{4}\/[A-Z0-9]{2}'),
         ];
     }

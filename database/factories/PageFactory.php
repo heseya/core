@@ -22,7 +22,7 @@ class PageFactory extends Factory
      */
     public function definition()
     {
-        $name = $this->faker->words(rand(1, 3));
+        $name = $this->faker->sentence(rand(1, 3));
 
         return [
             'name' => $name,
