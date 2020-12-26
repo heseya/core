@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use App\Models\Page;
 use Illuminate\Database\Seeder;
 
-class PagesSeeder extends Seeder
+class PageSeeder extends Seeder
 {
     /**
      * Run the database seeds.

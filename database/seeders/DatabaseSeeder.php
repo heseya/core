@@ -15,11 +15,11 @@ class DatabaseSeeder extends Seeder
     {
         $this
             ->call(ItemSeeder::class)
-            ->call(ProductsSeeder::class)
+            ->call(ProductSeeder::class)
             ->call(ShippingMethodSeeder::class)
-            ->call(OrdersSeeder::class)
-            ->call(PagesSeeder::class)
-            ->call(UsersSeeder::class)
+            ->call(OrderSeeder::class)
+            ->call(PageSeeder::class)
+            ->call(UserSeeder::class)
             ->call(ChatSeeder::class)
             ->call(PackageTemplateSeeder::class)
             ->call(AuthSeeder::class);

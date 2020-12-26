@@ -26,7 +26,7 @@ class ProductFactory extends Factory
 
         return [
             'name' => $name,
-            'slug' => Str::slug($name),
+            'slug' => Str::slug($name) . '-' . rand(1, 99999),
             'price' => round(rand(500, 6000), -2),
             'description_md' => $this->faker->sentence(10),
         ];

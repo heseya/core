@@ -6,7 +6,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class OrderItemsFactory extends Factory
+class OrderItemFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.

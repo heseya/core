@@ -10,7 +10,7 @@ use App\Models\ShippingMethod;
 use App\Models\Status;
 use Illuminate\Database\Seeder;
 
-class OrdersSeeder extends Seeder
+class OrderSeeder extends Seeder
 {
     /**
      * Run the database seeds.
