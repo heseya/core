@@ -1,16 +1,28 @@
 <?php
 
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
+namespace Database\Factories;
 
 use App\Models\Deposit;
-use Faker\Generator as Faker;
-use Bezhanov\Faker\ProviderCollectionHelper;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-$factory->define(Deposit::class, function (Faker $faker) {
+class DepositFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = Deposit::class;
 
-    ProviderCollectionHelper::addAllProvidersTo($faker);
-
-    return [
-        'quantity' => rand(1, 20),
-    ];
-});
+    /**
+     * Define the model's default state.
+     *
+     * @return array
+     */
+    public function definition()
+    {
+        return [
+            'quantity' => rand(1, 20),
+        ];
+    }
+}

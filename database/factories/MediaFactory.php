@@ -1,13 +1,29 @@
 <?php
 
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
+namespace Database\Factories;
 
 use App\Models\Media;
-use Faker\Generator as Faker;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-$factory->define(Media::class, function (Faker $faker) {
-    return [
-        'type' => Media::PHOTO,
-        'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
-    ];
-});
+class MediaFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = Media::class;
+
+    /**
+     * Define the model's default state.
+     *
+     * @return array
+     */
+    public function definition()
+    {
+        return [
+            'type' => Media::PHOTO,
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ];
+    }
+}

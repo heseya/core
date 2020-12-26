@@ -1,16 +1,33 @@
 <?php
 
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
+namespace Database\Factories;
 
 use App\Models\User;
-use Faker\Generator as Faker;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-$factory->define(User::class, function (Faker $faker) {
-    return [
-        'name' => $faker->name,
-        'email' => $faker->unique()->safeEmail,
-        'password' => '$argon2d$v=19$m=1024,t=1,p=1$emFxMUBXU1g$glYLVr9V7GcJL6MUVbUVYjLnwpb7Wzm7F18GgvEOQ3U', // secret
-        'remember_token' => Str::random(10),
-    ];
-});
+class UserFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = User::class;
+
+    /**
+     * Define the model's default state.
+     *
+     * @return array
+     */
+    public function definition()
+    {
+        return [
+            'name' => $this->faker->name,
+            'email' => $this->faker->unique()->safeEmail,
+            'password' => Hash::make('secret'),
+            'remember_token' => Str::random(10),
+        ];
+    }
+}

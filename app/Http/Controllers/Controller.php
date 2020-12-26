@@ -14,7 +14,7 @@ class Controller extends BaseController
     /**
      * @OA\Info(
      *   title="Heseya Store API",
-     *   version="1.0.1",
+     *   version="1.0.0",
      * )
      */
 

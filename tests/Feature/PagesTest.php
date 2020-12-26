@@ -18,11 +18,11 @@ class PagesTest extends TestCase
     {
         parent::setUp();
 
-        $this->page = factory(Page::class)->create([
+        $this->page = Page::factory()->create([
             'public' => true,
         ]);
 
-        $this->page_hidden = factory(Page::class)->create([
+        $this->page_hidden = Page::factory()->create([
             'public' => false,
         ]);
 

@@ -1,5 +1,7 @@
 <?php
 
+namespace Database\Seeders;
+
 use App\Models\PackageTemplate;
 use Illuminate\Database\Seeder;
 
@@ -12,6 +14,6 @@ class PackageTemplateSeeder extends Seeder
      */
     public function run()
     {
-        factory(PackageTemplate::class, rand(3, 6))->create();
+        PackageTemplate::factory()->count(rand(3, 6))->create();
     }
 }

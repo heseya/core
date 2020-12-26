@@ -19,7 +19,7 @@ class StatusesTest extends TestCase
     {
         parent::setUp();
 
-        $this->status_model = factory(Status::class)->create();
+        $this->status_model = Status::factory()->create();
 
         /**
          * Expected response
@@ -46,9 +46,7 @@ class StatusesTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(4, 'data') // domyślne statusy z migracji + ten utworzony teraz
-            ->assertJson(['data' => [
-                3 => $this->expected,
-            ]]);
+            ->assertJsonFragment([$this->expected]);
     }
 
     /**

@@ -1,22 +1,37 @@
 <?php
 
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
+namespace Database\Factories;
 
 use App\Models\PaymentMethod;
-use Faker\Generator as Faker;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
-$factory->define(PaymentMethod::class, function (Faker $faker) {
+class PaymentMethodFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = PaymentMethod::class;
 
-    $name = $faker->randomElement([
-        'Przelewy24',
-        'Bluemedia',
-        'PayNow',
-    ]);
+    /**
+     * Define the model's default state.
+     *
+     * @return array
+     */
+    public function definition()
+    {
+        $name = $this->faker->randomElement([
+            'Przelewy24',
+            'Bluemedia',
+            'PayNow',
+        ]);
 
-    return [
-        'name' => $name,
-        'alias' => Str::slug($name),
-        'public' => rand(0, 1),
-    ];
-});
+        return [
+            'name' => $name,
+            'alias' => Str::slug($name),
+            'public' => $this->faker->boolean,
+        ];
+    }
+}

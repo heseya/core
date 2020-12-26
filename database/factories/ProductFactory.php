@@ -1,22 +1,34 @@
 <?php
 
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
+namespace Database\Factories;
 
 use App\Models\Product;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
-use Faker\Generator as Faker;
-use Bezhanov\Faker\ProviderCollectionHelper;
 
-$factory->define(Product::class, function (Faker $faker) {
+class ProductFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = Product::class;
 
-    ProviderCollectionHelper::addAllProvidersTo($faker);
+    /**
+     * Define the model's default state.
+     *
+     * @return array
+     */
+    public function definition()
+    {
+        $name = $this->faker->sentence(rand(1, 3));
 
-    $name = $faker->unique()->productName;
-
-    return [
-        'name' => $name,
-        'slug' => Str::slug($name),
-        'price' => round(rand(500, 6000), -2),
-        'description_md' => $faker->sentence(10),
-    ];
-});
+        return [
+            'name' => $name,
+            'slug' => Str::slug($name) . '-' . rand(1, 99999),
+            'price' => round(rand(500, 6000), -2),
+            'description_md' => $this->faker->sentence(10),
+        ];
+    }
+}

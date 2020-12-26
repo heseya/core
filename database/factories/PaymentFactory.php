@@ -1,17 +1,33 @@
 <?php
 
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
+namespace Database\Factories;
 
 use App\Models\Payment;
-use Faker\Generator as Faker;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-$factory->define(Payment::class, function (Faker $faker) {
-    return [
-        'external_id' => rand(0, 9999999),
-        'method' => $faker->randomElement(['przelewy24', 'bluemedia', 'paynow']),
-        'payed' => rand(0, 1),
-        'amount' => rand(10, 1000),
-        'redirect_url' => 'https://heseya.com/pay',
-        'continue_url' => 'https://store.heseya.com/done',
-    ];
-});
+class PaymentFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = Payment::class;
+
+    /**
+     * Define the model's default state.
+     *
+     * @return array
+     */
+    public function definition()
+    {
+        return [
+            'external_id' => $this->faker->uuid,
+            'method' => $this->faker->randomElement(['przelewy24', 'bluemedia', 'paynow']),
+            'payed' => $this->faker->boolean,
+            'amount' => rand(10, 1000),
+            'redirect_url' => 'https://heseya.com/pay',
+            'continue_url' => 'https://store.heseya.com/done',
+        ];
+    }
+}

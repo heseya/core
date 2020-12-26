@@ -16,7 +16,7 @@ class PackageTemplatesTest extends TestCase
     {
         parent::setUp();
 
-        $this->package = factory(PackageTemplate::class)->create();
+        $this->package = PackageTemplate::factory()->create();
 
         /**
          * Expected response

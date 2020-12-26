@@ -2,18 +2,18 @@
 
 namespace Database\Factories;
 
-use App\Models\Status;
+use App\Models\OrderItem;
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
-class StatusFactory extends Factory
+class OrderItemFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Status::class;
+    protected $model = OrderItem::class;
 
     /**
      * Define the model's default state.
@@ -23,9 +23,9 @@ class StatusFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->unique()->word,
-            'color' => ltrim($this->faker->hexcolor, '#'),
-            'description' => Str::limit($this->faker->paragraph, 220),
+            'quantity' => rand(1, 4),
+            'price' => rand(100, 200),
+            'product_id' => Product::select('id')->inRandomOrder()->first()->getKey(),
         ];
     }
 }

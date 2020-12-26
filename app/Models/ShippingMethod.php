@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 /**
  * @OA\Schema()
  */
 class ShippingMethod extends Model
 {
+    use HasFactory;
+
     /**
      * @OA\Property(
      *   property="id",

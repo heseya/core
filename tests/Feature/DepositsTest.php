@@ -17,9 +17,9 @@ class DepositsTest extends TestCase
     {
         parent::setUp();
 
-        $this->item = factory(Item::class)->create();
+        $this->item = Item::factory()->create();
 
-        $deposit = factory(Deposit::class)->create([
+        $deposit = Deposit::factory()->create([
             'item_id' => $this->item->getKey(),
         ]);
 

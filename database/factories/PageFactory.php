@@ -1,19 +1,34 @@
 <?php
 
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
+namespace Database\Factories;
 
 use App\Models\Page;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
-use Faker\Generator as Faker;
 
-$factory->define(Page::class, function (Faker $faker) {
+class PageFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = Page::class;
 
-    $name = $faker->unique()->country;
+    /**
+     * Define the model's default state.
+     *
+     * @return array
+     */
+    public function definition()
+    {
+        $name = $this->faker->sentence(rand(1, 3));
 
-    return [
-        'name' => $name,
-        'slug' => Str::slug($name),
-        'public' => rand(0, 1),
-        'content_md' => $faker->sentence(20),
-    ];
-});
+        return [
+            'name' => $name,
+            'slug' => Str::slug($name),
+            'public' => $this->faker->boolean,
+            'content_md' => $this->faker->sentence(rand(20, 40)),
+        ];
+    }
+}

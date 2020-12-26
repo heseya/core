@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
 /**
@@ -9,6 +10,8 @@ use Propaganistas\LaravelPhone\PhoneNumber;
  */
 class Address extends Model
 {
+    use HasFactory;
+
     /**
      * @OA\Property(
      *   property="id",

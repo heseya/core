@@ -19,11 +19,11 @@ class CategoriesTest extends TestCase
     {
         parent::setUp();
 
-        $this->category = factory(Category::class)->create([
+        $this->category = Category::factory()->create([
             'public' => true,
         ]);
 
-        $this->category_hidden = factory(Category::class)->create([
+        $this->category_hidden = Category::factory()->create([
             'public' => false,
         ]);
 
@@ -120,10 +120,10 @@ class CategoriesTest extends TestCase
     {
         Passport::actingAs($this->user);
 
-        $this->category = factory(Category::class)->create();
-        $brand = factory(Brand::class)->create();
+        $this->category = Category::factory()->create();
+        $brand = Brand::factory()->create();
 
-        factory(Product::class)->create([
+        Product::factory()->create([
             'category_id' => $this->category->getKey(),
             'brand_id' => $brand->getKey(),
         ]);

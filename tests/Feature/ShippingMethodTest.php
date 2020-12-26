@@ -18,11 +18,11 @@ class ShippingMethodTest extends TestCase
     {
         parent::setUp();
 
-        $this->shipping_method = factory(ShippingMethod::class)->create([
+        $this->shipping_method = ShippingMethod::factory()->create([
             'public' => true,
         ]);
 
-        $this->shipping_method_hidden = factory(ShippingMethod::class)->create([
+        $this->shipping_method_hidden = ShippingMethod::factory()->create([
             'public' => false,
         ]);
 
@@ -119,9 +119,9 @@ class ShippingMethodTest extends TestCase
     {
         Passport::actingAs($this->user);
 
-        $this->shipping_method = factory(ShippingMethod::class)->create();
+        $this->shipping_method = ShippingMethod::factory()->create();
 
-        factory(Order::class)->create([
+        Order::factory()->create([
             'shipping_method_id' => $this->shipping_method->getKey(),
         ]);
 
