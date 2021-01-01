@@ -3,11 +3,21 @@
 namespace Tests\Feature;
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class MediaTest extends TestCase
 {
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        Http::fake([
+            '*' => Http::response([0 => ['path' => 'image.jpeg']]),
+        ]);
+    }
+
     public function testUploadUnauthorized()
     {
         $response = $this->postJson('/media');
