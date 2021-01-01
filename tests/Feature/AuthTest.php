@@ -6,17 +6,7 @@ use Tests\TestCase;
 
 class AuthTest extends TestCase
 {
-    public function setUp(): void
-    {
-        parent::setUp();
-    }
-
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
-    public function testLogin()
+    public function testLogin(): void
     {
         $response = $this->postJson('/login', [
             'email' => $this->user->email,
@@ -24,7 +14,7 @@ class AuthTest extends TestCase
         ]);
 
         $response
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJsonStructure(['data' => [
                 'token',
                 'expires_at',

@@ -34,10 +34,7 @@ class ItemTest extends TestCase
         ];
     }
 
-    /**
-     * @return void
-     */
-    public function testIndex()
+    public function testIndex(): void
     {
         $response = $this->getJson('/items');
         $response->assertUnauthorized();
@@ -53,10 +50,7 @@ class ItemTest extends TestCase
             ]]);
     }
 
-    /**
-     * @return void
-     */
-    public function testView()
+    public function testView(): void
     {
         $response = $this->getJson('/items/id:' . $this->item->getKey());
         $response->assertUnauthorized();
@@ -69,10 +63,7 @@ class ItemTest extends TestCase
             ->assertJson(['data' => $this->expected]);
     }
 
-    /**
-     * @return void
-     */
-    public function testCreate()
+    public function testCreate(): void
     {
         $response = $this->postJson('/items');
         $response->assertUnauthorized();
@@ -115,10 +106,7 @@ class ItemTest extends TestCase
         $this->assertDatabaseHas('items', $item);
     }
 
-    /**
-     * @return void
-     */
-    public function testUpdate()
+    public function testUpdate(): void
     {
         $response = $this->patchJson('/items/id:' . $this->item->getKey());
         $response->assertUnauthorized();
@@ -141,10 +129,7 @@ class ItemTest extends TestCase
         $this->assertDatabaseHas('items', $item + ['id' => $this->item->getKey()]);
     }
 
-    /**
-     * @return void
-     */
-    public function testDelete()
+    public function testDelete(): void
     {
         $response = $this->deleteJson('/items/id:' . $this->item->getKey());
         $response->assertUnauthorized();

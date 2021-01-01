@@ -37,10 +37,7 @@ class ShippingMethodTest extends TestCase
         ];
     }
 
-    /**
-     * @return void
-     */
-    public function testIndex()
+    public function testIndex(): void
     {
         $response = $this->getJson('/shipping-methods');
         $response
@@ -51,10 +48,7 @@ class ShippingMethodTest extends TestCase
             ]]);
     }
 
-    /**
-     * @return void
-     */
-    public function testCreate()
+    public function testCreate(): void
     {
         $response = $this->postJson('/shipping-methods');
         $response->assertUnauthorized();
@@ -71,12 +65,11 @@ class ShippingMethodTest extends TestCase
         $response
             ->assertCreated()
             ->assertJson(['data' => $shipping_method]);
+
+        $this->assertDatabaseHas('shipping_methods', $shipping_method);
     }
 
-    /**
-     * @return void
-     */
-    public function testUpdate()
+    public function testUpdate(): void
     {
         $response = $this->patchJson('/shipping-methods/id:' . $this->shipping_method->getKey());
         $response->assertUnauthorized();
@@ -96,26 +89,27 @@ class ShippingMethodTest extends TestCase
         $response
             ->assertOk()
             ->assertJson(['data' => $shipping_method]);
+
+        $this->assertDatabaseHas(
+            'shipping_methods',
+            $shipping_method + ['id' => $this->shipping_method->getKey()],
+        );
     }
 
-    /**
-     * @return void
-     */
-    public function testDelete()
+    public function testDelete(): void
     {
         $response = $this->deleteJson('/shipping-methods/id:' . $this->shipping_method->getKey());
         $response->assertUnauthorized();
+        $this->assertDatabaseHas('shipping_methods', $this->shipping_method->toArray());
 
         Passport::actingAs($this->user);
 
         $response = $this->deleteJson('/shipping-methods/id:' . $this->shipping_method->getKey());
         $response->assertNoContent();
+        $this->assertDeleted($this->shipping_method);
     }
 
-    /**
-     * @return void
-     */
-    public function testDeleteWithRelations()
+    public function testDeleteWithRelations(): void
     {
         Passport::actingAs($this->user);
 
@@ -127,5 +121,6 @@ class ShippingMethodTest extends TestCase
 
         $response = $this->deleteJson('/shipping-methods/id:' . $this->shipping_method->getKey());
         $response->assertStatus(409);
+        $this->assertDatabaseHas('shipping_methods', $this->shipping_method->toArray());
     }
 }

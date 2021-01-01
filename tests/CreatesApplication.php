@@ -23,8 +23,6 @@ trait CreatesApplication
 
     /**
      * Creates the application.
-     *
-     * @return Application
      */
     public function createApplication(): Application
     {
@@ -47,8 +45,6 @@ trait CreatesApplication
 
     /**
      * Clears Laravel Cache.
-     *
-     * @return void
      */
     protected function runCommands(): void
     {

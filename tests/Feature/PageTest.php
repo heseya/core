@@ -42,10 +42,7 @@ class PageTest extends TestCase
         ]);
     }
 
-    /**
-     * @return void
-     */
-    public function testIndex()
+    public function testIndex(): void
     {
         $response = $this->getJson('/pages');
         $response
@@ -63,10 +60,7 @@ class PageTest extends TestCase
             ->assertJsonCount(2, 'data');
     }
 
-    /**
-     * @return void
-     */
-    public function testView()
+    public function testView(): void
     {
         $response = $this->getJson('/pages/' . $this->page->slug);
         $response
@@ -84,10 +78,7 @@ class PageTest extends TestCase
             ->assertJson(['data' => $this->expected_view]);
     }
 
-    /**
-     * @return void
-     */
-    public function testViewHidden()
+    public function testViewHidden(): void
     {
         $response = $this->getJson('/pages/' . $this->page_hidden->slug);
         $response->assertUnauthorized();
@@ -104,10 +95,7 @@ class PageTest extends TestCase
         $response->assertOk();
     }
 
-    /**
-     * @return void
-     */
-    public function testCreate()
+    public function testCreate(): void
     {
         $response = $this->postJson('/pages');
         $response->assertUnauthorized();
@@ -129,10 +117,7 @@ class PageTest extends TestCase
         $this->assertDatabaseHas('pages', $page);
     }
 
-    /**
-     * @return void
-     */
-    public function testUpdate()
+    public function testUpdate(): void
     {
         $response = $this->patchJson('/pages/id:' . $this->page->getKey());
         $response->assertUnauthorized();
@@ -158,10 +143,7 @@ class PageTest extends TestCase
         $this->assertDatabaseHas('pages', $page + ['id' => $this->page->getKey()]);
     }
 
-    /**
-     * @return void
-     */
-    public function testDelete()
+    public function testDelete(): void
     {
         $page = $this->page->toArray();
         unset($page['content_html']);

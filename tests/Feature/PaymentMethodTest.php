@@ -37,10 +37,7 @@ class PaymentMethodTest extends TestCase
         ]);
     }
 
-    /**
-     * @return void
-     */
-    public function testIndex()
+    public function testIndex(): void
     {
         $response = $this->getJson('/payment-methods');
         $response
@@ -50,10 +47,7 @@ class PaymentMethodTest extends TestCase
             ->assertJsonFragment(['id' => $this->payment_method_related->getKey()]);
     }
 
-    /**
-     * @return void
-     */
-    public function testCreate()
+    public function testCreate(): void
     {
         $response = $this->postJson('/payment-methods');
         $response->assertUnauthorized();
@@ -72,10 +66,7 @@ class PaymentMethodTest extends TestCase
             ->assertJson(['data' => $payment_method]);
     }
 
-    /**
-     * @return void
-     */
-    public function testUpdate()
+    public function testUpdate(): void
     {
         $response = $this->patchJson('/payment-methods/id:' . $this->payment_method->getKey());
         $response->assertUnauthorized();
@@ -97,10 +88,7 @@ class PaymentMethodTest extends TestCase
             ->assertJson(['data' => $payment_method]);
     }
 
-    /**
-     * @return void
-     */
-    public function testDelete()
+    public function testDelete(): void
     {
         $response = $this->deleteJson('/payment-methods/id:' . $this->payment_method->getKey());
         $response->assertUnauthorized();

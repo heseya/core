@@ -38,10 +38,7 @@ class BrandTest extends TestCase
         ];
     }
 
-    /**
-     * @return void
-     */
-    public function testIndex()
+    public function testIndex(): void
     {
         $response = $this->getJson('/brands');
         $response
@@ -52,10 +49,7 @@ class BrandTest extends TestCase
             ]]);
     }
 
-    /**
-     * @return void
-     */
-    public function testCreate()
+    public function testCreate(): void
     {
         $response = $this->postJson('/brands');
         $response->assertUnauthorized();
@@ -76,10 +70,7 @@ class BrandTest extends TestCase
         $this->assertDatabaseHas('brands', $brand);
     }
 
-    /**
-     * @return void
-     */
-    public function testUpdate()
+    public function testUpdate(): void
     {
         $response = $this->patchJson('/brands/id:' . $this->brand->getKey());
         $response->assertUnauthorized();
@@ -103,10 +94,7 @@ class BrandTest extends TestCase
         $this->assertDatabaseHas('brands', $brand + ['id' => $this->brand->getKey()]);
     }
 
-    /**
-     * @return void
-     */
-    public function testDelete()
+    public function testDelete(): void
     {
         $response = $this->deleteJson('/brands/id:' . $this->brand->getKey());
         $response->assertUnauthorized();
@@ -119,10 +107,7 @@ class BrandTest extends TestCase
         $this->assertDeleted($this->brand);
     }
 
-    /**
-     * @return void
-     */
-    public function testDeleteWithRelations()
+    public function testDeleteWithRelations(): void
     {
         Passport::actingAs($this->user);
 

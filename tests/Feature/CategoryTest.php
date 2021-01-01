@@ -38,10 +38,7 @@ class CategoryTest extends TestCase
         ];
     }
 
-    /**
-     * @return void
-     */
-    public function testIndex()
+    public function testIndex(): void
     {
         $response = $this->getJson('/categories');
         $response
@@ -52,10 +49,7 @@ class CategoryTest extends TestCase
             ]]);
     }
 
-    /**
-     * @return void
-     */
-    public function testCreate()
+    public function testCreate(): void
     {
         $response = $this->postJson('/categories');
         $response->assertUnauthorized();
@@ -76,10 +70,7 @@ class CategoryTest extends TestCase
         $this->assertDatabaseHas('categories', $category);
     }
 
-    /**
-     * @return void
-     */
-    public function testUpdate()
+    public function testUpdate(): void
     {
         $response = $this->patchJson('/categories/id:' . $this->category->getKey());
         $response->assertUnauthorized();
@@ -103,10 +94,7 @@ class CategoryTest extends TestCase
         $this->assertDatabaseHas('categories', $category + ['id' => $this->category->getKey()]);
     }
 
-    /**
-     * @return void
-     */
-    public function testDelete()
+    public function testDelete(): void
     {
         $response = $this->deleteJson('/categories/id:' . $this->category->getKey());
         $response->assertUnauthorized();
@@ -119,10 +107,7 @@ class CategoryTest extends TestCase
         $this->assertDeleted($this->category);
     }
 
-    /**
-     * @return void
-     */
-    public function testDeleteWithRelations()
+    public function testDeleteWithRelations(): void
     {
         Passport::actingAs($this->user);
 

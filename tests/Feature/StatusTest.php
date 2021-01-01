@@ -9,7 +9,7 @@ use Tests\TestCase;
 class StatusTest extends TestCase
 {
     /**
-     * Zmienna status jest zarezerwowana przez TestCase.
+     * $status is used in TestCase.
      */
     private Status $status_model;
 
@@ -32,10 +32,7 @@ class StatusTest extends TestCase
         ];
     }
 
-    /**
-     * @return void
-     */
-    public function testIndex()
+    public function testIndex(): void
     {
         $response = $this->getJson('/statuses');
         $response->assertUnauthorized();
@@ -49,10 +46,7 @@ class StatusTest extends TestCase
             ->assertJsonFragment([$this->expected]);
     }
 
-    /**
-     * @return void
-     */
-    public function testCreate()
+    public function testCreate(): void
     {
         $response = $this->postJson('/statuses');
         $response->assertUnauthorized();
@@ -73,10 +67,7 @@ class StatusTest extends TestCase
         $this->assertDatabaseHas('statuses', $status);
     }
 
-    /**
-     * @return void
-     */
-    public function testUpdate()
+    public function testUpdate(): void
     {
         $response = $this->patchJson('/statuses/id:' . $this->status_model->getKey());
         $response->assertUnauthorized();
@@ -100,10 +91,7 @@ class StatusTest extends TestCase
         $this->assertDatabaseHas('statuses', $status + ['id' => $this->status_model->getKey()]);
     }
 
-    /**
-     * @return void
-     */
-    public function testDelete()
+    public function testDelete(): void
     {
         $response = $this->deleteJson('/statuses/id:' . $this->status_model->getKey());
         $response->assertUnauthorized();

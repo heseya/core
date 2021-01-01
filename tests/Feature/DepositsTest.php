@@ -10,7 +10,6 @@ use Tests\TestCase;
 class DepositsTest extends TestCase
 {
     private Item $item;
-
     private array $expected;
 
     public function setUp(): void
@@ -30,10 +29,7 @@ class DepositsTest extends TestCase
         ];
     }
 
-    /**
-     * @return void
-     */
-    public function testIndex()
+    public function testIndex(): void
     {
         $response = $this->getJson('/deposits');
         $response->assertUnauthorized();
@@ -49,10 +45,7 @@ class DepositsTest extends TestCase
             ]]);
     }
 
-    /**
-     * @return void
-     */
-    public function testView()
+    public function testView(): void
     {
         $response = $this->getJson('/items/id:' . $this->item->getKey() . '/deposits');
         $response->assertUnauthorized();
@@ -68,10 +61,7 @@ class DepositsTest extends TestCase
             ]]);
     }
 
-    /**
-     * @return void
-     */
-    public function testCreate()
+    public function testCreate(): void
     {
         $response = $this->postJson('/items/id:' . $this->item->getKey() . '/deposits');
         $response->assertUnauthorized();

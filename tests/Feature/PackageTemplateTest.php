@@ -31,10 +31,7 @@ class PackageTemplateTest extends TestCase
         ];
     }
 
-    /**
-     * @return void
-     */
-    public function testIndex()
+    public function testIndex(): void
     {
         $response = $this->postJson('/package-templates');
         $response->assertUnauthorized();
@@ -49,10 +46,7 @@ class PackageTemplateTest extends TestCase
             ]]);
     }
 
-    /**
-     * @return void
-     */
-    public function testCreate()
+    public function testCreate(): void
     {
         $response = $this->postJson('/package-templates');
         $response->assertUnauthorized();
@@ -75,10 +69,7 @@ class PackageTemplateTest extends TestCase
         $this->assertDatabaseHas('package_templates', $package);
     }
 
-    /**
-     * @return void
-     */
-    public function testUpdate()
+    public function testUpdate(): void
     {
         $response = $this->patchJson('/package-templates/id:' . $this->package->getKey());
         $response->assertUnauthorized();
@@ -105,10 +96,7 @@ class PackageTemplateTest extends TestCase
         $this->assertDatabaseHas('package_templates', $package + ['id' => $this->package->getKey()]);
     }
 
-    /**
-     * @return void
-     */
-    public function testDelete()
+    public function testDelete(): void
     {
         $response = $this->deleteJson('/package-templates/id:' . $this->package->getKey());
         $response->assertUnauthorized();

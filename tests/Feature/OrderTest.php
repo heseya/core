@@ -49,10 +49,7 @@ class OrderTest extends TestCase
         ];
     }
 
-    /**
-     * @return void
-     */
-    public function testIndex()
+    public function testIndex(): void
     {
         $response = $this->getJson('/orders');
         $response->assertUnauthorized();
@@ -70,10 +67,7 @@ class OrderTest extends TestCase
             ]]);
     }
 
-    /**
-     * @return void
-     */
-    public function testViewPublic()
+    public function testViewPublic(): void
     {
         $response = $this->getJson('/orders/' . $this->order->code);
         $response

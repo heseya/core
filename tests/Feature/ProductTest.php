@@ -183,10 +183,7 @@ class ProductTest extends TestCase
         ];
     }
 
-    /**
-     * @return void
-     */
-    public function testIndex()
+    public function testIndex(): void
     {
         $response = $this->getJson('/products');
         $response
@@ -204,10 +201,7 @@ class ProductTest extends TestCase
             ->assertJsonCount(count($this->hidden_products) + 1, 'data'); // Should show all products.
     }
 
-    /**
-     * @return void
-     */
-    public function testView()
+    public function testView(): void
     {
         $response = $this->getJson('/products/' . $this->product->slug);
         $response
@@ -218,10 +212,7 @@ class ProductTest extends TestCase
         $response->assertUnauthorized();
     }
 
-    /**
-     * @return void
-     */
-    public function testViewAdmin()
+    public function testViewAdmin(): void
     {
         $response = $this->getJson('/products/id:' . $this->product->getKey());
         $response->assertUnauthorized();
@@ -237,10 +228,7 @@ class ProductTest extends TestCase
         $response->assertOk();
     }
 
-    /**
-     * @return void
-     */
-    public function testViewHidden()
+    public function testViewHidden(): void
     {
         foreach ($this->hidden_products as $product) {
             $response = $this->getJson('/products/' . $product->slug);
@@ -253,10 +241,7 @@ class ProductTest extends TestCase
         }
     }
 
-    /**
-     * @return void
-     */
-    public function testCreate()
+    public function testCreate(): void
     {
         $response = $this->postJson('/products');
         $response->assertUnauthorized();
@@ -315,10 +300,7 @@ class ProductTest extends TestCase
             ]]);
     }
 
-    /**
-     * @return void
-     */
-    public function testUpdate()
+    public function testUpdate(): void
     {
         $response = $this->patchJson('/products/id:' . $this->product->getKey());
         $response->assertUnauthorized();
@@ -354,10 +336,7 @@ class ProductTest extends TestCase
             ->assertJson(['data' => $this->expected_updated]);
     }
 
-     /**
-     * @return void
-     */
-    public function testDelete()
+    public function testDelete(): void
     {
         $response = $this->deleteJson('/products/id:' . $this->product->getKey());
         $response->assertUnauthorized();
