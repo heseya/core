@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @OA\Schema()
@@ -33,7 +34,7 @@ class Deposit extends Model
         'quantity'
     ];
 
-    public function items()
+    public function items(): BelongsTo
     {
         return $this->belongsTo(Item::class);
     }

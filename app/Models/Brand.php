@@ -5,6 +5,7 @@ namespace App\Models;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @OA\Schema()
@@ -43,7 +44,7 @@ class Brand extends Model
         'public',
     ];
 
-    protected $searchable = [
+    protected array $searchable = [
         'name' => Like::class,
         'slug' => Like::class,
         'public',
@@ -58,7 +59,7 @@ class Brand extends Model
         'public' => 'boolean',
     ];
 
-    public function products()
+    public function products(): HasMany
     {
         return $this->hasMany(Product::class);
     }

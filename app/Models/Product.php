@@ -7,6 +7,9 @@ use App\SearchTypes\WhereHasSlug;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -90,7 +93,7 @@ class Product extends Model
         'search' => ProductSearch::class,
     ];
 
-    public function media()
+    public function media(): BelongsToMany
     {
         return $this->belongsToMany(Media::class, 'product_media');
     }
@@ -101,7 +104,7 @@ class Product extends Model
      *   ref="#/components/schemas/Brand",
      * )
      */
-    public function brand()
+    public function brand(): BelongsTo
     {
         return $this->belongsTo(Brand::class);
     }
@@ -112,7 +115,7 @@ class Product extends Model
      *   ref="#/components/schemas/Category",
      * )
      */
-    public function category()
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
@@ -124,12 +127,12 @@ class Product extends Model
      *   @OA\Items(ref="#/components/schemas/ProductSchema"),
      * )
      */
-    public function schemas()
+    public function schemas(): HasMany
     {
         return $this->hasMany(ProductSchema::class);
     }
 
-    public function orders()
+    public function orders(): BelongsToMany
     {
         return $this->belongsToMany(Order::class)->using(OrderItem::class);
     }

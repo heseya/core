@@ -3,6 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @OA\Schema()
@@ -102,7 +106,7 @@ class Order extends Model
      *   ref="#/components/schemas/Status",
      * )
      */
-    public function status()
+    public function status(): BelongsTo
     {
         return $this->belongsTo(Status::class);
     }
@@ -113,7 +117,7 @@ class Order extends Model
      *   ref="#/components/schemas/ShippingMethod",
      * )
      */
-    public function shippingMethod()
+    public function shippingMethod(): BelongsTo
     {
         return $this->belongsTo(ShippingMethod::class);
     }
@@ -124,7 +128,7 @@ class Order extends Model
      *   ref="#/components/schemas/Address",
      * )
      */
-    public function deliveryAddress()
+    public function deliveryAddress(): HasOne
     {
         return $this->hasOne(Address::class, 'id', 'delivery_address_id');
     }
@@ -135,7 +139,7 @@ class Order extends Model
      *   ref="#/components/schemas/Address",
      * )
      */
-    public function invoiceAddress()
+    public function invoiceAddress(): HasOne
     {
         return $this->hasOne(Address::class, 'id', 'invoice_address_id');
     }
@@ -147,7 +151,7 @@ class Order extends Model
      *   @OA\Items(ref="#/components/schemas/OrderItem"),
      * )
      */
-    public function items()
+    public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
     }
@@ -159,7 +163,7 @@ class Order extends Model
      *   @OA\Items(ref="#/components/schemas/Payment"),
      * )
      */
-    public function payments()
+    public function payments(): HasMany
     {
         return $this
             ->hasMany(Payment::class)
@@ -167,23 +171,23 @@ class Order extends Model
             ->orderBy('updated_at', 'DESC');
     }
 
-    public function logs()
+    public function logs(): HasMany
     {
         return $this->hasMany(OrderLog::class)->orderBy('created_at', 'DESC');
     }
 
-    public function notes()
+    public function notes(): HasMany
     {
         return $this->hasMany(OrderNote::class)->orderBy('created_at', 'DESC');
     }
 
-    public function products()
+    public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class)->using(OrderItem::class);
     }
 
     /**
-     * @param $items
+     * @param array $items
      */
     public function saveItems($items): void
     {

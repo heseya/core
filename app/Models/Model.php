@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use DateTime;
 use DateTimeInterface;
 use Illuminate\Support\Str;
 
@@ -24,21 +23,16 @@ class Model extends \Illuminate\Database\Eloquent\Model
 
     /**
      * Prepare a date for array / JSON serialization.
-     *
-     * @param DateTimeInterface $date
-     * @return string
      */
-    protected function serializeDate(DateTimeInterface $date)
+    protected function serializeDate(DateTimeInterface $date): string
     {
         return $date->format('Y-m-d H:i:s');
     }
 
     /**
      * Bootstrap the model and its traits.
-     *
-     * @return void
      */
-    public static function boot()
+    public static function boot(): void
     {
         static::creating(function ($model) {
             if (!$model->getKey()) {

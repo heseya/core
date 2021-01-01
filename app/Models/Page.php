@@ -70,8 +70,6 @@ class Page extends Model
      *   type="string",
      *   example="<h1>Awesome stuff!</h1>",
      * )
-     *
-     * @var string
      */
     public function getContentHtmlAttribute(): string
     {

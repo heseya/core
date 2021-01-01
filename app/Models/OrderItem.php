@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @OA\Schema()
@@ -31,12 +33,12 @@ class OrderItem extends Model
         'product_id',
     ];
 
-    public function order()
+    public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
-    public function product()
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class)->withTrashed();
     }
@@ -48,7 +50,7 @@ class OrderItem extends Model
      *   @OA\Items(ref="#/components/schemas/ProductSchemaItem"),
      * )
      */
-    public function schemaItems()
+    public function schemaItems(): BelongsToMany
     {
         return $this->belongsToMany(ProductSchemaItem::class)->withTrashed();
     }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
 /**
@@ -71,20 +72,18 @@ class Address extends Model
         'phone',
     ];
 
-    public function orders()
+    public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
     }
 
-    public function getPhoneSimpleAttribute()
+    public function getPhoneSimpleAttribute(): string
     {
         $phone = PhoneNumber::make(
             $this->phone,
             $this->country,
         );
 
-        return $phone->formatForMobileDialingInCountry(
-            $this->country,
-        );
+        return $phone->formatForMobileDialingInCountry($this->country);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @OA\Schema()
@@ -54,7 +55,7 @@ class PaymentMethod extends Model
         'public' => 'boolean',
     ];
 
-    public function shippingMethods()
+    public function shippingMethods(): BelongsToMany
     {
         return $this->belongsToMany(ShippingMethod::class, 'shipping_method_payment_method');
     }

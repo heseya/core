@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -50,7 +52,7 @@ class ProductSchema extends Model
         'required' => 'boolean',
     ];
 
-    public function product()
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
@@ -62,7 +64,7 @@ class ProductSchema extends Model
      *   @OA\Items(ref="#/components/schemas/ProductSchemaItem"),
      * )
      */
-    public function schemaItems()
+    public function schemaItems(): HasMany
     {
         return $this->hasMany(ProductSchemaItem::class)->with('item');
     }

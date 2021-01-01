@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @OA\Schema()
@@ -56,7 +58,7 @@ class ShippingMethod extends Model
         'public' => 'boolean',
     ];
 
-    public function orders()
+    public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
     }
@@ -68,12 +70,12 @@ class ShippingMethod extends Model
      *   @OA\Items(ref="#/components/schemas/PaymentMethod"),
      * )
      */
-    public function paymentMethods()
+    public function paymentMethods(): BelongsToMany
     {
         return $this->belongsToMany(PaymentMethod::class, 'shipping_method_payment_method');
     }
 
-    public function paymentMethodsPublic()
+    public function paymentMethodsPublic(): BelongsToMany
     {
         return $this->paymentMethods()->where('public', true);
     }
