@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+
 Route::post('login', 'AuthController@login');
 Route::patch('user/password', 'AuthController@changePassword')->middleware('auth:api');
 

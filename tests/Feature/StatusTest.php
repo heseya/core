@@ -6,7 +6,7 @@ use App\Models\Status;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 
-class StatusesTest extends TestCase
+class StatusTest extends TestCase
 {
     /**
      * Zmienna status jest zarezerwowana przez TestCase.
@@ -69,6 +69,8 @@ class StatusesTest extends TestCase
         $response
             ->assertCreated()
             ->assertJson(['data' => $status]);
+
+        $this->assertDatabaseHas('statuses', $status);
     }
 
     /**
@@ -94,6 +96,8 @@ class StatusesTest extends TestCase
         $response
             ->assertOk()
             ->assertJson(['data' => $status]);
+
+        $this->assertDatabaseHas('statuses', $status + ['id' => $this->status_model->getKey()]);
     }
 
     /**
@@ -103,10 +107,12 @@ class StatusesTest extends TestCase
     {
         $response = $this->deleteJson('/statuses/id:' . $this->status_model->getKey());
         $response->assertUnauthorized();
+        $this->assertDatabaseHas('statuses', ['id' => $this->status_model->getKey()]);
 
         Passport::actingAs($this->user);
 
         $response = $this->deleteJson('/statuses/id:' . $this->status_model->getKey());
         $response->assertNoContent();
+        $this->assertDeleted($this->status_model);
     }
 }

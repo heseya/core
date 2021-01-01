@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use DateTime;
+use DateTimeInterface;
 use Illuminate\Support\Str;
 
 class Model extends \Illuminate\Database\Eloquent\Model
@@ -20,6 +22,22 @@ class Model extends \Illuminate\Database\Eloquent\Model
      */
     public $incrementing = false;
 
+    /**
+     * Prepare a date for array / JSON serialization.
+     *
+     * @param DateTimeInterface $date
+     * @return string
+     */
+    protected function serializeDate(DateTimeInterface $date)
+    {
+        return $date->format('Y-m-d H:i:s');
+    }
+
+    /**
+     * Bootstrap the model and its traits.
+     *
+     * @return void
+     */
     public static function boot()
     {
         static::creating(function ($model) {

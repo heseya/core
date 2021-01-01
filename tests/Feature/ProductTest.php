@@ -9,7 +9,7 @@ use App\Models\Product;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 
-class ProductsTest extends TestCase
+class ProductTest extends TestCase
 {
     private Product $product;
     private Item $item;
@@ -366,6 +366,7 @@ class ProductsTest extends TestCase
 
         $response = $this->deleteJson('/products/id:' . $this->product->getKey());
         $response->assertNoContent();
+        $this->assertSoftDeleted($this->product);
 
         $response = $this->getJson('/products/id:' . $this->product->getKey());
         $response->assertNotFound();

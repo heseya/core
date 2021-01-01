@@ -6,7 +6,7 @@ use App\Models\PackageTemplate;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 
-class PackageTemplatesTest extends TestCase
+class PackageTemplateTest extends TestCase
 {
     private PackageTemplate $package;
 
@@ -71,6 +71,8 @@ class PackageTemplatesTest extends TestCase
         $response
             ->assertCreated()
             ->assertJson(['data' => $package]);
+
+        $this->assertDatabaseHas('package_templates', $package);
     }
 
     /**
@@ -99,6 +101,8 @@ class PackageTemplatesTest extends TestCase
         $response
             ->assertOk()
             ->assertJson(['data' => $package]);
+
+        $this->assertDatabaseHas('package_templates', $package + ['id' => $this->package->getKey()]);
     }
 
     /**
@@ -108,10 +112,12 @@ class PackageTemplatesTest extends TestCase
     {
         $response = $this->deleteJson('/package-templates/id:' . $this->package->getKey());
         $response->assertUnauthorized();
+        $this->assertDatabaseHas('package_templates', $this->package->toArray());
 
         Passport::actingAs($this->user);
 
         $response = $this->deleteJson('/package-templates/id:' . $this->package->getKey());
         $response->assertNoContent();
+        $this->assertDeleted($this->package);
     }
 }

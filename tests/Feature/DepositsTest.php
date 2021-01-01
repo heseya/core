@@ -92,5 +92,7 @@ class DepositsTest extends TestCase
             ->assertJson(['data' => $deposit + [
                 'item_id' => $this->item->getKey(),
             ]]);
+
+        $this->assertDatabaseHas('deposits', ['item_id' => $this->item->getKey()] + $deposit);
     }
 }

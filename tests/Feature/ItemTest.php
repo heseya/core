@@ -7,7 +7,7 @@ use App\Models\Item;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 
-class ItemsTest extends TestCase
+class ItemTest extends TestCase
 {
     private Item $item;
 
@@ -89,6 +89,8 @@ class ItemsTest extends TestCase
             ->assertCreated()
             ->assertJson(['data' => $item]);
 
+        $this->assertDatabaseHas('items', $item);
+
         $item = [
             'name' => 'Test NULL sku',
             'sku' => NULL,
@@ -99,6 +101,8 @@ class ItemsTest extends TestCase
             ->assertCreated()
             ->assertJson(['data' => $item]);
 
+        $this->assertDatabaseHas('items', $item);
+
         $item = [
             'name' => 'Test no sku',
         ];
@@ -107,6 +111,8 @@ class ItemsTest extends TestCase
         $response
             ->assertCreated()
             ->assertJson(['data' => $item + ['sku' => NULL]]);
+
+        $this->assertDatabaseHas('items', $item);
     }
 
     /**
@@ -131,6 +137,8 @@ class ItemsTest extends TestCase
         $response
             ->assertOk()
             ->assertJson(['data' => $item]);
+
+        $this->assertDatabaseHas('items', $item + ['id' => $this->item->getKey()]);
     }
 
     /**
@@ -140,10 +148,12 @@ class ItemsTest extends TestCase
     {
         $response = $this->deleteJson('/items/id:' . $this->item->getKey());
         $response->assertUnauthorized();
+        $this->assertDatabaseHas('items', $this->item->toArray());
 
         Passport::actingAs($this->user);
 
         $response = $this->deleteJson('/items/id:' . $this->item->getKey());
         $response->assertNoContent();
+        $this->assertSoftDeleted($this->item);
     }
 }

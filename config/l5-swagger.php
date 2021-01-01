@@ -5,7 +5,7 @@ return [
     'documentations' => [
         'default' => [
             'api' => [
-                'title' => 'Heseya Store API',
+                'title' => 'Heseya Store API documentation',
             ],
 
             'routes' => [

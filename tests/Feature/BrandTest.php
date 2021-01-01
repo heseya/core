@@ -8,7 +8,7 @@ use App\Models\Product;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 
-class BrandsTest extends TestCase
+class BrandTest extends TestCase
 {
     private Brand $brand;
     private Brand $brand_hidden;
@@ -72,6 +72,8 @@ class BrandsTest extends TestCase
         $response
             ->assertCreated()
             ->assertJson(['data' => $brand]);
+
+        $this->assertDatabaseHas('brands', $brand);
     }
 
     /**
@@ -97,6 +99,8 @@ class BrandsTest extends TestCase
         $response
             ->assertOk()
             ->assertJson(['data' => $brand]);
+
+        $this->assertDatabaseHas('brands', $brand + ['id' => $this->brand->getKey()]);
     }
 
     /**
@@ -106,11 +110,13 @@ class BrandsTest extends TestCase
     {
         $response = $this->deleteJson('/brands/id:' . $this->brand->getKey());
         $response->assertUnauthorized();
+        $this->assertDatabaseHas('brands', $this->brand->toArray());
 
         Passport::actingAs($this->user);
 
         $response = $this->deleteJson('/brands/id:' . $this->brand->getKey());
         $response->assertNoContent();
+        $this->assertDeleted($this->brand);
     }
 
     /**
@@ -130,5 +136,6 @@ class BrandsTest extends TestCase
 
         $response = $this->deleteJson('/brands/id:' . $this->brand->getKey());
         $response->assertStatus(409);
+        $this->assertDatabaseHas('brands', $this->brand->toArray());
     }
 }

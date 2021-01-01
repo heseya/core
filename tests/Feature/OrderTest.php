@@ -8,7 +8,7 @@ use App\Models\Status;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 
-class OrdersTest extends TestCase
+class OrderTest extends TestCase
 {
     private Order $order;
 
@@ -19,11 +19,11 @@ class OrdersTest extends TestCase
     {
         parent::setUp();
 
-        $shippingMethod = ShippingMethod::factory()->create();
+        $shipping_method = ShippingMethod::factory()->create();
         $status = Status::factory()->create();
 
         $this->order = Order::factory()->create([
-            'shipping_method_id' => $shippingMethod->getKey(),
+            'shipping_method_id' => $shipping_method->getKey(),
             'status_id' => $status->getKey(),
         ]);
 

@@ -8,7 +8,7 @@ use App\Models\Product;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 
-class CategoriesTest extends TestCase
+class CategoryTest extends TestCase
 {
     private Category $category;
     private Category $category_hidden;
@@ -72,6 +72,8 @@ class CategoriesTest extends TestCase
         $response
             ->assertCreated()
             ->assertJson(['data' => $category]);
+
+        $this->assertDatabaseHas('categories', $category);
     }
 
     /**
@@ -97,6 +99,8 @@ class CategoriesTest extends TestCase
         $response
             ->assertOk()
             ->assertJson(['data' => $category]);
+
+        $this->assertDatabaseHas('categories', $category + ['id' => $this->category->getKey()]);
     }
 
     /**
@@ -106,11 +110,13 @@ class CategoriesTest extends TestCase
     {
         $response = $this->deleteJson('/categories/id:' . $this->category->getKey());
         $response->assertUnauthorized();
+        $this->assertDatabaseHas('categories', $this->category->toArray());
 
         Passport::actingAs($this->user);
 
         $response = $this->deleteJson('/categories/id:' . $this->category->getKey());
         $response->assertNoContent();
+        $this->assertDeleted($this->category);
     }
 
     /**
@@ -130,5 +136,6 @@ class CategoriesTest extends TestCase
 
         $response = $this->delete('/categories/id:' . $this->category->getKey());
         $response->assertStatus(409);
+        $this->assertDatabaseHas('categories', $this->category->toArray());
     }
 }

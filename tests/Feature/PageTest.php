@@ -6,7 +6,7 @@ use App\Models\Page;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 
-class PagesTest extends TestCase
+class PageTest extends TestCase
 {
     private Page $page;
     private Page $page_hidden;
@@ -119,13 +119,14 @@ class PagesTest extends TestCase
             'slug' => 'test-test',
             'public' => true,
             'content_md' => '# hello world',
-            'content_html' => '<h1>hello world</h1>',
         ];
 
         $response = $this->postJson('/pages', $page);
         $response
-            ->assertJson(['data' => $page])
+            ->assertJson(['data' => $page + ['content_html' => '<h1>hello world</h1>']])
             ->assertCreated();
+
+        $this->assertDatabaseHas('pages', $page);
     }
 
     /**
@@ -143,7 +144,6 @@ class PagesTest extends TestCase
             'slug' => 'test-2',
             'public' => false,
             'content_md' => '# hello world 2',
-            'content_html' => '<h1>hello world 2</h1>',
         ];
 
         $response = $this->patchJson(
@@ -153,7 +153,9 @@ class PagesTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJson(['data' => $page]);
+            ->assertJson(['data' => $page + ['content_html' => '<h1>hello world 2</h1>']]);
+
+        $this->assertDatabaseHas('pages', $page + ['id' => $this->page->getKey()]);
     }
 
     /**
@@ -161,12 +163,17 @@ class PagesTest extends TestCase
      */
     public function testDelete()
     {
+        $page = $this->page->toArray();
+        unset($page['content_html']);
+
         $response = $this->patchJson('/pages/id:' . $this->page->getKey());
         $response->assertUnauthorized();
+        $this->assertDatabaseHas('pages', $page);
 
         Passport::actingAs($this->user);
 
         $response = $this->deleteJson('/pages/id:' . $this->page->getKey());
         $response->assertNoContent();
+        $this->assertDeleted($this->page);
     }
 }
