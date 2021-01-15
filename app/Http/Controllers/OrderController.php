@@ -12,8 +12,6 @@ use App\Mail\NewOrder;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\Product;
-use App\Models\ProductSchema;
-use App\Models\ProductSchemaItem;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use Illuminate\Http\Request;

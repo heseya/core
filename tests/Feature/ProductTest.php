@@ -37,22 +37,6 @@ class ProductTest extends TestCase
             'original_id' => $this->product->getKey(),
         ]);
 
-        $schema = $this->product->schemas()->create([
-            'name' => null,
-            'type' => 0,
-            'required' => true,
-        ]);
-
-        $this->item = Item::create([
-            'name' => $this->product->name,
-            'sku' => null,
-        ]);
-
-        $schema->schemaItems()->create([
-            'item_id' => $this->item->getKey(),
-            'extra_price' => 0,
-        ]);
-
         // Hidden
         $brand_hidden = Brand::factory()->create(['public' => false]);
         $category_hidden = Category::factory()->create(['public' => false]);
@@ -166,20 +150,6 @@ class ProductTest extends TestCase
             'description_md' => '# New description',
             'description_html' => '<h1>New description</h1>',
             'gallery' => [],
-            'schemas' => [[
-                'name' => null,
-                'type' => 0,
-                'required' => true,
-                'schema_items' => [[
-                    'value' => null,
-                    'extra_price' => 0,
-                    'item' => [
-                        'name' => $this->product->name,
-                        'sku' => null,
-                        'quantity' => 0,
-                    ],
-                ]],
-            ]],
         ];
     }
 
@@ -283,20 +253,6 @@ class ProductTest extends TestCase
                 ],
                 'cover' => null,
                 'gallery' => [],
-                'schemas' => [[
-                    'name' => null,
-                    'type' => 0,
-                    'required' => true,
-                    'schema_items' => [[
-                        'value' => null,
-                        'extra_price' => 0,
-                        'item' => [
-                            'name' => 'Test',
-                            'sku' => null,
-                            'quantity' => 0,
-                        ],
-                    ]],
-                ]],
             ]]);
     }
 
@@ -316,19 +272,6 @@ class ProductTest extends TestCase
             'description_md' => '# New description',
             'digital' => false,
             'public' => false,
-            'schemas' => [
-                [
-                    'name' => null,
-                    'type' => 0,
-                    'required' => true,
-                    'items' => [
-                        [
-                            'item_id' => $this->item->getKey(),
-                            'extra_price' => 0,
-                        ],
-                    ],
-                ],
-            ],
         ]);
 
         $response

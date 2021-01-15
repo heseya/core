@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -124,12 +125,12 @@ class Product extends Model
      * @OA\Property(
      *   property="schemas",
      *   type="array",
-     *   @OA\Items(ref="#/components/schemas/ProductSchema"),
+     *   @OA\Items(ref="#/components/schemas/Schema"),
      * )
      */
-    public function schemas(): HasMany
+    public function schemas(): MorphTo
     {
-        return $this->hasMany(ProductSchema::class);
+        return $this->morphTo();
     }
 
     public function orders(): BelongsToMany
@@ -165,8 +166,10 @@ class Product extends Model
      */
     public function getAvailableAttribute(): bool
     {
-        return $this->schemas()->exists() ? $this->schemas()->first()
-            ->schemaItems()->first()->item->quantity > 0 : false;
+        return true; // temp
+
+//        return $this->schemas()->exists() ? $this->schemas()->first()
+//            ->schemaItems()->first()->item->quantity > 0 : false;
     }
 
     /**

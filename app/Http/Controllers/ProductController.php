@@ -6,7 +6,6 @@ use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\ProductControllerSwagger;
 use App\Http\Requests\ProductIndexRequest;
 use App\Http\Resources\ProductResource;
-use App\Models\Item;
 use App\Models\Media;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
@@ -121,46 +120,46 @@ class ProductController extends Controller implements ProductControllerSwagger
             'original_id' => $product->id,
         ]);
 
-        $requiredPhysicalSchemas = array_filter($schemas, function ($schema) {
-            return $schema['required'] === true && $schema['type'] === 0;
-        });
+//        $requiredPhysicalSchemas = array_filter($schemas, function ($schema) {
+//            return $schema['required'] === true && $schema['type'] === 0;
+//        });
+//
+//        if (count($requiredPhysicalSchemas) === 0) {
+//            $schema = $product->schemas()->create([
+//                'name' => null,
+//                'type' => 0,
+//                'required' => true,
+//            ]);
+//
+//            $item = Item::create([
+//                'name' => $request->input('name'),
+//                'sku' => null,
+//            ]);
+//
+//            $schema->schemaItems()->create([
+//                'item_id' => $item->id,
+//                'extra_price' => 0,
+//            ]);
+//        }
 
-        if (count($requiredPhysicalSchemas) === 0) {
-            $schema = $product->schemas()->create([
-                'name' => null,
-                'type' => 0,
-                'required' => true,
-            ]);
-
-            $item = Item::create([
-                'name' => $request->input('name'),
-                'sku' => null,
-            ]);
-
-            $schema->schemaItems()->create([
-                'item_id' => $item->id,
-                'extra_price' => 0,
-            ]);
-        }
-
-        foreach ($schemas as $schema) {
-            $newSchema = $product->schemas()->create([
-                'name' => $schema['name'],
-                'type' => $schema['type'],
-                'required' => $schema['required'],
-            ]);
-
-            if ($schema['type'] !== 0) {
-                continue;
-            }
-
-            foreach ($schema['items'] as $item) {
-                $newSchema->schemaItems()->create([
-                    'item_id' => $item['item_id'],
-                    'extra_price' => $item['extra_price'],
-                ]);
-            }
-        }
+//        foreach ($schemas as $schema) {
+//            $newSchema = $product->schemas()->create([
+//                'name' => $schema['name'],
+//                'type' => $schema['type'],
+//                'required' => $schema['required'],
+//            ]);
+//
+//            if ($schema['type'] !== 0) {
+//                continue;
+//            }
+//
+//            foreach ($schema['items'] as $item) {
+//                $newSchema->schemaItems()->create([
+//                    'item_id' => $item['item_id'],
+//                    'extra_price' => $item['extra_price'],
+//                ]);
+//            }
+//        }
 
         $product->media()->sync($media);
 
@@ -184,38 +183,38 @@ class ProductController extends Controller implements ProductControllerSwagger
             'description_md' => 'string|nullable',
             'digital' => 'required|boolean',
             'public' => 'required|boolean',
-            'schemas' => 'required|array|min:1',
+            'schemas' => 'nullable|array|min:1',
             'media' => 'array|nullable',
         ]);
 
-        $schemas = $request->schemas;
-
-        foreach ($schemas as $schema) {
-            Validator::make($schema, [
-                'name' => 'nullable|string|max:255',
-                // Kiedyś trzeba dodać jakieś obiekty typów w kodzie
-                'type' => 'required|integer|min:0|max:1',
-                'required' => 'required|boolean',
-                'items' => 'exclude_unless:type,0|required|array|min:1',
-            ])->validate();
-
-            $items = isset($schema['items']) ? $schema['items'] : [];
-
-            foreach ($items as $item) {
-                Validator::make($item, [
-                    'item_id' => 'required|uuid|exists:items,id',
-                    'extra_price' => 'required|numeric',
-                ])->validate();
-            }
-        }
-
-        $requiredPhysicalSchemas = array_filter($schemas, function ($schema) {
-            return $schema['required'] === true && $schema['type'] === 0;
-        });
-
-        if (count($requiredPhysicalSchemas) === 0) {
-            return Error::abort('No required physical schemas.', 400);
-        }
+//        $schemas = $request->schemas;
+//
+//        foreach ($schemas as $schema) {
+//            Validator::make($schema, [
+//                'name' => 'nullable|string|max:255',
+//                // Kiedyś trzeba dodać jakieś obiekty typów w kodzie
+//                'type' => 'required|integer|min:0|max:1',
+//                'required' => 'required|boolean',
+//                'items' => 'exclude_unless:type,0|required|array|min:1',
+//            ])->validate();
+//
+//            $items = isset($schema['items']) ? $schema['items'] : [];
+//
+//            foreach ($items as $item) {
+//                Validator::make($item, [
+//                    'item_id' => 'required|uuid|exists:items,id',
+//                    'extra_price' => 'required|numeric',
+//                ])->validate();
+//            }
+//        }
+//
+//        $requiredPhysicalSchemas = array_filter($schemas, function ($schema) {
+//            return $schema['required'] === true && $schema['type'] === 0;
+//        });
+//
+//        if (count($requiredPhysicalSchemas) === 0) {
+//            return Error::abort('No required physical schemas.', 400);
+//        }
 
         $media = isset($request->media) ? $request->media : [];
 
@@ -238,24 +237,24 @@ class ProductController extends Controller implements ProductControllerSwagger
             'original_id' => $originalId
         ]);
 
-        foreach ($schemas as $schema) {
-            $newSchema = $product->schemas()->create([
-                'name' => $schema['name'],
-                'type' => $schema['type'],
-                'required' => $schema['required'],
-            ]);
-
-            if ($schema['type'] !== 0) {
-                continue;
-            }
-
-            foreach ($schema['items'] as $item) {
-                $newSchema->schemaItems()->create([
-                    'item_id' => $item['item_id'],
-                    'extra_price' => $item['extra_price'],
-                ]);
-            }
-        }
+//        foreach ($schemas as $schema) {
+//            $newSchema = $product->schemas()->create([
+//                'name' => $schema['name'],
+//                'type' => $schema['type'],
+//                'required' => $schema['required'],
+//            ]);
+//
+//            if ($schema['type'] !== 0) {
+//                continue;
+//            }
+//
+//            foreach ($schema['items'] as $item) {
+//                $newSchema->schemaItems()->create([
+//                    'item_id' => $item['item_id'],
+//                    'extra_price' => $item['extra_price'],
+//                ]);
+//            }
+//        }
 
         $product->media()->sync($media);
 

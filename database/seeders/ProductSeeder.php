@@ -4,12 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\Brand;
 use App\Models\Category;
-use App\Models\Deposit;
-use App\Models\Item;
 use App\Models\Media;
 use App\Models\Product;
-use App\Models\ProductSchema;
-use App\Models\ProductSchemaItem;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
@@ -81,34 +77,34 @@ class ProductSeeder extends Seeder
     }
 
     private function simpleProduct ($product) {
-        $schema = $product->schemas()->create([
-            'name' => null,
-            'type' => 0,
-            'required' => true,
-        ]);
-
-        $item = Item::create([
-            'name' => $product->name,
-            'sku' => null,
-        ]);
-
-        $item->deposits()->saveMany(Deposit::factory()->count(rand(0, 2))->make());
-
-        $schema->schemaItems()->create([
-            'item_id' => $item->getKey(),
-            'extra_price' => 0,
-        ]);
+//        $schema = $product->schemas()->create([
+//            'name' => null,
+//            'type' => 0,
+//            'required' => true,
+//        ]);
+//
+//        $item = Item::create([
+//            'name' => $product->name,
+//            'sku' => null,
+//        ]);
+//
+//        $item->deposits()->saveMany(Deposit::factory()->count(rand(0, 2))->make());
+//
+//        $schema->schemaItems()->create([
+//            'item_id' => $item->getKey(),
+//            'extra_price' => 0,
+//        ]);
     }
 
     private function complexProduct($product)
     {
-        $product->schemas()->saveMany(ProductSchema::factory()->count(rand(0, 4))->make())->each(function ($schema) {
-            $schema->schemaItems()->saveMany(ProductSchemaItem::factory()->count(rand(1, 3))->make())->each(function ($schemaItem) {
-                $item = Item::factory()->create();
-                $item->deposits()->saveMany(Deposit::factory()->count(rand(0, 2))->make());
-                $schemaItem->item()->associate($item)->save();
-            });
-        });
+//        $product->schemas()->saveMany(ProductSchema::factory()->count(rand(0, 4))->make())->each(function ($schema) {
+//            $schema->schemaItems()->saveMany(ProductSchemaItem::factory()->count(rand(1, 3))->make())->each(function ($schemaItem) {
+//                $item = Item::factory()->create();
+//                $item->deposits()->saveMany(Deposit::factory()->count(rand(0, 2))->make());
+//                $schemaItem->item()->associate($item)->save();
+//            });
+//        });
     }
 
     private function media($product)
