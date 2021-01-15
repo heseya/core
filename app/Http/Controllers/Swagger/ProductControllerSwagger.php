@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers\Swagger;
 
+use App\Http\Requests\ProductCreateRequest;
 use App\Http\Requests\ProductIndexRequest;
+use App\Http\Requests\ProductShowRequest;
+use App\Http\Requests\ProductUpdateRequest;
 use App\Models\Product;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -116,7 +120,7 @@ interface ProductControllerSwagger
      *   }
      * )
      */
-    public function show(Product $product);
+    public function show(ProductShowRequest $request, Product $product): JsonResource;
 
     /**
      * @OA\Post(
@@ -139,19 +143,17 @@ interface ProductControllerSwagger
      *       ),
      *       @OA\Property(
      *         property="brand_id",
-     *         type="integer",
+     *         type="string",
+     *         example="0006c3a0-21af-4485-b7fe-9c42233cf03a",
      *       ),
      *       @OA\Property(
      *         property="category_id",
-     *         type="integer",
+     *         type="string",
+     *         example="0006c3a0-21af-4485-b7fe-9c42233cf03a",
      *       ),
      *       @OA\Property(
      *         property="description_md",
      *         type="string",
-     *       ),
-     *       @OA\Property(
-     *         property="digital",
-     *         type="boolean",
      *       ),
      *       @OA\Property(
      *         property="public",
@@ -195,7 +197,8 @@ interface ProductControllerSwagger
      *         property="media",
      *         type="array",
      *         @OA\Items(
-     *           type="integer",
+     *           type="string",
+     *           example="0006c3a0-21af-4485-b7fe-9c42233cf03a",
      *         )
      *       )
      *     )
@@ -215,7 +218,7 @@ interface ProductControllerSwagger
      *   }
      * )
      */
-    public function store(Request $request);
+    public function store(ProductCreateRequest $request): JsonResource;
 
     /**
      * @OA\Patch(
@@ -322,7 +325,7 @@ interface ProductControllerSwagger
      *   }
      * )
      */
-    public function update(Product $product, Request $request);
+    public function update(ProductUpdateRequest $request, Product $product): JsonResponse;
 
     /**
      * @OA\Delete(
@@ -346,5 +349,5 @@ interface ProductControllerSwagger
      *   }
      * )
      */
-    public function destroy(Product $product);
+    public function destroy(Product $product): JsonResponse;
 }

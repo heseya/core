@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\ProductControllerSwagger;
+use App\Http\Requests\ProductCreateRequest;
 use App\Http\Requests\ProductIndexRequest;
+use App\Http\Requests\ProductShowRequest;
+use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Resources\ProductResource;
-use App\Models\Media;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 
 class ProductController extends Controller implements ProductControllerSwagger
 {
@@ -56,41 +56,14 @@ class ProductController extends Controller implements ProductControllerSwagger
         );
     }
 
-    public function show(Product $product)
+    public function show(ProductShowRequest $request, Product $product): JsonResource
     {
-        if (!Auth::check() && $product->isPublic() !== true) {
-            return Error::abort('Unauthorized.', 401);
-        }
-
         return ProductResource::make($product);
     }
 
-    public function store(Request $request)
+    public function store(ProductCreateRequest $request): JsonResource
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:products|alpha_dash',
-            'price' => 'required|numeric',
-            'brand_id' => 'required|uuid|exists:brands,id',
-            'category_id' => 'required|uuid|exists:categories,id',
-            'description_md' => 'string|nullable',
-            'digital' => 'required|boolean',
-            'public' => 'required|boolean',
-            'schemas' => 'array|nullable',
-            'media' => 'array|nullable',
-        ]);
-
-        $schemas = $request->schemas ?? [];
-
-        foreach ($schemas as $schema) {
-            Validator::make($schema, [
-                'name' => 'required|string|max:255',
-                // Kiedyś trzeba dodać jakieś obiekty typów w kodzie
-                'type' => 'required|integer|min:0|max:1',
-                'required' => 'required|boolean',
-                'items' => 'exclude_unless:type,0|required|array|min:1',
-            ])->validate();
-
+        foreach ($request->input('schemas', []) as $schema) {
             $items = $schema['items'] ?? [];
 
             foreach ($items as $item) {
@@ -101,23 +74,10 @@ class ProductController extends Controller implements ProductControllerSwagger
             }
         }
 
-        $media = $request->media ?? [];
-
-        foreach ($media as $id) {
-            $thisMedia = Media::find($id);
-
-            if ($thisMedia === null) {
-                return Error::abort(
-                    'Media with ID ' . $id . ' does not exist.',
-                    404,
-                );
-            }
-        }
-
-        $product = Product::create($request->all());
+        $product = Product::create($request->validated());
 
         $product->update([
-            'original_id' => $product->id,
+            'original_id' => $product->getKey(),
         ]);
 
 //        $requiredPhysicalSchemas = array_filter($schemas, function ($schema) {
@@ -161,32 +121,13 @@ class ProductController extends Controller implements ProductControllerSwagger
 //            }
 //        }
 
-        $product->media()->sync($media);
+        $product->media()->sync($request->input('media', []));
 
         return ProductResource::make($product);
     }
 
-    public function update(Product $product, Request $request)
+    public function update(ProductUpdateRequest $request, Product $product): JsonResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => [
-                'required',
-                'string',
-                'max:255',
-                'alpha_dash',
-                Rule::unique('products')->ignore($product->slug, 'slug'),
-            ],
-            'price' => 'required|numeric',
-            'brand_id' => 'required|uuid|exists:brands,id',
-            'category_id' => 'required|uuid|exists:categories,id',
-            'description_md' => 'string|nullable',
-            'digital' => 'required|boolean',
-            'public' => 'required|boolean',
-            'schemas' => 'nullable|array|min:1',
-            'media' => 'array|nullable',
-        ]);
-
 //        $schemas = $request->schemas;
 //
 //        foreach ($schemas as $schema) {
@@ -216,24 +157,11 @@ class ProductController extends Controller implements ProductControllerSwagger
 //            return Error::abort('No required physical schemas.', 400);
 //        }
 
-        $media = isset($request->media) ? $request->media : [];
-
-        foreach ($media as $id) {
-            $thisMedia = Media::find($id);
-
-            if ($thisMedia === null) {
-                return Error::abort(
-                    'Media with ID ' . $id . ' does not `exist`.',
-                    404,
-                );
-            }
-        }
-
         $originalId = $product->original_id;
 
         $product->delete();
 
-        $product = Product::create($request->all() + [
+        $product = Product::create($request->validated() + [
             'original_id' => $originalId
         ]);
 
@@ -256,14 +184,14 @@ class ProductController extends Controller implements ProductControllerSwagger
 //            }
 //        }
 
-        $product->media()->sync($media);
+        $product->media()->sync($request->input('media', []));
 
         return ProductResource::make($product)
             ->response()
             ->setStatusCode(200);
     }
 
-    public function destroy(Product $product)
+    public function destroy(Product $product): JsonResponse
     {
         $product->delete();
 
