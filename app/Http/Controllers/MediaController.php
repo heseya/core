@@ -34,7 +34,7 @@ class MediaController extends Controller implements MediaControllerSwagger
 
         $media = Media::create([
             'type' => Media::PHOTO,
-            'url' => rtrim(config('silverbox.host') . '/') . '/' . $response[0]->path,
+            'url' => rtrim(config('silverbox.host') . '/') . '/' . $response[0]['path'],
         ]);
 
         return MediaResource::make($media);
