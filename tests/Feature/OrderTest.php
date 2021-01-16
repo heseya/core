@@ -24,10 +24,17 @@ class OrderTest extends TestCase
 
         $shipping_method = ShippingMethod::factory()->create();
         $status = Status::factory()->create();
+        $product = Product::factory()->create();
 
         $this->order = Order::factory()->create([
             'shipping_method_id' => $shipping_method->getKey(),
             'status_id' => $status->getKey(),
+        ]);
+
+        $this->order->items()->create([
+            'product_id' => $product->getKey(),
+            'quantity' => 10,
+            'price' => 247.47,
         ]);
 
         /**
@@ -75,6 +82,17 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonStructure(['data' => $this->expected_structure])
             ->assertJson(['data' => $this->expected]);
+    }
+
+    public function testView(): void
+    {
+        $response = $this->getJson('/orders/id:' . $this->order->getKey());
+        $response->assertUnauthorized();
+
+        $response = $this->actingAs($this->user)->getJson('/orders/id:' . $this->order->getKey());
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['code' => $this->order->code]);
     }
 
     public function testCantCreateOrderWithoutItems(): void
