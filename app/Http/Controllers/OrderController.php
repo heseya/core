@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\OrderControllerSwagger;
 use App\Http\Requests\OrderCreateRequest;
+use App\Http\Requests\OrderIndexRequest;
+use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Resources\OrderPublicResource;
 use App\Http\Resources\OrderResource;
-use App\Mail\ChangeStatus;
+use App\Mail\OrderUpdateStatus;
 use App\Mail\NewOrder;
 use App\Models\Address;
 use App\Models\Order;
@@ -22,23 +24,12 @@ use Illuminate\Support\Str;
 
 class OrderController extends Controller implements OrderControllerSwagger
 {
-    public function index(Request $request): JsonResource
+    public function index(OrderIndexRequest $request): JsonResource
     {
-        $request->validate([
-            'search' => 'string|max:255',
-            'sort' => 'string',
-        ]);
+        $query = Order::search($request->validated());
 
-        $query = Order::query();
-
-        if ($request->search) {
-            $query
-                ->where('code', 'LIKE', '%' . $request->search . '%')
-                ->orWhere('email', 'LIKE', '%' . $request->search . '%');
-        }
-
-        if ($request->sort) {
-            $sort = explode(',', $request->sort);
+        if ($request->input('sort')) {
+            $sort = explode(',', $request->input('sort'));
 
             foreach ($sort as $option) {
                 $option = explode(':', $option);
@@ -56,9 +47,9 @@ class OrderController extends Controller implements OrderControllerSwagger
             $query->orderBy('created_at', 'desc');
         }
 
-        $query = $query->paginate(15);
-
-        return OrderResource::collection($query);
+        return OrderResource::collection(
+            $query->paginate(15),
+        );
     }
 
     public function show(Order $order): JsonResource
@@ -75,204 +66,35 @@ class OrderController extends Controller implements OrderControllerSwagger
     {
         $shipping_method = ShippingMethod::findOrFail($request->input('shipping_method_id'));
 
-        $itemCounts = [];
-        $usedSchemas = [];
-
-        $indexedSchemaItems = [];
-
-        $cartItems = 0;
-
-        foreach ($request->input('items', []) as $item) {
-            Validator::make($item, [
-                'product_id' => 'required|uuid|exists:products,id',
-                'quantity' => 'required|numeric',
-                'schema_items' => 'array|nullable',
-                'custom_schemas' => 'array|nullable',
-            ])->validate();
-
-            $product = Product::findOrFail($item['product_id']);
-
-            if (!$product->isPublic()) {
-                return Error::abort(
-                    'Product with ID ' . $product->id . ' is does not exist.',
-                    404,
-                );
-            }
-
-            if (!$product->schemas()->where('required', true)->where('type', 0)->exists()) {
-                return Error::abort(
-                    'Product with ID ' . $product->id . ' is invalid.',
-                    409,
-                );
-            }
-
-            $schemaItems = $item['schema_items'] ?? [];
-            $customSchemas = $item['custom_schemas'] ?? [];
-
-            $schemas = $product->schemas()->where('required', 1)->get();
-
-            foreach ($schemas as $schema) {
-                if ($schema->name === null) {
-                    $schemaItem = $schema->schemaItems()->first();
-
-                    if (!in_array($schemaItem->id, $schemaItems)) {
-                        array_push($schemaItems, $schemaItem->id);
-                    }
-
-                    continue;
-                }
-
-                if ($schema->type === 0 && !$schema->schemaItems()->whereIn(
-                    'id', $schemaItems)->exists()) {
-
-                    return Error::abort(
-                        'No required schema items present.',
-                        400,
-                    );
-                }
-
-                if ($schema->type > 1) {
-                    function thisSchema ($value) {
-                        return $value['schema_id'] === $schema->id;
-                    }
-
-                    $hasSchema = array_filter($customSchemas, 'thisSchema');
-
-                    if (!$hasSchema) {
-                        return Error::abort(
-                            'No required custom schemas present.',
-                            400,
-                        );
-                    }
-                }
-            }
-
-            foreach ($customSchemas as $input) {
-                $schema = ProductSchema::find($input['schema_id']);
-
-                if ($schema === null || $schema->type === 0) {
-                    return Error::abort(
-                        'Custom schema with ID ' . $id . ' does not exist.',
-                        404,
-                    );
-                }
-
-                $productId = $schema->product->id;
-
-                if ($item['product_id'] !== $productId) {
-                    return Error::abort(
-                        'Custom schema with ID ' . $id . ' does not exist.',
-                        404,
-                    );
-                }
-
-                Validator::make($input, [
-                    'value' => 'required|string|max:256',
-                ])->validate();
-            }
-
-            foreach ($schemaItems as $id) {
-                $schemaItem = ProductSchemaItem::findOrFail($id);
-
-                $schema = $schemaItem->schema;
-
-                if ($schema->type !== 0) {
-                    return Error::abort(
-                        'Schema item with ID ' . $id . ' does not exist.',
-                        404,
-                    );
-                }
-
-                $productId = $schema->product->id;
-
-                if ($item['product_id'] !== $productId) {
-                    return Error::abort(
-                        'Schema item with ID ' . $id . ' does not exist.',
-                        404,
-                    );
-                }
-
-                if (in_array($schema->id, $usedSchemas)) {
-                    return Error::abort(
-                        'Schema with ID ' . $schema->id . ' used twice.',
-                        400,
-                    );
-                } else {
-                    array_push($usedSchemas, $schema->id);
-                }
-
-                $itemId = $schemaItem->item->id;
-
-                if (!isset($itemCounts[$itemId])) {
-                    $itemCounts[$itemId] = 0;
-                }
-
-                $itemCounts[$itemId] += $item['quantity'];
-
-                if ($schemaItem->item->quantity < $itemCounts[$itemId]) {
-                    return Error::abort(
-                        'Insufficient quantity of ' . $schemaItem->item->name,
-                        400,
-                    );
-                }
-            }
-
-            $indexedSchemaItems[$cartItems++] = $schemaItems;
-        }
-
-        do {
-            $code = Str::upper(Str::random(6));
-        } while (Order::where('code', $code)->exists());
-
         $order = new Order([
-            'code' => $code,
-            'email' => $request->email,
-            'comment' => $request->comment,
+            'email' => $request->input('email'),
+            'comment' => $request->input('comment'),
             'currency' => 'PLN',
-            'shipping_method_id' => $shipping_method->id,
+            'shipping_method_id' => $shipping_method->getKey(),
             'shipping_price' => $shipping_method->price,
-            'status_id' => Status::select('id')->orderBy('created_at')->first()->id,
+            'status_id' => Status::select('id')->orderBy('created_at')->first()->getKey(),
         ]);
 
-        $order->delivery_address_id = Address::firstOrCreate($request->delivery_address)->id;
+        $order->delivery_address_id = Address::firstOrCreate($request->delivery_address)->getKey();
         $order->invoice_address_id = $request->filled('invoice_address.name') ?
-            Address::firstOrCreate($request->invoice_address)->id : null;
+            Address::firstOrCreate($request->invoice_address)->getKey() : null;
 
         $order->save();
 
-        $cartItems = 0;
-
-        foreach ($request->items as $item) {
+        foreach ($request->input('items', []) as $item) {
             $product = Product::findOrFail($item['product_id']);
             $price = $product->price;
-            $schemaItems = $indexedSchemaItems[$cartItems++];
 
-            foreach ($schemaItems as $id) {
-                $price += ProductSchemaItem::find($id)->extra_price;
-            }
-
-            $orderItem = $order->items()->create([
-                'product_id' => $product->id,
+            $order->items()->create([
+                'product_id' => $product->getKey(),
                 'quantity' => $item['quantity'],
                 'price' => $price < 0 ? 0 : $price,
             ]);
-
-            $orderItem->schemaItems()->sync($schemaItems);
-
-            if (isset($item['custom_schemas'])) {
-                foreach($item['custom_schemas'] as $schema) {
-                    $orderItem->schemaItems()->create([
-                        'product_schema_id' => $schema['schema_id'],
-                        'value' => $schema['value'],
-                        'extra_price' => 0,
-                    ]);
-                }
-            }
         }
 
         Mail::to($order->email)->send(new NewOrder($order));
 
-        // logi
+        // logs
         $order->logs()->create([
             'content' => 'Utworzenie zamówienia.',
             'user' => 'API',
@@ -465,17 +287,13 @@ class OrderController extends Controller implements OrderControllerSwagger
         return response()->json(['data' => $cartItems]);
     }
 
-    public function updateStatus(Order $order, Request $request)
+    public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResource
     {
-        $request->validate([
-            'status_id' => 'required|uuid|exists:statuses,id',
-        ]);
-
         $order->update([
             'status_id' => $request->input('status_id'),
         ]);
 
-        Mail::to($order->email)->send(new ChangeStatus($order));
+        Mail::to($order->email)->send(new OrderUpdateStatus($order));
 
         return OrderResource::make($order);
     }

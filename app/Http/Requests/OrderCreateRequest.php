@@ -81,10 +81,6 @@ class OrderCreateRequest extends FormRequest
             'comment' => ['nullable', 'string', 'max:1000'],
             'shipping_method_id' => ['required', 'uuid', 'exists:shipping_methods,id'],
 
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.product_id' => ['required', 'uuid', 'exists:products,id'],
-            'items.*.quantity' => ['required', 'integer', 'min:1'],
-
             'delivery_address.name'    => ['required', 'string', 'max:255'],
             'delivery_address.phone'   => ['required', 'string', 'max:20'],
             'delivery_address.address' => ['required', 'string', 'max:255'],
@@ -100,6 +96,10 @@ class OrderCreateRequest extends FormRequest
             'invoice_address.zip'     => ['nullable', 'string', 'max:16'],
             'invoice_address.city'    => ['nullable', 'string', 'max:255'],
             'invoice_address.country' => ['nullable', 'string', 'size:2'],
+
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.product_id' => ['required', 'uuid', 'exists:products,id'],
+            'items.*.quantity' => ['required', 'integer', 'min:1'],
         ];
     }
 }

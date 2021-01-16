@@ -2,18 +2,28 @@
 
 namespace App\Models;
 
+use Heseya\Searchable\Searches\Like;
+use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 
 /**
  * @OA\Schema()
  */
 class Order extends Model
 {
-    use HasFactory;
+    use HasFactory, Searchable;
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        $this->code = $attributes['code'] ?? $this->generateCode();
+    }
 
     /**
      * @OA\Property(
@@ -51,6 +61,11 @@ class Order extends Model
         'delivery_address_id',
         'invoice_address_id',
         'shipping_number',
+    ];
+
+    protected array $searchable = [
+        'code' => Like::class,
+        'email' => Like::class,
     ];
 
     /**
@@ -195,5 +210,14 @@ class Order extends Model
             $item = OrderItem::create($item);
             $this->items()->save($item);
         }
+    }
+
+    public function generateCode(): string
+    {
+        do {
+            $code = Str::upper(Str::random(6));
+        } while (Order::where('code', $code)->exists());
+
+        return $code;
     }
 }

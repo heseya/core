@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Swagger;
 
 use App\Http\Requests\OrderCreateRequest;
+use App\Http\Requests\OrderIndexRequest;
+use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -49,7 +51,7 @@ interface OrderControllerSwagger
      *   }
      * )
      */
-    public function index(Request $request): JsonResource;
+    public function index(OrderIndexRequest $request): JsonResource;
 
     /**
      * @OA\Get(
@@ -217,8 +219,8 @@ interface OrderControllerSwagger
      *     in="path",
      *     required=true,
      *     @OA\Schema(
-     *       type="id",
-     *       example="2",
+     *       type="string",
+     *       example="1c8705ce-5fae-4468-b88a-8784cb5414a0",
      *     ),
      *   ),
      *   @OA\RequestBody(
@@ -239,5 +241,5 @@ interface OrderControllerSwagger
      *   }
      * )
      */
-    public function updateStatus(Order $order, Request $request);
+    public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResource;
 }
