@@ -28,7 +28,7 @@ class OrderController extends Controller implements OrderControllerSwagger
     {
         $query = Order::search($request->validated());
 
-        if ($request->input('sort')) {
+        if ($request->filled('sort')) {
             $sort = explode(',', $request->input('sort'));
 
             foreach ($sort as $option) {
