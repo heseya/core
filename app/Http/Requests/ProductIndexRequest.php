@@ -14,10 +14,10 @@ class ProductIndexRequest extends FormRequest
     public function rules()
     {
         return [
-            'brand' => 'string|max:255',
-            'category' => 'string|max:255',
-            'search' => 'string|max:255',
-            'sort' => 'string|max:255',
+            'brand' => ['nullable', 'string', 'max:255'],
+            'category' => ['nullable', 'string', 'max:255'],
+            'search' => ['nullable', 'string', 'max:255'],
+            'sort' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

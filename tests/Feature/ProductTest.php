@@ -37,22 +37,6 @@ class ProductTest extends TestCase
             'original_id' => $this->product->getKey(),
         ]);
 
-        $schema = $this->product->schemas()->create([
-            'name' => null,
-            'type' => 0,
-            'required' => true,
-        ]);
-
-        $this->item = Item::create([
-            'name' => $this->product->name,
-            'sku' => null,
-        ]);
-
-        $schema->schemaItems()->create([
-            'item_id' => $this->item->getKey(),
-            'extra_price' => 0,
-        ]);
-
         // Hidden
         $brand_hidden = Brand::factory()->create(['public' => false]);
         $category_hidden = Category::factory()->create(['public' => false]);
@@ -105,7 +89,6 @@ class ProductTest extends TestCase
             'price' => $this->product->price,
             'visible' => $this->product->isPublic(),
             'public' => (bool) $this->product->public,
-            'digital' => (bool) $this->product->digital,
             'brand' => [
                 'id' => $this->product->brand->getKey(),
                 'name' => $this->product->brand->name,
@@ -128,20 +111,20 @@ class ProductTest extends TestCase
             'description_md' => $this->product->description_md,
             'description_html' => parsedown($this->product->description_md),
             'gallery' => [],
-            'schemas' => [[
-                'name' => null,
-                'type' => 0,
-                'required' => true,
-                'schema_items' => [[
-                    'value' => null,
-                    'extra_price' => 0,
-                    'item' => [
-                        'name' => $this->product->name,
-                        'sku' => null,
-                        'quantity' => 0,
-                    ],
-                ]],
-            ]],
+//            'schemas' => [[
+//                'name' => null,
+//                'type' => 0,
+//                'required' => true,
+//                'schema_items' => [[
+//                    'value' => null,
+//                    'extra_price' => 0,
+//                    'item' => [
+//                        'name' => $this->product->name,
+//                        'sku' => null,
+//                        'quantity' => 0,
+//                    ],
+//                ]],
+//            ]],
         ]);
 
         $this->expected_updated = [
@@ -149,7 +132,6 @@ class ProductTest extends TestCase
             'slug' => 'updated',
             'price' => 150,
             'public' => false,
-            'digital' => false,
             'brand' => [
                 'id' => $this->product->brand->getKey(),
                 'name' => $this->product->brand->name,
@@ -166,20 +148,6 @@ class ProductTest extends TestCase
             'description_md' => '# New description',
             'description_html' => '<h1>New description</h1>',
             'gallery' => [],
-            'schemas' => [[
-                'name' => null,
-                'type' => 0,
-                'required' => true,
-                'schema_items' => [[
-                    'value' => null,
-                    'extra_price' => 0,
-                    'item' => [
-                        'name' => $this->product->name,
-                        'sku' => null,
-                        'quantity' => 0,
-                    ],
-                ]],
-            ]],
         ];
     }
 
@@ -201,7 +169,7 @@ class ProductTest extends TestCase
             ->assertJsonCount(count($this->hidden_products) + 1, 'data'); // Should show all products.
     }
 
-    public function testView(): void
+    public function testShow(): void
     {
         $response = $this->getJson('/products/' . $this->product->slug);
         $response
@@ -209,17 +177,15 @@ class ProductTest extends TestCase
             ->assertJson(['data' => $this->expected]);
 
         $response = $this->getJson('/products/' . $this->hidden_products[0]->slug);
-        $response->assertUnauthorized();
+        $response->assertForbidden();
     }
 
-    public function testViewAdmin(): void
+    public function testShowAdmin(): void
     {
         $response = $this->getJson('/products/id:' . $this->product->getKey());
         $response->assertUnauthorized();
 
-        Passport::actingAs($this->user);
-
-        $response = $this->getJson('/products/id:' . $this->product->getKey());
+        $response = $this->actingAs($this->user)->getJson('/products/id:' . $this->product->getKey());
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
@@ -228,16 +194,11 @@ class ProductTest extends TestCase
         $response->assertOk();
     }
 
-    public function testViewHidden(): void
+    public function testShowHidden(): void
     {
         foreach ($this->hidden_products as $product) {
             $response = $this->getJson('/products/' . $product->slug);
-            $response
-                ->assertUnauthorized()
-                ->assertJsonStructure(['error' => [
-                    'code',
-                    'message',
-                ]]);
+            $response->assertForbidden();
         }
     }
 
@@ -255,7 +216,6 @@ class ProductTest extends TestCase
             'brand_id' => $this->product->brand->getKey(),
             'category_id' => $this->product->category->getKey(),
             'description_md' => '# Description',
-            'digital' => false,
             'public' => true,
         ]);
 
@@ -266,7 +226,6 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
-                'digital' => false,
                 'description_md' => '# Description',
                 'description_html' => '<h1>Description</h1>',
                 'brand' => [
@@ -283,20 +242,6 @@ class ProductTest extends TestCase
                 ],
                 'cover' => null,
                 'gallery' => [],
-                'schemas' => [[
-                    'name' => null,
-                    'type' => 0,
-                    'required' => true,
-                    'schema_items' => [[
-                        'value' => null,
-                        'extra_price' => 0,
-                        'item' => [
-                            'name' => 'Test',
-                            'sku' => null,
-                            'quantity' => 0,
-                        ],
-                    ]],
-                ]],
             ]]);
     }
 
@@ -314,21 +259,7 @@ class ProductTest extends TestCase
             'brand_id' => $this->product->brand->getKey(),
             'category_id' => $this->product->category->getKey(),
             'description_md' => '# New description',
-            'digital' => false,
             'public' => false,
-            'schemas' => [
-                [
-                    'name' => null,
-                    'type' => 0,
-                    'required' => true,
-                    'items' => [
-                        [
-                            'item_id' => $this->item->getKey(),
-                            'extra_price' => 0,
-                        ],
-                    ],
-                ],
-            ],
         ]);
 
         $response

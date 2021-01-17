@@ -20,7 +20,6 @@ class DatabaseSeeder extends Seeder
             ->call(OrderSeeder::class)
             ->call(PageSeeder::class)
             ->call(UserSeeder::class)
-            ->call(ChatSeeder::class)
             ->call(PackageTemplateSeeder::class)
             ->call(AuthSeeder::class);
     }

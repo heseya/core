@@ -22,7 +22,6 @@ class ProductResource extends Resource
             'public' => $this->public,
             'visible' => $this->isPublic(),
             'available' => $this->available,
-            'digital' => $this->digital,
             'brand' => BrandResource::make($this->brand),
             'category' => CategoryResource::make($this->category),
             'cover' => MediaResource::make($this->media()->first()),
@@ -37,7 +36,7 @@ class ProductResource extends Resource
             'description_md' => $this->description_md,
             'description_html' => $this->description_html,
             'gallery' => MediaResource::collection($this->media),
-            'schemas' => SchemaResource::collection($this->schemas),
+            // 'schemas' => SchemaResource::collection($this->schemas),
         ];
     }
 }

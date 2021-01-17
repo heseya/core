@@ -19,7 +19,6 @@ class OrderItemResource extends Resource
             'quantity' => $this->quantity,
             'price' => $this->price,
             'product' => ProductResource::make($this->product),
-            'schema_items' => SchemaItemResource::collection($this->schemaItems),
         ];
     }
 }

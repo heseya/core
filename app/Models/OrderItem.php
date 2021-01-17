@@ -42,16 +42,4 @@ class OrderItem extends Model
     {
         return $this->belongsTo(Product::class)->withTrashed();
     }
-
-    /**
-     * @OA\Property(
-     *   property="schema_items",
-     *   type="array",
-     *   @OA\Items(ref="#/components/schemas/ProductSchemaItem"),
-     * )
-     */
-    public function schemaItems(): BelongsToMany
-    {
-        return $this->belongsToMany(ProductSchemaItem::class)->withTrashed();
-    }
 }

@@ -7,7 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class ChangeStatus extends Mailable
+class OrderUpdateStatus extends Mailable
 {
     use Queueable, SerializesModels;
 

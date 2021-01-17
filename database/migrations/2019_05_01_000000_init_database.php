@@ -124,11 +124,10 @@ class InitDatabase extends Migration
             $table->string('name');
             $table->string('slug')->unique()->index();
             $table->float('price', 19, 4);
-            $table->uuid('brand_id')->index();
-            $table->uuid('category_id')->index();
+            $table->uuid('brand_id')->index()->nullable();
+            $table->uuid('category_id')->index()->nullable();
             $table->uuid('original_id')->index()->nullable();
             $table->text('description_md')->nullable();
-            $table->boolean('digital')->default(false);
             $table->boolean('public')->default(false);
             $table->timestamps();
             $table->softDeletes();
@@ -238,26 +237,13 @@ class InitDatabase extends Migration
         Schema::create('product_schemas', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('product_id')->index();
+            $table->uuid('schema_id')->index();
+            $table->string('type');
             $table->string('name')->nullable();
-            $table->unsignedInteger('type')->default(0);
-            $table->boolean('required')->default(0);
+            $table->boolean('required')->default(false);
             $table->timestamps();
-            $table->softDeletes();
 
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
-        });
-
-        Schema::create('product_schema_items', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->float('extra_price', 19, 4);
-            $table->string('value', 256)->nullable();
-            $table->uuid('item_id')->index()->nullable();
-            $table->uuid('product_schema_id')->index();
-            $table->timestamps();
-            $table->softDeletes();
-
-            $table->foreign('item_id')->references('id')->on('items')->onDelete('restrict');
-            $table->foreign('product_schema_id')->references('id')->on('product_schemas')->onDelete('cascade');
         });
 
         Schema::create('order_logs', function (Blueprint $table) {
@@ -291,36 +277,6 @@ class InitDatabase extends Migration
 
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
             $table->foreign('product_id')->references('id')->on('products')->onDelete('restrict');
-        });
-
-        Schema::create('order_item_product_schema_item', function (Blueprint $table) {
-            $table->uuid('order_item_id')->index();
-            $table->uuid('product_schema_item_id')->index();
-
-            $table->primary(['order_item_id', 'product_schema_item_id'], 'order_item_product_schema_item_primary');
-
-            $table->foreign('order_item_id')->references('id')->on('order_items')->onDelete('cascade');
-            $table->foreign('product_schema_item_id')->references('id')->on('product_schema_items')->onDelete('restrict');
-        });
-
-        Schema::create('chats', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->smallInteger('system')->default(0);
-            $table->string('external_id')->nullable();
-            $table->timestamps();
-        });
-
-        Schema::create('messages', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->boolean('received')->default(false);
-            $table->text('content');
-            $table->string('external_id')->nullable();
-            $table->uuid('user_id')->nullable();
-            $table->uuid('chat_id');
-            $table->timestamp('created_at')->useCurrent();
-
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('chat_id')->references('id')->on('chats')->onDelete('cascade');
         });
 
         Schema::create('pages', function (Blueprint $table) {
