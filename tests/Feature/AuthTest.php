@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
@@ -26,5 +28,22 @@ class AuthTest extends TestCase
                 ],
                 'scopes' => [],
             ]]);
+    }
+
+    public function testChangePassword(): void
+    {
+        $user = User::factory()->create([
+            'password' => Hash::make('test'),
+        ]);
+
+        $response = $this->actingAs($user)->patchJson('/user/password', [
+            'password' => 'test',
+            'password_new' => 'test123456',
+        ]);
+
+        $response->assertNoContent();
+
+        $user->refresh();
+        $this->assertTrue(Hash::check('test123456', $user->password));
     }
 }
