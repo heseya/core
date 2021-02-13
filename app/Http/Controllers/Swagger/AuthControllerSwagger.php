@@ -51,10 +51,7 @@ interface AuthControllerSwagger
      *         ),
      *       )
      *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
+     *   )
      * )
      */
     public function login(Request $request);

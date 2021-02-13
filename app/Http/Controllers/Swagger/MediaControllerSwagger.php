@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Swagger;
 
+use App\Http\Requests\MediaStoreRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 interface MediaControllerSwagger
 {
@@ -33,8 +35,11 @@ interface MediaControllerSwagger
      *         @OA\Items(ref="#/components/schemas/Media"),
      *       )
      *     )
-     *   )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
      * )
      */
-    public function store(Request $request);
+    public function store(MediaStoreRequest $request): JsonResource;
 }
