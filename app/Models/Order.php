@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,7 +17,7 @@ use Illuminate\Support\Str;
  */
 class Order extends Model
 {
-    use HasFactory, Searchable;
+    use HasFactory, Searchable, Sortable;
 
     public function __construct(array $attributes = [])
     {
@@ -67,6 +68,15 @@ class Order extends Model
         'code' => Like::class,
         'email' => Like::class,
     ];
+
+    protected array $sortable = [
+        'id',
+        'code',
+        'created_at',
+    ];
+
+    protected string $defaultSortBy = 'created_at';
+    protected string $defaultSortDirection = 'desc';
 
     /**
      * @OA\Property(
