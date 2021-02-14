@@ -3,60 +3,76 @@
 namespace App\Schemas;
 
 use App\Http\Resources\Resource;
+use App\Models\Model;
+use App\Models\Product;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
-/**
- * @OA\Schema()
- */
-abstract class Schema
+abstract class Schema extends Model
 {
     use SerializesModels;
 
-    private string $name;
+    protected $fillable = [
+        'name',
+        'price',
+        'validation',
+    ];
 
-    private float $price;
-
-    public function validate(): bool
+    public function getTable(): string
     {
-        return true;
+        return Str::of(class_basename($this))
+            ->before('Schema')
+            ->start('schemas')
+            ->snake();
+    }
+
+    public function getResource(): string
+    {
+        return Str::of(class_basename($this))
+            ->start('App\\Http\\Resources\\Schemas\\')
+            ->finish('Resource');
     }
 
     public function toResource(): Resource
     {
-        $resource = '\\App\\Http\\Resources\\Schemas\\' . class_basename($this) . 'Resource';
+        $resource = $this->getResource();
 
         return new $resource($this);
     }
 
-    /**
-     * @return float
-     */
-    public function getPrice(): float
-    {
-        return $this->price;
-    }
+    /* Base functions invented to be overloaded on final classes */
 
     /**
-     * @param float $price
+     * Check if user input is valid
+     *
+     * @param mixed $input
+     *
+     * @return bool
      */
-    public function setPrice(float $price): void
+    public function validate(array $input): bool
     {
-        $this->price = $price;
+        $validator = Validator::make($input, $this->getValidation());
+
+        if ($validator->fails()) {
+            return false;
+        }
+
+        return true;
     }
 
-    /**
-     * @return string
-     */
-    public function getName(): string
+    /* Getters */
+
+    public function getValidationAttribute($value): array
     {
-        return $this->name;
+        return json_decode($value, true, 512, JSON_THROW_ON_ERROR);
     }
 
-    /**
-     * @param string $name
-     */
-    public function setName(string $name): void
+    /* Relations */
+
+    public function products(): MorphToMany
     {
-        $this->name = $name;
+        return $this->morphedByMany(Product::class, 'product_schema');
     }
 }

@@ -234,18 +234,6 @@ class InitDatabase extends Migration
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('restrict');
         });
 
-        Schema::create('product_schemas', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->uuid('product_id')->index();
-            $table->uuid('schema_id')->index();
-            $table->string('type');
-            $table->string('name')->nullable();
-            $table->boolean('required')->default(false);
-            $table->timestamps();
-
-            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
-        });
-
         Schema::create('order_logs', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('order_id')->index();

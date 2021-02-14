@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Schemas\Schema;
 use App\SearchTypes\ProductSearch;
 use App\SearchTypes\WhereHasSlug;
 use Heseya\Searchable\Searches\Like;
@@ -9,9 +10,10 @@ use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @OA\Schema()
@@ -129,9 +131,16 @@ class Product extends Model
      *   @OA\Items(ref="#/components/schemas/Schema"),
      * )
      */
-    public function schemas(): MorphTo
+    public function schemas(): Builder
     {
-        return $this->morphTo();
+        return DB::table('product_schemas')->where('product_id', $this->getKey());
+    }
+
+    public function getSchemasAttribute(): Collection
+    {
+        return $this->schemas()->get()->map(function ($schema): Schema {
+            return ($schema->schema_type)::findOrFail($schema->schema_id);
+        });
     }
 
     public function orders(): BelongsToMany

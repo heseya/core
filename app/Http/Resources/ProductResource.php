@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Http\Resources\Schemas\SchemaResource;
 use Illuminate\Http\Request;
 
 class ProductResource extends Resource
@@ -36,7 +37,7 @@ class ProductResource extends Resource
             'description_md' => $this->description_md,
             'description_html' => $this->description_html,
             'gallery' => MediaResource::collection($this->media),
-            // 'schemas' => SchemaResource::collection($this->schemas),
+            'schemas' => SchemaResource::collection($this->schemas),
         ];
     }
 }
