@@ -4,12 +4,12 @@ namespace App\Models;
 
 use App\SearchTypes\ProductSearch;
 use App\SearchTypes\WhereHasSlug;
+use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Product extends Model
 {
-    use SoftDeletes, Searchable, HasFactory;
+    use HasFactory, SoftDeletes, Searchable, Sortable;
 
     /**
      * @OA\Property(
@@ -93,6 +93,16 @@ class Product extends Model
         'category' => WhereHasSlug::class,
         'search' => ProductSearch::class,
     ];
+
+    protected array $sortable = [
+        'id',
+        'price',
+        'name',
+        'created_at',
+    ];
+
+    protected string $defaultSortBy = 'created_at';
+    protected string $defaultSortDirection = 'desc';
 
     public function media(): BelongsToMany
     {

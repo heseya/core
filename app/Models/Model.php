@@ -3,9 +3,10 @@
 namespace App\Models;
 
 use DateTimeInterface;
+use Illuminate\Database\Eloquent\Model as LaravelModel;
 use Illuminate\Support\Str;
 
-class Model extends \Illuminate\Database\Eloquent\Model
+class Model extends LaravelModel
 {
     /**
      * The "type" of the primary key ID.
@@ -23,6 +24,10 @@ class Model extends \Illuminate\Database\Eloquent\Model
 
     /**
      * Prepare a date for array / JSON serialization.
+     *
+     * @param DateTimeInterface $date
+     *
+     * @return string
      */
     protected function serializeDate(DateTimeInterface $date): string
     {

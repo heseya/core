@@ -26,26 +26,8 @@ class OrderController extends Controller implements OrderControllerSwagger
 {
     public function index(OrderIndexRequest $request): JsonResource
     {
-        $query = Order::search($request->validated());
-
-        if ($request->filled('sort')) {
-            $sort = explode(',', $request->input('sort'));
-
-            foreach ($sort as $option) {
-                $option = explode(':', $option);
-
-                Validator::make($option, [
-                    '0' => 'required|in:code,created_at,id',
-                    '1' => 'in:asc,desc',
-                ])->validate();
-
-                $order = count($option) > 1 ? $option[1] : 'asc';
-                $query->orderBy($option[0], $order);
-            }
-
-        } else {
-            $query->orderBy('created_at', 'desc');
-        }
+        $query = Order::search($request->validated())
+            ->sort($request->input('sort'));
 
         return OrderResource::collection(
             $query->paginate(15),

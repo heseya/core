@@ -19,36 +19,19 @@ class ProductController extends Controller implements ProductControllerSwagger
 {
     public function index(ProductIndexRequest $request): JsonResource
     {
-        $query = Product::search($request->validated())->with([
-            'brand',
-            'category',
-            'media',
-        ]);
+        $query = Product::search($request->validated())
+            ->sort($request->input('sort'))
+            ->with([
+                'brand',
+                'media',
+                'category',
+            ]);
 
         if (!Auth::check()) {
             $query
                 ->where('public', true)
                 ->whereHas('brand', fn (Builder $subQuery) => $subQuery->where('public', true))
                 ->whereHas('category', fn (Builder $subQuery) => $subQuery->where('public', true));
-        }
-
-        if ($request->input('sort')) {
-            $sort = explode(',', $request->input('sort'));
-
-            foreach ($sort as $option) {
-                $option = explode(':', $option);
-
-                Validator::make($option, [
-                    '0' => 'required|in:price,name,created_at,id',
-                    '1' => 'in:asc,desc',
-                ])->validate();
-
-                $order = count($option) > 1 ? $option[1] : 'asc';
-                $query->orderBy($option[0], $order);
-            }
-
-        } else {
-            $query->orderBy('created_at', 'desc');
         }
 
         return ProductResource::collection(
