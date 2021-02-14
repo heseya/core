@@ -4,20 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\AuthControllerSwagger;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Resources\AuthResource;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller implements AuthControllerSwagger
 {
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $request->validate([
-            'email' => 'required|string|max:255',
-            'password' => 'required|string|max:255',
-        ]);
-
         if (!Auth::guard('web')->attempt([
             'email' => $request->input('email'),
             'password' => $request->input('password'),
@@ -31,23 +28,16 @@ class AuthController extends Controller implements AuthControllerSwagger
         return AuthResource::make($token);
     }
 
-    public function changePassword(Request $request)
+    public function changePassword(PasswordChangeRequest $request): JsonResponse
     {
-        $request->validate([
-            'password' => 'required|string|max:255',
-            'password_new' => 'required|string|max:255|min:10',
-        ]);
-
-        $user = Auth::user();
+        $user = $request->user();
 
         if (!Hash::check($request->input('password'), $user->password)) {
             return Error::abort('Invalid credentials.', 400);
         }
 
-        $hash = Hash::make($request->input('password_new'));
-
         $user->update([
-            'password' => $hash,
+            'password' => Hash::make($request->input('password_new')),
         ]);
 
         return response()->json(null, 204);

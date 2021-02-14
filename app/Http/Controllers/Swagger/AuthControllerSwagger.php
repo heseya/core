@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers\Swagger;
 
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\PasswordChangeRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 interface AuthControllerSwagger
 {
@@ -54,8 +58,7 @@ interface AuthControllerSwagger
      *   )
      * )
      */
-    public function login(Request $request);
-
+    public function login(LoginRequest $request);
 
     /**
      * @OA\Patch(
@@ -77,24 +80,13 @@ interface AuthControllerSwagger
      *     )
      *   ),
      *   @OA\Response(
-     *     response=200,
+     *     response=204,
      *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         type="object",
-     *         @OA\Property(
-     *           property="messgae",
-     *           type="string",
-     *           example="OK",
-     *         ),
-     *       )
-     *     )
      *   ),
      *   security={
      *     {"oauth": {}}
      *   }
      * )
      */
-    public function changePassword(Request $request);
+    public function changePassword(PasswordChangeRequest $request): JsonResponse;
 }
