@@ -81,29 +81,6 @@ class ItemTest extends TestCase
             ->assertJson(['data' => $item]);
 
         $this->assertDatabaseHas('items', $item);
-
-        $item = [
-            'name' => 'Test NULL sku',
-            'sku' => NULL,
-        ];
-
-        $response = $this->postJson('/items', $item);
-        $response
-            ->assertCreated()
-            ->assertJson(['data' => $item]);
-
-        $this->assertDatabaseHas('items', $item);
-
-        $item = [
-            'name' => 'Test no sku',
-        ];
-
-        $response = $this->postJson('/items', $item);
-        $response
-            ->assertCreated()
-            ->assertJson(['data' => $item + ['sku' => NULL]]);
-
-        $this->assertDatabaseHas('items', $item);
     }
 
     public function testUpdate(): void

@@ -21,15 +21,39 @@ interface ProductControllerSwagger
      *   @OA\Parameter(
      *     name="search",
      *     in="query",
-     *     description="Full text search.",
+     *     description="Full text search",
      *     @OA\Schema(
      *       type="string",
      *     ),
      *   ),
      *   @OA\Parameter(
+     *     name="name",
+     *     in="query",
+     *     description="Name search",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="slug",
+     *     in="query",
+     *     description="Slug search",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="public",
+     *     in="query",
+     *     description="Is public search",
+     *     @OA\Schema(
+     *       type="boolean",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
      *     name="brand",
      *     in="query",
-     *     description="Brand slug.",
+     *     description="Brand slug search",
      *     @OA\Schema(
      *       type="string",
      *     ),
@@ -37,7 +61,7 @@ interface ProductControllerSwagger
      *   @OA\Parameter(
      *     name="category",
      *     in="query",
-     *     description="Category slug.",
+     *     description="Category slug search",
      *     @OA\Schema(
      *       type="string",
      *     ),
@@ -45,7 +69,7 @@ interface ProductControllerSwagger
      *   @OA\Parameter(
      *     name="sort",
      *     in="query",
-     *     description="Sorting string.",
+     *     description="Sorting string",
      *     @OA\Schema(
      *       type="string",
      *       example="price:asc,created_at:desc,name"
