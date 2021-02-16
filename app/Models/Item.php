@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\SearchTypes\ProductSearch;
+use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Item extends Model
 {
-    use SoftDeletes, HasFactory, Searchable;
+    use SoftDeletes, HasFactory, Searchable, Sortable;
 
     /**
      * @OA\Property(
