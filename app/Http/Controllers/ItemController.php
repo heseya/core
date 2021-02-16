@@ -16,7 +16,9 @@ class ItemController extends Controller implements ItemControllerSwagger
     public function index(ItemIndexRequest $request): JsonResource
     {
         return ItemResource::collection(
-            Item::search($request->validated())->paginate(12),
+            Item::search($request->validated())
+                ->sort($request->input('sort'))
+                ->paginate(12),
         );
     }
 

@@ -50,6 +50,11 @@ class Item extends Model
         'search' => ProductSearch::class,
     ];
 
+    protected array $sortable = [
+        'name',
+        'sku',
+    ];
+
     public function getQuantityAttribute (): float
     {
         return $this->deposits()->sum('quantity');
