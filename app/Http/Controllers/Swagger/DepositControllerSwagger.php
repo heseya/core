@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Swagger;
 
+use App\Http\Requests\DepositCreateRequest;
 use App\Models\Item;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 interface DepositControllerSwagger
@@ -94,5 +94,5 @@ interface DepositControllerSwagger
      *   }
      * )
      */
-    public function store(Item $item, Request $request);
+    public function store(Item $item, DepositCreateRequest $request): JsonResource;
 }

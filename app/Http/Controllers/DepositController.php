@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Swagger\DepositControllerSwagger;
+use App\Http\Requests\DepositCreateRequest;
 use App\Http\Resources\DepositResource;
 use App\Models\Deposit;
 use App\Models\Item;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class DepositController extends Controller implements DepositControllerSwagger
@@ -25,16 +25,10 @@ class DepositController extends Controller implements DepositControllerSwagger
         );
     }
 
-    public function store(Item $item, Request $request)
+    public function store(Item $item, DepositCreateRequest $request): JsonResource
     {
-        $validated = $request->validate([
-            'quantity' => 'required|numeric',
-        ]);
+        $deposit = $item->deposits()->create($request->validated());
 
-        $deposit = $item->deposits()->create($validated);
-
-        return DepositResource::make($deposit)
-            ->response()
-            ->setStatusCode(201);
+        return DepositResource::make($deposit);
     }
 }

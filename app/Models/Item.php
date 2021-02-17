@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\SearchTypes\ProductSearch;
+use App\Traits\Sortable;
+use Heseya\Searchable\Searches\Like;
+use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -11,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Item extends Model
 {
-    use SoftDeletes, HasFactory;
+    use SoftDeletes, HasFactory, Searchable, Sortable;
 
     /**
      * @OA\Property(
@@ -30,6 +34,11 @@ class Item extends Model
      *   property="sku",
      *   type="string",
      * )
+     *
+     * @OA\Property(
+     *   property="quantity",
+     *   type="string",
+     * )
      */
 
     protected $fillable = [
@@ -37,25 +46,20 @@ class Item extends Model
         'sku',
     ];
 
+    protected $searchable = [
+        'name' => Like::class,
+        'sku' => Like::class,
+        'search' => ProductSearch::class,
+    ];
+
+    protected array $sortable = [
+        'name',
+        'sku',
+    ];
+
     public function getQuantityAttribute (): float
     {
-        return 100; // temp
-
-//        $deposits = $this->deposits()->sum('quantity');
-//        $withdrawals = $this->schemaItems()
-//            ->join(
-//                'order_item_product_schema_item',
-//                'product_schema_items.id',
-//                '=',
-//                'order_item_product_schema_item.product_schema_item_id'
-//            )->join(
-//                'order_items',
-//                'order_items.id',
-//                '=',
-//                'order_item_product_schema_item.order_item_id'
-//            )->sum('quantity');
-//
-//        return $deposits - $withdrawals;
+        return $this->deposits()->sum('quantity');
     }
 
     public function deposits (): HasMany
