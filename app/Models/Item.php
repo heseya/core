@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\SearchTypes\ProductSearch;
+use App\SearchTypes\ItemSearch;
 use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
@@ -48,7 +48,7 @@ class Item extends Model
     protected $searchable = [
         'name' => Like::class,
         'sku' => Like::class,
-        'search' => ProductSearch::class,
+        'search' => ItemSearch::class,
     ];
 
     protected array $sortable = [
