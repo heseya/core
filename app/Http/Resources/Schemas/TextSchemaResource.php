@@ -14,6 +14,7 @@ class TextSchemaResource extends Resource
             'id' => $this->getKey(),
             'name' => $this->name,
             'price' => $this->price,
+            'validation' => $this->validation,
         ];
     }
 }

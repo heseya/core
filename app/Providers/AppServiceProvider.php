@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Schemas\TextSchema;
+use App\Schemas\SelectSchema;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passport\Passport;

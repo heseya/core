@@ -136,6 +136,43 @@ class InitDatabase extends Migration
             $table->foreign('brand_id')->references('id')->on('brands')->onDelete('restrict');
         });
 
+        Schema::create('schemas', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->unsignedTinyInteger('type')->default(0);
+            $table->boolean('required')->default(false);
+            $table->boolean('hidden')->default(false);
+            $table->string('name');
+            $table->string('description');
+            $table->float('price', 19, 4);
+            $table->string('min')->nullable();
+            $table->string('max')->nullable();
+            $table->string('default')->nullable();
+            $table->string('pattern')->nullable();
+            $table->string('validation')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('options', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('name');
+            $table->string('value');
+            $table->boolean('disabled')->default(false);
+            $table->uuid('schema_id')->index();
+            $table->timestamps();
+
+            $table->foreign('schema_id')->references('id')->on('schemas')->onDelete('cascade');
+        });
+
+        Schema::create('product_schemas', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('product_id')->index();
+            $table->uuid('schema_id')->index();
+            $table->timestamps();
+
+            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
+            $table->foreign('schema_id')->references('id')->on('schemas')->onDelete('cascade');
+        });
+
         Schema::create('media', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->tinyInteger('type');

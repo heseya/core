@@ -2,7 +2,7 @@
 
 namespace App\Schemas;
 
-class TextSchema extends Schema
+class SelectSchema extends Schema
 {
     //
 }
