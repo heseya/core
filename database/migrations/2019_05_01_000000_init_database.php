@@ -163,11 +163,21 @@ class InitDatabase extends Migration
             $table->foreign('schema_id')->references('id')->on('schemas')->onDelete('cascade');
         });
 
+        Schema::create('option_items', function (Blueprint $table) {
+            $table->uuid('option_id')->index();
+            $table->uuid('item_id')->index();
+
+            $table->primary(['option_id', 'item_id']);
+
+            $table->foreign('option_id')->references('id')->on('options')->onDelete('cascade');
+            $table->foreign('item_id')->references('id')->on('items')->onDelete('cascade');
+        });
+
         Schema::create('product_schemas', function (Blueprint $table) {
-            $table->uuid('id')->primary();
             $table->uuid('product_id')->index();
             $table->uuid('schema_id')->index();
-            $table->timestamps();
+
+            $table->primary(['product_id', 'schema_id']);
 
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
             $table->foreign('schema_id')->references('id')->on('schemas')->onDelete('cascade');

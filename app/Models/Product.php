@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Schemas\Schema;
 use App\SearchTypes\ProductSearch;
 use App\SearchTypes\WhereHasSlug;
 use App\Traits\Sortable;
@@ -11,11 +10,8 @@ use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 /**
  * @OA\Schema()
@@ -143,9 +139,9 @@ class Product extends Model
      *   @OA\Items(ref="#/components/schemas/Schema"),
      * )
      */
-    public function schemas(): Builder
+    public function schemas(): BelongsToMany
     {
-        return DB::table('product_schemas')->where('product_id', $this->getKey());
+        return $this->belongsToMany(Schema::class, 'product_schemas');
     }
 
     public function getSchemasAttribute(): Collection

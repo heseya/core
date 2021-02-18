@@ -2,17 +2,17 @@
 
 namespace Database\Factories;
 
-use App\Models\Item;
+use App\Models\Option;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class ItemFactory extends Factory
+class OptionFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Item::class;
+    protected $model = Option::class;
 
     /**
      * Define the model's default state.
@@ -20,8 +20,9 @@ class ItemFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->unique()->sentence(rand(1, 3)),
-            'sku' => $this->faker->unique()->regexify('[A-Z0-9]{4}'),
+            'name' => $this->faker->word,
+            'value' => $this->faker->numberBetween(0, 100),
+            'disabled' => $this->faker->boolean,
         ];
     }
 }

@@ -17,10 +17,8 @@ class BrandFactory extends Factory
 
     /**
      * Define the model's default state.
-     *
-     * @return array
      */
-    public function definition()
+    public function definition(): array
     {
         $name = $this->faker->unique()->sentence(rand(1, 2));
 

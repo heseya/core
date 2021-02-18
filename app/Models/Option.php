@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @OA\Schema()
@@ -31,4 +31,9 @@ class Option extends Model
         'value',
         'disabled',
     ];
+
+    public function items(): BelongsToMany
+    {
+        return $this->belongsToMany(Item::class, 'option_items');
+    }
 }

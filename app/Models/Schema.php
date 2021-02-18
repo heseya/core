@@ -44,7 +44,7 @@ class Schema extends Model
      *   type="float",
      * ),
      * @OA\Property(
-     *   property="visible",
+     *   property="hidden",
      *   type="boolean",
      * ),
      * @OA\Property(
@@ -77,7 +77,7 @@ class Schema extends Model
         'name',
         'description',
         'price',
-        'visible',
+        'hidden',
         'required',
         'max',
         'min',
@@ -106,7 +106,7 @@ class Schema extends Model
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'product_schema');
+        return $this->belongsToMany(Product::class, 'product_schemas');
     }
 
     /**

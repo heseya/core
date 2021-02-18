@@ -4,8 +4,12 @@ namespace Database\Seeders;
 
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\Deposit;
+use App\Models\Item;
 use App\Models\Media;
+use App\Models\Option;
 use App\Models\Product;
+use App\Models\Schema;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
@@ -31,13 +35,13 @@ class ProductSeeder extends Seeder
             'category_id' => $categories[rand(0, 2)]->getKey(),
             'brand_id' => $brands[rand(0, 3)]->getKey(),
             'public' => true,
-        ])->each(fn ($p) => $this->simpleProduct($p))->each(fn ($p) => $this->media($p));
+        ])->each(fn ($p) => $this->media($p));
 
         Product::factory()->count(25)->create([
             'category_id' => $categories[rand(0, 2)]->getKey(),
             'brand_id' => $brands[rand(0, 3)]->getKey(),
             'public' => false,
-        ])->each(fn ($p) => $this->simpleProduct($p))->each(fn ($p) => $this->media($p));
+        ])->each(fn ($p) => $this->media($p));
 
         Product::factory()->count(25)->create([
             'category_id' => $categories[rand(0, 2)]->getKey(),
@@ -77,23 +81,13 @@ class ProductSeeder extends Seeder
     }
 
     private function simpleProduct ($product) {
-//        $schema = $product->schemas()->create([
-//            'name' => null,
-//            'type' => 0,
-//            'required' => true,
-//        ]);
-//
-//        $item = Item::create([
-//            'name' => $product->name,
-//            'sku' => null,
-//        ]);
-//
-//        $item->deposits()->saveMany(Deposit::factory()->count(rand(0, 2))->make());
-//
-//        $schema->schemaItems()->create([
-//            'item_id' => $item->getKey(),
-//            'extra_price' => 0,
-//        ]);
+        $schema = Schema::factory()->make();
+
+        $product->schemas()->save($schema);
+
+        $item = Item::factory()->create();
+        $item->deposits()->saveMany(Deposit::factory()->count(rand(0, 2))->make());
+        $schema->options()->saveMany(Option::factory()->count(rand(0, 4))->make());
     }
 
     private function complexProduct($product)
