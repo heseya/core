@@ -50,7 +50,7 @@ class Schema extends Model
      *   property="price",
      *   type="float",
      *   description="Additional price the customer will have to pay after selecting the option (can be negative)",
-     *   example="9,99",
+     *   example=9.99,
      * ),
      * @OA\Property(
      *   property="hidden",

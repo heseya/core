@@ -68,7 +68,7 @@ interface ItemControllerSwagger
      *     in="path",
      *     required=true,
      *     @OA\Schema(
-     *       type="integer",
+     *       type="string",
      *     )
      *   ),
      *   @OA\Response(
