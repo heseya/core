@@ -13,6 +13,9 @@ class OptionStoreRequest extends FormRequest
             'price' => ['required', 'numeric'],
             'disabled' => ['required', 'boolean'],
             'schema_id' => ['required', 'uuid', 'exists:schemas,id'],
+
+            'items' => ['array'],
+            'items.*' => ['uuid', 'exists:items,id'],
         ];
     }
 }
