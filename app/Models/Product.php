@@ -72,7 +72,6 @@ class Product extends Model
         'public',
         'brand_id',
         'category_id',
-        'original_id',
     ];
 
     /**
@@ -84,6 +83,7 @@ class Product extends Model
         'price' => 'float',
         'public' => 'bool',
         'digital' => 'bool',
+        'available' => 'bool',
     ];
 
     protected array $searchable = [
@@ -141,14 +141,8 @@ class Product extends Model
      */
     public function schemas(): BelongsToMany
     {
-        return $this->belongsToMany(Schema::class, 'product_schemas');
-    }
-
-    public function getSchemasAttribute(): Collection
-    {
-        return $this->schemas()->get()->map(function ($schema): Schema {
-            return ($schema->schema_type)::findOrFail($schema->schema_id);
-        });
+        return $this->belongsToMany(Schema::class, 'product_schemas')
+            ->orderBy('created_at', 'DESC');
     }
 
     public function orders(): BelongsToMany
@@ -184,10 +178,18 @@ class Product extends Model
      */
     public function getAvailableAttribute(): bool
     {
-        return true; // temp
+        if ($this->schemas()->count() <= 0) {
+            return true;
+        }
 
-//        return $this->schemas()->exists() ? $this->schemas()->first()
-//            ->schemaItems()->first()->item->quantity > 0 : false;
+        // a product is available if all required schematics are available
+        foreach ($this->schemas as $schema) {
+            if ($schema->required && !$schema->available) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

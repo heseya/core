@@ -1,20 +1,20 @@
 <?php
 
-namespace App\Http\Resources\Schemas;
+namespace App\Http\Resources;
 
-use App\Http\Resources\Resource;
 use Illuminate\Http\Request;
 
-class TextSchemaResource extends Resource
+class OptionResource extends Resource
 {
     public function base(Request $request): array
     {
         return [
-            'type' => 'text',
             'id' => $this->getKey(),
             'name' => $this->name,
             'price' => $this->price,
-            'validation' => $this->validation,
+            'disabled' => $this->disabled,
+            'available' => $this->available,
+            'items' => ItemResource::collection($this->items),
         ];
     }
 }

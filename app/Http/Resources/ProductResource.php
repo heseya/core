@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\Schemas\SchemaResource;
 use Illuminate\Http\Request;
 
 class ProductResource extends Resource

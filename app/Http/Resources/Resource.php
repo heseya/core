@@ -13,7 +13,7 @@ class Resource extends JsonResource
      * @param Request $request
      * @return array
      */
-    public function with($request)
+    public function with($request): array
     {
         return [
             'meta' => [

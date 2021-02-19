@@ -22,12 +22,6 @@ class ProductCreateRequest extends FormRequest
             'description_md' => ['nullable', 'string'],
             'public' => ['required', 'boolean'],
 
-            'schemas' => ['nullable', 'array'],
-            'schemas.*.name' => ['required', 'string', 'max:255'],
-            'schemas.*.required' => ['required', 'boolean'],
-            'schemas.*.price' => ['required', 'numeric'],
-            'schemas.*.type' => ['required', 'string'],
-
             'media' => ['nullable', 'array'],
             'media.*' => ['uuid', 'exists:media,id'],
         ];

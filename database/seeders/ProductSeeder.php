@@ -92,13 +92,7 @@ class ProductSeeder extends Seeder
 
     private function complexProduct($product)
     {
-//        $product->schemas()->saveMany(ProductSchema::factory()->count(rand(0, 4))->make())->each(function ($schema) {
-//            $schema->schemaItems()->saveMany(ProductSchemaItem::factory()->count(rand(1, 3))->make())->each(function ($schemaItem) {
-//                $item = Item::factory()->create();
-//                $item->deposits()->saveMany(Deposit::factory()->count(rand(0, 2))->make());
-//                $schemaItem->item()->associate($item)->save();
-//            });
-//        });
+        $product->schemas();
     }
 
     private function media($product)

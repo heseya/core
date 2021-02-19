@@ -126,7 +126,6 @@ class InitDatabase extends Migration
             $table->float('price', 19, 4);
             $table->uuid('brand_id')->index()->nullable();
             $table->uuid('category_id')->index()->nullable();
-            $table->uuid('original_id')->index()->nullable();
             $table->text('description_md')->nullable();
             $table->boolean('public')->default(false);
             $table->timestamps();
@@ -142,8 +141,8 @@ class InitDatabase extends Migration
             $table->boolean('required')->default(false);
             $table->boolean('hidden')->default(false);
             $table->string('name');
-            $table->string('description');
-            $table->float('price', 19, 4);
+            $table->string('description')->nullable();
+            $table->float('price', 19, 4)->default(0);
             $table->string('min')->nullable();
             $table->string('max')->nullable();
             $table->string('default')->nullable();
@@ -155,7 +154,7 @@ class InitDatabase extends Migration
         Schema::create('options', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
-            $table->string('value');
+            $table->float('price', 19, 4)->default(0);
             $table->boolean('disabled')->default(false);
             $table->uuid('schema_id')->index();
             $table->timestamps();

@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller implements ProductControllerSwagger
 {
@@ -46,132 +45,20 @@ class ProductController extends Controller implements ProductControllerSwagger
 
     public function store(ProductCreateRequest $request): JsonResource
     {
-        foreach ($request->input('schemas', []) as $schema) {
-            $items = $schema['items'] ?? [];
-
-            foreach ($items as $item) {
-                Validator::make($item, [
-                    'item_id' => 'required|uuid|exists:items,id',
-                    'extra_price' => 'required|numeric',
-                ])->validate();
-            }
-        }
-
         $product = Product::create($request->validated());
-
-        $product->update([
-            'original_id' => $product->getKey(),
-        ]);
-
-//        $requiredPhysicalSchemas = array_filter($schemas, function ($schema) {
-//            return $schema['required'] === true && $schema['type'] === 0;
-//        });
-//
-//        if (count($requiredPhysicalSchemas) === 0) {
-//            $schema = $product->schemas()->create([
-//                'name' => null,
-//                'type' => 0,
-//                'required' => true,
-//            ]);
-//
-//            $item = Item::create([
-//                'name' => $request->input('name'),
-//                'sku' => null,
-//            ]);
-//
-//            $schema->schemaItems()->create([
-//                'item_id' => $item->id,
-//                'extra_price' => 0,
-//            ]);
-//        }
-
-//        foreach ($schemas as $schema) {
-//            $newSchema = $product->schemas()->create([
-//                'name' => $schema['name'],
-//                'type' => $schema['type'],
-//                'required' => $schema['required'],
-//            ]);
-//
-//            if ($schema['type'] !== 0) {
-//                continue;
-//            }
-//
-//            foreach ($schema['items'] as $item) {
-//                $newSchema->schemaItems()->create([
-//                    'item_id' => $item['item_id'],
-//                    'extra_price' => $item['extra_price'],
-//                ]);
-//            }
-//        }
 
         $product->media()->sync($request->input('media', []));
 
         return ProductResource::make($product);
     }
 
-    public function update(ProductUpdateRequest $request, Product $product): JsonResponse
+    public function update(ProductUpdateRequest $request, Product $product): JsonResource
     {
-//        $schemas = $request->schemas;
-//
-//        foreach ($schemas as $schema) {
-//            Validator::make($schema, [
-//                'name' => 'nullable|string|max:255',
-//                // Kiedyś trzeba dodać jakieś obiekty typów w kodzie
-//                'type' => 'required|integer|min:0|max:1',
-//                'required' => 'required|boolean',
-//                'items' => 'exclude_unless:type,0|required|array|min:1',
-//            ])->validate();
-//
-//            $items = isset($schema['items']) ? $schema['items'] : [];
-//
-//            foreach ($items as $item) {
-//                Validator::make($item, [
-//                    'item_id' => 'required|uuid|exists:items,id',
-//                    'extra_price' => 'required|numeric',
-//                ])->validate();
-//            }
-//        }
-//
-//        $requiredPhysicalSchemas = array_filter($schemas, function ($schema) {
-//            return $schema['required'] === true && $schema['type'] === 0;
-//        });
-//
-//        if (count($requiredPhysicalSchemas) === 0) {
-//            return Error::abort('No required physical schemas.', 400);
-//        }
-
-        $originalId = $product->original_id;
-
-        $product->delete();
-
-        $product = Product::create($request->validated() + [
-            'original_id' => $originalId
-        ]);
-
-//        foreach ($schemas as $schema) {
-//            $newSchema = $product->schemas()->create([
-//                'name' => $schema['name'],
-//                'type' => $schema['type'],
-//                'required' => $schema['required'],
-//            ]);
-//
-//            if ($schema['type'] !== 0) {
-//                continue;
-//            }
-//
-//            foreach ($schema['items'] as $item) {
-//                $newSchema->schemaItems()->create([
-//                    'item_id' => $item['item_id'],
-//                    'extra_price' => $item['extra_price'],
-//                ]);
-//            }
-//        }
+        $product->update($request->validated());
 
         $product->media()->sync($request->input('media', []));
 
-        return ProductResource::make($product)
-            ->response()
-            ->setStatusCode(200);
+        return ProductResource::make($product);
     }
 
     public function destroy(Product $product): JsonResponse

@@ -21,8 +21,8 @@ class OptionFactory extends Factory
     {
         return [
             'name' => $this->faker->word,
-            'value' => $this->faker->numberBetween(0, 100),
-            'disabled' => $this->faker->boolean,
+            'price' => rand(0, 1) ? $this->faker->numberBetween(0, 100) : 0,
+            'disabled' => rand(0, 10) === 0,
         ];
     }
 }

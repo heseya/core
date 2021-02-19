@@ -16,6 +16,11 @@ class Schema extends Model
 
     /**
      * @OA\Property(
+     *   property="id",
+     *   type="string",
+     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
+     * ),
+     * @OA\Property(
      *   property="type",
      *   type="string",
      *   enum={"string", "numeric", "boolean", "date", "select", "file"},
@@ -34,22 +39,28 @@ class Schema extends Model
      * @OA\Property(
      *   property="name",
      *   type="string",
+     *   example="Size",
      * ),
      * @OA\Property(
      *   property="description",
      *   type="string",
+     *   description="Short description, no html or md allowed",
      * ),
      * @OA\Property(
      *   property="price",
      *   type="float",
+     *   description="Additional price the customer will have to pay after selecting the option (can be negative)",
+     *   example="9,99",
      * ),
      * @OA\Property(
      *   property="hidden",
      *   type="boolean",
+     *   example=false,
      * ),
      * @OA\Property(
      *   property="required",
      *   type="boolean",
+     *   example=false,
      * ),
      * @OA\Property(
      *   property="min",
@@ -57,6 +68,10 @@ class Schema extends Model
      * ),
      * @OA\Property(
      *   property="max",
+     *   type="string",
+     * ),
+     * @OA\Property(
+     *   property="step",
      *   type="string",
      * ),
      * @OA\Property(
@@ -81,10 +96,38 @@ class Schema extends Model
         'required',
         'max',
         'min',
+        'step',
         'default',
         'pattern',
         'validation',
     ];
+
+    protected $casts = [
+        'price' => 'float',
+        'hidden' => 'bool',
+        'required' => 'bool',
+        'available' => 'bool',
+    ];
+
+    public function getAvailableAttribute(): bool
+    {
+        if ($this->disabled) {
+            return false;
+        }
+
+        if ($this->options()->count() <= 0) {
+            return true;
+        }
+
+        // schema should be available if any of the options are available
+        foreach ($this->options as $option) {
+            if ($option->available) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /**
      * Check if user input is valid
@@ -95,13 +138,40 @@ class Schema extends Model
      */
     public function validate($input): bool
     {
-        $validator = Validator::make($input, $this->validation);
+        $validation = explode('|', $this->validation ?? '');
+
+        $validation[] = $this->type;
+
+        if ($this->required) {
+            $validation[] = 'required';
+        }
+
+        if ($this->max) {
+            $validation[] = 'max:' . $this->max;
+        }
+
+        if ($this->min) {
+            $validation[] = 'max:' . $this->min;
+        }
+
+        dd($validation);
+
+        $validator = Validator::make($input, $validation);
 
         if ($validator->fails()) {
             return false;
         }
 
         return true;
+    }
+
+    public function setTypeAttribute($value)
+    {
+        if (!is_integer($value)) {
+            $value = array_***REMOVED***(self::TYPES)[$value];
+        }
+
+        $this->attributes['type'] = $value;
     }
 
     public function products(): BelongsToMany
