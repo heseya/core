@@ -10,7 +10,6 @@ use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -23,7 +22,8 @@ class Product extends Model
     /**
      * @OA\Property(
      *   property="id",
-     *   type="integer",
+     *   type="string",
+     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
      * )
      *
      * @OA\Property(
@@ -71,7 +71,6 @@ class Product extends Model
         'public',
         'brand_id',
         'category_id',
-        'original_id',
     ];
 
     /**
@@ -83,6 +82,7 @@ class Product extends Model
         'price' => 'float',
         'public' => 'bool',
         'digital' => 'bool',
+        'available' => 'bool',
     ];
 
     protected array $searchable = [
@@ -138,9 +138,10 @@ class Product extends Model
      *   @OA\Items(ref="#/components/schemas/Schema"),
      * )
      */
-    public function schemas(): MorphTo
+    public function schemas(): BelongsToMany
     {
-        return $this->morphTo();
+        return $this->belongsToMany(Schema::class, 'product_schemas')
+            ->orderBy('created_at', 'DESC');
     }
 
     public function orders(): BelongsToMany
@@ -176,10 +177,18 @@ class Product extends Model
      */
     public function getAvailableAttribute(): bool
     {
-        return true; // temp
+        if ($this->schemas()->count() <= 0) {
+            return true;
+        }
 
-//        return $this->schemas()->exists() ? $this->schemas()->first()
-//            ->schemaItems()->first()->item->quantity > 0 : false;
+        // a product is available if all required schematics are available
+        foreach ($this->schemas as $schema) {
+            if ($schema->required && !$schema->available) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

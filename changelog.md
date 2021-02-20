@@ -7,8 +7,9 @@ and this project adheres to [Semantic Versioning 2.0.0](https://semver.org/spec/
 
 ## [Unreleased]
 ### Changed
+- Products schemas refactor,
 - Code refactor,
-- Follow laravel crud controller methods naming,
+- Follow laravel crud controller methods naming.
 
 
 ## [1.0.5] - 2020-07-15

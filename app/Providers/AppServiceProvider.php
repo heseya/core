@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Schemas\TextAreaSchema;
+use App\Schemas\SelectSchema;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passport\Passport;
@@ -26,8 +26,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Relation::morphMap([
-            'test_area' => TextAreaSchema::class,
-        ]);
+        //
     }
 }

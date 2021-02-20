@@ -92,6 +92,23 @@ Route::middleware('auth:api')->group(function () {
     Route::get('deposits', 'DepositController@index');
 
     Route::post('media', 'MediaController@store');
+
+    Route::prefix('schemas')->group(function () {
+        Route::get(null, 'SchemaController@index');
+        Route::post(null, 'SchemaController@store');
+        Route::get('id:{schema:id}', 'SchemaController@show');
+        Route::patch('id:{schema:id}', 'SchemaController@update');
+        Route::delete('id:{schema:id}', 'SchemaController@destroy');
+        Route::post('id:{schema:id}/attach/id:{product:id}', 'SchemaController@attach');
+        Route::post('id:{schema:id}/detach/id:{product:id}', 'SchemaController@detach');
+    });
+
+    Route::prefix('options')->group(function () {
+        Route::post(null, 'OptionController@store');
+        Route::get('id:{option:id}', 'OptionController@show');
+        Route::patch('id:{option:id}', 'OptionController@update');
+        Route::delete('id:{option:id}', 'OptionController@destroy');
+    });
 });
 
 // External

@@ -184,40 +184,6 @@ interface ProductControllerSwagger
      *         type="boolean",
      *       ),
      *       @OA\Property(
-     *         property="schemas",
-     *         type="array",
-     *         @OA\Items(
-     *           type="object",
-     *           @OA\Property(
-     *             property="name",
-     *             type="string",
-     *           ),
-     *           @OA\Property(
-     *             property="type",
-     *             type="integer",
-     *           ),
-     *           @OA\Property(
-     *             property="required",
-     *             type="boolean",
-     *           ),
-     *           @OA\Property(
-     *             property="items",
-     *             type="array",
-     *             @OA\Items(
-     *               type="object",
-     *               @OA\Property(
-     *                 property="item_id",
-     *                 type="integer",
-     *               ),
-     *               @OA\Property(
-     *                 property="extra_price",
-     *                 type="number",
-     *               )
-     *             )
-     *           )
-     *         )
-     *       ),
-     *       @OA\Property(
      *         property="media",
      *         type="array",
      *         @OA\Items(
@@ -292,40 +258,6 @@ interface ProductControllerSwagger
      *         type="boolean",
      *       ),
      *       @OA\Property(
-     *         property="schemas",
-     *         type="array",
-     *         @OA\Items(
-     *           type="object",
-     *           @OA\Property(
-     *             property="name",
-     *             type="string",
-     *           ),
-     *           @OA\Property(
-     *             property="type",
-     *             type="integer",
-     *           ),
-     *           @OA\Property(
-     *             property="required",
-     *             type="boolean",
-     *           ),
-     *           @OA\Property(
-     *             property="items",
-     *             type="array",
-     *             @OA\Items(
-     *               type="object",
-     *               @OA\Property(
-     *                 property="item_id",
-     *                 type="integer",
-     *               ),
-     *               @OA\Property(
-     *                 property="extra_price",
-     *                 type="number",
-     *               )
-     *             )
-     *           )
-     *         )
-     *       ),
-     *       @OA\Property(
      *         property="media",
      *         type="array",
      *         @OA\Items(
@@ -349,7 +281,7 @@ interface ProductControllerSwagger
      *   }
      * )
      */
-    public function update(ProductUpdateRequest $request, Product $product): JsonResponse;
+    public function update(ProductUpdateRequest $request, Product $product): JsonResource;
 
     /**
      * @OA\Delete(

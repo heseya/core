@@ -19,8 +19,5 @@ class PackageTemplate extends Model implements PackageTemplateSwagger
 
     protected $casts = [
         'weight' => 'float',
-        'width' => 'float',
-        'height' => 'float',
-        'depth' => 'float',
     ];
 }

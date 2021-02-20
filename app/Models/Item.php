@@ -20,7 +20,8 @@ class Item extends Model
     /**
      * @OA\Property(
      *   property="id",
-     *   type="integer",
+     *   type="string",
+     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
      * )
      *
      * @OA\Property(
@@ -32,11 +33,13 @@ class Item extends Model
      * @OA\Property(
      *   property="sku",
      *   type="string",
+     *   example="K121"
      * )
      *
      * @OA\Property(
      *   property="quantity",
-     *   type="string",
+     *   type="float",
+     *   example="20",
      * )
      */
 
@@ -56,12 +59,12 @@ class Item extends Model
         'sku',
     ];
 
-    public function getQuantityAttribute (): float
+    public function getQuantityAttribute(): float
     {
         return $this->deposits()->sum('quantity');
     }
 
-    public function deposits (): HasMany
+    public function deposits(): HasMany
     {
         return $this->hasMany(Deposit::class);
     }

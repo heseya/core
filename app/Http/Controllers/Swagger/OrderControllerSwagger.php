@@ -233,8 +233,17 @@ interface OrderControllerSwagger
      *     ),
      *   ),
      *   @OA\Response(
-     *     response=204,
+     *     response=200,
      *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         type="array",
+     *         @OA\Items(
+     *           ref="#/components/schemas/Order",
+     *         )
+     *       )
+     *     )
      *   ),
      *   security={
      *     {"oauth": {}}

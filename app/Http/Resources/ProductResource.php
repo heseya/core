@@ -36,7 +36,7 @@ class ProductResource extends Resource
             'description_md' => $this->description_md,
             'description_html' => $this->description_html,
             'gallery' => MediaResource::collection($this->media),
-            // 'schemas' => SchemaResource::collection($this->schemas),
+            'schemas' => SchemaResource::collection($this->schemas),
         ];
     }
 }

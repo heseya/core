@@ -12,7 +12,8 @@ interface PackageTemplateSwagger
     /**
      * @OA\Property(
      *   property="id",
-     *   type="integer",
+     *   type="string",
+     *   example="5fb4a472-b5fd-4e9a-a4ee-bf42bde86a73",
      * )
      *
      * @OA\Property(

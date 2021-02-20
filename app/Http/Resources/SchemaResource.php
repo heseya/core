@@ -2,24 +2,36 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Schema;
 use Illuminate\Http\Request;
 
 class SchemaResource extends Resource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @param Request $request
-     * @return array
-     */
     public function base(Request $request): array
     {
         return [
             'id' => $this->getKey(),
+            'type' => Schema::TYPES[$this->type],
             'name' => $this->name,
-            'type' => $this->type,
+            'description' => $this->description,
+            'price' => $this->price,
+            'hidden' => $this->hidden,
             'required' => $this->required,
-            'schema_items' => SchemaItemResource::collection($this->schemaItems),
+            'available' => $this->available,
+            'max' => $this->max,
+            'min' => $this->min,
+            'step' => $this->step,
+            'default' => $this->default,
+            'pattern' => $this->pattern,
+            'validation' => $this->validation,
+            'options' => OptionResource::collection($this->options),
+        ];
+    }
+
+    public function view(Request $request): array
+    {
+        return [
+            'products' => ProductResource::collection($this->products),
         ];
     }
 }

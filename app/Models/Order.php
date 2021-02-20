@@ -29,7 +29,8 @@ class Order extends Model
     /**
      * @OA\Property(
      *   property="id",
-     *   type="integer",
+     *   type="string",
+     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
      * )
      *
      * @OA\Property(
@@ -47,7 +48,7 @@ class Order extends Model
      * @OA\Property(
      *   property="shipping_number",
      *   type="string",
-     *   example="chch234chch1j3c23",
+     *   example="630552359128340015809770",
      * )
      */
 
@@ -100,7 +101,8 @@ class Order extends Model
      *
      * @OA\Property(
      *   property="summary_payed",
-     *   type="number",
+     *   type="float",
+     *   example=199.99
      * )
      *
      * @return float
@@ -115,7 +117,8 @@ class Order extends Model
     /**
      * @OA\Property(
      *   property="payed",
-     *   type="bolean",
+     *   type="boolean",
+     *   example=true,
      * )
      *
      * @return bool

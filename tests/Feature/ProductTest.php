@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Brand;
 use App\Models\Category;
-use App\Models\Item;
 use App\Models\Product;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
@@ -12,13 +11,11 @@ use Tests\TestCase;
 class ProductTest extends TestCase
 {
     private Product $product;
-    private Item $item;
 
     private array $hidden_products;
 
     private array $expected;
     private array $expected_short;
-    private array $expected_updated;
 
     public function setUp(): void
     {
@@ -33,8 +30,35 @@ class ProductTest extends TestCase
             'public' => true,
         ]);
 
-        $this->product->update([
-            'original_id' => $this->product->getKey(),
+        $schema = $this->product->schemas()->create([
+            'name' => 'Rozmiar',
+            'type' => 'select',
+            'price' => 0,
+            'required' => true,
+        ]);
+
+        $l = $schema->options()->create([
+            'name' => 'L',
+            'price' => 0,
+        ]);
+
+        $l->items()->create([
+            'name' => 'Koszulka L',
+            'sku' => 'K001/L',
+        ]);
+
+        $xl = $schema->options()->create([
+            'name' => 'XL',
+            'price' => 0,
+        ]);
+
+        $item = $xl->items()->create([
+            'name' => 'Koszulka XL',
+            'sku' => 'K001/XL',
+        ]);
+
+        $item->deposits()->create([
+            'quantity' => 10,
         ]);
 
         // Hidden
@@ -86,9 +110,10 @@ class ProductTest extends TestCase
             'id' => $this->product->getKey(),
             'name' => $this->product->name,
             'slug' => $this->product->slug,
-            'price' => $this->product->price,
+            'price' => (int) $this->product->price,
             'visible' => $this->product->isPublic(),
             'public' => (bool) $this->product->public,
+            'available' => true,
             'brand' => [
                 'id' => $this->product->brand->getKey(),
                 'name' => $this->product->brand->name,
@@ -111,44 +136,36 @@ class ProductTest extends TestCase
             'description_md' => $this->product->description_md,
             'description_html' => parsedown($this->product->description_md),
             'gallery' => [],
-//            'schemas' => [[
-//                'name' => null,
-//                'type' => 0,
-//                'required' => true,
-//                'schema_items' => [[
-//                    'value' => null,
-//                    'extra_price' => 0,
-//                    'item' => [
-//                        'name' => $this->product->name,
-//                        'sku' => null,
-//                        'quantity' => 0,
-//                    ],
-//                ]],
-//            ]],
+            'schemas' => [[
+                'name' => 'Rozmiar',
+                'type' => 'select',
+                'required' => true,
+                'available' => true,
+                'price' => 0,
+                'options' => [
+                    [
+                        'name' => 'L',
+                        'price' => 0,
+                        'disabled' => false,
+                        'available' => false,
+                        'items' => [[
+                            'name' => 'Koszulka L',
+                            'sku' => 'K001/L',
+                        ]],
+                    ],
+                    [
+                        'name' => 'XL',
+                        'price' => 0,
+                        'disabled' => false,
+                        'available' => true,
+                        'items' => [[
+                            'name' => 'Koszulka XL',
+                            'sku' => 'K001/XL',
+                        ]],
+                    ],
+                ],
+            ]],
         ]);
-
-        $this->expected_updated = [
-            'name' => 'Updated',
-            'slug' => 'updated',
-            'price' => 150,
-            'public' => false,
-            'brand' => [
-                'id' => $this->product->brand->getKey(),
-                'name' => $this->product->brand->name,
-                'slug' => $this->product->brand->slug,
-                'public' => (bool) $this->product->brand->public,
-            ],
-            'category' => [
-                'id' => $this->product->category->getKey(),
-                'name' => $this->product->category->name,
-                'slug' => $this->product->category->slug,
-                'public' => (bool) $this->product->category->public,
-            ],
-            'cover' => null,
-            'description_md' => '# New description',
-            'description_html' => '<h1>New description</h1>',
-            'gallery' => [],
-        ];
     }
 
     public function testIndex(): void
@@ -243,6 +260,16 @@ class ProductTest extends TestCase
                 'cover' => null,
                 'gallery' => [],
             ]]);
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'public' => true,
+            'description_md' => '# Description',
+            'brand_id' => $this->product->brand->getKey(),
+            'category_id' => $this->product->category->getKey(),
+        ]);
     }
 
     public function testUpdate(): void
@@ -255,16 +282,14 @@ class ProductTest extends TestCase
         $response = $this->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'Updated',
             'slug' => 'updated',
-            'price' => 150.00,
+            'price' => 150,
             'brand_id' => $this->product->brand->getKey(),
             'category_id' => $this->product->category->getKey(),
             'description_md' => '# New description',
             'public' => false,
         ]);
 
-        $response
-            ->assertOk()
-            ->assertJson(['data' => $this->expected_updated]);
+        $response->assertOk();
     }
 
     public function testDelete(): void
