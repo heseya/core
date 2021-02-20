@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Swagger;
 
 use App\Http\Requests\SchemaStoreRequest;
+use App\Models\Product;
 use App\Models\Schema;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -137,4 +138,68 @@ interface SchemaControllerSwagger
      * )
      */
     public function destroy(Schema $schema): JsonResponse;
+
+    /**
+     * @OA\Post(
+     *   path="/schemas/id:{id}/attach/id:{product_id}",
+     *   tags={"Schemas"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     description="Schema ID",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *     )
+     *   ),
+     *   @OA\Parameter(
+     *     name="product_id",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=204,
+     *     description="Success",
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function attach(Schema $schema, string $product): JsonResponse;
+
+    /**
+     * @OA\Post(
+     *   path="/schemas/id:{id}/detach/id:{product_id}",
+     *   tags={"Schemas"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     description="Schema ID",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *     )
+     *   ),
+     *   @OA\Parameter(
+     *     name="product_id",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=204,
+     *     description="Success",
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function detach(Schema $schema, string $product): JsonResponse;
 }

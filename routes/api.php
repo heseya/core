@@ -99,6 +99,8 @@ Route::middleware('auth:api')->group(function () {
         Route::get('id:{schema:id}', 'SchemaController@show');
         Route::patch('id:{schema:id}', 'SchemaController@update');
         Route::delete('id:{schema:id}', 'SchemaController@destroy');
+        Route::post('id:{schema:id}/attach/id:{product:id}', 'SchemaController@attach');
+        Route::post('id:{schema:id}/detach/id:{product:id}', 'SchemaController@detach');
     });
 
     Route::prefix('options')->group(function () {
