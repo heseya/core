@@ -27,13 +27,15 @@ class SchemaController extends Controller implements SchemaControllerSwagger
     {
         $schema = Schema::create($request->validated());
 
-        foreach ($request->input('options') as $input) {
-            $option = $schema->options()->create($input);
+        if ($request->has('options')) {
+            foreach ($request->input('options') as $input) {
+                $option = $schema->options()->create($input);
 
-            $option->items()->sync($input['items'] ?? []);
+                $option->items()->sync($input['items'] ?? []);
+            }
+
+            $schema->refresh();
         }
-
-        $schema->refresh();
 
         return SchemaResource::make($schema);
     }
@@ -47,10 +49,12 @@ class SchemaController extends Controller implements SchemaControllerSwagger
     {
         $schema->update($request->validated());
 
-        foreach ($request->input('options') as $input) {
-            $option = $schema->options()->create($input);
+        if ($request->has('options')) {
+            foreach ($request->input('options') as $input) {
+                $option = $schema->options()->create($input);
 
-            $option->items()->sync($input['items'] ?? []);
+                $option->items()->sync($input['items'] ?? []);
+            }
         }
 
         return SchemaResource::make($schema);
