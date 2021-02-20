@@ -57,6 +57,8 @@ class Item extends Model
     protected array $sortable = [
         'name',
         'sku',
+        'created_at',
+        'updated_at',
     ];
 
     public function getQuantityAttribute(): float

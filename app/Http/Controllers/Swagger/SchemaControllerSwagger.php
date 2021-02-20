@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Swagger;
 
+use App\Http\Requests\IndexSchemaRequest;
 use App\Http\Requests\SchemaStoreRequest;
-use App\Models\Product;
 use App\Models\Schema;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -31,7 +31,7 @@ interface SchemaControllerSwagger
      *   }
      * )
      */
-    public function index(): JsonResource;
+    public function index(IndexSchemaRequest $request): JsonResource;
 
     /**
      * @OA\Post(

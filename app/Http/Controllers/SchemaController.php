@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Swagger\SchemaControllerSwagger;
+use App\Http\Requests\IndexSchemaRequest;
 use App\Http\Requests\SchemaStoreRequest;
 use App\Http\Resources\SchemaResource;
 use App\Models\Product;
@@ -12,10 +13,13 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class SchemaController extends Controller implements SchemaControllerSwagger
 {
-    public function index(): JsonResource
+    public function index(IndexSchemaRequest $request): JsonResource
     {
+        $schemas = Schema::search($request->validated())
+            ->sort($request->input('sort'));
+
         return SchemaResource::collection(
-            Schema::paginate(12),
+            $schemas->paginate(12),
         );
     }
 

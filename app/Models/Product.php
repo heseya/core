@@ -67,7 +67,6 @@ class Product extends Model
         'slug',
         'price',
         'description_md',
-        'digital',
         'public',
         'brand_id',
         'category_id',
@@ -81,7 +80,6 @@ class Product extends Model
     protected $casts = [
         'price' => 'float',
         'public' => 'bool',
-        'digital' => 'bool',
         'available' => 'bool',
     ];
 
@@ -99,6 +97,7 @@ class Product extends Model
         'price',
         'name',
         'created_at',
+        'updated_at',
     ];
 
     protected string $defaultSortBy = 'created_at';

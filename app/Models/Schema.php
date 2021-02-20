@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\SearchTypes\SchemaSearch;
+use App\Traits\Sortable;
+use Heseya\Searchable\Searches\Like;
+use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,7 +16,7 @@ use Illuminate\Support\Facades\Validator;
  */
 class Schema extends Model
 {
-    use HasFactory;
+    use HasFactory, Searchable, Sortable;
 
     /**
      * @OA\Property(
@@ -107,6 +111,20 @@ class Schema extends Model
         'hidden' => 'bool',
         'required' => 'bool',
         'available' => 'bool',
+    ];
+
+    protected $searchable = [
+        'search' => SchemaSearch::class,
+        'name' => Like::class,
+        'hidden',
+        'required',
+    ];
+
+    protected array $sortable = [
+        'name',
+        'sku',
+        'created_at',
+        'updated_at',
     ];
 
     public function getAvailableAttribute(): bool
