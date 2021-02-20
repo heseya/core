@@ -145,6 +145,7 @@ class InitDatabase extends Migration
             $table->float('price', 19, 4)->default(0);
             $table->string('min')->nullable();
             $table->string('max')->nullable();
+            $table->float('step', 8, 8)->nullable();
             $table->string('default')->nullable();
             $table->string('pattern')->nullable();
             $table->string('validation')->nullable();
