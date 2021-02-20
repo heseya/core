@@ -37,6 +37,8 @@ class ProductTest extends TestCase
             'required' => true,
         ]);
 
+        $this->travel(5)->hours();
+
         $l = $schema->options()->create([
             'name' => 'L',
             'price' => 0,
@@ -46,6 +48,8 @@ class ProductTest extends TestCase
             'name' => 'Koszulka L',
             'sku' => 'K001/L',
         ]);
+
+        $this->travelBack();
 
         $xl = $schema->options()->create([
             'name' => 'XL',
