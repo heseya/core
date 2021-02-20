@@ -5,29 +5,26 @@
     "license": "proprietary",
     "require": {
         "php": "^7.4|^8.0",
-        "ext-json": "*",
-        "ext-simplexml": "*",
-        "ext-soap": "*",
         "darkaonline/l5-swagger": "^8.0",
         "fideloper/proxy": "^4.4",
-        "fruitcake/laravel-cors": "^2.0.1",
+        "fruitcake/laravel-cors": "^2.0",
         "heseya/laravel-searchable": "^1.0",
-        "laravel/framework": "^8.0",
-        "laravel/passport": "^10.0",
-        "laravel/tinker": "^2.4",
+        "laravel/framework": "^8.28",
+        "laravel/passport": "^10.1",
+        "laravel/tinker": "^2.6",
         "parsedown/laravel": "^1.2",
-        "pay-now/paynow-php-sdk": "^1.0",
-        "propaganistas/laravel-phone": "^4.2",
+        "pay-now/paynow-php-sdk": "^1.1",
+        "propaganistas/laravel-phone": "^4.3",
         "guzzlehttp/guzzle": "^7.2"
     },
     "require-dev": {
-        "facade/ignition": "^2.4",
+        "facade/ignition": "^2.5",
         "fzaninotto/faker": "^1.9",
         "mbezhanov/faker-provider-collection": "^1.2",
         "mockery/mockery": "^1.4",
-        "nunomaduro/collision": "^5.0",
+        "nunomaduro/collision": "^5.3",
         "nunomaduro/phpinsights": "^1.14",
-        "phpunit/phpunit": "^9.3"
+        "phpunit/phpunit": "^9.5"
     },
     "config": {
         "optimize-autoloader": true,
