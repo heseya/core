@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Swagger\SchemaControllerSwagger;
 use App\Http\Requests\SchemaStoreRequest;
 use App\Http\Resources\SchemaResource;
+use App\Models\Option;
 use App\Models\Schema;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -22,6 +23,14 @@ class SchemaController extends Controller implements SchemaControllerSwagger
     {
         $schema = Schema::create($request->validated());
 
+        foreach ($request->input('options') as $input) {
+            $option = $schema->options()->create($input);
+
+            $option->items()->sync($input['items'] ?? []);
+        }
+
+        $schema->refresh();
+
         return SchemaResource::make($schema);
     }
 
@@ -33,6 +42,12 @@ class SchemaController extends Controller implements SchemaControllerSwagger
     public function update(SchemaStoreRequest $request, Schema $schema): JsonResource
     {
         $schema->update($request->validated());
+
+        foreach ($request->input('options') as $input) {
+            $option = $schema->options()->create($input);
+
+            $option->items()->sync($input['items'] ?? []);
+        }
 
         return SchemaResource::make($schema);
     }

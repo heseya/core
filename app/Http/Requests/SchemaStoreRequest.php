@@ -23,6 +23,14 @@ class SchemaStoreRequest extends FormRequest
             'default' => ['nullable'],
             'pattern' => ['nullable', 'string'],
             'validation' => ['nullable', 'string'],
+
+            'options' => ['array'],
+            'options.*.name' => ['required', 'string', 'max:255'],
+            'options.*.price' => ['required', 'numeric'],
+            'options.*.disabled' => ['required', 'boolean'],
+
+            'options.*.items' => ['array'],
+            'options.*.items.*' => ['uuid', 'exists:items,id'],
         ];
     }
 }
