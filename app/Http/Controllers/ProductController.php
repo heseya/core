@@ -49,6 +49,10 @@ class ProductController extends Controller implements ProductControllerSwagger
 
         $product->media()->sync($request->input('media', []));
 
+        if ($request->has('schemas')) {
+            $product->schemas()->sync($request->input('schemas'));
+        }
+
         return ProductResource::make($product);
     }
 
@@ -57,6 +61,10 @@ class ProductController extends Controller implements ProductControllerSwagger
         $product->update($request->validated());
 
         $product->media()->sync($request->input('media', []));
+
+        if ($request->has('schemas')) {
+            $product->schemas()->sync($request->input('schemas'));
+        }
 
         return ProductResource::make($product);
     }
