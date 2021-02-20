@@ -190,6 +190,14 @@ interface ProductControllerSwagger
      *           type="string",
      *           example="0006c3a0-21af-4485-b7fe-9c42233cf03a",
      *         )
+     *       ),
+     *       @OA\Property(
+     *         property="schemas",
+     *         type="array",
+     *         @OA\Items(
+     *           type="string",
+     *           example="0006c3a0-21af-4485-b7fe-9c42233cf03a",
+     *         )
      *       )
      *     )
      *   ),
@@ -261,7 +269,16 @@ interface ProductControllerSwagger
      *         property="media",
      *         type="array",
      *         @OA\Items(
-     *           type="integer",
+     *           type="string",
+     *           example="0006c3a0-21af-4485-b7fe-9c42233cf03a",
+     *         )
+     *       ),
+     *       @OA\Property(
+     *         property="schemas",
+     *         type="array",
+     *         @OA\Items(
+     *           type="string",
+     *           example="0006c3a0-21af-4485-b7fe-9c42233cf03a",
      *         )
      *       )
      *     )
