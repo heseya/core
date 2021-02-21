@@ -298,6 +298,14 @@ class InitDatabase extends Migration
             $table->timestamps();
         });
 
+        Schema::create('settings', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('name')->unique()->index();
+            $table->string('value');
+            $table->boolean('public');
+            $table->timestamps();
+        });
+
         DB::table('statuses')->insert([
             'id' => Str::uuid(),
             'name' => 'Nowe',
