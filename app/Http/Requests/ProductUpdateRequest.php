@@ -15,7 +15,7 @@ class ProductUpdateRequest extends ProductCreateRequest
             'string',
             'max:255',
             'alpha_dash',
-            Rule::unique('products')->ignore($this->product->slug, 'slug'),
+            Rule::unique('products')->ignore($this->route('product')->slug, 'slug'),
         ];
 
         return $rules;
