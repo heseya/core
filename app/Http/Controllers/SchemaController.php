@@ -52,7 +52,7 @@ class SchemaController extends Controller implements SchemaControllerSwagger
 
         if ($request->has('options')) {
             foreach ($request->input('options') as $input) {
-                if (!isset($input->id)) {
+                if (!isset($input['id'])) {
                     $option = $schema->options()->create($input);
                 } else {
                     $option = Option::findOrFail($input['id']);
