@@ -49,7 +49,7 @@ class ProductController extends Controller implements ProductControllerSwagger
 
         $product->media()->sync($request->input('media', []));
 
-        if ($request->has('schemas')) {
+        if ($request->has('schemas') && is_array($request->input('schemas'))) {
             $product->schemas()->sync($request->input('schemas'));
         }
 
@@ -62,7 +62,7 @@ class ProductController extends Controller implements ProductControllerSwagger
 
         $product->media()->sync($request->input('media', []));
 
-        if ($request->has('schemas')) {
+        if ($request->has('schemas') && is_array($request->input('schemas'))) {
             $product->schemas()->sync($request->input('schemas'));
         }
 

@@ -14,9 +14,9 @@ class SchemaStoreRequest extends FormRequest
             'type' => ['required', 'string', Rule::in(array_values(Schema::TYPES))],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:255'],
-            'price' => ['required', 'numeric'],
-            'hidden' => ['required', 'boolean'],
-            'required' => ['required', 'boolean'],
+            'price' => ['nullable', 'numeric'],
+            'hidden' => ['nullable', 'boolean'],
+            'required' => ['nullable', 'boolean'],
             'min' => ['nullable', 'numeric'],
             'max' => ['nullable', 'numeric'],
             'step' => ['nullable', 'numeric'],
@@ -24,12 +24,12 @@ class SchemaStoreRequest extends FormRequest
             'pattern' => ['nullable', 'string'],
             'validation' => ['nullable', 'string'],
 
-            'options' => ['array'],
+            'options' => ['nullable', 'array'],
             'options.*.name' => ['required', 'string', 'max:255'],
             'options.*.price' => ['required', 'numeric'],
             'options.*.disabled' => ['required', 'boolean'],
 
-            'options.*.items' => ['array'],
+            'options.*.items' => ['nullable', 'array'],
             'options.*.items.*' => ['uuid', 'exists:items,id'],
         ];
     }

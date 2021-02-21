@@ -6,12 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ProductCreateRequest extends FormRequest
 {
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
-    public function rules()
+    public function rules(): array
     {
         return [
             'name' => ['required', 'string', 'max:255'],
@@ -25,7 +20,7 @@ class ProductCreateRequest extends FormRequest
             'media' => ['nullable', 'array'],
             'media.*' => ['uuid', 'exists:media,id'],
 
-            'schemas' => ['array'],
+            'schemas' => ['nullable', 'array'],
             'schemas.*' => ['uuid', 'exists:schemas,id'],
         ];
     }
