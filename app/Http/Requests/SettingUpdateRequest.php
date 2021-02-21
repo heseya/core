@@ -8,17 +8,16 @@ use Illuminate\Validation\Rule;
 
 class SettingUpdateRequest extends FormRequest
 {
-    public function rules(Setting $setting): array
+    public function rules(): array
     {
         return [
             'name' => [
                 'string',
                 'max:255',
-                'unique:settings',
-                Rule::unique('settings')->ignore($setting),
+                Rule::unique('settings')->whereNot('name', $this->setting),
                 Rule::notIn(
                     collect(config('settings'))
-                        ->except($setting->name)->keys()->toArray(),
+                        ->except($this->setting)->keys()->toArray(),
                 ),
             ],
             'value' => ['string', 'max:255'],
