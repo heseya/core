@@ -349,14 +349,15 @@ class ProductTest extends TestCase
         ]);
     }
 
-    public function testDelete(): void
+    public function testDeleteUnauthorized(): void
     {
         $response = $this->deleteJson('/products/id:' . $this->product->getKey());
         $response->assertUnauthorized();
+    }
 
-        Passport::actingAs($this->user);
-
-        $response = $this->deleteJson('/products/id:' . $this->product->getKey());
+    public function testDelete(): void
+    {
+        $response = $this->actingAs($this->user)->deleteJson('/products/id:' . $this->product->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($this->product);
 
