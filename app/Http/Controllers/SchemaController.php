@@ -6,6 +6,7 @@ use App\Http\Controllers\Swagger\SchemaControllerSwagger;
 use App\Http\Requests\IndexSchemaRequest;
 use App\Http\Requests\SchemaStoreRequest;
 use App\Http\Resources\SchemaResource;
+use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
 use Illuminate\Http\JsonResponse;
@@ -51,7 +52,12 @@ class SchemaController extends Controller implements SchemaControllerSwagger
 
         if ($request->has('options')) {
             foreach ($request->input('options') as $input) {
-                $option = $schema->options()->create($input);
+                if (!isset($input->id)) {
+                    $option = $schema->options()->create($input);
+                } else {
+                    $option = Option::findOrFail($input['id']);
+                    $option->update($input);
+                }
 
                 $option->items()->sync($input['items'] ?? []);
             }
