@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Schema;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 
@@ -181,10 +182,11 @@ class ProductTest extends TestCase
             ->assertJson(['data' => [
                 0 => $this->expected_short,
             ]]);
+    }
 
-        Passport::actingAs($this->user);
-
-        $response = $this->getJson('/products');
+    public function testIndexAdmin(): void
+    {
+        $response = $this->actingAs($this->user)->getJson('/products');
         $response
             ->assertOk()
             ->assertJsonCount(count($this->hidden_products) + 1, 'data'); // Should show all products.
@@ -201,11 +203,14 @@ class ProductTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testShowAdmin(): void
+    public function testShowAdminUnauthorized(): void
     {
         $response = $this->getJson('/products/id:' . $this->product->getKey());
         $response->assertUnauthorized();
+    }
 
+    public function testShowAdmin(): void
+    {
         $response = $this->actingAs($this->user)->getJson('/products/id:' . $this->product->getKey());
         $response
             ->assertOk()
@@ -223,14 +228,15 @@ class ProductTest extends TestCase
         }
     }
 
-    public function testCreate(): void
+    public function testCreateUnauthorized(): void
     {
         $response = $this->postJson('/products');
         $response->assertUnauthorized();
+    }
 
-        Passport::actingAs($this->user);
-
-        $response = $this->postJson('/products', [
+    public function testCreate(): void
+    {
+        $response = $this->actingAs($this->user)->postJson('/products', [
             'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
@@ -276,14 +282,50 @@ class ProductTest extends TestCase
         ]);
     }
 
-    public function testUpdate(): void
+    public function testCreateWithSchemas(): void
+    {
+        $schema = Schema::factory()->create();
+
+        $response = $this->actingAs($this->user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 150,
+            'brand_id' => $this->product->brand->getKey(),
+            'category_id' => $this->product->category->getKey(),
+            'public' => false,
+            'schemas' => [
+                $schema->getKey(),
+            ],
+        ]);
+
+        $response->assertCreated();
+        $product = $response->getData()->data;
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 150,
+            'public' => false,
+            'description_md' => null,
+            'brand_id' => $this->product->brand->getKey(),
+            'category_id' => $this->product->category->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_schemas', [
+            'product_id' => $product->id,
+            'schema_id' => $schema->id,
+        ]);
+    }
+
+    public function testUpdateUnauthorized(): void
     {
         $response = $this->patchJson('/products/id:' . $this->product->getKey());
         $response->assertUnauthorized();
+    }
 
-        Passport::actingAs($this->user);
-
-        $response = $this->patchJson('/products/id:' . $this->product->getKey(), [
+    public function testUpdate(): void
+    {
+        $response = $this->actingAs($this->user)->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'Updated',
             'slug' => 'updated',
             'price' => 150,
@@ -294,6 +336,17 @@ class ProductTest extends TestCase
         ]);
 
         $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $this->product->getKey(),
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150,
+            'brand_id' => $this->product->brand->getKey(),
+            'category_id' => $this->product->category->getKey(),
+            'description_md' => '# New description',
+            'public' => false,
+        ]);
     }
 
     public function testDelete(): void
