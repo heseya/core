@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Setting;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -12,6 +11,7 @@ class SettingUpdateRequest extends FormRequest
     {
         return [
             'name' => [
+                'required',
                 'string',
                 'max:255',
                 Rule::unique('settings')->whereNot('name', $this->setting),
@@ -20,8 +20,8 @@ class SettingUpdateRequest extends FormRequest
                         ->except($this->setting)->keys()->toArray(),
                 ),
             ],
-            'value' => ['string', 'max:255'],
-            'public' => ['boolean'],
+            'value' => ['required', 'string', 'max:255'],
+            'public' => ['nullable', 'boolean'],
         ];
     }
 }

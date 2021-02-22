@@ -6,12 +6,6 @@ use Illuminate\Http\Request;
 
 class OrderPublicResource extends Resource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @param Request $request
-     * @return array
-     */
     public function base(Request $request): array
     {
         return [

@@ -2,17 +2,10 @@
 
 namespace App\Http\Resources;
 
-use App\Models\ShippingMethod;
 use Illuminate\Http\Request;
 
 class OrderResource extends Resource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @param Request $request
-     * @return array
-     */
     public function base(Request $request): array
     {
         return [

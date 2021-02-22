@@ -14,7 +14,7 @@ class OptionStoreRequest extends FormRequest
             'disabled' => ['required', 'boolean'],
             'schema_id' => ['required', 'uuid', 'exists:schemas,id'],
 
-            'items' => ['array'],
+            'items' => ['nullable', 'array'],
             'items.*' => ['uuid', 'exists:items,id'],
         ];
     }

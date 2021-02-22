@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ItemIndexRequest extends FormRequest
 {
-    public function rules()
+    public function rules(): array
     {
         return [
             'name' => ['nullable', 'string', 'max:255'],
