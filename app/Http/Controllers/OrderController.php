@@ -8,8 +8,8 @@ use App\Http\Requests\OrderIndexRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Resources\OrderPublicResource;
 use App\Http\Resources\OrderResource;
-use App\Mail\OrderUpdateStatus;
 use App\Mail\NewOrder;
+use App\Mail\OrderUpdateStatus;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\Product;
@@ -65,7 +65,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             $product = Product::findOrFail($item['product_id']);
             $price = $product->price;
 
-            $order->items()->create([
+            $order->products()->create([
                 'product_id' => $product->getKey(),
                 'quantity' => $item['quantity'],
                 'price' => $price < 0 ? 0 : $price,

@@ -28,7 +28,7 @@ class OrderResource extends Resource
             'invoice_address' => AddressResource::make($this->invoiceAddress),
             'shipping_method' => ShippingMethodResource::make($this->shippingMethod),
             'comment' => $this->comment,
-            'items' => OrderItemResource::collection($this->items),
+            'products' => OrderProductResource::collection($this->products),
             'payments' => PaymentResource::collection($this->payments),
             'shipping_number' => $this->shipping_number,
         ];

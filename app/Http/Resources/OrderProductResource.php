@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 
-class OrderItemResource extends Resource
+class OrderProductResource extends Resource
 {
     public function base(Request $request): array
     {
@@ -13,6 +13,7 @@ class OrderItemResource extends Resource
             'quantity' => $this->quantity,
             'price' => $this->price,
             'product' => ProductResource::make($this->product),
+            'schemas' => OrderSchemaResource::collection($this->schemas),
         ];
     }
 }

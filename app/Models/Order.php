@@ -89,7 +89,7 @@ class Order extends Model
     {
         $value = $this->shipping_price;
 
-        foreach ($this->items as $item) {
+        foreach ($this->products as $item) {
             $value += ($item->price * $item->quantity);
         }
 
@@ -174,14 +174,14 @@ class Order extends Model
 
     /**
      * @OA\Property(
-     *   property="items",
+     *   property="products",
      *   type="array",
-     *   @OA\Items(ref="#/components/schemas/OrderItem"),
+     *   @OA\Items(ref="#/components/schemas/OrderProduct"),
      * )
      */
-    public function items(): HasMany
+    public function products(): HasMany
     {
-        return $this->hasMany(OrderItem::class);
+        return $this->hasMany(OrderProduct::class);
     }
 
     /**
@@ -209,19 +209,14 @@ class Order extends Model
         return $this->hasMany(OrderNote::class)->orderBy('created_at', 'DESC');
     }
 
-    public function products(): BelongsToMany
-    {
-        return $this->belongsToMany(Product::class)->using(OrderItem::class);
-    }
-
     /**
      * @param array $items
      */
     public function saveItems($items): void
     {
         foreach ($items as $item) {
-            $item = OrderItem::create($item);
-            $this->items()->save($item);
+            $item = OrderProduct::create($item);
+            $this->products()->save($item);
         }
     }
 

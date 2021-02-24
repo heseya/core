@@ -145,7 +145,7 @@ class Product extends Model
 
     public function orders(): BelongsToMany
     {
-        return $this->belongsToMany(Order::class)->using(OrderItem::class);
+        return $this->belongsToMany(Order::class)->using(OrderProduct::class);
     }
 
     /**

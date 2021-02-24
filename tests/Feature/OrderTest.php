@@ -22,6 +22,8 @@ class OrderTest extends TestCase
     {
         parent::setUp();
 
+        Product::factory()->create();
+
         $shipping_method = ShippingMethod::factory()->create();
         $status = Status::factory()->create();
         $product = Product::factory()->create();
@@ -31,10 +33,16 @@ class OrderTest extends TestCase
             'status_id' => $status->getKey(),
         ]);
 
-        $this->order->items()->create([
+        $item = $this->order->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 10,
             'price' => 247.47,
+        ]);
+
+        $item->schemas()->create([
+            'name' => 'Grawer',
+            'value' => 'HESEYA',
+            'price' => 49.99,
         ]);
 
         /**
@@ -110,7 +118,7 @@ class OrderTest extends TestCase
                 'city' => 'Bydgoszcz',
                 'country' => 'PL',
             ],
-            'items' => [],
+            'products' => [],
         ]);
 
         $response->assertStatus(422);

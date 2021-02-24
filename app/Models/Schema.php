@@ -172,8 +172,6 @@ class Schema extends Model
             $validation[] = 'max:' . $this->min;
         }
 
-        dd($validation);
-
         $validator = Validator::make($input, $validation);
 
         if ($validator->fails()) {

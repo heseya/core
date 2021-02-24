@@ -4,8 +4,10 @@ namespace Database\Seeders;
 
 use App\Models\Address;
 use App\Models\Order;
-use App\Models\OrderItem;
+use App\Models\OrderProduct;
+use App\Models\OrderSchema;
 use App\Models\Payment;
+use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use Illuminate\Database\Seeder;
@@ -35,17 +37,12 @@ class OrderSeeder extends Seeder
 
             $order->save();
 
-            $items = OrderItem::factory()->count(rand(1, 3))->make();
-            $order->items()->saveMany($items);
+            $products = OrderProduct::factory()->count(rand(1, 3))->make();
+            $order->products()->saveMany($products);
 
-            $items->each(function ($item) {
-
-//                $schema = $item->product->schemas()->inRandomOrder()->first();
-//
-//                if ($schema) {
-//                    $item->schemaItems()->sync($schema->getKey());
-//                    $item->save();
-//                }
+            $products->each(function ($product) {
+                $schemas = OrderSchema::factory()->count(rand(1, 3))->make();
+                $product->schemas()->saveMany($schemas);
             });
 
             for ($i = 0; $i < rand(0, 5); $i++) {

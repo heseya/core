@@ -302,7 +302,7 @@ class InitDatabase extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
         });
 
-        Schema::create('order_items', function (Blueprint $table) {
+        Schema::create('order_products', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->float('quantity', 8, 4);
             $table->float('price', 19, 4);
@@ -312,6 +312,17 @@ class InitDatabase extends Migration
 
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
             $table->foreign('product_id')->references('id')->on('products')->onDelete('restrict');
+        });
+
+        Schema::create('order_schemas', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('name');
+            $table->string('value');
+            $table->float('price', 19, 4);
+            $table->uuid('order_product_id')->index();
+            $table->timestamps();
+
+            $table->foreign('order_product_id')->references('id')->on('order_products')->onDelete('cascade');
         });
 
         Schema::create('pages', function (Blueprint $table) {
