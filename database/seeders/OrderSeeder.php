@@ -41,8 +41,10 @@ class OrderSeeder extends Seeder
             $order->products()->saveMany($products);
 
             $products->each(function ($product) {
-                $schemas = OrderSchema::factory()->count(rand(1, 3))->make();
-                $product->schemas()->saveMany($schemas);
+                if (rand(0, 3) === 0) {
+                    $schemas = OrderSchema::factory()->count(rand(1, 3))->make();
+                    $product->schemas()->saveMany($schemas);
+                }
             });
 
             for ($i = 0; $i < rand(0, 5); $i++) {
