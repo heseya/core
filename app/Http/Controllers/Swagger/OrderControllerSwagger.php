@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Swagger;
 
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderIndexRequest;
+use App\Http\Requests\OrderItemsRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Models\Order;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -131,7 +133,7 @@ interface OrderControllerSwagger
      *   )
      * )
      */
-    public function store(OrderCreateRequest $request);
+    public function store(OrderCreateRequest $request): JsonResource;
 
     /**
      * @OA\Post(
@@ -147,67 +149,39 @@ interface OrderControllerSwagger
      *         @OA\Items(
      *           type="object",
      *           @OA\Property(
-     *             property="cartitem_id",
-     *             type="string",
-     *           ),
-     *           @OA\Property(
      *             property="product_id",
-     *             type="integer",
+     *             type="string",
+     *             example="026bc5f6-8373-4aeb-972e-e78d72a67121",
      *           ),
      *           @OA\Property(
      *             property="quantity",
      *             type="number",
      *           ),
      *           @OA\Property(
-     *             property="schema_items",
-     *             type="array",
-     *             @OA\Items(
-     *               type="integer"
-     *             )
+     *             property="schemas",
+     *             type="object",
+     *             @OA\Property(
+     *               property="119c0a63-1ea1-4769-8d5f-169f68de5598",
+     *               type="string",
+     *               example="123459fb-39a4-4dd0-8240-14793aa1f73b",
+     *             ),
+     *             @OA\Property(
+     *               property="02b97693-857c-4fb9-9999-47400ac5fbef",
+     *               type="string",
+     *               example="HE + YA",
+     *             ),
      *           ),
-     *           @OA\Property(
-     *             property="custom_schemas",
-     *             type="array",
-     *             @OA\Items(
-     *               type="object",
-     *               @OA\Property(
-     *                 property="schema_id",
-     *                 type="integer",
-     *               ),
-     *               @OA\Property(
-     *                 property="value",
-     *                 type="string",
-     *               )
-     *             )
-     *           )
-     *         )
-     *       )
-     *     )
+     *         ),
+     *       ),
+     *     ),
      *   ),
      *   @OA\Response(
-     *     response=200,
+     *     response=204,
      *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         type="array",
-     *         @OA\Items(
-     *           type="object",
-     *           @OA\Property(
-     *             property="cartitem_id",
-     *             type="string",
-     *           ),
-     *           @OA\Property(
-     *             property="enough",
-     *             type="boolean",
-     *           )
-     *         )
-     *       )
-     *     )
      *   )
      * )
      */
-    public function verify(Request $request);
+    public function verify(OrderItemsRequest $request): JsonResponse;
 
     /**
      * @OA\Post(

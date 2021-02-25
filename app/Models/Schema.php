@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Rules\OptionAvailable;
 use App\SearchTypes\SchemaSearch;
 use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @OA\Schema()
@@ -129,11 +131,7 @@ class Schema extends Model
 
     public function getAvailableAttribute(): bool
     {
-        if ($this->disabled) {
-            return false;
-        }
-
-        if ($this->options()->count() <= 0) {
+        if ($this->type != 4) {
             return true;
         }
 
@@ -151,37 +149,47 @@ class Schema extends Model
      * Check if user input is valid
      *
      * @param mixed $input
+     * @param float $quantity
      *
-     * @return bool
+     * @throws ValidationException
      */
-    public function validate($input): bool
+    public function validate($input, float $quantity = 0): void
     {
-        $validation = explode('|', $this->validation ?? '');
-
-        $validation[] = $this->type;
+        $validation = collect();
 
         if ($this->required) {
-            $validation[] = 'required';
+            $validation->push('required');
         }
 
         if ($this->max) {
-            $validation[] = 'max:' . $this->max;
+            $validation->push('max:' . $this->max);
         }
 
         if ($this->min) {
-            $validation[] = 'max:' . $this->min;
+            $validation->push('max:' . $this->min);
         }
 
-        $validator = Validator::make($input, $validation);
+        if ($this->type === 4) {
+            $validation->push('uuid');
+            $validation->push(new OptionAvailable($this, $quantity));
+        }
+
+        $validator = Validator::make(
+            [$this->name => $input],
+            [$this->name => $validation],
+        );
 
         if ($validator->fails()) {
-            return false;
+            throw new ValidationException($validator);
         }
-
-        return true;
     }
 
-    public function setTypeAttribute($value)
+    public function getTypeNameAttribute(): string
+    {
+        return Schema::TYPES[$this->type];
+    }
+
+    public function setTypeAttribute($value): void
     {
         if (!is_integer($value)) {
             $value = array_***REMOVED***(self::TYPES)[$value];

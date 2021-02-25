@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-
 /**
  * @OA\RequestBody(
  *   request="OrderCreate",
@@ -38,26 +36,18 @@ use Illuminate\Foundation\Http\FormRequest;
  *           type="number",
  *         ),
  *         @OA\Property(
- *           property="schema_items",
- *           type="array",
- *           @OA\Items(
- *             type="integer"
- *           )
- *         ),
- *         @OA\Property(
- *           property="custom_schemas",
- *           type="array",
- *           @OA\Items(
- *             type="object",
- *             @OA\Property(
- *               property="schema_id",
- *               type="integer",
- *             ),
- *             @OA\Property(
- *               property="value",
- *               type="string",
- *             )
- *           )
+ *           property="schemas",
+ *           type="object",
+ *           @OA\Property(
+ *             property="119c0a63-1ea1-4769-8d5f-169f68de5598",
+ *             type="string",
+ *             example="123459fb-39a4-4dd0-8240-14793aa1f73b",
+ *           ),
+ *           @OA\Property(
+ *             property="02b97693-857c-4fb9-9999-47400ac5fbef",
+ *             type="string",
+ *             example="HE + YA",
+ *           ),
  *         ),
  *       )
  *     ),
@@ -72,11 +62,11 @@ use Illuminate\Foundation\Http\FormRequest;
  *   )
  * )
  */
-class OrderCreateRequest extends FormRequest
+class OrderCreateRequest extends OrderItemsRequest
 {
     public function rules(): array
     {
-        return [
+        return parent::rules() + [
             'email' => ['required', 'email'],
             'comment' => ['nullable', 'string', 'max:1000'],
             'shipping_method_id' => ['required', 'uuid', 'exists:shipping_methods,id'],
@@ -96,10 +86,6 @@ class OrderCreateRequest extends FormRequest
             'invoice_address.zip'     => ['nullable', 'string', 'max:16'],
             'invoice_address.city'    => ['nullable', 'string', 'max:255'],
             'invoice_address.country' => ['nullable', 'string', 'size:2'],
-
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.product_id' => ['required', 'uuid', 'exists:products,id'],
-            'items.*.quantity' => ['required', 'integer', 'min:1'],
         ];
     }
 }

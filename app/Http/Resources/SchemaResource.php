@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Schema;
 use Illuminate\Http\Request;
 
 class SchemaResource extends Resource
@@ -11,7 +10,7 @@ class SchemaResource extends Resource
     {
         return [
             'id' => $this->getKey(),
-            'type' => Schema::TYPES[$this->type],
+            'type' => $this->typeName,
             'name' => $this->name,
             'description' => $this->description,
             'price' => $this->price,

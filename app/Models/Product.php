@@ -149,12 +149,11 @@ class Product extends Model
     }
 
     /**
-     * Description in HTML.
-     *
      * @OA\Property(
      *   property="description_html",
      *   type="string",
      *   example="<h1>Awesome stuff!</h1>",
+     *   description="Description in HTML.",
      * )
      *
      * @var string
@@ -165,14 +164,11 @@ class Product extends Model
     }
 
     /**
-     * Whether product is available.
-     *
      * @OA\Property(
      *   property="available",
      *   type="boolean",
+     *   description="Whether product is available.",
      * )
-     *
-     * @var bool
      */
     public function getAvailableAttribute(): bool
     {

@@ -55,8 +55,11 @@ class Option extends Model
         'available' => 'bool',
     ];
 
-    public function getAvailableAttribute(): bool
+    public function getAvailableAttribute($quantity = 1): bool
     {
+        // diwne obejście ale niech bedzie
+        $quantity = $quantity ?? 1;
+
         if ($this->disabled) {
             return false;
         }
@@ -67,7 +70,7 @@ class Option extends Model
 
         // all items must be available for the option to be available
         foreach ($this->items as $item) {
-            if ($item->quantity <= 0) {
+            if ($item->quantity < $quantity) {
                 return false;
             }
         }

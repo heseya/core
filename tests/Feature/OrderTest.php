@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Mail\NewOrder;
 use App\Mail\OrderUpdateStatus;
+use App\Models\Brand;
+use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ShippingMethod;
@@ -128,8 +130,15 @@ class OrderTest extends TestCase
     {
         Mail::fake();
 
-        $shippingMethod = ShippingMethod::factory()->create();
-        $product = Product::factory()->create();
+        $shippingMethod = ShippingMethod::factory()->create(['public' => true]);
+
+        $category = Category::factory()->create(['public' => true]);
+        $brand = Brand::factory()->create(['public' => true]);
+        $product = Product::factory()->create([
+            'category_id' => $category->getKey(),
+            'brand_id' => $brand->getKey(),
+            'public' => true,
+        ]);
 
         $response = $this->postJson('/orders', [
             'email' => 'test@example.com',
