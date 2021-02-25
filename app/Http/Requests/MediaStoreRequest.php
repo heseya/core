@@ -9,7 +9,7 @@ class MediaStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file' => ['required', 'file', 'mimes:jpeg,png,gif,bmp'],
+            'file' => ['required', 'file', 'mimes:jpeg,png,gif,bmp,svg'],
         ];
     }
 }
