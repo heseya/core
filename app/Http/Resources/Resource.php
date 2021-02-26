@@ -71,10 +71,11 @@ class Resource extends JsonResource
      * Create new resource collection.
      *
      * @param mixed $resource
+     * @param bool $full
      * @return Collection
      */
-    public static function collection($resource): Collection
+    public static function collection($resource, $full = false): Collection
     {
-        return new Collection($resource, static::class);
+        return new Collection($resource, static::class, $full);
     }
 }

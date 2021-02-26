@@ -35,6 +35,7 @@ class ProductController extends Controller implements ProductControllerSwagger
 
         return ProductResource::collection(
             $query->paginate(12),
+            $request->has('full'),
         );
     }
 
