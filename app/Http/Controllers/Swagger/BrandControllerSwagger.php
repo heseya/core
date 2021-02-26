@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Swagger;
 
+use App\Http\Requests\BrandCreateRequest;
 use App\Http\Requests\BrandIndexRequest;
+use App\Http\Requests\BrandUpdateRequest;
 use App\Models\Brand;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 interface BrandControllerSwagger
@@ -54,7 +56,7 @@ interface BrandControllerSwagger
      *   }
      * )
      */
-    public function store(Request $request);
+    public function store(BrandCreateRequest $request): JsonResource;
 
     /**
      * @OA\Patch(
@@ -89,7 +91,7 @@ interface BrandControllerSwagger
      *   }
      * )
      */
-    public function update(Brand $brand, Request $request): JsonResource;
+    public function update(Brand $brand, BrandUpdateRequest $request): JsonResource;
 
     /**
      * @OA\Delete(
@@ -113,5 +115,5 @@ interface BrandControllerSwagger
      *   }
      * )
      */
-    public function destroy(Brand $brand);
+    public function destroy(Brand $brand): JsonResponse;
 }

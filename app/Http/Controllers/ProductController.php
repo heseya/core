@@ -29,12 +29,12 @@ class ProductController extends Controller implements ProductControllerSwagger
         if (!Auth::check()) {
             $query
                 ->where('public', true)
-                ->whereHas('brand', fn (Builder $subQuery) => $subQuery->where('public', true))
-                ->whereHas('category', fn (Builder $subQuery) => $subQuery->where('public', true));
+                ->whereHas('brand', fn (Builder $q) => $q->where('public', true))
+                ->whereHas('category', fn (Builder $q) => $q->where('public', true));
         }
 
         return ProductResource::collection(
-            $query->paginate(12),
+            $query->paginate((int) $request->input('limit', 12)),
             $request->has('full'),
         );
     }
