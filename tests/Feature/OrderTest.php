@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Events\OrderCreated;
+use App\Events\OrderStatusUpdated;
 use App\Mail\NewOrder;
 use App\Mail\OrderUpdateStatus;
 use App\Models\Brand;
@@ -10,7 +12,10 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use App\Notifications\OrderCreated as OrderCreatedNotification;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class OrderTest extends TestCase
@@ -128,7 +133,7 @@ class OrderTest extends TestCase
 
     public function testCreateSimpleOrder(): void
     {
-        Mail::fake();
+        Event::fake([OrderCreated::class]);
 
         $shippingMethod = ShippingMethod::factory()->create(['public' => true]);
 
@@ -163,13 +168,12 @@ class OrderTest extends TestCase
         $this->assertDatabaseHas('orders', [
             'email' => 'test@example.com',
         ]);
-
-        Mail::assertSent(NewOrder::class);
+        Event::assertDispatched(OrderCreated::class);
     }
 
-    public function testUpdateOrderStatus(): void
+    public function testUpdateOdrerStatusUnauthorized(): void
     {
-        Mail::fake();
+        Event::fake([OrderStatusUpdated::class]);
 
         $status = Status::factory()->create();
 
@@ -178,7 +182,14 @@ class OrderTest extends TestCase
         ]);
 
         $response->assertUnauthorized();
-        Mail::assertNothingSent();
+        Event::assertNotDispatched(OrderStatusUpdated::class);
+    }
+
+    public function testUpdateOrderStatus(): void
+    {
+        Event::fake([OrderStatusUpdated::class]);
+
+        $status = Status::factory()->create();
 
         $response = $this->actingAs($this->user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
             'status_id' => $status->getKey(),
@@ -189,6 +200,6 @@ class OrderTest extends TestCase
             'id' => $this->order->getKey(),
             'status_id' => $status->getKey(),
         ]);
-        Mail::assertSent(OrderUpdateStatus::class);
+        Event::assertDispatched(OrderStatusUpdated::class);
     }
 }

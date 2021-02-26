@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\OrderCreated;
+use App\Events\OrderStatusUpdated;
 use App\Http\Controllers\Swagger\OrderControllerSwagger;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderIndexRequest;
@@ -9,8 +11,6 @@ use App\Http\Requests\OrderItemsRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Resources\OrderPublicResource;
 use App\Http\Resources\OrderResource;
-use App\Mail\NewOrder;
-use App\Mail\OrderUpdateStatus;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\OrderProduct;
@@ -19,8 +19,6 @@ use App\Models\ShippingMethod;
 use App\Models\Status;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller implements OrderControllerSwagger
 {
@@ -88,13 +86,13 @@ class OrderController extends Controller implements OrderControllerSwagger
 
         $order->products()->saveMany($products);
 
-        Mail::to($order->email)->send(new NewOrder($order));
-
         // logs
         $order->logs()->create([
             'content' => 'Utworzenie zamówienia.',
             'user' => 'API',
         ]);
+
+        OrderCreated::dispatch($order);
 
         return OrderPublicResource::make($order);
     }
@@ -123,7 +121,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             'status_id' => $request->input('status_id'),
         ]);
 
-        Mail::to($order->email)->send(new OrderUpdateStatus($order));
+        OrderStatusUpdated::dispatch($order);
 
         return OrderResource::make($order);
     }
