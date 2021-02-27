@@ -13,6 +13,7 @@ class ProductIndexRequest extends FormRequest
             'slug' => ['nullable', 'string', 'max:255'],
             'public' => ['nullable', 'boolean'],
             'category' => ['nullable', 'string', 'max:255'],
+            'brand' => ['nullable', 'string', 'max:255'],
             'search' => ['nullable', 'string', 'max:255'],
             'sort' => ['nullable', 'string', 'max:255'],
             'limit' => ['nullable', 'integer', 'min:1', 'max:500'],

@@ -9,7 +9,7 @@ class WhereHasSlug extends Search
 {
     public function query(Builder $query): Builder
     {
-        return $query->whereHas('brand', function (Builder $query) {
+        return $query->whereHas($this->key, function (Builder $query) {
             $query->where('slug', $this->value);
         });
     }
