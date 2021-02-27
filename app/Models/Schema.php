@@ -212,6 +212,8 @@ class Schema extends Model
      */
     public function options(): HasMany
     {
-        return $this->hasMany(Option::class)->orderBy('name');
+        return $this->hasMany(Option::class)
+            ->orderBy('price')
+            ->orderBy('name');
     }
 }
