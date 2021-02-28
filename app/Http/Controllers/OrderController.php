@@ -14,6 +14,7 @@ use App\Http\Resources\OrderResource;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\OrderProduct;
+use App\Models\OrderSchema;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
@@ -44,10 +45,11 @@ class OrderController extends Controller implements OrderControllerSwagger
 
     public function store(OrderCreateRequest $request): JsonResource
     {
+        $products = [];
+        $orderSchemas = [];
+
         foreach ($request->input('items', []) as $item) {
             $product = Product::findOrFail($item['product_id']);
-            $price = $product->price;
-
             $schemas = $item['schemas'] ?? [];
 
             foreach ($product->schemas as $schema) {
@@ -56,13 +58,17 @@ class OrderController extends Controller implements OrderControllerSwagger
                     $item['quantity'],
                 );
 
-                $price += $schema->price;
+                $orderSchemas[$product->getKey()][] = new OrderSchema([
+                    'name' => $schema->name,
+                    'value' => $schemas[$schema->getKey()] ?? null,
+                    'price' => $schema->price,
+                ]);
             }
 
             $products[] = new OrderProduct([
                 'product_id' => $product->getKey(),
                 'quantity' => $item['quantity'],
-                'price' => $price < 0 ? 0 : $price,
+                'price' => $product->price,
             ]);
         }
 
@@ -85,6 +91,10 @@ class OrderController extends Controller implements OrderControllerSwagger
         ]);
 
         $order->products()->saveMany($products);
+
+        foreach ($order->products as $product) {
+            $product->schemas()->saveMany($orderSchemas[$product->product_id] ?? []);
+        }
 
         // logs
         $order->logs()->create([

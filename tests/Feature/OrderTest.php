@@ -2,20 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Events\OrderCreated;
 use App\Events\OrderStatusUpdated;
-use App\Mail\NewOrder;
-use App\Mail\OrderUpdateStatus;
-use App\Models\Brand;
-use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
-use App\Notifications\OrderCreated as OrderCreatedNotification;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class OrderTest extends TestCase
@@ -131,47 +123,7 @@ class OrderTest extends TestCase
         $response->assertStatus(422);
     }
 
-    public function testCreateSimpleOrder(): void
-    {
-        Event::fake([OrderCreated::class]);
-
-        $shippingMethod = ShippingMethod::factory()->create(['public' => true]);
-
-        $category = Category::factory()->create(['public' => true]);
-        $brand = Brand::factory()->create(['public' => true]);
-        $product = Product::factory()->create([
-            'category_id' => $category->getKey(),
-            'brand_id' => $brand->getKey(),
-            'public' => true,
-        ]);
-
-        $response = $this->postJson('/orders', [
-            'email' => 'test@example.com',
-            'shipping_method_id' => $shippingMethod->getKey(),
-            'delivery_address' => [
-                'name' => 'Wojtek Testowy',
-                'phone' => '+48123321123',
-                'address' => 'Gdańska 89/1',
-                'zip' => '12-123',
-                'city' => 'Bydgoszcz',
-                'country' => 'PL',
-            ],
-            'items' => [
-                [
-                    'product_id' => $product->getKey(),
-                    'quantity' => 20,
-                ],
-            ],
-        ]);
-
-        $response->assertCreated();
-        $this->assertDatabaseHas('orders', [
-            'email' => 'test@example.com',
-        ]);
-        Event::assertDispatched(OrderCreated::class);
-    }
-
-    public function testUpdateOdrerStatusUnauthorized(): void
+    public function testUpdateOrderStatusUnauthorized(): void
     {
         Event::fake([OrderStatusUpdated::class]);
 
