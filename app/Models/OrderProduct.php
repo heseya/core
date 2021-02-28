@@ -42,6 +42,11 @@ class OrderProduct extends Model
         'product_id',
     ];
 
+    public function getPriceAttribute($value): float
+    {
+        return $value + $this->schemas()->sum('price');
+    }
+
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
