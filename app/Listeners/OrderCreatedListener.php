@@ -12,6 +12,8 @@ class OrderCreatedListener implements ShouldQueue
 {
     use InteractsWithQueue;
 
+    public $tries = 3;
+
     public function handle(OrderCreatedEvent $event): void
     {
         $order = $event->getOder();

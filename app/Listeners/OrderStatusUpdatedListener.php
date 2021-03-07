@@ -12,6 +12,8 @@ class OrderStatusUpdatedListener implements ShouldQueue
 {
     use InteractsWithQueue;
 
+    public $tries = 3;
+
     public function handle(OrderStatusUpdatedEvent $event): void
     {
         $order = $event->getOder();
