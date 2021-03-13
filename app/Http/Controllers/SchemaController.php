@@ -38,6 +38,16 @@ class SchemaController extends Controller implements SchemaControllerSwagger
             $schema->refresh();
         }
 
+        if ($request->has('used_schemas')) {
+            foreach ($request->input('used_schemas') as $input) {
+                $used_schema = Schema::findOrFail($input);
+
+                $schema->usedSchemas()->attach($used_schema);
+            }
+
+            $schema->refresh();
+        }
+
         return SchemaResource::make($schema);
     }
 
@@ -60,6 +70,16 @@ class SchemaController extends Controller implements SchemaControllerSwagger
                 }
 
                 $option->items()->sync($input['items'] ?? []);
+            }
+        }
+
+        if ($request->has('used_schemas')) {
+            $schema->usedSchemas()->detach();
+
+            foreach ($request->input('used_schemas') as $input) {
+                $used_schema = Schema::findOrFail($input);
+
+                $schema->usedSchemas()->attach($used_schema);
             }
         }
 

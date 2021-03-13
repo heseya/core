@@ -39,6 +39,8 @@ class Schema extends Model
         3 => 'date',
         4 => 'select',
         5 => 'file',
+        6 => 'multiply',
+        7 => 'multiply_schema',
     ];
 
     /**
@@ -215,5 +217,43 @@ class Schema extends Model
         return $this->hasMany(Option::class)
             ->orderBy('price')
             ->orderBy('name');
+    }
+
+    public function usedSchemas(): BelongsToMany
+    {
+        return $this->belongsToMany(Schema::class, 'schema_used_schemas', 'schema_id', 'used_schema_id');
+    }
+
+    public function usedBySchemas(): BelongsToMany
+    {
+        return $this->belongsToMany(Schema::class, 'schema_used_schemas', 'used_schema_id', 'schema_id');
+    }
+    
+    public function getPrice($value, $schemas): float {
+        if ($this->usedBySchemas->has($schemas)) {
+            return 0.0;
+        }
+
+        return $this->getUsedPrice($value, $schemas);
+    }
+
+    private function getUsedPrice($value, $schemas): float {
+        $price = $this->price;
+
+        if ($this->type === 4) {
+            $option = $this->options()->findOrFail($value);
+
+            $price += $option->price;
+        }
+
+        if ($this->type === 6) {
+            $price *= (double) $value;
+        }
+
+        if ($this->type === 7) {
+            $price = (double) $value * $this->usedSchemas()->firstOrFail()->getUsedPrice();
+        }
+
+        return $price;
     }
 }
