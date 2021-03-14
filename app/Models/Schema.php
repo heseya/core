@@ -230,7 +230,11 @@ class Schema extends Model
     }
     
     public function getPrice($value, $schemas): float {
-        if ($this->usedBySchemas->has($schemas)) {
+        $schemaKeys = collect($schemas)->keys();
+
+        if ($this->usedBySchemas()->whereIn(
+            $this->getKeyName(), $schemaKeys,
+        )->exists()) {
             return 0.0;
         }
 
@@ -251,7 +255,10 @@ class Schema extends Model
         }
 
         if ($this->type === 7) {
-            $price = (double) $value * $this->usedSchemas()->firstOrFail()->getUsedPrice();
+            $usedSchema = $this->usedSchemas()->firstOrFail();
+            $price = $value * $usedSchema->getUsedPrice(
+                $schemas[$usedSchema->getKey()], $schemas,
+            );
         }
 
         return $price;
