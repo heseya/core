@@ -101,15 +101,6 @@ class SchemaTest extends TestCase
         $response->assertCreated();
         $schema = $response->getData()->data;
 
-        $this->assertDatabaseHas('schemas', [
-            'name' => 'Multiplier',
-            'type' => array_***REMOVED***(Schema::TYPES)['multiply_schema'],
-            'price' => 0,
-            'min' => 1,
-            'max' => 10,
-            'step' => 0.1,
-        ]);
-
         $this->assertDatabaseHas('schema_used_schemas', [
             'schema_id' => $schema->id,
             'used_schema_id' => $usedSchema->getKey(),

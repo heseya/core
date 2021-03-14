@@ -219,6 +219,16 @@ class Schema extends Model
             ->orderBy('name');
     }
 
+    /**
+     * @OA\Property(
+     *   property="used_schemas",
+     *   type="array",
+     *   @OA\Items(
+     *     type="string",
+     *     example="used-schema-ids",
+     *   ),
+     * )
+     */
     public function usedSchemas(): BelongsToMany
     {
         return $this->belongsToMany(Schema::class, 'schema_used_schemas', 'schema_id', 'used_schema_id');
