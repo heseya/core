@@ -141,6 +141,20 @@ class SchemaTest extends TestCase
         $this->assertEquals(30, $colors->getPrice($blue->getKey(), [
             $colors->getKey() => $blue->getKey(),
         ]));
+
+        $multiplier = Schema::create([
+            'name' => 'Price Multiplier',
+            'type' => 'multiply',
+            'price' => 10,
+            'min' => 1,
+            'max' => 10,
+            'step' => 0.1,
+        ]);
+
+        $value = rand(10, 100) / 10;
+        $this->assertEquals(10 * $value, $multiplier->getPrice($value, [
+            $multiplier->getKey() => $value,
+        ]));
     }
 
     public function testRelatedPrice(): void
