@@ -59,13 +59,12 @@ class OrderController extends Controller implements OrderControllerSwagger
                 );
 
                 $value = $schemas[$schema->getKey()] ?? null;
-                $price = $schema->price;
+                $price = $schema->getPrice($value, $schemas);
 
                 if ($schema->type === 4) {
                     $option = $schema->options()->findOrFail($value);
 
                     $value = $option->name;
-                    $price += $option->price;
                 }
 
                 $orderSchemas[$product->getKey()][] = new OrderSchema([

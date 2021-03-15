@@ -14,7 +14,13 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 /**
- * @OA\Schema()
+ * @OA\Schema(
+ *   description="Schema allows a product to take on new optional characteristics that can be chosen by the user
+     and influences the price based on said choices. Schemas can use other schemas for their price calculation
+     e.g. multiply_schema multiplies price of different schema based on it's own value.
+ *   SCHEMAS USED BY OTHERS SHOULD NOT AFFECT THE PRICE
+ *   (schema multiplied by multiply_schema adds 0 to the price while multiply_schema adds the multiplied value)",
+ * )
  */
 class Schema extends Model
 {
@@ -29,7 +35,8 @@ class Schema extends Model
      * @OA\Property(
      *   property="type",
      *   type="string",
-     *   enum={"string", "numeric", "boolean", "date", "select", "file"},
+     *   description="multiply_schema(min, max, step) type uses one schema and multiplies it's price by own numeric value",
+     *   enum={"string", "numeric", "boolean", "date", "select", "file", "multiply", "multiply_schema"},
      * )
      */
     public const TYPES = [
@@ -39,6 +46,8 @@ class Schema extends Model
         3 => 'date',
         4 => 'select',
         5 => 'file',
+        6 => 'multiply',
+        7 => 'multiply_schema',
     ];
 
     /**
@@ -215,5 +224,62 @@ class Schema extends Model
         return $this->hasMany(Option::class)
             ->orderBy('price')
             ->orderBy('name');
+    }
+
+    /**
+     * @OA\Property(
+     *   property="used_schemas",
+     *   description="Array of schema id's given schema uses e.g. 
+     *     multiply_schema type uses one schema of which price it miltiplies",
+     *   type="array",
+     *   @OA\Items(
+     *     type="string",
+     *     example="used-schema-ids",
+     *   ),
+     * )
+     */
+    public function usedSchemas(): BelongsToMany
+    {
+        return $this->belongsToMany(Schema::class, 'schema_used_schemas', 'schema_id', 'used_schema_id');
+    }
+
+    public function usedBySchemas(): BelongsToMany
+    {
+        return $this->belongsToMany(Schema::class, 'schema_used_schemas', 'used_schema_id', 'schema_id');
+    }
+    
+    public function getPrice($value, $schemas): float {
+        $schemaKeys = collect($schemas)->keys();
+
+        if ($this->usedBySchemas()->whereIn(
+            $this->getKeyName(), $schemaKeys,
+        )->exists()) {
+            return 0.0;
+        }
+
+        return $this->getUsedPrice($value, $schemas);
+    }
+
+    private function getUsedPrice($value, $schemas): float {
+        $price = $this->price;
+
+        if ($this->type === 4) {
+            $option = $this->options()->findOrFail($value);
+
+            $price += $option->price;
+        }
+
+        if ($this->type === 6) {
+            $price *= (double) $value;
+        }
+
+        if ($this->type === 7) {
+            $usedSchema = $this->usedSchemas()->firstOrFail();
+            $price = $value * $usedSchema->getUsedPrice(
+                $schemas[$usedSchema->getKey()], $schemas,
+            );
+        }
+
+        return $price;
     }
 }
