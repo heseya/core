@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Swagger\PaymentMethodControllerSwagger;
+use App\Http\Requests\PaymentMethodIndexRequest;
 use App\Http\Resources\PaymentMethodResource;
 use App\Models\PaymentMethod;
 use App\Models\ShippingMethod;
@@ -12,13 +13,9 @@ use Illuminate\Support\Facades\Auth;
 
 class PaymentMethodController extends Controller implements PaymentMethodControllerSwagger
 {
-    public function index(Request $request): JsonResource
+    public function index(PaymentMethodIndexRequest $request): JsonResource
     {
-        $request->validate([
-            'shipping_method_id' => 'integer|exists:shipping_methods,id',
-        ]);
-
-        if ($request->input('shipping_method_id')) {
+        if ($request->has('shipping_method_id')) {
             $shipping_method = ShippingMethod::find($request->input('shipping_method_id'));
             $query = $shipping_method->paymentMethods();
         } else {

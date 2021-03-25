@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Swagger;
 
+use App\Http\Requests\PaymentMethodIndexRequest;
 use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -33,7 +34,7 @@ interface PaymentMethodControllerSwagger
      *   )
      * )
      */
-    public function index(Request $request): JsonResource;
+    public function index(PaymentMethodIndexRequest $request): JsonResource;
 
     /**
      * @OA\Post(
