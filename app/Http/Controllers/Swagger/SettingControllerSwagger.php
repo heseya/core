@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Swagger;
 
 use App\Http\Requests\SettingCreateRequest;
-use App\Http\Requests\SettingIndexRequest;
 use App\Http\Requests\SettingUpdateRequest;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 interface SettingControllerSwagger
@@ -16,7 +16,14 @@ interface SettingControllerSwagger
      *   path="/settings",
      *   summary="list settings",
      *   tags={"Settings"},
-     *
+     *   @OA\Parameter(
+     *     name="array",
+     *     in="query",
+     *     required=false,
+     *     @OA\Schema(
+     *       type="boolean",
+     *     )
+     *   ),
      *   @OA\Response(
      *     response=200,
      *     description="Success",
@@ -33,7 +40,7 @@ interface SettingControllerSwagger
      *   }
      * )
      */
-    public function index(): JsonResource;
+    public function index(Request $request): JsonResponse;
 
     /**
      * @OA\Get(
