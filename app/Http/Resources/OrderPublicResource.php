@@ -13,6 +13,7 @@ class OrderPublicResource extends Resource
             'code' => $this->code,
             'status' => StatusResource::make($this->status),
             'payed' => $this->isPayed(),
+            'summary' => $this->summary,
             'shipping_method_id' => $this->shipping_method_id,
             'created_at' => $this->created_at,
         ];
