@@ -19,14 +19,13 @@ class SettingController extends Controller implements SettingControllerSwagger
     {
         $settings = Setting::all();
 
-        collect(config('settings'))
-            ->each(function($setting, $key) use ($settings) {
-                if (!$settings->contains('name', $key)) {
-                    $settings->push(Setting::make($setting + [
-                        'name' => $key,
-                    ]));
-                }
-            });
+        collect(config('settings'))->each(function($setting, $key) use ($settings) {
+            if (!$settings->contains('name', $key)) {
+                $settings->push(Setting::make($setting + [
+                    'name' => $key,
+                ]));
+            }
+        });
 
         if (!Auth::check()) {
             $settings->filter(fn($setting) => $setting->public);
