@@ -4,43 +4,46 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Swagger\SettingControllerSwagger;
 use App\Http\Requests\SettingCreateRequest;
-use App\Http\Requests\SettingIndexRequest;
 use App\Http\Requests\SettingUpdateRequest;
 use App\Http\Resources\SettingResource;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 
 class SettingController extends Controller implements SettingControllerSwagger
 {
 
-    public function index(): JsonResource
+    public function index(Request $request): JsonResponse
     {
         $settings = Setting::all();
 
-        $config = collect(config('settings'))
-            ->each(function($setting, $key) use ($settings) {
-                if (!$settings->contains('name', $key)) {
-                    $settings->push(Setting::make($setting + [
-                        'name' => $key,
-                    ]));
-                }
-            });
+        collect(config('settings'))->each(function($setting, $key) use ($settings) {
+            if (!$settings->contains('name', $key)) {
+                $settings->push(Setting::make($setting + [
+                    'name' => $key,
+                ]));
+            }
+        });
 
         if (!Auth::check()) {
-            return SettingResource::collection(
-                $settings->filter(fn($setting) => $setting->public),
-            );
+            $settings->filter(fn($setting) => $setting->public);
         }
 
-        return SettingResource::collection($settings);
+        if ($request->has('array')) {
+            return response()->json($settings->mapWithKeys(function ($setting) {
+                return [$setting->name => $setting->value];
+            }));
+        }
+
+        return SettingResource::collection($settings)->response();
     }
 
     public function show(string $name): JsonResource
     {
         $config = config("settings.$name", null);
-        
+
         if ($config === null) {
             $setting = Setting::where('name', $name)->firstOrFail();
         } else {
