@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DiscountController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', 'AuthController@login');
@@ -76,6 +77,10 @@ Route::prefix('package-templates')->middleware('auth:api')->group(function () {
     Route::post(null, 'PackageTemplateController@store');
     Route::patch('id:{package:id}', 'PackageTemplateController@update');
     Route::delete('id:{package:id}', 'PackageTemplateController@destroy');
+});
+
+Route::prefix('discounts')->group(function () {
+    Route::get(null, [DiscountController::class, 'index'])->middleware('auth:api');
 });
 
 Route::middleware('auth:api')->group(function () {

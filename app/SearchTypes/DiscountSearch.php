@@ -10,7 +10,7 @@ class DiscountSearch extends Search
     public function query(Builder $query): Builder
     {
         return $query->where(function (Builder $query): Builder {
-            return $query->where('name', '%' . $this->value . '%')
+            return $query->where('description', '%' . $this->value . '%')
                 ->orWhere('code', '%' . $this->value . '%')
                 ->orWhere('type', '%' . $this->value . '%')
                 ->orWhere('discount', '%' . $this->value . '%');

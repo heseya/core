@@ -25,7 +25,7 @@ class DiscountFactory extends Factory
         return [
             'code' => $this->faker->regexify('[A-Z0-9]{8}'),
             'description' => rand(0, 1) ? $this->faker->text : null,
-            'discount' => $this->faker->randomFloat(),
+            'discount' => $this->faker->randomFloat(2, 5, 40),
             'type' => DiscountType::getRandomValue(),
         ];
     }
