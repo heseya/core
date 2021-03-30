@@ -5,17 +5,18 @@
     "license": "proprietary",
     "require": {
         "php": "^7.4|^8.0",
+        "bensampo/laravel-enum": "^3.3",
         "darkaonline/l5-swagger": "^8.0",
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
+        "guzzlehttp/guzzle": "^7.2",
         "heseya/laravel-searchable": "^1.0",
         "laravel/framework": "^8.28",
         "laravel/passport": "^10.1",
         "laravel/tinker": "^2.6",
         "parsedown/laravel": "^1.2",
         "pay-now/paynow-php-sdk": "^1.1",
-        "propaganistas/laravel-phone": "^4.3",
-        "guzzlehttp/guzzle": "^7.2"
+        "propaganistas/laravel-phone": "^4.3"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
