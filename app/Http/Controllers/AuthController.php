@@ -69,9 +69,10 @@ class AuthController extends Controller implements AuthControllerSwagger
     {
         $tokens = Passport::token()
             ->where('user_id', $request->user()->getKey())
-            ->orderBy('created_at', 'DESC')
-            ->get();
+            ->orderBy('created_at', 'DESC');
 
-        return LoginHistoryResource::collection($tokens);
+        return LoginHistoryResource::collection(
+            $tokens->paginate(12),
+        );
     }
 }
