@@ -8,6 +8,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Resources\AuthResource;
 use App\Http\Resources\LoginHistoryResource;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -40,14 +41,12 @@ class AuthController extends Controller implements AuthControllerSwagger
 
     public function logout(Request $request): JsonResponse
     {
-        Passport::token()
-            ->where('id', $request->user()->token())
-            ->update([
-                'revoked' => true,
-                'expires_at' => DB::raw('NOW()'),
-            ]);
+        $request->user()->token()->update([
+            'revoked' => true,
+            'expires_at' => Carbon::now(),
+        ]);
 
-        return response()->json(null);
+        return response()->json(null, 204);
     }
 
     public function changePassword(PasswordChangeRequest $request): JsonResponse
