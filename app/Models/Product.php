@@ -105,7 +105,9 @@ class Product extends Model
 
     public function media(): BelongsToMany
     {
-        return $this->belongsToMany(Media::class, 'product_media');
+        return $this
+            ->belongsToMany(Media::class, 'product_media')
+            ->orderByPivot('order');
     }
 
     /**
