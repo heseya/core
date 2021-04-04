@@ -14,7 +14,8 @@ class LoginHistoryResource extends Resource
         return [
             'device' => $agent->device() === false ? null : $agent->device(),
             'platform' => $agent->platform() === false ? null : $agent->platform(),
-            'browser' => $agent->browser() === false ? null : $agent->browser(),
+            'browser' => $browser = $agent->browser() === false ? null : $agent->browser(),
+            'browser_ver' => $agent->version($browser) === false ? null : $agent->version($browser),
             'ip' => $this->ip,
             'revoked' => (bool) $this->revoked,
             'created_at' => $this->created_at,
