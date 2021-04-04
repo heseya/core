@@ -178,6 +178,7 @@ return [
         L5Swagger\L5SwaggerServiceProvider::class,
         Laravel\Passport\PassportServiceProvider::class,
         Parsedown\Providers\ParsedownServiceProvider::class,
+        Jenssegers\Agent\AgentServiceProvider::class,
         // SammyK\LaravelFacebookSdk\LaravelFacebookSdkServiceProvider::class,
 
         /*
@@ -239,6 +240,8 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
+        'Agent' => Jenssegers\Agent\Facades\Agent::class,
+
     ],
 
 ];

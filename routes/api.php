@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', 'AuthController@login');
@@ -116,6 +117,11 @@ Route::middleware('auth:api')->group(function () {
         Route::get('id:{option:id}', 'OptionController@show');
         Route::patch('id:{option:id}', 'OptionController@update');
         Route::delete('id:{option:id}', 'OptionController@destroy');
+    });
+
+    Route::prefix('auth')->group(function () {
+        Route::get('logout', [AuthController::class, 'logout']);
+        Route::get('login-history', [AuthController::class, 'loginHistory']);
     });
 });
 
