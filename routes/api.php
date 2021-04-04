@@ -81,6 +81,7 @@ Route::prefix('package-templates')->middleware('auth:api')->group(function () {
 
 Route::prefix('discounts')->group(function () {
     Route::get(null, [DiscountController::class, 'index'])->middleware('auth:api');
+    Route::post(null, [DiscountController::class, 'store'])->middleware('auth:api');
 });
 
 Route::middleware('auth:api')->group(function () {

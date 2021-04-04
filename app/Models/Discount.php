@@ -12,6 +12,13 @@ class Discount extends Model
 {
     use HasFactory, Searchable;
 
+    protected $fillable = [
+        'description',
+        'code',
+        'discount',
+        'type',
+    ];
+
     protected $casts = [
         'type' => DiscountType::class,
     ];

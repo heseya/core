@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\DiscountType;
 use App\Models\Discount;
 use Tests\TestCase;
 
@@ -26,5 +27,26 @@ class DiscountTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(10, 'data');
+    }
+
+    public function testCreate(): void
+    {
+        $response = $this->actingAs($this->user)->postJson('/discounts', [
+            'description' => 'Testowy kupon',
+            'code' => 'S43SA2',
+            'discount' => 10,
+            'type' => DiscountType::PERCENTAGE,
+        ]);
+
+        dd($response->json());
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'description' => 'Testowy kupon',
+                'code' => 'S43SA2',
+                'discount' => 10,
+                'type' => DiscountType::PERCENTAGE,
+            ]);
     }
 }
