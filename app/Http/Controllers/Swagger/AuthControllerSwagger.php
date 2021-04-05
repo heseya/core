@@ -61,6 +61,19 @@ interface AuthControllerSwagger
     public function login(LoginRequest $request);
 
     /**
+     * @OA\Post(
+     *   path="/auth/logout",
+     *   summary="Logout",
+     *   tags={"Auth"},
+     *   @OA\Response(
+     *     response=204,
+     *     description="Success no content",
+     *   )
+     * )
+     */
+    public function logout(Request $request): JsonResponse;
+
+    /**
      * @OA\Patch(
      *   path="/user/password",
      *   summary="Change password",
@@ -89,4 +102,20 @@ interface AuthControllerSwagger
      * )
      */
     public function changePassword(PasswordChangeRequest $request): JsonResponse;
+
+    /**
+     * @OA\Get(
+     *   path="/auth/login-history",
+     *   summary="Get login history",
+     *   tags={"Auth"},
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function loginHistory(Request $request): JsonResource;
 }

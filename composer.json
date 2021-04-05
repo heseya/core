@@ -9,6 +9,7 @@
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
         "heseya/laravel-searchable": "^1.0",
+        "jenssegers/agent": "^2.6",
         "laravel/framework": "^8.28",
         "laravel/passport": "^10.1",
         "laravel/tinker": "^2.6",
