@@ -1,7 +1,7 @@
 {
     "name": "heseya/store-api",
     "type": "project",
-    "description": "Heseya Store API",
+    "description": "E-Commerce Dog API by Heseya",
     "license": "proprietary",
     "require": {
         "php": "^7.4|^8.0",
