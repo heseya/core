@@ -56,7 +56,7 @@ class ProductController extends Controller implements ProductControllerSwagger
     {
         $product = Product::create($request->validated());
 
-        $this->mediaService->sync($product, $request->input('media'));
+        $this->mediaService->sync($product, $request->input('media', []));
 
         if ($request->has('schemas') && is_array($request->input('schemas'))) {
             $product->schemas()->sync($request->input('schemas'));
@@ -69,7 +69,7 @@ class ProductController extends Controller implements ProductControllerSwagger
     {
         $product->update($request->validated());
 
-        $this->mediaService->sync($product, $request->input('media'));
+        $this->mediaService->sync($product, $request->input('media', []));
 
         if ($request->has('schemas') && is_array($request->input('schemas'))) {
             $product->schemas()->sync($request->input('schemas'));
