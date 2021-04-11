@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AppController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -122,6 +123,10 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('auth')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::get('login-history', [AuthController::class, 'loginHistory']);
+    });
+
+    Route::prefix('apps')->group(function () {
+        Route::get(null, [AppController::class, 'index']);
     });
 });
 

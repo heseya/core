@@ -2,12 +2,9 @@
 
 namespace App\Providers;
 
-use App\Schemas\SelectSchema;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\MediaService;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
-use Laravel\Passport\Passport;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,8 +19,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        Passport::ignoreMigrations();
-
         $this->injectContract(self::CONTRACTS);
     }
 

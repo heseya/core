@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             ->call(PageSeeder::class)
             ->call(UserSeeder::class)
             ->call(PackageTemplateSeeder::class)
+            ->call(AppSeeder::class)
             ->call(AuthSeeder::class);
     }
 }
