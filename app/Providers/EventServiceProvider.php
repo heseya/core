@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Events\OrderCreated;
+use App\Events\OrderStatusUpdated;
+use App\Listeners\OrderCreatedListener;
+use App\Listeners\OrderStatusUpdatedListener;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -11,14 +15,19 @@ class EventServiceProvider extends ServiceProvider
      *
      * @var array
      */
-    protected $listen = [];
+    protected $listen = [
+        OrderCreated::class => [
+            OrderCreatedListener::class,
+        ],
+        OrderStatusUpdated::class => [
+            OrderStatusUpdatedListener::class,
+        ],
+    ];
 
     /**
      * Register any events for your application.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         parent::boot();
     }

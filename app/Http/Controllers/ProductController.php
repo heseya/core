@@ -2,631 +2,83 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Item;
-use App\Models\Media;
-use App\Models\Product;
-use App\Exceptions\Error;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Swagger\ProductControllerSwagger;
+use App\Http\Requests\ProductCreateRequest;
+use App\Http\Requests\ProductIndexRequest;
+use App\Http\Requests\ProductShowRequest;
+use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Resources\ProductResource;
+use App\Models\Product;
+use App\Services\Contracts\MediaServiceContract;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
 
-class ProductController extends Controller
+class ProductController extends Controller implements ProductControllerSwagger
 {
-    /**
-     * @OA\Get(
-     *   path="/products",
-     *   summary="list products",
-     *   tags={"Products"},
-     *   @OA\Parameter(
-     *     name="search",
-     *     in="query",
-     *     description="Full text search.",
-     *     @OA\Schema(
-     *       type="string",
-     *     ),
-     *   ),
-     *   @OA\Parameter(
-     *     name="brand",
-     *     in="query",
-     *     description="Brand slug.",
-     *     @OA\Schema(
-     *       type="string",
-     *     ),
-     *   ),
-     *   @OA\Parameter(
-     *     name="category",
-     *     in="query",
-     *     description="Category slug.",
-     *     @OA\Schema(
-     *       type="string",
-     *     ),
-     *   ),
-     *   @OA\Parameter(
-     *     name="sort",
-     *     in="query",
-     *     description="Sorting string.",
-     *     @OA\Schema(
-     *       type="string",
-     *       example="price:asc,created_at:desc,name"
-     *     ),
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         type="array",
-     *         @OA\Items(ref="#/components/schemas/Product"),
-     *       )
-     *     )
-     *   )
-     * )
-     */
-    public function index(Request $request)
-    {
-        $request->validate([
-            'brand' => 'string|max:255',
-            'category' => 'string|max:255',
-            'search' => 'string|max:255',
-            'sort' => 'string',
-        ]);
+    private MediaServiceContract $mediaService;
 
-        $query = Product::with([
-            'brand',
-            'category',
-            'media',
-        ]);
+    public function __construct(MediaServiceContract $mediaService)
+    {
+        $this->mediaService = $mediaService;
+    }
+
+    public function index(ProductIndexRequest $request): JsonResource
+    {
+        $query = Product::search($request->validated())
+            ->sort($request->input('sort'))
+            ->with([
+                'brand',
+                'media',
+                'category',
+            ]);
 
         if (!Auth::check()) {
             $query
                 ->where('public', true)
-                ->whereHas('brand', fn (Builder $subQuery) => $subQuery->where('public', true))
-                ->whereHas('category', fn (Builder $subQuery) => $subQuery->where('public', true));
-        }
-
-        if ($request->brand) {
-            $query->whereHas('brand', function (Builder $query) use ($request) {
-                return $query->where('slug', $request->brand);
-            });
-        }
-
-        if ($request->category) {
-            $query->whereHas('category', function (Builder $query) use ($request) {
-                return $query->where('slug', $request->category);
-            });
-        }
-
-        if ($request->search) {
-            $query
-                ->where('slug', 'LIKE', '%' . $request->search . '%')
-                ->orWhere('name', 'LIKE', '%' . $request->search . '%')
-                ->orWhereHas('brand', function (Builder $query) use ($request) {
-                    return $query->where('name', 'LIKE', '%' . $request->search . '%')
-                        ->orWhere('slug', 'LIKE', '%' . $request->search . '%');
-                })
-                ->orWhereHas('category', function (Builder $query) use ($request) {
-                    return $query->where('name', 'LIKE', '%' . $request->search . '%')
-                        ->orWhere('slug', 'LIKE', '%' . $request->search . '%');
-                });
-        }
-
-        if ($request->sort) {
-            $sort = explode(',', $request->sort);
-
-            foreach ($sort as $option) {
-                $option = explode(':', $option);
-
-                Validator::make($option, [
-                    '0' => 'required|in:price,name,created_at,id',
-                    '1' => 'in:asc,desc',
-                ])->validate();
-
-                $order = count($option) > 1 ? $option[1] : 'asc';
-                $query->orderBy($option[0], $order);
-            }
-
-        } else {
-            $query->orderBy('created_at', 'desc');
+                ->whereHas('brand', fn (Builder $q) => $q->where('public', true))
+                ->whereHas('category', fn (Builder $q) => $q->where('public', true));
         }
 
         return ProductResource::collection(
-            $query->paginate(12),
+            $query->paginate((int) $request->input('limit', 12)),
+            $request->has('full'),
         );
     }
 
-    /**
-     * @OA\Get(
-     *   path="/products/{slug}",
-     *   summary="single product view",
-     *   tags={"Products"},
-     *   @OA\Parameter(
-     *     name="slug",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="string",
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Product"
-     *       )
-     *     )
-     *   )
-     * )
-     */
-
-    /**
-     * @OA\Get(
-     *   path="/products/id:{id}",
-     *   summary="alias",
-     *   tags={"Products"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer",
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Product"
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function view(Product $product)
+    public function show(ProductShowRequest $request, Product $product): JsonResource
     {
-        if (!Auth::check() && $product->isPublic() !== true) {
-            return Error::abort('Unauthorized.', 401);
+        return ProductResource::make($product);
+    }
+
+    public function store(ProductCreateRequest $request): JsonResource
+    {
+        $product = Product::create($request->validated());
+
+        $this->mediaService->sync($product, $request->input('media', []));
+
+        if ($request->has('schemas') && is_array($request->input('schemas'))) {
+            $product->schemas()->sync($request->input('schemas'));
         }
 
         return ProductResource::make($product);
     }
 
-    /**
-     * @OA\Post(
-     *   path="/products",
-     *   summary="create product",
-     *   tags={"Products"},
-     *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="name",
-     *         type="string",
-     *       ),
-     *       @OA\Property(
-     *         property="slug",
-     *         type="string",
-     *       ),
-     *       @OA\Property(
-     *         property="price",
-     *         type="number",
-     *       ),
-     *       @OA\Property(
-     *         property="brand_id",
-     *         type="integer",
-     *       ),
-     *       @OA\Property(
-     *         property="category_id",
-     *         type="integer",
-     *       ),
-     *       @OA\Property(
-     *         property="description_md",
-     *         type="string",
-     *       ),
-     *       @OA\Property(
-     *         property="digital",
-     *         type="boolean",
-     *       ),
-     *       @OA\Property(
-     *         property="public",
-     *         type="boolean",
-     *       ),
-     *       @OA\Property(
-     *         property="schemas",
-     *         type="array",
-     *         @OA\Items(
-     *           type="object",
-     *           @OA\Property(
-     *             property="name",
-     *             type="string",
-     *           ),
-     *           @OA\Property(
-     *             property="type",
-     *             type="integer",
-     *           ),
-     *           @OA\Property(
-     *             property="required",
-     *             type="boolean",
-     *           ),
-     *           @OA\Property(
-     *             property="items",
-     *             type="array",
-     *             @OA\Items(
-     *               type="object",
-     *               @OA\Property(
-     *                 property="item_id",
-     *                 type="integer",
-     *               ),
-     *               @OA\Property(
-     *                 property="extra_price",
-     *                 type="number",
-     *               )
-     *             )
-     *           )
-     *         )
-     *       ),
-     *       @OA\Property(
-     *         property="media",
-     *         type="array",
-     *         @OA\Items(
-     *           type="integer",
-     *         )
-     *       )
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=201,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Product"
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function create(Request $request)
+    public function update(ProductUpdateRequest $request, Product $product): JsonResource
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:products|alpha_dash',
-            'price' => 'required|numeric',
-            'brand_id' => 'required|integer|exists:brands,id',
-            'category_id' => 'required|integer|exists:categories,id',
-            'description_md' => 'string|nullable',
-            'digital' => 'required|boolean',
-            'public' => 'required|boolean',
-            'schemas' => 'array|nullable',
-            'media' => 'array|nullable',
-        ]);
+        $product->update($request->validated());
 
-        $schemas = isset($request->schemas) ? $request->schemas : [];
+        $this->mediaService->sync($product, $request->input('media', []));
 
-        foreach ($schemas as $schema) {
-            Validator::make($schema, [
-                'name' => 'required|string|max:255',
-                // Kiedyś trzeba dodać jakieś obiekty typów w kodzie
-                'type' => 'required|integer|min:0|max:1',
-                'required' => 'required|boolean',
-                'items' => 'exclude_unless:type,0|required|array|min:1',
-            ])->validate();
-
-            $items = isset($schema['items']) ? $schema['items'] : [];
-
-            foreach ($items as $item) {
-                Validator::make($item, [
-                    'item_id' => 'required|integer|exists:items,id',
-                    'extra_price' => 'required|numeric',
-                ])->validate();
-            }
+        if ($request->has('schemas') && is_array($request->input('schemas'))) {
+            $product->schemas()->sync($request->input('schemas'));
         }
 
-        $media = isset($request->media) ? $request->media : [];
-
-        foreach ($media as $id) {
-            $thisMedia = Media::find($id);
-
-            if ($thisMedia === null) {
-                return Error::abort(
-                    'Media with ID ' . $id . ' does not exist.',
-                    400,
-                );
-            }
-        }
-
-        $product = Product::create($request->all());
-
-        $product->update([
-            'original_id' => $product->id,
-        ]);
-
-        $requiredPhysicalSchemas = array_filter($schemas, function ($schema) {
-            return $schema['required'] === true && $schema['type'] === 0;
-        });
-
-        if (count($requiredPhysicalSchemas) === 0) {
-            $schema = $product->schemas()->create([
-                'name' => null,
-                'type' => 0,
-                'required' => true,
-            ]);
-
-            $item = Item::create([
-                'name' => $request->name,
-                'sku' => null,
-            ]);
-
-            $schema->schemaItems()->create([
-                'item_id' => $item->id,
-                'extra_price' => 0,
-            ]);
-        }
-
-        foreach ($schemas as $schema) {
-            $newSchema = $product->schemas()->create([
-                'name' => $schema['name'],
-                'type' => $schema['type'],
-                'required' => $schema['required'],
-            ]);
-
-            if ($schema['type'] !== 0) {
-                continue;
-            }
-
-            foreach ($schema['items'] as $item) {
-                $newSchema->schemaItems()->create([
-                    'item_id' => $item['item_id'],
-                    'extra_price' => $item_id['extra_price'],
-                ]);
-            }
-        }
-
-        $product->media()->sync($media);
-
-        return ProductResource::make($product)
-            ->response()
-            ->setStatusCode(201);
+        return ProductResource::make($product);
     }
 
-    /**
-     * @OA\Patch(
-     *   path="/products/id:{id}",
-     *   summary="update product",
-     *   tags={"Products"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer",
-     *     )
-     *   ),
-     *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="name",
-     *         type="string",
-     *       ),
-     *       @OA\Property(
-     *         property="slug",
-     *         type="string",
-     *       ),
-     *       @OA\Property(
-     *         property="price",
-     *         type="number",
-     *       ),
-     *       @OA\Property(
-     *         property="brand_id",
-     *         type="integer",
-     *       ),
-     *       @OA\Property(
-     *         property="category_id",
-     *         type="integer",
-     *       ),
-     *       @OA\Property(
-     *         property="description_md",
-     *         type="string",
-     *       ),
-     *       @OA\Property(
-     *         property="digital",
-     *         type="boolean",
-     *       ),
-     *       @OA\Property(
-     *         property="public",
-     *         type="boolean",
-     *       ),
-     *       @OA\Property(
-     *         property="schemas",
-     *         type="array",
-     *         @OA\Items(
-     *           type="object",
-     *           @OA\Property(
-     *             property="name",
-     *             type="string",
-     *           ),
-     *           @OA\Property(
-     *             property="type",
-     *             type="integer",
-     *           ),
-     *           @OA\Property(
-     *             property="required",
-     *             type="boolean",
-     *           ),
-     *           @OA\Property(
-     *             property="items",
-     *             type="array",
-     *             @OA\Items(
-     *               type="object",
-     *               @OA\Property(
-     *                 property="item_id",
-     *                 type="integer",
-     *               ),
-     *               @OA\Property(
-     *                 property="extra_price",
-     *                 type="number",
-     *               )
-     *             )
-     *           )
-     *         )
-     *       ),
-     *       @OA\Property(
-     *         property="media",
-     *         type="array",
-     *         @OA\Items(
-     *           type="integer",
-     *         )
-     *       )
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Product"
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function update(Product $product, Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => [
-                'required',
-                'string',
-                'max:255',
-                'alpha_dash',
-                Rule::unique('products')->ignore($product->slug, 'slug'),
-            ],
-            'price' => 'required|numeric',
-            'brand_id' => 'required|integer|exists:brands,id',
-            'category_id' => 'required|integer|exists:categories,id',
-            'description_md' => 'string|nullable',
-            'digital' => 'required|boolean',
-            'public' => 'required|boolean',
-            'schemas' => 'required|array|min:1',
-            'media' => 'array|nullable',
-        ]);
-
-        $schemas = $request->schemas;
-
-        foreach ($schemas as $schema) {
-            Validator::make($schema, [
-                'name' => 'nullable|string|max:255',
-                // Kiedyś trzeba dodać jakieś obiekty typów w kodzie
-                'type' => 'required|integer|min:0|max:1',
-                'required' => 'required|boolean',
-                'items' => 'exclude_unless:type,0|required|array|min:1',
-            ])->validate();
-
-            $items = isset($schema['items']) ? $schema['items'] : [];
-
-            foreach ($items as $item) {
-                Validator::make($item, [
-                    'item_id' => 'required|integer|exists:items,id',
-                    'extra_price' => 'required|numeric',
-                ])->validate();
-            }
-        }
-
-        $requiredPhysicalSchemas = array_filter($schemas, function ($schema) {
-            return $schema['required'] === true && $schema['type'] === 0;
-        });
-
-        if (count($requiredPhysicalSchemas) === 0) {
-            return Error::abort('No required physical schemas.', 400);
-        }
-
-        $media = isset($request->media) ? $request->media : [];
-
-        foreach ($media as $id) {
-            $thisMedia = Media::find($id);
-
-            if ($thisMedia === null) {
-                return Error::abort(
-                    'Media with ID ' . $id . ' does not `exist`.',
-                    400,
-                );
-            }
-        }
-
-        $originalId = $product->original_id;
-
-        $product->delete();
-
-        $product = Product::create($request->all() + [
-            'original_id' => $originalId
-        ]);
-
-        foreach ($schemas as $schema) {
-            $newSchema = $product->schemas()->create([
-                'name' => $schema['name'],
-                'type' => $schema['type'],
-                'required' => $schema['required'],
-            ]);
-
-            if ($schema['type'] !== 0) {
-                continue;
-            }
-
-            foreach ($schema['items'] as $item) {
-                $newSchema->schemaItems()->create([
-                    'item_id' => $item['item_id'],
-                    'extra_price' => $item['extra_price'],
-                ]);
-            }
-        }
-
-        $product->media()->sync($media);
-
-        return ProductResource::make($product)
-            ->response()
-            ->setStatusCode(200);
-    }
-
-    /**
-     * @OA\Delete(
-     *   path="/products/id:{id}",
-     *   summary="delete product",
-     *   tags={"Products"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer",
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=204,
-     *     description="Success",
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function delete(Product $product)
+    public function destroy(Product $product): JsonResponse
     {
         $product->delete();
 

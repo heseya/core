@@ -2,13 +2,19 @@
 
 namespace App\Providers;
 
-use Schema;
-use Illuminate\Pagination\Paginator;
-use Illuminate\Support\ServiceProvider;
+use App\Schemas\SelectSchema;
+use App\Services\Contracts\MediaServiceContract;
+use App\Services\MediaService;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\ServiceProvider;
+use Laravel\Passport\Passport;
 
 class AppServiceProvider extends ServiceProvider
 {
+    const CONTRACTS = [
+        MediaServiceContract::class => MediaService::class,
+    ];
+
     /**
      * Register any application services.
      *
@@ -16,7 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        Passport::ignoreMigrations();
+
+        $this->injectContract(self::CONTRACTS);
     }
 
     /**
@@ -26,10 +34,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Schema::defaultStringLength(191);
+        //
+    }
 
-        Relation::morphMap([
-            'user' => 'App\User',
-        ]);
+    private function injectContract(array $contracts): void
+    {
+        foreach ($contracts as $abstract => $concrete) {
+            $this->app->bind($abstract, $concrete);
+        }
     }
 }

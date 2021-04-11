@@ -2,36 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
 use App\Exceptions\Error;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Swagger\CategoryControllerSwagger;
+use App\Http\Requests\CategoryIndexRequest;
 use App\Http\Resources\CategoryResource;
+use App\Models\Category;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
-class CategoryController extends Controller
+class CategoryController extends Controller implements CategoryControllerSwagger
 {
-    /**
-     * @OA\Get(
-     *   path="/categories",
-     *   summary="list categories",
-     *   tags={"Categories"},
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         type="array",
-     *         @OA\Items(ref="#/components/schemas/Category"),
-     *       )
-     *     )
-     *   )
-     * )
-     */
-    public function index()
+    public function index(CategoryIndexRequest $request): JsonResource
     {
-        $query = Category::select();
+        $query = Category::search($request->validated());
 
         if (!Auth::check()) {
             $query->where('public', true);
@@ -40,82 +25,22 @@ class CategoryController extends Controller
         return CategoryResource::collection($query->get());
     }
 
-    /**
-     * @OA\Post(
-     *   path="/categories",
-     *   summary="add new category",
-     *   tags={"Categories"},
-     *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       ref="#/components/schemas/Category",
-     *     ),
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Category",
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function create(Request $request)
+    public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:categories|alpha_dash',
             'public' => 'boolean',
         ]);
 
-        $category = Category::create($request->all());
+        $category = Category::create($validated);
 
-        return CategoryResource::make($category)
-            ->response()
-            ->setStatusCode(201);
+        return CategoryResource::make($category);
     }
 
-    /**
-     * @OA\Patch(
-     *   path="/categories/id:{id}",
-     *   summary="update category",
-     *   tags={"Categories"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer",
-     *     )
-     *   ),
-     *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       ref="#/components/schemas/Category",
-     *     ),
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Category",
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function update(Category $category, Request $request)
+    public function update(Category $category, Request $request): JsonResource
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'string|max:255',
             'public' => 'boolean',
             'slug' => [
@@ -127,39 +52,17 @@ class CategoryController extends Controller
             ],
         ]);
 
-        $category->update($request->all());
+        $category->update($validated);
 
         return CategoryResource::make($category);
     }
 
-    /**
-     * @OA\Delete(
-     *   path="/categories/id:{id}",
-     *   summary="delete category",
-     *   tags={"Categories"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer",
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=204,
-     *     description="Success",
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function delete(Category $category)
+    public function destroy(Category $category)
     {
         if ($category->products()->count() > 0) {
             return Error::abort(
                 "Category can't be deleted, because has relations.",
-                400,
+                409,
             );
         }
 

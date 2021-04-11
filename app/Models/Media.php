@@ -2,16 +2,19 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @OA\Schema()
  */
 class Media extends Model
 {
-    const OTHER = 0;
-    const PHOTO = 1;
-    const VIDEO = 2;
+    use HasFactory;
+
+    public const OTHER = 0;
+    public const PHOTO = 1;
+    public const VIDEO = 2;
 
     /**
      * The table associated with the model.
@@ -23,7 +26,8 @@ class Media extends Model
     /**
      * @OA\Property(
      *   property="id",
-     *   type="integer",
+     *   type="string",
+     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
      * )
      *
      * @OA\Property(
@@ -44,7 +48,7 @@ class Media extends Model
         'url',
     ];
 
-    public function products()
+    public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'product_media');
     }

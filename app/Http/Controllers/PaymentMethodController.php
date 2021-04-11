@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\Error;
+use App\Http\Controllers\Swagger\PaymentMethodControllerSwagger;
+use App\Http\Requests\PaymentMethodIndexRequest;
 use App\Http\Resources\PaymentMethodResource;
 use App\Models\PaymentMethod;
 use App\Models\ShippingMethod;
@@ -10,44 +11,15 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 
-class PaymentMethodController extends Controller
+class PaymentMethodController extends Controller implements PaymentMethodControllerSwagger
 {
-    /**
-     * @OA\Get(
-     *   path="/payment-methods",
-     *   summary="list payment methods",
-     *   tags={"Payments"},
-     *   @OA\Parameter(
-     *     name="shipping_method_id",
-     *     in="query",
-     *     @OA\Schema(
-     *       type="integer",
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         type="array",
-     *         @OA\Items(ref="#/components/schemas/PaymentMethod"),
-     *       )
-     *     )
-     *   )
-     * )
-     */
-    public function index(Request $request): JsonResource
+    public function index(PaymentMethodIndexRequest $request): JsonResource
     {
-         $request->validate([
-            'shipping_method_id' => 'integer|exists:shipping_methods,id',
-        ]);
-
-        if ($request->shipping_method_id) {
-            $shipping_method = ShippingMethod::find($request->shipping_method_id);
+        if ($request->has('shipping_method_id')) {
+            $shipping_method = ShippingMethod::find($request->input('shipping_method_id'));
             $query = $shipping_method->paymentMethods();
         } else {
-            $query = PaymentMethod::select();
+            $query = PaymentMethod::query();
         }
 
         if (!Auth::check()) {
@@ -57,113 +29,33 @@ class PaymentMethodController extends Controller
         return PaymentMethodResource::collection($query->get());
     }
 
-    /**
-     * @OA\Post(
-     *   path="/payment-methods",
-     *   summary="add new payment method",
-     *   tags={"Payments"},
-     *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       ref="#/components/schemas/PaymentMethod",
-     *     ),
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/PaymentMethod",
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function create(Request $request): JsonResource
+    public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'alias' => 'required|string|max:255',
             'public' => 'boolean',
         ]);
 
-        $payment_method = PaymentMethod::create($request->all());
+        $payment_method = PaymentMethod::create($validated);
 
         return PaymentMethodResource::make($payment_method);
     }
 
-    /**
-     * @OA\Patch(
-     *   path="/payment-methods/id:{id}",
-     *   summary="update payment method",
-     *   tags={"Payments"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer",
-     *     )
-     *   ),
-     *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       ref="#/components/schemas/PaymentMethod",
-     *     ),
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/PaymentMethod",
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
     public function update(PaymentMethod $payment_method, Request $request): JsonResource
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'string|max:255',
             'alias' => 'string|max:255',
             'public' => 'boolean',
         ]);
 
-        $payment_method->update($request->all());
+        $payment_method->update($validated);
 
         return PaymentMethodResource::make($payment_method);
     }
 
-    /**
-     * @OA\Delete(
-     *   path="/payment-methods/id:{id}",
-     *   summary="delete payment method",
-     *   tags={"Payments"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer",
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=204,
-     *     description="Success",
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function delete(PaymentMethod $payment_method)
+    public function destroy(PaymentMethod $payment_method)
     {
         $payment_method->delete();
 

@@ -1,17 +1,27 @@
 <?php
 
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
+namespace Database\Factories;
 
 use App\Models\Item;
-use Faker\Generator as Faker;
-use Bezhanov\Faker\ProviderCollectionHelper;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-$factory->define(Item::class, function (Faker $faker) {
+class ItemFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = Item::class;
 
-    ProviderCollectionHelper::addAllProvidersTo($faker);
-
-    return [
-        'name' => $faker->unique()->productName,
-        'sku' => $faker->regexify('[A-Z0-9]{4}\/[A-Z0-9]{2}'),
-    ];
-});
+    /**
+     * Define the model's default state.
+     */
+    public function definition(): array
+    {
+        return [
+            'name' => $this->faker->unique()->sentence(rand(1, 3)),
+            'sku' => $this->faker->unique()->regexify('[A-Z0-9]{4}'),
+        ];
+    }
+}

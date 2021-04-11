@@ -1,17 +1,31 @@
 <?php
 
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
+namespace Database\Factories;
 
 use App\Models\ShippingMethod;
-use Faker\Generator as Faker;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-$factory->define(ShippingMethod::class, function (Faker $faker) {
-    return [
-        'name' => $faker->randomElement([
-            'dpd',
-            'inpostkurier',
-        ]),
-        'price' => rand(8, 15) + 0.99,
-        'public' => rand(0, 1),
-    ];
-});
+class ShippingMethodFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = ShippingMethod::class;
+
+    /**
+     * Define the model's default state.
+     */
+    public function definition(): array
+    {
+        return [
+            'name' => $this->faker->randomElement([
+                'dpd',
+                'inpostkurier',
+            ]),
+            'price' => rand(8, 15) + (rand(0, 99) / 100),
+            'public' => $this->faker->boolean,
+        ];
+    }
+}

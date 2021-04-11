@@ -2,61 +2,35 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Media;
-use Heseya\Silverbox;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Swagger\MediaControllerSwagger;
+use App\Http\Requests\MediaStoreRequest;
 use App\Http\Resources\MediaResource;
+use App\Models\Media;
+use Exception;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Http;
 
-class MediaController extends Controller
+class MediaController extends Controller implements MediaControllerSwagger
 {
-    /**
-     * @OA\Post(
-     *   path="/media",
-     *   summary="upload new file",
-     *   tags={"Media"},
-     *   @OA\RequestBody(
-     *     @OA\MediaType(
-     *       mediaType="multipart/form-data",
-     *       @OA\Schema(
-     *         @OA\Property(
-     *           property="file",
-     *           description="File.",
-     *           type="binary",
-     *         ),
-     *       ),
-     *     ),
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         type="array",
-     *         @OA\Items(ref="#/components/schemas/Media"),
-     *       )
-     *     )
-     *   )
-     * )
-     */
-    public function upload(Request $request)
+    public function store(MediaStoreRequest $request): JsonResource
     {
-        $request->validate([
-            'file' => 'required|file|mimes:jpeg,png,gif,bmp',
-        ]);
+        $response = Http::attach(
+                'file',
+                file_get_contents($request->file('file')),
+                'file',
+            )
+            ->withHeaders(['Authorization' => config('silverbox.key'),])
+            ->post(config('silverbox.host') . '/' . config('silverbox.client'));
 
-        $silverbox = new Silverbox(config('silverbox.host'));
-        $response = $silverbox
-            ->as(config('silverbox.client'), config('silverbox.key'))
-            ->upload($request->file('file'));
+        if ($response->failed()) {
+            throw new Exception($response->body());
+        }
 
         $media = Media::create([
             'type' => Media::PHOTO,
-            'url' => rtrim(config('silverbox.host'). '/') . '/' . $response[0]->path,
+            'url' => config('silverbox.host') . '/' . $response[0]['path'],
         ]);
 
-        return MediaResource::make($media)
-            ->response()
-            ->setStatusCode(201);
+        return MediaResource::make($media);
     }
 }

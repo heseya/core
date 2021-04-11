@@ -2,90 +2,87 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\Item;
 use App\Models\Deposit;
+use App\Models\Item;
 use Laravel\Passport\Passport;
+use Tests\TestCase;
 
 class DepositsTest extends TestCase
 {
+    private Item $item;
+    private array $expected;
+
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->item = factory(Item::class)->create();
+        $this->item = Item::factory()->create();
 
-        $deposit = factory(Deposit::class)->create([
-            'item_id' => $this->item->id,
+        $deposit = Deposit::factory()->create([
+            'item_id' => $this->item->getKey(),
         ]);
 
         $this->expected = [
-            'id' => $deposit->id,
+            'id' => $deposit->getKey(),
             'quantity' => $deposit->quantity,
             'item_id' => $deposit->item_id,
         ];
     }
 
-    /**
-     * @return void
-     */
-    public function testIndex()
+    public function testIndex(): void
     {
-        $response = $this->get('/deposits');
+        $response = $this->getJson('/deposits');
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->get('/deposits');
+        $response = $this->getJson('/deposits');
         $response
             ->assertOk()
-            ->assertJsonCount(1, 'data') // Only one item xD
+            ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
     }
 
-    /**
-     * @return void
-     */
-    public function testView()
+    public function testView(): void
     {
-        $response = $this->get('/items/id:' . $this->item->id . '/deposits');
+        $response = $this->getJson('/items/id:' . $this->item->getKey() . '/deposits');
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
-        $response = $this->get('/items/id:' . $this->item->id . '/deposits');
+        $response = $this->getJson('/items/id:' . $this->item->getKey() . '/deposits');
         $response
             ->assertOk()
-            ->assertJsonCount(1, 'data') // Only one item xD
+            ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
     }
 
-    /**
-     * @return void
-     */
-    public function testCreate()
+    public function testCreate(): void
     {
-        $response = $this->post('/items/id:' . $this->item->id . '/deposits');
+        $response = $this->postJson('/items/id:' . $this->item->getKey() . '/deposits');
         $response->assertUnauthorized();
 
         Passport::actingAs($this->user);
 
         $deposit = [
-            'quantity' => '12.5',
+            'quantity' => 12.5,
         ];
 
-        $response = $this->post(
-            '/items/id:' . $this->item->id . '/deposits',
+        $response = $this->postJson(
+            '/items/id:' . $this->item->getKey() . '/deposits',
             $deposit,
         );
+
         $response
             ->assertCreated()
             ->assertJson(['data' => $deposit + [
-                'item_id' => $this->item->id
+                'item_id' => $this->item->getKey(),
             ]]);
+
+        $this->assertDatabaseHas('deposits', ['item_id' => $this->item->getKey()] + $deposit);
     }
 }

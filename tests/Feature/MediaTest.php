@@ -2,78 +2,28 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Laravel\Passport\Passport;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
+use Tests\TestCase;
 
 class MediaTest extends TestCase
 {
-    public function testUploadUnauthorized()
+    public function testUploadUnauthorized(): void
     {
-        $response = $this->post('/media');
+        $response = $this->postJson('/media');
         $response->assertUnauthorized();
     }
 
-    /**
-     * @return void
-     */
-    public function testUploadJpg()
+    public function testUpload(): void
     {
-        $file = UploadedFile::fake()->image('image.jpg');
+        Http::fake(['*' => Http::response([0 => ['path' => 'image.jpeg']])]);
 
-        $this->upload($file);
-    }
-
-    /**
-     * @return void
-     */
-    public function testUploadJpeg()
-    {
         $file = UploadedFile::fake()->image('image.jpeg');
 
-        $this->upload($file);
-    }
-
-    /**
-     * @return void
-     */
-    public function testUploadPng()
-    {
-        $file = UploadedFile::fake()->image('image.png');
-
-        $this->upload($file);
-    }
-
-    /**
-     * @return void
-     */
-    public function testUploadGif()
-    {
-        $file = UploadedFile::fake()->image('image.gif');
-
-        $this->upload($file);
-    }
-
-    /**
-     * @return void
-     */
-    public function testUploadBmp()
-    {
-        $file = UploadedFile::fake()->image('image.bmp');
-
-        $this->upload($file);
-    }
-
-    /**
-     * @return void
-     */
-    protected function upload($file)
-    {
-        Passport::actingAs($this->user);
-
-        $response = $this->post('/media', [
+        $response = $this->actingAs($this->user)->postJson('/media', [
             'file' => $file,
         ]);
+
         $response
             ->assertCreated()
             ->assertJsonStructure(['data' => [

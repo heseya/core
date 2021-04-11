@@ -1,19 +1,30 @@
 <?php
 
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
+namespace Database\Factories;
 
 use App\Models\PackageTemplate;
-use Faker\Generator as Faker;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-$factory->define(PackageTemplate::class, function (Faker $faker) {
+class PackageTemplateFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = PackageTemplate::class;
 
-    $name = $faker->unique()->name;
-
-    return [
-        'name' => $name . ' package',
-        'weight' => rand(1, 100) / 10.0,
-        'width' => rand(1, 100),
-        'height' => rand(1, 100),
-        'depth' => rand(1, 100),
-    ];
-});
+    /**
+     * Define the model's default state.
+     */
+    public function definition(): array
+    {
+        return [
+            'name' => $this->faker->name . ' package',
+            'weight' => rand(1, 100) / 10.0,
+            'width' => rand(1, 100),
+            'height' => rand(1, 100),
+            'depth' => rand(1, 100),
+        ];
+    }
+}

@@ -1,29 +1,31 @@
 <?php
 
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
+namespace Database\Factories;
 
 use App\Models\Category;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
-use Faker\Generator as Faker;
-use Bezhanov\Faker\ProviderCollectionHelper;
 
-$factory->define(Category::class, function (Faker $faker) {
+class CategoryFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = Category::class;
 
-    ProviderCollectionHelper::addAllProvidersTo($faker);
+    /**
+     * Define the model's default state.
+     */
+    public function definition(): array
+    {
+        $name = $this->faker->unique()->word;
 
-    $name = $faker->unique()->randomElement([
-        'Akcesoria',
-        'Biżuteria',
-        'Narzędzia',
-        'Obuwie',
-        'Okulary',
-        'Ubrania',
-        'Zegarki',
-    ]);
-
-    return [
-        'name' => $name,
-        'slug' => Str::slug($name),
-        'public' => rand(0, 1),
-    ];
-});
+        return [
+            'name' => $name,
+            'slug' => Str::slug($name),
+            'public' => rand(0, 1),
+        ];
+    }
+}

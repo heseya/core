@@ -2,7 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\SearchTypes\ItemSearch;
+use App\Traits\Sortable;
+use Heseya\Searchable\Searches\Like;
+use Heseya\Searchable\Traits\Searchable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -10,12 +15,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Item extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasFactory, Searchable, Sortable;
 
     /**
      * @OA\Property(
      *   property="id",
-     *   type="integer",
+     *   type="string",
+     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
      * )
      *
      * @OA\Property(
@@ -27,6 +33,13 @@ class Item extends Model
      * @OA\Property(
      *   property="sku",
      *   type="string",
+     *   example="K121"
+     * )
+     *
+     * @OA\Property(
+     *   property="quantity",
+     *   type="float",
+     *   example="20",
      * )
      */
 
@@ -35,32 +48,26 @@ class Item extends Model
         'sku',
     ];
 
-    public function getQuantityAttribute (): float
-    {
-        $deposits = $this->deposits()->sum('quantity');
-        $withdrawals = $this->schemaItems()
-            ->join(
-                'order_item_product_schema_item', 
-                'product_schema_items.id', 
-                '=', 
-                'order_item_product_schema_item.product_schema_item_id'
-            )->join(
-                'order_items',
-                'order_items.id',
-                '=',
-                'order_item_product_schema_item.order_item_id'
-            )->sum('quantity');
+    protected $searchable = [
+        'name' => Like::class,
+        'sku' => Like::class,
+        'search' => ItemSearch::class,
+    ];
 
-        return $deposits - $withdrawals;
+    protected array $sortable = [
+        'name',
+        'sku',
+        'created_at',
+        'updated_at',
+    ];
+
+    public function getQuantityAttribute(): float
+    {
+        return $this->deposits()->sum('quantity');
     }
 
-    public function deposits()
+    public function deposits(): HasMany
     {
         return $this->hasMany(Deposit::class);
-    }
-
-    public function schemaItems()
-    {
-        return $this->hasMany(ProductSchemaItem::class);
     }
 }

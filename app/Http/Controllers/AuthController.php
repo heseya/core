@@ -3,152 +3,76 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\Error;
+use App\Http\Controllers\Swagger\AuthControllerSwagger;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\PasswordChangeRequest;
+use App\Http\Resources\AuthResource;
+use App\Http\Resources\LoginHistoryResource;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use App\Http\Resources\UserResource;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Passport\Passport;
 
-class AuthController extends Controller
+class AuthController extends Controller implements AuthControllerSwagger
 {
-    /**
-     * @OA\Post(
-     *   path="/login",
-     *   summary="Login",
-     *   tags={"Auth"},
-     *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="email",
-     *         type="string",
-     *         example="admin@example.com",
-     *       ),
-     *       @OA\Property(
-     *         property="password",
-     *         type="string",
-     *         example="secret",
-     *       ),
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         type="object",
-     *         @OA\Property(
-     *           property="token",
-     *           type="string",
-     *         ),
-     *         @OA\Property(
-     *           property="expires_at",
-     *           type="string",
-     *         ),
-     *         @OA\Property(
-     *           property="user",
-     *           ref="#/components/schemas/User"
-     *         ),
-     *         @OA\Property(
-     *           property="scopes",
-     *           type="array",
-     *           items="",
-     *         ),
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $request->validate([
-            'email' => 'required|string|max:255',
-            'password' => 'required|string|max:255',
-        ]);
-
-        if (Auth::guard('web')->attempt([
-            'email' => $request->email,
-            'password' => $request->password,
+        if (!Auth::guard('web')->attempt([
+            'email' => $request->input('email'),
+            'password' => $request->input('password'),
         ])) {
-
-            $user = Auth::guard('web')->user();
-            $token = $user->createToken('Admin');
-
-            return response()->json(['data' => [
-                'token' => $token->accessToken,
-                'expires_at' => $token->token->expires_at,
-                'user' => UserResource::make($user),
-                'scopes' => $token->token->scopes,
-            ]], 200);
-        }
-
-        return Error::abort('Invalid credentials.', 400);
-    }
-
-
-    /**
-     * @OA\Patch(
-     *   path="/user/password",
-     *   summary="Change password",
-     *   tags={"Auth"},
-     *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="password",
-     *         type="string",
-     *         example="secret",
-     *       ),
-     *       @OA\Property(
-     *         property="password_new",
-     *         type="string",
-     *         example="xsw@!QAZ34",
-     *       ),
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         type="object",
-     *         @OA\Property(
-     *           property="messgae",
-     *           type="string",
-     *           example="OK",
-     *         ),
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function changePassword(Request $request)
-    {
-        $request->validate([
-            'password' => 'required|string|max:255',
-            'password_new' => 'required|string|max:255|min:10',
-        ]);
-
-        $user = Auth::user();
-
-        if (!Hash::check($request->password, $user->password)) {
             return Error::abort('Invalid credentials.', 400);
         }
 
-        $hash = Hash::make($request->password_new);
+        $user = Auth::guard('web')->user();
+        $token = $user->createToken('Admin');
 
-        $user->update([
-            'password' => $hash,
+        $token->token->update([
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
         ]);
 
-        return response()->json(['data' => [
-            'message' => 'OK',
-        ]], 200);
+        return AuthResource::make($token);
+    }
+
+    public function logout(Request $request): JsonResponse
+    {
+        if ($token = $request->user()->token()) {
+            $token->update([
+                'revoked' => true,
+                'expires_at' => Carbon::now(),
+            ]);
+        }
+
+        return response()->json(null, 204);
+    }
+
+    public function changePassword(PasswordChangeRequest $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!Hash::check($request->input('password'), $user->password)) {
+            return Error::abort('Invalid credentials.', 400);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->input('password_new')),
+        ]);
+
+        return response()->json(null, 204);
+    }
+
+    public function loginHistory(Request $request): JsonResource
+    {
+        $tokens = Passport::token()
+            ->where('user_id', $request->user()->getKey())
+            ->orderBy('created_at', 'DESC');
+
+        return LoginHistoryResource::collection(
+            $tokens->paginate(12),
+        );
     }
 }

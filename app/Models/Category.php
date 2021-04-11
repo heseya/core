@@ -2,17 +2,23 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Heseya\Searchable\Searches\Like;
+use Heseya\Searchable\Traits\Searchable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @OA\Schema()
  */
 class Category extends Model
 {
+    use Searchable, HasFactory;
+
     /**
      * @OA\Property(
      *   property="id",
-     *   type="integer",
+     *   type="string",
+     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
      * )
      *
      * @OA\Property(
@@ -39,6 +45,12 @@ class Category extends Model
         'public',
     ];
 
+    protected array $searchable = [
+        'name' => Like::class,
+        'slug' => Like::class,
+        'public',
+    ];
+
     /**
      * The attributes that should be cast to native types.
      *
@@ -48,7 +60,7 @@ class Category extends Model
         'public' => 'boolean',
     ];
 
-    public function products()
+    public function products(): HasMany
     {
         return $this->hasMany(Product::class);
     }

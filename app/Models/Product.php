@@ -2,7 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\SearchTypes\ProductSearch;
+use App\SearchTypes\WhereHasSlug;
+use App\Traits\Sortable;
+use Heseya\Searchable\Searches\Like;
+use Heseya\Searchable\Traits\Searchable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -10,12 +17,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Product extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes, Searchable, Sortable;
 
     /**
      * @OA\Property(
      *   property="id",
-     *   type="integer",
+     *   type="string",
+     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
      * )
      *
      * @OA\Property(
@@ -59,12 +67,9 @@ class Product extends Model
         'slug',
         'price',
         'description_md',
-        'digital',
         'public',
         'brand_id',
         'category_id',
-        'original_id',
-        'user_id',
     ];
 
     /**
@@ -75,12 +80,34 @@ class Product extends Model
     protected $casts = [
         'price' => 'float',
         'public' => 'bool',
-        'digital' => 'bool',
+        'available' => 'bool',
     ];
 
-    public function media()
+    protected array $searchable = [
+        'name' => Like::class,
+        'slug' => Like::class,
+        'public',
+        'brand' => WhereHasSlug::class,
+        'category' => WhereHasSlug::class,
+        'search' => ProductSearch::class,
+    ];
+
+    protected array $sortable = [
+        'id',
+        'price',
+        'name',
+        'created_at',
+        'updated_at',
+    ];
+
+    protected string $defaultSortBy = 'created_at';
+    protected string $defaultSortDirection = 'desc';
+
+    public function media(): BelongsToMany
     {
-        return $this->belongsToMany(Media::class, 'product_media');
+        return $this
+            ->belongsToMany(Media::class, 'product_media')
+            ->orderByPivot('order');
     }
 
     /**
@@ -89,7 +116,7 @@ class Product extends Model
      *   ref="#/components/schemas/Brand",
      * )
      */
-    public function brand()
+    public function brand(): BelongsTo
     {
         return $this->belongsTo(Brand::class);
     }
@@ -100,7 +127,7 @@ class Product extends Model
      *   ref="#/components/schemas/Category",
      * )
      */
-    public function category()
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
@@ -109,26 +136,26 @@ class Product extends Model
      * @OA\Property(
      *   property="schemas",
      *   type="array",
-     *   @OA\Items(ref="#/components/schemas/ProductSchema"),
+     *   @OA\Items(ref="#/components/schemas/Schema"),
      * )
      */
-    public function schemas()
+    public function schemas(): BelongsToMany
     {
-        return $this->hasMany(ProductSchema::class);
+        return $this->belongsToMany(Schema::class, 'product_schemas')
+            ->orderBy('created_at', 'DESC');
     }
 
-    public function orders()
+    public function orders(): BelongsToMany
     {
-        return $this->belongsToMany(Order::class)->using(OrderItem::class);
+        return $this->belongsToMany(Order::class)->using(OrderProduct::class);
     }
 
     /**
-     * Description in HTML.
-     *
      * @OA\Property(
      *   property="description_html",
      *   type="string",
      *   example="<h1>Awesome stuff!</h1>",
+     *   description="Description in HTML.",
      * )
      *
      * @var string
@@ -139,19 +166,26 @@ class Product extends Model
     }
 
     /**
-     * Whether product is available.
-     *
      * @OA\Property(
      *   property="available",
      *   type="boolean",
+     *   description="Whether product is available.",
      * )
-     *
-     * @var bool
      */
     public function getAvailableAttribute(): bool
     {
-        return $this->schemas()->exists() ? $this->schemas()->first()
-            ->schemaItems()->first()->item->quantity > 0 : false;
+        if ($this->schemas()->count() <= 0) {
+            return true;
+        }
+
+        // a product is available if all required schematics are available
+        foreach ($this->schemas as $schema) {
+            if ($schema->required && !$schema->available) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

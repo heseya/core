@@ -2,18 +2,14 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Request;
+
 class ItemResource extends Resource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
-     */
-    public function base($request): array
+    public function base(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => $this->getKey(),
             'name' => $this->name,
             'sku' => $this->sku,
             'quantity' => $this->quantity,

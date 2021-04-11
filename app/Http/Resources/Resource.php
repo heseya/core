@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Support\Arr;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class Resource extends JsonResource
@@ -10,35 +10,37 @@ class Resource extends JsonResource
     /**
      * Get any additional data that should be returned with the resource array.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param Request $request
      * @return array
      */
-    public function with($request)
+    public function with($request): array
     {
-        return ['meta' => [
-            'currency' => [
-                'name' => 'Polski Złoty',
-                'symbol' => 'PLN',
-                'decimals' => 2,
+        return [
+            'meta' => [
+                'currency' => [
+                    'name' => 'Polski Złoty',
+                    'symbol' => 'PLN',
+                    'decimals' => 2,
+                ],
+                'language' => [
+                    'name' => 'Polski',
+                    'symbol' => 'PL-pl',
+                ],
             ],
-            'language' => [
-                'name' => 'Polski',
-                'symbol' => 'PL-pl',
-            ],
-        ]];
+        ];
     }
 
-    public function base($request): array
+    public function base(Request $request): array
     {
         return [];
     }
 
-    public function view($request): array
+    public function view(Request $request): array
     {
         return [];
     }
 
-    public function index($request): array
+    public function index(Request $request): array
     {
         return [];
     }
@@ -46,32 +48,34 @@ class Resource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param Request $request
+     * @param bool $index
      * @return array
      */
-    public function toArray($request, $index = false): array
+    public function toArray($request, bool $index = false): array
     {
         if ($index) {
             return array_merge(
                 $this->base($request),
                 $this->index($request),
             );
-        } else {
-            return array_merge(
-                $this->base($request),
-                $this->view($request),
-            );
         }
+
+        return array_merge(
+            $this->base($request),
+            $this->view($request),
+        );
     }
 
     /**
      * Create new resource collection.
      *
-     * @param  mixed  $resource
-     * @return \App\Http\Resources\Collection
+     * @param mixed $resource
+     * @param bool $full
+     * @return Collection
      */
-    public static function collection($resource)
+    public static function collection($resource, $full = false): Collection
     {
-        return new Collection($resource, static::class);
+        return new Collection($resource, static::class, $full);
     }
 }

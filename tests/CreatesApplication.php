@@ -2,17 +2,29 @@
 
 namespace Tests;
 
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Artisan;
 
 trait CreatesApplication
 {
     /**
-     * Creates the application.
+     * Commands that are executed before testing.
      *
-     * @return \Illuminate\Foundation\Application
+     * @var array|string[]
      */
-    public function createApplication()
+    private array $commands = [
+        'clear-compiled',
+        'cache:clear',
+        'view:clear',
+        'config:clear',
+        'route:clear',
+    ];
+
+    /**
+     * Creates the application.
+     */
+    public function createApplication(): Application
     {
         $createApp = function() {
             $app = require __DIR__ . '/../bootstrap/app.php';
@@ -24,7 +36,7 @@ trait CreatesApplication
         $app = $createApp();
 
         if ($app->environment() !== 'testing') {
-            $this->clearCache();
+            $this->runCommands();
             $app = $createApp();
         }
 
@@ -33,20 +45,10 @@ trait CreatesApplication
 
     /**
      * Clears Laravel Cache.
-     *
-     * @return void
      */
-    protected function clearCache(): void
+    protected function runCommands(): void
     {
-        $commands = [
-            'clear-compiled',
-            'cache:clear',
-            'view:clear',
-            'config:clear',
-            'route:clear',
-        ];
-
-        foreach ($commands as $command) {
+        foreach ($this->commands as $command) {
             Artisan::call($command);
         }
     }

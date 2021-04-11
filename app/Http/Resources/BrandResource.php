@@ -2,18 +2,14 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Request;
+
 class BrandResource extends Resource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
-     */
-    public function base($request): array
+    public function base(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => $this->getKey(),
             'slug' => $this->slug,
             'name' => $this->name,
             'public' => $this->public,

@@ -2,18 +2,35 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
+use App\Traits\Sortable;
+use Heseya\Searchable\Searches\Like;
+use Heseya\Searchable\Traits\Searchable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 
 /**
  * @OA\Schema()
  */
 class Order extends Model
 {
+    use HasFactory, Searchable, Sortable;
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        $this->code = $attributes['code'] ?? $this->generateCode();
+    }
+
     /**
      * @OA\Property(
      *   property="id",
-     *   type="integer",
+     *   type="string",
+     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
      * )
      *
      * @OA\Property(
@@ -31,7 +48,7 @@ class Order extends Model
      * @OA\Property(
      *   property="shipping_number",
      *   type="string",
-     *   example="chch234chch1j3c23",
+     *   example="630552359128340015809770",
      * )
      */
 
@@ -48,6 +65,20 @@ class Order extends Model
         'shipping_number',
     ];
 
+    protected array $searchable = [
+        'code' => Like::class,
+        'email' => Like::class,
+    ];
+
+    protected array $sortable = [
+        'id',
+        'code',
+        'created_at',
+    ];
+
+    protected string $defaultSortBy = 'created_at';
+    protected string $defaultSortDirection = 'desc';
+
     /**
      * @OA\Property(
      *   property="summary",
@@ -58,7 +89,7 @@ class Order extends Model
     {
         $value = $this->shipping_price;
 
-        foreach ($this->items as $item) {
+        foreach ($this->products as $item) {
             $value += ($item->price * $item->quantity);
         }
 
@@ -70,7 +101,8 @@ class Order extends Model
      *
      * @OA\Property(
      *   property="summary_payed",
-     *   type="number",
+     *   type="float",
+     *   example=199.99
      * )
      *
      * @return float
@@ -85,7 +117,8 @@ class Order extends Model
     /**
      * @OA\Property(
      *   property="payed",
-     *   type="bolean",
+     *   type="boolean",
+     *   example=true,
      * )
      *
      * @return bool
@@ -101,7 +134,7 @@ class Order extends Model
      *   ref="#/components/schemas/Status",
      * )
      */
-    public function status()
+    public function status(): BelongsTo
     {
         return $this->belongsTo(Status::class);
     }
@@ -112,7 +145,7 @@ class Order extends Model
      *   ref="#/components/schemas/ShippingMethod",
      * )
      */
-    public function shippingMethod()
+    public function shippingMethod(): BelongsTo
     {
         return $this->belongsTo(ShippingMethod::class);
     }
@@ -123,7 +156,7 @@ class Order extends Model
      *   ref="#/components/schemas/Address",
      * )
      */
-    public function deliveryAddress()
+    public function deliveryAddress(): HasOne
     {
         return $this->hasOne(Address::class, 'id', 'delivery_address_id');
     }
@@ -134,21 +167,21 @@ class Order extends Model
      *   ref="#/components/schemas/Address",
      * )
      */
-    public function invoiceAddress()
+    public function invoiceAddress(): HasOne
     {
         return $this->hasOne(Address::class, 'id', 'invoice_address_id');
     }
 
     /**
      * @OA\Property(
-     *   property="items",
+     *   property="products",
      *   type="array",
-     *   @OA\Items(ref="#/components/schemas/OrderItem"),
+     *   @OA\Items(ref="#/components/schemas/OrderProduct"),
      * )
      */
-    public function items()
+    public function products(): HasMany
     {
-        return $this->hasMany(OrderItem::class);
+        return $this->hasMany(OrderProduct::class);
     }
 
     /**
@@ -158,7 +191,7 @@ class Order extends Model
      *   @OA\Items(ref="#/components/schemas/Payment"),
      * )
      */
-    public function payments()
+    public function payments(): HasMany
     {
         return $this
             ->hasMany(Payment::class)
@@ -166,29 +199,33 @@ class Order extends Model
             ->orderBy('updated_at', 'DESC');
     }
 
-    public function logs()
+    public function logs(): HasMany
     {
         return $this->hasMany(OrderLog::class)->orderBy('created_at', 'DESC');
     }
 
-    public function notes()
+    public function notes(): HasMany
     {
         return $this->hasMany(OrderNote::class)->orderBy('created_at', 'DESC');
     }
 
-    public function products()
-    {
-        return $this->belongsToMany(Product::class)->using(OrderItem::class);
-    }
-
     /**
-     * @param $items
+     * @param array $items
      */
     public function saveItems($items): void
     {
         foreach ($items as $item) {
-            $item = OrderItem::create($item);
-            $this->items()->save($item);
+            $item = OrderProduct::create($item);
+            $this->products()->save($item);
         }
+    }
+
+    public function generateCode(): string
+    {
+        do {
+            $code = Str::upper(Str::random(6));
+        } while (Order::where('code', $code)->exists());
+
+        return $code;
     }
 }

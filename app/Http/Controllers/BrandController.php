@@ -2,36 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Brand;
 use App\Exceptions\Error;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Swagger\BrandControllerSwagger;
+use App\Http\Requests\BrandCreateRequest;
+use App\Http\Requests\BrandIndexRequest;
+use App\Http\Requests\BrandUpdateRequest;
 use App\Http\Resources\BrandResource;
+use App\Models\Brand;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
 
-class BrandController extends Controller
+class BrandController extends Controller implements BrandControllerSwagger
 {
-    /**
-     * @OA\Get(
-     *   path="/brands",
-     *   summary="list brands",
-     *   tags={"Brands"},
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         type="array",
-     *         @OA\Items(ref="#/components/schemas/Brand"),
-     *       )
-     *     )
-     *   )
-     * )
-     */
-    public function index()
+    public function index(BrandIndexRequest $request): JsonResource
     {
-        $query = Brand::select();
+        $query = Brand::search($request->validated());
 
         if (!Auth::check()) {
             $query->where('public', true);
@@ -40,126 +26,26 @@ class BrandController extends Controller
         return BrandResource::collection($query->get());
     }
 
-    /**
-     * @OA\Post(
-     *   path="/brands",
-     *   summary="add new brand",
-     *   tags={"Brands"},
-     *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       ref="#/components/schemas/Brand",
-     *     ),
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Brand",
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function create(Request $request)
+    public function store(BrandCreateRequest $request): JsonResource
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:brands|alpha_dash',
-            'public' => 'boolean',
-        ]);
-
-        $brand = Brand::create($request->all());
-
-        return BrandResource::make($brand)
-            ->response()
-            ->setStatusCode(201);
-    }
-
-    /**
-     * @OA\Patch(
-     *   path="/brands/id:{id}",
-     *   summary="update brand",
-     *   tags={"Brands"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer",
-     *     )
-     *   ),
-     *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       ref="#/components/schemas/Brand",
-     *     ),
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Brand",
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function update(Brand $brand, Request $request)
-    {
-        $request->validate([
-            'name' => 'string|max:255',
-            'public' => 'boolean',
-            'slug' => [
-                'required',
-                'string',
-                'max:255',
-                'alpha_dash',
-                Rule::unique('brands')->ignore($brand->slug, 'slug'),
-            ],
-        ]);
-
-        $brand->update($request->all());
+        $brand = Brand::create($request->validated());
 
         return BrandResource::make($brand);
     }
 
-    /**
-     * @OA\Delete(
-     *   path="/brands/id:{id}",
-     *   summary="delete brand",
-     *   tags={"Brands"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer",
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=204,
-     *     description="Success",
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function delete(Brand $brand)
+    public function update(Brand $brand, BrandUpdateRequest $request): JsonResource
+    {
+        $brand->update($request->validated());
+
+        return BrandResource::make($brand);
+    }
+
+    public function destroy(Brand $brand): JsonResponse
     {
         if ($brand->products()->count() > 0) {
             return Error::abort(
-                "Brand can't be deleted, because has relations.",
-                400,
+                'Brand can\'t be deleted, because has relations.',
+                409,
             );
         }
 

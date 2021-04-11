@@ -2,17 +2,20 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * @OA\Schema()
  */
 class Page extends Model
 {
+    use HasFactory;
+
     /**
      * @OA\Property(
      *   property="id",
-     *   type="integer",
+     *   type="string",
+     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
      * )
      *
      * @OA\Property(
@@ -68,8 +71,6 @@ class Page extends Model
      *   type="string",
      *   example="<h1>Awesome stuff!</h1>",
      * )
-     *
-     * @var string
      */
     public function getContentHtmlAttribute(): string
     {

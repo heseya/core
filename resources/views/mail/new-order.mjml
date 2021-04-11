@@ -23,8 +23,8 @@
             <th style="padding: 0 15px;">Ilość</th>
             <th style="padding: 0 0 0 15px;">Suma</th>
           </tr>
-          
-   			 @foreach ($order->items as $item)
+
+   			 @foreach ($order->products as $item)
           <tr>
             <td style="padding: 0 15px 0 0;">{{ $item->product->name }}</td>
             <td style="padding: 0 15px;">{{ $item->quantity }}</td>

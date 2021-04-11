@@ -1,21 +1,31 @@
 <?php
 
-/** @var \Illuminate\Database\Eloquent\Factory $factory */
+namespace Database\Factories;
 
 use App\Models\Address;
-use Faker\Generator as Faker;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-$factory->define(Address::class, function (Faker $faker) {
-    return [
-        'name' => $faker->firstName . ' ' . $faker->lastName,
-        'phone' => $faker->phoneNumber,
-        'address' => 'Nowogrodzka 84/86',
-        'zip' => '02-018',
-        'city' => 'Warszawa',
-        'country' =>'PL',
-        // 'address' => $faker->streetAddress,
-        // 'zip' => $faker->postcode,
-        // 'city' => $faker->city,
-        // 'country' => rand(0, 3) ? 'PL' : $faker->countryCode,
-    ];
-});
+class AddressFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = Address::class;
+
+    /**
+     * Define the model's default state.
+     */
+    public function definition(): array
+    {
+        return [
+            'name' => $this->faker->name,
+            'phone' => $this->faker->phoneNumber,
+            'address' => $this->faker->streetAddress,
+            'zip' => $this->faker->postcode,
+            'city' => $this->faker->city,
+            'country' => $this->faker->countryCode,
+        ];
+    }
+}

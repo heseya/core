@@ -3,10 +3,12 @@
 namespace App\Http\Resources;
 
 use Countable;
-use IteratorAggregate;
-use Illuminate\Pagination\AbstractPaginator;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\CollectsResources;
 use Illuminate\Http\Resources\Json\PaginatedResourceResponse;
+use Illuminate\Pagination\AbstractPaginator;
+use IteratorAggregate;
 
 class Collection extends Resource implements Countable, IteratorAggregate
 {
@@ -26,15 +28,15 @@ class Collection extends Resource implements Countable, IteratorAggregate
      */
     public $collection;
 
+    private bool $full;
+
     /**
      * Create a new resource instance.
-     *
-     * @param  mixed  $resource
-     * @return void
      */
-    public function __construct($resource, $collects)
+    public function __construct($resource, $collects, bool $full = false)
     {
         $this->collects = $collects;
+        $this->full = $full;
 
         parent::__construct($resource);
 
@@ -43,10 +45,8 @@ class Collection extends Resource implements Countable, IteratorAggregate
 
     /**
      * Return the count of items in the resource collection.
-     *
-     * @return int
      */
-    public function count()
+    public function count(): int
     {
         return $this->collection->count();
     }
@@ -54,21 +54,23 @@ class Collection extends Resource implements Countable, IteratorAggregate
     /**
      * Transform the resource into a JSON array.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param Request $request
+     * @param bool $index
+     *
      * @return array
      */
-    public function toArray($request, $index = false): array
+    public function toArray($request, bool $index = false): array
     {
-        return $this->collection->map->toArray($request, true)->all();
+        return $this->collection->map->toArray($request, !$this->full)->all();
     }
 
     /**
      * Create an HTTP response that represents the object.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function toResponse($request)
+    public function toResponse($request): JsonResponse
     {
         if ($this->resource instanceof AbstractPaginator) {
             return $this->preparePaginatedResponse($request);
@@ -80,10 +82,10 @@ class Collection extends Resource implements Countable, IteratorAggregate
     /**
      * Create a paginate-aware HTTP response.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * @param Request $request
+     * @return JsonResponse
      */
-    protected function preparePaginatedResponse($request)
+    protected function preparePaginatedResponse($request): JsonResponse
     {
         // preserve All Query Parameters
         $this->resource->appends($request->query());

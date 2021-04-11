@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-
 /**
  * @OA\RequestBody(
  *   request="OrderCreate",
@@ -14,17 +12,14 @@ use Illuminate\Foundation\Http\FormRequest;
  *       example="admin@example.com",
  *     ),
  *     @OA\Property(
- *       property="shipping_method_id",
- *       type="integer",
- *     ),
- *     @OA\Property(
  *       property="comment",
  *       type="string",
  *       example="asap plz",
  *     ),
  *     @OA\Property(
- *       property="is_statute_accepted",
- *       type="boolean",
+ *       property="shipping_method_id",
+ *       type="string",
+ *       example="026bc5f6-8373-4aeb-972e-e78d72a67121",
  *     ),
  *     @OA\Property(
  *       property="items",
@@ -33,33 +28,26 @@ use Illuminate\Foundation\Http\FormRequest;
  *         type="object",
  *         @OA\Property(
  *           property="product_id",
- *           type="integer",
+ *           type="string",
+ *           example="026bc5f6-8373-4aeb-972e-e78d72a67121",
  *         ),
  *         @OA\Property(
  *           property="quantity",
  *           type="number",
  *         ),
  *         @OA\Property(
- *           property="schema_items",
- *           type="array",
- *           @OA\Items(
- *             type="integer"
- *           )
- *         ),
- *         @OA\Property(
- *           property="custom_schemas",
- *           type="array",
- *           @OA\Items(
- *             type="object",
- *             @OA\Property(
- *               property="schema_id",
- *               type="integer",
- *             ),
- *             @OA\Property(
- *               property="value",
- *               type="string",
- *             )
- *           )
+ *           property="schemas",
+ *           type="object",
+ *           @OA\Property(
+ *             property="119c0a63-1ea1-4769-8d5f-169f68de5598",
+ *             type="string",
+ *             example="123459fb-39a4-4dd0-8240-14793aa1f73b",
+ *           ),
+ *           @OA\Property(
+ *             property="02b97693-857c-4fb9-9999-47400ac5fbef",
+ *             type="string",
+ *             example="HE + YA",
+ *           ),
  *         ),
  *       )
  *     ),
@@ -74,33 +62,30 @@ use Illuminate\Foundation\Http\FormRequest;
  *   )
  * )
  */
-class OrderCreateRequest extends FormRequest
+class OrderCreateRequest extends OrderItemsRequest
 {
-    public function rules()
+    public function rules(): array
     {
-        return [
-            'email' => 'required|email',
-            'comment' => 'string|max:1000|nullable',
-            'shipping_method_id' => 'required|integer|exists:shipping_methods,id',
-            'is_statute_accepted' => 'accepted',
+        return parent::rules() + [
+            'email' => ['required', 'email'],
+            'comment' => ['nullable', 'string', 'max:1000'],
+            'shipping_method_id' => ['required', 'uuid', 'exists:shipping_methods,id'],
 
-            'items' => 'required|array|min:1',
+            'delivery_address.name'    => ['required', 'string', 'max:255'],
+            'delivery_address.phone'   => ['required', 'string', 'max:20'],
+            'delivery_address.address' => ['required', 'string', 'max:255'],
+            'delivery_address.zip'     => ['required', 'string', 'max:16'],
+            'delivery_address.city'    => ['required', 'string', 'max:255'],
+            'delivery_address.country' => ['required', 'string', 'size:2'],
+            'delivery_address.vat'     => ['nullable', 'string', 'max:15'],
 
-            'delivery_address.name' => 'required|string|max:255',
-            'delivery_address.phone' => 'required|string|max:20',
-            'delivery_address.address' => 'required|string|max:255',
-            'delivery_address.vat' => 'string|max:15|nullable',
-            'delivery_address.zip' => 'required|string|max:16',
-            'delivery_address.city' => 'required|string|max:255',
-            'delivery_address.country' => 'required|string|size:2',
-
-            'invoice_address.name' => 'string|max:255|nullable',
-            'invoice_address.phone' => 'string|max:20|nullable',
-            'invoice_address.address' => 'string|max:255|nullable',
-            'invoice_address.vat' => 'string|max:15|nullable',
-            'invoice_address.zip' => 'string|max:16|nullable',
-            'invoice_address.city' => 'string|max:255|nullable',
-            'invoice_address.country' => 'string|size:2|nullable',
+            'invoice_address.name'    => ['nullable', 'string', 'max:255'],
+            'invoice_address.phone'   => ['nullable', 'string', 'max:20'],
+            'invoice_address.address' => ['nullable', 'string', 'max:255'],
+            'invoice_address.vat'     => ['nullable', 'string', 'max:15'],
+            'invoice_address.zip'     => ['nullable', 'string', 'max:16'],
+            'invoice_address.city'    => ['nullable', 'string', 'max:255'],
+            'invoice_address.country' => ['nullable', 'string', 'size:2'],
         ];
     }
 }

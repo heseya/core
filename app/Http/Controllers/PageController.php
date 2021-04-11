@@ -2,99 +2,30 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Page;
 use App\Exceptions\Error;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Swagger\PageControllerSwagger;
 use App\Http\Resources\PageResource;
+use App\Models\Page;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 
-class PageController extends Controller
+class PageController extends Controller implements PageControllerSwagger
 {
-    /**
-     * @OA\Get(
-     *   path="/pages",
-     *   summary="list page",
-     *   tags={"Pages"},
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         type="array",
-     *         @OA\Items(ref="#/components/schemas/Page"),
-     *       )
-     *     )
-     *   )
-     * )
-     */
-    public function index()
+    public function index(): JsonResource
     {
-        $query = Page::select();
+        $query = Page::query();
 
         if (!Auth::check()) {
             $query->where('public', true);
         }
 
-
-        return PageResource::collection($query->simplePaginate(14));
+        return PageResource::collection(
+            $query->paginate(14),
+        );
     }
 
-    /**
-     * @OA\Get(
-     *   path="/pages/{slug}",
-     *   summary="single page view",
-     *   tags={"Pages"},
-     *   @OA\Parameter(
-     *     name="slug",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="string",
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Page"
-     *       )
-     *     )
-     *   )
-     * )
-     */
-
-    /**
-     * @OA\Get(
-     *   path="/pages/id:{id}",
-     *   summary="alias",
-     *   tags={"Pages"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer",
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Page"
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function view(Page $page)
+    public function show(Page $page)
     {
         if (!Auth::check() && $page->public !== true) {
             return Error::abort('Unauthorized.', 401);
@@ -103,117 +34,35 @@ class PageController extends Controller
         return PageResource::make($page);
     }
 
-     /**
-     * @OA\Post(
-     *   path="/pages",
-     *   summary="add new page",
-     *   tags={"Pages"},
-     *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       ref="#/components/schemas/Page",
-     *     ),
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Page",
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function create(Request $request)
+    public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255',
             'public' => 'boolean',
             'content_md' => 'string|nullable',
         ]);
 
-        $page = Page::create($request->all());
-
-        return PageResource::make($page)
-            ->response()
-            ->setStatusCode(201);
-    }
-
-    /**
-     * @OA\Patch(
-     *   path="/pages/id:{id}",
-     *   summary="update page",
-     *   tags={"Pages"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer",
-     *     )
-     *   ),
-     *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       ref="#/components/schemas/Page",
-     *     ),
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Page",
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function update(Page $page, Request $request)
-    {
-        $request->validate([
-            'name' => 'string|max:255',
-            'price' => 'string|max:255',
-            'public' => 'boolean',
-            'content_md' => 'string|nullable',
-        ]);
-
-        $page->update($request->all());
+        $page = Page::create($validated);
 
         return PageResource::make($page);
     }
 
-    /**
-     * @OA\Delete(
-     *   path="/pages/id:{id}",
-     *   summary="delete page",
-     *   tags={"Pages"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="integer",
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=204,
-     *     description="Success",
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function delete(Page $page)
+    public function update(Page $page, Request $request): JsonResource
+    {
+        $validated = $request->validate([
+            'name' => 'string|max:255',
+            'slug' => 'string|max:255',
+            'public' => 'boolean',
+            'content_md' => 'string|nullable',
+        ]);
+
+        $page->update($validated);
+
+        return PageResource::make($page);
+    }
+
+    public function destroy(Page $page)
     {
         $page->delete();
 

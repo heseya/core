@@ -17,6 +17,14 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Application Version
+    |--------------------------------------------------------------------------
+     */
+
+    'ver' => '1.0.6',
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |
@@ -54,9 +62,9 @@ return [
 
     'url' => env('APP_URL', 'https://secure.example.com'),
 
-    'store_url' => rtrim(env('APP_STORE_URL', 'https://example.com'), '/'),
+    'store_url' => env('APP_STORE_URL', 'https://example.com'),
 
-    'asset_url' => env('ASSET_URL', null),
+    'admin_url' => env('APP_ADMIN_URL', 'https://admin.example.com'),
 
     /*
     |--------------------------------------------------------------------------
@@ -170,6 +178,7 @@ return [
         L5Swagger\L5SwaggerServiceProvider::class,
         Laravel\Passport\PassportServiceProvider::class,
         Parsedown\Providers\ParsedownServiceProvider::class,
+        Jenssegers\Agent\AgentServiceProvider::class,
         // SammyK\LaravelFacebookSdk\LaravelFacebookSdkServiceProvider::class,
 
         /*
@@ -231,7 +240,8 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
-        // 'Facebook' => SammyK\LaravelFacebookSdk\FacebookFacade::class,
+        'Agent' => Jenssegers\Agent\Facades\Agent::class,
+
     ],
 
 ];

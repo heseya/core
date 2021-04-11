@@ -2,32 +2,27 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Request;
+
 class ProductResource extends Resource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
-     */
-    public function base($request): array
+    public function base(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => $this->getKey(),
             'slug' => $this->slug,
             'name' => $this->name,
             'price' => $this->price,
             'public' => $this->public,
             'visible' => $this->isPublic(),
             'available' => $this->available,
-            'digital' => $this->digital,
             'brand' => BrandResource::make($this->brand),
             'category' => CategoryResource::make($this->category),
             'cover' => MediaResource::make($this->media()->first()),
         ];
     }
 
-    public function view($request): array
+    public function view(Request $request): array
     {
         return [
             'user_id' => $this->user_id,

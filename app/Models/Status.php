@@ -2,29 +2,38 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * @OA\Schema()
  */
 class Status extends Model
 {
+    use HasFactory;
+
     /**
      * @OA\Property(
      *   property="id",
-     *   type="integer",
+     *   type="string",
+     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
      * )
      *
      * @OA\Property(
      *   property="name",
      *   type="string",
-     *   example="Gotowe",
+     *   example="Cancel",
      * )
      *
      * @OA\Property(
      *   property="color",
      *   type="string",
-     *   example="",
+     *   example="8f022c",
+     * )
+     *
+     * @OA\Property(
+     *   property="description",
+     *   type="string",
+     *   example="Your order has been cancelled!",
      * )
      */
     protected $fillable = [

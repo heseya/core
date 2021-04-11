@@ -2,18 +2,14 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Request;
+
 class OrderResource extends Resource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
-     */
-    public function base($request): array
+    public function base(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => $this->getKey(),
             'code' => $this->code,
             'email' => $this->email,
             'currency' => $this->currency,
@@ -21,22 +17,18 @@ class OrderResource extends Resource
             'summary_payed' => $this->payed,
             'payed' => $this->isPayed(),
             'created_at' => $this->created_at,
-            'status' => StatusResource::make($this->status),
-            'delivery_address' => AddressResource::make($this->deliveryAddress),
+            'status' => $this->status ? StatusResource::make($this->status) : null,
+            'delivery_address' => $this->deliveryAddress ? AddressResource::make($this->deliveryAddress) : null,
         ];
     }
 
-    public function view($request): array
+    public function view(Request $request): array
     {
         return [
             'invoice_address' => AddressResource::make($this->invoiceAddress),
-            'shipping_method' => [
-                'id' => $this->shippingMethod->id,
-                'name' => $this->shippingMethod->name,
-                'price' => $this->shipping_price,
-            ],
+            'shipping_method' => ShippingMethodResource::make($this->shippingMethod),
             'comment' => $this->comment,
-            'items' => OrderItemResource::collection($this->items),
+            'products' => OrderProductResource::collection($this->products),
             'payments' => PaymentResource::collection($this->payments),
             'shipping_number' => $this->shipping_number,
         ];
