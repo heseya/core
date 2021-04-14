@@ -4,17 +4,12 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class IndexSchemaRequest extends FormRequest
+class RevenueAnalyticsRequest extends FormRequest
 {
     public function rules(): array
     {
         return [
-            'name' => ['nullable', 'string', 'max:255'],
-            'hidden' => ['nullable', 'boolean'],
-            'required' => ['nullable', 'boolean'],
-
-            'search' => ['nullable', 'string', 'max:255'],
-            'sort' => ['nullable', 'string', 'max:255'],
+            'days' => ['nullable', 'integer', 'min:1'],
         ];
     }
 }
