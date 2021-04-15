@@ -22,7 +22,7 @@ class Authenticate extends Middleware
         return parent::handle($request, $next, ...$guards);
     }
 
-    protected function authenticateApp($id, $key): bool
+    protected function authenticateApp(string $id, string $key): bool
     {
         $app = App::find($id);
 

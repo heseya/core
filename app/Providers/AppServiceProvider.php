@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\AppService;
+use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\MediaService;
 use Illuminate\Support\ServiceProvider;
@@ -9,6 +11,7 @@ use Illuminate\Support\ServiceProvider;
 class AppServiceProvider extends ServiceProvider
 {
     const CONTRACTS = [
+        AppServiceContract::class => AppService::class,
         MediaServiceContract::class => MediaService::class,
     ];
 

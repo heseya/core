@@ -60,9 +60,10 @@ class Order extends Model
         'status_id',
         'shipping_method_id',
         'shipping_price',
+        'shipping_number',
         'delivery_address_id',
         'invoice_address_id',
-        'shipping_number',
+        'created_at',
     ];
 
     protected array $searchable = [
