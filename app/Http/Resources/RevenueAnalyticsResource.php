@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Requests;
 
-use Illuminate\Http\Request;
+use Illuminate\Foundation\Http\FormRequest;
 
-class SchemaResource extends Resource
+class RevenueAnalyticsRequest extends FormRequest
 {
-    public function base(Request $request): array
+    public function rules(): array
     {
         return [
-            'total' => $this['total'],
+            'days' => ['nullable', 'integer', 'min:1'],
         ];
     }
 }
