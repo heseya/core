@@ -43,6 +43,7 @@ class Brand extends Model
         'name',
         'slug',
         'public',
+        'order',
     ];
 
     protected array $searchable = [

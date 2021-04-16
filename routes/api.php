@@ -39,6 +39,7 @@ Route::prefix('pages')->group(function () {
 Route::prefix('brands')->group(function () {
     Route::get(null, 'BrandController@index');
     Route::post(null, 'BrandController@store')->middleware('auth:api');
+    Route::post('order', 'BrandController@order')->middleware('auth:api');
     Route::patch('id:{brand:id}', 'BrandController@update')->middleware('auth:api');
     Route::delete('id:{brand:id}', 'BrandController@destroy')->middleware('auth:api');
 });
@@ -46,6 +47,7 @@ Route::prefix('brands')->group(function () {
 Route::prefix('categories')->group(function () {
     Route::get(null, 'CategoryController@index');
     Route::post(null, 'CategoryController@store')->middleware('auth:api');
+    Route::post('order', 'CategoryController@order')->middleware('auth:api');
     Route::patch('id:{category:id}', 'CategoryController@update')->middleware('auth:api');
     Route::delete('id:{category:id}', 'CategoryController@destroy')->middleware('auth:api');
 });
@@ -53,6 +55,7 @@ Route::prefix('categories')->group(function () {
 Route::prefix('shipping-methods')->group(function () {
     Route::get(null, 'ShippingMethodController@index');
     Route::post(null, 'ShippingMethodController@store')->middleware('auth:api');
+    Route::post('order', 'ShippingMethodController@order')->middleware('auth:api');
     Route::patch('id:{shipping_method:id}', 'ShippingMethodController@update')->middleware('auth:api');
     Route::delete('id:{shipping_method:id}', 'ShippingMethodController@destroy')->middleware('auth:api');
 });
