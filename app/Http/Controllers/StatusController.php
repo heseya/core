@@ -57,6 +57,13 @@ class StatusController extends Controller implements StatusControllerSwagger
 
     public function destroy(Status $status)
     {
+        if (Status::count() <= 1) {
+            return Error::abort(
+                'There must be at least one status.',
+                409,
+            );
+        }
+
         if ($status->orders()->count() > 0) {
             return Error::abort(
                 'Order can\'t be deleted, because has relations.',
