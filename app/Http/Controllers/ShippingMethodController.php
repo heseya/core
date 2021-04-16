@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\ShippingMethodControllerSwagger;
+use App\Http\Requests\CategoryOrderRequest;
+use App\Http\Requests\ShippingMethodOrderRequest;
 use App\Http\Resources\ShippingMethodResource;
+use App\Models\Category;
 use App\Models\ShippingMethod;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
@@ -14,7 +18,7 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
 {
     public function index(): JsonResource
     {
-        $query = ShippingMethod::query();
+        $query = ShippingMethod::query()->orderBy('order');
 
         if (Auth::check()) {
             $query->with('paymentMethods');
@@ -57,6 +61,15 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
         $shipping_method->paymentMethods()->sync($request->input('payment_methods', []));
 
         return ShippingMethodResource::make($shipping_method);
+    }
+
+    public function order(ShippingMethodOrderRequest $request): JsonResponse
+    {
+        foreach ($request->input('shipping_methods') as $key => $id) {
+            ShippingMethod::where('id', $id)->update(['order' => $key]);
+        }
+
+        return response()->json(null, 204);
     }
 
     public function destroy(ShippingMethod $shipping_method)

@@ -141,13 +141,16 @@ class Product extends Model
      */
     public function schemas(): BelongsToMany
     {
-        return $this->belongsToMany(Schema::class, 'product_schemas')
-            ->orderBy('created_at', 'DESC');
+        return $this
+            ->belongsToMany(Schema::class, 'product_schemas')
+            ->orderByPivot('order');
     }
 
     public function orders(): BelongsToMany
     {
-        return $this->belongsToMany(Order::class)->using(OrderProduct::class);
+        return $this
+            ->belongsToMany(Order::class)
+            ->using(OrderProduct::class);
     }
 
     /**

@@ -2,10 +2,10 @@
 
 namespace App\Providers;
 
-use App\Schemas\SelectSchema;
 use App\Services\Contracts\MediaServiceContract;
+use App\Services\Contracts\SchemaServiceContract;
 use App\Services\MediaService;
-use Illuminate\Database\Eloquent\Relations\Relation;
+use App\Services\SchemaService;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passport\Passport;
 
@@ -13,6 +13,7 @@ class AppServiceProvider extends ServiceProvider
 {
     const CONTRACTS = [
         MediaServiceContract::class => MediaService::class,
+        SchemaServiceContract::class => SchemaService::class,
     ];
 
     /**

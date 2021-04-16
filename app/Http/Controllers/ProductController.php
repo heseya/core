@@ -10,6 +10,7 @@ use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Services\Contracts\MediaServiceContract;
+use App\Services\Contracts\SchemaServiceContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -18,10 +19,12 @@ use Illuminate\Support\Facades\Auth;
 class ProductController extends Controller implements ProductControllerSwagger
 {
     private MediaServiceContract $mediaService;
+    private SchemaServiceContract $schemaService;
 
-    public function __construct(MediaServiceContract $mediaService)
+    public function __construct(MediaServiceContract $mediaService, SchemaServiceContract $schemaService)
     {
         $this->mediaService = $mediaService;
+        $this->schemaService = $schemaService;
     }
 
     public function index(ProductIndexRequest $request): JsonResource
@@ -59,7 +62,7 @@ class ProductController extends Controller implements ProductControllerSwagger
         $this->mediaService->sync($product, $request->input('media', []));
 
         if ($request->has('schemas') && is_array($request->input('schemas'))) {
-            $product->schemas()->sync($request->input('schemas'));
+            $this->schemaService->sync($product, $request->input('schemas'));
         }
 
         return ProductResource::make($product);
@@ -72,7 +75,7 @@ class ProductController extends Controller implements ProductControllerSwagger
         $this->mediaService->sync($product, $request->input('media', []));
 
         if ($request->has('schemas') && is_array($request->input('schemas'))) {
-            $product->schemas()->sync($request->input('schemas'));
+            $this->schemaService->sync($product, $request->input('schemas'));
         }
 
         return ProductResource::make($product);
