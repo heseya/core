@@ -47,6 +47,7 @@ class ShippingMethod extends Model
         'name',
         'price',
         'public',
+        'order',
     ];
 
     /**

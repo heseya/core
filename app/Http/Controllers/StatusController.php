@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\StatusControllerSwagger;
+use App\Http\Requests\ShippingMethodOrderRequest;
+use App\Http\Requests\StatusOrderRequest;
 use App\Http\Resources\StatusResource;
+use App\Models\ShippingMethod;
 use App\Models\Status;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -12,7 +17,7 @@ class StatusController extends Controller implements StatusControllerSwagger
 {
     public function index(): JsonResource
     {
-        return StatusResource::collection(Status::all());
+        return StatusResource::collection(Status::orderBy('order')->get());
     }
 
     public function store(Request $request): JsonResource
@@ -41,8 +46,31 @@ class StatusController extends Controller implements StatusControllerSwagger
         return StatusResource::make($status);
     }
 
+    public function order(StatusOrderRequest $request): JsonResponse
+    {
+        foreach ($request->input('statuses') as $key => $id) {
+            Status::where('id', $id)->update(['order' => $key]);
+        }
+
+        return response()->json(null, 204);
+    }
+
     public function destroy(Status $status)
     {
+        if (Status::count() <= 1) {
+            return Error::abort(
+                'There must be at least one status.',
+                409,
+            );
+        }
+
+        if ($status->orders()->count() > 0) {
+            return Error::abort(
+                'Order can\'t be deleted, because has relations.',
+                409,
+            );
+        }
+
         $status->delete();
 
         return response()->json(null, 204);

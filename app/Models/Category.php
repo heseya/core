@@ -43,6 +43,7 @@ class Category extends Model
         'name',
         'slug',
         'public',
+        'order',
     ];
 
     protected array $searchable = [
