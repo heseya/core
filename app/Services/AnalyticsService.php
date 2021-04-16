@@ -3,22 +3,21 @@
 namespace App\Services;
 
 use App\Models\Order;
+use App\Models\Payment;
 use App\Services\Contracts\AnalyticsServiceContract;
 use Carbon\Carbon;
 
 class AnalyticsService implements AnalyticsServiceContract
 {
-    public function getTotalOrderRevenue(): float
+    public function getPaymentsOverPeriodTotal(Carbon $from, Carbon $to): array
     {
-        return Order::all()->sum('payedAmount');
-    }
+        $query = Payment::where('payed', true)->whereDate(
+            'created_at', '>=', $from,
+        )->whereDate('created_at', '<=', $to);
 
-    public function getPastDaysOrderRevenue(int $days): float
-    {
-        return Order::whereDate(
-            'created_at',
-            '>=',
-            Carbon::today()->subDays($days),
-        )->sum('payedAmount');
+        return [
+            'amount' => $query->sum('amount'),
+            'count' => $query->count(),
+        ];
     }
 }

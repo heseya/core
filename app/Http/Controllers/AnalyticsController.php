@@ -2,28 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\RevenueAnalyticsRequest;
-use App\Http\Resources\RevenueAnalyticsResource;
-use App\Model\Order
-use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Swagger\AnalyticsControllerSwagger;
+use App\Http\Requests\PaymentsAnalyticsRequest;
+use App\Http\Resources\PaymentsAnalyticsResource;
+use App\Services\Contracts\AnalyticsServiceContract;
+use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class AnalyticsController extends Controller
+class AnalyticsController extends Controller implements AnalyticsControllerSwagger
 {
-    public function revenue(RevenueAnalyticsRequest $request): JsonResource
+    private AnalyticsServiceContract $analyticsService;
+
+    public function __construct(AnalyticsServiceContract $analyticsService)
     {
-        $orders = Order::all();
+        $this->analyticsService = $analyticsService;
+    }
 
-        if ($request->has('days')) {
-            $orders = $orders->whereDate(
-                'created_at',
-                '>=',
-                Carbon::today()->subDays($request->input('days')),
-            );
-        }
+    public function paymentsTotal(PaymentsAnalyticsRequest $request): JsonResource
+    {
+        $from = $request->filled('from') ? Carbon::parse($request->input('from')) : Carbon::today();
+        $to = $request->filled('to') ? Carbon::parse($request->input('to')) : Carbon::today()->subYear();
 
-        $total = $orders->sum('payedAmount');
+        $total = $this->analyticsService->getPaymentsOverPeriodTotal($from, $to);
 
-        return RevenueAnalyticsResource::make(['total' => $total]);
+        return PaymentsAnalyticsResource::make($total);
     }
 }

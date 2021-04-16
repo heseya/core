@@ -3,10 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\Order;
-use App\Models\OrderProduct;
 use App\Models\Payment;
-use App\Models\Product;
 use App\Services\Contracts\AnalyticsServiceContract;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -21,25 +20,49 @@ class AnalyticsServiceTest extends TestCase
         $this->analyticsService = app(AnalyticsServiceContract::class);
     }
 
-    public function testGetTotalOrderRevenue(): void
+    public function testGetPaymentsOverPeriodTotal(): void
     {
-        Product::factory()->count(3)->create();
+        $to = Carbon::today();
+        $from = $to->copy()->subDays(30);
 
-        $orders = Order::factory()->count(2)->create()->each(function ($order) {
-            $order->products()->saveMany(
-                OrderProduct::factory()->count(3)->make(),
-            );
+        $order = Order::factory()->create();
 
-            $order->payments()->save(
-                Payment::factory([
-                    'payed' => true,
-                    'amount' => $order->summary,
-                ])->make(),
-            );
-        });
+        $before = Payment::factory([
+            'payed' => true,
+            'created_at' => $from->copy()->subDay(),
+        ])->make();
 
-        $total = $orders->reduce(fn ($total, $order) => $total + $order->payedAmount, 0.0);
+        $onStart = Payment::factory([
+            'payed' => true,
+            'created_at' => $from,
+        ])->make();
 
-        $this->assertEquals($total, $this->analyticsService->getTotalOrderRevenue());
+        $during = Payment::factory([
+            'payed' => true,
+            'created_at' => $from->copy()->addDays(15),
+        ])->make();
+
+        $onEnd = Payment::factory([
+            'payed' => true,
+            'created_at' => $to->copy()->addHours(5),
+        ])->make();
+
+        $after = Payment::factory([
+            'payed' => true,
+            'created_at' => $to->copy()->addDay(),
+        ])->make();
+
+        $order->payments()->save($before);
+        $order->payments()->save($onStart);
+        $order->payments()->save($during);
+        $order->payments()->save($onEnd);
+        $order->payments()->save($after);
+
+        $amount = $onStart->amount + $during->amount + $onEnd->amount;
+
+        $this->assertEquals([
+            'amount' => $amount,
+            'count' => 3,
+        ], $this->analyticsService->getPaymentsOverPeriodTotal($from, $to));
     }
 }

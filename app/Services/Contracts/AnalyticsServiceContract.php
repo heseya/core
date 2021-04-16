@@ -2,11 +2,9 @@
 
 namespace App\Services\Contracts;
 
-use App\Models\Order;
+use Carbon\Carbon;
 
 interface AnalyticsServiceContract
 {
-    public function getTotalOrderRevenue(): float;
-
-    public function getPastDaysOrderRevenue(int $days): float;
+    public function getPaymentsOverPeriodTotal(Carbon $from, Carbon $to): array;
 }
