@@ -35,6 +35,22 @@ interface OrderControllerSwagger
      *       example="code:asc,created_at:desc,id"
      *     ),
      *   ),
+     *   @OA\Parameter(
+     *     name="status_id",
+     *     in="query",
+     *     description="Status UUID",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="shipping_method_id",
+     *     in="query",
+     *     description="Shipping Method UUID",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
      *   @OA\Response(
      *     response=200,
      *     description="Success",

@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
+use App\SearchTypes\OrderSearch;
 use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
@@ -66,6 +66,9 @@ class Order extends Model
     ];
 
     protected array $searchable = [
+        'search' => OrderSearch::class,
+        'status_id',
+        'shipping_method_id',
         'code' => Like::class,
         'email' => Like::class,
     ];
