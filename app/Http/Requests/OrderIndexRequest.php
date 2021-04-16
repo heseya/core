@@ -11,6 +11,9 @@ class OrderIndexRequest extends FormRequest
         return [
             'search' => ['nullable', 'string', 'max:255'],
             'sort' => ['nullable', 'string'],
+
+            'status_id' => ['nullable', 'uuid'],
+            'shipping_method_id' => ['nullable', 'uuid'],
         ];
     }
 }
