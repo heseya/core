@@ -126,6 +126,10 @@ Route::middleware('auth:api')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::get('login-history', [AuthController::class, 'loginHistory']);
     });
+
+    Route::prefix('analytics')->group(function () {
+        Route::get('payments/total', 'AnalyticsController@paymentsTotal');
+    });
 });
 
 // External

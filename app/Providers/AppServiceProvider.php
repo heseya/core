@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\AnalyticsService;
+use App\Services\Contracts\AnalyticsServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use App\Services\MediaService;
@@ -12,6 +14,7 @@ use Laravel\Passport\Passport;
 class AppServiceProvider extends ServiceProvider
 {
     const CONTRACTS = [
+        AnalyticsServiceContract::class => AnalyticsService::class,
         MediaServiceContract::class => MediaService::class,
         SchemaServiceContract::class => SchemaService::class,
     ];
