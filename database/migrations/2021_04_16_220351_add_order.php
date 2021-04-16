@@ -28,6 +28,10 @@ class AddOrder extends Migration
         Schema::table('shipping_methods', function (Blueprint $table) {
             $table->unsignedTinyInteger('order')->default(0);
         });
+
+        Schema::table('statuses', function (Blueprint $table) {
+            $table->unsignedTinyInteger('order')->default(0);
+        });
     }
 
     /**
@@ -50,6 +54,10 @@ class AddOrder extends Migration
         });
 
         Schema::table('shipping_methods', function (Blueprint $table) {
+            $table->dropColumn('order');
+        });
+
+        Schema::table('statuses', function (Blueprint $table) {
             $table->dropColumn('order');
         });
     }

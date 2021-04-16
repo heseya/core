@@ -97,6 +97,7 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('statuses')->group(function () {
         Route::get(null, 'StatusController@index');
         Route::post(null, 'StatusController@store');
+        Route::post('order', 'StatusController@order');
         Route::patch('id:{status:id}', 'StatusController@update');
         Route::delete('id:{status:id}', 'StatusController@destroy');
     });
