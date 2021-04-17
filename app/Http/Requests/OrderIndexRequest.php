@@ -14,6 +14,8 @@ class OrderIndexRequest extends FormRequest
 
             'status_id' => ['nullable', 'uuid'],
             'shipping_method_id' => ['nullable', 'uuid'],
+
+            'limit' => ['nullable', 'integer', 'min:1', 'max:500'],
         ];
     }
 }
