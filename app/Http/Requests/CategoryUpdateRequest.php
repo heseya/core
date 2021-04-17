@@ -17,6 +17,7 @@ class CategoryUpdateRequest extends FormRequest
         return [
             'name' => ['string', 'max:255'],
             'public' => 'boolean',
+            'hide_on_index' => 'boolean',
             'slug' => [
                 'required',
                 'string',

@@ -37,6 +37,11 @@ class Category extends Model
      *   property="public",
      *   type="boolean",
      * )
+     *
+     * @OA\Property(
+     *   property="hide_on_index",
+     *   type="boolean",
+     * )
      */
 
     protected $fillable = [
@@ -44,6 +49,7 @@ class Category extends Model
         'slug',
         'public',
         'order',
+        'hide_on_index',
     ];
 
     protected array $searchable = [
@@ -59,6 +65,7 @@ class Category extends Model
      */
     protected $casts = [
         'public' => 'boolean',
+        'hide_on_index' => 'boolean',
     ];
 
     public function products(): HasMany

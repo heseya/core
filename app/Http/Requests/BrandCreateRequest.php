@@ -12,6 +12,7 @@ class BrandCreateRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'unique:brands', 'alpha_dash'],
             'public' => 'boolean',
+            'hide_on_index' => 'boolean',
         ];
     }
 }
