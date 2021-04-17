@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * @OA\Schema()
@@ -141,9 +142,15 @@ class Product extends Model
      */
     public function schemas(): BelongsToMany
     {
-        return $this
+         $query = $this
             ->belongsToMany(Schema::class, 'product_schemas')
             ->orderByPivot('order');
+
+         if (!Auth::check()) {
+             $query->where('hidden', false);
+         }
+
+        return $query;
     }
 
     public function orders(): BelongsToMany
