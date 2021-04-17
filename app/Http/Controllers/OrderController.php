@@ -29,7 +29,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             ->sort($request->input('sort'));
 
         return OrderResource::collection(
-            $query->paginate(15),
+            $query->paginate((int) $request->input('limit', 15)),
         );
     }
 
