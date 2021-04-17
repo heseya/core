@@ -41,30 +41,30 @@ class ProductController extends Controller implements ProductControllerSwagger
             $query
                 ->where('public', true)
                 ->whereHas('brand', function (Builder $query) use ($request): Builder {
-                    return $query
-                        ->where('public', true)
-                        ->where(function (Builder $query) use ($request): Builder {
-                            if ($request->has('search')) {
-                                return $query;
-                            }
+                    $query->where('public', true);
 
+                    if (!$request->has('search')) {
+                        $query->where(function (Builder $query) use ($request): Builder {
                             return $query
                                 ->where('hide_on_index', false)
                                 ->orWhere('slug', $request->input('brand'));
                         });
+                    }
+
+                    return $query;
                 })
                 ->whereHas('category', function (Builder $query) use ($request): Builder {
-                    return $query
-                        ->where('public', true)
-                        ->where(function (Builder $query) use ($request): Builder {
-                            if ($request->has('search')) {
-                                return $query;
-                            }
+                    $query->where('public', true);
 
+                    if (!$request->has('search')) {
+                        $query->where(function (Builder $query) use ($request): Builder {
                             return $query
                                 ->where('hide_on_index', false)
                                 ->orWhere('slug', $request->input('category'));
                         });
+                    }
+
+                    return $query;
                 });
         }
 
