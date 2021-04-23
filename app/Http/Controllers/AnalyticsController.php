@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Swagger\AnalyticsControllerSwagger;
-use App\Http\Requests\PaymentsAnalyticsRequest;
-use App\Http\Resources\PaymentsAnalyticsResource;
+use App\Http\Requests\AnalyticsPaymentsRequest;
+use App\Http\Resources\AnalyticsPaymentsResource;
 use App\Services\Contracts\AnalyticsServiceContract;
 use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -18,13 +18,14 @@ class AnalyticsController extends Controller implements AnalyticsControllerSwagg
         $this->analyticsService = $analyticsService;
     }
 
-    public function paymentsTotal(PaymentsAnalyticsRequest $request): JsonResource
+    public function payments(AnalyticsPaymentsRequest $request): JsonResource
     {
-        $from = $request->filled('from') ? Carbon::parse($request->input('from')) : Carbon::today();
-        $to = $request->filled('to') ? Carbon::parse($request->input('to')) : Carbon::today()->subYear();
+        $from = $request->filled('from') ? Carbon::parse($request->input('from')) : Carbon::today()->subYear();
+        $to = $request->filled('to') ? Carbon::parse($request->input('to')) : Carbon::now();
+        $group = $request->input('group', 'total');
 
-        $total = $this->analyticsService->getPaymentsOverPeriodTotal($from, $to);
+        $payments = $this->analyticsService->getPaymentsOverPeriod($from, $to, $group);
 
-        return PaymentsAnalyticsResource::make($total);
+        return AnalyticsPaymentsResource::make($payments);
     }
 }

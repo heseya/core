@@ -129,7 +129,7 @@ Route::middleware('auth:api')->group(function () {
     });
 
     Route::prefix('analytics')->group(function () {
-        Route::get('payments/total', 'AnalyticsController@paymentsTotal');
+        Route::get('payments', 'AnalyticsController@payments');
     });
 });
 

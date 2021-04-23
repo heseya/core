@@ -6,5 +6,5 @@ use Carbon\Carbon;
 
 interface AnalyticsServiceContract
 {
-    public function getPaymentsOverPeriodTotal(Carbon $from, Carbon $to): array;
+    public function getPaymentsOverPeriod(Carbon $from, Carbon $to, string $group): array;
 }
