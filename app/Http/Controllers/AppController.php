@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\Error;
 use App\Http\Requests\CreateAppRequest;
 use App\Http\Resources\AppResource;
 use App\Models\App;
 use App\Services\Contracts\AppServiceContract;
+use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class AppController extends Controller
@@ -22,10 +25,14 @@ class AppController extends Controller
         return AppResource::collection(App::paginate(12));
     }
 
-    public function store(CreateAppRequest $request): JsonResource
+    public function store(CreateAppRequest $request): JsonResponse
     {
-        $app = $this->appService->add($request->input('url'));
+        try {
+            $app = $this->appService->register($request->input('url'));
+        } catch (Exception $exception) {
+            return Error::abort('App responded with error', 400);
+        }
 
-        return AppResource::make($app);
+        return AppResource::make($app)->response();
     }
 }

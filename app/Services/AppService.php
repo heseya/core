@@ -16,7 +16,7 @@ class AppService implements AppServiceContract
         $response = Http::get($url);
 
         if ($response->failed()) {
-            throw new Exception('App responsed with error');
+            throw new Exception('App responded with error');
         }
 
         $response = $response->object();
@@ -30,21 +30,40 @@ class AppService implements AppServiceContract
     public function register($url): App
     {
         $key = Str::random(64);
-
-        $response = Http::post($url, [
-            'key' => $key,
-        ]);
-
-        if ($response->failed()) {
-            throw new Exception('App responsed with error');
-        }
-
-        $response = $response->object();
-
-        return App::create([
-            'name' => $response->name,
+        $app = App::create([
             'url' => $url,
             'key' => Hash::make($key),
         ]);
+
+        try {
+            $response = Http::post($url, [
+                'id' => $app->getKey(),
+                'key' => $key,
+            ]);
+
+            if ($response->failed()) {
+                throw new Exception;
+            }
+
+            $response = $response->object();
+
+            if (!$this->isValidRegisterResponse($response)) {
+                throw new Exception;
+            }
+        } catch (Exception $exception) {
+            $app->delete();
+            throw new Exception('App responded with error');
+        }
+
+        $app->update([
+            'name' => $response->name,
+        ]);
+
+        return $app;
+    }
+
+    protected function isValidRegisterResponse($response): bool
+    {
+        return isset($response->name);
     }
 }

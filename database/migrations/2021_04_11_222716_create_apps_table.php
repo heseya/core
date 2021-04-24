@@ -15,9 +15,9 @@ class CreateAppsTable extends Migration
     {
         Schema::create('apps', function (Blueprint $table) {
             $table->uuid('id');
-            $table->string('name');
+            $table->string('name')->nullable();
             $table->string('url');
-            $table->string('key', 64);
+            $table->string('key');
             $table->timestamps();
         });
     }
