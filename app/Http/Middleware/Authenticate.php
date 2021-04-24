@@ -24,7 +24,7 @@ class Authenticate extends Middleware
 
     protected function authenticateApp(string $id, string $key): bool
     {
-        $app = App::find($id);
+        $app = App::findOrFail($id);
 
         return $app && Hash::check($key, $app->key);
     }

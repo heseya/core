@@ -11,22 +11,6 @@ use Illuminate\Support\Str;
 
 class AppService implements AppServiceContract
 {
-    public function info($url): App
-    {
-        $response = Http::get($url);
-
-        if ($response->failed()) {
-            throw new Exception('App responded with error');
-        }
-
-        $response = $response->object();
-
-        return App::create([
-            'name' => $response->name,
-            'url' => $url,
-        ]);
-    }
-
     public function register($url): App
     {
         $key = Str::random(64);
