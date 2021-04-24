@@ -86,6 +86,8 @@ class OrderCreateRequest extends OrderItemsRequest
             'invoice_address.zip'     => ['nullable', 'string', 'max:16'],
             'invoice_address.city'    => ['nullable', 'string', 'max:255'],
             'invoice_address.country' => ['nullable', 'string', 'size:2'],
+
+            'validation' => ['boolean'],
         ];
     }
 }
