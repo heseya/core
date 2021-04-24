@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\Error;
+use App\Http\Controllers\Swagger\AppControllerSwagger;
 use App\Http\Requests\CreateAppRequest;
 use App\Http\Resources\AppResource;
 use App\Models\App;
@@ -11,7 +12,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class AppController extends Controller
+class AppController extends Controller implements AppControllerSwagger
 {
     private AppServiceContract $appService;
 
