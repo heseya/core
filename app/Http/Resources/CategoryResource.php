@@ -13,6 +13,7 @@ class CategoryResource extends Resource
             'slug' => $this->slug,
             'name' => $this->name,
             'public' => $this->public,
+            'hide_on_index' => $this->hide_on_index,
         ];
     }
 }

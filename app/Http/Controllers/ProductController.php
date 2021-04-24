@@ -10,6 +10,7 @@ use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Services\Contracts\MediaServiceContract;
+use App\Services\Contracts\SchemaServiceContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -18,10 +19,12 @@ use Illuminate\Support\Facades\Auth;
 class ProductController extends Controller implements ProductControllerSwagger
 {
     private MediaServiceContract $mediaService;
+    private SchemaServiceContract $schemaService;
 
-    public function __construct(MediaServiceContract $mediaService)
+    public function __construct(MediaServiceContract $mediaService, SchemaServiceContract $schemaService)
     {
         $this->mediaService = $mediaService;
+        $this->schemaService = $schemaService;
     }
 
     public function index(ProductIndexRequest $request): JsonResource
@@ -37,8 +40,32 @@ class ProductController extends Controller implements ProductControllerSwagger
         if (!Auth::check()) {
             $query
                 ->where('public', true)
-                ->whereHas('brand', fn (Builder $q) => $q->where('public', true))
-                ->whereHas('category', fn (Builder $q) => $q->where('public', true));
+                ->whereHas('brand', function (Builder $query) use ($request): Builder {
+                    $query->where('public', true);
+
+                    if (!$request->has('search')) {
+                        $query->where(function (Builder $query) use ($request): Builder {
+                            return $query
+                                ->where('hide_on_index', false)
+                                ->orWhere('slug', $request->input('brand'));
+                        });
+                    }
+
+                    return $query;
+                })
+                ->whereHas('category', function (Builder $query) use ($request): Builder {
+                    $query->where('public', true);
+
+                    if (!$request->has('search')) {
+                        $query->where(function (Builder $query) use ($request): Builder {
+                            return $query
+                                ->where('hide_on_index', false)
+                                ->orWhere('slug', $request->input('category'));
+                        });
+                    }
+
+                    return $query;
+                });
         }
 
         return ProductResource::collection(
@@ -59,7 +86,7 @@ class ProductController extends Controller implements ProductControllerSwagger
         $this->mediaService->sync($product, $request->input('media', []));
 
         if ($request->has('schemas') && is_array($request->input('schemas'))) {
-            $product->schemas()->sync($request->input('schemas'));
+            $this->schemaService->sync($product, $request->input('schemas'));
         }
 
         return ProductResource::make($product);
@@ -72,7 +99,7 @@ class ProductController extends Controller implements ProductControllerSwagger
         $this->mediaService->sync($product, $request->input('media', []));
 
         if ($request->has('schemas') && is_array($request->input('schemas'))) {
-            $product->schemas()->sync($request->input('schemas'));
+            $this->schemaService->sync($product, $request->input('schemas'));
         }
 
         return ProductResource::make($product);

@@ -41,6 +41,7 @@ Route::prefix('pages')->group(function () {
 Route::prefix('brands')->group(function () {
     Route::get(null, 'BrandController@index');
     Route::post(null, 'BrandController@store')->middleware('auth:api');
+    Route::post('order', 'BrandController@order')->middleware('auth:api');
     Route::patch('id:{brand:id}', 'BrandController@update')->middleware('auth:api');
     Route::delete('id:{brand:id}', 'BrandController@destroy')->middleware('auth:api');
 });
@@ -48,6 +49,7 @@ Route::prefix('brands')->group(function () {
 Route::prefix('categories')->group(function () {
     Route::get(null, 'CategoryController@index');
     Route::post(null, 'CategoryController@store')->middleware('auth:api');
+    Route::post('order', 'CategoryController@order')->middleware('auth:api');
     Route::patch('id:{category:id}', 'CategoryController@update')->middleware('auth:api');
     Route::delete('id:{category:id}', 'CategoryController@destroy')->middleware('auth:api');
 });
@@ -55,6 +57,7 @@ Route::prefix('categories')->group(function () {
 Route::prefix('shipping-methods')->group(function () {
     Route::get(null, 'ShippingMethodController@index');
     Route::post(null, 'ShippingMethodController@store')->middleware('auth:api');
+    Route::post('order', 'ShippingMethodController@order')->middleware('auth:api');
     Route::patch('id:{shipping_method:id}', 'ShippingMethodController@update')->middleware('auth:api');
     Route::delete('id:{shipping_method:id}', 'ShippingMethodController@destroy')->middleware('auth:api');
 });
@@ -96,6 +99,7 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('statuses')->group(function () {
         Route::get(null, 'StatusController@index');
         Route::post(null, 'StatusController@store');
+        Route::post('order', 'StatusController@order');
         Route::patch('id:{status:id}', 'StatusController@update');
         Route::delete('id:{status:id}', 'StatusController@destroy');
     });
@@ -129,6 +133,10 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('apps')->group(function () {
         Route::get(null, [AppController::class, 'index']);
         Route::post(null, [AppController::class, 'store']);
+    });
+
+    Route::prefix('analytics')->group(function () {
+        Route::get('payments/total', 'AnalyticsController@paymentsTotal');
     });
 });
 

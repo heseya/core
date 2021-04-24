@@ -2,17 +2,23 @@
 
 namespace App\Providers;
 
+use App\Services\AnalyticsService;
 use App\Services\AppService;
+use App\Services\Contracts\AnalyticsServiceContract;
 use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\MediaServiceContract;
+use App\Services\Contracts\SchemaServiceContract;
 use App\Services\MediaService;
+use App\Services\SchemaService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
     const CONTRACTS = [
+        AnalyticsServiceContract::class => AnalyticsService::class,
         AppServiceContract::class => AppService::class,
         MediaServiceContract::class => MediaService::class,
+        SchemaServiceContract::class => SchemaService::class,
     ];
 
     /**

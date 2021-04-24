@@ -30,7 +30,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             ->sort($request->input('sort'));
 
         return OrderResource::collection(
-            $query->paginate(15),
+            $query->paginate((int) $request->input('limit', 15)),
         );
     }
 
@@ -95,7 +95,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             'currency' => 'PLN',
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_price' => $shippingMethod->price,
-            'status_id' => Status::select('id')->orderBy('created_at')->first()->getKey(),
+            'status_id' => Status::select('id')->orderBy('order')->first()->getKey(),
             'delivery_address_id' => $deliveryAddress->getKey(),
             'invoice_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
         ]);
