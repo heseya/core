@@ -22,12 +22,17 @@ class CreateCountriesTable extends Migration
         Artisan::call('db:seed --class=CountriesSeeder');
 
         Schema::create('shipping_method_country', function (Blueprint $table) {
-            $table->char('country_code', 2)->primary()->index();
-            $table->uuid('shipping_method_id');
+            $table->char('country_code', 2)->index();
+            $table->uuid('shipping_method_id')->index();
+
+            $table->primary(['country_code', 'shipping_method_id']);
+
+            $table->foreign('country_code')->references('code')->on('countries')->onDelete('cascade');
+            $table->foreign('shipping_method_id')->references('id')->on('shipping_methods')->onDelete('cascade');
         });
 
         Schema::table('shipping_methods', function (Blueprint $table) {
-            $table->boolean('black_list')->default(false);
+            $table->boolean('black_list')->default(true);
         });
     }
 

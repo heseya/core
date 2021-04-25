@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Swagger;
 
+use App\Http\Requests\ShippingMethodIndexRequest;
 use App\Models\ShippingMethod;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -26,7 +27,7 @@ interface ShippingMethodControllerSwagger
      *   )
      * )
      */
-    public function index(): JsonResource;
+    public function index(ShippingMethodIndexRequest $request): JsonResource;
 
     /**
      * @OA\Post(

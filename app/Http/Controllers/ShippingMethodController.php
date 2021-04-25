@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\ShippingMethodControllerSwagger;
-use App\Http\Requests\CategoryOrderRequest;
+use App\Http\Requests\ShippingMethodIndexRequest;
 use App\Http\Requests\ShippingMethodOrderRequest;
 use App\Http\Resources\ShippingMethodResource;
-use App\Models\Category;
 use App\Models\ShippingMethod;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ShippingMethodController extends Controller implements ShippingMethodControllerSwagger
 {
-    public function index(): JsonResource
+    public function index(ShippingMethodIndexRequest $request): JsonResource
     {
         $query = ShippingMethod::query()->orderBy('order');
 
@@ -26,6 +26,21 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
             $query
                 ->with(['paymentMethods' => fn ($q) => $q->where('public', true)])
                 ->where('public', true);
+
+            if ($request->has('country')) {
+                $query->where(function (Builder $query) use ($request) {
+                    $query->where(function (Builder $query) use ($request) {
+                        $query
+                            ->where('black_list', false)
+                            ->whereHas('countries', fn ($q) => $q->where('code', $request->input('country')));
+                    })
+                    ->orWhere(function (Builder $query) use ($request) {
+                        $query
+                            ->where('black_list', true)
+                            ->whereDoesntHave('countries', fn ($q) => $q->where('code', $request->input('country')));
+                    });
+                });
+            }
         }
 
         return ShippingMethodResource::collection($query->get());
