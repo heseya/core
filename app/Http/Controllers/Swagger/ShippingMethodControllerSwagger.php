@@ -27,6 +27,34 @@ interface ShippingMethodControllerSwagger
      *   )
      * )
      */
+
+    /**
+     * @OA\Post(
+     *   path="/shipping-methods/filter",
+     *   summary="list shipping methods by filters",
+     *   tags={"Shipping"},
+     *   @OA\RequestBody(
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="country",
+     *         type="string",
+     *         example="DE",
+     *       ),
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         type="array",
+     *         @OA\Items(ref="#/components/schemas/ShippingMethod"),
+     *       )
+     *     )
+     *   )
+     * )
+     */
     public function index(ShippingMethodIndexRequest $request): JsonResource;
 
     /**
