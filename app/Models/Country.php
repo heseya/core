@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Model;
+
 /**
  * @OA\Schema()
  *
@@ -17,7 +19,7 @@ namespace App\Models;
  *   example="Poland",
  * )
  */
-class Country extends \Illuminate\Database\Eloquent\Model
+class Country extends Model
 {
     public $timestamps = null;
 

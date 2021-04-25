@@ -26,21 +26,21 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
             $query
                 ->with(['paymentMethods' => fn ($q) => $q->where('public', true)])
                 ->where('public', true);
+        }
 
-            if ($request->has('country')) {
+        if ($request->has('country')) {
+            $query->where(function (Builder $query) use ($request) {
                 $query->where(function (Builder $query) use ($request) {
-                    $query->where(function (Builder $query) use ($request) {
-                        $query
-                            ->where('black_list', false)
-                            ->whereHas('countries', fn ($q) => $q->where('code', $request->input('country')));
-                    })
+                    $query
+                        ->where('black_list', false)
+                        ->whereHas('countries', fn ($q) => $q->where('code', $request->input('country')));
+                })
                     ->orWhere(function (Builder $query) use ($request) {
                         $query
                             ->where('black_list', true)
                             ->whereDoesntHave('countries', fn ($q) => $q->where('code', $request->input('country')));
                     });
-                });
-            }
+            });
         }
 
         return ShippingMethodResource::collection($query->get());
