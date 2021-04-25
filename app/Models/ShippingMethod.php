@@ -64,6 +64,7 @@ class ShippingMethod extends Model
     protected $casts = [
         'price' => 'float',
         'public' => 'boolean',
+        'black_list' => 'boolean',
     ];
 
     public function orders(): HasMany

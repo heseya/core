@@ -1,5 +1,6 @@
 <?php
 
+use Database\Seeders\CountriesSeeder;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Artisan;
@@ -19,7 +20,8 @@ class CreateCountriesTable extends Migration
             $table->string('name', 64);
         });
 
-        Artisan::call('db:seed --class=CountriesSeeder');
+        $seeder = new CountriesSeeder;
+        $seeder->run();
 
         Schema::create('shipping_method_country', function (Blueprint $table) {
             $table->char('country_code', 2)->index();
