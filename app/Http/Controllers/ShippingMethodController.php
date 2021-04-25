@@ -34,15 +34,19 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric',
+            'name' => ['required', 'string', 'max:255'],
+            'price' => ['required', 'numeric'],
             'public' => 'boolean',
+            'black_list' => 'boolean',
             'payment_methods' => 'array',
-            'payment_methods.*' => 'uuid|exists:payment_methods,id',
+            'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
+            'countries' => 'array',
+            'countries.*' => ['string', 'size:2', 'exists:countries,code'],
         ]);
 
         $shipping_method = ShippingMethod::create($validated);
         $shipping_method->paymentMethods()->sync($request->input('payment_methods', []));
+        $shipping_method->countries()->sync($request->input('countries', []));
 
         return ShippingMethodResource::make($shipping_method);
     }
@@ -50,15 +54,19 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
     public function update(ShippingMethod $shipping_method, Request $request): JsonResource
     {
         $validated = $request->validate([
-            'name' => 'string|max:255',
+            'name' => ['string', 'max:255'],
             'price' => 'numeric',
             'public' => 'boolean',
+            'black_list' => 'boolean',
             'payment_methods' => 'array',
-            'payment_methods.*' => 'uuid|exists:payment_methods,id',
+            'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
+            'countries' => 'array',
+            'countries.*' => ['string', 'size:2', 'exists:countries,code'],
         ]);
 
         $shipping_method->update($validated);
         $shipping_method->paymentMethods()->sync($request->input('payment_methods', []));
+        $shipping_method->countries()->sync($request->input('countries', []));
 
         return ShippingMethodResource::make($shipping_method);
     }

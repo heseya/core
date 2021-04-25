@@ -15,11 +15,20 @@ class CreateCountriesTable extends Migration
     public function up()
     {
         Schema::create('countries', function (Blueprint $table) {
-            $table->string('code', 2)->primary()->index();
+            $table->char('code', 2)->primary()->index();
             $table->string('name', 64);
         });
 
         Artisan::call('db:seed --class=CountriesSeeder');
+
+        Schema::create('shipping_method_country', function (Blueprint $table) {
+            $table->char('country_code', 2)->primary()->index();
+            $table->uuid('shipping_method_id');
+        });
+
+        Schema::table('shipping_methods', function (Blueprint $table) {
+            $table->boolean('black_list')->default(false);
+        });
     }
 
     /**
@@ -29,6 +38,11 @@ class CreateCountriesTable extends Migration
      */
     public function down()
     {
+        Schema::table('shipping_methods', function (Blueprint $table) {
+            $table->dropColumn('black_list');
+        });
+
+        Schema::dropIfExists('shipping_method_country');
         Schema::dropIfExists('countries');
     }
 }

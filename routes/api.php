@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AppController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CountriesController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', 'AuthController@login');
@@ -83,6 +84,8 @@ Route::prefix('package-templates')->middleware('auth:api')->group(function () {
     Route::patch('id:{package:id}', 'PackageTemplateController@update');
     Route::delete('id:{package:id}', 'PackageTemplateController@destroy');
 });
+
+Route::get('countries', [CountriesController::class, 'index']);
 
 Route::middleware('auth:api')->group(function () {
     Route::prefix('items')->group(function () {

@@ -2,8 +2,30 @@
 
 namespace App\Models;
 
+/**
+ * @OA\Schema()
+ *
+ * @OA\Property(
+ *   property="code",
+ *   type="string",
+ *   example="PL",
+ * )
+ *
+ * @OA\Property(
+ *   property="name",
+ *   type="string",
+ *   example="Poland",
+ * )
+ */
 class Country extends \Illuminate\Database\Eloquent\Model
 {
+    public $timestamps = null;
+
+    protected $fillable = [
+        'code',
+        'name',
+    ];
+
     public function getIncrementing(): bool
     {
         return false;
