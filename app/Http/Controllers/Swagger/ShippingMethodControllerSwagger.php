@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Swagger;
 
+use App\Http\Requests\ShippingMethodIndexRequest;
 use App\Models\ShippingMethod;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -26,7 +27,35 @@ interface ShippingMethodControllerSwagger
      *   )
      * )
      */
-    public function index(): JsonResource;
+
+    /**
+     * @OA\Post(
+     *   path="/shipping-methods/filter",
+     *   summary="list shipping methods by filters",
+     *   tags={"Shipping"},
+     *   @OA\RequestBody(
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="country",
+     *         type="string",
+     *         example="DE",
+     *       ),
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         type="array",
+     *         @OA\Items(ref="#/components/schemas/ShippingMethod"),
+     *       )
+     *     )
+     *   )
+     * )
+     */
+    public function index(ShippingMethodIndexRequest $request): JsonResource;
 
     /**
      * @OA\Post(
