@@ -10,6 +10,8 @@ return [
 
         'przelewy24' => App\Payments\Przelewy24::class,
 
+        'payu' => App\Payments\PayU::class,
+
         // 'cinkciarz' => App\Payment\Cinkciarz::class,
 
     ],
