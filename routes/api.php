@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\AppController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CountriesController;
+use App\Http\Controllers\ShippingMethodController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', 'AuthController@login');
@@ -18,6 +21,7 @@ Route::prefix('products')->group(function () {
 Route::prefix('orders')->group(function () {
     Route::get(null, 'OrderController@index')->middleware('auth:api');
     Route::post(null,'OrderController@store');
+    Route::post('sync','OrderController@sync')->middleware('auth:api');
     Route::post('verify','OrderController@verify');
     Route::get('id:{order:id}', 'OrderController@show')->middleware('auth:api');
     Route::post('id:{order:id}/status', 'OrderController@updateStatus')->middleware('auth:api');
@@ -54,6 +58,7 @@ Route::prefix('categories')->group(function () {
 
 Route::prefix('shipping-methods')->group(function () {
     Route::get(null, 'ShippingMethodController@index');
+    Route::post('filter', [ShippingMethodController::class, 'index']);
     Route::post(null, 'ShippingMethodController@store')->middleware('auth:api');
     Route::post('order', 'ShippingMethodController@order')->middleware('auth:api');
     Route::patch('id:{shipping_method:id}', 'ShippingMethodController@update')->middleware('auth:api');
@@ -81,6 +86,8 @@ Route::prefix('package-templates')->middleware('auth:api')->group(function () {
     Route::patch('id:{package:id}', 'PackageTemplateController@update');
     Route::delete('id:{package:id}', 'PackageTemplateController@destroy');
 });
+
+Route::get('countries', [CountriesController::class, 'index']);
 
 Route::middleware('auth:api')->group(function () {
     Route::prefix('items')->group(function () {
@@ -128,8 +135,13 @@ Route::middleware('auth:api')->group(function () {
         Route::get('login-history', [AuthController::class, 'loginHistory']);
     });
 
+    Route::prefix('apps')->group(function () {
+        Route::get(null, [AppController::class, 'index']);
+        Route::post(null, [AppController::class, 'store']);
+    });
+
     Route::prefix('analytics')->group(function () {
-        Route::get('payments/total', 'AnalyticsController@paymentsTotal');
+        Route::get('payments', 'AnalyticsController@payments');
     });
 });
 

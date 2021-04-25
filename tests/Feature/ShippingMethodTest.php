@@ -20,10 +20,12 @@ class ShippingMethodTest extends TestCase
 
         $this->shipping_method = ShippingMethod::factory()->create([
             'public' => true,
+            'black_list' => true,
         ]);
 
         $this->shipping_method_hidden = ShippingMethod::factory()->create([
             'public' => false,
+            'black_list' => true,
         ]);
 
         /**
@@ -46,6 +48,30 @@ class ShippingMethodTest extends TestCase
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
+    }
+
+    public function testIndexByCountry(): void
+    {
+        // All countries without Germany
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'black_list' => true,
+        ]);
+        $shippingMethod->countries()->sync(['DE']);
+
+        // Only Germany
+        $shippingMethod2 = ShippingMethod::factory()->create([
+            'public' => true,
+            'black_list' => false,
+        ]);
+        $shippingMethod2->countries()->sync(['DE']);
+
+        $response = $this->postJson('/shipping-methods/filter', ['country' => 'DE']);
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data') // Should show only public shipping methods.
+            ->assertJsonFragment(['id' => $this->shipping_method->getKey()])
+            ->assertJsonFragment(['id' => $shippingMethod2->getKey()]);
     }
 
     public function testCreate(): void

@@ -36,6 +36,11 @@ class ShippingMethod extends Model
      *   property="public",
      *   type="boolean",
      * )
+     *
+     * @OA\Property(
+     *   property="black_list",
+     *   type="boolean",
+     * )
      */
 
     /**
@@ -48,6 +53,7 @@ class ShippingMethod extends Model
         'price',
         'public',
         'order',
+        'black_list',
     ];
 
     /**
@@ -58,6 +64,7 @@ class ShippingMethod extends Model
     protected $casts = [
         'price' => 'float',
         'public' => 'boolean',
+        'black_list' => 'boolean',
     ];
 
     public function orders(): HasMany
@@ -80,5 +87,17 @@ class ShippingMethod extends Model
     public function paymentMethodsPublic(): BelongsToMany
     {
         return $this->paymentMethods()->where('public', true);
+    }
+
+    /**
+     * @OA\Property(
+     *   property="countries",
+     *   type="array",
+     *   @OA\Items(ref="#/components/schemas/Country"),
+     * )
+     */
+    public function countries(): BelongsToMany
+    {
+        return $this->belongsToMany(Country::class, 'shipping_method_country');
     }
 }
