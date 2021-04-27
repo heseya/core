@@ -60,6 +60,8 @@ class OrderCreateTest extends TestCase
             ],
         ]);
 
+        dd($response->json());
+
         $response->assertCreated();
         $order = $response->getData()->data;
 
