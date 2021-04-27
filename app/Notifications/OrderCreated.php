@@ -4,14 +4,11 @@ namespace App\Notifications;
 
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
-use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class OrderCreated extends Notification
 {
-    use Queueable;
-
     private Order $order;
 
     public function __construct(Order $order)
