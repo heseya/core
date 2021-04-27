@@ -8,8 +8,10 @@ use App\Services\Contracts\AnalyticsServiceContract;
 use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
+use App\Services\Contracts\SettingsServiceContract;
 use App\Services\MediaService;
 use App\Services\SchemaService;
+use App\Services\SettingsService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
         AppServiceContract::class => AppService::class,
         MediaServiceContract::class => MediaService::class,
         SchemaServiceContract::class => SchemaService::class,
+        SettingsServiceContract::class => SettingsService::class,
     ];
 
     /**
@@ -28,7 +31,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->injectContract(self::CONTRACTS);
+        foreach (self::CONTRACTS as $abstract => $concrete) {
+            $this->app->bind($abstract, $concrete);
+        }
     }
 
     /**
@@ -39,12 +44,5 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         //
-    }
-
-    private function injectContract(array $contracts): void
-    {
-        foreach ($contracts as $abstract => $concrete) {
-            $this->app->bind($abstract, $concrete);
-        }
     }
 }

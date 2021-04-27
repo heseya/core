@@ -7,6 +7,7 @@ use App\Http\Requests\SettingCreateRequest;
 use App\Http\Requests\SettingUpdateRequest;
 use App\Http\Resources\SettingResource;
 use App\Models\Setting;
+use App\Services\Contracts\SettingsServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -14,22 +15,16 @@ use Illuminate\Support\Facades\Auth;
 
 class SettingController extends Controller implements SettingControllerSwagger
 {
+    private SettingsServiceContract $settingsService;
+
+    public function __construct(SettingsServiceContract $settingsService)
+    {
+        $this->settingsService = $settingsService;
+    }
 
     public function index(Request $request): JsonResponse
     {
-        $settings = Setting::all();
-
-        collect(config('settings'))->each(function($setting, $key) use ($settings) {
-            if (!$settings->contains('name', $key)) {
-                $settings->push(Setting::make($setting + [
-                    'name' => $key,
-                ]));
-            }
-        });
-
-        if (!Auth::check()) {
-            $settings->filter(fn($setting) => $setting->public);
-        }
+        $settings = $this->settingsService->getSettings(!Auth::check());
 
         if ($request->has('array')) {
             return response()->json($settings->mapWithKeys(function ($setting) {
@@ -42,19 +37,7 @@ class SettingController extends Controller implements SettingControllerSwagger
 
     public function show(string $name): JsonResource
     {
-        $config = config("settings.$name", null);
-
-        if ($config === null) {
-            $setting = Setting::where('name', $name)->firstOrFail();
-        } else {
-            $setting = Setting::where('name', $name)->first();
-
-            if ($setting === null) {
-                $setting = Setting::make($config + [
-                    'name' => $name,
-                ]);
-            }
-        }
+        $setting = $this->settingsService->getSetting($name);
 
         if ($setting->public === false && !Auth::check()) {
             abort(404);
