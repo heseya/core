@@ -20,7 +20,9 @@ class PayU implements PaymentMethod
 
         $amount = (int) $payment->amount * 100;
 
-        $response = Http::withToken($response['access_token'])->post(config('payu.url') . '/api/v2_1/orders', [
+        $response = Http::withToken($response['access_token'])->withOptions([
+            'allow_redirects' => false,
+        ])->post(config('payu.url') . '/api/v2_1/orders', [
             'notifyUrl' => config('app.url') . '/payments/payu',
             'customerIp' => '127.0.0.1', // Posibbly enforced by website and we'll need to track order ip
             'merchantPosId' => config('payu.pos_id'),
@@ -33,10 +35,12 @@ class PayU implements PaymentMethod
                 'email' => $payment->order->email,
             ],
             'products' => [
-                'name' => 'Zakupy w sklepie internetowym.',
-                'unitPrice' => $amount,
-                'quantity' => '1',
-            ]
+                [
+                    'name' => 'Zakupy w sklepie internetowym.',
+                    'unitPrice' => $amount,
+                    'quantity' => '1',
+                ],
+            ],
         ])->throw();
 
         if ($response['status']['statusCode'] !== 'SUCCESS') {
