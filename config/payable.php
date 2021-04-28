@@ -12,7 +12,7 @@ return [
 
         'payu' => App\Payments\PayU::class,
 
-        // 'cinkciarz' => App\Payment\Cinkciarz::class,
+        'paypal' => App\Payments\PayPal::class,
 
     ],
 
