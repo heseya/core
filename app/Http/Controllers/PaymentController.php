@@ -34,11 +34,11 @@ class PaymentController extends Controller implements PaymentControllerSwagger
             'continue_url' => $request->input('continue_url'),
         ]);
 
-        try {
+//        try {
             $payment->update($method_class::generateUrl($payment));
-        } catch (Throwable $e) {
-            return Error::abort('Cannot generate payment url.', 500);
-        }
+//        } catch (Throwable $e) {
+//            return Error::abort('Cannot generate payment url.', 500);
+//        }
 
         return PaymentResource::make($payment);
     }
