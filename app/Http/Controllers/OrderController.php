@@ -19,11 +19,19 @@ use App\Models\OrderSchema;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use App\Services\Contracts\NameServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class OrderController extends Controller implements OrderControllerSwagger
 {
+    private NameServiceContract $nameService;
+
+    public function __construct(NameServiceContract $nameService)
+    {
+        $this->nameService = $nameService;
+    }
+
     public function index(OrderIndexRequest $request): JsonResource
     {
         $query = Order::search($request->validated())
@@ -90,6 +98,7 @@ class OrderController extends Controller implements OrderControllerSwagger
         }
 
         $order = Order::create([
+            'code' => $this->nameService->generate(),
             'email' => $request->input('email'),
             'comment' => $request->input('comment'),
             'currency' => 'PLN',

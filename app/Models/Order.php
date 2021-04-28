@@ -23,8 +23,6 @@ class Order extends Model
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-
-        $this->code = $attributes['code'] ?? $this->generateCode();
     }
 
     /**
