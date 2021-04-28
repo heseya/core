@@ -27,32 +27,32 @@ class PayPal implements PaymentMethod
         ]);
 
         return [
+            'external_id' => $response['id'],
             'redirect_url' => $response['links'][1]['href'],
         ];
     }
 
     public static function translateNotification(Request $request)
     {
-        // Optional signature verification; lackluster docs
-        // $signature = $request->header('OpenPayu-Signature');
+         $request->validate([
+            'txn_id' => ['required', 'string'],
+            'payment_status' => ['required', 'string'],
+            'mc_gross' => ['required'],
+         ]);
 
-        $validated = $request->validate([
-            'order' => ['required', 'array'],
-            'order.status' => ['required', 'string'],
-            'order.extOrderId' => ['required', 'string', 'exists:payments,id'],
-        ]);
+        $payment = Payment::where('external_id', $request->input('txn_id'))->firstOrFail();
 
-        $order = $validated['order'];
-        $status = $order['status'];
-
-        $payment = Payment::findOrFail($order['extOrderId']);
-
-        if ($status === 'COMPLETED') {
+        if (
+            $request->input('payment_status') === 'Completed' &&
+            $request->input('mc_gross') == number_format($payment->order->amount, 2, '.', '')
+        ) {
             $payment->update([
                 'payed' => true,
             ]);
+
+            return response()->json(null);
         }
 
-        return response()->json(null, 200);
+        return response()->json(null, 400);
     }
 }
