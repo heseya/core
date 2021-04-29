@@ -19,6 +19,8 @@ class PayPal implements PaymentMethod
             'purchase_units' => [
                 [
                     'amount' => [
+                        'item_name' => 'Order ' . $payment->order->code,
+                        'item_number' => $payment->getKey(),
                         'currency_code' => $payment->order->currency,
                         'value' => $payment->amount,
                     ],
@@ -40,7 +42,7 @@ class PayPal implements PaymentMethod
             'mc_gross' => ['required'],
          ]);
 
-        $payment = Payment::where('external_id', $request->input('txn_id'))->firstOrFail();
+        $payment = Payment::findOrFail($request->input('item_number'));
 
         if (
             $request->input('payment_status') === 'Completed' &&
