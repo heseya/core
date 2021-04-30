@@ -46,15 +46,13 @@ class PayPal implements PaymentMethod
 
         if (
             $request->input('payment_status') === 'Completed' &&
-            $request->input('mc_gross') === number_format($payment->order->amount, 2, '.', '')
+            $request->input('mc_gross') === number_format($payment->abount, 2, '.', '')
         ) {
             $payment->update([
                 'payed' => true,
             ]);
-
-            return response()->json(null);
         }
 
-        return response()->json(null, 400);
+        return response(null);
     }
 }
