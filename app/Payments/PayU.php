@@ -79,6 +79,6 @@ class PayU implements PaymentMethod
             ]);
         }
 
-        return response()->json(null, 200);
+        return response()->json(null);
     }
 }
