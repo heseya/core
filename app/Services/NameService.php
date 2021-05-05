@@ -22,7 +22,7 @@ class NameService implements NameServiceContract
         $start = (int) $this->settingsService->getSetting('order_number_start')->value;
 
         return $this->render($pattern, [
-            'r' => Str::random(),
+            'r' => Str::of(Str::random())->upper(),
 
             'year' => date('Y'),
             'month' => date('n'),
