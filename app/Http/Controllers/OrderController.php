@@ -174,7 +174,7 @@ class OrderController extends Controller implements OrderControllerSwagger
         }
 
         $order->payments()->delete();
-        
+
         foreach ($request->input('payments') as $payment) {
             $order->payments()->create([
                 'method' => $payment['name'],

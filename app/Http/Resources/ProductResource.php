@@ -16,6 +16,7 @@ class ProductResource extends Resource
             'public' => $this->public,
             'visible' => $this->isPublic(),
             'available' => $this->available,
+            'quantity_step' => $this->quantity_step,
             'brand' => BrandResource::make($this->brand),
             'category' => CategoryResource::make($this->category),
             'cover' => MediaResource::make($this->media()->first()),

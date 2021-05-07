@@ -16,6 +16,7 @@ class ProductCreateRequest extends FormRequest
             'category_id' => ['nullable', 'uuid', 'exists:categories,id'],
             'description_md' => ['nullable', 'string'],
             'public' => ['required', 'boolean'],
+            'quantity_step' => ['numeric'],
 
             'media' => ['nullable', 'array'],
             'media.*' => ['uuid', 'exists:media,id'],

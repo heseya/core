@@ -14,7 +14,7 @@ class ProductQuantityStep extends Migration
     public function up()
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->float('quantity_step', 8, 8)->nullable();
+            $table->float('quantity_step')->default(1);
         });
     }
 
