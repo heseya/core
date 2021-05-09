@@ -71,6 +71,7 @@ class Product extends Model
         'public',
         'brand_id',
         'category_id',
+        'quantity_step',
     ];
 
     /**
@@ -82,6 +83,7 @@ class Product extends Model
         'price' => 'float',
         'public' => 'bool',
         'available' => 'bool',
+        'quantity_step' => 'float',
     ];
 
     protected array $searchable = [
