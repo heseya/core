@@ -51,11 +51,8 @@ class PayU implements PaymentMethod
             throw new Exception('PayU invalid response');
         }
 
-        $payment->update([
-            'external_id' => $response['orderId'],
-        ]);
-
         return [
+            'external_id' => $response['orderId'],
             'redirect_url' => $response['redirectUri'],
         ];
     }
@@ -82,6 +79,6 @@ class PayU implements PaymentMethod
             ]);
         }
 
-        return response()->json(null, 200);
+        return response()->json(null);
     }
 }

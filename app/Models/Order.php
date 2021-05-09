@@ -9,6 +9,7 @@ use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -23,8 +24,6 @@ class Order extends Model
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-
-        $this->code = $attributes['code'] ?? $this->generateCode();
     }
 
     /**
@@ -212,6 +211,11 @@ class Order extends Model
     public function notes(): HasMany
     {
         return $this->hasMany(OrderNote::class)->orderBy('created_at', 'DESC');
+    }
+
+    public function deposits(): HasManyThrough
+    {
+        return $this->hasManyThrough(Deposit::class, OrderProduct::class);
     }
 
     /**

@@ -74,19 +74,44 @@ class PaymentTest extends TestCase
         $payment = Payment::factory()->make([
             'payed' => false,
         ]);
-        
+
         $this->order->payments()->save($payment);
 
-        $response = $this->postJson("payments/payu", [
+        $response = $this->postJson('payments/payu', [
             'order' => [
                 'status' => 'COMPLETED',
                 'extOrderId' => $payment->getKey(),
             ],
         ]);
 
-        $payment->refresh();
+        $response->assertOk();
+        $this->assertDatabaseHas('payments', [
+            'id' => $payment->getKey(),
+            'payed' => true,
+        ]);
+    }
+
+    public function testPayPalNotification(): void
+    {
+        $payment = Payment::factory()->make([
+            'payed' => false,
+            'external_id' => '61E67681CH3238416',
+        ]);
+
+        $this->order->payments()->save($payment);
+
+        $request = [
+            'txn_id=' . $payment->external_id,
+            'mc_gross=' . number_format($this->order->amount, 2, '.' ,''),
+            'payment_status=Completed',
+        ];
+
+        $response = $this->post('payments/paypal?' . implode('&', $request));
 
         $response->assertOk();
-        $this->assertTrue($payment->payed);
+        $this->assertDatabaseHas('payments', [
+            'id' => $payment->getKey(),
+            'payed' => true,
+        ]);
     }
 }
