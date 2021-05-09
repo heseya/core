@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\OrderCreated;
 use App\Events\OrderStatusUpdated;
+use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\OrderControllerSwagger;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderIndexRequest;
@@ -13,11 +14,8 @@ use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Resources\OrderPublicResource;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
-use App\Models\Deposit;
-use App\Models\Item;
 use App\Models\Order;
 use App\Models\OrderProduct;
-use App\Models\OrderSchema;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
@@ -213,14 +211,24 @@ class OrderController extends Controller implements OrderControllerSwagger
         return response()->json(null, 204);
     }
 
-    public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResource
+    public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResponse
     {
+        if ($order->status->cancel) {
+            return Error::abort('Nie można zmienić statusu anulowanego zamówienia', 400);
+        }
+
+        $status = Status::findOrFail($request->input('status_id'));
+
         $order->update([
-            'status_id' => $request->input('status_id'),
+            'status_id' => $status->getKey(),
         ]);
+
+        if ($status->cancel) {
+            $order->deposits()->delete();
+        }
 
         OrderStatusUpdated::dispatch($order);
 
-        return OrderResource::make($order);
+        return OrderResource::make($order)->response();
     }
 }

@@ -16,6 +16,10 @@ class AddOrderIdToDepositsTable extends Migration
         Schema::table('deposits', function (Blueprint $table) {
             $table->uuid('order_product_id')->after('item_id')->nullable();
         });
+
+        Schema::table('statuses', function (Blueprint $table) {
+            $table->boolean('cancel')->after('color')->default(false);
+        });
     }
 
     /**
@@ -27,6 +31,10 @@ class AddOrderIdToDepositsTable extends Migration
     {
         Schema::table('deposits', function (Blueprint $table) {
             $table->dropColumn('order_product_id');
+        });
+
+        Schema::table('statuses', function (Blueprint $table) {
+            $table->dropColumn('cancel');
         });
     }
 }

@@ -8,7 +8,6 @@ use App\Http\Requests\OrderItemsRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 interface OrderControllerSwagger
@@ -240,5 +239,5 @@ interface OrderControllerSwagger
      *   }
      * )
      */
-    public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResource;
+    public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResponse;
 }
