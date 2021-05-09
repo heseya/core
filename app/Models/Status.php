@@ -32,6 +32,11 @@ class Status extends Model
      * )
      *
      * @OA\Property(
+     *   property="cancel",
+     *   type="boolean",
+     * )
+     *
+     * @OA\Property(
      *   property="description",
      *   type="string",
      *   example="Your order has been cancelled!",
@@ -40,8 +45,13 @@ class Status extends Model
     protected $fillable = [
         'name',
         'color',
+        'cancel',
         'description',
         'order',
+    ];
+
+    protected $casts = [
+        'cancel' => 'boolean',
     ];
 
     public function orders(): HasMany

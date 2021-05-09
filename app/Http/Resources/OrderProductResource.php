@@ -14,6 +14,7 @@ class OrderProductResource extends Resource
             'price' => $this->price,
             'product' => ProductResource::make($this->product),
             'schemas' => OrderSchemaResource::collection($this->schemas),
+            'deposits' => DepositResource::collection($this->deposits),
         ];
     }
 }
