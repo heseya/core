@@ -13,6 +13,8 @@ use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Resources\OrderPublicResource;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
+use App\Models\Deposit;
+use App\Models\Item;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\OrderSchema;
@@ -78,31 +80,37 @@ class OrderController extends Controller implements OrderControllerSwagger
             foreach ($request->input('items', []) as $item) {
                 $product = Product::findOrFail($item['product_id']);
                 $schemas = $item['schemas'] ?? [];
-    
-                $order_product = new OrderProduct([
+
+                $orderProduct = new OrderProduct([
                     'product_id' => $product->getKey(),
                     'quantity' => $item['quantity'],
                     'price' => $product->price,
                 ]);
-    
-                $order->products()->save($order_product);
-    
+
+                $order->products()->save($orderProduct);
+
                 foreach ($product->schemas as $schema) {
                     $schema->validate(
                         $schemas[$schema->getKey()] ?? null,
                         $item['quantity'],
                     );
-    
+
                     $value = $schemas[$schema->getKey()] ?? null;
                     $price = $schema->getPrice($value, $schemas);
-    
+
                     if ($schema->type === 4) {
                         $option = $schema->options()->findOrFail($value);
-    
                         $value = $option->name;
+
+                        foreach ($option->items as $optionItem) {
+                            $orderProduct->deposits()->create([
+                                'item_id' => $optionItem->getKey(),
+                                'quantity' => -1 * $item['quantity'],
+                            ]);
+                        }
                     }
-    
-                    $order_product->schemas()->create([
+
+                    $orderProduct->schemas()->create([
                         'name' => $schema->name,
                         'value' => $value,
                         'price' => $price,

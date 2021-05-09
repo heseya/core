@@ -27,16 +27,30 @@ class Deposit extends Model
      *
      * @OA\Property(
      *   property="item_id",
-     *   type="integer",
+     *   type="string",
+     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
+     * )
+     *
+     * @OA\Property(
+     *   property="order_id",
+     *   type="string",
+     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
      * )
      */
 
     protected $fillable = [
-        'quantity'
+        'quantity',
+        'item_id',
+        'order_id',
     ];
 
     public function items(): BelongsTo
     {
         return $this->belongsTo(Item::class);
+    }
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class);
     }
 }
