@@ -28,6 +28,7 @@ class StatusTest extends TestCase
             'id' => $this->status_model->getKey(),
             'name' => $this->status_model->name,
             'color' => $this->status_model->color,
+            'cancel' => false,
             'description' => $this->status_model->description,
         ];
     }
