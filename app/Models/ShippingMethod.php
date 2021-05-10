@@ -50,7 +50,6 @@ class ShippingMethod extends Model
      */
     protected $fillable = [
         'name',
-        'price',
         'public',
         'order',
         'black_list',
@@ -99,5 +98,46 @@ class ShippingMethod extends Model
     public function countries(): BelongsToMany
     {
         return $this->belongsToMany(Country::class, 'shipping_method_country');
+    }
+
+    /**
+     * @OA\Property(
+     *   property="price_ranges (request)",
+     *   type="array",
+     *   @OA\Items(
+     *     type="object",
+     *     @OA\Property(
+     *       property="start",
+     *       description="start of the range (min = 0); range goes from start to start of next range or infinity",
+     *       type="number",
+     *       example=0.0
+     *     ),
+     *     @OA\Property(
+     *       property="value",
+     *       description="price in this range",
+     *       type="number",
+     *       example=18.70
+     *     ),
+     *   ),
+     * )
+     */
+
+    /**
+     * @OA\Property(
+     *   property="price_ranges (response)",
+     *   type="array",
+     *   @OA\Items(ref="#/components/schemas/PriceRange"),
+     * )
+     */
+    public function priceRanges(): HasMany
+    {
+        return $this->hasMany(PriceRange::class, 'shipping_method_id');
+    }
+
+    public function getPrice(float $orderTotal): float
+    {
+        return $this->priceRanges()->where('start', '<=', $orderTotal)
+            ->orderBy('start', 'desc')->firstOrFail()
+            ->prices()->firstOrFail()->value;
     }
 }

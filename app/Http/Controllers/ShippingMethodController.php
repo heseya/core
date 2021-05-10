@@ -7,6 +7,8 @@ use App\Http\Controllers\Swagger\ShippingMethodControllerSwagger;
 use App\Http\Requests\ShippingMethodIndexRequest;
 use App\Http\Requests\ShippingMethodOrderRequest;
 use App\Http\Resources\ShippingMethodResource;
+use App\Models\Price;
+use App\Models\PriceRange;
 use App\Models\ShippingMethod;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -50,40 +52,67 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'price' => ['required', 'numeric'],
             'public' => 'boolean',
             'black_list' => 'boolean',
             'payment_methods' => 'array',
             'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
             'countries' => 'array',
             'countries.*' => ['string', 'size:2', 'exists:countries,code'],
+            'price_ranges' => ['required', 'array', 'min:1'],
+            'price_ranges.*.start' => ['required', 'numeric', 'min:0'],
+            'price_ranges.*.value' => ['required', 'numeric', 'min:0'],
         ]);
 
-        $shipping_method = ShippingMethod::create($validated);
-        $shipping_method->paymentMethods()->sync($request->input('payment_methods', []));
-        $shipping_method->countries()->sync($request->input('countries', []));
+        $shippingMethod = ShippingMethod::create($validated);
+        $shippingMethod->paymentMethods()->sync($request->input('payment_methods', []));
+        $shippingMethod->countries()->sync($request->input('countries', []));
 
-        return ShippingMethodResource::make($shipping_method);
+        foreach ($request->input('price_ranges') as $range) {
+            $priceRange = $shippingMethod->priceRanges()->firstOrCreate([
+                'start' => $range['start'],
+            ]);
+            $priceRange->prices()->create([
+                'value' => $range['value'],
+            ]);
+        }
+
+        return ShippingMethodResource::make($shippingMethod);
     }
 
-    public function update(ShippingMethod $shipping_method, Request $request): JsonResource
+    public function update(ShippingMethod $shippingMethod, Request $request): JsonResource
     {
         $validated = $request->validate([
             'name' => ['string', 'max:255'],
-            'price' => 'numeric',
             'public' => 'boolean',
             'black_list' => 'boolean',
             'payment_methods' => 'array',
             'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
             'countries' => 'array',
             'countries.*' => ['string', 'size:2', 'exists:countries,code'],
+            'price_ranges' => ['array', 'min:1'],
+            'price_ranges.*.start' => ['required', 'numeric', 'min:0'],
+            'price_ranges.*.value' => ['required', 'numeric', 'min:0'],
         ]);
 
-        $shipping_method->update($validated);
-        $shipping_method->paymentMethods()->sync($request->input('payment_methods', []));
-        $shipping_method->countries()->sync($request->input('countries', []));
+        $shippingMethod->update($validated);
+        $shippingMethod->paymentMethods()->sync($request->input('payment_methods', []));
+        $shippingMethod->countries()->sync($request->input('countries', []));
 
-        return ShippingMethodResource::make($shipping_method);
+        if ($request->has('price_ranges')) {
+            $shippingMethod->priceRanges()->delete();
+
+
+            foreach ($request->input('price_ranges') as $range) {
+                $priceRange = $shippingMethod->priceRanges()->firstOrCreate([
+                    'start' => $range['start'],
+                ]);
+                $priceRange->prices()->create([
+                    'value' => $range['value'],
+                ]);
+            }
+        }
+
+        return ShippingMethodResource::make($shippingMethod);
     }
 
     public function order(ShippingMethodOrderRequest $request): JsonResponse
