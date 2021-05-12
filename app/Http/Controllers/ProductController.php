@@ -71,7 +71,7 @@ class ProductController extends Controller implements ProductControllerSwagger
         $products = $query->paginate((int) $request->input('limit', 12));
 
         if ($request->has('available')) {
-            $products->filter(function ($product) use ($request) {
+            $products = $products->filter(function ($product) use ($request) {
                 return $product->available === $request->boolean('available');
             });
         }
