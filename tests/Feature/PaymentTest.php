@@ -93,6 +93,8 @@ class PaymentTest extends TestCase
 
     public function testPayPalNotification(): void
     {
+        Http::fake();
+
         $payment = Payment::factory()->make([
             'payed' => false,
         ]);

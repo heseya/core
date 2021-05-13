@@ -40,17 +40,18 @@ class PayPal implements PaymentMethod
         Log::info('PayPal Response', $request->all());
 
         $request->validate([
-            'txn_id' => ['required', 'string'],
-            'payment_status' => ['required', 'string'],
-            'mc_gross' => ['required'],
+            'txn_id' => 'required',
+            'mc_gross' => 'required',
+            'payment_status' => 'required',
         ]);
-
-        $payment = Payment::findOrFail($request->input('item_number'));
 
         $provider = PayPalMethod::setProvider();
         $provider->setApiCredentials(config('paypal'));
         $provider->setAccessToken($provider->getAccessToken());
-        $provider->capturePaymentOrder($payment->external_id);
+        $provider->capturePaymentOrder($request->input('txn_id'));
+
+        $payment = Payment::where('external_id', $request->input('txn_id'))->firstOrFail();
+        Log::info('PayPal Response find model', $payment->toArray());
 
         if (
             $request->input('payment_status') === 'Completed' &&
