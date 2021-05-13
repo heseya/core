@@ -15,6 +15,7 @@ class ShippingMethodIndexRequest extends FormRequest
     {
         return [
             'country' => ['string', 'size:2', 'exists:countries,code'],
+            'cart_value' => ['numeric'],
         ];
     }
 }

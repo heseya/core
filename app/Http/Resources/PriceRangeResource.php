@@ -4,16 +4,14 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 
-class StatusResource extends Resource
+class PriceRangeResource extends Resource
 {
     public function base(Request $request): array
     {
         return [
             'id' => $this->getKey(),
-            'name' => $this->name,
-            'color' => $this->color,
-            'cancel' => $this->cancel,
-            'description' => $this->description,
+            'start' => $this->start,
+            'prices' => PriceResource::collection($this->prices),
         ];
     }
 }

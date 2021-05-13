@@ -4,10 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\StatusControllerSwagger;
-use App\Http\Requests\ShippingMethodOrderRequest;
 use App\Http\Requests\StatusOrderRequest;
 use App\Http\Resources\StatusResource;
-use App\Models\ShippingMethod;
 use App\Models\Status;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,6 +23,7 @@ class StatusController extends Controller implements StatusControllerSwagger
         $validated = $request->validate([
             'name' => 'required|string|max:60',
             'color' => 'required|string|size:6',
+            'cancel' => 'boolean',
             'description' => 'string|max:255|nullable',
         ]);
 
@@ -38,6 +37,7 @@ class StatusController extends Controller implements StatusControllerSwagger
         $validated = $request->validate([
             'name' => 'string|max:60',
             'color' => 'string|size:6',
+            'cancel' => 'boolean',
             'description' => 'string|max:255|nullable',
         ]);
 
@@ -59,14 +59,14 @@ class StatusController extends Controller implements StatusControllerSwagger
     {
         if (Status::count() <= 1) {
             return Error::abort(
-                'There must be at least one status.',
+                'Musi istnieć co najmniej jeden status.',
                 409,
             );
         }
 
         if ($status->orders()->count() > 0) {
             return Error::abort(
-                'Order can\'t be deleted, because has relations.',
+                'Status nie może być usunięty, ponieważ jest przypisany do zamówienia.',
                 409,
             );
         }

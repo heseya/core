@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\OrderCreated;
 use App\Events\OrderStatusUpdated;
+use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\OrderControllerSwagger;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderIndexRequest;
@@ -15,13 +16,13 @@ use App\Http\Resources\OrderResource;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\OrderProduct;
-use App\Models\OrderSchema;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Services\Contracts\NameServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Throwable;
 
 class OrderController extends Controller implements OrderControllerSwagger
 {
@@ -54,42 +55,6 @@ class OrderController extends Controller implements OrderControllerSwagger
 
     public function store(OrderCreateRequest $request): JsonResource
     {
-        $products = [];
-        $orderSchemas = [];
-
-        foreach ($request->input('items', []) as $item) {
-            $product = Product::findOrFail($item['product_id']);
-            $schemas = $item['schemas'] ?? [];
-
-            foreach ($product->schemas as $schema) {
-                $schema->validate(
-                    $schemas[$schema->getKey()] ?? null,
-                    $item['quantity'],
-                );
-
-                $value = $schemas[$schema->getKey()] ?? null;
-                $price = $schema->getPrice($value, $schemas);
-
-                if ($schema->type === 4) {
-                    $option = $schema->options()->findOrFail($value);
-
-                    $value = $option->name;
-                }
-
-                $orderSchemas[$product->getKey()][] = new OrderSchema([
-                    'name' => $schema->name,
-                    'value' => $value,
-                    'price' => $price,
-                ]);
-            }
-
-            $products[] = new OrderProduct([
-                'product_id' => $product->getKey(),
-                'quantity' => $item['quantity'],
-                'price' => $product->price,
-            ]);
-        }
-
         $shippingMethod = ShippingMethod::findOrFail($request->input('shipping_method_id'));
         $deliveryAddress = Address::firstOrCreate($request->input('delivery_address'));
 
@@ -103,16 +68,61 @@ class OrderController extends Controller implements OrderControllerSwagger
             'comment' => $request->input('comment'),
             'currency' => 'PLN',
             'shipping_method_id' => $shippingMethod->getKey(),
-            'shipping_price' => $shippingMethod->price,
+            'shipping_price' => 0.0,
             'status_id' => Status::select('id')->orderBy('order')->first()->getKey(),
             'delivery_address_id' => $deliveryAddress->getKey(),
             'invoice_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
         ]);
 
-        $order->products()->saveMany($products);
+        try {
+            foreach ($request->input('items', []) as $item) {
+                $product = Product::findOrFail($item['product_id']);
+                $schemas = $item['schemas'] ?? [];
 
-        foreach ($order->products as $product) {
-            $product->schemas()->saveMany($orderSchemas[$product->product_id] ?? []);
+                $orderProduct = new OrderProduct([
+                    'product_id' => $product->getKey(),
+                    'quantity' => $item['quantity'],
+                    'price' => $product->price,
+                ]);
+
+                $order->products()->save($orderProduct);
+
+                foreach ($product->schemas as $schema) {
+                    $schema->validate(
+                        $schemas[$schema->getKey()] ?? null,
+                        $item['quantity'],
+                    );
+
+                    $value = $schemas[$schema->getKey()] ?? null;
+                    $price = $schema->getPrice($value, $schemas);
+
+                    if ($schema->type === 4) {
+                        $option = $schema->options()->findOrFail($value);
+                        $value = $option->name;
+
+                        foreach ($option->items as $optionItem) {
+                            $orderProduct->deposits()->create([
+                                'item_id' => $optionItem->getKey(),
+                                'quantity' => -1 * $item['quantity'],
+                            ]);
+                        }
+                    }
+
+                    $orderProduct->schemas()->create([
+                        'name' => $schema->name,
+                        'value' => $value,
+                        'price' => $price,
+                    ]);
+                }
+            }
+
+            $order->update([
+                'shipping_price' => $shippingMethod->getPrice($order->summary),
+            ]);
+        } catch (Throwable $e) {
+            $order->delete();
+
+            throw $e;
         }
 
         // logs
@@ -128,25 +138,8 @@ class OrderController extends Controller implements OrderControllerSwagger
 
     public function sync(OrderSyncRequest $request): JsonResponse
     {
-        $products = [];
-        $orderSchemas = [];
-
         foreach ($request->input('items', []) as $item) {
             $product = Product::findOrFail($item['product_id']);
-
-            foreach ($item['schemas'] ?? [] as $schema) {
-                $orderSchemas[$product->getKey()][] = new OrderSchema([
-                    'name' => $schema['name'],
-                    'value' => $schema['value'],
-                    'price' => $schema['price'],
-                ]);
-            }
-
-            $products[] = new OrderProduct([
-                'product_id' => $product->getKey(),
-                'quantity' => $item['quantity'],
-                'price' => $item['price'],
-            ]);
         }
 
         $deliveryAddress = Address::firstOrCreate($request->input('delivery_address'));
@@ -169,11 +162,25 @@ class OrderController extends Controller implements OrderControllerSwagger
         ]);
 
         $order->products()->delete();
-        $order->products()->saveMany($products);
 
-        foreach ($order->products as $product) {
-            $product->schemas()->delete();
-            $product->schemas()->saveMany($orderSchemas[$product->product_id] ?? []);
+        foreach ($request->input('items', []) as $item) {
+            $product = Product::findOrFail($item['product_id']);
+
+            $order_product = new OrderProduct([
+                'product_id' => $product->getKey(),
+                'quantity' => $item['quantity'],
+                'price' => $item['price'],
+            ]);
+
+            $order->products()->save($order_product);
+
+            foreach ($item['schemas'] ?? [] as $schema) {
+                $order_product->schemas()->create([
+                    'name' => $schema['name'],
+                    'value' => $schema['value'],
+                    'price' => $schema['price'],
+                ]);
+            }
         }
 
         $order->payments()->delete();
@@ -208,14 +215,24 @@ class OrderController extends Controller implements OrderControllerSwagger
         return response()->json(null, 204);
     }
 
-    public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResource
+    public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResponse
     {
+        if ($order->status->cancel) {
+            return Error::abort('Nie można zmienić statusu anulowanego zamówienia', 400);
+        }
+
+        $status = Status::findOrFail($request->input('status_id'));
+
         $order->update([
-            'status_id' => $request->input('status_id'),
+            'status_id' => $status->getKey(),
         ]);
+
+        if ($status->cancel) {
+            $order->deposits()->delete();
+        }
 
         OrderStatusUpdated::dispatch($order);
 
-        return OrderResource::make($order);
+        return OrderResource::make($order)->response();
     }
 }

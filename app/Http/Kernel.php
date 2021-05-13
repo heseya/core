@@ -15,6 +15,7 @@ class Kernel extends HttpKernel
      */
     protected $middleware = [
         \Fruitcake\Cors\HandleCors::class,
+        \App\Http\Middleware\SecureHeaders::class,
         \App\Http\Middleware\Language::class,
         \App\Http\Middleware\TrimStrings::class,
         \App\Http\Middleware\TrustProxies::class,
@@ -64,5 +65,6 @@ class Kernel extends HttpKernel
         \App\Http\Middleware\Authenticate::class,
         \Illuminate\Session\Middleware\AuthenticateSession::class,
         \Illuminate\Auth\Middleware\Authorize::class,
+        \App\Http\Middleware\SecureHeaders::class,
     ];
 }

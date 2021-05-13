@@ -15,6 +15,7 @@ class OrderStatusUpdated
     public function __construct(Order $order)
     {
         $this->order = $order;
+        $this->order->refresh();
     }
 
     public function getOrder(): Order
