@@ -50,6 +50,12 @@ class Order extends Model
      *   type="string",
      *   example="630552359128340015809770",
      * )
+     * 
+     * @OA\Property(
+     *   property="shipping_price",
+     *   type="float",
+     *   example=18.70
+     * )
      */
 
     protected $fillable = [

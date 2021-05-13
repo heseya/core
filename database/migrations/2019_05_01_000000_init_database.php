@@ -211,7 +211,6 @@ class InitDatabase extends Migration
         Schema::create('shipping_methods', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
-            $table->float('price', 19, 4);
             $table->boolean('public')->default(false);
             $table->timestamps();
         });

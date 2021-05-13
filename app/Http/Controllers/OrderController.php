@@ -68,7 +68,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             'comment' => $request->input('comment'),
             'currency' => 'PLN',
             'shipping_method_id' => $shippingMethod->getKey(),
-            'shipping_price' => $shippingMethod->price,
+            'shipping_price' => 0.0,
             'status_id' => Status::select('id')->orderBy('order')->first()->getKey(),
             'delivery_address_id' => $deliveryAddress->getKey(),
             'invoice_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
@@ -115,6 +115,10 @@ class OrderController extends Controller implements OrderControllerSwagger
                     ]);
                 }
             }
+
+            $order->update([
+                'shipping_price' => $shippingMethod->getPrice($order->summary),
+            ]);
         } catch (Throwable $e) {
             $order->delete();
 

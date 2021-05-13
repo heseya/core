@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Order;
+use App\Models\Price;
+use App\Models\PriceRange;
 use App\Models\ShippingMethod;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
@@ -23,10 +25,30 @@ class ShippingMethodTest extends TestCase
             'black_list' => true,
         ]);
 
+        $lowRange = PriceRange::create(['start' => 0]);
+        $lowRange->prices()->create([
+            'value' => rand(8, 15) + (rand(0, 99) / 100),
+        ]);
+
+        $highRange = PriceRange::create(['start' => 210]);
+        $highRange->prices()->create(['value' => 0.0]);
+
+        $this->shipping_method->priceRanges()->saveMany([$lowRange, $highRange]);
+
         $this->shipping_method_hidden = ShippingMethod::factory()->create([
             'public' => false,
             'black_list' => true,
         ]);
+
+        $lowRange = PriceRange::create(['start' => 0]);
+        $lowRange->prices()->create([
+            'value' => rand(8, 15) + (rand(0, 99) / 100),
+        ]);
+
+        $highRange = PriceRange::create(['start' => 210]);
+        $highRange->prices()->create(['value' => 0.0]);
+
+        $this->shipping_method_hidden->priceRanges()->saveMany([$lowRange, $highRange]);
 
         /**
          * Expected response
@@ -34,7 +56,6 @@ class ShippingMethodTest extends TestCase
         $this->expected = [
             'id' => $this->shipping_method->getKey(),
             'name' => $this->shipping_method->name,
-            'price' => $this->shipping_method->price,
             'public' => $this->shipping_method->public,
         ];
     }
@@ -83,14 +104,44 @@ class ShippingMethodTest extends TestCase
 
         $shipping_method = [
             'name' => 'Test',
-            'price' => 1.23,
             'public' => true,
         ];
 
-        $response = $this->postJson('/shipping-methods', $shipping_method);
+        $response = $this->postJson('/shipping-methods', $shipping_method + [
+            'price_ranges' => [
+                [
+                    'start' => 0,
+                    'value' => 10.37,
+                ],
+                [
+                    'start' => 200,
+                    'value' => 0,
+                ],
+            ],
+        ]);
         $response
             ->assertCreated()
-            ->assertJson(['data' => $shipping_method]);
+            ->assertJson(['data' => $shipping_method])
+            ->assertJsonCount(2, 'data.price_ranges')
+            ->assertJsonFragment(['start' => 0])
+            ->assertJsonFragment(['value' => 10.37])
+            ->assertJsonFragment(['start' => 200])
+            ->assertJsonFragment(['value' => 0]);
+            // ->assertJsonFragment(['price_ranges' => [
+            //     [
+            //         'start' => 0,
+            //         'prices' => [
+            //             ['value' => 10.37],
+            //         ],
+            //     ],
+            //     [
+            //         'start' => 200,
+            //         'prices' => [
+            //             ['value' => 0],
+            //         ],
+            //     ],
+            // ]]);
+            // Doesnt work bacause of extra shit in the array
 
         $this->assertDatabaseHas('shipping_methods', $shipping_method);
     }
@@ -104,17 +155,33 @@ class ShippingMethodTest extends TestCase
 
         $shipping_method = [
             'name' => 'Test 2',
-            'price' => 5.23,
             'public' => false,
         ];
 
         $response = $this->patchJson(
             '/shipping-methods/id:' . $this->shipping_method->getKey(),
-            $shipping_method,
+            $shipping_method + [
+                'price_ranges' => [
+                    [
+                        'start' => 0,
+                        'value' => 10.37,
+                    ],
+                    [
+                        'start' => 200,
+                        'value' => 0,
+                    ],
+                ],
+            ],
         );
+
         $response
             ->assertOk()
-            ->assertJson(['data' => $shipping_method]);
+            ->assertJson(['data' => $shipping_method])
+            ->assertJsonCount(2, 'data.price_ranges')
+            ->assertJsonFragment(['start' => 0])
+            ->assertJsonFragment(['value' => 10.37])
+            ->assertJsonFragment(['start' => 200])
+            ->assertJsonFragment(['value' => 0]);
 
         $this->assertDatabaseHas(
             'shipping_methods',
