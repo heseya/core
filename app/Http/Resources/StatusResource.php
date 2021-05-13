@@ -12,6 +12,7 @@ class StatusResource extends Resource
             'id' => $this->getKey(),
             'name' => $this->name,
             'color' => $this->color,
+            'cancel' => $this->cancel,
             'description' => $this->description,
         ];
     }
