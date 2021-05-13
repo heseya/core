@@ -19,11 +19,11 @@ class Price extends Model
      *   type="number",
      *   example=19.97,
      * )
-     * 
+     *
      * @OA\Property(
-     *   property="region_id",
+     *   property="model_id",
      *   type="string",
-     *   example=null,
+     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
      * )
      */
 
@@ -34,7 +34,7 @@ class Price extends Model
      */
     protected $fillable = [
         'value',
-        'region_id'
+        'model_id',
     ];
 
     /**

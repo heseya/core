@@ -11,6 +11,7 @@ class ShippingMethodResource extends Resource
         return [
             'id' => $this->getKey(),
             'name' => $this->name,
+            'price' => $this->price,
             'public' => $this->public,
             'black_list' => $this->black_list,
             'payment_methods' => PaymentMethodResource::collection($this->paymentMethods),

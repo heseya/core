@@ -45,7 +45,10 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
             });
         }
 
-        return ShippingMethodResource::collection($query->get());
+        $shippingMethods = $query->get();
+        $shippingMethods->each(fn ($m) => $m->price = $m->getPrice($request->input('cart_value', 0)));
+
+        return ShippingMethodResource::collection($shippingMethods);
     }
 
     public function store(Request $request)

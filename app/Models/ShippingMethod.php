@@ -136,8 +136,11 @@ class ShippingMethod extends Model
 
     public function getPrice(float $orderTotal): float
     {
-        return $this->priceRanges()->where('start', '<=', $orderTotal)
-            ->orderBy('start', 'desc')->firstOrFail()
-            ->prices()->firstOrFail()->value;
+        $priceRange = $this->priceRanges()
+            ->where('start', '<=', $orderTotal)
+            ->orderBy('start', 'desc')
+            ->first();
+
+        return $priceRange ? $priceRange->prices()->first()->value : 0;
     }
 }

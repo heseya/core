@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
  * @OA\Schema()
@@ -48,8 +49,8 @@ class PriceRange extends Model
      *   @OA\Items(ref="#/components/schemas/Price"),
      * )
      */
-    public function prices(): HasMany
+    public function prices(): MorphMany
     {
-        return $this->hasMany(Price::class, 'price_range_id');
+        return $this->morphMany(Price::class, 'model');
     }
 }
