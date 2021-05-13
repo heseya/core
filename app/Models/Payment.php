@@ -61,6 +61,7 @@ class Payment extends Model
         'amount',
         'redirect_url',
         'continue_url',
+        'created_at',
     ];
 
     protected $casts = [
