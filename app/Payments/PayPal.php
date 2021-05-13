@@ -4,6 +4,7 @@ namespace App\Payments;
 
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Srmklive\PayPal\Facades\PayPal as PayPalMethod;
 
 class PayPal implements PaymentMethod
@@ -36,13 +37,20 @@ class PayPal implements PaymentMethod
 
     public static function translateNotification(Request $request)
     {
-         $request->validate([
+        Log::info('PayPal Response', $request->all());
+
+        $request->validate([
             'txn_id' => ['required', 'string'],
             'payment_status' => ['required', 'string'],
             'mc_gross' => ['required'],
-         ]);
+        ]);
 
         $payment = Payment::findOrFail($request->input('item_number'));
+
+        $provider = PayPalMethod::setProvider();
+        $provider->setApiCredentials(config('paypal'));
+        $provider->setAccessToken($provider->getAccessToken());
+        $provider->capturePaymentOrder($payment->external_id);
 
         if (
             $request->input('payment_status') === 'Completed' &&
