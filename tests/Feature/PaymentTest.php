@@ -105,7 +105,6 @@ class PaymentTest extends TestCase
             'txn_id' => $payment->external_id,
             'mc_gross' => number_format($this->order->amount, 2, '.' ,''),
             'payment_status' => 'Completed',
-            'item_number' => $payment->getKey(),
         ]);
 
         $response->assertOk();
