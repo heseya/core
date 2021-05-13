@@ -4,6 +4,7 @@ namespace App\Payments;
 
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Srmklive\PayPal\Facades\PayPal as PayPalMethod;
 
 class PayPal implements PaymentMethod
@@ -19,6 +20,8 @@ class PayPal implements PaymentMethod
             'purchase_units' => [
                 [
                     'amount' => [
+                        'item_name' => 'Order ' . $payment->order->code,
+                        'item_number' => $payment->getKey(),
                         'currency_code' => $payment->order->currency,
                         'value' => $payment->amount,
                     ],
@@ -34,25 +37,31 @@ class PayPal implements PaymentMethod
 
     public static function translateNotification(Request $request)
     {
-         $request->validate([
-            'txn_id' => ['required', 'string'],
-            'payment_status' => ['required', 'string'],
-            'mc_gross' => ['required'],
-         ]);
+        Log::info('PayPal Response', $request->all());
+
+        $request->validate([
+            'txn_id' => 'required',
+            'mc_gross' => 'required',
+            'payment_status' => 'required',
+        ]);
+
+        $provider = PayPalMethod::setProvider();
+        $provider->setApiCredentials(config('paypal'));
+        $provider->setAccessToken($provider->getAccessToken());
+        $provider->capturePaymentOrder($request->input('txn_id'));
 
         $payment = Payment::where('external_id', $request->input('txn_id'))->firstOrFail();
+        Log::info('PayPal Response find model', $payment->toArray());
 
         if (
             $request->input('payment_status') === 'Completed' &&
-            $request->input('mc_gross') === number_format($payment->order->amount, 2, '.', '')
+            $request->input('mc_gross') === number_format($payment->abount, 2, '.', '')
         ) {
             $payment->update([
                 'payed' => true,
             ]);
-
-            return response()->json(null);
         }
 
-        return response()->json(null, 400);
+        return response(null);
     }
 }
