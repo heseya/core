@@ -222,15 +222,15 @@ class Schema extends Model
     public function options(): HasMany
     {
         return $this->hasMany(Option::class)
-            ->orderBy('price')
+            ->orderBy('created_at')
             ->orderBy('name');
     }
 
     /**
      * @OA\Property(
      *   property="used_schemas",
-     *   description="Array of schema id's given schema uses e.g. 
-     *     multiply_schema type uses one schema of which price it miltiplies",
+     *   description="Array of schema id's given schema uses e.g.
+     *   multiply_schema type uses one schema of which price it miltiplies",
      *   type="array",
      *   @OA\Items(
      *     type="string",
@@ -247,7 +247,7 @@ class Schema extends Model
     {
         return $this->belongsToMany(Schema::class, 'schema_used_schemas', 'used_schema_id', 'schema_id');
     }
-    
+
     public function getPrice($value, $schemas): float {
         $schemaKeys = collect($schemas)->keys();
 
