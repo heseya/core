@@ -32,6 +32,7 @@ class OrderResource extends Resource
             'products' => OrderProductResource::collection($this->products),
             'payments' => PaymentResource::collection($this->payments),
             'shipping_number' => $this->shipping_number,
+            'payable' => $this->payable,
         ];
     }
 }

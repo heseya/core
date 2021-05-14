@@ -50,7 +50,7 @@ class Order extends Model
      *   type="string",
      *   example="630552359128340015809770",
      * )
-     * 
+     *
      * @OA\Property(
      *   property="shipping_price",
      *   type="float",
@@ -128,14 +128,25 @@ class Order extends Model
      * @OA\Property(
      *   property="payed",
      *   type="boolean",
-     *   example=true,
      * )
-     *
-     * @return bool
      */
     public function isPayed(): bool
     {
         return $this->summary === $this->payedAmount;
+    }
+
+    /**
+     * @OA\Property(
+     *   property="payable",
+     *   type="boolean",
+     * )
+     */
+    public function getPayableAttribute(): bool
+    {
+        return
+            !$this->isPayed() &&
+            !$this->status->cancel &&
+            $this->shippingMethod->paymentMethods()->count() > 0;
     }
 
     /**
