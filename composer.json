@@ -14,8 +14,11 @@
         "laravel/framework": "^8.28",
         "laravel/passport": "^10.1",
         "laravel/tinker": "^2.6",
+        "league/omnipay": "^3",
+        "omnipay/common": "^3",
+        "omnipay/paypal": "^3.0",
         "parsedown/laravel": "^1.2",
-        "pay-now/paynow-php-sdk": "^1.1",
+        "php-http/curl-client": "^2.2",
         "propaganistas/laravel-phone": "^4.3",
         "srmklive/paypal": "^3.0"
     },

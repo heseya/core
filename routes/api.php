@@ -29,7 +29,7 @@ Route::prefix('orders')->group(function () {
     Route::post('{order:code}/pay/{method}', 'PaymentController@store');
 });
 
-Route::post('payments/{method}', 'PaymentController@update');
+Route::any('payments/{method}', 'PaymentController@update');
 
 Route::prefix('pages')->group(function () {
     Route::get(null, 'PageController@index');
