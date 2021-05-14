@@ -223,7 +223,7 @@ class Schema extends Model
     {
         return $this->hasMany(Option::class)
             ->orderBy('created_at')
-            ->orderBy('name');
+            ->orderBy('name', 'DESC');
     }
 
     /**
