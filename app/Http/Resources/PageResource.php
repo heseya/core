@@ -21,7 +21,7 @@ class PageResource extends Resource
         return [
             'content_md' => $this->content_md,
             'content_html' => $this->content_html,
-            'meta_description' => trim(strip_tags($this->content_html)),
+            'meta_description' => str_replace("\n", ' ', trim(strip_tags($this->content_html))),
         ];
     }
 }

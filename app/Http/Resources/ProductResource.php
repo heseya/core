@@ -30,7 +30,7 @@ class ProductResource extends Resource
             'original_id' => $this->original_id,
             'description_md' => $this->description_md,
             'description_html' => $this->description_html,
-            'meta_description' => trim(strip_tags($this->description_html)),
+            'meta_description' => str_replace("\n", ' ', trim(strip_tags($this->content_html))),
             'gallery' => MediaResource::collection($this->media),
             'schemas' => SchemaResource::collection($this->schemas),
         ];
