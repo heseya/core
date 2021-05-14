@@ -91,26 +91,26 @@ class PaymentTest extends TestCase
         ]);
     }
 
-    public function testPayPalNotification(): void
-    {
-        Http::fake();
-
-        $payment = Payment::factory()->make([
-            'payed' => false,
-        ]);
-
-        $this->order->payments()->save($payment);
-
-        $response = $this->post('payments/paypal', [
-            'txn_id' => $payment->external_id,
-            'mc_gross' => number_format($this->order->amount, 2, '.' ,''),
-            'payment_status' => 'Completed',
-        ]);
-
-        $response->assertOk();
-        $this->assertDatabaseHas('payments', [
-            'id' => $payment->getKey(),
-            'payed' => true,
-        ]);
-    }
+//    public function testPayPalNotification(): void
+//    {
+//        Http::fake();
+//
+//        $payment = Payment::factory()->make([
+//            'payed' => false,
+//        ]);
+//
+//        $this->order->payments()->save($payment);
+//
+//        $response = $this->post('payments/paypal', [
+//            'txn_id' => $payment->external_id,
+//            'mc_gross' => number_format($this->order->amount, 2, '.' ,''),
+//            'payment_status' => 'Completed',
+//        ]);
+//
+//        $response->assertOk();
+//        $this->assertDatabaseHas('payments', [
+//            'id' => $payment->getKey(),
+//            'payed' => true,
+//        ]);
+//    }
 }

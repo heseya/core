@@ -11,9 +11,9 @@ class PayPal implements PaymentMethod
     public static function generateUrl(Payment $payment): array
     {
         $gateway = Omnipay::create('PayPal_Rest');
-        $gateway->setClientId(config('paypal.sandbox.client_id'));
-        $gateway->setSecret(config('paypal.sandbox.client_secret'));
-        $gateway->setTestMode(true); //set it to 'false' when go live
+        $gateway->setClientId(config('paypal.client_id'));
+        $gateway->setSecret(config('paypal.client_secret'));
+        $gateway->setTestMode(config('paypal.sandbox'));
 
         $response = $gateway->purchase([
             'amount' => $payment->amount,
@@ -39,9 +39,9 @@ class PayPal implements PaymentMethod
     public static function translateNotification(Request $request)
     {
         $gateway = Omnipay::create('PayPal_Rest');
-        $gateway->setClientId(config('paypal.sandbox.client_id'));
-        $gateway->setSecret(config('paypal.sandbox.client_secret'));
-        $gateway->setTestMode(true); //set it to 'false' when go live
+        $gateway->setClientId(config('paypal.client_id'));
+        $gateway->setSecret(config('paypal.client_secret'));
+        $gateway->setTestMode(config('paypal.sandbox'));
 
         $transaction = $gateway->completePurchase([
             'payer_id' => $request->input('PayerID'),
