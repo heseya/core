@@ -1,11 +1,11 @@
 <mjml>
   <mj-body background-color="#F4F4F4">
-    <mj-section background-color="#ffffff" background-repeat="repeat" padding-bottom="0px" padding-top="20px" text-align="center">
+    <mj-section background-color="#fff" background-repeat="repeat" padding-bottom="0px" padding-top="20px" text-align="center">
       <mj-column>
-        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="32px" line-height="22px" padding-bottom="20px" padding-top="0px" padding="10px 25px">{{ config('app.name') }}</mj-text>
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="32px" line-height="22px" padding-bottom="20px" padding-top="0px" padding="10px 25px" text-transform="uppercase">{{ config('app.name') }}</mj-text>
       </mj-column>
     </mj-section>
-    <mj-section background-color="#ffffff" background-repeat="repeat" background-size="auto" padding-bottom="0px" padding-top="30px" padding="20px 0" text-align="center">
+    <mj-section background-color="#fff" background-repeat="repeat" background-size="auto" padding-bottom="0px" padding-top="30px" padding="20px 0" text-align="center">
       <mj-column>
         <mj-text align="left" color="#55575d" font-family="Arial, sans-serif" font-size="30px" line-height="22px" padding-bottom="10px" padding-top="10px" padding="10px 25px">
           <p style="line-height: 30px; margin: 10px 0; text-align: center; color:#151e23; font-size:30p; font-family:Arial,sans-serif">Order <b>{{ $order->code }}</b> Confirmation</p>
@@ -15,7 +15,7 @@
         </mj-text>
       </mj-column>
     </mj-section>
-    <mj-section background-color="#ffffff" padding-bottom="0">
+    <mj-section background-color="#fff" padding-bottom="0">
       <mj-column>
         <mj-table>
           <tr style="border-bottom:1px solid #ecedee;text-align:left;padding:15px 0;">
@@ -30,12 +30,23 @@
         </mj-table>
       </mj-column>
     </mj-section>
-    <mj-section background-color="#ffffff" background-repeat="repeat" background-size="auto" padding-bottom="0px" text-align="center">
+    <mj-section background-color="#fff" background-repeat="repeat" background-size="auto" padding-bottom="0px" text-align="center">
       <mj-column>
         <mj-text align="right" color="#000" font-family="Arial, sans-serif" font-size="14px" line-height="22px">
-          <p> Cart: <b>{{ $order->summary - $order->shipping_price }} {{ $order->currency }}</b><br /> Delivery: <b>{{ $order->shipping_price }} {{ $order->currency }}</b><br />
+          <p> Delivery: <b>{{ $order->shipping_method->name }}</b><br /> Delivery price: <b>{{ $order->shipping_price }} {{ $order->currency }}</b><br /> Cart: <b>{{ $order->summary - $order->shipping_price }} {{ $order->currency }}</b><br />
           </p>
           <p style="font-size: 20px">Summary: <b>{{ $order->summary }} {{ $order->currency }}</b><br /></p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#fff" background-repeat="repeat">
+      <mj-column>
+        <mj-text align="center" color="#666" font-family="Arial, sans-serif" font-size="12px" line-height="17px">
+          <h3>PONIŻEJ ZNAJDZIESZ PRZYDATNE INFORMACJE</h3>
+          <b>Kontakt i pytania</b><br /> W przypadku jakichkolwiek pytań związanych z zamówieniem prosimy o kontakt drogą mailową na adres <a href="mailto:***REMOVED***.contact@gmail.com">***REMOVED***.contact@gmail.com</a> powołując się na numer zamówienia.<br /><br />
+          <b>Regulamin sklepu i polityka prywatności</b><br /> Regulamin oraz politykę prywatności znajdziesz na stronie: <a href="https://www.***REMOVED***.eu/terms-conditions">www.***REMOVED***.eu/terms-conditions</a><br /><br />
+          <b>Zwroty i wymiana</b><br /> Szczegółowe informacje na temat zwrotów i reklamacji oraz odpowiednie formularze znajdziesz na stronie: <a href="https://www.***REMOVED***.eu/return-policy">www.***REMOVED***.eu/return-policy</a><br /><br />
+          </p>
         </mj-text>
       </mj-column>
     </mj-section>
