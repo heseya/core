@@ -32,8 +32,7 @@
     </mj-section>
     <mj-section background-color="#fff" background-repeat="repeat" background-size="auto" padding-bottom="0px" text-align="center">
       <mj-column>
-        <mj-text align="right" color="#000" font-family="Arial, sans-serif" font-size="14px" line-height="22px">
-          <p> Delivery: <b>{{ $order->shipping_method->name }}</b><br /> Delivery price: <b>{{ $order->shipping_price }} {{ $order->currency }}</b><br /> Cart: <b>{{ $order->summary - $order->shipping_price }} {{ $order->currency }}</b><br />
+        <mj-text align="right" color="#000" font-family="Arial, sans-serif" font-size="14px" line-height="22px"> @if ($order->shippingMethod) <p> Delivery: <b>{{ $order->shippingMethod->name }}</b><br /> @endif Delivery price: <b>{{ $order->shipping_price }} {{ $order->currency }}</b><br /> Cart: <b>{{ $order->summary - $order->shipping_price }} {{ $order->currency }}</b><br />
           </p>
           <p style="font-size: 20px">Summary: <b>{{ $order->summary }} {{ $order->currency }}</b><br /></p>
         </mj-text>
