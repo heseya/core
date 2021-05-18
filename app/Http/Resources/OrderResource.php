@@ -17,6 +17,7 @@ class OrderResource extends Resource
             'summary_payed' => $this->payed,
             'shipping_price' => $this->shipping_price,
             'payed' => $this->isPayed(),
+            'comment' => $this->comment,
             'created_at' => $this->created_at,
             'status' => $this->status ? StatusResource::make($this->status) : null,
             'delivery_address' => $this->deliveryAddress ? AddressResource::make($this->deliveryAddress) : null,
@@ -28,7 +29,6 @@ class OrderResource extends Resource
         return [
             'invoice_address' => AddressResource::make($this->invoiceAddress),
             'shipping_method' => ShippingMethodResource::make($this->shippingMethod),
-            'comment' => $this->comment,
             'products' => OrderProductResource::collection($this->products),
             'payments' => PaymentResource::collection($this->payments),
             'shipping_number' => $this->shipping_number,
