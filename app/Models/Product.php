@@ -101,6 +101,7 @@ class Product extends Model
         'name',
         'created_at',
         'updated_at',
+        'order',
     ];
 
     protected string $defaultSortBy = 'created_at';

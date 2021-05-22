@@ -6,6 +6,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Schema;
+use Carbon\Carbon;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 
@@ -29,6 +30,7 @@ class ProductTest extends TestCase
             'brand_id' => $brand->getKey(),
             'category_id' => $category->getKey(),
             'public' => true,
+            'order' => 1,
         ]);
 
         $schema = $this->product->schemas()->create([
@@ -140,6 +142,7 @@ class ProductTest extends TestCase
         $this->expected = array_merge($this->expected_short, [
             'description_md' => $this->product->description_md,
             'description_html' => parsedown($this->product->description_md),
+            'meta_description' => strip_tags($this->product->description_html),
             'gallery' => [],
             'schemas' => [[
                 'name' => 'Rozmiar',
@@ -149,16 +152,6 @@ class ProductTest extends TestCase
                 'price' => 0,
                 'options' => [
                     [
-                        'name' => 'L',
-                        'price' => 0,
-                        'disabled' => false,
-                        'available' => false,
-                        'items' => [[
-                            'name' => 'Koszulka L',
-                            'sku' => 'K001/L',
-                        ]],
-                    ],
-                    [
                         'name' => 'XL',
                         'price' => 0,
                         'disabled' => false,
@@ -166,6 +159,16 @@ class ProductTest extends TestCase
                         'items' => [[
                             'name' => 'Koszulka XL',
                             'sku' => 'K001/XL',
+                        ]],
+                    ],
+                    [
+                        'name' => 'L',
+                        'price' => 0,
+                        'disabled' => false,
+                        'available' => false,
+                        'items' => [[
+                            'name' => 'Koszulka L',
+                            'sku' => 'K001/L',
                         ]],
                     ],
                 ],

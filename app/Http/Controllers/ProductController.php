@@ -30,7 +30,7 @@ class ProductController extends Controller implements ProductControllerSwagger
     public function index(ProductIndexRequest $request): JsonResource
     {
         $query = Product::search($request->validated())
-            ->sort($request->input('sort'))
+            ->sort($request->input('sort', 'order'))
             ->with([
                 'brand',
                 'media',
