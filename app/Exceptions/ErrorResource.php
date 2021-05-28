@@ -4,7 +4,7 @@ namespace App\Exceptions;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ErrorResource extends JsonResource
+final class ErrorResource extends JsonResource
 {
     /**
      * @var string

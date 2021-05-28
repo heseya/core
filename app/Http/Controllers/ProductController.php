@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ProductController extends Controller implements ProductControllerSwagger
 {
@@ -82,6 +84,10 @@ class ProductController extends Controller implements ProductControllerSwagger
 
     public function show(ProductShowRequest $request, Product $product): JsonResource
     {
+        if (!Auth::check() && !$product->isPublic()) {
+            throw new NotFoundHttpException;
+        }
+
         return ProductResource::make($product);
     }
 
@@ -115,6 +121,6 @@ class ProductController extends Controller implements ProductControllerSwagger
     {
         $product->delete();
 
-        return response()->json(null, 204);
+        return Response::json(null, 204);
     }
 }

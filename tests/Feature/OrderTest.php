@@ -117,7 +117,7 @@ class OrderTest extends TestCase
                 'city' => 'Bydgoszcz',
                 'country' => 'PL',
             ],
-            'products' => [],
+            'items' => [],
         ]);
 
         $response->assertStatus(422);
