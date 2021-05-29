@@ -81,7 +81,7 @@ class PageTest extends TestCase
     public function testViewHidden(): void
     {
         $response = $this->getJson('/pages/' . $this->page_hidden->slug);
-        $response->assertUnauthorized();
+        $response->assertNotFound();
 
         $response = $this->getJson('/pages/id:' . $this->page_hidden->getKey());
         $response->assertUnauthorized();

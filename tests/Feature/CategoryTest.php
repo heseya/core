@@ -120,7 +120,7 @@ class CategoryTest extends TestCase
         ]);
 
         $response = $this->delete('/categories/id:' . $this->category->getKey());
-        $response->assertStatus(409);
+        $response->assertStatus(400);
         $this->assertDatabaseHas('categories', $this->category->toArray());
     }
 }

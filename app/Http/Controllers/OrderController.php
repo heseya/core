@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\OrderCreated;
 use App\Events\OrderStatusUpdated;
-use App\Exceptions\Error;
+use App\Exceptions\StoreException;
 use App\Http\Controllers\Swagger\OrderControllerSwagger;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderIndexRequest;
@@ -217,7 +217,7 @@ class OrderController extends Controller implements OrderControllerSwagger
     public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResponse
     {
         if ($order->status->cancel) {
-            return Error::abort('Nie można zmienić statusu anulowanego zamówienia', 400);
+            throw new StoreException(__('admin.error.order_change_status_canceled'));
         }
 
         $status = Status::findOrFail($request->input('status_id'));

@@ -201,9 +201,6 @@ class ProductTest extends TestCase
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
-
-        $response = $this->getJson('/products/' . $this->hidden_products[0]->slug);
-        $response->assertForbidden();
     }
 
     public function testShowAdminUnauthorized(): void
@@ -227,7 +224,7 @@ class ProductTest extends TestCase
     {
         foreach ($this->hidden_products as $product) {
             $response = $this->getJson('/products/' . $product->slug);
-            $response->assertForbidden();
+            $response->assertNotFound();
         }
     }
 
@@ -363,8 +360,5 @@ class ProductTest extends TestCase
         $response = $this->actingAs($this->user)->deleteJson('/products/id:' . $this->product->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($this->product);
-
-        $response = $this->getJson('/products/id:' . $this->product->getKey());
-        $response->assertNotFound();
     }
 }

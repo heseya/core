@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\Error;
+use App\Exceptions\StoreException;
 use App\Http\Controllers\Swagger\BrandControllerSwagger;
 use App\Http\Requests\BrandCreateRequest;
 use App\Http\Requests\BrandIndexRequest;
 use App\Http\Requests\BrandOrderRequest;
 use App\Http\Requests\BrandUpdateRequest;
-use App\Http\Requests\CategoryOrderRequest;
 use App\Http\Resources\BrandResource;
 use App\Models\Brand;
-use App\Models\Category;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Response;
 
 class BrandController extends Controller implements BrandControllerSwagger
 {
@@ -52,20 +51,17 @@ class BrandController extends Controller implements BrandControllerSwagger
             Brand::where('id', $id)->update(['order' => $key]);
         }
 
-        return response()->json(null, 204);
+        return Response::json(null, 204);
     }
 
     public function destroy(Brand $brand): JsonResponse
     {
         if ($brand->products()->count() > 0) {
-            return Error::abort(
-                'Brand can\'t be deleted, because has relations.',
-                409,
-            );
+            throw new StoreException(__('admin.error.delete_with_relations'));
         }
 
         $brand->delete();
 
-        return response()->json(null, 204);
+        return Response::json(null, 204);
     }
 }

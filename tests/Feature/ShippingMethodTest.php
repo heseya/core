@@ -213,7 +213,7 @@ class ShippingMethodTest extends TestCase
         ]);
 
         $response = $this->deleteJson('/shipping-methods/id:' . $this->shipping_method->getKey());
-        $response->assertStatus(409);
+        $response->assertStatus(400);
         $this->assertDatabaseHas('shipping_methods', $this->shipping_method->toArray());
     }
 }

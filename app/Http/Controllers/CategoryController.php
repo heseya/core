@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\Error;
+use App\Exceptions\StoreException;
 use App\Http\Controllers\Swagger\CategoryControllerSwagger;
 use App\Http\Requests\CategoryCreateRequest;
 use App\Http\Requests\CategoryIndexRequest;
@@ -13,6 +13,7 @@ use App\Models\Category;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Response;
 
 class CategoryController extends Controller implements CategoryControllerSwagger
 {
@@ -50,20 +51,17 @@ class CategoryController extends Controller implements CategoryControllerSwagger
             Category::where('id', $id)->update(['order' => $key]);
         }
 
-        return response()->json(null, 204);
+        return Response::json(null, 204);
     }
 
-    public function destroy(Category $category)
+    public function destroy(Category $category): JsonResponse
     {
         if ($category->products()->count() > 0) {
-            return Error::abort(
-                "Category can't be deleted, because has relations.",
-                409,
-            );
+            throw new StoreException(__('admin.error.delete_with_relations'));
         }
 
         $category->delete();
 
-        return response()->json(null, 204);
+        return Response::json(null, 204);
     }
 }

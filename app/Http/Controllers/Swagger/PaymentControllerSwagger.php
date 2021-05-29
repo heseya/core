@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Swagger;
 
-use App\Http\Resources\PaymentResource;
+use App\Http\Requests\Payments\PaymentStoreRequest;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 interface PaymentControllerSwagger
 {
@@ -51,14 +52,8 @@ interface PaymentControllerSwagger
      *     )
      *   )
      * )
-     *
-     * @param Order $order
-     * @param string $method
-     * @param Request $request
-     *
-     * @return PaymentResource|JsonResponse|object
      */
-    public function store(Order $order, string $method, Request $request);
+    public function store(Order $order, string $method, PaymentStoreRequest $request): JsonResource;
 
     /**
      * @OA\Post(
@@ -78,11 +73,6 @@ interface PaymentControllerSwagger
      *     description="Success",
      *   )
      * )
-     *
-     * @param string $method
-     * @param Request $request
-     *
-     * @return JsonResponse|object
      */
     public function update(string $method, Request $request);
 }
