@@ -83,7 +83,6 @@ class User extends Model implements
     /**
      * Url to avatar.
      *
-     * @return string
      * @OA\Property(
      *   property="avatar",
      *   type="string",

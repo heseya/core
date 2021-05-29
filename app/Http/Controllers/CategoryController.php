@@ -4,17 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\CategoryControllerSwagger;
-use App\Http\Requests\CategoryIndexRequest;
 use App\Http\Requests\CategoryCreateRequest;
+use App\Http\Requests\CategoryIndexRequest;
 use App\Http\Requests\CategoryOrderRequest;
 use App\Http\Requests\CategoryUpdateRequest;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller implements CategoryControllerSwagger
 {

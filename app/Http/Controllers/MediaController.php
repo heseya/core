@@ -19,7 +19,7 @@ class MediaController extends Controller implements MediaControllerSwagger
                 file_get_contents($request->file('file')),
                 'file',
             )
-            ->withHeaders(['Authorization' => config('silverbox.key'),])
+            ->withHeaders(['Authorization' => config('silverbox.key')])
             ->post(config('silverbox.host') . '/' . config('silverbox.client'));
 
         if ($response->failed()) {

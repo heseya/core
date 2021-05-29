@@ -18,7 +18,7 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    const CONTRACTS = [
+    private const CONTRACTS = [
         AnalyticsServiceContract::class => AnalyticsService::class,
         AppServiceContract::class => AppService::class,
         NameServiceContract::class => NameService::class,
@@ -29,10 +29,8 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * Register any application services.
-     *
-     * @return void
      */
-    public function register()
+    public function register(): void
     {
         foreach (self::CONTRACTS as $abstract => $concrete) {
             $this->app->bind($abstract, $concrete);
@@ -41,11 +39,8 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        //
     }
 }
