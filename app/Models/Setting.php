@@ -18,12 +18,12 @@ class Setting extends Model
      *   property="value",
      *   type="string",
      * )
-     * 
+     *
      * @OA\Property(
      *   property="public",
      *   type="boolean",
      * )
-     * 
+     *
      * @OA\Property(
      *   property="permanent",
      *   type="boolean",
@@ -40,7 +40,8 @@ class Setting extends Model
         'public' => 'bool',
     ];
 
-    public function getPermanentAttribute() {
-        return config("settings.$this->name") !== null;
+    public function getPermanentAttribute(): bool
+    {
+        return config('settings.' . $this->name) !== null;
     }
 }

@@ -21,11 +21,6 @@ class Order extends Model
 {
     use HasFactory, Searchable, Sortable, Notifiable;
 
-    public function __construct(array $attributes = [])
-    {
-        parent::__construct($attributes);
-    }
-
     /**
      * @OA\Property(
      *   property="id",
@@ -89,18 +84,23 @@ class Order extends Model
     protected string $defaultSortBy = 'created_at';
     protected string $defaultSortDirection = 'desc';
 
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+    }
+
     /**
      * @OA\Property(
      *   property="summary",
      *   type="number",
      * )
-    */
+     */
     public function getSummaryAttribute(): float
     {
         $value = $this->shipping_price;
 
         foreach ($this->products as $item) {
-            $value += ($item->price * $item->quantity);
+            $value += $item->price * $item->quantity;
         }
 
         return round($value, 2);
@@ -143,8 +143,7 @@ class Order extends Model
      */
     public function getPayableAttribute(): bool
     {
-        return
-            !$this->isPayed() &&
+        return !$this->isPayed() &&
             !$this->status->cancel &&
             $this->shippingMethod->paymentMethods()->count() > 0;
     }

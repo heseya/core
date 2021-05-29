@@ -145,13 +145,13 @@ class Product extends Model
      */
     public function schemas(): BelongsToMany
     {
-         $query = $this
+        $query = $this
             ->belongsToMany(Schema::class, 'product_schemas')
             ->orderByPivot('order');
 
-         if (!Auth::check()) {
-             $query->where('hidden', false);
-         }
+        if (!Auth::check()) {
+            $query->where('hidden', false);
+        }
 
         return $query;
     }

@@ -16,8 +16,8 @@ use Illuminate\Validation\ValidationException;
 /**
  * @OA\Schema(
  *   description="Schema allows a product to take on new optional characteristics that can be chosen by the user
-     and influences the price based on said choices. Schemas can use other schemas for their price calculation
-     e.g. multiply_schema multiplies price of different schema based on it's own value.
+ *   and influences the price based on said choices. Schemas can use other schemas for their price calculation
+ *   e.g. multiply_schema multiplies price of different schema based on it's own value.
  *   SCHEMAS USED BY OTHERS SHOULD NOT AFFECT THE PRICE
  *   (schema multiplied by multiply_schema adds 0 to the price while multiply_schema adds the multiplied value)",
  * )
@@ -248,7 +248,8 @@ class Schema extends Model
         return $this->belongsToMany(Schema::class, 'schema_used_schemas', 'used_schema_id', 'schema_id');
     }
 
-    public function getPrice($value, $schemas): float {
+    public function getPrice($value, $schemas): float
+    {
         $schemaKeys = collect($schemas)->keys();
 
         if ($this->usedBySchemas()->whereIn(
@@ -260,7 +261,8 @@ class Schema extends Model
         return $this->getUsedPrice($value, $schemas);
     }
 
-    private function getUsedPrice($value, $schemas): float {
+    private function getUsedPrice($value, $schemas): float
+    {
         $price = $this->price;
 
         if ($this->type === 4) {
@@ -270,7 +272,7 @@ class Schema extends Model
         }
 
         if ($this->type === 6) {
-            $price *= (double) $value;
+            $price *= (float) $value;
         }
 
         if ($this->type === 7) {

@@ -46,7 +46,7 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
         }
 
         $shippingMethods = $query->get();
-        $shippingMethods->each(fn ($m) => $m->price = $m->getPrice($request->input('cart_value', 0)));
+        $shippingMethods->each(fn ($method) => $method->price = $method->getPrice($request->input('cart_value', 0)));
 
         return ShippingMethodResource::collection($shippingMethods);
     }
@@ -103,7 +103,6 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
 
         if ($request->has('price_ranges')) {
             $shippingMethod->priceRanges()->delete();
-
 
             foreach ($request->input('price_ranges') as $range) {
                 $priceRange = $shippingMethod->priceRanges()->firstOrCreate([
