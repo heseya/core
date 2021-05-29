@@ -16,9 +16,7 @@ abstract class Controller extends BaseController
      *   title="Heseya Store API",
      *   version="1.0.0",
      * )
-     */
-
-    /**
+     *
      * @OA\SecurityScheme(
      *   type="oauth2",
      *   name="oauth",

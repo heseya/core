@@ -200,7 +200,6 @@ class OrderController extends Controller implements OrderControllerSwagger
     public function verify(OrderItemsRequest $request): JsonResponse
     {
         foreach ($request->input('items', []) as $item) {
-
             $product = Product::findOrFail($item['product_id']);
             $schemas = $item['schemas'] ?? [];
 

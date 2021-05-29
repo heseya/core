@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Response;
 use Laravel\Passport\Passport;
 
 class AuthController extends Controller implements AuthControllerSwagger
@@ -40,14 +41,16 @@ class AuthController extends Controller implements AuthControllerSwagger
 
     public function logout(Request $request): JsonResponse
     {
-        if ($token = $request->user()->token()) {
+        $token = $request->user()->token();
+
+        if ($token) {
             $token->update([
                 'revoked' => true,
                 'expires_at' => Carbon::now(),
             ]);
         }
 
-        return response()->json(null, 204);
+        return Response::json(null, 204);
     }
 
     public function changePassword(PasswordChangeRequest $request): JsonResponse

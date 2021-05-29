@@ -1,20 +1,20 @@
 {
     "name": "heseya/store-api",
     "type": "project",
-    "description": "E-Commerce Dog API by Heseya",
+    "description": "Store API by Heseya",
     "license": "proprietary",
     "require": {
         "php": "^7.4|^8.0",
         "darkaonline/l5-swagger": "^8.0",
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
-        "guzzlehttp/guzzle": "^7.2",
+        "guzzlehttp/guzzle": "^7.3",
         "heseya/laravel-searchable": "^1.0",
         "jenssegers/agent": "^2.6",
-        "laravel/framework": "^8.28",
+        "laravel/framework": "^8.44",
         "laravel/passport": "^10.1",
         "laravel/tinker": "^2.6",
-        "league/omnipay": "^3",
+        "league/omnipay": "^3.1",
         "omnipay/common": "^3",
         "omnipay/paypal": "^3.0",
         "parsedown/laravel": "^1.2",
@@ -23,7 +23,7 @@
         "srmklive/paypal": "^3.0"
     },
     "require-dev": {
-        "facade/ignition": "^2.5",
+        "facade/ignition": "^2.9",
         "fzaninotto/faker": "^1.9",
         "mbezhanov/faker-provider-collection": "^1.2",
         "mockery/mockery": "^1.4",

@@ -20,9 +20,9 @@ Route::prefix('products')->group(function () {
 
 Route::prefix('orders')->group(function () {
     Route::get(null, 'OrderController@index')->middleware('auth:api');
-    Route::post(null,'OrderController@store');
-    Route::post('sync','OrderController@sync')->middleware('auth:api');
-    Route::post('verify','OrderController@verify');
+    Route::post(null, 'OrderController@store');
+    Route::post('sync', 'OrderController@sync')->middleware('auth:api');
+    Route::post('verify', 'OrderController@verify');
     Route::get('id:{order:id}', 'OrderController@show')->middleware('auth:api');
     Route::post('id:{order:id}/status', 'OrderController@updateStatus')->middleware('auth:api');
     Route::get('{order:code}', 'OrderController@showPublic');
