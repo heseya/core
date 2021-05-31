@@ -65,6 +65,10 @@ final class Handler extends ExceptionHandler
             $error = new Error;
         }
 
+        if (app()->bound('sentry') && $this->shouldReport($exception)) {
+            app('sentry')->captureException($exception);
+        }
+
         return ErrorResource::make($error)
             ->response()
             ->setStatusCode($error->code);

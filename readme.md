@@ -51,6 +51,9 @@ Deleting the environment
 docker-compose down -v
 ```
 
+## Deploy
+- Remember to config Sentry when deploying new instance!
+
 ## Code style
 Set your IDE to use the .editorconfig file. There is an extension for this in VS Code.
 
@@ -59,12 +62,23 @@ When writing the code for this project, follow rules from [Laravel best practice
 Additional:
 - all variables in this project should be `snake_case` and functions (relations too) `camelCase`,
 - variables containing links like `avatar_url` should always end with `_url`,
-- all models must have in uuid4 format,
-- all resources must contains id (uuid),
+- all models must have uuid4 formatted ID,
 - always get model id by getKey() method,
 - in tests use `getJson()`, `postJson()` etc.
 - in tests use `assertOk()`, `assertCreated()` etc.
-- sort 
+- `$x === null` > `is_null()`.
+
+## Tests
+Tests are automatically performed during CI. GitLab will not allow you to merge changes until they all pass. You can run tests locally with the command:
+```
+php artisan test
+```
+
+## Insights
+We use [PHP Insights](https://phpinsights.com/) to keep project clean.
+```
+php artisan insight
+```
 
 
 ## Docs
