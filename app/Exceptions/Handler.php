@@ -11,7 +11,7 @@ use Throwable;
 
 final class Handler extends ExceptionHandler
 {
-    private array $errors = [
+    protected array $errors = [
         AuthenticationException::class => [
             'message' => 'Unauthorized',
             'code' => 401,
@@ -26,6 +26,12 @@ final class Handler extends ExceptionHandler
         StoreException::class => [
             'code' => 400,
         ],
+    ];
+
+    protected array $sentryNoReport = [
+        StoreException::class,
+        ValidationException::class,
+        NotFoundHttpException::class,
     ];
 
     /**
@@ -65,7 +71,7 @@ final class Handler extends ExceptionHandler
             $error = new Error;
         }
 
-        if (app()->bound('sentry') && $this->shouldReport($exception)) {
+        if (!in_array($class, $this->sentryNoReport) && app()->bound('sentry')) {
             app('sentry')->captureException($exception);
         }
 
