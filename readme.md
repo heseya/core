@@ -62,7 +62,7 @@ When writing the code for this project, follow rules from [Laravel best practice
 Additional:
 - all variables in this project should be `snake_case` and functions (relations too) `camelCase`,
 - variables containing links like `avatar_url` should always end with `_url`,
-- all models must have in uuid4 formatted ID,
+- all models must have uuid4 formatted ID,
 - always get model id by getKey() method,
 - in tests use `getJson()`, `postJson()` etc.
 - in tests use `assertOk()`, `assertCreated()` etc.
