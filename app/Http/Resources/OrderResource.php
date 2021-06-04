@@ -18,7 +18,7 @@ class OrderResource extends Resource
             'shipping_price' => $this->shipping_price,
             'payed' => $this->isPayed(),
             'comment' => $this->comment,
-            'created_at' => $this->created_at->format('Y-m-d H:m:s'),
+            'created_at' => $this->created_at,
             'status' => $this->status ? StatusResource::make($this->status) : null,
             'delivery_address' => $this->deliveryAddress ? AddressResource::make($this->deliveryAddress) : null,
         ];

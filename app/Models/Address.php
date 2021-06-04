@@ -74,6 +74,11 @@ class Address extends Model
         'phone',
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);

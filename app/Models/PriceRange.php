@@ -25,8 +25,6 @@ class PriceRange extends Model
 
     /**
      * The attributes that are mass assignable.
-     *
-     * @var array
      */
     protected $fillable = [
         'start',
@@ -39,6 +37,8 @@ class PriceRange extends Model
      */
     protected $casts = [
         'start' => 'float',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /**

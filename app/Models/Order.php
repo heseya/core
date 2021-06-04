@@ -67,6 +67,11 @@ class Order extends Model
         'created_at',
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     protected array $searchable = [
         'search' => OrderSearch::class,
         'status_id',
