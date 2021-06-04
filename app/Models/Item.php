@@ -48,7 +48,12 @@ class Item extends Model
         'sku',
     ];
 
-    protected $searchable = [
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    protected array $searchable = [
         'name' => Like::class,
         'sku' => Like::class,
         'search' => ItemSearch::class,

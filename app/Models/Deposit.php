@@ -44,6 +44,11 @@ class Deposit extends Model
         'order_product_id',
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     public function items(): BelongsTo
     {
         return $this->belongsTo(Item::class);

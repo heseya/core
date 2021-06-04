@@ -38,6 +38,8 @@ class Setting extends Model
 
     protected $casts = [
         'public' => 'bool',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function getPermanentAttribute(): bool

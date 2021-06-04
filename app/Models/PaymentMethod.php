@@ -54,6 +54,8 @@ class PaymentMethod extends Model
      */
     protected $casts = [
         'public' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function shippingMethods(): BelongsToMany
