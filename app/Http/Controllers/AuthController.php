@@ -7,9 +7,15 @@ use App\Http\Controllers\Swagger\AuthControllerSwagger;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Resources\AuthResource;
+use App\Http\Resources\LoginHistoryResource;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Response;
+use Laravel\Passport\Passport;
 
 class AuthController extends Controller implements AuthControllerSwagger
 {
@@ -25,7 +31,26 @@ class AuthController extends Controller implements AuthControllerSwagger
         $user = Auth::guard('web')->user();
         $token = $user->createToken('Admin');
 
+        $token->token->update([
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
         return AuthResource::make($token);
+    }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $token = $request->user()->token();
+
+        if ($token) {
+            $token->update([
+                'revoked' => true,
+                'expires_at' => Carbon::now(),
+            ]);
+        }
+
+        return Response::json(null, 204);
     }
 
     public function changePassword(PasswordChangeRequest $request): JsonResponse
@@ -41,5 +66,16 @@ class AuthController extends Controller implements AuthControllerSwagger
         ]);
 
         return response()->json(null, 204);
+    }
+
+    public function loginHistory(Request $request): JsonResource
+    {
+        $tokens = Passport::token()
+            ->where('user_id', $request->user()->getKey())
+            ->orderBy('created_at', 'DESC');
+
+        return LoginHistoryResource::collection(
+            $tokens->paginate(12),
+        );
     }
 }

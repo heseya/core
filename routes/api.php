@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\AppController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CountriesController;
+use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\DiscountController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,15 +21,16 @@ Route::prefix('products')->group(function () {
 
 Route::prefix('orders')->group(function () {
     Route::get(null, 'OrderController@index')->middleware('auth:api');
-    Route::post(null,'OrderController@store');
-    Route::post('verify','OrderController@verify');
+    Route::post(null, 'OrderController@store');
+    Route::post('sync', 'OrderController@sync')->middleware('auth:api');
+    Route::post('verify', 'OrderController@verify');
     Route::get('id:{order:id}', 'OrderController@show')->middleware('auth:api');
     Route::post('id:{order:id}/status', 'OrderController@updateStatus')->middleware('auth:api');
     Route::get('{order:code}', 'OrderController@showPublic');
     Route::post('{order:code}/pay/{method}', 'PaymentController@store');
 });
 
-Route::post('payments/{method}', 'PaymentController@update');
+Route::any('payments/{method}', 'PaymentController@update');
 
 Route::prefix('pages')->group(function () {
     Route::get(null, 'PageController@index');
@@ -39,6 +44,7 @@ Route::prefix('pages')->group(function () {
 Route::prefix('brands')->group(function () {
     Route::get(null, 'BrandController@index');
     Route::post(null, 'BrandController@store')->middleware('auth:api');
+    Route::post('order', 'BrandController@order')->middleware('auth:api');
     Route::patch('id:{brand:id}', 'BrandController@update')->middleware('auth:api');
     Route::delete('id:{brand:id}', 'BrandController@destroy')->middleware('auth:api');
 });
@@ -46,13 +52,16 @@ Route::prefix('brands')->group(function () {
 Route::prefix('categories')->group(function () {
     Route::get(null, 'CategoryController@index');
     Route::post(null, 'CategoryController@store')->middleware('auth:api');
+    Route::post('order', 'CategoryController@order')->middleware('auth:api');
     Route::patch('id:{category:id}', 'CategoryController@update')->middleware('auth:api');
     Route::delete('id:{category:id}', 'CategoryController@destroy')->middleware('auth:api');
 });
 
 Route::prefix('shipping-methods')->group(function () {
     Route::get(null, 'ShippingMethodController@index');
+    Route::post('filter', [ShippingMethodController::class, 'index']);
     Route::post(null, 'ShippingMethodController@store')->middleware('auth:api');
+    Route::post('order', 'ShippingMethodController@order')->middleware('auth:api');
     Route::patch('id:{shipping_method:id}', 'ShippingMethodController@update')->middleware('auth:api');
     Route::delete('id:{shipping_method:id}', 'ShippingMethodController@destroy')->middleware('auth:api');
 });
@@ -79,6 +88,8 @@ Route::prefix('package-templates')->middleware('auth:api')->group(function () {
     Route::delete('id:{package:id}', 'PackageTemplateController@destroy');
 });
 
+Route::get('countries', [CountriesController::class, 'index']);
+
 Route::prefix('discounts')->group(function () {
     Route::get(null, [DiscountController::class, 'index'])->middleware('auth:api');
     Route::post(null, [DiscountController::class, 'store'])->middleware('auth:api');
@@ -99,6 +110,7 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('statuses')->group(function () {
         Route::get(null, 'StatusController@index');
         Route::post(null, 'StatusController@store');
+        Route::post('order', 'StatusController@order');
         Route::patch('id:{status:id}', 'StatusController@update');
         Route::delete('id:{status:id}', 'StatusController@destroy');
     });
@@ -122,6 +134,20 @@ Route::middleware('auth:api')->group(function () {
         Route::get('id:{option:id}', 'OptionController@show');
         Route::patch('id:{option:id}', 'OptionController@update');
         Route::delete('id:{option:id}', 'OptionController@destroy');
+    });
+
+    Route::prefix('auth')->group(function () {
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::get('login-history', [AuthController::class, 'loginHistory']);
+    });
+
+    Route::prefix('apps')->group(function () {
+        Route::get(null, [AppController::class, 'index']);
+        Route::post(null, [AppController::class, 'store']);
+    });
+
+    Route::prefix('analytics')->group(function () {
+        Route::get('payments', 'AnalyticsController@payments');
     });
 });
 

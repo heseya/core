@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Swagger;
 
+use App\Http\Requests\CategoryCreateRequest;
 use App\Http\Requests\CategoryIndexRequest;
+use App\Http\Requests\CategoryUpdateRequest;
 use App\Models\Category;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 interface CategoryControllerSwagger
@@ -54,7 +55,7 @@ interface CategoryControllerSwagger
      *   }
      * )
      */
-    public function store(Request $request);
+    public function store(CategoryCreateRequest $request): JsonResource;
 
     /**
      * @OA\Patch(
@@ -89,7 +90,7 @@ interface CategoryControllerSwagger
      *   }
      * )
      */
-    public function update(Category $category, Request $request): JsonResource;
+    public function update(Category $category, CategoryUpdateRequest $request): JsonResource;
 
     /**
      * @OA\Delete(

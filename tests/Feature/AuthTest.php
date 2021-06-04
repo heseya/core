@@ -30,6 +30,12 @@ class AuthTest extends TestCase
             ]]);
     }
 
+    public function testLogout(): void
+    {
+        $response = $this->actingAs($this->user)->postJson('/auth/logout');
+        $response->assertNoContent();
+    }
+
     public function testChangePassword(): void
     {
         $user = User::factory()->create([
@@ -45,5 +51,11 @@ class AuthTest extends TestCase
 
         $user->refresh();
         $this->assertTrue(Hash::check('test123456', $user->password));
+    }
+
+    public function testLoginHistory(): void
+    {
+        $response = $this->actingAs($this->user)->getJson('/auth/login-history');
+        $response->assertOk();
     }
 }

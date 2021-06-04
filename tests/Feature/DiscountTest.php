@@ -38,8 +38,6 @@ class DiscountTest extends TestCase
             'type' => DiscountType::PERCENTAGE,
         ]);
 
-        dd($response->json());
-
         $response
             ->assertOk()
             ->assertJsonFragment([

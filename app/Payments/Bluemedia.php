@@ -15,14 +15,14 @@ class Bluemedia implements PaymentMethod
 
         $hash = hash(config('bluemedia.hash'),
             config('bluemedia.service_id') . '|' .
-            $payment->id . '|' .
+            $payment->getKey() . '|' .
             $amount . '|' .
             config('bluemedia.key'),
         );
 
-        $url = 'https://pay.bm.pl/payment' .
-            '?ServiceID=' . config('bluemedia.service_id') .
-            '&OrderID=' . $payment->id .
+        $url = 'https://pay.bm.pl/payment?ServiceID=' .
+            config('bluemedia.service_id') .
+            '&OrderID=' . $payment->getKey() .
             '&Amount=' . $amount .
             '&Hash=' . $hash;
 
@@ -35,7 +35,7 @@ class Bluemedia implements PaymentMethod
     {
         try {
             $itn = new SimpleXMLElement(base64_decode($request->getContent()));
-        } catch (Exception $e) {
+        } catch (Exception $exception) {
             return self::response('XXX', 'NOTCONFIRMED');
         }
 
@@ -67,15 +67,15 @@ class Bluemedia implements PaymentMethod
 
         if ($status === 'PENDING') {
             $payment->update([
-                'status' => Payment::STATUS_PENDING
+                'status' => Payment::STATUS_PENDING,
             ]);
         } elseif ($status === 'SUCCESS') {
             $payment->update([
-                'status' => Payment::STATUS_PAYED
+                'status' => Payment::STATUS_PAYED,
             ]);
         } elseif ($status === 'FAILURE') {
             $payment->update([
-                'status' => Payment::STATUS_FAILURE
+                'status' => Payment::STATUS_FAILURE,
             ]);
         } else {
             return self::response($payment_id, 'NOTCONFIRMED');

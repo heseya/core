@@ -8,7 +8,6 @@ use App\Http\Requests\OrderItemsRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 interface OrderControllerSwagger
@@ -33,6 +32,22 @@ interface OrderControllerSwagger
      *     @OA\Schema(
      *       type="string",
      *       example="code:asc,created_at:desc,id"
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="status_id",
+     *     in="query",
+     *     description="Status UUID",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="shipping_method_id",
+     *     in="query",
+     *     description="Shipping Method UUID",
+     *     @OA\Schema(
+     *       type="string",
      *     ),
      *   ),
      *   @OA\Response(
@@ -224,5 +239,5 @@ interface OrderControllerSwagger
      *   }
      * )
      */
-    public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResource;
+    public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResponse;
 }

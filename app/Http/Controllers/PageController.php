@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\PageControllerSwagger;
 use App\Http\Resources\PageResource;
 use App\Models\Page;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PageController extends Controller implements PageControllerSwagger
 {
@@ -25,16 +27,16 @@ class PageController extends Controller implements PageControllerSwagger
         );
     }
 
-    public function show(Page $page)
+    public function show(Page $page): JsonResource
     {
         if (!Auth::check() && $page->public !== true) {
-            return Error::abort('Unauthorized.', 401);
+            throw new NotFoundHttpException;
         }
 
         return PageResource::make($page);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResource
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -62,10 +64,10 @@ class PageController extends Controller implements PageControllerSwagger
         return PageResource::make($page);
     }
 
-    public function destroy(Page $page)
+    public function destroy(Page $page): JsonResponse
     {
         $page->delete();
 
-        return response()->json(null, 204);
+        return Response::json(null, 204);
     }
 }

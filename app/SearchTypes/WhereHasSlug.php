@@ -10,7 +10,11 @@ class WhereHasSlug extends Search
     public function query(Builder $query): Builder
     {
         return $query->whereHas($this->key, function (Builder $query) {
-            $query->where('slug', $this->value);
+            if (is_array($this->value)) {
+                return $query->whereIn('slug', $this->value);
+            }
+
+            return $query->where('slug', $this->value);
         });
     }
 }

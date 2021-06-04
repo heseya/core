@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\SearchTypes\OrderSearch;
 use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
 /**
@@ -17,14 +19,7 @@ use Illuminate\Support\Str;
  */
 class Order extends Model
 {
-    use HasFactory, Searchable, Sortable;
-
-    public function __construct(array $attributes = [])
-    {
-        parent::__construct($attributes);
-
-        $this->code = $attributes['code'] ?? $this->generateCode();
-    }
+    use HasFactory, Searchable, Sortable, Notifiable;
 
     /**
      * @OA\Property(
@@ -50,6 +45,12 @@ class Order extends Model
      *   type="string",
      *   example="630552359128340015809770",
      * )
+     *
+     * @OA\Property(
+     *   property="shipping_price",
+     *   type="float",
+     *   example=18.70
+     * )
      */
 
     protected $fillable = [
@@ -60,12 +61,21 @@ class Order extends Model
         'status_id',
         'shipping_method_id',
         'shipping_price',
+        'shipping_number',
         'delivery_address_id',
         'invoice_address_id',
-        'shipping_number',
+        'created_at',
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     protected array $searchable = [
+        'search' => OrderSearch::class,
+        'status_id',
+        'shipping_method_id',
         'code' => Like::class,
         'email' => Like::class,
     ];
@@ -79,18 +89,23 @@ class Order extends Model
     protected string $defaultSortBy = 'created_at';
     protected string $defaultSortDirection = 'desc';
 
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+    }
+
     /**
      * @OA\Property(
      *   property="summary",
      *   type="number",
      * )
-    */
+     */
     public function getSummaryAttribute(): float
     {
         $value = $this->shipping_price;
 
         foreach ($this->products as $item) {
-            $value += ($item->price * $item->quantity);
+            $value += $item->price * $item->quantity;
         }
 
         return round($value, 2);
@@ -118,14 +133,24 @@ class Order extends Model
      * @OA\Property(
      *   property="payed",
      *   type="boolean",
-     *   example=true,
      * )
-     *
-     * @return bool
      */
     public function isPayed(): bool
     {
         return $this->summary === $this->payedAmount;
+    }
+
+    /**
+     * @OA\Property(
+     *   property="payable",
+     *   type="boolean",
+     * )
+     */
+    public function getPayableAttribute(): bool
+    {
+        return !$this->isPayed() &&
+            !$this->status->cancel &&
+            $this->shippingMethod->paymentMethods()->count() > 0;
     }
 
     /**
@@ -207,6 +232,11 @@ class Order extends Model
     public function notes(): HasMany
     {
         return $this->hasMany(OrderNote::class)->orderBy('created_at', 'DESC');
+    }
+
+    public function deposits(): HasManyThrough
+    {
+        return $this->hasManyThrough(Deposit::class, OrderProduct::class);
     }
 
     /**

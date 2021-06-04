@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenDefineFunctions;
-use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenFinalClasses;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenPrivateMethods;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenTraits;
-use NunoMaduro\PhpInsights\Domain\Metrics\Architecture\Classes;
+use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
+use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
 use SlevomatCodingStandard\Sniffs\Commenting\UselessFunctionDocCommentSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\DeclareStrictTypesSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\DisallowMixedTypeHintSniff;
@@ -65,11 +65,7 @@ return [
         //  'path/to/directory-or-file'
     ],
 
-    'add' => [
-        Classes::class => [
-            ForbiddenFinalClasses::class,
-        ],
-    ],
+    'add' => [],
 
     'remove' => [
         DeclareStrictTypesSniff::class,
@@ -81,6 +77,8 @@ return [
         PropertyTypeHintSniff::class,
         ReturnTypeHintSniff::class,
         UselessFunctionDocCommentSniff::class,
+        SpaceAfterNotSniff::class,
+        SuperfluousExceptionNamingSniff::class,
     ],
 
     'config' => [
@@ -101,11 +99,11 @@ return [
     */
 
     'requirements' => [
-//        'min-quality' => 0,
-//        'min-complexity' => 0,
-//        'min-architecture' => 0,
-//        'min-style' => 0,
-//        'disable-security-check' => false,
+        'min-quality' => 85,
+        'min-complexity' => 80,
+        'min-architecture' => 85,
+        'min-style' => 85,
+        'disable-security-check' => false,
     ],
 
 ];

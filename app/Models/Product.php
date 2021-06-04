@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * @OA\Schema()
@@ -70,6 +71,7 @@ class Product extends Model
         'public',
         'brand_id',
         'category_id',
+        'quantity_step',
     ];
 
     /**
@@ -81,6 +83,9 @@ class Product extends Model
         'price' => 'float',
         'public' => 'bool',
         'available' => 'bool',
+        'quantity_step' => 'float',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     protected array $searchable = [
@@ -98,6 +103,7 @@ class Product extends Model
         'name',
         'created_at',
         'updated_at',
+        'order',
     ];
 
     protected string $defaultSortBy = 'created_at';
@@ -105,7 +111,9 @@ class Product extends Model
 
     public function media(): BelongsToMany
     {
-        return $this->belongsToMany(Media::class, 'product_media');
+        return $this
+            ->belongsToMany(Media::class, 'product_media')
+            ->orderByPivot('order');
     }
 
     /**
@@ -139,13 +147,22 @@ class Product extends Model
      */
     public function schemas(): BelongsToMany
     {
-        return $this->belongsToMany(Schema::class, 'product_schemas')
-            ->orderBy('created_at', 'DESC');
+        $query = $this
+            ->belongsToMany(Schema::class, 'product_schemas')
+            ->orderByPivot('order');
+
+        if (!Auth::check()) {
+            $query->where('hidden', false);
+        }
+
+        return $query;
     }
 
     public function orders(): BelongsToMany
     {
-        return $this->belongsToMany(Order::class)->using(OrderProduct::class);
+        return $this
+            ->belongsToMany(Order::class)
+            ->using(OrderProduct::class);
     }
 
     /**

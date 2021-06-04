@@ -2,30 +2,45 @@
 
 namespace App\Providers;
 
-use App\Schemas\SelectSchema;
-use Illuminate\Database\Eloquent\Relations\Relation;
+use App\Services\AnalyticsService;
+use App\Services\AppService;
+use App\Services\Contracts\AnalyticsServiceContract;
+use App\Services\Contracts\AppServiceContract;
+use App\Services\Contracts\MediaServiceContract;
+use App\Services\Contracts\NameServiceContract;
+use App\Services\Contracts\SchemaServiceContract;
+use App\Services\Contracts\SettingsServiceContract;
+use App\Services\MediaService;
+use App\Services\NameService;
+use App\Services\SchemaService;
+use App\Services\SettingsService;
 use Illuminate\Support\ServiceProvider;
-use Laravel\Passport\Passport;
 
 class AppServiceProvider extends ServiceProvider
 {
+    private const CONTRACTS = [
+        AnalyticsServiceContract::class => AnalyticsService::class,
+        AppServiceContract::class => AppService::class,
+        NameServiceContract::class => NameService::class,
+        MediaServiceContract::class => MediaService::class,
+        SchemaServiceContract::class => SchemaService::class,
+        SettingsServiceContract::class => SettingsService::class,
+    ];
+
     /**
      * Register any application services.
-     *
-     * @return void
      */
-    public function register()
+    public function register(): void
     {
-        Passport::ignoreMigrations();
+        foreach (self::CONTRACTS as $abstract => $concrete) {
+            $this->app->bind($abstract, $concrete);
+        }
     }
 
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
-        //
     }
 }

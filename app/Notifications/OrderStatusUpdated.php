@@ -4,14 +4,11 @@ namespace App\Notifications;
 
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
-use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class OrderStatusUpdated extends Notification
 {
-    use Queueable;
-
     private Order $order;
 
     public function __construct(Order $order)
@@ -33,7 +30,7 @@ class OrderStatusUpdated extends Notification
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Twoje zamówienie zmieniło status')
+            ->subject('Your order status has changed')
             ->view('mail.status-change', [
                 'order' => $this->order,
             ]);

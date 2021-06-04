@@ -37,27 +37,32 @@ class Category extends Model
      *   property="public",
      *   type="boolean",
      * )
+     *
+     * @OA\Property(
+     *   property="hide_on_index",
+     *   type="boolean",
+     * )
      */
 
     protected $fillable = [
         'name',
         'slug',
         'public',
+        'order',
+        'hide_on_index',
+    ];
+
+    protected $casts = [
+        'public' => 'boolean',
+        'hide_on_index' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     protected array $searchable = [
         'name' => Like::class,
         'slug' => Like::class,
         'public',
-    ];
-
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'public' => 'boolean',
     ];
 
     public function products(): HasMany

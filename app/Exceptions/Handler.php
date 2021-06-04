@@ -2,19 +2,36 @@
 
 namespace App\Exceptions;
 
-use Throwable;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Support\Facades\App;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Throwable;
 
-class Handler extends ExceptionHandler
+final class Handler extends ExceptionHandler
 {
-    /**
-     * A list of the exception types that are not reported.
-     *
-     * @var array
-     */
-    protected $dontReport = [
-        //
+    protected array $errors = [
+        AuthenticationException::class => [
+            'message' => 'Unauthorized',
+            'code' => 401,
+        ],
+        NotFoundHttpException::class => [
+            'message' => 'Page not found',
+            'code' => 404,
+        ],
+        ValidationException::class => [
+            'code' => 422,
+        ],
+        StoreException::class => [
+            'code' => 400,
+        ],
+    ];
+
+    protected array $sentryNoReport = [
+        StoreException::class,
+        ValidationException::class,
+        NotFoundHttpException::class,
     ];
 
     /**
@@ -29,29 +46,37 @@ class Handler extends ExceptionHandler
 
     /**
      * Report or log an exception.
-     *
-     * @param  \Exception  $exception
-     * @return void
      */
-    public function report(Throwable $exception)
+    public function report(Throwable $e): void
     {
-        parent::report($exception);
+        parent::report($e);
     }
 
     /**
      * Render an exception into an HTTP response.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Exception  $exception
-     * @return \Illuminate\Http\Response
      */
     public function render($request, Throwable $exception)
     {
-        return parent::render($request, $exception);
-    }
+        $class = get_class($exception);
 
-    protected function unauthenticated($request, AuthenticationException $exception)
-    {
-        return Error::abort('Unauthorized.', 401);
+        if (isset($this->errors[$class])) {
+            $error = new Error(
+                $this->errors[$class]['message'] ?? $exception->getMessage(),
+                $this->errors[$class]['code'] ?? 500,
+            );
+        } else {
+            if (App::environment('local')) {
+                return parent::render($request, $exception);
+            }
+            $error = new Error;
+        }
+
+        if (!in_array($class, $this->sentryNoReport) && app()->bound('sentry')) {
+            app('sentry')->captureException($exception);
+        }
+
+        return ErrorResource::make($error)
+            ->response()
+            ->setStatusCode($error->code);
     }
 }

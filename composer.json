@@ -1,7 +1,7 @@
 {
     "name": "heseya/store-api",
     "type": "project",
-    "description": "Heseya Store API",
+    "description": "Store API by Heseya",
     "license": "proprietary",
     "require": {
         "php": "^7.4|^8.0",
@@ -9,17 +9,23 @@
         "darkaonline/l5-swagger": "^8.0",
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
-        "guzzlehttp/guzzle": "^7.2",
+        "guzzlehttp/guzzle": "^7.3",
         "heseya/laravel-searchable": "^1.0",
-        "laravel/framework": "^8.28",
+        "jenssegers/agent": "^2.6",
+        "laravel/framework": "^8.44",
         "laravel/passport": "^10.1",
         "laravel/tinker": "^2.6",
+        "league/omnipay": "^3.1",
+        "omnipay/common": "^3",
+        "omnipay/paypal": "^3.0",
         "parsedown/laravel": "^1.2",
-        "pay-now/paynow-php-sdk": "^1.1",
-        "propaganistas/laravel-phone": "^4.3"
+        "php-http/curl-client": "^2.2",
+        "propaganistas/laravel-phone": "^4.3",
+        "sentry/sentry-laravel": "^2.6",
+        "srmklive/paypal": "^3.0"
     },
     "require-dev": {
-        "facade/ignition": "^2.5",
+        "facade/ignition": "^2.9",
         "fzaninotto/faker": "^1.9",
         "mbezhanov/faker-provider-collection": "^1.2",
         "mockery/mockery": "^1.4",

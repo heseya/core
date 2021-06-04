@@ -5,7 +5,7 @@ namespace App\Exceptions;
 /**
  * @OA\Schema()
  */
-class Error
+final class Error
 {
     /**
      * Http response code.
@@ -15,7 +15,7 @@ class Error
      *   example=500,
      * )
      */
-    public $code;
+    public int $code;
 
     /**
      * Error message.
@@ -25,18 +25,27 @@ class Error
      *   example="Some error message.",
      * )
      */
-    public $message;
+    public string $message;
+
+    public function __construct(string $message = 'Internal Server Error', int $code = 500)
+    {
+        $this->message = $message;
+        $this->code = $code;
+    }
 
     /**
      * Return http error response.
      *
      * @param string $message
      * @param int $code Http code.
+     *
+     * @deprecated
      */
     public static function abort($message = 'Internal Server Error', $code = 500) {
-        $error = new self();
-        $error->message = $message;
-        $error->code = $code;
+        $error = new self(
+            $message,
+            $code,
+        );
 
         return ErrorResource::make($error)
             ->response()

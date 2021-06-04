@@ -15,11 +15,11 @@ class Kernel extends HttpKernel
      */
     protected $middleware = [
         \Fruitcake\Cors\HandleCors::class,
-        \App\Http\Middleware\Language::class,
-        \App\Http\Middleware\TrimStrings::class,
-        \App\Http\Middleware\TrustProxies::class,
-        \App\Http\Middleware\CheckForMaintenanceMode::class,
+        \App\Http\Middleware\SecureHeaders::class,
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
+        \App\Http\Middleware\Language::class,
+        \App\Http\Middleware\TrustProxies::class,
+        \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
     ];
 
@@ -30,7 +30,7 @@ class Kernel extends HttpKernel
      */
     protected $middlewareGroups = [
         'api' => [
-            'throttle:60,1',
+            'throttle:120,1',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
@@ -59,10 +59,8 @@ class Kernel extends HttpKernel
     protected $middlewarePriority = [
         \Fruitcake\Cors\HandleCors::class,
         \Illuminate\Routing\Middleware\SubstituteBindings::class,
-        \Illuminate\Session\Middleware\StartSession::class,
-        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
         \App\Http\Middleware\Authenticate::class,
-        \Illuminate\Session\Middleware\AuthenticateSession::class,
         \Illuminate\Auth\Middleware\Authorize::class,
+        \App\Http\Middleware\SecureHeaders::class,
     ];
 }

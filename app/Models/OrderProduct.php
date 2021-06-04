@@ -42,6 +42,11 @@ class OrderProduct extends Model
         'product_id',
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     public function getPriceAttribute($value): float
     {
         return $value + $this->schemas()->sum('price');
@@ -60,5 +65,10 @@ class OrderProduct extends Model
     public function schemas(): HasMany
     {
         return $this->hasMany(OrderSchema::class);
+    }
+
+    public function deposits(): HasMany
+    {
+        return $this->hasMany(Deposit::class);
     }
 }

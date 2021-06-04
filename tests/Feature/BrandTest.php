@@ -120,7 +120,7 @@ class BrandTest extends TestCase
         ]);
 
         $response = $this->deleteJson('/brands/id:' . $this->brand->getKey());
-        $response->assertStatus(409);
+        $response->assertStatus(400);
         $this->assertDatabaseHas('brands', $this->brand->toArray());
     }
 }

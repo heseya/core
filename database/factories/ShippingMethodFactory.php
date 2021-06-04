@@ -24,8 +24,8 @@ class ShippingMethodFactory extends Factory
                 'dpd',
                 'inpostkurier',
             ]),
-            'price' => rand(8, 15) + (rand(0, 99) / 100),
             'public' => $this->faker->boolean,
+            'black_list' => $this->faker->boolean,
         ];
     }
 }

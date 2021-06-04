@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @OA\Schema()
@@ -31,6 +32,11 @@ class Status extends Model
      * )
      *
      * @OA\Property(
+     *   property="cancel",
+     *   type="boolean",
+     * )
+     *
+     * @OA\Property(
      *   property="description",
      *   type="string",
      *   example="Your order has been cancelled!",
@@ -39,6 +45,19 @@ class Status extends Model
     protected $fillable = [
         'name',
         'color',
+        'cancel',
         'description',
+        'order',
     ];
+
+    protected $casts = [
+        'cancel' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
 }

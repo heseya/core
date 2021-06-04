@@ -16,6 +16,7 @@ class ProductResource extends Resource
             'public' => $this->public,
             'visible' => $this->isPublic(),
             'available' => $this->available,
+            'quantity_step' => $this->quantity_step,
             'brand' => BrandResource::make($this->brand),
             'category' => CategoryResource::make($this->category),
             'cover' => MediaResource::make($this->media()->first()),
@@ -29,6 +30,7 @@ class ProductResource extends Resource
             'original_id' => $this->original_id,
             'description_md' => $this->description_md,
             'description_html' => $this->description_html,
+            'meta_description' => str_replace("\n", ' ', trim(strip_tags($this->description_html))),
             'gallery' => MediaResource::collection($this->media),
             'schemas' => SchemaResource::collection($this->schemas),
         ];

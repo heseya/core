@@ -77,7 +77,7 @@ return [
     |
      */
 
-    'timezone' => 'Europe/Warsaw',
+    'timezone' => 'UTC',
 
     /*
     |--------------------------------------------------------------------------
@@ -90,7 +90,7 @@ return [
     |
      */
 
-    'locale' => 'pl',
+    'locale' => 'en',
 
     /*
     |--------------------------------------------------------------------------
@@ -178,6 +178,7 @@ return [
         L5Swagger\L5SwaggerServiceProvider::class,
         Laravel\Passport\PassportServiceProvider::class,
         Parsedown\Providers\ParsedownServiceProvider::class,
+        Jenssegers\Agent\AgentServiceProvider::class,
         // SammyK\LaravelFacebookSdk\LaravelFacebookSdkServiceProvider::class,
 
         /*
@@ -186,7 +187,7 @@ return [
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
-        // App\Providers\EventServiceProvider::class,
+        App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
 
     ],
@@ -239,6 +240,8 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
+        'Agent' => Jenssegers\Agent\Facades\Agent::class,
+
     ],
 
 ];

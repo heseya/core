@@ -44,8 +44,6 @@ class Page extends Model
 
     /**
      * The attributes that are mass assignable.
-     *
-     * @var array
      */
     protected $fillable = [
         'name',
@@ -61,6 +59,8 @@ class Page extends Model
      */
     protected $casts = [
         'public' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /**

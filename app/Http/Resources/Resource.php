@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\App;
 
 class Resource extends JsonResource
 {
@@ -23,8 +24,7 @@ class Resource extends JsonResource
                     'decimals' => 2,
                 ],
                 'language' => [
-                    'name' => 'Polski',
-                    'symbol' => 'PL-pl',
+                    'symbol' => App::currentLocale(),
                 ],
             ],
         ];
@@ -74,7 +74,7 @@ class Resource extends JsonResource
      * @param bool $full
      * @return Collection
      */
-    public static function collection($resource, $full = false): Collection
+    public static function collection($resource, bool $full = false): Collection
     {
         return new Collection($resource, static::class, $full);
     }
