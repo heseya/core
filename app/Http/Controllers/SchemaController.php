@@ -9,11 +9,19 @@ use App\Http\Resources\SchemaResource;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
+use App\Services\Contracts\OptionServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class SchemaController extends Controller implements SchemaControllerSwagger
 {
+    protected OptionServiceContract $optionService;
+
+    public function __construct(OptionServiceContract $optionService)
+    {
+        $this->optionService = $optionService;
+    }
+
     public function index(IndexSchemaRequest $request): JsonResource
     {
         $schemas = Schema::search($request->validated())
@@ -28,13 +36,8 @@ class SchemaController extends Controller implements SchemaControllerSwagger
     {
         $schema = Schema::create($request->validated());
 
-        if ($request->has('options')) {
-            foreach ($request->input('options') as $input) {
-                $option = $schema->options()->create($input);
-
-                $option->items()->sync($input['items'] ?? []);
-            }
-
+        if ($request->has('options') && is_array($request->input('options'))) {
+            $this->optionService->sync($schema, $request->input('options'));
             $schema->refresh();
         }
 
@@ -60,17 +63,9 @@ class SchemaController extends Controller implements SchemaControllerSwagger
     {
         $schema->update($request->validated());
 
-        if ($request->has('options')) {
-            foreach ($request->input('options') as $input) {
-                if (!isset($input['id'])) {
-                    $option = $schema->options()->create($input);
-                } else {
-                    $option = Option::findOrFail($input['id']);
-                    $option->update($input);
-                }
-
-                $option->items()->sync($input['items'] ?? []);
-            }
+        if ($request->has('options') && is_array($request->input('options'))) {
+            $this->optionService->sync($schema, $request->input('options'));
+            $schema->refresh();
         }
 
         if ($request->has('used_schemas')) {
