@@ -97,7 +97,7 @@ class ProductController extends Controller implements ProductControllerSwagger
 
         $this->mediaService->sync($product, $request->input('media', []));
 
-        if ($request->has('schemas') && is_array($request->input('schemas'))) {
+        if ($request->has('schemas')) {
             $this->schemaService->sync($product, $request->input('schemas'));
         }
 
@@ -110,7 +110,7 @@ class ProductController extends Controller implements ProductControllerSwagger
 
         $this->mediaService->sync($product, $request->input('media', []));
 
-        if ($request->has('schemas') && is_array($request->input('schemas'))) {
+        if ($request->has('schemas')) {
             $this->schemaService->sync($product, $request->input('schemas'));
         }
 

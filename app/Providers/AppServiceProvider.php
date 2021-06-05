@@ -8,10 +8,14 @@ use App\Services\Contracts\AnalyticsServiceContract;
 use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\NameServiceContract;
+use App\Services\Contracts\OptionServiceContract;
+use App\Services\Contracts\ReorderServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
 use App\Services\MediaService;
 use App\Services\NameService;
+use App\Services\OptionService;
+use App\Services\ReorderService;
 use App\Services\SchemaService;
 use App\Services\SettingsService;
 use Illuminate\Support\ServiceProvider;
@@ -21,8 +25,10 @@ class AppServiceProvider extends ServiceProvider
     private const CONTRACTS = [
         AnalyticsServiceContract::class => AnalyticsService::class,
         AppServiceContract::class => AppService::class,
+        ReorderServiceContract::class => ReorderService::class,
         NameServiceContract::class => NameService::class,
         MediaServiceContract::class => MediaService::class,
+        OptionServiceContract::class => OptionService::class,
         SchemaServiceContract::class => SchemaService::class,
         SettingsServiceContract::class => SettingsService::class,
     ];

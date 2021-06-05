@@ -10,7 +10,7 @@ class SettingsService implements SettingsServiceContract
 {
     public function getSettings($publicOnly = false): Collection
     {
-        $settings = Setting::all();
+        $settings = Setting::orderBy('name')->get();
 
         collect(config('settings'))->each(function ($setting, $key) use ($settings) {
             if (!$settings->contains('name', $key)) {
@@ -29,18 +29,18 @@ class SettingsService implements SettingsServiceContract
 
     public function getSetting(string $name): Setting
     {
-        $config = config("settings.$name");
+        $config = config('settings.' . $name);
 
         if ($config === null) {
-            $setting = Setting::where('name', $name)->firstOrFail();
-        } else {
-            $setting = Setting::where('name', $name)->first();
+            return Setting::where('name', $name)->firstOrFail();
+        }
 
-            if ($setting === null) {
-                $setting = Setting::make($config + [
-                    'name' => $name,
-                ]);
-            }
+        $setting = Setting::where('name', $name)->first();
+
+        if ($setting === null) {
+            $setting = Setting::make($config + [
+                'name' => $name,
+            ]);
         }
 
         return $setting;
