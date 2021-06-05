@@ -22,6 +22,7 @@ final class ErrorResource extends JsonResource
         return [
             'code' => $this->code,
             'message' => $this->message,
+            'errors' => $this->errors,
         ];
     }
 }

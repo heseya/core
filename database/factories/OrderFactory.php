@@ -24,6 +24,7 @@ class OrderFactory extends Factory
             'email' => $this->faker->unique()->safeEmail,
             'currency' => rand(0, 9) < 1 ? $this->faker->currencyCode : 'PLN',
             'shipping_price' => rand(8, 20) + 0.99,
+            'comment' => rand(0, 9) ? null : $this->faker->text,
         ];
     }
 }

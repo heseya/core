@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Discount;
+use App\Models\Order;
 use Illuminate\Database\Seeder;
 
 class DiscountSeeder extends Seeder
@@ -14,6 +15,19 @@ class DiscountSeeder extends Seeder
      */
     public function run()
     {
-        Discount::factory()->count(25)->create();
+        $discounts = Discount::factory()->count(25)->create();
+
+        foreach (Order::inRandomOrder()->limit(40)->get() as $order) {
+            $discount = $discounts->random();
+
+            if (!$discount->available) {
+                $discount->increment('max_uses', 24);
+            }
+
+            $order->discounts()->attach($discount, [
+                'discount' => $discount->discount,
+                'type' => $discount->type,
+            ]);
+        }
     }
 }

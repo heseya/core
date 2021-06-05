@@ -37,7 +37,6 @@ class Deposit extends Model
      *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
      * )
      */
-
     protected $fillable = [
         'quantity',
         'item_id',

@@ -8,6 +8,15 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class DiscountFactory extends Factory
 {
+    protected const DESCRIPTIONS = [
+        'Black Week',
+        'Holidays 2021',
+        'Holidays Sale',
+        'Cyber Monday 2020',
+        'Black Friday 21',
+        'Halloween Sale',
+    ];
+
     /**
      * The name of the factory's corresponding model.
      *
@@ -22,11 +31,14 @@ class DiscountFactory extends Factory
      */
     public function definition()
     {
+        $type = DiscountType::getRandomValue();
+
         return [
             'code' => $this->faker->regexify('[A-Z0-9]{8}'),
-            'description' => rand(0, 1) ? $this->faker->text : null,
-            'discount' => $this->faker->randomFloat(2, 5, 40),
-            'type' => DiscountType::getRandomValue(),
+            'description' => rand(0, 5) ? null : $this->faker->randomElement(self::DESCRIPTIONS),
+            'type' => $type,
+            'discount' => $type === DiscountType::PERCENTAGE ? rand(1, 18) * 5 : $this->faker->randomFloat(2, 5, 40),
+            'max_uses' => rand(0, 5) ? 1 : rand(1, 10) * 50,
         ];
     }
 }

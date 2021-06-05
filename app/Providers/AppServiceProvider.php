@@ -6,10 +6,12 @@ use App\Services\AnalyticsService;
 use App\Services\AppService;
 use App\Services\Contracts\AnalyticsServiceContract;
 use App\Services\Contracts\AppServiceContract;
+use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
+use App\Services\DiscountService;
 use App\Services\MediaService;
 use App\Services\NameService;
 use App\Services\SchemaService;
@@ -21,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
     private const CONTRACTS = [
         AnalyticsServiceContract::class => AnalyticsService::class,
         AppServiceContract::class => AppService::class,
+        DiscountServiceContract::class => DiscountService::class,
         NameServiceContract::class => NameService::class,
         MediaServiceContract::class => MediaService::class,
         SchemaServiceContract::class => SchemaService::class,

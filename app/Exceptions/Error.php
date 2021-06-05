@@ -27,10 +27,18 @@ final class Error
      */
     public string $message;
 
-    public function __construct(string $message = 'Internal Server Error', int $code = 500)
+    /**
+     * Errors details
+     *
+     * @var array
+     */
+    public array $errors;
+
+    public function __construct(string $message = 'Internal Server Error', int $code = 500, array $errors = [])
     {
         $this->message = $message;
         $this->code = $code;
+        $this->errors = $errors;
     }
 
     /**
