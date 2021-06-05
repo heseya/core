@@ -36,7 +36,7 @@ class SchemaController extends Controller implements SchemaControllerSwagger
     {
         $schema = Schema::create($request->validated());
 
-        if ($request->has('options') && is_array($request->input('options'))) {
+        if ($request->has('options')) {
             $this->optionService->sync($schema, $request->input('options'));
             $schema->refresh();
         }
@@ -63,7 +63,7 @@ class SchemaController extends Controller implements SchemaControllerSwagger
     {
         $schema->update($request->validated());
 
-        if ($request->has('options') && is_array($request->input('options'))) {
+        if ($request->has('options')) {
             $this->optionService->sync($schema, $request->input('options'));
             $schema->refresh();
         }
