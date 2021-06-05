@@ -6,7 +6,6 @@ use App\Http\Controllers\Swagger\SchemaControllerSwagger;
 use App\Http\Requests\IndexSchemaRequest;
 use App\Http\Requests\SchemaStoreRequest;
 use App\Http\Resources\SchemaResource;
-use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Services\Contracts\OptionServiceContract;
