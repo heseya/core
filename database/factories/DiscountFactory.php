@@ -31,13 +31,13 @@ class DiscountFactory extends Factory
      */
     public function definition()
     {
-        $type = DiscountType::getRandomValue();
+        $type = DiscountType::getRandomInstance();
 
         return [
             'code' => $this->faker->regexify('[A-Z0-9]{8}'),
             'description' => rand(0, 5) ? null : $this->faker->randomElement(self::DESCRIPTIONS),
             'type' => $type,
-            'discount' => $type === DiscountType::PERCENTAGE ? rand(1, 18) * 5 : $this->faker->randomFloat(2, 5, 40),
+            'discount' => $type->is(DiscountType::PERCENTAGE) ? rand(1, 18) * 5 : $this->faker->randomFloat(2, 5, 40),
             'max_uses' => rand(0, 5) ? 1 : rand(1, 10) * 50,
         ];
     }
