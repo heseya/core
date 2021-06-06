@@ -64,12 +64,7 @@ use App\Rules\DiscountAvailable;
  *     @OA\Property(
  *       property="discounts",
  *       type="array",
- *       @OA\Items(
- *         @OA\Property(
- *           type="string",
- *           exaple="02b97693-857c-4fb9-9999-47400ac5fbef",
- *         )
- *       )
+ *       @OA\Items()
  *     )
  *   )
  * )
