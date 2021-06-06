@@ -19,6 +19,11 @@ class DiscountController extends Controller implements DiscountControllerSwagger
         return DiscountResource::collection($query->paginate($request->input('limit', 12)));
     }
 
+    public function show(Discount $discount): JsonResource
+    {
+        return DiscountResource::make($discount);
+    }
+
     public function store(DiscountCreateRequest $request): JsonResource
     {
         $discount = Discount::create($request->validated());

@@ -92,7 +92,7 @@ class Discount extends Model
         return $this->orders()->count();
     }
 
-    public function getAvailableAttribute(): int
+    public function getAvailableAttribute(): bool
     {
         return $this->max_uses > $this->uses;
     }

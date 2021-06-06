@@ -58,6 +58,33 @@ interface DiscountControllerSwagger
     public function index(DiscountIndexRequest $request): JsonResource;
 
     /**
+     * @OA\Get(
+     *   path="/discounts/{code}",
+     *   summary="show discount",
+     *   tags={"Discounts"},
+     *   @OA\Parameter(
+     *     name="code",
+     *     in="path",
+     *     required=false,
+     *     @OA\Schema(
+     *       type="string",
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/Discount",
+     *       )
+     *     )
+     *   ),
+     * )
+     */
+    public function show(Discount $discount): JsonResource;
+
+    /**
      * @OA\Post(
      *   path="/discounts",
      *   summary="add new discount",
@@ -76,7 +103,10 @@ interface DiscountControllerSwagger
      *         ref="#/components/schemas/Discount",
      *       )
      *     )
-     *   )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
      * )
      */
     public function store(DiscountCreateRequest $request): JsonResource;
@@ -109,7 +139,10 @@ interface DiscountControllerSwagger
      *         ref="#/components/schemas/Discount",
      *       )
      *     )
-     *   )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
      * )
      */
     public function update(Discount $discount, DiscountUpdateRequest $request): JsonResource;

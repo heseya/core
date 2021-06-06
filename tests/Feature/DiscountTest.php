@@ -29,6 +29,22 @@ class DiscountTest extends TestCase
             ->assertJsonCount(10, 'data');
     }
 
+    public function testShow(): void
+    {
+        $discount = Discount::factory()->create();
+
+        $response = $this->getJson('/discounts/' . $discount->code);
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['id' => $discount->getKey()]);
+    }
+
+    public function testCreateUnauthorized(): void
+    {
+        $response = $this->postJson('/discounts');
+        $response->assertUnauthorized();
+    }
+
     public function testCreate(): void
     {
         $response = $this->actingAs($this->user)->postJson('/discounts', [
@@ -55,8 +71,17 @@ class DiscountTest extends TestCase
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',
             'discount' => 10,
+            'max_uses' => 20,
             'type' => DiscountType::PERCENTAGE,
         ]);
+    }
+
+    public function testUpdateUnauthorized(): void
+    {
+        $discount = Discount::factory()->create();
+
+        $response = $this->patchJson('/discounts/id:' .  $discount->getKey());
+        $response->assertUnauthorized();
     }
 
     public function testUpdate(): void
@@ -68,6 +93,7 @@ class DiscountTest extends TestCase
             'code' => 'WEEKEND',
             'discount' => 20,
             'type' => DiscountType::AMOUNT,
+            'max_uses' => 40,
         ]);
 
         $response
@@ -86,6 +112,7 @@ class DiscountTest extends TestCase
             'code' => 'WEEKEND',
             'discount' => 20,
             'type' => DiscountType::AMOUNT,
+            'max_uses' => 40,
         ]);
     }
 }

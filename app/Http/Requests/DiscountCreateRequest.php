@@ -18,6 +18,7 @@ class DiscountCreateRequest extends FormRequest
             'code' => ['required', 'string', 'max:64', 'unique:discounts'],
             'discount' => ['required', 'numeric'],
             'type' => ['required', new EnumValue(DiscountType::class, false)],
+            'max_uses' => ['required', 'integer', 'min:0'],
         ];
     }
 }

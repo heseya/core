@@ -2,17 +2,11 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Request;
 
-class DiscountResource extends JsonResource
+class DiscountResource extends Resource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
-     */
-    public function toArray($request)
+    public function base(Request $request): array
     {
         return [
             'id' => $this->getKey(),
@@ -22,6 +16,7 @@ class DiscountResource extends JsonResource
             'type' => $this->type,
             'uses' => $this->uses,
             'max_uses' => $this->max_uses,
+            'available' => $this->available,
         ];
     }
 }
