@@ -33,6 +33,7 @@ class OrderResource extends Resource
             'payments' => PaymentResource::collection($this->payments),
             'shipping_number' => $this->shipping_number,
             'payable' => $this->payable,
+            'discounts' => DiscountResource::collection($this->discounts),
         ];
     }
 }

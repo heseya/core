@@ -10,6 +10,7 @@ use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OptionServiceContract;
+use App\Services\Contracts\OrderServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
@@ -17,6 +18,7 @@ use App\Services\DiscountService;
 use App\Services\MediaService;
 use App\Services\NameService;
 use App\Services\OptionService;
+use App\Services\OrderService;
 use App\Services\ReorderService;
 use App\Services\SchemaService;
 use App\Services\SettingsService;
@@ -32,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
         NameServiceContract::class => NameService::class,
         MediaServiceContract::class => MediaService::class,
         OptionServiceContract::class => OptionService::class,
+        OrderServiceContract::class => OrderService::class,
         SchemaServiceContract::class => SchemaService::class,
         SettingsServiceContract::class => SettingsService::class,
     ];

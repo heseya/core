@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\SearchTypes\OrderSearch;
+use App\Services\Contracts\OrderServiceContract;
+use App\Services\OrderService;
 use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
@@ -103,13 +105,10 @@ class Order extends Model
      */
     public function getSummaryAttribute(): float
     {
-        $value = $this->shipping_price;
+        /** @var OrderService $orderService */
+        $orderService = app(OrderServiceContract::class);
 
-        foreach ($this->products as $item) {
-            $value += $item->price * $item->quantity;
-        }
-
-        return round($value, 2);
+        return $orderService->calcSummary($this);
     }
 
     /**
@@ -242,7 +241,9 @@ class Order extends Model
 
     public function discounts(): BelongsToMany
     {
-        return $this->belongsToMany(Discount::class, 'order_discounts');
+        return $this
+            ->belongsToMany(Discount::class, 'order_discounts')
+            ->withPivot(['type', 'discount']);
     }
 
     /**
