@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\DiscountAvailable;
+
 /**
  * @OA\RequestBody(
  *   request="OrderCreate",
@@ -58,6 +60,11 @@ namespace App\Http\Requests;
  *     @OA\Property(
  *       property="invoice_address",
  *       ref="#/components/schemas/Address",
+ *     ),
+ *     @OA\Property(
+ *       property="discounts",
+ *       type="array",
+ *       @OA\Items()
  *     )
  *   )
  * )
@@ -86,6 +93,9 @@ class OrderCreateRequest extends OrderItemsRequest
             'invoice_address.zip'     => ['nullable', 'string', 'max:16'],
             'invoice_address.city'    => ['nullable', 'string', 'max:255'],
             'invoice_address.country' => ['nullable', 'string', 'size:2'],
+
+            'discounts' => ['nullable', 'array'],
+            'discounts.*' => ['string', 'exists:discounts,code', new DiscountAvailable],
 
             'validation' => ['boolean'],
         ];

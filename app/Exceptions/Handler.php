@@ -63,6 +63,7 @@ final class Handler extends ExceptionHandler
             $error = new Error(
                 $this->errors[$class]['message'] ?? $exception->getMessage(),
                 $this->errors[$class]['code'] ?? 500,
+                method_exists($exception, 'errors') ? $exception->errors() : [],
             );
         } else {
             if (config('app.debug') === true) {

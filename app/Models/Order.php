@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\SearchTypes\OrderSearch;
+use App\Services\Contracts\OrderServiceContract;
+use App\Services\OrderService;
 use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -102,13 +105,10 @@ class Order extends Model
      */
     public function getSummaryAttribute(): float
     {
-        $value = $this->shipping_price;
+        /** @var OrderService $orderService */
+        $orderService = app(OrderServiceContract::class);
 
-        foreach ($this->products as $item) {
-            $value += $item->price * $item->quantity;
-        }
-
-        return round($value, 2);
+        return $orderService->calcSummary($this);
     }
 
     /**
@@ -237,6 +237,13 @@ class Order extends Model
     public function deposits(): HasManyThrough
     {
         return $this->hasManyThrough(Deposit::class, OrderProduct::class);
+    }
+
+    public function discounts(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(Discount::class, 'order_discounts')
+            ->withPivot(['type', 'discount']);
     }
 
     /**

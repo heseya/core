@@ -39,6 +39,6 @@ class OptionAvailable implements Rule
      */
     public function message(): string
     {
-        return ':attribute jest niedostępna';
+        return ':attribute is not available';
     }
 }

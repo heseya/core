@@ -4,6 +4,7 @@ use App\Http\Controllers\AppController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CountriesController;
 use App\Http\Controllers\ShippingMethodController;
+use App\Http\Controllers\DiscountController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', 'AuthController@login');
@@ -88,6 +89,13 @@ Route::prefix('package-templates')->middleware('auth:api')->group(function () {
 });
 
 Route::get('countries', [CountriesController::class, 'index']);
+
+Route::prefix('discounts')->group(function () {
+    Route::get(null, [DiscountController::class, 'index'])->middleware('auth:api');
+    Route::get('{discount:code}', [DiscountController::class, 'show']);
+    Route::post(null, [DiscountController::class, 'store'])->middleware('auth:api');
+    Route::patch('id:{discount:id}', [DiscountController::class, 'update'])->middleware('auth:api');
+});
 
 Route::middleware('auth:api')->group(function () {
     Route::prefix('items')->group(function () {

@@ -5,6 +5,7 @@
     "license": "proprietary",
     "require": {
         "php": "^7.4|^8.0",
+        "bensampo/laravel-enum": "^3.3",
         "darkaonline/l5-swagger": "^8.0",
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",

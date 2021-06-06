@@ -14,6 +14,7 @@ use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Resources\OrderPublicResource;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
+use App\Models\Discount;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
@@ -116,13 +117,23 @@ class OrderController extends Controller implements OrderControllerSwagger
                 }
             }
 
+            $discounts = [];
+            foreach ($request->input('discounts', []) as $discount) {
+                $discount = Discount::where('code', $discount)->firstOrFail();
+                $discounts[$discount->getKey()] = [
+                    'type' => $discount->type,
+                    'discount' => $discount->discount,
+                ];
+            }
+            $order->discounts()->sync($discounts);
+
             $order->update([
                 'shipping_price' => $shippingMethod->getPrice($order->summary),
             ]);
-        } catch (Throwable $e) {
+        } catch (Throwable $exception) {
             $order->delete();
 
-            throw $e;
+            throw $exception;
         }
 
         // logs
