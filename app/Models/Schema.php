@@ -177,12 +177,16 @@ class Schema extends Model
         }
 
         if ($this->min) {
-            $validation->push('max:' . $this->min);
+            $validation->push('min:' . $this->min);
         }
 
         if ($this->type === 4) {
             $validation->push('uuid');
             $validation->push(new OptionAvailable($this, $quantity));
+        }
+
+        if ($this->type === 6) {
+            $validation->push('numeric');
         }
 
         $validator = Validator::make(
