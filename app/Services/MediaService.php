@@ -4,22 +4,19 @@ namespace App\Services;
 
 use App\Models\Product;
 use App\Services\Contracts\MediaServiceContract;
+use App\Services\Contracts\ReorderServiceContract;
 
 class MediaService implements MediaServiceContract
 {
-    public function sync(Product $product, array $media = []): void
+    protected ReorderServiceContract $reorderService;
+
+    public function __construct(ReorderServiceContract $reorderService)
     {
-        $product->media()->sync($this->reorder($media));
+        $this->reorderService = $reorderService;
     }
 
-    private function reorder(array $media): array
+    public function sync(Product $product, array $media = []): void
     {
-        $array = [];
-
-        foreach ($media as $key => $id) {
-            $array[$id]['order'] = $key;
-        }
-
-        return $array;
+        $product->media()->sync($this->reorderService->reorder($media));
     }
 }

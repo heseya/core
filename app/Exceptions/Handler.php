@@ -66,7 +66,7 @@ final class Handler extends ExceptionHandler
                 method_exists($exception, 'errors') ? $exception->errors() : [],
             );
         } else {
-            if (App::environment('local')) {
+            if (config('app.debug') === true) {
                 return parent::render($request, $exception);
             }
             $error = new Error;
