@@ -53,7 +53,7 @@ class DiscountOrderTest extends TestCase
     {
         $discount = Discount::factory()->create([
             'type' => DiscountType::PERCENTAGE,
-            'discount' => 10,
+            'discount' => 15,
         ]);
 
         $response = $this->postJson('/orders', [
@@ -68,7 +68,7 @@ class DiscountOrderTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => 100]); // 100 - 100 * 10% + 10 (delivery)
+            ->assertJsonFragment(['summary' => 95]); // 100 - 100 * 15% + 10 (delivery)
 
         $orderId = $response->getData()->data->id;
 

@@ -27,8 +27,8 @@ class OrderService
             $value -= $this->discountService->calc($cartValue, $discount);
         }
 
-        $value += $order->shipping_price;
+        $value = ($value < 0 ? 0 : $value) + $order->shipping_price;
 
-        return round($value < 0 ? 0 : $value, 2);
+        return round($value, 2);
     }
 }

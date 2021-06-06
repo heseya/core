@@ -17,7 +17,7 @@ class DiscountService implements DiscountServiceContract
         }
 
         if ($discount->type->is(DiscountType::PERCENTAGE)) {
-            return $value / $discount->discount;
+            return $value * $discount->discount / 100;
         }
 
         if ($discount->type->is(DiscountType::AMOUNT)) {
