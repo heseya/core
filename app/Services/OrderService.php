@@ -22,12 +22,13 @@ class OrderService
             $value += $item->price * $item->quantity;
         }
 
+        $cartValue = $value;
         foreach ($order->discounts as $discount) {
-            $value = $this->discountService->calc($value, $discount);
+            $value -= $this->discountService->calc($cartValue, $discount);
         }
 
         $value += $order->shipping_price;
 
-        return round($value, 2);
+        return round($value < 0 ? 0 : $value, 2);
     }
 }

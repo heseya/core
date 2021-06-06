@@ -17,11 +17,11 @@ class DiscountService implements DiscountServiceContract
         }
 
         if ($discount->type->is(DiscountType::PERCENTAGE)) {
-            return $value - ($value / $discount->discount);
+            return $value / $discount->discount;
         }
 
         if ($discount->type->is(DiscountType::AMOUNT)) {
-            return $value - $discount->discount;
+            return $discount->discount;
         }
 
         throw new StoreException('Discount type "' . $discount->type . '" is not supported');
