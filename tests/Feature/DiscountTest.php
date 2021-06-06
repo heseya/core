@@ -40,7 +40,7 @@ class DiscountTest extends TestCase
         ]);
 
         $response
-            ->assertOk()
+            ->assertCreated()
             ->assertJsonFragment([
                 'description' => 'Testowy kupon',
                 'code' => 'S43SA2',
