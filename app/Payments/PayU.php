@@ -30,7 +30,7 @@ class PayU implements PaymentMethod
             'currencyCode' => $payment->order->currency,
             'totalAmount' => $amount,
             'extOrderId' => $payment->getKey(),
-            'returnUrl' => $payment->continue_url,
+            'returnUrl' => config('app.store_url') . '/status/' . $payment->order->code,
             'buyer' => [
                 'email' => $payment->order->email,
             ],
