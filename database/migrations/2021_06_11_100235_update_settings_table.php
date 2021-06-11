@@ -13,7 +13,7 @@ class UpdateSettingsTable extends Migration
      */
     public function up()
     {
-        Schema::table('products', function (Blueprint $table) {
+        Schema::table('settings', function (Blueprint $table) {
             $table->string('value', 1000)->change();
         });
     }
@@ -25,7 +25,7 @@ class UpdateSettingsTable extends Migration
      */
     public function down()
     {
-        Schema::table('products', function (Blueprint $table) {
+        Schema::table('settings', function (Blueprint $table) {
             $table->string('value')->change();
         });
     }
