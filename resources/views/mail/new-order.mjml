@@ -16,12 +16,13 @@
           <p style="line-height: 30px; margin: 10px 0; text-align: center; color:#151e23; font-size:30p; font-family:Arial,sans-serif">Order <b>{{ $order->code }}</b> Confirmation</p>
         </mj-text>
         <mj-text align="left" color="#333" font-family="Arial, sans-serif" font-size="16px" line-height="22px" padding-bottom="0" padding-top="10px" padding="10px 25px">
-          <p>Dear customer,<br /> Thank you for placing your order. You can track the status of your order on our website. You will also receive a separate email when the status changes. <br /><br /> If you have not paid for your order you can do so through this link:<br /><br/>
-            </p>
-            <a style="padding: 15px; 40px; background: black; color: white; border-radius: 5px; text-decoration: none" href="{{ config('app.store_url') }}/payment/{{ $order->code }}">
-              Pay for your order
-            </a>
-            <p style="margin-top: 40px">Here are the details of your order:</p>
+          <small>
+            Jeśli nie opłaciłeś jeszcze swoje zamówienia, możesz to zrobić za pomocą tego linku:<br/>
+            If you have not paid for your order you can do so through this link:<br /><br /></small>
+          <p>
+            <a style="padding: 15px; 40px; background: black; color: white; border-radius: 5px; text-decoration: none" href="{{ config('app.store_url') }}/payment/{{ $order->code }}"> Pay for your order </a>
+          </p><br />
+          <p>{!! $settingsService->getSetting('mail_order_created')->value !!}</p>
         </mj-text>
       </mj-column>
     </mj-section>
@@ -50,9 +51,7 @@
     </mj-section>
     <mj-section background-color="#fff" background-repeat="repeat">
       <mj-column>
-        <mj-text align="center" color="#666" font-family="Arial, sans-serif" font-size="12px" line-height="17px">
-          {!! $settingsService->getSetting('mail_footer')->value !!}
-        </mj-text>
+        <mj-text align="center" color="#666" font-family="Arial, sans-serif" font-size="12px" line-height="17px"> {!! $settingsService->getSetting('mail_footer')->value !!} </mj-text>
       </mj-column>
     </mj-section>
   </mj-body>
