@@ -7,6 +7,16 @@ return [
         'public' => true,
     ],
 
+    'store_logo' => [
+        'value' => '',
+        'public' => true,
+    ],
+
+    'mail_footer' => [
+        'value' => 'Powered by <a href="https://heseya.com">Heseya</a>',
+        'public' => false,
+    ],
+
     'order_number_template' => [
         'value' => '{no}',
         'public' => false,

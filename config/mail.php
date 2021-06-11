@@ -14,17 +14,17 @@ return [
 
     'driver' => 'smtp',
 
-    'host' => env('EMAIL_HOST', 'mail.heseya.com'),
+    'host' => env('EMAIL_HOST', ''),
     'port' => env('EMAIL_PORT', 587),
     'encryption' => env('EMAIL_ENCRYPTION', 'tls'),
-    'username' => env('EMAIL_USER', 'shop@kupdepth.pl'),
+    'username' => env('EMAIL_USER', ''),
     'password' => env('EMAIL_PASSWORD', 'secret'),
-    'address' => env('EMAIL_ADDRESS', 'shop@kupdepth.pl'),
-    'name' => env('EMAIL_NAME', 'Depth'),
+    'address' => env('EMAIL_ADDRESS', ''),
+    'name' => env('EMAIL_NAME', 'Store'),
 
     'from' => [
-        'address' => env('EMAIL_ADDRESS', 'shop@kupdepth.pl'),
-        'name' => env('EMAIL_NAME', 'Depth'),
+        'address' => env('EMAIL_ADDRESS', ''),
+        'name' => env('EMAIL_NAME', 'Store'),
     ],
 
     /*
