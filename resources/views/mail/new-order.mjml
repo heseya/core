@@ -51,7 +51,7 @@
     <mj-section background-color="#fff" background-repeat="repeat">
       <mj-column>
         <mj-text align="center" color="#666" font-family="Arial, sans-serif" font-size="12px" line-height="17px">
-          {{ $settingsService->getSetting('mail_footer')->value }}
+          {!! $settingsService->getSetting('mail_footer')->value !!}
         </mj-text>
       </mj-column>
     </mj-section>

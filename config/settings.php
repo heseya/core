@@ -3,12 +3,12 @@
 return [
 
     'store_name' => [
-        'value' => 'E-Commerce Dog',
+        'value' => 'Heseya Dev Store',
         'public' => true,
     ],
 
     'store_logo' => [
-        'value' => '',
+        'value' => 'https://heseya.com/img/logo.svg',
         'public' => true,
     ],
 
@@ -18,7 +18,7 @@ return [
     ],
 
     'order_number_template' => [
-        'value' => '{no}',
+        'value' => '{r}',
         'public' => false,
     ],
 
@@ -33,7 +33,7 @@ return [
     ],
 
     'bank_transfer_address' => [
-        'value' => env('APP_NAME'),
+        'value' => 'Heseya Dev Store Co.',
         'public' => true,
     ],
 
