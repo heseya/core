@@ -167,6 +167,18 @@ class Product extends Model
 
     /**
      * @OA\Property(
+     *   property="tags",
+     *   type="array",
+     *   @OA\Items(ref="#/components/schemas/Tag"),
+     * )
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'product_tags');
+    }
+
+    /**
+     * @OA\Property(
      *   property="description_html",
      *   type="string",
      *   example="<h1>Awesome stuff!</h1>",

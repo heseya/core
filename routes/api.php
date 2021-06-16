@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CountriesController;
 use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', 'AuthController@login');
@@ -150,6 +151,10 @@ Route::middleware('auth:api')->group(function () {
 
     Route::prefix('analytics')->group(function () {
         Route::get('payments', 'AnalyticsController@payments');
+    });
+
+    Route::prefix('tags')->group(function () {
+        Route::get(null, [TagController::class, 'index']);
     });
 });
 
