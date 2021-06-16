@@ -157,6 +157,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get(null, [TagController::class, 'index']);
         Route::post(null, [TagController::class, 'store']);
         Route::patch('id:{tag:id}', [TagController::class, 'update']);
+        Route::delete('id:{tag:id}', [TagController::class, 'destroy']);
     });
 });
 

@@ -74,4 +74,24 @@ class TagTest extends TestCase
             'color' => 'ababab',
         ]);
     }
+
+    public function testDeleteUnauthorized(): void
+    {
+        $tag = Tag::factory()->create();
+
+        $this->deleteJson('/tags/id:' . $tag->getKey())->assertUnauthorized();
+    }
+
+    public function testDelete(): void
+    {
+        $tag = Tag::factory()->create();
+
+        $response = $this->actingAs($this->user)->deleteJson('/tags/id:' . $tag->getKey());
+
+        $response->assertNoContent();
+
+        $this->assertDatabaseMissing('tags', [
+            'id' => $tag->getKey(),
+        ]);
+    }
 }

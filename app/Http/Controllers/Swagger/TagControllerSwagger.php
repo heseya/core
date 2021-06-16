@@ -2,20 +2,19 @@
 
 namespace App\Http\Controllers\Swagger;
 
-use App\Http\Requests\ItemCreateRequest;
-use App\Http\Requests\ItemIndexRequest;
-use App\Http\Requests\ItemUpdateRequest;
-use App\Models\Item;
+use App\Http\Requests\TagCreateRequest;
+use App\Http\Requests\TagIndexRequest;
+use App\Models\Tag;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-interface ItemControllerSwagger
+interface TagControllerSwagger
 {
     /**
      * @OA\Get(
-     *   path="/items",
-     *   summary="list items",
-     *   tags={"Items"},
+     *   path="/tags",
+     *   summary="list tags",
+     *   tags={"Tags"},
      *   @OA\Parameter(
      *     name="search",
      *     in="query",
@@ -33,9 +32,9 @@ interface ItemControllerSwagger
      *     ),
      *   ),
      *   @OA\Parameter(
-     *     name="sku",
+     *     name="color",
      *     in="query",
-     *     description="Sku search",
+     *     description="Color search",
      *     @OA\Schema(
      *       type="string",
      *     ),
@@ -47,7 +46,7 @@ interface ItemControllerSwagger
      *       @OA\Property(
      *         property="data",
      *         type="array",
-     *         @OA\Items(ref="#/components/schemas/Item"),
+     *         @OA\Items(ref="#/components/schemas/Tag"),
      *       )
      *     )
      *   ),
@@ -56,46 +55,16 @@ interface ItemControllerSwagger
      *   }
      * )
      */
-    public function index(ItemIndexRequest $request): JsonResource;
-
-    /**
-     * @OA\Get(
-     *   path="/items/id:{id}",
-     *   summary="view item",
-     *   tags={"Items"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="string",
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         ref="#/components/schemas/Item"
-     *       )
-     *     )
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function show(Item $item): JsonResource;
+    public function index(TagIndexRequest $request): JsonResource;
 
     /**
      * @OA\Post(
-     *   path="/items",
-     *   summary="add new item",
-     *   tags={"Items"},
+     *   path="/tags",
+     *   summary="add new tag",
+     *   tags={"Tags"},
      *   @OA\RequestBody(
      *     @OA\JsonContent(
-     *       ref="#/components/schemas/Item",
+     *       ref="#/components/schemas/Tag",
      *     ),
      *   ),
      *   @OA\Response(
@@ -104,7 +73,7 @@ interface ItemControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/Item",
+     *         ref="#/components/schemas/Tag",
      *       )
      *     )
      *   ),
@@ -113,13 +82,13 @@ interface ItemControllerSwagger
      *   }
      * )
      */
-    public function store(ItemCreateRequest $request): JsonResource;
+    public function store(TagCreateRequest $request): JsonResource;
 
     /**
      * @OA\Patch(
-     *   path="/items/id:{id}",
-     *   summary="update item",
-     *   tags={"Items"},
+     *   path="/tags/id:{id}",
+     *   summary="update tag",
+     *   tags={"Tags"},
      *   @OA\Parameter(
      *     name="id",
      *     in="path",
@@ -131,7 +100,7 @@ interface ItemControllerSwagger
      *   ),
      *   @OA\RequestBody(
      *     @OA\JsonContent(
-     *       ref="#/components/schemas/Item",
+     *       ref="#/components/schemas/Tag",
      *     ),
      *   ),
      *   @OA\Response(
@@ -140,7 +109,7 @@ interface ItemControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/Item",
+     *         ref="#/components/schemas/Tag",
      *       )
      *     )
      *   ),
@@ -149,13 +118,13 @@ interface ItemControllerSwagger
      *   }
      * )
      */
-    public function update(Item $item, ItemUpdateRequest $request): JsonResource;
+    public function update(Tag $tag, TagCreateRequest $request): JsonResource;
 
     /**
      * @OA\Delete(
-     *   path="/items/id:{id}",
-     *   summary="delete item",
-     *   tags={"Items"},
+     *   path="/tags/id:{id}",
+     *   summary="delete tag",
+     *   tags={"Tags"},
      *   @OA\Parameter(
      *     name="id",
      *     in="path",
@@ -174,5 +143,5 @@ interface ItemControllerSwagger
      *   }
      * )
      */
-    public function destroy(Item $item): JsonResponse;
+    public function destroy(Tag $tag): JsonResponse;
 }

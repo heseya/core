@@ -6,7 +6,9 @@ use App\Http\Requests\TagCreateRequest;
 use App\Http\Requests\TagIndexRequest;
 use App\Http\Resources\TagResource;
 use App\Models\Tag;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Response;
 
 class TagController extends Controller
 {
@@ -32,5 +34,12 @@ class TagController extends Controller
         $tag->update($request->validated());
 
         return TagResource::make($tag);
+    }
+
+    public function destroy(Tag $tag): JsonResponse
+    {
+        $tag->delete();
+
+        return Response::json(null, 204);
     }
 }
