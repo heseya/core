@@ -30,4 +30,48 @@ class TagTest extends TestCase
             ->assertJsonCount(10, 'data')
             ->assertJson(['data' => [['id' => $tag->getKey()]]]);
     }
+
+    public function testCreateUnauthorized(): void
+    {
+        $this->postJson('/tags')->assertUnauthorized();
+    }
+
+    public function testCreate(): void
+    {
+        $response = $this->actingAs($this->user)->postJson('/tags', [
+            'name' => 'test sale',
+            'color' => '444444',
+        ]);
+
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('tags', [
+            'name' => 'test sale',
+            'color' => '444444',
+        ]);
+    }
+
+    public function testUpdateUnauthorized(): void
+    {
+        $tag = Tag::factory()->create();
+
+        $this->patchJson('/tags/id:' . $tag->getKey())->assertUnauthorized();
+    }
+
+    public function testUpdate(): void
+    {
+        $tag = Tag::factory()->create();
+
+        $response = $this->actingAs($this->user)->patchJson('/tags/id:' . $tag->getKey(), [
+            'name' => 'test tag',
+            'color' => 'ababab',
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('tags', [
+            'name' => 'test tag',
+            'color' => 'ababab',
+        ]);
+    }
 }

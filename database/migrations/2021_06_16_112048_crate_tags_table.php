@@ -16,7 +16,7 @@ class CrateTagsTable extends Migration
         Schema::create('tags', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name', 30);
-            $table->string('color', 6);
+            $table->string('color', 6)->default('000000');
             $table->timestamps();
         });
 

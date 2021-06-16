@@ -2,9 +2,7 @@
 
 namespace App\Models;
 
-use App\SearchTypes\ProductSearch;
 use App\SearchTypes\TagSearch;
-use App\SearchTypes\WhereHasSlug;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
