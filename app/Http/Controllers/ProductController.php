@@ -35,8 +35,9 @@ class ProductController extends Controller implements ProductControllerSwagger
             ->sort($request->input('sort', 'order'))
             ->with([
                 'brand',
-                'media',
                 'category',
+                'tags',
+                'media',
             ]);
 
         if (!Auth::check()) {

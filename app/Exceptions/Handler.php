@@ -4,7 +4,6 @@ namespace App\Exceptions;
 
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Illuminate\Support\Facades\App;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
@@ -28,12 +27,6 @@ final class Handler extends ExceptionHandler
         ],
     ];
 
-    protected array $sentryNoReport = [
-        StoreException::class,
-        ValidationException::class,
-        NotFoundHttpException::class,
-    ];
-
     /**
      * A list of the inputs that are never flashed for validation exceptions.
      *
@@ -42,14 +35,15 @@ final class Handler extends ExceptionHandler
     protected $dontFlash = [
         'password',
         'password_confirmation',
+        'token',
     ];
 
     /**
      * Report or log an exception.
      */
-    public function report(Throwable $e): void
+    public function report(Throwable $exception): void
     {
-        parent::report($e);
+        parent::report($exception);
     }
 
     /**
@@ -66,14 +60,14 @@ final class Handler extends ExceptionHandler
                 method_exists($exception, 'errors') ? $exception->errors() : [],
             );
         } else {
+            if (app()->bound('sentry')) {
+                app('sentry')->captureException($exception);
+            }
+
             if (config('app.debug') === true) {
                 return parent::render($request, $exception);
             }
             $error = new Error;
-        }
-
-        if (!in_array($class, $this->sentryNoReport) && app()->bound('sentry')) {
-            app('sentry')->captureException($exception);
         }
 
         return ErrorResource::make($error)

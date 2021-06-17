@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\Error;
+use App\Exceptions\StoreException;
 use App\Http\Controllers\Swagger\AuthControllerSwagger;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
@@ -19,13 +19,13 @@ use Laravel\Passport\Passport;
 
 class AuthController extends Controller implements AuthControllerSwagger
 {
-    public function login(LoginRequest $request)
+    public function login(LoginRequest $request): JsonResource
     {
         if (!Auth::guard('web')->attempt([
             'email' => $request->input('email'),
             'password' => $request->input('password'),
         ])) {
-            return Error::abort('Invalid credentials.', 400);
+            throw new StoreException('Invalid credentials');
         }
 
         $user = Auth::guard('web')->user();
@@ -58,7 +58,7 @@ class AuthController extends Controller implements AuthControllerSwagger
         $user = $request->user();
 
         if (!Hash::check($request->input('password'), $user->password)) {
-            return Error::abort('Invalid credentials.', 400);
+            throw new StoreException('Invalid credentials');
         }
 
         $user->update([

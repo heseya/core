@@ -58,7 +58,7 @@ interface AuthControllerSwagger
      *   )
      * )
      */
-    public function login(LoginRequest $request);
+    public function login(LoginRequest $request): JsonResource;
 
     /**
      * @OA\Post(
