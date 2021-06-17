@@ -96,6 +96,7 @@ class ProductController extends Controller implements ProductControllerSwagger
         $product = Product::create($request->validated());
 
         $this->mediaService->sync($product, $request->input('media', []));
+        $product->tags()->sync($request->input('tags', []));
 
         if ($request->has('schemas')) {
             $this->schemaService->sync($product, $request->input('schemas'));
@@ -109,6 +110,7 @@ class ProductController extends Controller implements ProductControllerSwagger
         $product->update($request->validated());
 
         $this->mediaService->sync($product, $request->input('media', []));
+        $product->tags()->sync($request->input('tags', []));
 
         if ($request->has('schemas')) {
             $this->schemaService->sync($product, $request->input('schemas'));

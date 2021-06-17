@@ -23,7 +23,7 @@ class MediaController extends Controller implements MediaControllerSwagger
             ->post(config('silverbox.host') . '/' . config('silverbox.client'));
 
         if ($response->failed()) {
-            throw new Exception($response->body());
+            throw new Exception('CDN responded with an error');
         }
 
         $media = Media::create([
