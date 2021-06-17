@@ -20,6 +20,7 @@ class ProductResource extends Resource
             'brand' => BrandResource::make($this->brand),
             'category' => CategoryResource::make($this->category),
             'cover' => MediaResource::make($this->media()->first()),
+            'tags' => TagResource::collection($this->tags),
         ];
     }
 
