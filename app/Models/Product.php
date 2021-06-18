@@ -69,8 +69,6 @@ class Product extends Model
         'price',
         'description_md',
         'public',
-        'brand_id',
-        'category_id',
         'quantity_step',
     ];
 
@@ -118,24 +116,15 @@ class Product extends Model
 
     /**
      * @OA\Property(
-     *   property="brand",
-     *   ref="#/components/schemas/Brand",
+     *   property="set",
+     *   ref="#/components/schemas/ProductSet",
      * )
      */
-    public function brand(): BelongsTo
+    public function sets(): BelongsToMany
     {
-        return $this->belongsTo(Brand::class);
-    }
-
-    /**
-     * @OA\Property(
-     *   property="category",
-     *   ref="#/components/schemas/Category",
-     * )
-     */
-    public function category(): BelongsTo
-    {
-        return $this->belongsTo(Category::class);
+        return $this
+            ->belongsToMany(ProductSet::class, 'product_set_product')
+            ->orderBy('order');
     }
 
     /**

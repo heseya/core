@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Brand;
-use App\Models\Category;
+use App\Models\ProductSet;
 use App\Models\Product;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
@@ -112,7 +112,7 @@ class BrandTest extends TestCase
         Passport::actingAs($this->user);
 
         $this->brand = Brand::factory()->create();
-        $category = Category::factory()->create();
+        $category = ProductSet::factory()->create();
 
         Product::factory()->create([
             'brand_id' => $this->brand->getKey(),

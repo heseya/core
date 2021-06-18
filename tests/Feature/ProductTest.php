@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Brand;
-use App\Models\Category;
+use App\Models\ProductSet;
 use App\Models\Product;
 use App\Models\Schema;
 use Carbon\Carbon;
@@ -24,7 +24,7 @@ class ProductTest extends TestCase
         parent::setUp();
 
         $brand = Brand::factory()->create(['public' => true]);
-        $category = Category::factory()->create(['public' => true]);
+        $category = ProductSet::factory()->create(['public' => true]);
 
         $this->product = Product::factory()->create([
             'brand_id' => $brand->getKey(),
@@ -70,7 +70,7 @@ class ProductTest extends TestCase
 
         // Hidden
         $brand_hidden = Brand::factory()->create(['public' => false]);
-        $category_hidden = Category::factory()->create(['public' => false]);
+        $category_hidden = ProductSet::factory()->create(['public' => false]);
 
         $this->hidden_products = [
             Product::factory()->create([

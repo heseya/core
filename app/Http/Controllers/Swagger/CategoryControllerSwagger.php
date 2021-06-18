@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Swagger;
 use App\Http\Requests\CategoryCreateRequest;
 use App\Http\Requests\CategoryIndexRequest;
 use App\Http\Requests\CategoryUpdateRequest;
-use App\Models\Category;
+use App\Models\ProductSet;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 interface CategoryControllerSwagger
@@ -90,7 +90,7 @@ interface CategoryControllerSwagger
      *   }
      * )
      */
-    public function update(Category $category, CategoryUpdateRequest $request): JsonResource;
+    public function update(ProductSet $category, CategoryUpdateRequest $request): JsonResource;
 
     /**
      * @OA\Delete(
@@ -114,5 +114,5 @@ interface CategoryControllerSwagger
      *   }
      * )
      */
-    public function destroy(Category $category);
+    public function destroy(ProductSet $category);
 }

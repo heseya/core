@@ -5,12 +5,13 @@ namespace App\Models;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @OA\Schema()
  */
-class Category extends Model
+class ProductSet extends Model
 {
     use Searchable, HasFactory;
 
@@ -24,13 +25,13 @@ class Category extends Model
      * @OA\Property(
      *   property="name",
      *   type="string",
-     *   example="Rings & Sets",
+     *   example="Rings",
      * )
      *
      * @OA\Property(
      *   property="slug",
      *   type="string",
-     *   example="rings-and-sets",
+     *   example="rings",
      * )
      *
      * @OA\Property(
@@ -50,6 +51,7 @@ class Category extends Model
         'public',
         'order',
         'hide_on_index',
+        'parent_id',
     ];
 
     protected $casts = [
@@ -62,8 +64,20 @@ class Category extends Model
     protected array $searchable = [
         'name' => Like::class,
         'slug' => Like::class,
+        'parent_id',
         'public',
+        'hide_on_index',
     ];
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(self::class);
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(self::class);
+    }
 
     public function products(): HasMany
     {

@@ -2,18 +2,18 @@
 
 namespace Database\Factories;
 
-use App\Models\Category;
+use App\Models\ProductSet;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
-class CategoryFactory extends Factory
+class ProductSetFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Category::class;
+    protected $model = ProductSet::class;
 
     /**
      * Define the model's default state.
@@ -24,8 +24,10 @@ class CategoryFactory extends Factory
 
         return [
             'name' => $name,
-            'slug' => Str::slug($name),
-            'public' => rand(0, 1),
+            'slug' => Str::of($name)->slug(),
+            'public' => $this->faker->boolean,
+            'hide_on_index' => $this->faker->boolean,
+            'parent_id' => rand(0, 3) ? null : ProductSet::inRandomOrder()->first()->getKey(),
         ];
     }
 }
