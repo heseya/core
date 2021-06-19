@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\StoreException;
-use App\Http\Controllers\Swagger\CategoryControllerSwagger;
+use App\Http\Controllers\Swagger\ProductSetControllerSwagger;
 use App\Http\Requests\CategoryCreateRequest;
 use App\Http\Requests\CategoryIndexRequest;
 use App\Http\Requests\CategoryOrderRequest;
@@ -15,7 +15,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 
-class CategoryController extends Controller implements CategoryControllerSwagger
+class CategoryController extends Controller implements ProductSetControllerSwagger
 {
     public function index(CategoryIndexRequest $request): JsonResource
     {
