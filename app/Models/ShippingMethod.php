@@ -131,7 +131,9 @@ class ShippingMethod extends Model
      */
     public function priceRanges(): HasMany
     {
-        return $this->hasMany(PriceRange::class, 'shipping_method_id');
+        return $this
+            ->hasMany(PriceRange::class, 'shipping_method_id')
+            ->orderBy('start');
     }
 
     public function getPrice(float $orderTotal): float
