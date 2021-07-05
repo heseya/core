@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Swagger;
 
+use App\Http\Requests\PageUpdateRequest;
+use App\Http\Requests\PageStoreRequest;
 use App\Models\Page;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 interface PageControllerSwagger
@@ -47,7 +49,7 @@ interface PageControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/Page"
+     *         ref="#/components/schemas/PageView"
      *       )
      *     )
      *   )
@@ -73,7 +75,7 @@ interface PageControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/Page"
+     *         ref="#/components/schemas/PageView"
      *       )
      *     )
      *   ),
@@ -82,7 +84,7 @@ interface PageControllerSwagger
      *   }
      * )
      */
-    public function show(Page $page);
+    public function show(Page $page): JsonResource;
 
     /**
      * @OA\Post(
@@ -90,9 +92,7 @@ interface PageControllerSwagger
      *   summary="add new page",
      *   tags={"Pages"},
      *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       ref="#/components/schemas/Page",
-     *     ),
+     *     ref="#/components/requestBodies/PageStore",
      *   ),
      *   @OA\Response(
      *     response=201,
@@ -100,7 +100,7 @@ interface PageControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/Page",
+     *         ref="#/components/schemas/PageView",
      *       )
      *     )
      *   ),
@@ -109,7 +109,7 @@ interface PageControllerSwagger
      *   }
      * )
      */
-    public function store(Request $request);
+    public function store(PageStoreRequest $request): JsonResource;
 
     /**
      * @OA\Patch(
@@ -125,9 +125,7 @@ interface PageControllerSwagger
      *     )
      *   ),
      *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       ref="#/components/schemas/Page",
-     *     ),
+     *     ref="#/components/requestBodies/PageUpdate",
      *   ),
      *   @OA\Response(
      *     response=200,
@@ -135,7 +133,7 @@ interface PageControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/Page",
+     *         ref="#/components/schemas/PageView",
      *       )
      *     )
      *   ),
@@ -144,7 +142,7 @@ interface PageControllerSwagger
      *   }
      * )
      */
-    public function update(Page $page, Request $request): JsonResource;
+    public function update(Page $page, PageUpdateRequest $request): JsonResource;
 
     /**
      * @OA\Delete(
@@ -168,5 +166,5 @@ interface PageControllerSwagger
      *   }
      * )
      */
-    public function destroy(Page $page);
+    public function destroy(Page $page): JsonResponse;
 }
