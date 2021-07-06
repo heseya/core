@@ -115,6 +115,10 @@ Write models to _ide_helper_models.php and adds @mixin to each model, avoiding I
 ```
 php artisan ide-helper:models -M
 ```
+or run command:
+```
+composer ide-models-mixin
+```
 
 ## Release checklist
 This project uses [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html)
