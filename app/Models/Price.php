@@ -3,7 +3,8 @@
 namespace App\Models;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
+ * @mixin IdeHelperPrice
  */
 class Price extends Model
 {

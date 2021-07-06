@@ -49,7 +49,8 @@ final class Error
      *
      * @deprecated
      */
-    public static function abort($message = 'Internal Server Error', $code = 500) {
+    public static function abort($message = 'Internal Server Error', $code = 500)
+    {
         $error = new self(
             $message,
             $code,

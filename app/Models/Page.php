@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * @OA\Schema ()
+ * @mixin IdeHelperPage
+ */
 class Page extends Model
 {
     use HasFactory;

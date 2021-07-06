@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+/**
+ * @mixin IdeHelperOrderLog
+ */
 class OrderLog extends Model
 {
     public $timestamps = false;

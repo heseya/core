@@ -6,6 +6,6 @@ use BenSampo\Enum\Enum;
 
 class DiscountType extends Enum
 {
-    const PERCENTAGE = 0;
-    const AMOUNT = 1;
+    public const PERCENTAGE = 0;
+    public const AMOUNT = 1;
 }

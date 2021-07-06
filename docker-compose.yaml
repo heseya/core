@@ -15,12 +15,14 @@ services:
       if [ ! -f "/usr/src/init" ]; then
         composer install
         php artisan key:generate
+        sleep 15
         php artisan migrate --seed
+        php artisan passport:install
         touch /usr/src/init
       fi
       exec apache2-foreground
   mysql_service:
-    image: mysql:8.0
+    image: mariadb:10.5
     restart: unless-stopped
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: 'yes'

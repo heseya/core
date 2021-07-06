@@ -54,11 +54,4 @@ class AppServiceProvider extends ServiceProvider
             $this->app->bind($abstract, $concrete);
         }
     }
-
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-    }
 }

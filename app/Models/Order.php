@@ -18,7 +18,8 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
+ * @mixin IdeHelperOrder
  */
 class Order extends Model
 {
@@ -91,11 +92,6 @@ class Order extends Model
 
     protected string $defaultSortBy = 'created_at';
     protected string $defaultSortDirection = 'desc';
-
-    public function __construct(array $attributes = [])
-    {
-        parent::__construct($attributes);
-    }
 
     /**
      * @OA\Property(
