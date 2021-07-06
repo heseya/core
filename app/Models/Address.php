@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Propaganistas\LaravelPhone\PhoneNumber;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
+ * @mixin IdeHelperAddress
  */
 class Address extends Model
 {
