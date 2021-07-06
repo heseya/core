@@ -6,13 +6,24 @@ use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenDefineFunctions;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenPrivateMethods;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenTraits;
+use NunoMaduro\PhpInsights\Domain\Metrics\Code\Code;
 use NunoMaduro\PhpInsights\Domain\Metrics\Style\Style;
+use ObjectCalisthenics\Sniffs\Classes\ForbiddenPublicPropertySniff;
+use ObjectCalisthenics\Sniffs\Files\FunctionLengthSniff;
+use ObjectCalisthenics\Sniffs\Metrics\MaxNestingLevelSniff;
+use PHP_CodeSniffer\Standards\Generic\Sniffs\Arrays\DisallowLongArraySyntaxSniff;
+use PHP_CodeSniffer\Standards\Generic\Sniffs\CodeAnalysis\UnconditionalIfStatementSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
+use PHP_CodeSniffer\Standards\Generic\Sniffs\PHP\LowerCaseConstantSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\WhiteSpace\DisallowTabIndentSniff;
+use PhpCsFixer\Fixer\CastNotation\ShortScalarCastFixer;
+use PhpCsFixer\Fixer\Phpdoc\PhpdocVarAnnotationCorrectOrderFixer;
 use SlevomatCodingStandard\Sniffs\Arrays\TrailingArrayCommaSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
+use SlevomatCodingStandard\Sniffs\Commenting\DocCommentSpacingSniff;
 use SlevomatCodingStandard\Sniffs\Commenting\UselessFunctionDocCommentSniff;
+use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\DeclareStrictTypesSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\DisallowMixedTypeHintSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\ParameterTypeHintSniff;
@@ -70,8 +81,15 @@ return [
     ],
 
     'add' => [
+        Code::class => [
+            ShortScalarCastFixer::class,
+            UnconditionalIfStatementSniff::class,
+        ],
         Style::class => [
+            DisallowLongArraySyntaxSniff::class,
             DisallowTabIndentSniff::class,
+            LowerCaseConstantSniff::class,
+            PhpdocVarAnnotationCorrectOrderFixer::class,
             TrailingArrayCommaSniff::class,
         ],
     ],
@@ -88,6 +106,9 @@ return [
         UselessFunctionDocCommentSniff::class,
         SpaceAfterNotSniff::class,
         SuperfluousExceptionNamingSniff::class,
+        UnusedParameterSniff::class,
+        DocCommentSpacingSniff::class,
+        ForbiddenPublicPropertySniff::class,
     ],
 
     'config' => [
@@ -95,10 +116,16 @@ return [
             'title' => 'The usage of private methods is not idiomatic in Laravel.',
         ],
         LineLengthSniff::class => [
-            'lineLimit' => 100,
+            'lineLimit' => 120,
             'absoluteLineLimit' => 120,
             'ignoreComments' => false,
-        ]
+        ],
+        FunctionLengthSniff::class => [
+            'maxLinesLength' => 40,
+        ],
+        MaxNestingLevelSniff::class => [
+            'maxNestingLevel' => 5,
+        ],
     ],
 
     /*
@@ -113,10 +140,10 @@ return [
     */
 
     'requirements' => [
-        'min-quality' => 85,
+        'min-quality' => 100,
         'min-complexity' => 80,
         'min-architecture' => 85,
-        'min-style' => 85,
+        'min-style' => 100,
         'disable-security-check' => false,
     ],
 

@@ -43,8 +43,9 @@ class NameService implements NameServiceContract
 
         $arr = [];
         $tags = [];
+        $splittedCount = count($splitted);
 
-        for ($i = 0; count($splitted); $i++) {
+        for ($i = 0; $splittedCount; $i++) {
             $arr[$i] = '';
             $pairs = 0;
 
@@ -69,7 +70,6 @@ class NameService implements NameServiceContract
         $number = $pattern;
 
         foreach ($tags as $key => $tag) {
-
             $temp = explode(':', $key);
 
             if (count($temp) > 1 && isset($params[$temp[0]])) {
@@ -84,5 +84,4 @@ class NameService implements NameServiceContract
 
         return $number;
     }
-
 }

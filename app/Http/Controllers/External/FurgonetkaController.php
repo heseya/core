@@ -253,7 +253,7 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
         ], 201);
     }
 
-    private function getApiKey($refresh = false) : string
+    private function getApiKey($refresh = false): string
     {
         if (Storage::missing('furgonetka.key') || $refresh) {
             $response = Http::withBasicAuth(

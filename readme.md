@@ -72,6 +72,11 @@ Set your IDE to use the .editorconfig file. There is an extension for this in VS
 
 When writing the code for this project, follow rules from [Laravel best practices](https://github.com/alexeymezenin/laravel-best-practices).
 
+You can test your code with PHP Insights.
+```
+php artisan insights
+```
+
 Additional:
 - all variables in this project should be `snake_case` and functions (relations too) `camelCase`,
 - variables containing links like `avatar_url` should always end with `_url`,

@@ -38,7 +38,10 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
                 })->orWhere(function (Builder $query) use ($request) {
                     $query
                         ->where('black_list', true)
-                        ->whereDoesntHave('countries', fn ($query) => $query->where('code', $request->input('country')));
+                        ->whereDoesntHave(
+                            'countries',
+                            fn ($query) => $query->where('code', $request->input('country')),
+                        );
                 });
             });
         }
