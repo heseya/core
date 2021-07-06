@@ -45,7 +45,7 @@ class NameService implements NameServiceContract
         $tags = [];
         $splittedCount = count($splitted);
 
-        for ($i = 0; $splittedCount; $i++) {
+        for ($i = 0; $i < $splittedCount; $i++) {
             $arr[$i] = '';
             $pairs = 0;
 
