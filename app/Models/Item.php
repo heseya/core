@@ -11,7 +11,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
+ * @mixin IdeHelperItem
  */
 class Item extends Model
 {

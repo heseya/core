@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
+ * @mixin IdeHelperCategory
  */
 class Category extends Model
 {

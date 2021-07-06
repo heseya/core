@@ -14,13 +14,14 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 /**
- * @OA\Schema(
+ * @OA\Schema (
  *   description="Schema allows a product to take on new optional characteristics that can be chosen by the user
  *   and influences the price based on said choices. Schemas can use other schemas for their price calculation
  *   e.g. multiply_schema multiplies price of different schema based on it's own value.
  *   SCHEMAS USED BY OTHERS SHOULD NOT AFFECT THE PRICE
  *   (schema multiplied by multiply_schema adds 0 to the price while multiply_schema adds the multiplied value)",
  * )
+ * @mixin IdeHelperSchema
  */
 class Schema extends Model
 {

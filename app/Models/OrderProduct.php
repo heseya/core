@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
+ * @mixin IdeHelperOrderProduct
  */
 class OrderProduct extends Model
 {

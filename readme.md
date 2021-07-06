@@ -93,7 +93,6 @@ We use [PHP Insights](https://phpinsights.com/) to keep project clean.
 php artisan insight
 ```
 
-
 ## Docs
 Write documentation using [Swagger-PHP](http://zircote.github.io/swagger-php/).
 
@@ -106,6 +105,16 @@ The generated documentation is available at `/docs`.
 
 Locally I recommend set `L5_SWAGGER_GENERATE_ALWAYS` option in .env to `true`, then the documentation will be generated with every refresh.
 
+## IDE-helper
+
+Laravel [IDE Helper](https://packagist.org/packages/barryvdh/laravel-ide-helper), generates correct PHPDocs for all Facade classes, to improve auto-completion.
+
+>>Set the ide-helper for the new model
+ 
+Write models to _ide_helper_models.php and adds @mixin to each model, avoiding IDE duplicate declaration warnings:
+```
+php artisan ide-helper:models -M
+```
 
 ## Release checklist
 This project uses [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html)

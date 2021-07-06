@@ -14,7 +14,8 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
+ * @mixin IdeHelperUser
  */
 class User extends Model implements
     AuthenticatableContract,
