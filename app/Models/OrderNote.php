@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @mixin IdeHelperOrderNote
+ */
 class OrderNote extends Model
 {
     protected $fillable = [

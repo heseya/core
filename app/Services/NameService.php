@@ -30,7 +30,8 @@ class NameService implements NameServiceContract
 
             'no' => Order::count() + $start + 1,
             'no_year' => Order::whereYear('created_at', date('Y'))->count() + 1,
-            'no_month' => Order::whereYear('created_at', date('Y'))->whereMonth('created_at', date('n'))->count() + 1,
+            'no_month' => Order::whereYear('created_at', date('Y'))
+                ->whereMonth('created_at', date('n'))->count() + 1,
             'no_day' => Order::where('created_at', date('Y-m-d'))->count() + 1,
         ]);
     }
@@ -42,8 +43,9 @@ class NameService implements NameServiceContract
 
         $arr = [];
         $tags = [];
+        $splittedCount = count($splitted);
 
-        for ($i = 0; count($splitted); $i++) {
+        for ($i = 0; $i < $splittedCount; $i++) {
             $arr[$i] = '';
             $pairs = 0;
 
@@ -68,7 +70,6 @@ class NameService implements NameServiceContract
         $number = $pattern;
 
         foreach ($tags as $key => $tag) {
-
             $temp = explode(':', $key);
 
             if (count($temp) > 1 && isset($params[$temp[0]])) {
@@ -83,5 +84,4 @@ class NameService implements NameServiceContract
 
         return $number;
     }
-
 }

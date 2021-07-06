@@ -9,7 +9,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
+ * @mixin IdeHelperTag
  */
 class Tag extends Model
 {

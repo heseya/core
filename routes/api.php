@@ -3,8 +3,8 @@
 use App\Http\Controllers\AppController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CountriesController;
-use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
 
@@ -63,15 +63,19 @@ Route::prefix('shipping-methods')->group(function () {
     Route::post('filter', [ShippingMethodController::class, 'index']);
     Route::post(null, 'ShippingMethodController@store')->middleware('auth:api');
     Route::post('order', 'ShippingMethodController@order')->middleware('auth:api');
-    Route::patch('id:{shipping_method:id}', 'ShippingMethodController@update')->middleware('auth:api');
-    Route::delete('id:{shipping_method:id}', 'ShippingMethodController@destroy')->middleware('auth:api');
+    Route::patch('id:{shipping_method:id}', 'ShippingMethodController@update')
+        ->middleware('auth:api');
+    Route::delete('id:{shipping_method:id}', 'ShippingMethodController@destroy')
+        ->middleware('auth:api');
 });
 
 Route::prefix('payment-methods')->group(function () {
     Route::get(null, 'PaymentMethodController@index');
     Route::post(null, 'PaymentMethodController@store')->middleware('auth:api');
-    Route::patch('id:{payment_method:id}', 'PaymentMethodController@update')->middleware('auth:api');
-    Route::delete('id:{payment_method:id}', 'PaymentMethodController@destroy')->middleware('auth:api');
+    Route::patch('id:{payment_method:id}', 'PaymentMethodController@update')
+        ->middleware('auth:api');
+    Route::delete('id:{payment_method:id}', 'PaymentMethodController@destroy')
+        ->middleware('auth:api');
 });
 
 Route::prefix('settings')->group(function () {
@@ -95,7 +99,8 @@ Route::prefix('discounts')->group(function () {
     Route::get(null, [DiscountController::class, 'index'])->middleware('auth:api');
     Route::get('{discount:code}', [DiscountController::class, 'show']);
     Route::post(null, [DiscountController::class, 'store'])->middleware('auth:api');
-    Route::patch('id:{discount:id}', [DiscountController::class, 'update'])->middleware('auth:api');
+    Route::patch('id:{discount:id}', [DiscountController::class, 'update'])
+        ->middleware('auth:api');
 });
 
 Route::middleware('auth:api')->group(function () {
@@ -164,5 +169,6 @@ Route::middleware('auth:api')->group(function () {
 // External
 Route::prefix('furgonetka')->group(function () {
     Route::post('webhook', 'External\FurgonetkaController@webhook');
-    Route::post('create-package', 'External\FurgonetkaController@createPackage')->middleware('auth:api');
+    Route::post('create-package', 'External\FurgonetkaController@createPackage')
+        ->middleware('auth:api');
 });

@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
+ * @mixin IdeHelperShippingMethod
  */
 class ShippingMethod extends Model
 {
@@ -108,7 +109,8 @@ class ShippingMethod extends Model
      *     type="object",
      *     @OA\Property(
      *       property="start",
-     *       description="start of the range (min = 0); range goes from start to start of next range or infinity",
+     *       description="start of the range (min = 0);
+     *         range goes from start to start of next range or infinity",
      *       type="number",
      *       example=0.0
      *     ),
@@ -131,7 +133,9 @@ class ShippingMethod extends Model
      */
     public function priceRanges(): HasMany
     {
-        return $this->hasMany(PriceRange::class, 'shipping_method_id');
+        return $this
+            ->hasMany(PriceRange::class, 'shipping_method_id')
+            ->orderBy('start');
     }
 
     public function getPrice(float $orderTotal): float

@@ -30,7 +30,7 @@ class PageController extends Controller implements PageControllerSwagger
     public function show(Page $page): JsonResource
     {
         if (!Auth::check() && $page->public !== true) {
-            throw new NotFoundHttpException;
+            throw new NotFoundHttpException();
         }
 
         return PageResource::make($page);

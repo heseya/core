@@ -48,7 +48,8 @@ class Przelewy24 implements PaymentMethod
         }
 
         return [
-            'redirect_url' => config('przelewy24.url') . '/trnRequest/' . $response['data']['token'],
+            'redirect_url' => config('przelewy24.url') . '/trnRequest/' .
+                $response['data']['token'],
         ];
     }
 
@@ -88,7 +89,7 @@ class Przelewy24 implements PaymentMethod
             'crc' => config('przelewy24.crc'),
         ]);
 
-        if ($validated['sign'] != $sign) {
+        if ($validated['sign'] !== $sign) {
             return Error::abort('Invalid payment', 400);
         }
 

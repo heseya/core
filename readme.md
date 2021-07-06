@@ -1,31 +1,13 @@
 # Heseya Store API
 
-## Project setup
-```
-composer i
-```
-
-Copy `.env.example` to `.env`.
-
-Create application key and run migrations with seeder.
-```
-php artisan key:generate
-php artisan migrate --seed
-```
-
-After migration run passport install.
-```
-php artisan passport:install
-```
-
-Seeder creates user `admin@example.com` with password `secret`.
-
-When something not working with cache (like routing).
-```
-php artisan optimize
-```
-
 ## Docker
+Preparation
+* Copy `.env.example` to `.env`.
+* Configure DOCKER_PORT in .env to free port on your host eg.
+```
+DOCKER_PORT=3000
+```
+
 Create an environment
 ```
 docker-compose up
@@ -51,6 +33,37 @@ Deleting the environment
 docker-compose down -v
 ```
 
+Optionally, you can clear the entire project cache by
+```
+docker system prune
+```
+
+
+## Project setup
+```
+composer i
+```
+
+Copy `.env.example` to `.env`.
+
+Create application key and run migrations with seeder.
+```
+php artisan key:generate
+php artisan migrate --seed
+```
+
+After migration run passport install.
+```
+php artisan passport:install
+```
+
+Seeder creates user `admin@example.com` with password `secret`.
+
+When something not working with cache (like routing).
+```
+php artisan optimize
+```
+
 ## Deploy
 - Remember to config Sentry when deploying new instance!
 
@@ -58,6 +71,11 @@ docker-compose down -v
 Set your IDE to use the .editorconfig file. There is an extension for this in VS Code.
 
 When writing the code for this project, follow rules from [Laravel best practices](https://github.com/alexeymezenin/laravel-best-practices).
+
+You can test your code with PHP Insights.
+```
+php artisan insights
+```
 
 Additional:
 - all variables in this project should be `snake_case` and functions (relations too) `camelCase`,
@@ -80,7 +98,6 @@ We use [PHP Insights](https://phpinsights.com/) to keep project clean.
 php artisan insight
 ```
 
-
 ## Docs
 Write documentation using [Swagger-PHP](http://zircote.github.io/swagger-php/).
 
@@ -93,6 +110,20 @@ The generated documentation is available at `/docs`.
 
 Locally I recommend set `L5_SWAGGER_GENERATE_ALWAYS` option in .env to `true`, then the documentation will be generated with every refresh.
 
+## IDE-helper
+
+Laravel [IDE Helper](https://packagist.org/packages/barryvdh/laravel-ide-helper), generates correct PHPDocs for all Facade classes, to improve auto-completion.
+
+>>Set the ide-helper for the new model
+ 
+Write models to _ide_helper_models.php and adds @mixin to each model, avoiding IDE duplicate declaration warnings:
+```
+php artisan ide-helper:models -M
+```
+or run command:
+```
+composer ide-models-mixin
+```
 
 ## Release checklist
 This project uses [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html)
