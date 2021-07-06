@@ -26,6 +26,13 @@ php artisan optimize
 ```
 
 ## Docker
+Preparation
+* Copy `.env.example` to `.env`.
+* Configure DOCKER_PORT in .env to free port on your host eg.
+```
+DOCKER_PORT=3000
+```
+
 Create an environment
 ```
 docker-compose up
