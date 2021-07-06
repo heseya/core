@@ -29,7 +29,7 @@ class OrderCreated extends Notification
      */
     public function toMail($notifiable): MailMessage
     {
-        return (new MailMessage)
+        return (new MailMessage())
             ->subject('Order confirmation')
             ->view('mail.new-order', [
                 'order' => $this->order,

@@ -16,17 +16,8 @@ class Collection extends Resource implements Countable, IteratorAggregate
 
     /**
      * The resource that this resource collects.
-     *
-     * @var string
      */
-    public $collects;
-
-    /**
-     * The mapped collection instance.
-     *
-     * @var \Illuminate\Support\Collection
-     */
-    public $collection;
+    private string $collects;
 
     private bool $full;
 
@@ -68,7 +59,6 @@ class Collection extends Resource implements Countable, IteratorAggregate
      * Create an HTTP response that represents the object.
      *
      * @param Request $request
-     * @return JsonResponse
      */
     public function toResponse($request): JsonResponse
     {
@@ -81,11 +71,8 @@ class Collection extends Resource implements Countable, IteratorAggregate
 
     /**
      * Create a paginate-aware HTTP response.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
-    protected function preparePaginatedResponse($request): JsonResponse
+    protected function preparePaginatedResponse(Request $request): JsonResponse
     {
         // preserve All Query Parameters
         $this->resource->appends($request->query());

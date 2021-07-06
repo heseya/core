@@ -74,7 +74,9 @@ class ProductController extends Controller implements ProductControllerSwagger
         $products = $query->paginate((int) $request->input('limit', 12));
 
         if ($request->has('available')) {
-            $products = $products->filter(fn ($p) => $p->available === $request->boolean('available'));
+            $products = $products->filter(function ($product) use ($request) {
+                return $product->available === $request->boolean('available');
+            });
         }
 
         return ProductResource::collection(
@@ -86,7 +88,7 @@ class ProductController extends Controller implements ProductControllerSwagger
     public function show(ProductShowRequest $request, Product $product): JsonResource
     {
         if (!Auth::check() && !$product->isPublic()) {
-            throw new NotFoundHttpException;
+            throw new NotFoundHttpException();
         }
 
         return ProductResource::make($product);

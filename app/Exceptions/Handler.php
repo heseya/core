@@ -39,14 +39,6 @@ final class Handler extends ExceptionHandler
     ];
 
     /**
-     * Report or log an exception.
-     */
-    public function report(Throwable $exception): void
-    {
-        parent::report($exception);
-    }
-
-    /**
      * Render an exception into an HTTP response.
      */
     public function render($request, Throwable $exception)
@@ -67,7 +59,7 @@ final class Handler extends ExceptionHandler
             if (config('app.debug') === true) {
                 return parent::render($request, $exception);
             }
-            $error = new Error;
+            $error = new Error();
         }
 
         return ErrorResource::make($error)

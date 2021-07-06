@@ -11,7 +11,7 @@ class OrderItemsRequest extends FormRequest
     {
         return [
             'items' => ['required', 'array', 'min:1'],
-            'items.*.product_id' => ['required', 'uuid', new ProductPublic],
+            'items.*.product_id' => ['required', 'uuid', new ProductPublic()],
             'items.*.quantity' => ['required', 'integer', 'min:1'],
 
             'items.*.schemas' => ['nullable', 'array'],

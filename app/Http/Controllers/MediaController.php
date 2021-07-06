@@ -14,11 +14,7 @@ class MediaController extends Controller implements MediaControllerSwagger
 {
     public function store(MediaStoreRequest $request): JsonResource
     {
-        $response = Http::attach(
-                'file',
-                file_get_contents($request->file('file')),
-                'file',
-            )
+        $response = Http::attach('file', $request->file('file')->getContent(), 'file')
             ->withHeaders(['Authorization' => config('silverbox.key')])
             ->post(config('silverbox.host') . '/' . config('silverbox.client'));
 

@@ -55,7 +55,7 @@ class SettingController extends Controller implements SettingControllerSwagger
 
     public function update(string $name, SettingUpdateRequest $request): JsonResource
     {
-        $config = config("settings.$name");
+        $config = config('settings.' . $name);
 
         if ($config !== null) {
             $setting = Setting::where('name', $name)->first();

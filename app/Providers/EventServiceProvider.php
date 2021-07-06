@@ -23,12 +23,4 @@ class EventServiceProvider extends ServiceProvider
             OrderStatusUpdatedListener::class,
         ],
     ];
-
-    /**
-     * Register any events for your application.
-     */
-    public function boot(): void
-    {
-        parent::boot();
-    }
 }
