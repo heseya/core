@@ -273,9 +273,7 @@ class Schema extends Model
     {
         $schemaKeys = collect($schemas)->keys();
 
-        if ($this->usedBySchemas()->whereIn(
-            $this->getKeyName(), $schemaKeys,
-        )->exists()) {
+        if ($this->usedBySchemas()->whereIn($this->getKeyName(), $schemaKeys)->exists()) {
             return 0.0;
         }
 
@@ -298,9 +296,7 @@ class Schema extends Model
 
         if ($this->type === 7) {
             $usedSchema = $this->usedSchemas()->firstOrFail();
-            $price = $value * $usedSchema->getUsedPrice(
-                $schemas[$usedSchema->getKey()], $schemas,
-            );
+            $price = $value * $usedSchema->getUsedPrice($schemas[$usedSchema->getKey()], $schemas);
         }
 
         return $price;
