@@ -22,7 +22,7 @@ services:
       fi
       exec apache2-foreground
   mysql_service:
-    image: mysql:8.0
+    image: mariadb:10.5
     restart: unless-stopped
     environment:
       MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
