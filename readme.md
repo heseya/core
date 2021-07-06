@@ -1,30 +1,5 @@
 # Heseya Store API
 
-## Project setup
-```
-composer i
-```
-
-Copy `.env.example` to `.env`.
-
-Create application key and run migrations with seeder.
-```
-php artisan key:generate
-php artisan migrate --seed
-```
-
-After migration run passport install.
-```
-php artisan passport:install
-```
-
-Seeder creates user `admin@example.com` with password `secret`.
-
-When something not working with cache (like routing).
-```
-php artisan optimize
-```
-
 ## Docker
 Preparation
 * Copy `.env.example` to `.env`.
@@ -56,6 +31,37 @@ docker exec -it store-api_app_1 bash
 Deleting the environment
 ```
 docker-compose down -v
+```
+
+Optionally, you can clear the entire project cache by
+```
+docker system prune
+```
+
+
+## Project setup
+```
+composer i
+```
+
+Copy `.env.example` to `.env`.
+
+Create application key and run migrations with seeder.
+```
+php artisan key:generate
+php artisan migrate --seed
+```
+
+After migration run passport install.
+```
+php artisan passport:install
+```
+
+Seeder creates user `admin@example.com` with password `secret`.
+
+When something not working with cache (like routing).
+```
+php artisan optimize
 ```
 
 ## Deploy
