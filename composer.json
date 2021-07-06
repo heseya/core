@@ -31,7 +31,7 @@
         "mbezhanov/faker-provider-collection": "^1.2",
         "mockery/mockery": "^1.4",
         "nunomaduro/collision": "^5.3",
-        "nunomaduro/phpinsights": "^1.14",
+        "nunomaduro/phpinsights": "^2.0",
         "phpunit/phpunit": "^9.5"
     },
     "config": {
