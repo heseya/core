@@ -25,7 +25,7 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
             $query->with('paymentMethods');
         } else {
             $query
-                ->with(['paymentMethods' => fn ($q) => $q->where('public', true)])
+                ->with(['paymentMethods' => fn ($query) => $query->where('public', true)])
                 ->where('public', true);
         }
 
@@ -34,13 +34,12 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
                 $query->where(function (Builder $query) use ($request) {
                     $query
                         ->where('black_list', false)
-                        ->whereHas('countries', fn ($q) => $q->where('code', $request->input('country')));
-                })
-                    ->orWhere(function (Builder $query) use ($request) {
-                        $query
-                            ->where('black_list', true)
-                            ->whereDoesntHave('countries', fn ($q) => $q->where('code', $request->input('country')));
-                    });
+                        ->whereHas('countries', fn ($query) => $query->where('code', $request->input('country')));
+                })->orWhere(function (Builder $query) use ($request) {
+                    $query
+                        ->where('black_list', true)
+                        ->whereDoesntHave('countries', fn ($query) => $query->where('code', $request->input('country')));
+                });
             });
         }
 

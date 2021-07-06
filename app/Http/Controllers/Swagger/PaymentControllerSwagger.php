@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Swagger;
 
 use App\Http\Requests\Payments\PaymentStoreRequest;
 use App\Models\Order;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -74,5 +73,5 @@ interface PaymentControllerSwagger
      *   )
      * )
      */
-    public function update(string $method, Request $request);
+    public function update(string $method, Request $request): JsonResource;
 }

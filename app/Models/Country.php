@@ -21,8 +21,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Country extends Model
 {
-    public $timestamps = null;
-
     protected $fillable = [
         'code',
         'name',

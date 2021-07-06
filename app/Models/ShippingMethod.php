@@ -108,7 +108,8 @@ class ShippingMethod extends Model
      *     type="object",
      *     @OA\Property(
      *       property="start",
-     *       description="start of the range (min = 0); range goes from start to start of next range or infinity",
+     *       description="start of the range (min = 0);
+     *         range goes from start to start of next range or infinity",
      *       type="number",
      *       example=0.0
      *     ),

@@ -72,21 +72,22 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
     public function createPackage(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'order_id' => 'required|integer',
-            'package_template_id' => 'required|integer',
+            'order_id' => ['required', 'integer'],
+            'package_template_id' => ['required', 'integer'],
         ]);
 
         $order = Order::findOrFail($validated['order_id']);
         $packageTemplate = PackageTemplate::findOrFail($validated['package_template_id']);
 
         $validator = Validator::make($order->deliveryAddress->toArray(), [
-            'country' => 'required|in:PL',
-            'phone' => 'required|phone:PL'
+            'country' => ['required', 'in:PL'],
+            'phone' => ['required', 'phone:PL'],
         ]);
 
         if ($validator->fails()) {
             return Error::abort(
-                'Order address not in Poland/invalid phone number' . $order->deliveryAddress->phoneSimple,
+                'Order address not in Poland/invalid phone number' .
+                    $order->deliveryAddress->phoneSimple,
                 502,
             );
         }
@@ -96,7 +97,7 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
                 'trace' => true,
                 'cache_wsdl' => false,
             ]);
-        } catch (Exception $e) {
+        } catch (Exception $error) {
             return Error::abort(
                 'Could not connect to API',
                 502,

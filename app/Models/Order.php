@@ -92,11 +92,6 @@ class Order extends Model
     protected string $defaultSortBy = 'created_at';
     protected string $defaultSortDirection = 'desc';
 
-    public function __construct(array $attributes = [])
-    {
-        parent::__construct($attributes);
-    }
-
     /**
      * @OA\Property(
      *   property="summary",

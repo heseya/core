@@ -34,7 +34,7 @@ class PaymentController extends Controller implements PaymentControllerSwagger
 
         try {
             $payment->update($method_class::generateUrl($payment));
-        } catch (Throwable $e) {
+        } catch (Throwable $error) {
             throw new StoreException('Cannot generate payment url.');
         }
 

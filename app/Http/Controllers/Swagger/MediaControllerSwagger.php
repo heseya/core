@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Swagger;
 
 use App\Http\Requests\MediaStoreRequest;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 interface MediaControllerSwagger

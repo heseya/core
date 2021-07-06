@@ -6,7 +6,11 @@ use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenDefineFunctions;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenPrivateMethods;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenTraits;
+use NunoMaduro\PhpInsights\Domain\Metrics\Style\Style;
+use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
+use PHP_CodeSniffer\Standards\Generic\Sniffs\WhiteSpace\DisallowTabIndentSniff;
+use SlevomatCodingStandard\Sniffs\Arrays\TrailingArrayCommaSniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
 use SlevomatCodingStandard\Sniffs\Commenting\UselessFunctionDocCommentSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\DeclareStrictTypesSniff;
@@ -65,7 +69,12 @@ return [
         //  'path/to/directory-or-file'
     ],
 
-    'add' => [],
+    'add' => [
+        Style::class => [
+            DisallowTabIndentSniff::class,
+            TrailingArrayCommaSniff::class,
+        ],
+    ],
 
     'remove' => [
         DeclareStrictTypesSniff::class,
@@ -85,6 +94,11 @@ return [
         ForbiddenPrivateMethods::class => [
             'title' => 'The usage of private methods is not idiomatic in Laravel.',
         ],
+        LineLengthSniff::class => [
+            'lineLimit' => 100,
+            'absoluteLineLimit' => 120,
+            'ignoreComments' => false,
+        ]
     ],
 
     /*

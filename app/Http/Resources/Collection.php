@@ -19,14 +19,14 @@ class Collection extends Resource implements Countable, IteratorAggregate
      *
      * @var string
      */
-    public $collects;
+    private $collects;
 
     /**
      * The mapped collection instance.
      *
      * @var \Illuminate\Support\Collection
      */
-    public $collection;
+    private $collection;
 
     private bool $full;
 

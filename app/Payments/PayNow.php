@@ -2,11 +2,11 @@
 
 namespace App\Payments;
 
-use Illuminate\Http\JsonResponse;
-use Paynow\Client;
 use App\Models\Payment;
-use Paynow\Environment;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Paynow\Client;
+use Paynow\Environment;
 
 class PayNow implements PaymentMethod
 {

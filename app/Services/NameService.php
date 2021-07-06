@@ -30,7 +30,8 @@ class NameService implements NameServiceContract
 
             'no' => Order::count() + $start + 1,
             'no_year' => Order::whereYear('created_at', date('Y'))->count() + 1,
-            'no_month' => Order::whereYear('created_at', date('Y'))->whereMonth('created_at', date('n'))->count() + 1,
+            'no_month' => Order::whereYear('created_at', date('Y'))
+                ->whereMonth('created_at', date('n'))->count() + 1,
             'no_day' => Order::where('created_at', date('Y-m-d'))->count() + 1,
         ]);
     }
