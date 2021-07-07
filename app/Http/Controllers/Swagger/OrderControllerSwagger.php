@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Swagger;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderIndexRequest;
 use App\Http\Requests\OrderItemsRequest;
+use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
@@ -240,4 +241,59 @@ interface OrderControllerSwagger
      * )
      */
     public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResponse;
+
+    /**
+     * @OA\Patch(
+     *   path="/orders/id:{order:id}",
+     *   summary="update product",
+     *   tags={"Orders"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="integer",
+     *     ),
+     *   ),
+     *   @OA\RequestBody(
+     *     request="OrderUpdate",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="id",
+     *         type="string",
+     *       ),
+     *       @OA\Property(
+     *         property="email",
+     *         type="string",
+     *       ),
+     *       @OA\Property(
+     *         property="comment",
+     *         type="string",
+     *       ),
+     *       @OA\Property(
+     *         property="shipping_number",
+     *         type="string",
+     *       ),
+     *       @OA\Property(
+     *         property="shipping_price",
+     *         type="float",
+     *       ),
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/Order"
+     *       )
+     *     )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function update(OrderUpdateRequest $request, Order $order): JsonResponse;
 }

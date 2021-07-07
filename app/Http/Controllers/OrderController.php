@@ -10,6 +10,7 @@ use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderIndexRequest;
 use App\Http\Requests\OrderItemsRequest;
 use App\Http\Requests\OrderSyncRequest;
+use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Resources\OrderPublicResource;
 use App\Http\Resources\OrderResource;
@@ -21,6 +22,7 @@ use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Services\Contracts\NameServiceContract;
+use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Throwable;
@@ -28,10 +30,12 @@ use Throwable;
 class OrderController extends Controller implements OrderControllerSwagger
 {
     private NameServiceContract $nameService;
+    private OrderService $orderService;
 
-    public function __construct(NameServiceContract $nameService)
+    public function __construct(NameServiceContract $nameService, OrderService $orderService)
     {
         $this->nameService = $nameService;
+        $this->orderService = $orderService;
     }
 
     public function index(OrderIndexRequest $request): JsonResource
@@ -232,7 +236,6 @@ class OrderController extends Controller implements OrderControllerSwagger
         }
 
         $status = Status::findOrFail($request->input('status_id'));
-
         $order->update([
             'status_id' => $status->getKey(),
         ]);
@@ -244,5 +247,10 @@ class OrderController extends Controller implements OrderControllerSwagger
         OrderStatusUpdated::dispatch($order);
 
         return OrderResource::make($order)->response();
+    }
+
+    public function update(OrderUpdateRequest $request, Order $order): JsonResponse
+    {
+        return $this->orderService->update($request, $order);
     }
 }
