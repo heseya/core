@@ -13,6 +13,6 @@ interface PageServiceContract
     public function create(array $attributes): Page;
 
     public function update(Page $page, array $attributes): Page;
-    
+
     public function delete(Page $page);
 }

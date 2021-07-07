@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Swagger;
 
-use App\Http\Requests\PageUpdateRequest;
 use App\Http\Requests\PageStoreRequest;
+use App\Http\Requests\PageUpdateRequest;
 use App\Models\Page;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;

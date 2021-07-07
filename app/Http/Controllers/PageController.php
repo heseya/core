@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Swagger\PageControllerSwagger;
-use App\Http\Requests\PageUpdateRequest;
 use App\Http\Requests\PageStoreRequest;
+use App\Http\Requests\PageUpdateRequest;
 use App\Http\Resources\PageResource;
 use App\Models\Page;
 use App\Services\Contracts\PageServiceContract;

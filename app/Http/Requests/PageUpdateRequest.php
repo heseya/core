@@ -43,7 +43,7 @@ class PageUpdateRequest extends FormRequest
         return [
             'name' => ['string', 'max:255'],
             'slug' => [
-                'string', 
+                'string',
                 'max:255',
                 Rule::unique('pages')->ignore($this->route('page')->slug, 'slug'),
             ],

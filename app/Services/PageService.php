@@ -12,7 +12,7 @@ class PageService implements PageServiceContract
     public function authorize(Page $page)
     {
         if (!Auth::check() && $page->public !== true) {
-            throw new NotFoundHttpException;
+            throw new NotFoundHttpException();
         }
     }
 
