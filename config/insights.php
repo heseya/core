@@ -16,6 +16,7 @@ use PHP_CodeSniffer\Standards\Generic\Sniffs\PHP\LowerCaseConstantSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\WhiteSpace\DisallowTabIndentSniff;
 use PhpCsFixer\Fixer\CastNotation\ShortScalarCastFixer;
 use PhpCsFixer\Fixer\Phpdoc\PhpdocVarAnnotationCorrectOrderFixer;
+use PhpCsFixer\Fixer\Whitespace\NoExtraBlankLinesFixer;
 use SlevomatCodingStandard\Sniffs\Arrays\TrailingArrayCommaSniff;
 use SlevomatCodingStandard\Sniffs\Classes\ForbiddenPublicPropertySniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
@@ -99,6 +100,7 @@ return [
         ForbiddenDefineFunctions::class,
         ForbiddenNormalClasses::class,
         ForbiddenTraits::class,
+        NoExtraBlankLinesFixer::class,
         ParameterTypeHintSniff::class,
         PropertyTypeHintSniff::class,
         ReturnTypeHintSniff::class,
