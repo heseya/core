@@ -34,26 +34,26 @@ class OrderUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-                'email' => ['required', 'email'],
-                'comment' => ['nullable', 'string', 'max:1000'],
+            'email' => ['required', 'email'],
+            'comment' => ['nullable', 'string', 'max:1000'],
 
-                'delivery_address.name' => ['required', 'string', 'max:255'],
-                'delivery_address.phone' => ['required', 'string', 'max:20'],
-                'delivery_address.address' => ['required', 'string', 'max:255'],
-                'delivery_address.zip' => ['required', 'string', 'max:16'],
-                'delivery_address.city' => ['required', 'string', 'max:255'],
-                'delivery_address.country' => ['required', 'string', 'size:2'],
-                'delivery_address.vat' => ['nullable', 'string', 'max:15'],
+            'delivery_address.name' => ['required', 'string', 'max:255'],
+            'delivery_address.phone' => ['required', 'string', 'max:20'],
+            'delivery_address.address' => ['required', 'string', 'max:255'],
+            'delivery_address.zip' => ['required', 'string', 'max:16'],
+            'delivery_address.city' => ['required', 'string', 'max:255'],
+            'delivery_address.country' => ['required', 'string', 'size:2'],
+            'delivery_address.vat' => ['nullable', 'string', 'max:15'],
 
-                'invoice_address.name' => ['nullable', 'string', 'max:255'],
-                'invoice_address.phone' => ['nullable', 'string', 'max:20'],
-                'invoice_address.address' => ['nullable', 'string', 'max:255'],
-                'invoice_address.zip' => ['nullable', 'string', 'max:16'],
-                'invoice_address.city' => ['nullable', 'string', 'max:255'],
-                'invoice_address.country' => ['nullable', 'string', 'size:2'],
-                'invoice_address.vat' => ['nullable', 'string', 'max:15'],
+            'invoice_address.name' => ['nullable', 'string', 'max:255'],
+            'invoice_address.phone' => ['nullable', 'string', 'max:20'],
+            'invoice_address.address' => ['nullable', 'string', 'max:255'],
+            'invoice_address.zip' => ['nullable', 'string', 'max:16'],
+            'invoice_address.city' => ['nullable', 'string', 'max:255'],
+            'invoice_address.country' => ['nullable', 'string', 'size:2'],
+            'invoice_address.vat' => ['nullable', 'string', 'max:15'],
 
-                'validation' => ['boolean'],
-            ];
+            'validation' => ['boolean'],
+        ];
     }
 }

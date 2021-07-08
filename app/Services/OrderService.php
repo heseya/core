@@ -7,11 +7,11 @@ use App\Http\Resources\OrderResource;
 use App\Models\Address;
 use App\Models\Order;
 use App\Services\Contracts\DiscountServiceContract;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
-use Exception;
 
 class OrderService
 {
@@ -41,10 +41,6 @@ class OrderService
 
     public function update(Request $request, Order $order): JsonResponse
     {
-        if (!$order->id) {
-            throw new OrderException('Order model does not exist !', Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
         DB::beginTransaction();
 
         try {
@@ -65,10 +61,10 @@ class OrderService
             }
 
             $order->update([
-                 'email' => $request->input('email'),
-                 'comment' => $request->input('comment'),
-                 'delivery_address_id' => $deliveryAddress->getKey(),
-                 'invoice_address_id' => $request->invoice_address ? $invoiceAddress->getKey() : null,
+                'email' => $request->input('email'),
+                'comment' => $request->input('comment'),
+                'delivery_address_id' => $deliveryAddress->getKey(),
+                'invoice_address_id' => $request->invoice_address ? $invoiceAddress->getKey() : null,
             ]);
 
             DB::commit();
@@ -77,7 +73,10 @@ class OrderService
         } catch (Exception $error) {
             DB::rollBack();
 
-            throw new OrderException('Error editing the order for id: ' . $order->id);
+            throw new OrderException(
+                'Error editing the order for id: ' . $order->id,
+                Response::HTTP_UNPROCESSABLE_ENTITY
+            );
         }
     }
 }
