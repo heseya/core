@@ -25,3 +25,9 @@ class BrandController extends Controller implements BrandControllerSwagger
         return BrandResource::collection($query->get());
     }
 }
+
+
+#!/bin/sh
+
+composer style
+docker exec -it store-api_app_1 composer style
