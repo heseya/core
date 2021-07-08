@@ -26,6 +26,7 @@ use App\Services\PageService;
 use App\Services\ReorderService;
 use App\Services\SchemaService;
 use App\Services\SettingsService;
+use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -52,6 +53,10 @@ class AppServiceProvider extends ServiceProvider
     {
         foreach (self::CONTRACTS as $abstract => $concrete) {
             $this->app->bind($abstract, $concrete);
+        }
+
+        if ($this->app->isLocal()) {
+            $this->app->register(IdeHelperServiceProvider::class);
         }
     }
 }

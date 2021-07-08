@@ -36,7 +36,6 @@ interface PageResourceSwagger
      */
     public function base(Request $request): array;
 
-
     /**
      * @OA\Schema(
      *   schema="PageView",

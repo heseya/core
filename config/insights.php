@@ -12,10 +12,25 @@ use PHP_CodeSniffer\Standards\Generic\Sniffs\Arrays\DisallowLongArraySyntaxSniff
 use PHP_CodeSniffer\Standards\Generic\Sniffs\CodeAnalysis\UnconditionalIfStatementSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
+use PHP_CodeSniffer\Standards\Generic\Sniffs\NamingConventions\UpperCaseConstantNameSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\PHP\LowerCaseConstantSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\WhiteSpace\DisallowTabIndentSniff;
+use PHP_CodeSniffer\Standards\PSR1\Sniffs\Methods\CamelCapsMethodNameSniff;
+use PHP_CodeSniffer\Standards\PSR2\Sniffs\ControlStructures\ElseIfDeclarationSniff;
+use PHP_CodeSniffer\Standards\PSR2\Sniffs\Files\EndFileNewlineSniff;
+use PhpCsFixer\Fixer\ArrayNotation\NoTrailingCommaInSinglelineArrayFixer;
+use PhpCsFixer\Fixer\ArrayNotation\NoWhitespaceBeforeCommaInArrayFixer;
+use PhpCsFixer\Fixer\Basic\BracesFixer;
+use PhpCsFixer\Fixer\Casing\LowercaseStaticReferenceFixer;
 use PhpCsFixer\Fixer\CastNotation\ShortScalarCastFixer;
+use PhpCsFixer\Fixer\ClassNotation\OrderedClassElementsFixer;
+use PhpCsFixer\Fixer\Comment\NoTrailingWhitespaceInCommentFixer;
+use PhpCsFixer\Fixer\Import\SingleImportPerStatementFixer;
+use PhpCsFixer\Fixer\Operator\BinaryOperatorSpacesFixer;
+use PhpCsFixer\Fixer\Operator\StandardizeNotEqualsFixer;
 use PhpCsFixer\Fixer\Phpdoc\PhpdocVarAnnotationCorrectOrderFixer;
+use PhpCsFixer\Fixer\PhpTag\FullOpeningTagFixer;
+use PhpCsFixer\Fixer\StringNotation\SingleQuoteFixer;
 use PhpCsFixer\Fixer\Whitespace\NoExtraBlankLinesFixer;
 use SlevomatCodingStandard\Sniffs\Arrays\TrailingArrayCommaSniff;
 use SlevomatCodingStandard\Sniffs\Classes\ForbiddenPublicPropertySniff;
@@ -24,6 +39,11 @@ use SlevomatCodingStandard\Sniffs\Commenting\DocCommentSpacingSniff;
 use SlevomatCodingStandard\Sniffs\Commenting\UselessFunctionDocCommentSniff;
 use SlevomatCodingStandard\Sniffs\Functions\FunctionLengthSniff;
 use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
+use SlevomatCodingStandard\Sniffs\Namespaces\AlphabeticallySortedUsesSniff;
+use SlevomatCodingStandard\Sniffs\Namespaces\NamespaceSpacingSniff;
+use SlevomatCodingStandard\Sniffs\Namespaces\UnusedUsesSniff;
+use SlevomatCodingStandard\Sniffs\Namespaces\UseDoesNotStartWithBackslashSniff;
+use SlevomatCodingStandard\Sniffs\Operators\RequireCombinedAssignmentOperatorSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\DeclareStrictTypesSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\DisallowMixedTypeHintSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\ParameterTypeHintSniff;
@@ -84,6 +104,7 @@ return [
         Code::class => [
             ShortScalarCastFixer::class,
             UnconditionalIfStatementSniff::class,
+            RequireCombinedAssignmentOperatorSniff::class,
         ],
         Style::class => [
             DisallowLongArraySyntaxSniff::class,
@@ -91,6 +112,24 @@ return [
             LowerCaseConstantSniff::class,
             PhpdocVarAnnotationCorrectOrderFixer::class,
             TrailingArrayCommaSniff::class,
+            EndFileNewlineSniff::class,
+            CamelCapsMethodNameSniff::class,
+            ElseIfDeclarationSniff::class,
+            UpperCaseConstantNameSniff::class,
+            AlphabeticallySortedUsesSniff::class,
+            NamespaceSpacingSniff::class,
+            UnusedUsesSniff::class,
+            UseDoesNotStartWithBackslashSniff::class,
+            NoTrailingCommaInSinglelineArrayFixer::class,
+            NoWhitespaceBeforeCommaInArrayFixer::class,
+            BracesFixer::class,
+            LowercaseStaticReferenceFixer::class,
+            NoTrailingWhitespaceInCommentFixer::class,
+            BinaryOperatorSpacesFixer::class,
+            StandardizeNotEqualsFixer::class,
+            FullOpeningTagFixer::class,
+            OrderedClassElementsFixer::class,
+            SingleImportPerStatementFixer::class,
         ],
     ],
 
@@ -100,7 +139,6 @@ return [
         ForbiddenDefineFunctions::class,
         ForbiddenNormalClasses::class,
         ForbiddenTraits::class,
-        NoExtraBlankLinesFixer::class,
         ParameterTypeHintSniff::class,
         PropertyTypeHintSniff::class,
         ReturnTypeHintSniff::class,
@@ -108,7 +146,6 @@ return [
         SpaceAfterNotSniff::class,
         SuperfluousExceptionNamingSniff::class,
         UnusedParameterSniff::class,
-        DocCommentSpacingSniff::class,
         ForbiddenPublicPropertySniff::class,
         FunctionLengthSniff::class,
     ],

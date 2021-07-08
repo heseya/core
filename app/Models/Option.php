@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @OA\Schema ()
+ *
  * @mixin IdeHelperOption
  */
 class Option extends Model

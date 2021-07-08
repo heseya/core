@@ -19,6 +19,7 @@ use Illuminate\Support\Str;
 
 /**
  * @OA\Schema ()
+ *
  * @mixin IdeHelperOrder
  */
 class Order extends Model
