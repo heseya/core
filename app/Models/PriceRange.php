@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
  * @OA\Schema ()
+ *
  * @mixin IdeHelperPriceRange
  */
 class PriceRange extends Model

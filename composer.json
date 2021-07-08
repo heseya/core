@@ -43,7 +43,9 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": [
+                "barryvdh/laravel-ide-helper"
+            ]
         }
     },
     "autoload": {
@@ -63,7 +65,8 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@composer style"
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
@@ -72,7 +75,12 @@
             "@php artisan key:generate --ansi"
         ],
         "ide-models-mixin": [
-            "@php artisan ide-helper:models -M"
+            "@composer style"
+        ],
+        "style": [
+            "@php artisan ide-helper:generate -M",
+            "@php artisan ide-helper:models -M",
+            "@php artisan insights --fix"
         ]
     }
 }

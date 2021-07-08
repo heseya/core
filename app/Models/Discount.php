@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @OA\Schema ()
+ *
  * @mixin IdeHelperDiscount
  */
 class Discount extends Model

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @OA\Schema ()
+ *
  * @mixin IdeHelperPayment
  */
 class Payment extends Model

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @OA\Schema ()
+ *
  * @mixin IdeHelperCategory
  */
 class Category extends Model

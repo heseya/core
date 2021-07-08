@@ -11,6 +11,7 @@ final class Error
      * Http response code.
      *
      * @var int
+     *
      * @OA\Property(
      *   example=500,
      * )
@@ -21,6 +22,7 @@ final class Error
      * Error message.
      *
      * @var string
+     *
      * @OA\Property(
      *   example="Some error message.",
      * )

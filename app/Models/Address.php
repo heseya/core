@@ -9,6 +9,7 @@ use Propaganistas\LaravelPhone\PhoneNumber;
 
 /**
  * @OA\Schema ()
+ *
  * @mixin IdeHelperAddress
  */
 class Address extends Model

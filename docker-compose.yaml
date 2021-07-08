@@ -44,5 +44,5 @@ services:
     environment:
       - ADMINER_PREFIX=${DOCKER_ADMINER_PREFIX}
 
-volumes: 
+volumes:
   vendor-volume:

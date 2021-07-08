@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @OA\Schema ()
+ *
  * @mixin IdeHelperMedia
  */
 class Media extends Model

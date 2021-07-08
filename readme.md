@@ -84,7 +84,8 @@ Additional:
 - always get model id by getKey() method,
 - in tests use `getJson()`, `postJson()` etc.
 - in tests use `assertOk()`, `assertCreated()` etc.
-- `$x === null` > `is_null()`.
+- `$x === null` > `is_null()`,
+- avoid magic methods,
 
 ## Tests
 Tests are automatically performed during CI. GitLab will not allow you to merge changes until they all pass. You can run tests locally with the command:

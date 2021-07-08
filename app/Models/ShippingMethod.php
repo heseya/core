@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @OA\Schema ()
+ *
  * @mixin IdeHelperShippingMethod
  */
 class ShippingMethod extends Model
