@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\OrderUpdateDto;
 use App\Events\OrderCreated;
 use App\Events\OrderStatusUpdated;
 use App\Exceptions\StoreException;
@@ -252,6 +253,8 @@ class OrderController extends Controller implements OrderControllerSwagger
 
     public function update(OrderUpdateRequest $request, Order $order): JsonResponse
     {
-        return $this->orderService->update($request, $order);
+        $orderUpdateDto = OrderUpdateDto::instantiateFromRequest($request);
+
+        return $this->orderService->update($orderUpdateDto->toArray(), $order);
     }
 }

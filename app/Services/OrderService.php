@@ -9,7 +9,6 @@ use App\Models\Order;
 use App\Services\Contracts\DiscountServiceContract;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 
@@ -39,7 +38,7 @@ class OrderService
         return round($value, 2);
     }
 
-    public function update(Request $request, Order $order): JsonResponse
+    public function update(array $data, Order $order): JsonResponse
     {
         DB::beginTransaction();
 
@@ -48,23 +47,23 @@ class OrderService
                 [
                     'id' => $order->delivery_address_id,
                 ],
-                $request->delivery_address
+                $data['delivery_address']
             );
 
-            if ($request->invoice_address) {
+            if ($data['invoice_address']) {
                 $invoiceAddress = Address::updateOrCreate(
                     [
                         'id' => $order->invoice_address_id,
                     ],
-                    $request->invoice_address
+                    $data['invoice_address']
                 );
             }
 
             $order->update([
-                'email' => $request->input('email'),
-                'comment' => $request->input('comment'),
+                'email' => $data['email'],
+                'comment' => $data['comment'] ?? null,
                 'delivery_address_id' => $deliveryAddress->getKey(),
-                'invoice_address_id' => $request->invoice_address ? $invoiceAddress->getKey() : null,
+                'invoice_address_id' => $data['invoice_address'] ? $invoiceAddress->getKey() : null,
             ]);
 
             DB::commit();
