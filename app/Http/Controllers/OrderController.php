@@ -31,13 +31,12 @@ use Throwable;
 class OrderController extends Controller implements OrderControllerSwagger
 {
     private NameServiceContract $nameService;
-    private $orderService;
+    private OrderServiceContract $orderService;
 
-    public function __construct(NameServiceContract $nameService)
+    public function __construct(NameServiceContract $nameService, OrderServiceContract $orderService)
     {
         $this->nameService = $nameService;
-
-        $this->orderService = app()->make(OrderServiceContract::class);
+        $this->orderService = $orderService;
     }
 
     public function index(OrderIndexRequest $request): JsonResource

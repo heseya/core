@@ -7,12 +7,13 @@ use App\Http\Resources\OrderResource;
 use App\Models\Address;
 use App\Models\Order;
 use App\Services\Contracts\DiscountServiceContract;
+use App\Services\Contracts\OrderServiceContract;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 
-class OrderService
+class OrderService implements OrderServiceContract
 {
     protected DiscountServiceContract $discountService;
 
