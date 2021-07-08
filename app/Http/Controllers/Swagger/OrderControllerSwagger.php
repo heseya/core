@@ -252,7 +252,8 @@ interface OrderControllerSwagger
      *     in="path",
      *     required=true,
      *     @OA\Schema(
-     *       type="integer",
+     *       type="string",
+     *       example="1c8705ce-5fae-4468-b88a-8784cb5414a0",
      *     ),
      *   ),
      *   @OA\RequestBody(
@@ -271,12 +272,12 @@ interface OrderControllerSwagger
      *         type="string",
      *       ),
      *       @OA\Property(
-     *         property="shipping_number",
-     *         type="string",
+     *         property="delivery_address",
+     *         ref="#/components/schemas/Address",
      *       ),
      *       @OA\Property(
-     *         property="shipping_price",
-     *         type="float",
+     *         property="invoice_address",
+     *         ref="#/components/schemas/Address",
      *       ),
      *     ),
      *   ),

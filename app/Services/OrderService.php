@@ -6,14 +6,12 @@ use App\Exceptions\OrderException;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
 use App\Models\Order;
-use App\Models\OrderNote;
 use App\Services\Contracts\DiscountServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Exception;
 
 class OrderService
 {
@@ -43,24 +41,13 @@ class OrderService
 
     public function update(Request $request, Order $order): JsonResponse
     {
-        $model = Order::find($order->id);
-        if (!$model) {
+        if (!$order->id) {
             throw new OrderException('Order model does not exist !', Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         DB::beginTransaction();
 
         try {
-            OrderNote::updateOrCreate(
-                [
-                   'order_id' => $order->id,
-                   'user_id' => $request->user()->id ?? Auth::user()->id,
-                ],
-                [
-                    'message' => $request->note,
-                ]
-            );
-
             $deliveryAddress = Address::updateOrCreate(
                 [
                     'id' => $order->delivery_address_id,
@@ -68,25 +55,28 @@ class OrderService
                 $request->delivery_address
             );
 
-            $invoiceAddress = Address::updateOrCreate(
-                [
-                    'id' => $order->invoice_address_id,
-                ],
-                $request->invoice_address
-            );
+            if ($request->invoice_address) {
+                $invoiceAddress = Address::updateOrCreate(
+                    [
+                        'id' => $order->invoice_address_id,
+                    ],
+                    $request->invoice_address
+                );
+            }
 
             $order->update([
-                 'email' => $request->email,
-                 'delivery_address_id' => $deliveryAddress->id ?? null,
-                 'invoice_address_id' => $invoiceAddress->id ?? null,
+                 'email' => $request->input('email'),
+                 'comment' => $request->input('comment'),
+                 'delivery_address_id' => $deliveryAddress->getKey(),
+                 'invoice_address_id' => $request->invoice_address ? $invoiceAddress->getKey() : null,
             ]);
 
             DB::commit();
 
             return OrderResource::make($order)->response();
-        } catch (\Exception $error) {
+        } catch (Exception $error) {
             DB::rollBack();
-            Log::error('[' . __METHOD__ . '] ' . $error->getMessage());
+
             throw new OrderException('Error editing the order for id: ' . $order->id);
         }
     }

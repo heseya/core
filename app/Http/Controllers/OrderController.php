@@ -22,7 +22,7 @@ use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Services\Contracts\NameServiceContract;
-use App\Services\OrderService;
+use App\Services\Contracts\OrderServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Throwable;
@@ -30,12 +30,13 @@ use Throwable;
 class OrderController extends Controller implements OrderControllerSwagger
 {
     private NameServiceContract $nameService;
-    private OrderService $orderService;
+    private $orderService;
 
-    public function __construct(NameServiceContract $nameService, OrderService $orderService)
+    public function __construct(NameServiceContract $nameService)
     {
         $this->nameService = $nameService;
-        $this->orderService = $orderService;
+
+        $this->orderService = app()->make(OrderServiceContract::class);
     }
 
     public function index(OrderIndexRequest $request): JsonResource
