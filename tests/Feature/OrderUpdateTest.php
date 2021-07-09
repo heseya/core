@@ -13,11 +13,14 @@ use Tests\TestCase;
 
 class OrderUpdateTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, WithFaker;
 
     private Order $order;
     private ShippingMethod $shippingMethod;
     private Status $status;
+    private Address $address;
+
+    public const EMAIL_DATA = 'test@example.com';
 
     public function setUp(): void
     {
@@ -25,14 +28,16 @@ class OrderUpdateTest extends TestCase
 
         $this->shippingMethod = ShippingMethod::factory()->create();
         $this->status = Status::factory()->create();
-        $address = Address::factory()->make();
+        $this->address = Address::factory()->make();
 
         $this->order = Order::factory()->create([
-            'code' => 'XXXXXX',
-            'email' => 'test@example.com',
+            'code' => 'XXXXXX123',
+            'email' => self::EMAIL_DATA,
+            'comment' => $this->faker->text(10),
             'status_id' => $this->status->getKey(),
-            'shipping_method_id' => $this->shippingMethod ->getKey(),
-            'delivery_address_id' => $address->getKey(),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address_id' => $this->address->getKey(),
+            'invoice_address_id' => null,
         ]);
     }
 
@@ -44,31 +49,26 @@ class OrderUpdateTest extends TestCase
 
     public function testUpdateOrder(): void
     {
+        $this->address = Address::factory()->make();
+        $email = $this->faker->email();
+        $comment = $this->faker->text(200);
+
         $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->id, [
-            'code' => 'XXXXXX',
-            'email' => 'test@example.com',
-            'currency' => 'PLN',
-            'comment' => 'test',
+            'code' => rand (10000, 99999) . 'ABC',
+            'email' => $email,
+            'comment' => $comment,
             'status_id' => $this->status->getKey(),
-            'shipping_method_id' => $this->shippingMethod ->getKey(),
-            'delivery_address' => [
-                'name' => 'Zygmunt Testowy',
-                'phone' => '+48123321123',
-                'address' => 'Gdańska 89/1',
-                'zip' => '80-432',
-                'city' => 'Gdańsk',
-                'country' => 'PL',
-            ],
-            'invoice_address' => [
-                'name' => 'Iwona Testowa',
-                'phone' => '+48113321121',
-                'address' => 'Gdańska 89/1',
-                'zip' => '80-432',
-                'city' => 'Gdańsk',
-                'country' => 'PL',
-            ],
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address->toArray(),
+            'invoice_address' => $this->address->toArray(),
         ]);
 
         $response->assertOk();
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->id,
+            'email' => $email,
+            'comment' => $comment,
+        ]);
     }
 }

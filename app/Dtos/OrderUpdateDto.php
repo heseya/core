@@ -15,12 +15,20 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
     private ?string $shippingNumber;
     private ?float $shippingPrice;
     private ?string $statusId;
-    private ?array $shippingMethod;
-    private array $deliveryAddress;
-    private ?array $invoiceAddress;
+    private ?string $shippingMethodId;
+    private AddressDto $address;
 
-    public function __construct(?string $code, string $email, ?string $currency, ?string $comment, ?string $shippingNumber, ?float $shippingPrice, ?string $statusId, ?array $shippingMethod, array $deliveryAddress, ?array $invoiceAddress)
-    {
+    public function __construct(
+        ?string $code,
+        string $email,
+        ?string $currency,
+        ?string $comment,
+        ?string $shippingNumber,
+        ?float $shippingPrice,
+        ?string $statusId,
+        ?string $shippingMethodId,
+        AddressDto $addressDto
+    ) {
         $this->code = $code;
         $this->email = $email;
         $this->currency = $currency;
@@ -28,9 +36,8 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
         $this->shippingNumber = $shippingNumber;
         $this->shippingPrice = $shippingPrice;
         $this->statusId = $statusId;
-        $this->shippingMethod = $shippingMethod;
-        $this->deliveryAddress = $deliveryAddress;
-        $this->invoiceAddress = $invoiceAddress;
+        $this->shippingMethodId = $shippingMethodId;
+        $this->address = $addressDto;
     }
 
     public function toArray(): array
@@ -43,9 +50,8 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
             'shipping_number' => $this->getShippingNumber(),
             'shipping_price' => $this->getShippingPrice(),
             'status_id' => $this->getStatusId(),
-            'shipping_method' => $this->getShippingMethod(),
-            'delivery_address' => $this->getDeliveryAddress(),
-            'invoice_address' => $this->getInvoiceAddress(),
+            'shipping_method_id' => $this->getShippingMethodId(),
+            'address' => $this->getAddress(),
         ];
     }
 
@@ -60,8 +66,7 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
             $request->input('shipping_price'),
             $request->input('status_id'),
             $request->input('shipping_method'),
-            $request->input('delivery_address'),
-            $request->input('invoice_address'),
+            AddressDto::instantiateFromRequest($request),
         );
     }
 
@@ -100,18 +105,13 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
         return $this->statusId;
     }
 
-    public function getShippingMethod(): ?array
+    public function getShippingMethodId(): ?string
     {
-        return $this->shippingMethod;
+        return $this->shippingMethodId;
     }
 
-    public function getDeliveryAddress(): array
+    public function getAddress(): AddressDto
     {
-        return $this->deliveryAddress;
-    }
-
-    public function getInvoiceAddress(): ?array
-    {
-        return $this->invoiceAddress;
+        return $this->address;
     }
 }

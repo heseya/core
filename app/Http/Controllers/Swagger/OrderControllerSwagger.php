@@ -257,29 +257,7 @@ interface OrderControllerSwagger
      *     ),
      *   ),
      *   @OA\RequestBody(
-     *     request="OrderUpdate",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="id",
-     *         type="string",
-     *       ),
-     *       @OA\Property(
-     *         property="email",
-     *         type="string",
-     *       ),
-     *       @OA\Property(
-     *         property="comment",
-     *         type="string",
-     *       ),
-     *       @OA\Property(
-     *         property="delivery_address",
-     *         ref="#/components/schemas/Address",
-     *       ),
-     *       @OA\Property(
-     *         property="invoice_address",
-     *         ref="#/components/schemas/Address",
-     *       ),
-     *     ),
+     *     ref="#/components/requestBodies/OrderUpdate",
      *   ),
      *   @OA\Response(
      *     response=200,

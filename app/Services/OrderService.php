@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Dtos\OrderUpdateDto;
 use App\Exceptions\OrderException;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
@@ -39,7 +40,7 @@ class OrderService implements OrderServiceContract
         return round($value, 2);
     }
 
-    public function update(array $data, Order $order): JsonResponse
+    public function update(OrderUpdateDto $dto, Order $order): JsonResponse
     {
         DB::beginTransaction();
 
@@ -48,23 +49,33 @@ class OrderService implements OrderServiceContract
                 [
                     'id' => $order->delivery_address_id,
                 ],
-                $data['delivery_address']
+                $dto->getAddress()->toArray()['delivery_address']
             );
 
-            if ($data['invoice_address']) {
+            $invoiceAddressData = $dto->getAddress()->toArray()['invoice_address'];
+            $exsistInvoiceAddress = static function () use ($invoiceAddressData) {
+                foreach ($invoiceAddressData as $item) {
+                    if ($item !== null) {
+                        return true;
+                    }
+                }
+                return false;
+            };
+
+            if ($exsistInvoiceAddress()) {
                 $invoiceAddress = Address::updateOrCreate(
                     [
                         'id' => $order->invoice_address_id,
                     ],
-                    $data['invoice_address']
+                    $dto->getAddress()->toArray()['invoice_address']
                 );
             }
 
             $order->update([
-                'email' => $data['email'],
-                'comment' => $data['comment'] ?? null,
+                'email' => $dto->getEmail(),
+                'comment' => $dto->getComment(),
                 'delivery_address_id' => $deliveryAddress->getKey(),
-                'invoice_address_id' => $data['invoice_address'] ? $invoiceAddress->getKey() : null,
+                'invoice_address_id' => $exsistInvoiceAddress() ? $invoiceAddress->getKey() : null,
             ]);
 
             DB::commit();

@@ -254,6 +254,6 @@ class OrderController extends Controller implements OrderControllerSwagger
     {
         $orderUpdateDto = OrderUpdateDto::instantiateFromRequest($request);
 
-        return $this->orderService->update($orderUpdateDto->toArray(), $order);
+        return $this->orderService->update($orderUpdateDto, $order);
     }
 }
