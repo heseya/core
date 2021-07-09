@@ -28,7 +28,7 @@ class OrderUpdateTest extends TestCase
 
         $this->shippingMethod = ShippingMethod::factory()->create();
         $this->status = Status::factory()->create();
-        $this->address = Address::factory()->make();
+        $this->address = Address::factory()->create();
 
         $this->order = Order::factory()->create([
             'code' => 'XXXXXX123',

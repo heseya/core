@@ -45,37 +45,21 @@ class OrderService implements OrderServiceContract
         DB::beginTransaction();
 
         try {
-            $deliveryAddress = Address::updateOrCreate(
-                [
-                    'id' => $order->delivery_address_id,
-                ],
+            $deliveryAddress = $this->modifyAddress(
+                $order->delivery_address_id,
                 $dto->getAddress()->toArray()['delivery_address']
             );
-
-            $invoiceAddressData = $dto->getAddress()->toArray()['invoice_address'];
-            $exsistInvoiceAddress = static function () use ($invoiceAddressData) {
-                foreach ($invoiceAddressData as $item) {
-                    if ($item !== null) {
-                        return true;
-                    }
-                }
-                return false;
-            };
-
-            if ($exsistInvoiceAddress()) {
-                $invoiceAddress = Address::updateOrCreate(
-                    [
-                        'id' => $order->invoice_address_id,
-                    ],
-                    $invoiceAddressData
-                );
-            }
+            $invoiceAddress = $this->modifyAddress(
+                $order->invoice_address_id,
+                $dto->getAddress()->toArray()['invoice_address'],
+                true
+            );
 
             $order->update([
                 'email' => $dto->getEmail(),
                 'comment' => $dto->getComment(),
                 'delivery_address_id' => $deliveryAddress->getKey(),
-                'invoice_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
+                'invoice_address_id' => $invoiceAddress ? $invoiceAddress->getKey() : null,
             ]);
 
             DB::commit();
@@ -89,5 +73,21 @@ class OrderService implements OrderServiceContract
                 Response::HTTP_UNPROCESSABLE_ENTITY
             );
         }
+    }
+
+    private function modifyAddress(?string $uuid, array $data, bool $isInvoice = false): ?Address
+    {
+        if ($isInvoice) {
+            foreach ($data as $item) {
+                if ($item !== null) {
+                    $exsistInvoiceAddress = true;
+                }
+            }
+            if (!isset($exsistInvoiceAddress)) {
+                return null;
+            }
+        }
+
+        return Address::updateOrCreate(['id' => $uuid], $data);
     }
 }
