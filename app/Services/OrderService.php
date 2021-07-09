@@ -67,7 +67,7 @@ class OrderService implements OrderServiceContract
                     [
                         'id' => $order->invoice_address_id,
                     ],
-                    $dto->getAddress()->toArray()['invoice_address']
+                    $invoiceAddressData
                 );
             }
 
@@ -75,7 +75,7 @@ class OrderService implements OrderServiceContract
                 'email' => $dto->getEmail(),
                 'comment' => $dto->getComment(),
                 'delivery_address_id' => $deliveryAddress->getKey(),
-                'invoice_address_id' => $exsistInvoiceAddress() ? $invoiceAddress->getKey() : null,
+                'invoice_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
             ]);
 
             DB::commit();
