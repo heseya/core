@@ -4,6 +4,7 @@ namespace App\Models;
 
 /**
  * @OA\Schema ()
+ *
  * @mixin IdeHelperSetting
  */
 class Setting extends Model

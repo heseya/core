@@ -43,7 +43,9 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": [
+                "barryvdh/laravel-ide-helper"
+            ]
         }
     },
     "autoload": {
@@ -72,7 +74,12 @@
             "@php artisan key:generate --ansi"
         ],
         "ide-models-mixin": [
-            "@php artisan ide-helper:models -M"
+            "@composer style"
+        ],
+        "style": [
+            "@php artisan ide-helper:generate -M",
+            "@php artisan ide-helper:models -M",
+            "@php artisan insights --fix"
         ]
     }
 }

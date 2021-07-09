@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * @OA\Schema ()
+ *
  * @mixin IdeHelperOrderSchema
  */
 class OrderSchema extends Model

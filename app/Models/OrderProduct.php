@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @OA\Schema ()
+ *
  * @mixin IdeHelperOrderProduct
  */
 class OrderProduct extends Model
@@ -30,6 +31,7 @@ class OrderProduct extends Model
      *   type="number",
      *   example="199.99",
      * ),
+     *
      * @OA\Property(
      *   property="schemas",
      *   type="array",

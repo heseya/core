@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @OA\Schema ()
+ *
  * @OA\Property (
  *   property="code",
  *   type="string",
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
  *   type="string",
  *   example="Poland",
  * )
+ *
  * @mixin IdeHelperCountry
  */
 class Country extends Model
