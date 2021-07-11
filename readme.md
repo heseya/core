@@ -1,13 +1,17 @@
 # Heseya Store API
 
-## Docker
-Enable pre-commit git hooks
+## Project setup with Docker
+### Attention
+This section assumes the project catalogue uses the default repository name: store-api.
+The commands and the git hooks running on host will need to be modified with correct catalogue name otherwise.
+
+Enable pre-commit scripts by copying git hooks
 ```
-git config core.hooksPath ./git_hooks/docker
+cp ./git_hooks/docker/* ./.git/hooks/
 ```
 or if you commit directly from inside the container
 ```
-git config core.hooksPath ./git_hooks/host
+cp ./git_hooks/host/* ./.git/hooks/
 ```
 
 Preparation
@@ -48,10 +52,10 @@ docker system prune
 ```
 
 
-## Project setup
-Enable pre-commit git hooks
+## Project setup without Docker
+Enable pre-commit scripts by copying git hooks
 ```
-git config core.hooksPath ./git_hooks/host
+cp ./git_hooks/host/* ./.git/hooks/
 ```
 
 Install dependencies
