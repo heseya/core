@@ -1,6 +1,15 @@
 # Heseya Store API
 
 ## Docker
+Enable pre-commit git hooks
+```
+git config core.hooksPath ./git_hooks/docker
+```
+or if you commit directly from inside the container
+```
+git config core.hooksPath ./git_hooks/host
+```
+
 Preparation
 * Copy `.env.example` to `.env`.
 * Configure DOCKER_PORT in .env to free port on your host eg.
@@ -40,6 +49,12 @@ docker system prune
 
 
 ## Project setup
+Enable pre-commit git hooks
+```
+git config core.hooksPath ./git_hooks/host
+```
+
+Install dependencies
 ```
 composer i
 ```
@@ -63,6 +78,9 @@ When something not working with cache (like routing).
 ```
 php artisan optimize
 ```
+
+## Git hooks
+Project uses git pre-commit hook to automaticly generate IDE Helper docs and fix style issues
 
 ## Deploy
 - Remember to config Sentry when deploying new instance!
