@@ -11,7 +11,7 @@ class AddressDto implements DtoContract, InstantiateFromRequest
     private ?string $addressName;
     private ?string $addressPhone;
     private ?string $addressAddress;
-    private ?string $addressNip;
+    private ?string $addressVat;
     private ?string $addressZip;
     private ?string $addressCity;
     private ?string $addressCountry;
@@ -28,7 +28,7 @@ class AddressDto implements DtoContract, InstantiateFromRequest
         $this->addressName = $addressName;
         $this->addressPhone = $addressPhone;
         $this->addressAddress = $addressAddress;
-        $this->addressNip = $addressVat;  // Vat number - NIP
+        $this->addressVat = $addressVat;  // Vat number - NIP
         $this->addressZip = $addressZip;
         $this->addressCity = $addressCity;
         $this->addressCountry = $addressCountry;
@@ -40,7 +40,7 @@ class AddressDto implements DtoContract, InstantiateFromRequest
             'name' => $this->getAddressName(),
             'phone' => $this->getAddressPhone(),
             'address' => $this->getAddressAddress(),
-            'nip' => $this->getAddressNip(),
+            'vat' => $this->getAddressVat(),
             'zip' => $this->getAddressZip(),
             'city' => $this->getAddressCity(),
             'country' => $this->getAddressCountry(),
@@ -75,9 +75,9 @@ class AddressDto implements DtoContract, InstantiateFromRequest
         return $this->addressAddress;
     }
 
-    public function getAddressNip(): ?string
+    public function getAddressVat(): ?string
     {
-        return $this->addressNip;
+        return $this->addressVat;
     }
 
     public function getAddressZip(): ?string
