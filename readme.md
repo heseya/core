@@ -1,6 +1,19 @@
 # Heseya Store API
 
-## Docker
+## Project setup with Docker
+### Attention
+This section assumes the project catalogue uses the default repository name: store-api.
+The commands and the git hooks running on host will need to be modified with correct catalogue name otherwise.
+
+Enable pre-commit scripts by copying git hooks
+```
+cp ./git_hooks/docker/* ./.git/hooks/
+```
+or if you commit directly from inside the container
+```
+cp ./git_hooks/host/* ./.git/hooks/
+```
+
 Preparation
 * Copy `.env.example` to `.env`.
 * Configure DOCKER_PORT in .env to free port on your host eg.
@@ -39,7 +52,13 @@ docker system prune
 ```
 
 
-## Project setup
+## Project setup without Docker
+Enable pre-commit scripts by copying git hooks
+```
+cp ./git_hooks/host/* ./.git/hooks/
+```
+
+Install dependencies
 ```
 composer i
 ```
@@ -63,6 +82,9 @@ When something not working with cache (like routing).
 ```
 php artisan optimize
 ```
+
+## Git hooks
+Project uses git pre-commit hook to automaticly generate IDE Helper docs and fix style issues
 
 ## Deploy
 - Remember to config Sentry when deploying new instance!

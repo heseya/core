@@ -79,7 +79,10 @@
         "style": [
             "@php artisan ide-helper:generate -M",
             "@php artisan ide-helper:models -M",
-            "@php artisan insights --fix"
+            "@php artisan insights --fix --no-interaction"
+        ],
+        "pre-commit": [
+            "@composer style"
         ]
     }
 }
