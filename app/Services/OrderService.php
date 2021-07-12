@@ -51,15 +51,14 @@ class OrderService implements OrderServiceContract
             );
             $invoiceAddress = $this->modifyAddress(
                 $order->invoice_address_id,
-                $dto->getInvoiceAddress()->toArray(),
-                true
+                $dto->getInvoiceAddress()->toArray()
             );
 
             $order->update([
-                'email' => $dto->getEmail(),
-                'comment' => $dto->getComment(),
-                'delivery_address_id' => $deliveryAddress->getKey(),
-                'invoice_address_id' => $invoiceAddress ? $invoiceAddress->getKey() : null,
+                'email' => $dto->getEmail() ?? $order->email,
+                'comment' => $dto->getComment() ?? $order->comment,
+                'delivery_address_id' => $deliveryAddress ? $deliveryAddress->getKey() : $order->delivery_address_id,
+                'invoice_address_id' => $invoiceAddress ? $invoiceAddress->getKey() : $order->invoice_address_id,
             ]);
 
             DB::commit();
@@ -75,19 +74,14 @@ class OrderService implements OrderServiceContract
         }
     }
 
-    private function modifyAddress(?string $uuid, array $data, bool $isInvoice = false): ?Address
+    private function modifyAddress(?string $uuid, ?array $data = null): ?Address
     {
-        if ($isInvoice) {
-            foreach ($data as $item) {
-                if ($item !== null) {
-                    $exsistInvoiceAddress = true;
-                }
-            }
-            if (!isset($exsistInvoiceAddress)) {
-                return null;
+        foreach ($data as $item) {
+            if ($item !== null) {
+                $exsistAddress = true;
             }
         }
 
-        return Address::updateOrCreate(['id' => $uuid], $data);
+        return !isset($exsistAddress) ? null : Address::updateOrCreate(['id' => $uuid], $data);
     }
 }

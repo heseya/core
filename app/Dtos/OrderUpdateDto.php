@@ -9,27 +9,27 @@ use Illuminate\Http\Request;
 class OrderUpdateDto implements DtoContract, InstantiateFromRequest
 {
     private ?string $code;
-    private string $email;
+    private ?string $email;
     private ?string $currency;
     private ?string $comment;
     private ?string $shippingNumber;
     private ?float $shippingPrice;
     private ?string $statusId;
     private ?string $shippingMethodId;
-    private AddressDto $deliveryAddress;
+    private ?AddressDto $deliveryAddress;
     private ?AddressDto $invoiceAddress;
 
     public function __construct(
         ?string $code,
-        string $email,
+        ?string $email,
         ?string $currency,
         ?string $comment,
         ?string $shippingNumber,
         ?float $shippingPrice,
         ?string $statusId,
         ?string $shippingMethodId,
-        AddressDto $deliveryAddress,
-        AddressDto $invoiceAddress
+        ?AddressDto $deliveryAddress,
+        ?AddressDto $invoiceAddress
     ) {
         $this->code = $code;
         $this->email = $email;
@@ -96,7 +96,7 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
         return $this->code;
     }
 
-    public function getEmail(): string
+    public function getEmail(): ?string
     {
         return $this->email;
     }
@@ -131,7 +131,7 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
         return $this->shippingMethodId;
     }
 
-    public function getDeliveryAddress(): AddressDto
+    public function getDeliveryAddress(): ?AddressDto
     {
         return $this->deliveryAddress;
     }
