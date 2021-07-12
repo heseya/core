@@ -3,15 +3,15 @@
 namespace Tests\Feature;
 
 use App\Models\Brand;
-use App\Models\Category;
+use App\Models\ProductSet;
 use App\Models\Product;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class CategoryTest extends TestCase
 {
-    private Category $category;
-    private Category $category_hidden;
+    private ProductSet $category;
+    private ProductSet $category_hidden;
 
     private array $expected;
 
@@ -19,11 +19,11 @@ class CategoryTest extends TestCase
     {
         parent::setUp();
 
-        $this->category = Category::factory()->create([
+        $this->category = ProductSet::factory()->create([
             'public' => true,
         ]);
 
-        $this->category_hidden = Category::factory()->create([
+        $this->category_hidden = ProductSet::factory()->create([
             'public' => false,
         ]);
 
@@ -111,7 +111,7 @@ class CategoryTest extends TestCase
     {
         Passport::actingAs($this->user);
 
-        $this->category = Category::factory()->create();
+        $this->category = ProductSet::factory()->create();
         $brand = Brand::factory()->create();
 
         Product::factory()->create([
