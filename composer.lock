@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8a2410ccea5e86bbf1fe98326ef58965",
+    "content-hash": "dc1fff4a93237201452a05775d4482e1",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -951,16 +951,16 @@
         },
         {
             "name": "darkaonline/l5-swagger",
-            "version": "8.0.6",
+            "version": "8.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DarkaOnLine/L5-Swagger.git",
-                "reference": "4d5c4f1230cd7d4a66236ddafb8651b4f9d97d9d"
+                "reference": "5e3d9c067797ebc35304d20acd94aeb40cde2825"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DarkaOnLine/L5-Swagger/zipball/4d5c4f1230cd7d4a66236ddafb8651b4f9d97d9d",
-                "reference": "4d5c4f1230cd7d4a66236ddafb8651b4f9d97d9d",
+                "url": "https://api.github.com/repos/DarkaOnLine/L5-Swagger/zipball/5e3d9c067797ebc35304d20acd94aeb40cde2825",
+                "reference": "5e3d9c067797ebc35304d20acd94aeb40cde2825",
                 "shasum": ""
             },
             "require": {
@@ -1018,7 +1018,7 @@
             ],
             "support": {
                 "issues": "https://github.com/DarkaOnLine/L5-Swagger/issues",
-                "source": "https://github.com/DarkaOnLine/L5-Swagger/tree/8.0.6"
+                "source": "https://github.com/DarkaOnLine/L5-Swagger/tree/8.0.7"
             },
             "funding": [
                 {
@@ -1026,7 +1026,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2021-05-12T11:18:31+00:00"
+            "time": "2021-07-12T06:31:40+00:00"
         },
         {
             "name": "defuse/php-encryption",
@@ -10755,6 +10755,33 @@
             "time": "2020-07-09T08:09:16+00:00"
         },
         {
+            "name": "heseya/insights",
+            "version": "dev-develop",
+            "dist": {
+                "type": "path",
+                "url": "./heseya/insights",
+                "reference": "2a3f03f4437de8dd0ed7323b2fc34bca67082648"
+            },
+            "require": {
+                "nunomaduro/phpinsights": "^2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Heseya\\Insights\\": "src/"
+                }
+            },
+            "authors": [
+                {
+                    "name": "Jędrzej Buliński",
+                    "email": "jedrzej@heseya.com"
+                }
+            ],
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
             "name": "league/container",
             "version": "3.4.1",
             "source": {
@@ -13535,5 +13562,5 @@
         "php": "^7.4|^8.0"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.0.0"
+    "plugin-api-version": "2.1.0"
 }
