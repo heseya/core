@@ -47,11 +47,11 @@ class OrderService implements OrderServiceContract
         try {
             $deliveryAddress = $this->modifyAddress(
                 $order->delivery_address_id,
-                $dto->getAddress()->toArray()['delivery_address']
+                $dto->getDeliveryAddress()->toArray()
             );
             $invoiceAddress = $this->modifyAddress(
                 $order->invoice_address_id,
-                $dto->getAddress()->toArray()['invoice_address'],
+                $dto->getInvoiceAddress()->toArray(),
                 true
             );
 

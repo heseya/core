@@ -8,166 +8,90 @@ use Illuminate\Http\Request;
 
 class AddressDto implements DtoContract, InstantiateFromRequest
 {
-    private ?string $deliveryAddressName;
-    private ?string $deliveryAddressPhone;
-    private ?string $deliveryAddressAddress;
-    private ?string $deliveryAddressNip;
-    private ?string $deliveryAddressZip;
-    private ?string $deliveryAddressCity;
-    private ?string $deliveryAddressCountry;
-
-    private ?string $invoiceAddressName;
-    private ?string $invoiceAddressPhone;
-    private ?string $invoiceAddressAddress;
-    private ?string $invoiceAddressNip;
-    private ?string $invoiceAddressZip;
-    private ?string $invoiceAddressCity;
-    private ?string $invoiceAddressCountry;
+    private ?string $addressName;
+    private ?string $addressPhone;
+    private ?string $addressAddress;
+    private ?string $addressNip;
+    private ?string $addressZip;
+    private ?string $addressCity;
+    private ?string $addressCountry;
 
     public function __construct(
-        ?string $deliveryAddressName,
-        ?string $deliveryAddressPhone,
-        ?string $deliveryAddressAddress,
-        ?string $deliveryAddressVat,
-        ?string $deliveryAddressZip,
-        ?string $deliveryAddressCity,
-        ?string $deliveryAddressCountry,
-        ?string $invoiceAddressName,
-        ?string $invoiceAddressPhone,
-        ?string $invoiceAddressAddress,
-        ?string $invoiceAddressVat,
-        ?string $invoiceAddressZip,
-        ?string $invoiceAddressCity,
-        ?string $invoiceAddressCountry
+        ?string $addressName,
+        ?string $addressPhone,
+        ?string $addressAddress,
+        ?string $addressVat,
+        ?string $addressZip,
+        ?string $addressCity,
+        ?string $addressCountry
     ) {
-        $this->deliveryAddressName = $deliveryAddressName;
-        $this->deliveryAddressPhone = $deliveryAddressPhone;
-        $this->deliveryAddressAddress = $deliveryAddressAddress;
-        $this->deliveryAddressNip = $deliveryAddressVat;  // Vat number - NIP
-        $this->deliveryAddressZip = $deliveryAddressZip;
-        $this->deliveryAddressCity = $deliveryAddressCity;
-        $this->deliveryAddressCountry = $deliveryAddressCountry;
-
-        $this->invoiceAddressName = $invoiceAddressName;
-        $this->invoiceAddressPhone = $invoiceAddressPhone;
-        $this->invoiceAddressAddress = $invoiceAddressAddress;
-        $this->invoiceAddressNip = $invoiceAddressVat;
-        $this->invoiceAddressZip = $invoiceAddressZip;
-        $this->invoiceAddressCity = $invoiceAddressCity;
-        $this->invoiceAddressCountry = $invoiceAddressCountry;
+        $this->addressName = $addressName;
+        $this->addressPhone = $addressPhone;
+        $this->addressAddress = $addressAddress;
+        $this->addressNip = $addressVat;  // Vat number - NIP
+        $this->addressZip = $addressZip;
+        $this->addressCity = $addressCity;
+        $this->addressCountry = $addressCountry;
     }
 
     public function toArray(): array
     {
         return [
-            'delivery_address' => [
-                'name' => $this->getDeliveryAddressName(),
-                'phone' => $this->getDeliveryAddressPhone(),
-                'address' => $this->getDeliveryAddressAddress(),
-                'nip' => $this->getDeliveryAddressNip(),
-                'zip' => $this->getDeliveryAddressZip(),
-                'city' => $this->getDeliveryAddressCity(),
-                'country' => $this->getDeliveryAddressCountry(),
-            ],
-            'invoice_address' => [
-                'name' => $this->getInvoiceAddressName(),
-                'phone' => $this->getInvoiceAddressPhone(),
-                'address' => $this->getInvoiceAddressAddress(),
-                'nip' => $this->getInvoiceAddressNip(),
-                'zip' => $this->getInvoiceAddressZip(),
-                'city' => $this->getInvoiceAddressCity(),
-                'country' => $this->getInvoiceAddressCountry(),
-            ],
+            'name' => $this->getAddressName(),
+            'phone' => $this->getAddressPhone(),
+            'address' => $this->getAddressAddress(),
+            'nip' => $this->getAddressNip(),
+            'zip' => $this->getAddressZip(),
+            'city' => $this->getAddressCity(),
+            'country' => $this->getAddressCountry(),
         ];
     }
 
     public static function instantiateFromRequest(Request $request): self
     {
         return new self(
-            $request->input('delivery_address.name'),
-            $request->input('delivery_address.phone'),
-            $request->input('delivery_address.address'),
-            $request->input('delivery_address.vat'),
-            $request->input('delivery_address.zip'),
-            $request->input('delivery_address.city'),
-            $request->input('delivery_address.country'),
-            $request->input('invoice_address.name'),
-            $request->input('invoice_address.phone'),
-            $request->input('invoice_address.address'),
-            $request->input('invoice_address.vat'),
-            $request->input('invoice_address.zip'),
-            $request->input('invoice_address.city'),
-            $request->input('invoice_address.country'),
+            $request->input('name'),
+            $request->input('phone'),
+            $request->input('address'),
+            $request->input('vat'),
+            $request->input('zip'),
+            $request->input('city'),
+            $request->input('country'),
         );
     }
 
-    public function getDeliveryAddressName(): ?string
+    public function getAddressName(): ?string
     {
-        return $this->deliveryAddressName;
+        return $this->addressName;
     }
 
-    public function getDeliveryAddressPhone(): ?string
+    public function getAddressPhone(): ?string
     {
-        return $this->deliveryAddressPhone;
+        return $this->addressPhone;
     }
 
-    public function getDeliveryAddressAddress(): ?string
+    public function getAddressAddress(): ?string
     {
-        return $this->deliveryAddressAddress;
+        return $this->addressAddress;
     }
 
-    public function getDeliveryAddressNip(): ?string
+    public function getAddressNip(): ?string
     {
-        return $this->deliveryAddressNip;
+        return $this->addressNip;
     }
 
-    public function getDeliveryAddressZip(): ?string
+    public function getAddressZip(): ?string
     {
-        return $this->deliveryAddressZip;
+        return $this->addressZip;
     }
 
-    public function getDeliveryAddressCity(): ?string
+    public function getAddressCity(): ?string
     {
-        return $this->deliveryAddressCity;
+        return $this->addressCity;
     }
 
-    public function getDeliveryAddressCountry(): ?string
+    public function getAddressCountry(): ?string
     {
-        return $this->deliveryAddressCountry;
-    }
-
-    public function getInvoiceAddressName(): ?string
-    {
-        return $this->invoiceAddressName;
-    }
-
-    public function getInvoiceAddressPhone(): ?string
-    {
-        return $this->invoiceAddressPhone;
-    }
-
-    public function getInvoiceAddressAddress(): ?string
-    {
-        return $this->invoiceAddressAddress;
-    }
-
-    public function getInvoiceAddressNip(): ?string
-    {
-        return $this->invoiceAddressNip;
-    }
-
-    public function getInvoiceAddressZip(): ?string
-    {
-        return $this->invoiceAddressZip;
-    }
-
-    public function getInvoiceAddressCity(): ?string
-    {
-        return $this->invoiceAddressCity;
-    }
-
-    public function getInvoiceAddressCountry(): ?string
-    {
-        return $this->invoiceAddressCountry;
+        return $this->addressCountry;
     }
 }
