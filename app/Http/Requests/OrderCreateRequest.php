@@ -89,10 +89,10 @@ class OrderCreateRequest extends OrderItemsRequest
             'invoice_address.name' => ['nullable', 'string', 'max:255'],
             'invoice_address.phone' => ['nullable', 'string', 'max:20'],
             'invoice_address.address' => ['nullable', 'string', 'max:255'],
-            'invoice_address.vat' => ['nullable', 'string', 'max:15'],
             'invoice_address.zip' => ['nullable', 'string', 'max:16'],
             'invoice_address.city' => ['nullable', 'string', 'max:255'],
             'invoice_address.country' => ['nullable', 'string', 'size:2'],
+            'invoice_address.vat' => ['nullable', 'string', 'max:15'],
 
             'discounts' => ['nullable', 'array'],
             'discounts.*' => ['string', 'exists:discounts,code', new DiscountAvailable()],
