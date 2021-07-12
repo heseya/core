@@ -45,6 +45,7 @@ class OrderUpdateRequest extends FormRequest
             'delivery_address.country' => ['required', 'string', 'size:2'],
             'delivery_address.vat' => ['nullable', 'string', 'max:15'],
 
+            'invoice_address' => ['required'],
             'invoice_address.name' => ['nullable', 'string', 'max:255'],
             'invoice_address.phone' => ['nullable', 'string', 'max:20'],
             'invoice_address.address' => ['nullable', 'string', 'max:255'],
