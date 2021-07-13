@@ -33,8 +33,9 @@
         "mbezhanov/faker-provider-collection": "^1.2",
         "mockery/mockery": "^1.4",
         "nunomaduro/collision": "^5.3",
+        "phpunit/phpunit": "^9.5",
         "nunomaduro/phpinsights": "^2.0",
-        "phpunit/phpunit": "^9.5"
+        "heseya/insights": "*"
     },
     "config": {
         "optimize-autoloader": true,
@@ -84,5 +85,11 @@
         "pre-commit": [
             "@composer style"
         ]
-    }
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "./heseya/insights"
+        }
+    ]
 }

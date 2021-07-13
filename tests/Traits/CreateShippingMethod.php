@@ -6,7 +6,7 @@ use App\Models\ShippingMethod;
 
 trait CreateShippingMethod
 {
-    public function createShippingMethod(float $price, array $payload = []): ShippingMethod
+    public function createShippingMethod(float $price = 0, array $payload = []): ShippingMethod
     {
         $shippingMethod = ShippingMethod::factory()->create($payload);
         $priceRange = $shippingMethod->priceRanges()->create([

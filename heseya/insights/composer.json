@@ -1,0 +1,18 @@
+{
+    "name": "heseya/insights",
+    "type": "library",
+    "require": {
+        "nunomaduro/phpinsights": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Heseya\\Insights\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Jędrzej Buliński",
+            "email": "jedrzej@heseya.com"
+        }
+    ]
+}
