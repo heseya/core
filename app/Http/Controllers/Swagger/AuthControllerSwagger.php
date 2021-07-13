@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Swagger;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Requests\PasswordResetRequest;
+use App\Http\Requests\PasswordResetSaveRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -119,6 +120,7 @@ interface AuthControllerSwagger
      * @OA\Get(
      *   path="/user/password/reset/{token}",
      *   summary="Show reset password form",
+     *   tags={"Auth"},
      *   @OA\Response(
      *     response=200,
      *     description="Success",
@@ -129,6 +131,41 @@ interface AuthControllerSwagger
      * )
      */
     public function showResetPasswordForm(Request $request): JsonResource;
+
+    /**
+     * @OA\Post(
+     *   path="/user/password/reset/save",
+     *   summary="save the reset password",
+     *   tags={"Auth"},
+     *   @OA\RequestBody(
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="email",
+     *         type="string",
+     *         example="admin@example.com",
+     *       ),
+     *       @OA\Property(
+     *         property="password",
+     *         type="string",
+     *         example="secret",
+     *       ),
+     *       @OA\Property(
+     *         property="password_new",
+     *         type="string",
+     *         example="xsw@!QAZ34",
+     *       ),
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=204,
+     *     description="Success",
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function saveResetPassword(PasswordResetSaveRequest $request): JsonResponse;
 
     /**
      * @OA\Patch(

@@ -8,6 +8,7 @@ use App\Http\Controllers\Swagger\AuthControllerSwagger;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Requests\PasswordResetRequest;
+use App\Http\Requests\PasswordResetSaveRequest;
 use App\Http\Resources\AuthResource;
 use App\Http\Resources\LoginHistoryResource;
 use App\Http\Resources\UserResource;
@@ -86,6 +87,28 @@ class AuthController extends Controller implements AuthControllerSwagger
         }
 
         return UserResource::make($user);
+    }
+
+    public function saveResetPassword(PasswordResetSaveRequest $request): JsonResponse
+    {
+        $user = User::whereEmail($request->input('email'))->first();
+        if (!$user) {
+            throw new AuthExceptions('User does not exist!');
+        }
+
+        if (!Password::tokenExists($user, $request->input('token'))) {
+            throw new AuthExceptions('The token is invalid or inactive. Try to reset your password again.');
+        }
+
+        if (!Hash::check($request->input('password'), $user->password)) {
+            throw new AuthExceptions('Invalid credentials.');
+        }
+
+        $user->update([
+            'password' => Hash::make($request->input('password_new')),
+        ]);
+
+        return response()->json(null, HttpRespone::HTTP_NO_CONTENT);
     }
 
     public function changePassword(PasswordChangeRequest $request): JsonResponse
