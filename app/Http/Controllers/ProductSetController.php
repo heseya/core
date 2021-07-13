@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\ProductSetDto;
 use App\Http\Controllers\Swagger\ProductSetControllerSwagger;
 use App\Http\Requests\CategoryCreateRequest;
 use App\Http\Requests\CategoryIndexRequest;
@@ -10,6 +11,8 @@ use App\Http\Requests\CategoryUpdateRequest;
 use App\Http\Resources\ProductSetResource;
 use App\Http\Resources\ProductSetTreeResource;
 use App\Models\ProductSet;
+use App\Services\Contracts\ProductSetServiceContract;
+use App\Services\ProductSetService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
@@ -35,15 +38,19 @@ class ProductSetController extends Controller implements ProductSetControllerSwa
 
     public function store(CategoryCreateRequest $request): JsonResource
     {
+        $dto = ProductSetDto::instantiateFromRequest($request);
+
         return ProductSetResource::make(
-            $this->productSetService->create($request->validated()),
+            $this->productSetService->create($dto),
         );
     }
 
     public function update(ProductSet $set, CategoryUpdateRequest $request): JsonResource
     {
+        $dto = ProductSetDto::instantiateFromRequest($request);
+
         return ProductSetResource::make(
-            $this->productSetService->update($set, $request->validated()),
+            $this->productSetService->update($set, $dto),
         );
     }
 
@@ -51,13 +58,13 @@ class ProductSetController extends Controller implements ProductSetControllerSwa
     {
         $this->productSetService->reorder($request->input('product_sets'));
 
-        return Response::json(null, Response::HTTP_NO_CONTENT);
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
-    public function destroy(ProductSet $category): JsonResponse
+    public function destroy(ProductSet $set): JsonResponse
     {
         $this->productSetService->delete($set);
 
-        return Response::json(null, Response::HTTP_NO_CONTENT);
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

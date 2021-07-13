@@ -8,7 +8,7 @@ interface ProductSetResourceSwagger
 {
     /**
      * @OA\Schema(
-     *   schema="Page",
+     *   schema="ProductSet",
      *   @OA\Property(
      *     property="id",
      *     type="string",
@@ -18,7 +18,7 @@ interface ProductSetResourceSwagger
      *     property="name",
      *     type="string",
      *     description="Name displayed to the user",
-     *     example="AGD,
+     *     example="AGD",
      *   ),
      *   @OA\Property(
      *     property="slug",
@@ -29,14 +29,29 @@ interface ProductSetResourceSwagger
      *   @OA\Property(
      *     property="public",
      *     type="boolean",
-     *     example=true,
      *     description="Whether set is visible to unauthorized users",
+     *     example=true,
      *   ),
      *   @OA\Property(
      *     property="hide_on_index",
      *     type="boolean",
-     *     example=false,
      *     description="Whether set products should be hidden from the main page",
+     *     example=false,
+     *   ),
+     *   @OA\Property(
+     *     property="parent_id",
+     *     type="string",
+     *     description="Id of set, this set belongs to",
+     *     example="026bc5f6-8373-4aeb-972e-e78d72a67121",
+     *   ),
+     *   @OA\Property(
+     *     property="children_ids",
+     *     type="array",
+     *     description="Ids of assigned subsets",
+     *     @OA\Items(
+     *       type="string",
+     *       example="026bc5f6-8373-4aeb-972e-e78d72a67121",
+     *     ),
      *   ),
      * )
      */

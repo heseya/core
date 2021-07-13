@@ -75,6 +75,38 @@ namespace App\Models{
 
 namespace App\Models{
 /**
+ * App\Models\Category
+ *
+ * @OA\Schema ()
+ * @mixin IdeHelperCategory
+ * @property string $id
+ * @property string $name
+ * @property string $slug
+ * @property bool $public
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int $order
+ * @property bool $hide_on_index
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Product[] $products
+ * @property-read int|null $products_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Category newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Category newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Category query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Category search(array $params = [])
+ * @method static \Illuminate\Database\Eloquent\Builder|Category whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Category whereHideOnIndex($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Category whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Category whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Category whereOrder($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Category wherePublic($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Category whereSlug($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Category whereUpdatedAt($value)
+ */
+	class IdeHelperCategory extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
  * App\Models\Country
  *
  * @OA\Schema ()
@@ -660,21 +692,20 @@ namespace App\Models{
 /**
  * App\Models\ProductSet
  *
- * @OA\Schema ()
  * @mixin IdeHelperProductSet
  * @property-read \Illuminate\Database\Eloquent\Collection|ProductSet[] $children
  * @property-read int|null $children_count
  * @property-read ProductSet $parent
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Product[] $products
  * @property-read int|null $products_count
- * @method static \Illuminate\Database\Eloquent\Builder|ProductSet everything()
+ * @method static Builder|ProductSet everything()
  * @method static \Database\Factories\ProductSetFactory factory(...$parameters)
- * @method static \Illuminate\Database\Eloquent\Builder|ProductSet newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|ProductSet newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|ProductSet private()
- * @method static \Illuminate\Database\Eloquent\Builder|ProductSet query()
- * @method static \Illuminate\Database\Eloquent\Builder|ProductSet search(array $params = [])
- * @method static \Illuminate\Database\Eloquent\Builder|ProductSet subset()
+ * @method static Builder|ProductSet newModelQuery()
+ * @method static Builder|ProductSet newQuery()
+ * @method static Builder|ProductSet private()
+ * @method static Builder|ProductSet query()
+ * @method static Builder|ProductSet search(array $params = [])
+ * @method static Builder|ProductSet subset()
  */
 	class IdeHelperProductSet extends \Eloquent {}
 }

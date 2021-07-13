@@ -15,6 +15,10 @@ class ProductSetResource extends Resource implements ProductSetResourceSwagger
             'slug' => $this->slug,
             'public' => $this->public,
             'hide_on_index' => $this->hide_on_index,
+            'parent_id' => $this->parent_id,
+            'children_ids' => $this->children->map(
+                fn ($child) => $child->getKey(),
+            )->toArray(),
         ];
     }
 }

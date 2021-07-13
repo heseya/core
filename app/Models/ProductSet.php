@@ -4,48 +4,17 @@ namespace App\Models;
 
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * @OA\Schema ()
- *
  * @mixin IdeHelperProductSet
  */
 class ProductSet extends Model
 {
     use Searchable, HasFactory;
-
-    /**
-     * @OA\Property(
-     *   property="id",
-     *   type="string",
-     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
-     * )
-     *
-     * @OA\Property(
-     *   property="name",
-     *   type="string",
-     *   example="Rings",
-     * )
-     *
-     * @OA\Property(
-     *   property="slug",
-     *   type="string",
-     *   example="rings",
-     * )
-     *
-     * @OA\Property(
-     *   property="public",
-     *   type="boolean",
-     * )
-     *
-     * @OA\Property(
-     *   property="hide_on_index",
-     *   type="boolean",
-     * )
-     */
 
     protected $fillable = [
         'name',
@@ -111,6 +80,11 @@ class ProductSet extends Model
         static::addGlobalScope(
             'global_set',
             fn (Builder $builder) => $builder->whereNull('parent_id'),
+        );
+
+        static::addGlobalScope(
+            'ordered',
+            fn (Builder $builder) => $builder->orderBy('order'),
         );
     }
 }

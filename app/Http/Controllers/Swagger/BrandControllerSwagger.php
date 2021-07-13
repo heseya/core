@@ -20,7 +20,7 @@ interface BrandControllerSwagger
      *       @OA\Property(
      *         property="data",
      *         type="array",
-     *         @OA\Items(ref="#/components/schemas/Brand"),
+     *         @OA\Items(ref="#/components/schemas/ProductSet"),
      *       )
      *     )
      *   )
