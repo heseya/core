@@ -15,7 +15,7 @@ use Laravel\Passport\HasApiTokens;
 
 /**
  * @OA\Schema ()
- * 
+ *
  * @mixin IdeHelperUser
  */
 class User extends Model implements

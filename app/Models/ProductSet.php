@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @OA\Schema ()
+ *
  * @mixin IdeHelperProductSet
  */
 class ProductSet extends Model
@@ -70,17 +71,6 @@ class ProductSet extends Model
         'hide_on_index',
     ];
 
-    protected static function booted()
-    {
-        static::addGlobalScope('public', fn (Builder $builder) => 
-            $builder->where('public', false),
-        );
-
-        static::addGlobalScope('global_set', fn (Builder $builder) =>
-            $builder->whereNull('parent_id'),
-        );
-    }
-
     public function scopePrivate($query)
     {
         return $query->withoutGlobalScope('public');
@@ -109,5 +99,18 @@ class ProductSet extends Model
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
+    }
+
+    protected static function booted()
+    {
+        static::addGlobalScope(
+            'public',
+            fn (Builder $builder) => $builder->where('public', false),
+        );
+
+        static::addGlobalScope(
+            'global_set',
+            fn (Builder $builder) => $builder->whereNull('parent_id'),
+        );
     }
 }

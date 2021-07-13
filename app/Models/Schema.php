@@ -22,6 +22,7 @@ use Illuminate\Validation\ValidationException;
  *   (schema multiplied by multiply_schema adds 0 to the price while multiply_schema adds
  *   the multiplied value)",
  * )
+ *
  * @mixin IdeHelperSchema
  */
 class Schema extends Model

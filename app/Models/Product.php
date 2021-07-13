@@ -13,9 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @OA\Schema ()
- * 
- * 
- * 
+ *
  * @mixin IdeHelperProduct
  */
 class Product extends Model
