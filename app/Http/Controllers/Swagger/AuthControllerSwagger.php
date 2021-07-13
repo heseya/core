@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Swagger;
 
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
+use App\Http\Requests\PasswordResetRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -72,6 +73,31 @@ interface AuthControllerSwagger
      * )
      */
     public function logout(Request $request): JsonResponse;
+
+    /**
+     * @OA\Patch(
+     *   path="/user/password/reset",
+     *   summary="Reset password",
+     *   tags={"Auth"},
+     *   @OA\RequestBody(
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="email",
+     *         type="string",
+     *         example="admin@example.com",
+     *       ),
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=204,
+     *     description="Success",
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function resetPassword(PasswordResetRequest $request): JsonResponse;
 
     /**
      * @OA\Patch(

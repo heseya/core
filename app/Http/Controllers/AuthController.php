@@ -6,14 +6,17 @@ use App\Exceptions\StoreException;
 use App\Http\Controllers\Swagger\AuthControllerSwagger;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
+use App\Http\Requests\PasswordResetRequest;
 use App\Http\Resources\AuthResource;
 use App\Http\Resources\LoginHistoryResource;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Response as HttpRespone;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Response;
 use Laravel\Passport\Passport;
 
@@ -50,7 +53,18 @@ class AuthController extends Controller implements AuthControllerSwagger
             ]);
         }
 
-        return Response::json(null, 204);
+        return Response::json(null, HttpRespone::HTTP_NO_CONTENT);
+    }
+
+    public function resetPassword(PasswordResetRequest $request): JsonResponse
+    {
+        $response = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        return $response === Password::RESET_LINK_SENT
+            ? response()->json(['status' => __($response)], HttpRespone::HTTP_NO_CONTENT)
+            : response()->json(['email' => __($response)], HttpRespone::HTTP_NO_CONTENT);
     }
 
     public function changePassword(PasswordChangeRequest $request): JsonResponse
@@ -65,7 +79,7 @@ class AuthController extends Controller implements AuthControllerSwagger
             'password' => Hash::make($request->input('password_new')),
         ]);
 
-        return response()->json(null, 204);
+        return response()->json(null, HttpRespone::HTTP_NO_CONTENT);
     }
 
     public function loginHistory(Request $request): JsonResource
