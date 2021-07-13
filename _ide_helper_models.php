@@ -667,11 +667,14 @@ namespace App\Models{
  * @property-read ProductSet $parent
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Product[] $products
  * @property-read int|null $products_count
+ * @method static \Illuminate\Database\Eloquent\Builder|ProductSet everything()
  * @method static \Database\Factories\ProductSetFactory factory(...$parameters)
  * @method static \Illuminate\Database\Eloquent\Builder|ProductSet newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProductSet newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProductSet private()
  * @method static \Illuminate\Database\Eloquent\Builder|ProductSet query()
  * @method static \Illuminate\Database\Eloquent\Builder|ProductSet search(array $params = [])
+ * @method static \Illuminate\Database\Eloquent\Builder|ProductSet subset()
  */
 	class IdeHelperProductSet extends \Eloquent {}
 }

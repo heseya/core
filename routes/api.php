@@ -53,7 +53,7 @@ Route::prefix('brands')->group(function () {
 Route::prefix('categories')->group(function () {
     Route::get(null, 'CategoryController@index');
     Route::post(null, 'CategoryController@store')->middleware('auth:api');
-    Route::post('order', 'CategoryController@order')->middleware('auth:api');
+    Route::post('order', 'CategoryController@reorder')->middleware('auth:api');
     Route::patch('id:{category:id}', 'CategoryController@update')->middleware('auth:api');
     Route::delete('id:{category:id}', 'CategoryController@destroy')->middleware('auth:api');
 });

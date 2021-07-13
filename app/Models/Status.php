@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @OA\Schema ()
- *
+ * 
  * @mixin IdeHelperStatus
  */
 class Status extends Model
