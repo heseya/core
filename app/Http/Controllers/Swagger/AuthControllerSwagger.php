@@ -75,7 +75,7 @@ interface AuthControllerSwagger
     public function logout(Request $request): JsonResponse;
 
     /**
-     * @OA\Patch(
+     * @OA\Post(
      *   path="/user/password/reset",
      *   summary="Reset password",
      *   tags={"Auth"},
@@ -89,8 +89,24 @@ interface AuthControllerSwagger
      *     )
      *   ),
      *   @OA\Response(
-     *     response=204,
-     *     description="Success",
+     *     response=200,
+     *     description="We have e-mailed your password reset link!",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="status",
+     *         type="string",
+     *       )
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=422,
+     *     description="We can't find a user with that e-mail address.",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="email",
+     *         type="string",
+     *       )
+     *     )
      *   ),
      *   security={
      *     {"oauth": {}}
@@ -98,6 +114,21 @@ interface AuthControllerSwagger
      * )
      */
     public function resetPassword(PasswordResetRequest $request): JsonResponse;
+
+    /**
+     * @OA\Get(
+     *   path="/user/password/reset/{token}",
+     *   summary="Show reset password form",
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function showResetPasswordForm(Request $request): JsonResource;
 
     /**
      * @OA\Patch(

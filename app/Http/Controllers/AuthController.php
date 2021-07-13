@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\AuthExceptions;
 use App\Exceptions\StoreException;
 use App\Http\Controllers\Swagger\AuthControllerSwagger;
 use App\Http\Requests\LoginRequest;
@@ -9,6 +10,8 @@ use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Requests\PasswordResetRequest;
 use App\Http\Resources\AuthResource;
 use App\Http\Resources\LoginHistoryResource;
+use App\Http\Resources\UserResource;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -63,8 +66,26 @@ class AuthController extends Controller implements AuthControllerSwagger
         );
 
         return $response === Password::RESET_LINK_SENT
-            ? response()->json(['status' => __($response)], HttpRespone::HTTP_NO_CONTENT)
-            : response()->json(['email' => __($response)], HttpRespone::HTTP_NO_CONTENT);
+            ? response()->json(['status' => __($response)], HttpRespone::HTTP_OK)
+            : response()->json(['email' => __($response)], HttpRespone::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    public function showResetPasswordForm(Request $request): JsonResource
+    {
+        if (!$request->input('token')) {
+            throw new AuthExceptions('The token is invalid!');
+        }
+
+        $user = User::whereEmail($request->input('email'))->first();
+        if (!$user) {
+            throw new AuthExceptions('User does not exist!');
+        }
+
+        if (!Password::tokenExists($user, $request->input('token'))) {
+            throw new AuthExceptions('The token is invalid or inactive. Try to reset your password again.');
+        }
+
+        return UserResource::make($user);
     }
 
     public function changePassword(PasswordChangeRequest $request): JsonResponse

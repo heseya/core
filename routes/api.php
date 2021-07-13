@@ -9,8 +9,11 @@ use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', 'AuthController@login');
-Route::post('user/password/reset', 'AuthController@resetPassword')->name('password.reset')->middleware('auth:api');
-Route::patch('user/password', 'AuthController@changePassword')->middleware('auth:api');
+Route::prefix('user/password')->group(function () {
+    Route::get('/reset/{token?}/{email?}', 'AuthController@showResetPasswordForm')->name('password.request');
+    Route::post('/reset', 'AuthController@resetPassword')->name('password.reset')->middleware('auth:api');
+    Route::patch(null, 'AuthController@changePassword')->middleware('auth:api');
+});
 
 Route::prefix('products')->group(function () {
     Route::get(null, 'ProductController@index');
