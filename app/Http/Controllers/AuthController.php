@@ -77,7 +77,6 @@ class AuthController extends Controller implements AuthControllerSwagger
 
         $user = $this->getUserByEmail($request->input('email'));
         $this->checkPasswordResetToken($user, $request->input('token'));
-        $user->token = $request->input('token');
 
         return UserResource::make($user);
     }
