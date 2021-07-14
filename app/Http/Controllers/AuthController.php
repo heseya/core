@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\AuthExceptions;
-use App\Exceptions\StoreException;
 use App\Http\Controllers\Swagger\AuthControllerSwagger;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
@@ -32,7 +31,7 @@ class AuthController extends Controller implements AuthControllerSwagger
             'email' => $request->input('email'),
             'password' => $request->input('password'),
         ])) {
-            throw new StoreException('Invalid credentials');
+            throw new AuthExceptions('Invalid credentials');
         }
 
         $user = Auth::guard('web')->user();
@@ -49,7 +48,6 @@ class AuthController extends Controller implements AuthControllerSwagger
     public function logout(Request $request): JsonResponse
     {
         $token = $request->user()->token();
-
         if ($token) {
             $token->update([
                 'revoked' => true,
@@ -74,35 +72,21 @@ class AuthController extends Controller implements AuthControllerSwagger
     public function showResetPasswordForm(Request $request): JsonResource
     {
         if (!$request->input('token')) {
-            throw new AuthExceptions('The token is invalid!');
+            throw new AuthExceptions('The token is invalid');
         }
 
-        $user = User::whereEmail($request->input('email'))->first();
-        if (!$user) {
-            throw new AuthExceptions('User does not exist!');
-        }
-
-        if (!Password::tokenExists($user, $request->input('token'))) {
-            throw new AuthExceptions('The token is invalid or inactive. Try to reset your password again.');
-        }
+        $user = $this->getUserByEmail($request->input('email'));
+        $this->checkPasswordResetToken($user, $request->input('token'));
+        $user->token = $request->input('token');
 
         return UserResource::make($user);
     }
 
     public function saveResetPassword(PasswordResetSaveRequest $request): JsonResponse
     {
-        $user = User::whereEmail($request->input('email'))->first();
-        if (!$user) {
-            throw new AuthExceptions('User does not exist!');
-        }
-
-        if (!Password::tokenExists($user, $request->input('token'))) {
-            throw new AuthExceptions('The token is invalid or inactive. Try to reset your password again.');
-        }
-
-        if (!Hash::check($request->input('password'), $user->password)) {
-            throw new AuthExceptions('Invalid credentials.');
-        }
+        $user = $this->getUserByEmail($request->input('email'));
+        $this->checkPasswordResetToken($user, $request->input('token'));
+        $this->checkCredentials($user, $request->input('password'));
 
         $user->update([
             'password' => Hash::make($request->input('password_new')),
@@ -114,10 +98,7 @@ class AuthController extends Controller implements AuthControllerSwagger
     public function changePassword(PasswordChangeRequest $request): JsonResponse
     {
         $user = $request->user();
-
-        if (!Hash::check($request->input('password'), $user->password)) {
-            throw new StoreException('Invalid credentials');
-        }
+        $this->checkCredentials($user, $request->input('password'));
 
         $user->update([
             'password' => Hash::make($request->input('password_new')),
@@ -135,5 +116,29 @@ class AuthController extends Controller implements AuthControllerSwagger
         return LoginHistoryResource::collection(
             $tokens->paginate(12),
         );
+    }
+
+    private function getUserByEmail(string $email): User
+    {
+        $user = User::whereEmail($email)->first();
+        if (!$user) {
+            throw new AuthExceptions('User does not exist');
+        }
+
+        return $user;
+    }
+
+    private function checkCredentials(User $user, string $password): void
+    {
+        if (!Hash::check($password, $user->password)) {
+            throw new AuthExceptions('Invalid credentials');
+        }
+    }
+
+    private function checkPasswordResetToken(User $user, string $token): void
+    {
+        if (!Password::tokenExists($user, $token)) {
+            throw new AuthExceptions('The token is invalid or inactive. Try to reset your password again.');
+        }
     }
 }

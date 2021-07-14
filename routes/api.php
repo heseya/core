@@ -12,7 +12,7 @@ Route::post('login', 'AuthController@login');
 Route::prefix('user/password')->group(function () {
     Route::get('/reset/{token?}/{email?}', 'AuthController@showResetPasswordForm')->name('password.request');
     Route::post('/reset', 'AuthController@resetPassword')->name('password.reset');
-    Route::post('/reset/save', 'AuthController@saveResetPassword')->name('password.reset.save');
+    Route::patch('/reset/save', 'AuthController@saveResetPassword')->name('password.reset.save');
     Route::patch(null, 'AuthController@changePassword')->middleware('auth:api');
 });
 

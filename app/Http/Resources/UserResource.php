@@ -13,6 +13,7 @@ class UserResource extends Resource
             'email' => $this->email,
             'name' => $this->name,
             'avatar' => $this->avatar,
+            'token' => $this->token,
         ];
     }
 }
