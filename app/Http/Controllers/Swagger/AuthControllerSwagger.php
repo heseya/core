@@ -77,37 +77,15 @@ interface AuthControllerSwagger
 
     /**
      * @OA\Post(
-     *   path="/user/password/reset",
+     *   path="/user/reset-password",
      *   summary="Reset password",
      *   tags={"Auth"},
      *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="email",
-     *         type="string",
-     *         example="admin@example.com",
-     *       ),
-     *     )
+     *     ref="#/components/requestBodies/PasswordReset",
      *   ),
      *   @OA\Response(
-     *     response=200,
-     *     description="We have e-mailed your password reset link!",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="status",
-     *         type="string",
-     *       )
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=422,
-     *     description="We can't find a user with that e-mail address.",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="email",
-     *         type="string",
-     *       )
-     *     )
+     *     response=204,
+     *     description="Success",
      *   ),
      *   security={
      *     {"oauth": {}}
@@ -118,7 +96,7 @@ interface AuthControllerSwagger
 
     /**
      * @OA\Get(
-     *   path="/user/password/reset/{token}",
+     *   path="/user/reset-password/{token}/{email}",
      *   summary="Show reset password form",
      *   tags={"Auth"},
      *   @OA\Response(
@@ -133,28 +111,12 @@ interface AuthControllerSwagger
     public function showResetPasswordForm(Request $request): JsonResource;
 
     /**
-     * @OA\Post(
-     *   path="/user/password/reset/save",
+     * @OA\Patch(
+     *   path="/user/save-reset-password",
      *   summary="save the reset password",
      *   tags={"Auth"},
      *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="email",
-     *         type="string",
-     *         example="admin@example.com",
-     *       ),
-     *       @OA\Property(
-     *         property="password",
-     *         type="string",
-     *         example="secret",
-     *       ),
-     *       @OA\Property(
-     *         property="password_new",
-     *         type="string",
-     *         example="xsw@!QAZ34",
-     *       ),
-     *     )
+     *     ref="#/components/requestBodies/PasswordResetSave",
      *   ),
      *   @OA\Response(
      *     response=204,

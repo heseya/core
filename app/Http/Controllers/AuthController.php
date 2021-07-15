@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\AuthExceptions;
+use App\Exceptions\AuthException;
 use App\Http\Controllers\Swagger\AuthControllerSwagger;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
@@ -12,6 +12,7 @@ use App\Http\Resources\AuthResource;
 use App\Http\Resources\LoginHistoryResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Notifications\CustomResetPassword;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,7 +32,7 @@ class AuthController extends Controller implements AuthControllerSwagger
             'email' => $request->input('email'),
             'password' => $request->input('password'),
         ])) {
-            throw new AuthExceptions('Invalid credentials');
+            throw new AuthException('Invalid credentials');
         }
 
         $user = Auth::guard('web')->user();
@@ -60,19 +61,17 @@ class AuthController extends Controller implements AuthControllerSwagger
 
     public function resetPassword(PasswordResetRequest $request): JsonResponse
     {
-        $response = Password::sendResetLink(
-            $request->only('email')
-        );
+        $user = $this->getUserByEmail($request->input('email'));
+        $token = Password::createToken($user);
+        $user->notify(new CustomResetPassword($token));
 
-        return $response === Password::RESET_LINK_SENT
-            ? response()->json(['status' => __($response)], HttpRespone::HTTP_OK)
-            : response()->json(['email' => __($response)], HttpRespone::HTTP_UNPROCESSABLE_ENTITY);
+        return response()->json(null, HttpRespone::HTTP_NO_CONTENT);
     }
 
     public function showResetPasswordForm(Request $request): JsonResource
     {
         if (!$request->input('token')) {
-            throw new AuthExceptions('The token is invalid');
+            throw new AuthException('The token is invalid');
         }
 
         $user = $this->getUserByEmail($request->input('email'));
@@ -85,11 +84,11 @@ class AuthController extends Controller implements AuthControllerSwagger
     {
         $user = $this->getUserByEmail($request->input('email'));
         $this->checkPasswordResetToken($user, $request->input('token'));
-        $this->checkCredentials($user, $request->input('password'));
 
         $user->update([
             'password' => Hash::make($request->input('password_new')),
         ]);
+        Password::deleteToken($user);
 
         return response()->json(null, HttpRespone::HTTP_NO_CONTENT);
     }
@@ -121,7 +120,7 @@ class AuthController extends Controller implements AuthControllerSwagger
     {
         $user = User::whereEmail($email)->first();
         if (!$user) {
-            throw new AuthExceptions('User does not exist');
+            throw new AuthException('User does not exist');
         }
 
         return $user;
@@ -130,14 +129,14 @@ class AuthController extends Controller implements AuthControllerSwagger
     private function checkCredentials(User $user, string $password): void
     {
         if (!Hash::check($password, $user->password)) {
-            throw new AuthExceptions('Invalid credentials');
+            throw new AuthException('Invalid credentials');
         }
     }
 
     private function checkPasswordResetToken(User $user, string $token): void
     {
         if (!Password::tokenExists($user, $token)) {
-            throw new AuthExceptions('The token is invalid or inactive. Try to reset your password again.');
+            throw new AuthException('The token is invalid or inactive. Try to reset your password again.');
         }
     }
 }

@@ -8,12 +8,12 @@ use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('login', 'AuthController@login');
-Route::prefix('user/password')->group(function () {
-    Route::get('/reset/{token?}/{email?}', 'AuthController@showResetPasswordForm')->name('password.request');
-    Route::post('/reset', 'AuthController@resetPassword')->name('password.reset');
-    Route::patch('/reset/save', 'AuthController@saveResetPassword')->name('password.reset.save');
-    Route::patch(null, 'AuthController@changePassword')->middleware('auth:api');
+Route::prefix('user')->group(function () {
+    Route::post('/login', 'AuthController@login');
+    Route::get('/reset-password/{token?}/{email?}', 'AuthController@showResetPasswordForm');
+    Route::post('/reset-password', 'AuthController@resetPassword');
+    Route::patch('/save-reset-password', 'AuthController@saveResetPassword');
+    Route::patch('/password', 'AuthController@changePassword')->middleware('auth:api');
 });
 
 Route::prefix('products')->group(function () {

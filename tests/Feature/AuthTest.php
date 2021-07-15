@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\Response as HttpRespone;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
@@ -15,7 +16,7 @@ class AuthTest extends TestCase
 
     public function testLogin(): void
     {
-        $response = $this->postJson('/login', [
+        $response = $this->postJson('/user/login', [
             'email' => $this->user->email,
             'password' => $this->password,
         ]);
@@ -55,11 +56,11 @@ class AuthTest extends TestCase
         Mail::fake();
         Mail::assertNothingSent();
 
-        $response = $this->postJson('/user/password/reset', [
+        $response = $this->postJson('/user/reset-password', [
             'email' => $user->email,
         ]);
 
-        $response->assertOk();
+        $response->assertStatus(HttpRespone::HTTP_NO_CONTENT);
     }
 
     public function testSaveResetPassword(): void
@@ -74,28 +75,26 @@ class AuthTest extends TestCase
             'password' => Hash::make($password),
         ]);
 
-        $userWithToken =  User::factory()->withPasswordReset($user->email)->make();
-        $this->patchJson('/user/password/reset/save', [
+        $token = Password::createToken($user);
+        $this->assertTrue(Password::tokenExists($user, $token));
+
+        $this->patchJson('/user/save-reset-password', [
             'email' => $email,
             'password' => $password,
             'password_new' => $newPassword,
-            'token' => $userWithToken->token,
+            'token' => $token,
         ]);
 
         $user->refresh();
-        $this->assertFalse(Hash::check($password, $user->password));
         $this->assertTrue(Hash::check($newPassword, $user->password));
-        $this->assertTrue(Password::tokenExists($user, $userWithToken->token));
-
-        $user = User::factory()->create();
-        $this->assertFalse(Password::tokenExists($user, $userWithToken->token));
+        $this->assertFalse(Password::tokenExists($user, $token));
     }
 
     public function testChangePassword(): void
     {
         $user = User::factory()->create([
-                                            'password' => Hash::make('test'),
-                                        ]);
+            'password' => Hash::make('test'),
+        ]);
 
         $response = $this->actingAs($user)->patchJson('/user/password', [
             'password' => 'test',
