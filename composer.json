@@ -74,13 +74,16 @@
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
         ],
-        "ide-models-mixin": [
-            "@composer style"
+        "ide-helper": [
+            "@php artisan ide-helper:generate -M",
+            "@php artisan ide-helper:models -M"
         ],
         "style": [
-            "@php artisan ide-helper:generate -M",
-            "@php artisan ide-helper:models -M",
+            "@ide-helper",
             "@php artisan insights --fix --no-interaction"
+        ],
+        "docs": [
+            "@php artisan l5-swagger:generate"
         ],
         "pre-commit": [
             "@composer style"
