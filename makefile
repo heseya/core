@@ -16,4 +16,3 @@ hooks:
 
 hooks-remove:
 	- rm ./.git/hooks/*
-	- mkdir ./.git/hooks/
