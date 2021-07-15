@@ -133,3 +133,34 @@ Optionally, you can clear the entire project cache by
 ```
 docker system prune
 ```
+
+## Project setup without Docker
+Enable pre-commit scripts by copying git hooks
+```
+cp ./git_hooks/host/* ./.git/hooks/
+```
+
+Install dependencies
+```
+composer i
+```
+
+Copy `.env.example` to `.env`.
+
+Create application key and run migrations with seeder.
+```
+php artisan key:generate
+php artisan migrate --seed
+```
+
+After migration run passport install.
+```
+php artisan passport:install
+```
+
+Seeder creates user `admin@example.com` with password `secret`.
+
+When something not working with cache (like routing).
+```
+php artisan optimize
+```
