@@ -1,6 +1,6 @@
 # Heseya Store API
 
-## Easy start
+## Easy start with Docker
 ```
 make build
 ```
