@@ -97,6 +97,9 @@ This project uses [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.htm
 - Remember to config Sentry when deploying new instance!
 
 ## Manual project setup with Docker
+### Attention
+This section assumes the project catalogue uses the default repository name: store-api.
+The commands and the git hooks running on host will need to be modified with correct catalogue name otherwise.
 Preparation
 - Copy `.env.example` to `.env`.
 - Configure DOCKER_PORT in .env to free port on your host eg.
