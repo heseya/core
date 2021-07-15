@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Dtos\ProductSetDto;
 use App\Http\Controllers\Swagger\ProductSetControllerSwagger;
-use App\Http\Requests\CategoryCreateRequest;
 use App\Http\Requests\CategoryIndexRequest;
 use App\Http\Requests\CategoryReorderRequest;
-use App\Http\Requests\CategoryUpdateRequest;
+use App\Http\Requests\ProductSetStoreRequest;
+use App\Http\Requests\ProductSetUpdateRequest;
 use App\Http\Resources\ProductSetResource;
 use App\Http\Resources\ProductSetTreeResource;
 use App\Models\ProductSet;
@@ -36,7 +36,7 @@ class ProductSetController extends Controller implements ProductSetControllerSwa
         return ProductSetResource::collection($sets);
     }
 
-    public function store(CategoryCreateRequest $request): JsonResource
+    public function store(ProductSetStoreRequest $request): JsonResource
     {
         $dto = ProductSetDto::instantiateFromRequest($request);
 
@@ -45,12 +45,12 @@ class ProductSetController extends Controller implements ProductSetControllerSwa
         );
     }
 
-    public function update(ProductSet $set, CategoryUpdateRequest $request): JsonResource
+    public function update(ProductSet $productSet, ProductSetUpdateRequest $request): JsonResource
     {
         $dto = ProductSetDto::instantiateFromRequest($request);
 
         return ProductSetResource::make(
-            $this->productSetService->update($set, $dto),
+            $this->productSetService->update($productSet, $dto),
         );
     }
 
@@ -61,9 +61,9 @@ class ProductSetController extends Controller implements ProductSetControllerSwa
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
-    public function destroy(ProductSet $set): JsonResponse
+    public function destroy(ProductSet $productSet): JsonResponse
     {
-        $this->productSetService->delete($set);
+        $this->productSetService->delete($productSet);
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }

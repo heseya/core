@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Swagger;
 
-use App\Http\Requests\CategoryCreateRequest;
 use App\Http\Requests\CategoryIndexRequest;
-use App\Http\Requests\CategoryUpdateRequest;
+use App\Http\Requests\ProductSetStoreRequest;
+use App\Http\Requests\ProductSetUpdateRequest;
 use App\Models\ProductSet;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -53,7 +53,7 @@ interface ProductSetControllerSwagger
      *   }
      * )
      */
-    public function store(CategoryCreateRequest $request): JsonResource;
+    public function store(ProductSetStoreRequest $request): JsonResource;
 
     /**
      * @OA\Patch(
@@ -88,7 +88,7 @@ interface ProductSetControllerSwagger
      *   }
      * )
      */
-    public function update(ProductSet $category, CategoryUpdateRequest $request): JsonResource;
+    public function update(ProductSet $set, ProductSetUpdateRequest $request): JsonResource;
 
     /**
      * @OA\Delete(

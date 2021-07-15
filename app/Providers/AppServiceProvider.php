@@ -13,6 +13,7 @@ use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OptionServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\Contracts\PageServiceContract;
+use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
@@ -23,6 +24,7 @@ use App\Services\NameService;
 use App\Services\OptionService;
 use App\Services\OrderService;
 use App\Services\PageService;
+use App\Services\ProductSetService;
 use App\Services\ReorderService;
 use App\Services\SchemaService;
 use App\Services\SettingsService;
@@ -44,6 +46,7 @@ class AppServiceProvider extends ServiceProvider
         SettingsServiceContract::class => SettingsService::class,
         MarkdownServiceContract::class => MarkdownService::class,
         PageServiceContract::class => PageService::class,
+        ProductSetServiceContract::class => ProductSetService::class,
     ];
 
     /**

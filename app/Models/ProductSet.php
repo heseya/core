@@ -7,6 +7,7 @@ use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -45,41 +46,37 @@ class ProductSet extends Model
         return $query->withoutGlobalScope('public');
     }
 
-    public function scopeSubset($query)
+    public function scopeRoot($query)
     {
-        return $query->withoutGlobalScope('global_set');
+        return $query->whereNull('parent_id');
     }
 
-    public function scopeEverything($query)
+    public function scopeReversed($query)
     {
-        return $query->private()->subset();
+        return $query->withoutGlobalScope('ordered')
+            ->orderBy('order', 'desc');
     }
 
     public function parent(): BelongsTo
     {
-        return $this->belongsTo(self::class);
+        return $this->belongsTo(self::class, 'parent_id');
     }
 
     public function children(): HasMany
     {
-        return $this->hasMany(self::class);
+        return $this->hasMany(self::class, 'parent_id');
     }
 
-    public function products(): HasMany
+    public function products(): BelongsToMany
     {
-        return $this->hasMany(Product::class);
+        return $this->belongsToMany(Product::class, 'product_set_product');
     }
 
     protected static function booted()
     {
         static::addGlobalScope(
             'public',
-            fn (Builder $builder) => $builder->where('public', false),
-        );
-
-        static::addGlobalScope(
-            'global_set',
-            fn (Builder $builder) => $builder->whereNull('parent_id'),
+            fn (Builder $builder) => $builder->where('public', true),
         );
 
         static::addGlobalScope(

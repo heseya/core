@@ -54,17 +54,17 @@ use Illuminate\Foundation\Http\FormRequest;
  *   )
  * )
  */
-class ProductSetStoreRequest extends FormRequest
+class ProductSetUpdateRequest extends FormRequest
 {
     public function rules()
     {
         return [
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'unique:product_sets', 'alpha_dash'],
-            'public' => ['boolean'],
-            'hide_on_index' => ['boolean'],
-            'parent_id' => ['uuid', 'nullable', 'exists:product_sets,id'],
-            'children_ids' => ['array', 'min:1'],
+            'public' => ['required', 'boolean'],
+            'hide_on_index' => ['required', 'boolean'],
+            'parent_id' => ['present', 'nullable', 'uuid', 'exists:product_sets,id'],
+            'children_ids' => ['present', 'array'],
             'children_ids.*' => ['uuid', 'exists:product_sets,id'],
         ];
     }

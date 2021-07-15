@@ -122,9 +122,7 @@ class Product extends Model
      */
     public function sets(): BelongsToMany
     {
-        return $this
-            ->belongsToMany(ProductSet::class, 'product_set_product')
-            ->orderBy('order');
+        return $this->belongsToMany(ProductSet::class, 'product_set_product');
     }
 
     /**

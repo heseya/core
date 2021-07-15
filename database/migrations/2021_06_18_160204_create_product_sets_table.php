@@ -21,9 +21,12 @@ class CreateProductSetsTable extends Migration
             $table->string('name');
             $table->string('slug')->unique()->index();
             $table->uuid('parent_id')->nullable()->index();
-            $table->boolean('public')->default(false);
+            $table->boolean('public')->default(true);
+            $table->unsignedTinyInteger('order');
             $table->boolean('hide_on_index')->default(false);
             $table->timestamps();
+
+            $table->unique(['parent_id', 'order']);
         });
 
         $this->moveSets('Categories');
@@ -52,13 +55,17 @@ class CreateProductSetsTable extends Migration
 
     private function moveSets(string $set): void
     {
+        $children = DB::table(Str::of($set)->snake())->get();
+
+        if ($children->isEmpty()) {
+            return;
+        }
+
         $parent = ProductSet::create([
             'name' => $set,
             'slug' => Str::of($set)->slug(),
             'public' => true,
         ]);
-
-        $children = DB::table(Str::of($set)->snake())->get();
 
         foreach ($children as $child) {
             ProductSet::create([
@@ -67,6 +74,7 @@ class CreateProductSetsTable extends Migration
                 'slug' => $child->slug,
                 'parent_id' => $parent->getKey(),
                 'public' => $child->public,
+                'order' => $child->order,
                 'hide_on_index' => $child->hide_on_index,
             ]);
         }

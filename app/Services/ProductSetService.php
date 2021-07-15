@@ -12,7 +12,7 @@ class ProductSetService implements ProductSetServiceContract
 {
     public function searchAll(array $attributes)
     {
-        $query = ProductSet::search($attributes)->orderBy('order');
+        $query = ProductSet::root()->search($attributes);
 
         if (Auth::check()) {
             $query->private();
@@ -24,27 +24,46 @@ class ProductSetService implements ProductSetServiceContract
     public function create(ProductSetDto $dto): ProductSet
     {
         if ($dto->getParentId() !== null) {
-            $parent = ProductSet::everything()->findOrFail($dto->getParentId());
+            $parent = ProductSet::private()->findOrFail($dto->getParentId());
+            $lastChild = $parent->children()->private()->reversed()->first();
 
-            $order = $parent->children()->count();
+            $order = $lastChild ? $lastChild->order + 1 : 0;
         } else {
-            $order = ProductSet::private()->count();
+            $last = ProductSet::private()->reversed()->first();
+            
+            $order = $last ? $last->order + 1 : 0;
         }
 
-        return ProductSet::create($dto->toArray() + [
+        $set = ProductSet::create($dto->toArray() + [
             'order' => $order,
         ]);
+
+        if ($dto->getChildrenIds()->isNotEmpty()) {
+            $dto->getChildrenIds()->each(
+                fn ($id, $order) => ProductSet::private()->findOrFail($id)->update([
+                    'parent_id' => $set->getKey(),
+                    'order' => $order,
+                ]),
+            );
+        }
+
+        return $set;
     }
 
     public function update(ProductSet $set, ProductSetDto $dto): ProductSet
     {
-        if ($set->parent->getKey() !== $dto->getParentId()) {
-            if ($dto->getParentId() !== null) {
-                $parent = ProductSet::everything()->findOrFail($dto->getParentId());
+        $parentId = $set->parent ? $set->parent->getKey() : null;
 
-                $order = $parent->children()->count();
+        if ($parentId !== $dto->getParentId()) {
+            if ($dto->getParentId() !== null) {
+                $parent = ProductSet::private()->findOrFail($dto->getParentId());
+                $lastChild = $parent->children()->private()->reversed()->first();
+    
+                $order = $lastChild ? $lastChild->order + 1 : 0;
             } else {
-                $order = ProductSet::private()->count();
+                $last = ProductSet::private()->reversed()->first();
+                
+                $order = $last ? $last->order + 1 : 0;
             }
         } else {
             $order = $set->order;
@@ -53,6 +72,25 @@ class ProductSetService implements ProductSetServiceContract
         $set->update($dto->toArray() + [
             'order' => $order,
         ]);
+
+        // Safe detach
+        $last = ProductSet::private()->reversed()->first(); 
+        $childOrder = $last ? $last->order + 1 : 0;
+
+        $set->children->each(
+            fn ($id, $order) => ProductSet::private()->where('id', $id)->update([
+                'parent_id' => $set->getKey(),
+                'order' => $childOrder + $order,
+            ]),
+        );
+
+        // Reattach
+        $dto->getChildrenIds()->each(
+            fn ($id, $order) => ProductSet::private()->findOrFail($id)->update([
+                'parent_id' => $set->getKey(),
+                'order' => $order,
+            ]),
+        );
 
         return $set;
     }

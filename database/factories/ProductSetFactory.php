@@ -27,7 +27,6 @@ class ProductSetFactory extends Factory
             'slug' => Str::of($name)->slug(),
             'public' => $this->faker->boolean,
             'hide_on_index' => $this->faker->boolean,
-            'parent_id' => rand(0, 3) ? null : ProductSet::inRandomOrder()->first()->getKey(),
         ];
     }
 }

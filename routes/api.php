@@ -4,6 +4,7 @@ use App\Http\Controllers\AppController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CountriesController;
 use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\ProductSetController;
 use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
@@ -57,6 +58,18 @@ Route::prefix('categories')->group(function () {
     Route::post('order', 'CategoryController@reorder')->middleware('auth:api');
     Route::patch('id:{category:id}', 'CategoryController@update')->middleware('auth:api');
     Route::delete('id:{category:id}', 'CategoryController@destroy')->middleware('auth:api');
+});
+
+Route::prefix('product-sets')->group(function () {
+    Route::get(null, [ProductSetController::class, 'index']);
+
+    Route::middleware('auth:api')->group(function () {
+        Route::post(null, [ProductSetController::class, 'store']);
+        Route::post('id:{product_set:id}', [ProductSetController::class, 'update']);
+
+        Route::post('order', 'CategoryController@reorder');
+        Route::delete('id:{product_set:id}', [ProductSetController::class, 'destroy']);
+    });
 });
 
 Route::prefix('shipping-methods')->group(function () {

@@ -5,6 +5,7 @@ namespace App\Dtos;
 use App\Dtos\Contracts\DtoContract;
 use App\Dtos\Contracts\InstantiateFromRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class ProductSetDto implements DtoContract, InstantiateFromRequest
 {
@@ -13,7 +14,7 @@ class ProductSetDto implements DtoContract, InstantiateFromRequest
     private bool $public;
     private bool $hide_on_index;
     private ?string $parent_id;
-    private array $children_ids;
+    private Collection $children_ids;
 
     public function __construct(
         string $name,
@@ -28,7 +29,7 @@ class ProductSetDto implements DtoContract, InstantiateFromRequest
         $this->public = $public;
         $this->hide_on_index = $hide_on_index;
         $this->parent_id = $parent_id;
-        $this->children_ids = $children_ids;
+        $this->children_ids = Collection::make($children_ids);
     }
 
     public function toArray(): array
@@ -48,8 +49,8 @@ class ProductSetDto implements DtoContract, InstantiateFromRequest
         return new self(
             $request->input('name'),
             $request->input('slug'),
-            $request->input('public'),
-            $request->input('hide_on_index'),
+            $request->boolean('public', true),
+            $request->boolean('hide_on_index', false),
             $request->input('parent_id', null),
             $request->input('children_ids', []),
         );
@@ -80,7 +81,7 @@ class ProductSetDto implements DtoContract, InstantiateFromRequest
         return $this->parent_id;
     }
 
-    public function getChildrenIds(): array
+    public function getChildrenIds(): Collection
     {
         return $this->children_ids;
     }
