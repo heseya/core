@@ -8,6 +8,7 @@ bash:
 build:
 	- cp .env.example .env
 	- docker-compose up -d
+	- docker exec store-api_app_1 php artisan key:generate
 	- docker exec store-api_app_1 php artisan migrate:fresh --seed
 	- echo "\033[0;32mProject ready, make somthing awesome ;)"
 
