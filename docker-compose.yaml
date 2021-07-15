@@ -6,7 +6,6 @@ services:
       dockerfile: Dockerfile-dev
     restart: unless-stopped
     volumes:
-    - vendor-volume:/usr/src/app/vendor
     - .:/usr/src/app
     command:
     - bash
