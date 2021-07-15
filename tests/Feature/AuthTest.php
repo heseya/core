@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Http\Response as HttpRespone;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
@@ -16,7 +15,7 @@ class AuthTest extends TestCase
 
     public function testLogin(): void
     {
-        $response = $this->postJson('/user/login', [
+        $response = $this->postJson('/login', [
             'email' => $this->user->email,
             'password' => $this->password,
         ]);
@@ -56,32 +55,29 @@ class AuthTest extends TestCase
         Mail::fake();
         Mail::assertNothingSent();
 
-        $response = $this->postJson('/user/reset-password', [
+        $response = $this->postJson('/users/reset-password', [
             'email' => $user->email,
         ]);
 
-        $response->assertStatus(HttpRespone::HTTP_NO_CONTENT);
+        $response->assertNoContent();
     }
 
     public function testSaveResetPassword(): void
     {
         $email = $this->faker->unique()->safeEmail;
-        $password = 'Passwd###111';
         $newPassword = 'NewPasswd###111';
 
         $user = User::factory()->create([
             'name' => $this->faker->firstName() . ' '  . $this->faker->lastName(),
             'email' => $email,
-            'password' => Hash::make($password),
         ]);
 
         $token = Password::createToken($user);
         $this->assertTrue(Password::tokenExists($user, $token));
 
-        $this->patchJson('/user/save-reset-password', [
+        $this->patchJson('/users/save-reset-password', [
             'email' => $email,
-            'password' => $password,
-            'password_new' => $newPassword,
+            'password' => $newPassword,
             'token' => $token,
         ]);
 

@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Foundation\Http\FormRequest;
+
 /**
  * @OA\RequestBody(
  *   request="PasswordResetSave",
@@ -19,18 +21,15 @@ namespace App\Http\Requests;
  *       property="password",
  *       type="string",
  *     ),
- *     @OA\Property(
- *       property="password_new",
- *       type="string",
- *     ),
  *   )
  * )
  */
-class PasswordResetSaveRequest extends PasswordChangeRequest
+class PasswordResetSaveRequest extends FormRequest
 {
     public function rules(): array
     {
-        return parent::rules() + [
+        return [
+            'password' => ['required', 'string', 'max:255', 'min:10'],
             'token' => ['required', 'string'],
             'email' => ['required', 'email', 'exists:users,email'],
         ];
