@@ -9,12 +9,11 @@ build:
 	- cp .env.example .env
 	- docker-compose up -d
 	- docker exec store-api_app_1 php artisan key:generate
-	- docker exec store-api_app_1 php artisan migrate:fresh --seed
 	- echo "\033[0;32mProject ready, make somthing awesome ;)"
 
 hooks:
 	- cp ./git_hooks/docker/* ./.git/hooks/
 
 hooks-remove:
-	- rm -R ./.git/hooks/
+	- rm ./.git/hooks/*
 	- mkdir ./.git/hooks/
