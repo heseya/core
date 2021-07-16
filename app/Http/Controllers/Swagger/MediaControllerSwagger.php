@@ -66,5 +66,5 @@ interface MediaControllerSwagger
      *   }
      * )
      */
-    public function destroyByImage(Media $media): JsonResponse;
+    public function destroy(Media $media): JsonResponse;
 }

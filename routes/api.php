@@ -128,7 +128,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::prefix('media')->group(function () {
         Route::post(null, 'MediaController@store');
-        Route::delete('id:{media:id}', 'MediaController@destroyByImage');
+        Route::delete('id:{media:id}', 'MediaController@destroy');
     });
 
     Route::prefix('schemas')->group(function () {

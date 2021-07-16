@@ -8,6 +8,8 @@ use App\Models\Media;
 use App\Services\Contracts\MediaServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Response as HttpRespone;
+use Illuminate\Support\Facades\Response;
 
 class MediaController extends Controller implements MediaControllerSwagger
 {
@@ -23,8 +25,10 @@ class MediaController extends Controller implements MediaControllerSwagger
         return $this->mediaServiceContract->store($request);
     }
 
-    public function destroyByImage(Media $media): JsonResponse
+    public function destroy(Media $media): JsonResponse
     {
-        return $this->mediaServiceContract->destroyByImage($media);
+        $media->forceDelete();
+
+        return Response::json(null, HttpRespone::HTTP_NO_CONTENT);
     }
 }
