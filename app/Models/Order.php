@@ -34,6 +34,12 @@ class Order extends Model
      * )
      *
      * @OA\Property(
+     *   property="order",
+     *   type="int",
+     *   example="1",
+     * )
+     *
+     * @OA\Property(
      *   property="email",
      *   type="string",
      *   example="admin@example.com",
@@ -59,6 +65,7 @@ class Order extends Model
      */
 
     protected $fillable = [
+        'order',
         'code',
         'email',
         'currency',

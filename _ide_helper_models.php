@@ -331,6 +331,7 @@ namespace App\Models{
  * @OA\Schema ()
  * @mixin IdeHelperOrder
  * @property string $id
+ * @property int $order
  * @property string $code
  * @property string $email
  * @property string $currency
@@ -378,6 +379,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereInvoiceAddressId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Order whereOrder($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereShippingMethodId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereShippingNumber($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereShippingPrice($value)

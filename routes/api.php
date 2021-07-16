@@ -30,6 +30,7 @@ Route::prefix('orders')->group(function () {
     Route::patch('id:{order:id}', 'OrderController@update')->middleware('auth:api');
     Route::get('{order:code}', 'OrderController@showPublic');
     Route::post('{order:code}/pay/{method}', 'PaymentController@store');
+    Route::post('order', 'OrderController@order')->middleware('auth:api');
 });
 
 Route::any('payments/{method}', 'PaymentController@update');

@@ -10,6 +10,7 @@ use App\Http\Controllers\Swagger\OrderControllerSwagger;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderIndexRequest;
 use App\Http\Requests\OrderItemsRequest;
+use App\Http\Requests\OrderOrderRequest;
 use App\Http\Requests\OrderSyncRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
@@ -26,6 +27,7 @@ use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Response as HttpRespone;
 use Throwable;
 
 class OrderController extends Controller implements OrderControllerSwagger
@@ -210,7 +212,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             ]);
         }
 
-        return response()->json(null, 204);
+        return response()->json(null, HttpRespone::HTTP_NO_CONTENT);
     }
 
     public function verify(OrderItemsRequest $request): JsonResponse
@@ -227,7 +229,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             }
         }
 
-        return response()->json(null, 204);
+        return response()->json(null, HttpRespone::HTTP_NO_CONTENT);
     }
 
     public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResponse
@@ -255,5 +257,14 @@ class OrderController extends Controller implements OrderControllerSwagger
         $orderUpdateDto = OrderUpdateDto::instantiateFromRequest($request);
 
         return $this->orderService->update($orderUpdateDto, $order);
+    }
+
+    public function order(OrderOrderRequest $request): JsonResponse
+    {
+        foreach ($request->input('orders') as $key => $id) {
+            Order::where('id', $id)->update(['order' => $key]);
+        }
+
+        return response()->json(null, HttpRespone::HTTP_NO_CONTENT);
     }
 }
