@@ -3,6 +3,10 @@
 namespace App\Services;
 
 use App\Exceptions\AuthException;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\PasswordChangeRequest;
+use App\Http\Requests\PasswordResetRequest;
+use App\Http\Requests\PasswordResetSaveRequest;
 use App\Http\Resources\AuthResource;
 use App\Http\Resources\LoginHistoryResource;
 use App\Http\Resources\UserResource;
@@ -22,7 +26,7 @@ use Laravel\Passport\Passport;
 
 class AuthService implements AuthServiceContract
 {
-    public function login(Request $request): JsonResource
+    public function login(LoginRequest $request): JsonResource
     {
         if (!Auth::guard('web')->attempt([
             'email' => $request->input('email'),
@@ -55,7 +59,7 @@ class AuthService implements AuthServiceContract
         return Response::json(null, HttpRespone::HTTP_NO_CONTENT);
     }
 
-    public function resetPassword(Request $request): JsonResponse
+    public function resetPassword(PasswordResetRequest $request): JsonResponse
     {
         $user = $this->getUserByEmail($request->input('email'));
         $token = Password::createToken($user);
@@ -76,7 +80,7 @@ class AuthService implements AuthServiceContract
         return UserResource::make($user);
     }
 
-    public function saveResetPassword(Request $request): JsonResponse
+    public function saveResetPassword(PasswordResetSaveRequest $request): JsonResponse
     {
         $user = $this->getUserByEmail($request->input('email'));
         $this->checkPasswordResetToken($user, $request->input('token'));
@@ -84,12 +88,13 @@ class AuthService implements AuthServiceContract
         $user->update([
             'password' => Hash::make($request->input('password')),
         ]);
+
         Password::deleteToken($user);
 
         return response()->json(null, HttpRespone::HTTP_NO_CONTENT);
     }
 
-    public function changePassword(Request $request): JsonResponse
+    public function changePassword(PasswordChangeRequest $request): JsonResponse
     {
         $user = $request->user();
         $this->checkCredentials($user, $request->input('password'));
