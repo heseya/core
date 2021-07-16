@@ -126,7 +126,10 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('deposits', 'DepositController@index');
 
-    Route::post('media', 'MediaController@store');
+    Route::prefix('media')->group(function () {
+        Route::post(null, 'MediaController@store');
+        Route::delete('id:{media:id}', 'MediaController@destroyByImage');
+    });
 
     Route::prefix('schemas')->group(function () {
         Route::get(null, 'SchemaController@index');
