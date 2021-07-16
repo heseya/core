@@ -2,9 +2,18 @@
 
 namespace App\Services;
 
+use App\Exceptions\MediaException;
+use App\Http\Resources\MediaResource;
+use App\Models\Media;
 use App\Models\Product;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Response as HttpRespone;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Response;
 
 class MediaService implements MediaServiceContract
 {
@@ -18,5 +27,35 @@ class MediaService implements MediaServiceContract
     public function sync(Product $product, array $media = []): void
     {
         $product->media()->sync($this->reorderService->reorder($media));
+    }
+
+    public function store(Request $request): JsonResource
+    {
+        $response = Http::attach('file', $request->file('file')
+            ->getContent(), 'file')
+            ->withHeaders(['Authorization' => config('silverbox.key')])
+            ->post(config('silverbox.host') . '/' . config('silverbox.client'));
+
+        if ($response->failed()) {
+            throw new MediaException('CDN responded with an error');
+        }
+
+        $media = Media::create([
+            'type' => Media::PHOTO,
+            'url' => config('silverbox.host') . '/' . $response[0]['path'],
+        ]);
+
+        return MediaResource::make($media);
+    }
+
+    public function destroyByImage(Media $media): JsonResponse
+    {
+        if ($media->type !== Media::PHOTO) {
+            throw new MediaException('Media image not found');
+        }
+
+        $media->forceDelete();
+
+        return Response::json(null, HttpRespone::HTTP_NO_CONTENT);
     }
 }
