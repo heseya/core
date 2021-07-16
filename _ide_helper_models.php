@@ -331,7 +331,6 @@ namespace App\Models{
  * @OA\Schema ()
  * @mixin IdeHelperOrder
  * @property string $id
- * @property int $order
  * @property string $code
  * @property string $email
  * @property string $currency
@@ -379,7 +378,6 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereInvoiceAddressId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Order whereOrder($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereShippingMethodId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereShippingNumber($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereShippingPrice($value)
@@ -531,11 +529,13 @@ namespace App\Models{
 /**
  * App\Models\Page
  *
+ * @OA\Schema ()
  * @mixin IdeHelperPage
  * @property string $id
  * @property string $slug
  * @property bool $public
  * @property string $name
+ * @property int $order
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property string $content_html
@@ -547,6 +547,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Page whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Page whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Page whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Page whereOrder($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Page wherePublic($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Page whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Page whereUpdatedAt($value)

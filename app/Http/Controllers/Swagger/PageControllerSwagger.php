@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Swagger;
 
+use App\Http\Requests\PageOrderRequest;
 use App\Http\Requests\PageStoreRequest;
 use App\Http\Requests\PageUpdateRequest;
 use App\Models\Page;
@@ -167,4 +168,31 @@ interface PageControllerSwagger
      * )
      */
     public function destroy(Page $page): JsonResponse;
+
+    /**
+     * @OA\Post(
+     *   path="/pages/order",
+     *   summary="change pages order",
+     *   tags={"Pages"},
+     *   @OA\Parameter(
+     *     name="order",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
+     *   @OA\RequestBody(
+     *     ref="#/components/requestBodies/PageOrder",
+     *   ),
+     *   @OA\Response(
+     *     response=204,
+     *     description="Success",
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function order(PageOrderRequest $request): JsonResponse;
 }

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddOrderToOrdersTable extends Migration
+class AddOrderToPagesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AddOrderToOrdersTable extends Migration
      */
     public function up(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->unsignedTinyInteger('order')->default(0)->after('id');
+        Schema::table('pages', function (Blueprint $table) {
+            $table->unsignedTinyInteger('order')->default(0)->after('name');
         });
     }
 
@@ -25,7 +25,7 @@ class AddOrderToOrdersTable extends Migration
      */
     public function down(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
+        Schema::table('pages', function (Blueprint $table) {
             $table->dropColumn('order');
         });
     }

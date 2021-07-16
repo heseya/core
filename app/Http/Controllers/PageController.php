@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Swagger\PageControllerSwagger;
+use App\Http\Requests\PageOrderRequest;
 use App\Http\Requests\PageStoreRequest;
 use App\Http\Requests\PageUpdateRequest;
 use App\Http\Resources\PageResource;
@@ -10,6 +11,7 @@ use App\Models\Page;
 use App\Services\Contracts\PageServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Response as HttpRespone;
 use Illuminate\Support\Facades\Response;
 
 class PageController extends Controller implements PageControllerSwagger
@@ -53,6 +55,13 @@ class PageController extends Controller implements PageControllerSwagger
     {
         $this->pageService->delete($page);
 
-        return Response::json(null, 204);
+        return Response::json(null, HttpRespone::HTTP_NO_CONTENT);
+    }
+
+    public function order(PageOrderRequest $request): JsonResponse
+    {
+        $this->pageService->order($request);
+
+        return response()->json(null, HttpRespone::HTTP_NO_CONTENT);
     }
 }

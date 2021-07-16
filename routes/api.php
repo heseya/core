@@ -30,7 +30,6 @@ Route::prefix('orders')->group(function () {
     Route::patch('id:{order:id}', 'OrderController@update')->middleware('auth:api');
     Route::get('{order:code}', 'OrderController@showPublic');
     Route::post('{order:code}/pay/{method}', 'PaymentController@store');
-    Route::post('order', 'OrderController@order')->middleware('auth:api');
 });
 
 Route::any('payments/{method}', 'PaymentController@update');
@@ -42,6 +41,7 @@ Route::prefix('pages')->group(function () {
     Route::get('{page:slug}', 'PageController@show');
     Route::patch('id:{page:id}', 'PageController@update')->middleware('auth:api');
     Route::delete('id:{page:id}', 'PageController@destroy')->middleware('auth:api');
+    Route::post('order', 'PageController@order')->middleware('auth:api');
 });
 
 Route::prefix('brands')->group(function () {

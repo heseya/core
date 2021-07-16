@@ -2,7 +2,9 @@
 
 namespace App\Services\Contracts;
 
+use App\Http\Requests\PageOrderRequest;
 use App\Models\Page;
+use Illuminate\Http\JsonResponse;
 
 interface PageServiceContract
 {
@@ -15,4 +17,6 @@ interface PageServiceContract
     public function update(Page $page, array $attributes): Page;
 
     public function delete(Page $page);
+
+    public function order(PageOrderRequest $request): JsonResponse;
 }

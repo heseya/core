@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Http\Requests\PageOrderRequest;
 use App\Models\Page;
 use App\Services\Contracts\PageServiceContract;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -42,5 +44,12 @@ class PageService implements PageServiceContract
     public function delete(Page $page)
     {
         $page->delete();
+    }
+
+    public function order(PageOrderRequest $request): JsonResponse
+    {
+        foreach ($request->input('pages') as $key => $id) {
+            Page::where('id', $id)->update(['order' => $key]);
+        }
     }
 }

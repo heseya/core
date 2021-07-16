@@ -10,7 +10,6 @@ use App\Http\Controllers\Swagger\OrderControllerSwagger;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderIndexRequest;
 use App\Http\Requests\OrderItemsRequest;
-use App\Http\Requests\OrderOrderRequest;
 use App\Http\Requests\OrderSyncRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
@@ -257,14 +256,5 @@ class OrderController extends Controller implements OrderControllerSwagger
         $orderUpdateDto = OrderUpdateDto::instantiateFromRequest($request);
 
         return $this->orderService->update($orderUpdateDto, $order);
-    }
-
-    public function order(OrderOrderRequest $request): JsonResponse
-    {
-        foreach ($request->input('orders') as $key => $id) {
-            Order::where('id', $id)->update(['order' => $key]);
-        }
-
-        return response()->json(null, HttpRespone::HTTP_NO_CONTENT);
     }
 }

@@ -6,22 +6,22 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * @OA\RequestBody(
- *   request="OrderOrder",
+ *   request="PageOrder",
  *   @OA\JsonContent(
  *     @OA\Property(
- *       property="orders",
+ *       property="pages",
  *       type="array",
  *     ),
  *   )
  * )
  */
-class OrderOrderRequest extends FormRequest
+class PageOrderRequest extends FormRequest
 {
     public function rules(): array
     {
         return [
-            'orders' => ['required', 'array'],
-            'orders.*' => ['uuid', 'exists:orders,id'],
+            'pages' => ['required', 'array'],
+            'pages.*' => ['uuid', 'exists:pages,id'],
         ];
     }
 }

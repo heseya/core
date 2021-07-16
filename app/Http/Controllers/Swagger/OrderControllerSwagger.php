@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Swagger;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderIndexRequest;
 use App\Http\Requests\OrderItemsRequest;
-use App\Http\Requests\OrderOrderRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Models\Order;
@@ -276,31 +275,4 @@ interface OrderControllerSwagger
      * )
      */
     public function update(OrderUpdateRequest $request, Order $order): JsonResponse;
-
-    /**
-     * @OA\Post(
-     *   path="/orders/id:{id}/status",
-     *   summary="change pages order",
-     *   tags={"Orders"},
-     *   @OA\Parameter(
-     *     name="order",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="array",
-     *     ),
-     *   ),
-     *   @OA\RequestBody(
-     *     ref="#/components/requestBodies/OrderOrder",
-     *   ),
-     *   @OA\Response(
-     *     response=204,
-     *     description="Success",
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function order(OrderOrderRequest $request): JsonResponse;
 }
