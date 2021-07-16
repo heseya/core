@@ -11,6 +11,7 @@ use Illuminate\Foundation\Http\FormRequest;
  *     @OA\Property(
  *       property="pages",
  *       type="array",
+ *       @OA\Items(),
  *     ),
  *   )
  * )

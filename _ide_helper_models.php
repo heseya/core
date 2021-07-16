@@ -529,7 +529,6 @@ namespace App\Models{
 /**
  * App\Models\Page
  *
- * @OA\Schema ()
  * @mixin IdeHelperPage
  * @property string $id
  * @property string $slug
