@@ -3,13 +3,11 @@
 namespace App\Services;
 
 use App\Exceptions\MediaException;
-use App\Http\Requests\MediaStoreRequest;
-use App\Http\Resources\MediaResource;
 use App\Models\Media;
 use App\Models\Product;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
-use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 
 class MediaService implements MediaServiceContract
@@ -26,9 +24,9 @@ class MediaService implements MediaServiceContract
         $product->media()->sync($this->reorderService->reorder($media));
     }
 
-    public function store(MediaStoreRequest $request): JsonResource
+    public function store(UploadedFile $file): Media
     {
-        $response = Http::attach('file', $request->file('file')
+        $response = Http::attach('file', $file
             ->getContent(), 'file')
             ->withHeaders(['Authorization' => config('silverbox.key')])
             ->post(config('silverbox.host') . '/' . config('silverbox.client'));
@@ -37,11 +35,14 @@ class MediaService implements MediaServiceContract
             throw new MediaException('CDN responded with an error');
         }
 
-        $media = Media::create([
+        return Media::create([
             'type' => Media::PHOTO,
             'url' => config('silverbox.host') . '/' . $response[0]['path'],
         ]);
+    }
 
-        return MediaResource::make($media);
+    public function destroy(Media $media): void
+    {
+        $media->forceDelete();
     }
 }
