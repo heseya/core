@@ -4,14 +4,21 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\RequestBody(
+ *   request="ShippingMethodOrder",
+ *   @OA\JsonContent(
+ *     @OA\Property(
+ *       property="shipping_methods",
+ *       type="array",
+ *       @OA\Items(),
+ *     ),
+ *   )
+ * )
+ */
 class ShippingMethodOrderRequest extends FormRequest
 {
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
-    public function rules()
+    public function rules(): array
     {
         return [
             'shipping_methods' => ['required', 'array'],

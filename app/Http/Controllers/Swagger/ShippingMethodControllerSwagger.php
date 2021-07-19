@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Swagger;
 
 use App\Http\Requests\ShippingMethodIndexRequest;
+use App\Http\Requests\ShippingMethodOrderRequest;
+use App\Http\Requests\ShippingMethodStoreRequest;
+use App\Http\Requests\ShippingMethodUpdateRequest;
 use App\Models\ShippingMethod;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 interface ShippingMethodControllerSwagger
@@ -14,6 +17,9 @@ interface ShippingMethodControllerSwagger
      *   path="/shipping-methods",
      *   summary="list shipping methods",
      *   tags={"Shipping"},
+     *   @OA\RequestBody(
+     *     ref="#/components/requestBodies/ShippingMethodIndex",
+     *   ),
      *   @OA\Response(
      *     response=200,
      *     description="Success",
@@ -63,9 +69,7 @@ interface ShippingMethodControllerSwagger
      *   summary="add new shipping method",
      *   tags={"Shipping"},
      *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       ref="#/components/schemas/ShippingMethod",
-     *     ),
+     *     ref="#/components/requestBodies/ShippingMethodStore",
      *   ),
      *   @OA\Response(
      *     response=201,
@@ -82,7 +86,7 @@ interface ShippingMethodControllerSwagger
      *   }
      * )
      */
-    public function store(Request $request);
+    public function store(ShippingMethodStoreRequest $request): JsonResource;
 
     /**
      * @OA\Patch(
@@ -98,9 +102,7 @@ interface ShippingMethodControllerSwagger
      *     )
      *   ),
      *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       ref="#/components/schemas/ShippingMethod",
-     *     ),
+     *     ref="#/components/requestBodies/ShippingMethodUpdate",
      *   ),
      *   @OA\Response(
      *     response=200,
@@ -117,7 +119,34 @@ interface ShippingMethodControllerSwagger
      *   }
      * )
      */
-    public function update(ShippingMethod $shipping_method, Request $request): JsonResource;
+    public function update(ShippingMethodUpdateRequest $request, ShippingMethod $shipping_method): JsonResource;
+
+    /**
+     * @OA\Post(
+     *   path="/shipping-methods/order",
+     *   summary="order shipping method",
+     *   tags={"Shipping"},
+     *   @OA\Parameter(
+     *     name="order",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *     )
+     *   ),
+     *   @OA\RequestBody(
+     *     ref="#/components/requestBodies/ShippingMethodOrder",
+     *   ),
+     *   @OA\Response(
+     *     response=204,
+     *     description="Success",
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function order(ShippingMethodOrderRequest $request): JsonResponse;
 
     /**
      * @OA\Delete(
@@ -141,5 +170,5 @@ interface ShippingMethodControllerSwagger
      *   }
      * )
      */
-    public function destroy(ShippingMethod $shipping_method);
+    public function destroy(ShippingMethod $shippingMethod);
 }
