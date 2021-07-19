@@ -13,14 +13,14 @@ class ProductSearchTest extends TestCase
     use RefreshDatabase;
 
     private ProductSet $category;
-    private Brand $brand;
+    private ProductSet $brand;
 
     public function setUp(): void
     {
         parent::setUp();
 
         $this->category = ProductSet::factory()->create(['public' => true]);
-        $this->brand = Brand::factory()->create(['public' => true]);
+        $this->brand = ProductSet::factory()->create(['public' => true]);
     }
 
     public function testSearch(): void
@@ -53,7 +53,7 @@ class ProductSearchTest extends TestCase
 
     public function testSearchByBrand(): void
     {
-        $brand = Brand::factory()->create(['public' => true]);
+        $brand = ProductSet::factory()->create(['public' => true]);
 
         $product = Product::factory()->create([
             'category_id' => $this->category->getKey(),

@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\ProductSet;
 use App\Models\Product;
-use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class ProductSetTest extends TestCase
@@ -19,12 +18,12 @@ class ProductSetTest extends TestCase
 
         $this->set = ProductSet::factory()->create([
             'public' => true,
-            'order' => 0,
+            'order' => 10,
         ]);
 
         $this->privateSet = ProductSet::factory()->create([
             'public' => false,
-            'order' => 1,
+            'order' => 11,
         ]);
 
         $this->childSet = ProductSet::factory()->create([
@@ -178,7 +177,7 @@ class ProductSetTest extends TestCase
     {
         $parent = ProductSet::factory()->create([
             'public' => true,
-            'order' => 10,
+            'order' => 15,
         ]);
 
         $set = [

@@ -2,7 +2,6 @@
 
 namespace Tests\Traits;
 
-use App\Models\Brand;
 use App\Models\ProductSet;
 use App\Models\Product;
 
@@ -10,7 +9,7 @@ trait CreateProduct
 {
     public function createProduct(array $payload = []): Product
     {
-        $brand = Brand::factory()->create([
+        $brand = ProductSet::factory()->create([
             'public' => true,
         ]);
 

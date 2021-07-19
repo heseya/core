@@ -8,6 +8,7 @@ use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -69,6 +70,8 @@ class Product extends Model
         'price',
         'description_md',
         'public',
+        'brand_id',
+        'category_id',
         'quantity_step',
     ];
 
@@ -123,6 +126,28 @@ class Product extends Model
     public function sets(): BelongsToMany
     {
         return $this->belongsToMany(ProductSet::class, 'product_set_product');
+    }
+
+    /**
+     * @OA\Property(
+     *   property="brand",
+     *   ref="#/components/schemas/Brand",
+     * )
+     */
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(ProductSet::class, 'brand_id');
+    }
+
+    /**
+     * @OA\Property(
+     *   property="category",
+     *   ref="#/components/schemas/Category",
+     * )
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(ProductSet::class, 'category_id');
     }
 
     /**
@@ -201,6 +226,12 @@ class Product extends Model
      */
     public function isPublic(): bool
     {
-        return $this->public && $this->brand->public && $this->category->public;
+        $brand = $this->brand()->private()->first();
+        $isBrandPublic = $brand ? $brand->public : true;
+
+        $category = $this->category()->private()->first();
+        $isCategoryPublic = $category ? $category->public : true;
+
+        return $this->public && $isBrandPublic && $isCategoryPublic;
     }
 }

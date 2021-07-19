@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Product;
 use App\Models\ProductSet;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -22,15 +23,20 @@ class CreateProductSetsTable extends Migration
             $table->string('slug')->unique()->index();
             $table->uuid('parent_id')->nullable()->index();
             $table->boolean('public')->default(true);
-            $table->unsignedTinyInteger('order');
+            $table->unsignedTinyInteger('order')->default(0);
             $table->boolean('hide_on_index')->default(false);
             $table->timestamps();
 
             $table->unique(['parent_id', 'order']);
         });
 
-        $this->moveSets('Categories');
-        $this->moveSets('Brands');
+        Schema::table('products', function (Blueprint $table) {
+            $table->dropForeign('products_category_id_foreign');
+            $table->dropForeign('products_brand_id_foreign');
+
+            $table->foreign('category_id')->references('id')->on('product_sets')->onDelete('restrict');
+            $table->foreign('brand_id')->references('id')->on('product_sets')->onDelete('restrict');
+        });
 
         Schema::create('product_set_product', function (Blueprint $table) {
             $table->uuid('product_id')->index();
@@ -41,6 +47,9 @@ class CreateProductSetsTable extends Migration
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
             $table->foreign('product_set_id')->references('id')->on('product_sets')->onDelete('cascade');
         });
+
+        $this->moveSets('Categories', 0);
+        $this->moveSets('Brands', 1);
     }
 
     /**
@@ -53,7 +62,7 @@ class CreateProductSetsTable extends Migration
         Schema::dropIfExists('product_sets');
     }
 
-    private function moveSets(string $set): void
+    private function moveSets(string $set, int $order): void
     {
         $children = DB::table(Str::of($set)->snake())->get();
 
@@ -65,6 +74,7 @@ class CreateProductSetsTable extends Migration
             'name' => $set,
             'slug' => Str::of($set)->slug(),
             'public' => true,
+            'order' => $order,
         ]);
 
         foreach ($children as $child) {

@@ -22,10 +22,14 @@ class ProductSetFactory extends Factory
     {
         $name = $this->faker->unique()->word;
 
+        $last = ProductSet::private()->reversed()->first();
+        $order = $last ? $last->order + 1 : 0;
+
         return [
             'name' => $name,
             'slug' => Str::of($name)->slug(),
             'public' => $this->faker->boolean,
+            'order' => $order,
             'hide_on_index' => $this->faker->boolean,
         ];
     }

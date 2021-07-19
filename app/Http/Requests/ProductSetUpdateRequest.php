@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * @OA\RequestBody(
- *   request="ProductSetStore",
+ *   request="ProductSetUpdate",
  *   @OA\JsonContent(
  *     required={
  *       "name",
