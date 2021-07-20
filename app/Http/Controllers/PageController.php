@@ -11,7 +11,6 @@ use App\Models\Page;
 use App\Services\Contracts\PageServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Http\Response as HttpRespone;
 use Illuminate\Support\Facades\Response;
 
 class PageController extends Controller implements PageControllerSwagger
@@ -55,13 +54,13 @@ class PageController extends Controller implements PageControllerSwagger
     {
         $this->pageService->delete($page);
 
-        return Response::json(null, HttpRespone::HTTP_NO_CONTENT);
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
-    public function order(PageOrderRequest $request): JsonResponse
+    public function reorder(PageOrderRequest $request): JsonResponse
     {
-        $this->pageService->order($request);
+        $this->pageService->reorder($request->input('pages'));
 
-        return response()->json(null, HttpRespone::HTTP_NO_CONTENT);
+        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

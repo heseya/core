@@ -194,5 +194,5 @@ interface PageControllerSwagger
      *   }
      * )
      */
-    public function order(PageOrderRequest $request): JsonResponse;
+    public function reorder(PageOrderRequest $request): JsonResponse;
 }

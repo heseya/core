@@ -26,7 +26,6 @@ use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Http\Response as HttpRespone;
 use Throwable;
 
 class OrderController extends Controller implements OrderControllerSwagger
@@ -211,7 +210,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             ]);
         }
 
-        return response()->json(null, HttpRespone::HTTP_NO_CONTENT);
+        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function verify(OrderItemsRequest $request): JsonResponse
@@ -228,7 +227,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             }
         }
 
-        return response()->json(null, HttpRespone::HTTP_NO_CONTENT);
+        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResponse

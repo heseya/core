@@ -2,11 +2,10 @@
 
 namespace App\Services;
 
-use App\Http\Requests\PageOrderRequest;
 use App\Models\Page;
 use App\Services\Contracts\PageServiceContract;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PageService implements PageServiceContract
@@ -31,6 +30,11 @@ class PageService implements PageServiceContract
 
     public function create(array $attributes): Page
     {
+        $agesNextOrder = Page::select(DB::raw('MAX(`order`) + 1 as next_order'))->first();
+        if ($agesNextOrder !== null) {
+            $attributes = array_merge($attributes, ['order' => $agesNextOrder->next_order]);
+        }
+
         return Page::create($attributes);
     }
 
@@ -46,9 +50,9 @@ class PageService implements PageServiceContract
         $page->delete();
     }
 
-    public function order(PageOrderRequest $request): JsonResponse
+    public function reorder(array $pages): void
     {
-        foreach ($request->input('pages') as $key => $id) {
+        foreach ($pages as $key => $id) {
             Page::where('id', $id)->update(['order' => $key]);
         }
     }
