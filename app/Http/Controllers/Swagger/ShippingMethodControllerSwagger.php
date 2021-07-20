@@ -17,9 +17,6 @@ interface ShippingMethodControllerSwagger
      *   path="/shipping-methods",
      *   summary="list shipping methods",
      *   tags={"Shipping"},
-     *   @OA\RequestBody(
-     *     ref="#/components/requestBodies/ShippingMethodIndex",
-     *   ),
      *   @OA\Response(
      *     response=200,
      *     description="Success",
@@ -40,13 +37,7 @@ interface ShippingMethodControllerSwagger
      *   summary="list shipping methods by filters",
      *   tags={"Shipping"},
      *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="country",
-     *         type="string",
-     *         example="DE",
-     *       ),
-     *     ),
+     *     ref="#/components/requestBodies/ShippingMethodIndex",
      *   ),
      *   @OA\Response(
      *     response=200,
