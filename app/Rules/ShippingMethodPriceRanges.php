@@ -11,7 +11,11 @@ class ShippingMethodPriceRanges implements Rule
      */
     public function passes($attribute, $value): bool
     {
-        $result = false;
+        // for update
+        if ($value === null || !$value) {
+            return true;
+        }
+
         foreach ($value as $item) {
             if (!isset($item['start'])) {
                 return false;
@@ -19,11 +23,11 @@ class ShippingMethodPriceRanges implements Rule
 
             $minimumValue = (float) $item['start'];
             if ($minimumValue === 0.0) {
-                $result = true;
+                return true;
             }
         }
 
-        return $result;
+        return false;
     }
 
     /**
