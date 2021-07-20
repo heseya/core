@@ -30,9 +30,9 @@ class PageService implements PageServiceContract
 
     public function create(array $attributes): Page
     {
-        $agesNextOrder = Page::select(DB::raw('MAX(`order`) + 1 as next_order'))->first();
-        if ($agesNextOrder !== null) {
-            $attributes = array_merge($attributes, ['order' => $agesNextOrder->next_order]);
+        $pageNextOrder = Page::select(DB::raw('MAX(`order`) + 1 as next_order'))->first();
+        if ($pageNextOrder !== null) {
+            $attributes = array_merge($attributes, ['order' => $pageNextOrder->next_order]);
         }
 
         return Page::create($attributes);
