@@ -3,22 +3,20 @@
 namespace App\Services\Contracts;
 
 use App\Http\Requests\ShippingMethodIndexRequest;
-use App\Http\Requests\ShippingMethodOrderRequest;
 use App\Http\Requests\ShippingMethodStoreRequest;
 use App\Http\Requests\ShippingMethodUpdateRequest;
 use App\Models\ShippingMethod;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Database\Eloquent\Collection;
 
 interface ShippingMethodServiceContract
 {
-    public function index(ShippingMethodIndexRequest $request): JsonResource;
+    public function index(ShippingMethodIndexRequest $request): Collection;
 
-    public function store(ShippingMethodStoreRequest $request): JsonResource;
+    public function store(ShippingMethodStoreRequest $request): ShippingMethod;
 
-    public function update(ShippingMethodUpdateRequest $request, ShippingMethod $shippingMethod): JsonResource;
+    public function update(ShippingMethodUpdateRequest $request, ShippingMethod $shippingMethod): ShippingMethod;
 
-    public function order(ShippingMethodOrderRequest $request): JsonResponse;
+    public function reorder(array $shippingMethods): void;
 
-    public function destroy(ShippingMethod $shippingMethod): JsonResponse;
+    public function destroy(ShippingMethod $shippingMethod): void;
 }

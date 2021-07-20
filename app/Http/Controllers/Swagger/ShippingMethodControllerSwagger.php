@@ -146,7 +146,7 @@ interface ShippingMethodControllerSwagger
      *   }
      * )
      */
-    public function order(ShippingMethodOrderRequest $request): JsonResponse;
+    public function reorder(ShippingMethodOrderRequest $request): JsonResponse;
 
     /**
      * @OA\Delete(

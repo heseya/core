@@ -7,10 +7,12 @@ use App\Http\Requests\ShippingMethodIndexRequest;
 use App\Http\Requests\ShippingMethodOrderRequest;
 use App\Http\Requests\ShippingMethodStoreRequest;
 use App\Http\Requests\ShippingMethodUpdateRequest;
+use App\Http\Resources\ShippingMethodResource;
 use App\Models\ShippingMethod;
 use App\Services\Contracts\ShippingMethodServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Response;
 
 class ShippingMethodController extends Controller implements ShippingMethodControllerSwagger
 {
@@ -23,26 +25,36 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
 
     public function index(ShippingMethodIndexRequest $request): JsonResource
     {
-        return $this->shippingMethodServiceContract->index($request);
+        $shippingMethods = $this->shippingMethodServiceContract->index($request);
+
+        return ShippingMethodResource::collection($shippingMethods);
     }
 
     public function store(ShippingMethodStoreRequest $request): JsonResource
     {
-        return $this->shippingMethodServiceContract->store($request);
+        $shippingMethod = $this->shippingMethodServiceContract->store($request);
+
+        return ShippingMethodResource::make($shippingMethod);
     }
 
     public function update(ShippingMethodUpdateRequest $request, ShippingMethod $shippingMethod): JsonResource
     {
-        return $this->shippingMethodServiceContract->update($request, $shippingMethod);
+        $shippingMethod = $this->shippingMethodServiceContract->update($request, $shippingMethod);
+
+        return ShippingMethodResource::make($shippingMethod);
     }
 
-    public function order(ShippingMethodOrderRequest $request): JsonResponse
+    public function reorder(ShippingMethodOrderRequest $request): JsonResponse
     {
-        return $this->shippingMethodServiceContract->order($request);
+        $this->shippingMethodServiceContract->reorder($request->input('shipping_methods'));
+
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function destroy(ShippingMethod $shippingMethod): JsonResponse
     {
-        return $this->shippingMethodServiceContract->destroy($shippingMethod);
+        $this->shippingMethodServiceContract->destroy($shippingMethod);
+
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

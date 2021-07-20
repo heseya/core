@@ -4,21 +4,18 @@ namespace App\Services;
 
 use App\Exceptions\StoreException;
 use App\Http\Requests\ShippingMethodIndexRequest;
-use App\Http\Requests\ShippingMethodOrderRequest;
 use App\Http\Requests\ShippingMethodStoreRequest;
 use App\Http\Requests\ShippingMethodUpdateRequest;
-use App\Http\Resources\ShippingMethodResource;
 use App\Models\ShippingMethod;
 use App\Services\Contracts\ShippingMethodServiceContract;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\DB;
 
 class ShippingMethodService implements ShippingMethodServiceContract
 {
-    public function index(ShippingMethodIndexRequest $request): JsonResource
+    public function index(ShippingMethodIndexRequest $request): Collection
     {
         $query = ShippingMethod::query()->orderBy('order');
 
@@ -50,12 +47,18 @@ class ShippingMethodService implements ShippingMethodServiceContract
         $shippingMethods = $query->get();
         $shippingMethods->each(fn ($method) => $method->price = $method->getPrice($request->input('cart_value', 0)));
 
-        return ShippingMethodResource::collection($shippingMethods);
+        return $shippingMethods;
     }
 
-    public function store(ShippingMethodStoreRequest $request): JsonResource
+    public function store(ShippingMethodStoreRequest $request): ShippingMethod
     {
-        $shippingMethod = ShippingMethod::create($request->all());
+        $attributes = $request->validated();
+        $shippingMethodNextOrder = ShippingMethod::select(DB::raw('MAX(`order`) + 1 as next_order'))->first();
+        if ($shippingMethodNextOrder !== null) {
+            $attributes = array_merge($attributes, ['order' => $shippingMethodNextOrder->next_order]);
+        }
+
+        $shippingMethod = ShippingMethod::create($attributes);
         $shippingMethod->paymentMethods()->sync($request->input('payment_methods', []));
         $shippingMethod->countries()->sync($request->input('countries', []));
 
@@ -68,12 +71,12 @@ class ShippingMethodService implements ShippingMethodServiceContract
             ]);
         }
 
-        return ShippingMethodResource::make($shippingMethod);
+        return $shippingMethod;
     }
 
-    public function update(ShippingMethodUpdateRequest $request, ShippingMethod $shippingMethod): JsonResource
+    public function update(ShippingMethodUpdateRequest $request, ShippingMethod $shippingMethod): ShippingMethod
     {
-        $shippingMethod->update($request->all());
+        $shippingMethod->update($request->validated());
         $shippingMethod->paymentMethods()->sync($request->input('payment_methods', []));
         $shippingMethod->countries()->sync($request->input('countries', []));
 
@@ -90,26 +93,22 @@ class ShippingMethodService implements ShippingMethodServiceContract
             }
         }
 
-        return ShippingMethodResource::make($shippingMethod);
+        return $shippingMethod;
     }
 
-    public function order(ShippingMethodOrderRequest $request): JsonResponse
+    public function reorder(array $shippingMethods): void
     {
-        foreach ($request->input('shipping_methods') as $key => $id) {
+        foreach ($shippingMethods as $key => $id) {
             ShippingMethod::where('id', $id)->update(['order' => $key]);
         }
-
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
-    public function destroy(ShippingMethod $shippingMethod): JsonResponse
+    public function destroy(ShippingMethod $shippingMethod): void
     {
         if ($shippingMethod->orders()->count() > 0) {
             throw new StoreException(__('admin.error.delete_with_relations'));
         }
 
         $shippingMethod->delete();
-
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

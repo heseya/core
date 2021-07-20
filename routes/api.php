@@ -68,7 +68,7 @@ Route::prefix('shipping-methods')->group(function () {
     Route::get(null, 'ShippingMethodController@index');
     Route::post('filter', [ShippingMethodController::class, 'index']);
     Route::post(null, 'ShippingMethodController@store')->middleware('auth:api');
-    Route::post('order', 'ShippingMethodController@order')->middleware('auth:api');
+    Route::post('order', 'ShippingMethodController@reorder')->middleware('auth:api');
     Route::patch('id:{shipping_method:id}', 'ShippingMethodController@update')
         ->middleware('auth:api');
     Route::delete('id:{shipping_method:id}', 'ShippingMethodController@destroy')
