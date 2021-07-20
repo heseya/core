@@ -11,10 +11,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Auth;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
+ *
+ * @mixin IdeHelperProduct
  */
 class Product extends Model
 {
@@ -84,6 +85,8 @@ class Product extends Model
         'public' => 'bool',
         'available' => 'bool',
         'quantity_step' => 'float',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     protected array $searchable = [
@@ -101,6 +104,7 @@ class Product extends Model
         'name',
         'created_at',
         'updated_at',
+        'order',
     ];
 
     protected string $defaultSortBy = 'created_at';
@@ -144,15 +148,9 @@ class Product extends Model
      */
     public function schemas(): BelongsToMany
     {
-         $query = $this
+        return $this
             ->belongsToMany(Schema::class, 'product_schemas')
             ->orderByPivot('order');
-
-         if (!Auth::check()) {
-             $query->where('hidden', false);
-         }
-
-        return $query;
     }
 
     public function orders(): BelongsToMany
@@ -160,6 +158,18 @@ class Product extends Model
         return $this
             ->belongsToMany(Order::class)
             ->using(OrderProduct::class);
+    }
+
+    /**
+     * @OA\Property(
+     *   property="tags",
+     *   type="array",
+     *   @OA\Items(ref="#/components/schemas/Tag"),
+     * )
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'product_tags');
     }
 
     /**

@@ -4,55 +4,61 @@ namespace App\Payments;
 
 use App\Models\Payment;
 use Illuminate\Http\Request;
-use Srmklive\PayPal\Facades\PayPal as PayPalMethod;
+use Omnipay\Omnipay;
 
 class PayPal implements PaymentMethod
 {
     public static function generateUrl(Payment $payment): array
     {
-        $provider = PayPalMethod::setProvider();
-        $provider->setApiCredentials(config('paypal'));
-        $provider->setAccessToken($provider->getAccessToken());
+        $gateway = Omnipay::create('PayPal_Rest');
+        $gateway->setClientId(config('paypal.client_id'));
+        $gateway->setSecret(config('paypal.client_secret'));
+        $gateway->setTestMode(config('paypal.sandbox'));
 
-        $response = $provider->createOrder([
-            'intent' => 'CAPTURE',
-            'purchase_units' => [
+        $response = $gateway->purchase([
+            'amount' => $payment->amount,
+            'items' => [
                 [
-                    'amount' => [
-                        'currency_code' => $payment->order->currency,
-                        'value' => $payment->amount,
-                    ],
+                    'name' => $payment->order->code,
+                    'price' => $payment->amount,
+                    'description' => 'Order ' . $payment->order->code,
+                    'quantity' => 1,
                 ],
             ],
-        ]);
+            'currency' => $payment->order->currency,
+            'returnUrl' => config('app.url') . '/payments/paypal',
+            'cancelUrl' => config('app.url') . '/payments/paypal',
+        ])->send();
 
         return [
-            'external_id' => $response['id'],
-            'redirect_url' => $response['links'][1]['href'],
+            'external_id' => $response->getData()['id'],
+            'redirect_url' => $response->getRedirectUrl(),
         ];
     }
 
     public static function translateNotification(Request $request)
     {
-         $request->validate([
-            'txn_id' => ['required', 'string'],
-            'payment_status' => ['required', 'string'],
-            'mc_gross' => ['required'],
-         ]);
+        $gateway = Omnipay::create('PayPal_Rest');
+        $gateway->setClientId(config('paypal.client_id'));
+        $gateway->setSecret(config('paypal.client_secret'));
+        $gateway->setTestMode(config('paypal.sandbox'));
 
-        $payment = Payment::where('external_id', $request->input('txn_id'))->firstOrFail();
+        $transaction = $gateway->completePurchase([
+            'payer_id' => $request->input('PayerID'),
+            'transactionReference' => $request->input('paymentId'),
+        ]);
+        $response = $transaction->send();
 
-        if (
-            $request->input('payment_status') === 'Completed' &&
-            $request->input('mc_gross') === number_format($payment->order->amount, 2, '.', '')
-        ) {
-            $payment->update([
-                'payed' => true,
-            ]);
+        $payment = Payment::where('external_id', $request->input('paymentId'))->firstOrFail();
 
-            return response()->json(null);
+        if (!$response->isSuccessful()) {
+            return $response->getMessage();
         }
 
-        return response()->json(null, 400);
+        $payment->update([
+            'payed' => true,
+        ]);
+
+        return redirect(config('app.store_url') . '/status/' . $payment->order->code);
     }
 }

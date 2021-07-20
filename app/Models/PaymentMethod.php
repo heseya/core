@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
+ *
+ * @mixin IdeHelperPaymentMethod
  */
 class PaymentMethod extends Model
 {
@@ -54,6 +56,8 @@ class PaymentMethod extends Model
      */
     protected $casts = [
         'public' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function shippingMethods(): BelongsToMany

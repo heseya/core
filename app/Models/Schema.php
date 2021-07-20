@@ -14,13 +14,16 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 /**
- * @OA\Schema(
- *   description="Schema allows a product to take on new optional characteristics that can be chosen by the user
-     and influences the price based on said choices. Schemas can use other schemas for their price calculation
-     e.g. multiply_schema multiplies price of different schema based on it's own value.
- *   SCHEMAS USED BY OTHERS SHOULD NOT AFFECT THE PRICE
- *   (schema multiplied by multiply_schema adds 0 to the price while multiply_schema adds the multiplied value)",
+ * @OA\Schema (
+ *   description="Schema allows a product to take on new optional characteristics that can be
+ *   chosen by the userand influences the price based on said choices. Schemas can use other
+ *   schemas for their price calculation e.g. multiply_schema multiplies price of different
+ *   schema based on it's own value. SCHEMAS USED BY OTHERS SHOULD NOT AFFECT THE PRICE
+ *   (schema multiplied by multiply_schema adds 0 to the price while multiply_schema adds
+ *   the multiplied value)",
  * )
+ *
+ * @mixin IdeHelperSchema
  */
 class Schema extends Model
 {
@@ -32,11 +35,14 @@ class Schema extends Model
      *   type="string",
      *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
      * ),
+     *
      * @OA\Property(
      *   property="type",
      *   type="string",
-     *   description="multiply_schema(min, max, step) type uses one schema and multiplies it's price by own numeric value",
-     *   enum={"string", "numeric", "boolean", "date", "select", "file", "multiply", "multiply_schema"},
+     *   description="multiply_schema(min, max, step) type uses one schema and multiplies
+     *     it's price by own numeric value",
+     *   enum={"string", "numeric", "boolean", "date", "select", "file", "multiply",
+     *     "multiply_schema"},
      * )
      */
     public const TYPES = [
@@ -64,7 +70,8 @@ class Schema extends Model
      * @OA\Property(
      *   property="price",
      *   type="float",
-     *   description="Additional price the customer will have to pay after selecting the option (can be negative)",
+     *   description="Additional price the customer will have to pay after selecting the option
+     *     (can be negative)",
      *   example=9.99,
      * ),
      * @OA\Property(
@@ -122,6 +129,8 @@ class Schema extends Model
         'hidden' => 'bool',
         'required' => 'bool',
         'available' => 'bool',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     protected $searchable = [
@@ -140,7 +149,7 @@ class Schema extends Model
 
     public function getAvailableAttribute(): bool
     {
-        if ($this->type != 4) {
+        if ($this->type !== 4) {
             return true;
         }
 
@@ -175,12 +184,16 @@ class Schema extends Model
         }
 
         if ($this->min) {
-            $validation->push('max:' . $this->min);
+            $validation->push('min:' . $this->min);
         }
 
         if ($this->type === 4) {
             $validation->push('uuid');
             $validation->push(new OptionAvailable($this, $quantity));
+        }
+
+        if ($this->type === 6) {
+            $validation->push('numeric');
         }
 
         $validator = Validator::make(
@@ -222,15 +235,15 @@ class Schema extends Model
     public function options(): HasMany
     {
         return $this->hasMany(Option::class)
-            ->orderBy('price')
-            ->orderBy('name');
+            ->orderBy('created_at')
+            ->orderBy('name', 'DESC');
     }
 
     /**
      * @OA\Property(
      *   property="used_schemas",
-     *   description="Array of schema id's given schema uses e.g. 
-     *     multiply_schema type uses one schema of which price it miltiplies",
+     *   description="Array of schema id's given schema uses e.g.
+     *   multiply_schema type uses one schema of which price it miltiplies",
      *   type="array",
      *   @OA\Items(
      *     type="string",
@@ -240,27 +253,37 @@ class Schema extends Model
      */
     public function usedSchemas(): BelongsToMany
     {
-        return $this->belongsToMany(Schema::class, 'schema_used_schemas', 'schema_id', 'used_schema_id');
+        return $this->belongsToMany(
+            Schema::class,
+            'schema_used_schemas',
+            'schema_id',
+            'used_schema_id',
+        );
     }
 
     public function usedBySchemas(): BelongsToMany
     {
-        return $this->belongsToMany(Schema::class, 'schema_used_schemas', 'used_schema_id', 'schema_id');
+        return $this->belongsToMany(
+            Schema::class,
+            'schema_used_schemas',
+            'used_schema_id',
+            'schema_id',
+        );
     }
-    
-    public function getPrice($value, $schemas): float {
+
+    public function getPrice($value, $schemas): float
+    {
         $schemaKeys = collect($schemas)->keys();
 
-        if ($this->usedBySchemas()->whereIn(
-            $this->getKeyName(), $schemaKeys,
-        )->exists()) {
+        if ($this->usedBySchemas()->whereIn($this->getKeyName(), $schemaKeys)->exists()) {
             return 0.0;
         }
 
         return $this->getUsedPrice($value, $schemas);
     }
 
-    private function getUsedPrice($value, $schemas): float {
+    private function getUsedPrice($value, $schemas): float
+    {
         $price = $this->price;
 
         if ($this->type === 4) {
@@ -270,14 +293,12 @@ class Schema extends Model
         }
 
         if ($this->type === 6) {
-            $price *= (double) $value;
+            $price *= (float) $value;
         }
 
         if ($this->type === 7) {
             $usedSchema = $this->usedSchemas()->firstOrFail();
-            $price = $value * $usedSchema->getUsedPrice(
-                $schemas[$usedSchema->getKey()], $schemas,
-            );
+            $price = $value * $usedSchema->getUsedPrice($schemas[$usedSchema->getKey()], $schemas);
         }
 
         return $price;

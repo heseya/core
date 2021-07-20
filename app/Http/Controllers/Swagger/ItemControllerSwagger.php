@@ -125,7 +125,8 @@ interface ItemControllerSwagger
      *     in="path",
      *     required=true,
      *     @OA\Schema(
-     *       type="integer",
+     *       type="string",
+     *       example="5b320ba6-d5ee-4870-bed2-1a101704c2c4",
      *     )
      *   ),
      *   @OA\RequestBody(
@@ -160,7 +161,8 @@ interface ItemControllerSwagger
      *     in="path",
      *     required=true,
      *     @OA\Schema(
-     *       type="integer",
+     *       type="string",
+     *       example="5b320ba6-d5ee-4870-bed2-1a101704c2c4",
      *     )
      *   ),
      *   @OA\Response(

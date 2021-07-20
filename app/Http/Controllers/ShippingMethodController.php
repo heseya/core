@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\Error;
+use App\Exceptions\StoreException;
 use App\Http\Controllers\Swagger\ShippingMethodControllerSwagger;
 use App\Http\Requests\ShippingMethodIndexRequest;
 use App\Http\Requests\ShippingMethodOrderRequest;
@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Response;
 
 class ShippingMethodController extends Controller implements ShippingMethodControllerSwagger
 {
@@ -24,7 +25,7 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
             $query->with('paymentMethods');
         } else {
             $query
-                ->with(['paymentMethods' => fn ($q) => $q->where('public', true)])
+                ->with(['paymentMethods' => fn ($query) => $query->where('public', true)])
                 ->where('public', true);
         }
 
@@ -33,57 +34,88 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
                 $query->where(function (Builder $query) use ($request) {
                     $query
                         ->where('black_list', false)
-                        ->whereHas('countries', fn ($q) => $q->where('code', $request->input('country')));
-                })
-                    ->orWhere(function (Builder $query) use ($request) {
-                        $query
-                            ->where('black_list', true)
-                            ->whereDoesntHave('countries', fn ($q) => $q->where('code', $request->input('country')));
-                    });
+                        ->whereHas('countries', fn ($query) => $query->where('code', $request->input('country')));
+                })->orWhere(function (Builder $query) use ($request) {
+                    $query
+                        ->where('black_list', true)
+                        ->whereDoesntHave(
+                            'countries',
+                            fn ($query) => $query->where('code', $request->input('country')),
+                        );
+                });
             });
         }
 
-        return ShippingMethodResource::collection($query->get());
+        $shippingMethods = $query->get();
+        $shippingMethods->each(fn ($method) => $method->price = $method->getPrice($request->input('cart_value', 0)));
+
+        return ShippingMethodResource::collection($shippingMethods);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'price' => ['required', 'numeric'],
             'public' => 'boolean',
             'black_list' => 'boolean',
             'payment_methods' => 'array',
             'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
             'countries' => 'array',
             'countries.*' => ['string', 'size:2', 'exists:countries,code'],
+            'price_ranges' => ['required', 'array', 'min:1'],
+            'price_ranges.*.start' => ['required', 'numeric', 'min:0'],
+            'price_ranges.*.value' => ['required', 'numeric', 'min:0'],
         ]);
 
-        $shipping_method = ShippingMethod::create($validated);
-        $shipping_method->paymentMethods()->sync($request->input('payment_methods', []));
-        $shipping_method->countries()->sync($request->input('countries', []));
+        $shippingMethod = ShippingMethod::create($validated);
+        $shippingMethod->paymentMethods()->sync($request->input('payment_methods', []));
+        $shippingMethod->countries()->sync($request->input('countries', []));
 
-        return ShippingMethodResource::make($shipping_method);
+        foreach ($request->input('price_ranges') as $range) {
+            $priceRange = $shippingMethod->priceRanges()->firstOrCreate([
+                'start' => $range['start'],
+            ]);
+            $priceRange->prices()->create([
+                'value' => $range['value'],
+            ]);
+        }
+
+        return ShippingMethodResource::make($shippingMethod);
     }
 
-    public function update(ShippingMethod $shipping_method, Request $request): JsonResource
+    public function update(ShippingMethod $shippingMethod, Request $request): JsonResource
     {
         $validated = $request->validate([
             'name' => ['string', 'max:255'],
-            'price' => 'numeric',
             'public' => 'boolean',
             'black_list' => 'boolean',
             'payment_methods' => 'array',
             'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
             'countries' => 'array',
             'countries.*' => ['string', 'size:2', 'exists:countries,code'],
+            'price_ranges' => ['array', 'min:1'],
+            'price_ranges.*.start' => ['required', 'numeric', 'min:0'],
+            'price_ranges.*.value' => ['required', 'numeric', 'min:0'],
         ]);
 
-        $shipping_method->update($validated);
-        $shipping_method->paymentMethods()->sync($request->input('payment_methods', []));
-        $shipping_method->countries()->sync($request->input('countries', []));
+        $shippingMethod->update($validated);
+        $shippingMethod->paymentMethods()->sync($request->input('payment_methods', []));
+        $shippingMethod->countries()->sync($request->input('countries', []));
 
-        return ShippingMethodResource::make($shipping_method);
+        if ($request->has('price_ranges')) {
+            $shippingMethod->priceRanges()->delete();
+
+            foreach ($request->input('price_ranges') as $range) {
+                $priceRange = $shippingMethod->priceRanges()->firstOrCreate([
+                    'start' => $range['start'],
+                ]);
+                $priceRange->prices()->create([
+                    'value' => $range['value'],
+                ]);
+            }
+        }
+
+        return ShippingMethodResource::make($shippingMethod);
     }
 
     public function order(ShippingMethodOrderRequest $request): JsonResponse
@@ -92,20 +124,17 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
             ShippingMethod::where('id', $id)->update(['order' => $key]);
         }
 
-        return response()->json(null, 204);
+        return Response::json(null, 204);
     }
 
-    public function destroy(ShippingMethod $shipping_method)
+    public function destroy(ShippingMethod $shipping_method): JsonResponse
     {
         if ($shipping_method->orders()->count() > 0) {
-            return Error::abort(
-                "Shipping method can't be deleted, because has relations.",
-                409,
-            );
+            throw new StoreException(__('admin.error.delete_with_relations'));
         }
 
         $shipping_method->delete();
 
-        return response()->json(null, 204);
+        return Response::json(null, 204);
     }
 }

@@ -7,12 +7,7 @@ use Illuminate\Validation\Rule;
 
 class CategoryUpdateRequest extends FormRequest
 {
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
-    public function rules()
+    public function rules(): array
     {
         return [
             'name' => ['string', 'max:255'],

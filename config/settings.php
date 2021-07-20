@@ -3,12 +3,27 @@
 return [
 
     'store_name' => [
-        'value' => 'E-Commerce Dog',
+        'value' => 'Heseya Dev Store',
         'public' => true,
     ],
 
+    'store_logo' => [
+        'value' => 'https://heseya.com/img/logo.svg',
+        'public' => true,
+    ],
+
+    'mail_order_created' => [
+        'value' => 'Dear customer,<br/>Thank you for placing your order. You will receive a separate email when the status changes.',
+        'public' => false,
+    ],
+
+    'mail_footer' => [
+        'value' => 'Powered by <a href="https://heseya.com">Heseya</a>',
+        'public' => false,
+    ],
+
     'order_number_template' => [
-        'value' => '{no}',
+        'value' => '{r:6}',
         'public' => false,
     ],
 
@@ -23,7 +38,7 @@ return [
     ],
 
     'bank_transfer_address' => [
-        'value' => env('APP_NAME'),
+        'value' => 'Heseya Dev Store Co.',
         'public' => true,
     ],
 

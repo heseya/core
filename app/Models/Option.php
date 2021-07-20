@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
+ *
+ * @mixin IdeHelperOption
  */
 class Option extends Model
 {
@@ -53,6 +55,8 @@ class Option extends Model
         'price' => 'float',
         'disabled' => 'bool',
         'available' => 'bool',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function getAvailableAttribute($quantity = 1): bool

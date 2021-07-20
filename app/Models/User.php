@@ -14,7 +14,9 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
+ *
+ * @mixin IdeHelperUser
  */
 class User extends Model implements
     AuthenticatableContract,
@@ -78,12 +80,13 @@ class User extends Model implements
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /**
      * Url to avatar.
      *
-     * @return string
      * @OA\Property(
      *   property="avatar",
      *   type="string",

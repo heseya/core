@@ -21,6 +21,9 @@ class ProductCreateRequest extends FormRequest
             'media' => ['nullable', 'array'],
             'media.*' => ['uuid', 'exists:media,id'],
 
+            'tags' => ['nullable', 'array'],
+            'tags.*' => ['uuid', 'exists:tags,id'],
+
             'schemas' => ['nullable', 'array'],
             'schemas.*' => ['uuid', 'exists:schemas,id'],
         ];

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Page;
+use App\Services\Contracts\MarkdownServiceContract;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 
@@ -17,6 +18,8 @@ class PageTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+
+        $this->markdownService = app(MarkdownServiceContract::class);
 
         $this->page = Page::factory()->create([
             'public' => true,
@@ -37,8 +40,8 @@ class PageTest extends TestCase
         ];
 
         $this->expected_view = array_merge($this->expected, [
-            'content_md' => $this->page->content_md,
-            'content_html' => parsedown($this->page->content_md),
+            'content_html' => $this->page->content_html,
+            'content_md' => $this->markdownService->fromHtml($this->page->content_html),
         ]);
     }
 
@@ -81,7 +84,7 @@ class PageTest extends TestCase
     public function testViewHidden(): void
     {
         $response = $this->getJson('/pages/' . $this->page_hidden->slug);
-        $response->assertUnauthorized();
+        $response->assertNotFound();
 
         $response = $this->getJson('/pages/id:' . $this->page_hidden->getKey());
         $response->assertUnauthorized();
@@ -102,16 +105,17 @@ class PageTest extends TestCase
 
         Passport::actingAs($this->user);
 
+        $html = '<h1>hello world</h1>';
         $page = [
             'name' => 'Test',
             'slug' => 'test-test',
             'public' => true,
-            'content_md' => '# hello world',
+            'content_html' => $html,
         ];
 
         $response = $this->postJson('/pages', $page);
         $response
-            ->assertJson(['data' => $page + ['content_html' => '<h1>hello world</h1>']])
+            ->assertJson(['data' => $page + ['content_md' => $this->markdownService->fromHtml($html)]])
             ->assertCreated();
 
         $this->assertDatabaseHas('pages', $page);
@@ -124,11 +128,12 @@ class PageTest extends TestCase
 
         Passport::actingAs($this->user);
 
+        $html = '<h1>hello world 2</h1>';
         $page = [
             'name' => 'Test 2',
             'slug' => 'test-2',
             'public' => false,
-            'content_md' => '# hello world 2',
+            'content_html' => $html,
         ];
 
         $response = $this->patchJson(
@@ -138,7 +143,7 @@ class PageTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJson(['data' => $page + ['content_html' => '<h1>hello world 2</h1>']]);
+            ->assertJson(['data' => $page + ['content_md' => $this->markdownService->fromHtml($html)]]);
 
         $this->assertDatabaseHas('pages', $page + ['id' => $this->page->getKey()]);
     }

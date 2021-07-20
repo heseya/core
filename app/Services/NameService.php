@@ -30,21 +30,23 @@ class NameService implements NameServiceContract
 
             'no' => Order::count() + $start + 1,
             'no_year' => Order::whereYear('created_at', date('Y'))->count() + 1,
-            'no_month' => Order::whereYear('created_at', date('Y'))->whereMonth('created_at', date('n'))->count() + 1,
+            'no_month' => Order::whereYear('created_at', date('Y'))
+                ->whereMonth('created_at', date('n'))->count() + 1,
             'no_day' => Order::where('created_at', date('Y-m-d'))->count() + 1,
         ]);
     }
 
-    private function render(String $pattern, array $params): string
+    private function render(string $pattern, array $params): string
     {
         $splitted = explode('{', $pattern);
         array_shift($splitted);
 
-        $x = [];
+        $arr = [];
         $tags = [];
+        $splittedCount = count($splitted);
 
-        for ($i = 0; count($splitted); $i++) {
-            $x[$i] = '';
+        for ($i = 0; $i < $splittedCount; $i++) {
+            $arr[$i] = '';
             $pairs = 0;
 
             while ($pairs < 1) {
@@ -55,20 +57,19 @@ class NameService implements NameServiceContract
                 array_pop($closures);
 
                 if ($pairs >= 1) {
-                    $x[$i] .= implode('}', $closures);
+                    $arr[$i] .= implode('}', $closures);
                 } else {
-                    $x[$i] .= $piece . '{';
+                    $arr[$i] .= $piece . '{';
                     $pairs--;
                 }
             }
 
-            $tags[trim($x[$i])] = $x[$i];
+            $tags[trim($arr[$i])] = $arr[$i];
         }
 
         $number = $pattern;
 
         foreach ($tags as $key => $tag) {
-
             $temp = explode(':', $key);
 
             if (count($temp) > 1 && isset($params[$temp[0]])) {
@@ -83,5 +84,4 @@ class NameService implements NameServiceContract
 
         return $number;
     }
-
 }

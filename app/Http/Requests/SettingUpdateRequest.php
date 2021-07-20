@@ -20,7 +20,7 @@ class SettingUpdateRequest extends FormRequest
                         ->except($this->setting)->keys()->toArray(),
                 ),
             ],
-            'value' => ['required', 'string', 'max:255'],
+            'value' => ['required', 'string', 'max:1000'],
             'public' => ['nullable', 'boolean'],
         ];
     }

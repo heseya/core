@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ProductController extends Controller implements ProductControllerSwagger
 {
@@ -30,11 +32,12 @@ class ProductController extends Controller implements ProductControllerSwagger
     public function index(ProductIndexRequest $request): JsonResource
     {
         $query = Product::search($request->validated())
-            ->sort($request->input('sort'))
+            ->sort($request->input('sort', 'order'))
             ->with([
                 'brand',
-                'media',
                 'category',
+                'tags',
+                'media',
             ]);
 
         if (!Auth::check()) {
@@ -71,7 +74,9 @@ class ProductController extends Controller implements ProductControllerSwagger
         $products = $query->paginate((int) $request->input('limit', 12));
 
         if ($request->has('available')) {
-            $products = $products->filter(fn ($p) => $p->available === $request->boolean('available'));
+            $products = $products->filter(function ($product) use ($request) {
+                return $product->available === $request->boolean('available');
+            });
         }
 
         return ProductResource::collection(
@@ -82,6 +87,10 @@ class ProductController extends Controller implements ProductControllerSwagger
 
     public function show(ProductShowRequest $request, Product $product): JsonResource
     {
+        if (!Auth::check() && !$product->isPublic()) {
+            throw new NotFoundHttpException();
+        }
+
         return ProductResource::make($product);
     }
 
@@ -90,8 +99,9 @@ class ProductController extends Controller implements ProductControllerSwagger
         $product = Product::create($request->validated());
 
         $this->mediaService->sync($product, $request->input('media', []));
+        $product->tags()->sync($request->input('tags', []));
 
-        if ($request->has('schemas') && is_array($request->input('schemas'))) {
+        if ($request->has('schemas')) {
             $this->schemaService->sync($product, $request->input('schemas'));
         }
 
@@ -103,8 +113,9 @@ class ProductController extends Controller implements ProductControllerSwagger
         $product->update($request->validated());
 
         $this->mediaService->sync($product, $request->input('media', []));
+        $product->tags()->sync($request->input('tags', []));
 
-        if ($request->has('schemas') && is_array($request->input('schemas'))) {
+        if ($request->has('schemas')) {
             $this->schemaService->sync($product, $request->input('schemas'));
         }
 
@@ -115,6 +126,6 @@ class ProductController extends Controller implements ProductControllerSwagger
     {
         $product->delete();
 
-        return response()->json(null, 204);
+        return Response::json(null, 204);
     }
 }

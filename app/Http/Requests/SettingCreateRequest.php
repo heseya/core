@@ -17,7 +17,7 @@ class SettingCreateRequest extends FormRequest
                 'unique:settings',
                 Rule::notIn(array_keys(config('settings'))),
             ],
-            'value' => ['required', 'string', 'max:255'],
+            'value' => ['required', 'string', 'max:1000'],
             'public' => ['required', 'boolean'],
         ];
     }

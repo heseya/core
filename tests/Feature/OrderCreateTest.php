@@ -7,6 +7,8 @@ use App\Models\Address;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Order;
+use App\Models\Price;
+use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
@@ -29,6 +31,14 @@ class OrderCreateTest extends TestCase
         parent::setUp();
 
         $this->shippingMethod = ShippingMethod::factory()->create(['public' => true]);
+        $lowRange = PriceRange::create(['start' => 0]);
+        $lowRange->prices()->create(['value' => 8.11]);
+
+        $highRange = PriceRange::create(['start' => 210]);
+        $highRange->prices()->create(['value' => 0.0]);
+
+        $this->shippingMethod->priceRanges()->saveMany([$lowRange, $highRange]);
+
         $this->category = Category::factory()->create(['public' => true]);
         $this->brand = Brand::factory()->create(['public' => true]);
         $this->address = Address::factory()->make();
@@ -48,6 +58,8 @@ class OrderCreateTest extends TestCase
             'price' => 10,
         ]);
 
+        $productQuantity = 20;
+
         $response = $this->postJson('/orders', [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -55,7 +67,7 @@ class OrderCreateTest extends TestCase
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
-                    'quantity' => 20,
+                    'quantity' => $productQuantity,
                 ],
             ],
         ]);
@@ -66,6 +78,9 @@ class OrderCreateTest extends TestCase
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
             'email' => 'test@example.com',
+            'shipping_price' => $this->shippingMethod->getPrice(
+                $this->product->price * $productQuantity,
+            ),
         ]);
         $this->assertDatabaseHas('addresses', $this->address->toArray());
         $this->assertDatabaseHas('order_products', [
@@ -84,12 +99,15 @@ class OrderCreateTest extends TestCase
         $schema = Schema::factory()->create([
             'type' => 'string',
             'price' => 10,
+            'hidden' => false,
         ]);
 
-        $this->product->schemas()->attach($schema);
+        $this->product->schemas()->sync([$schema->getKey()]);
         $this->product->update([
             'price' => 100,
         ]);
+
+        $productQuantity = 2;
 
         $response = $this->postJson('/orders', [
             'email' => 'test@example.com',
@@ -98,7 +116,7 @@ class OrderCreateTest extends TestCase
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
-                    'quantity' => 2,
+                    'quantity' => $productQuantity,
                     'schemas' => [
                         $schema->getKey() => 'Test',
                     ]
@@ -109,9 +127,77 @@ class OrderCreateTest extends TestCase
         $response->assertCreated();
         $order = Order::find($response->getData()->data->id);
 
+        $schemaPrice = $schema->getPrice('Test', [
+            $schema->getKey() => 'Test',
+        ]);
+
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
             'email' => 'test@example.com',
+            'shipping_price' => $this->shippingMethod->getPrice(
+                ($this->product->price + $schemaPrice) * $productQuantity,
+            ),
+        ]);
+        $this->assertDatabaseHas('addresses', $this->address->toArray());
+        $this->assertDatabaseHas('order_products', [
+            'order_id' => $order->getKey(),
+            'product_id' => $this->product->getKey(),
+            'quantity' => 2,
+        ]);
+        $this->assertDatabaseHas('order_schemas', [
+            'order_product_id' => $order->products[0]->getKey(),
+            'name' => $schema->name,
+            'value' => 'Test',
+        ]);
+
+        Event::assertDispatched(OrderCreated::class);
+    }
+
+    public function testCreateOrderHiddenSchema(): void
+    {
+        Event::fake([OrderCreated::class]);
+
+        $schema = Schema::factory()->create([
+            'type' => 'string',
+            'price' => 10,
+            'hidden' => true,
+        ]);
+
+        $this->product->schemas()->sync([$schema->getKey()]);
+        $this->product->update([
+            'price' => 100,
+        ]);
+
+        $productQuantity = 2;
+
+        $response = $this->postJson('/orders', [
+            'email' => 'test@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                    'schemas' => [
+                        $schema->getKey() => 'Test',
+                    ]
+                ],
+            ],
+        ]);
+
+        $response->assertCreated();
+        $order = Order::find($response->getData()->data->id);
+
+        $schemaPrice = $schema->getPrice('Test', [
+            $schema->getKey() => 'Test',
+        ]);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'email' => 'test@example.com',
+            'shipping_price' => $this->shippingMethod->getPrice(
+                ($this->product->price + $schemaPrice) * $productQuantity,
+            ),
         ]);
         $this->assertDatabaseHas('addresses', $this->address->toArray());
         $this->assertDatabaseHas('order_products', [

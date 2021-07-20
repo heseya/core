@@ -5,7 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
+ *
+ * @mixin IdeHelperOrderSchema
  */
 class OrderSchema extends Model
 {
@@ -38,5 +40,10 @@ class OrderSchema extends Model
         'value',
         'price',
         'order_product_id',
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 }

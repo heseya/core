@@ -11,7 +11,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 interface SettingControllerSwagger
 {
-   /**
+    /**
      * @OA\Get(
      *   path="/settings",
      *   summary="list settings",

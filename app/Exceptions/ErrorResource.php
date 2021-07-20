@@ -2,9 +2,10 @@
 
 namespace App\Exceptions;
 
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\Resource;
+use Illuminate\Http\Request;
 
-class ErrorResource extends JsonResource
+final class ErrorResource extends Resource
 {
     /**
      * @var string
@@ -14,14 +15,14 @@ class ErrorResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
+     * @param Request $request
      */
-    public function toArray($request)
+    public function base($request): array
     {
         return [
             'code' => $this->code,
             'message' => $this->message,
+            'errors' => $this->errors,
         ];
     }
 }

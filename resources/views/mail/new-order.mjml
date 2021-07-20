@@ -1,21 +1,32 @@
 <mjml>
   <mj-body background-color="#F4F4F4">
-    <mj-section background-color="#ffffff" background-repeat="repeat" padding-bottom="0px" padding-top="20px" text-align="center">
+    <mj-section background-color="#fff" background-repeat="repeat" text-align="center" padding-top="50px">
       <mj-column>
-        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="32px" line-height="22px" padding-bottom="20px" padding-top="0px" padding="10px 25px">{{ config('app.name') }}</mj-text>
+        <mj-image height="50px" width="50px" src="{{ $settingsService->getSetting('store_logo')->value }}"></mj-image>
       </mj-column>
     </mj-section>
-    <mj-section background-color="#ffffff" background-repeat="repeat" background-size="auto" padding-bottom="0px" padding-top="30px" padding="20px 0" text-align="center">
+    <mj-section background-color="#fff" background-repeat="repeat" padding-bottom="0px" text-align="center">
+      <mj-column>
+        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="32px" line-height="22px" padding-bottom="20px" padding-top="0px" padding="10px 25px" text-transform="uppercase">{{ $settingsService->getSetting('store_name')->value }}</mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#fff" background-repeat="repeat" background-size="auto" padding-bottom="0px" padding-top="30px" padding="20px 0" text-align="center">
       <mj-column>
         <mj-text align="left" color="#55575d" font-family="Arial, sans-serif" font-size="30px" line-height="22px" padding-bottom="10px" padding-top="10px" padding="10px 25px">
           <p style="line-height: 30px; margin: 10px 0; text-align: center; color:#151e23; font-size:30p; font-family:Arial,sans-serif">Order <b>{{ $order->code }}</b> Confirmation</p>
         </mj-text>
-        <mj-text align="left" color="#333" font-family="Arial, sans-serif" font-size="16px" line-height="22px" padding-bottom="10px" padding-top="10px" padding="10px 25px">
-          <p>Dear customer,<br /> Thank you for placing your order. You can track the status of your order on our website. You will also receive a separate email when the status changes. <br /><br /> If you have not paid for your order you can do so through this <a href="{{ config('app.store_url') }}/payment/{{ $order->code }}">link</a>. <br /><br /> Here are the details of your order:</p>
+        <mj-text align="left" color="#333" font-family="Arial, sans-serif" font-size="16px" line-height="22px" padding-bottom="0" padding-top="10px" padding="10px 25px">
+          <small>
+            Jeśli nie opłaciłeś jeszcze swoje zamówienia, możesz to zrobić za pomocą tego linku:<br/>
+            If you have not paid for your order you can do so through this link:<br /><br /></small>
+          <p>
+            <a style="padding: 15px; 40px; background: black; color: white; border-radius: 5px; text-decoration: none" href="{{ config('app.store_url') }}/payment/{{ $order->code }}"> Pay for your order </a>
+          </p><br />
+          <p>{!! $settingsService->getSetting('mail_order_created')->value !!}</p>
         </mj-text>
       </mj-column>
     </mj-section>
-    <mj-section background-color="#ffffff" padding-bottom="0">
+    <mj-section background-color="#fff" padding-bottom="0">
       <mj-column>
         <mj-table>
           <tr style="border-bottom:1px solid #ecedee;text-align:left;padding:15px 0;">
@@ -30,13 +41,17 @@
         </mj-table>
       </mj-column>
     </mj-section>
-    <mj-section background-color="#ffffff" background-repeat="repeat" background-size="auto" padding-bottom="0px" text-align="center">
+    <mj-section background-color="#fff" background-repeat="repeat" background-size="auto" padding-bottom="0px" text-align="center">
       <mj-column>
-        <mj-text align="right" color="#000" font-family="Arial, sans-serif" font-size="14px" line-height="22px">
-          <p> Cart: <b>{{ $order->summary - $order->shipping_price }} {{ $order->currency }}</b><br /> Delivery: <b>{{ $order->shipping_price }} {{ $order->currency }}</b><br />
+        <mj-text align="right" color="#000" font-family="Arial, sans-serif" font-size="14px" line-height="22px"> @if ($order->shippingMethod) <p> Delivery: <b>{{ $order->shippingMethod->name }}</b><br /> @endif Delivery price: <b>{{ $order->shipping_price }} {{ $order->currency }}</b><br /> Cart: <b>{{ $order->summary - $order->shipping_price }} {{ $order->currency }}</b><br />
           </p>
           <p style="font-size: 20px">Summary: <b>{{ $order->summary }} {{ $order->currency }}</b><br /></p>
         </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#fff" background-repeat="repeat">
+      <mj-column>
+        <mj-text align="center" color="#666" font-family="Arial, sans-serif" font-size="12px" line-height="17px"> {!! $settingsService->getSetting('mail_footer')->value !!} </mj-text>
       </mj-column>
     </mj-section>
   </mj-body>

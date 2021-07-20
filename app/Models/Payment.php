@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
+ *
+ * @mixin IdeHelperPayment
  */
 class Payment extends Model
 {
@@ -67,6 +69,8 @@ class Payment extends Model
     protected $casts = [
         'payed' => 'boolean',
         'amount' => 'float',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function order(): BelongsTo

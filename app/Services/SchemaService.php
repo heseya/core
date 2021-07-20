@@ -3,23 +3,22 @@
 namespace App\Services;
 
 use App\Models\Product;
+use App\Services\Contracts\ReorderServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 
 class SchemaService implements SchemaServiceContract
 {
-    public function sync(Product $product, array $schemas = []): void
+    protected ReorderServiceContract $reorderService;
+
+    public function __construct(ReorderServiceContract $reorderService)
     {
-        $product->schemas()->sync($this->reorder($schemas));
+        $this->reorderService = $reorderService;
     }
 
-    private function reorder(array $schemas): array
+    public function sync(Product $product, array $schemas = []): void
     {
-        $array = [];
-
-        foreach ($schemas as $key => $id) {
-            $array[$id]['order'] = $key;
-        }
-
-        return $array;
+        $product->schemas()->sync(
+            $this->reorderService->reorder($schemas),
+        );
     }
 }

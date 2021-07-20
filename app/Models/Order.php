@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\SearchTypes\OrderSearch;
+use App\Services\Contracts\OrderServiceContract;
+use App\Services\OrderService;
 use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -15,16 +18,13 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
+ *
+ * @mixin IdeHelperOrder
  */
 class Order extends Model
 {
     use HasFactory, Searchable, Sortable, Notifiable;
-
-    public function __construct(array $attributes = [])
-    {
-        parent::__construct($attributes);
-    }
 
     /**
      * @OA\Property(
@@ -50,6 +50,12 @@ class Order extends Model
      *   type="string",
      *   example="630552359128340015809770",
      * )
+     *
+     * @OA\Property(
+     *   property="shipping_price",
+     *   type="float",
+     *   example=18.70
+     * )
      */
 
     protected $fillable = [
@@ -64,6 +70,11 @@ class Order extends Model
         'delivery_address_id',
         'invoice_address_id',
         'created_at',
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     protected array $searchable = [
@@ -88,16 +99,13 @@ class Order extends Model
      *   property="summary",
      *   type="number",
      * )
-    */
+     */
     public function getSummaryAttribute(): float
     {
-        $value = $this->shipping_price;
+        /** @var OrderService $orderService */
+        $orderService = app(OrderServiceContract::class);
 
-        foreach ($this->products as $item) {
-            $value += ($item->price * $item->quantity);
-        }
-
-        return round($value, 2);
+        return $orderService->calcSummary($this);
     }
 
     /**
@@ -122,14 +130,24 @@ class Order extends Model
      * @OA\Property(
      *   property="payed",
      *   type="boolean",
-     *   example=true,
      * )
-     *
-     * @return bool
      */
     public function isPayed(): bool
     {
         return $this->summary === $this->payedAmount;
+    }
+
+    /**
+     * @OA\Property(
+     *   property="payable",
+     *   type="boolean",
+     * )
+     */
+    public function getPayableAttribute(): bool
+    {
+        return !$this->isPayed() &&
+            !$this->status->cancel &&
+            $this->shippingMethod->paymentMethods()->count() > 0;
     }
 
     /**
@@ -216,6 +234,13 @@ class Order extends Model
     public function deposits(): HasManyThrough
     {
         return $this->hasManyThrough(Deposit::class, OrderProduct::class);
+    }
+
+    public function discounts(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(Discount::class, 'order_discounts')
+            ->withPivot(['type', 'discount']);
     }
 
     /**

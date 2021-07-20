@@ -11,7 +11,10 @@ interface AnalyticsControllerSwagger
      * @OA\Get(
      *   path="/analytics/payments",
      *   summary="Summary of all payments over a period of time",
-     *   description="Returns total amount and count of payments. By default period is last year. Results are grouped in specified time frames.",
+     *   description="
+     *       Returns total amount and count of payments. By default period is last year.
+     *       Results are grouped in specified time frames.
+     *   ",
      *   tags={"Analytics"},
      *   @OA\Parameter(
      *     name="from",
@@ -49,7 +52,10 @@ interface AnalyticsControllerSwagger
      *         type="object",
      *         @OA\Property(
      *           property="$timeframe",
-     *           description="formated time frame in UTC+0 eg.: for monthly - 'YYYY-MM', for hourly - 'YYYY-MM-DD HH', for total 'total'",
+     *           description="
+     *              formated time frame in UTC+0 eg.:
+     *              for monthly - 'YYYY-MM', for hourly - 'YYYY-MM-DD HH', for total 'total'
+     *           ",
      *           type="object",
      *           @OA\Property(
      *             property="amount",

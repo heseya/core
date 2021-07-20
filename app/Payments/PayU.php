@@ -15,7 +15,8 @@ class PayU implements PaymentMethod
         $client_secret = config('payu.client_secret');
 
         $response = Http::post(
-            config('payu.url') . "/pl/standard/user/oauth/authorize?grant_type=client_credentials&client_id=$client_id&client_secret=$client_secret",
+            config('payu.url') . '/pl/standard/user/oauth/authorize?grant_type=client_credentials&client_id=' .
+                $client_id . '&client_secret=' . $client_secret,
         )->throw();
 
         $amount = (int) $payment->amount * 100;
@@ -24,13 +25,13 @@ class PayU implements PaymentMethod
             'allow_redirects' => false,
         ])->post(config('payu.url') . '/api/v2_1/orders', [
             'notifyUrl' => config('app.url') . '/payments/payu',
-            'customerIp' => '127.0.0.1', // Posibbly enforced by website and we'll need to track order ip
+            'customerIp' => '127.0.0.1',
             'merchantPosId' => config('payu.pos_id'),
             'description' => 'Zakupy w sklepie internetowym.',
             'currencyCode' => $payment->order->currency,
             'totalAmount' => $amount,
             'extOrderId' => $payment->getKey(),
-            'returnUrl' => $payment->continue_url,
+            'returnUrl' => config('app.store_url') . '/status/' . $payment->order->code,
             'buyer' => [
                 'email' => $payment->order->email,
             ],

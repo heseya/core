@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
+ *
+ * @mixin IdeHelperCategory
  */
 class Category extends Model
 {
@@ -52,20 +54,17 @@ class Category extends Model
         'hide_on_index',
     ];
 
+    protected $casts = [
+        'public' => 'boolean',
+        'hide_on_index' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     protected array $searchable = [
         'name' => Like::class,
         'slug' => Like::class,
         'public',
-    ];
-
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'public' => 'boolean',
-        'hide_on_index' => 'boolean',
     ];
 
     public function products(): HasMany

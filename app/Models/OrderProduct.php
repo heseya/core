@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
+ *
+ * @mixin IdeHelperOrderProduct
  */
 class OrderProduct extends Model
 {
@@ -29,6 +31,7 @@ class OrderProduct extends Model
      *   type="number",
      *   example="199.99",
      * ),
+     *
      * @OA\Property(
      *   property="schemas",
      *   type="array",
@@ -40,6 +43,11 @@ class OrderProduct extends Model
         'price',
         'order_id',
         'product_id',
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function getPriceAttribute($value): float

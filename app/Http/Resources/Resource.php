@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\App;
 
 class Resource extends JsonResource
 {
@@ -11,6 +12,7 @@ class Resource extends JsonResource
      * Get any additional data that should be returned with the resource array.
      *
      * @param Request $request
+     *
      * @return array
      */
     public function with($request): array
@@ -23,8 +25,7 @@ class Resource extends JsonResource
                     'decimals' => 2,
                 ],
                 'language' => [
-                    'name' => 'Polski',
-                    'symbol' => 'PL-pl',
+                    'symbol' => App::currentLocale(),
                 ],
             ],
         ];
@@ -50,6 +51,7 @@ class Resource extends JsonResource
      *
      * @param Request $request
      * @param bool $index
+     *
      * @return array
      */
     public function toArray($request, bool $index = false): array
@@ -72,9 +74,10 @@ class Resource extends JsonResource
      *
      * @param mixed $resource
      * @param bool $full
+     *
      * @return Collection
      */
-    public static function collection($resource, $full = false): Collection
+    public static function collection($resource, bool $full = false): Collection
     {
         return new Collection($resource, static::class, $full);
     }

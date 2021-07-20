@@ -2,21 +2,22 @@
 
 namespace App\Http\Controllers\External;
 
-use App\Models\Order;
-use App\Models\Status;
-use App\Models\OrderLog;
 use App\Exceptions\Error;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
-use App\Models\PackageTemplate;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Swagger\FurgonetkaControllerSwagger;
+use App\Models\Order;
+use App\Models\OrderLog;
+use App\Models\PackageTemplate;
+use App\Models\Status;
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use App\Http\Controllers\Swagger\FurgonetkaControllerSwagger;
+use Illuminate\Support\Str;
 use SoapClient;
-use Exception;
 
 class FurgonetkaController extends Controller implements FurgonetkaControllerSwagger
 {
@@ -49,8 +50,7 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
             ->orWhere('code', $request->partner_order_id) // kod zamówienia
             ->first();
 
-        if (!empty($order)) {
-
+        if ($order) {
             $status = new Status();
             $order->update([
                 'delivery_status' => $status->furgonetka_status[$request->tracking['state']],
@@ -63,8 +63,8 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
             ]));
         }
 
-        // Brak błędów bo furgonetka musi dostać status ok jak hash się zgadza
-        return response()->json([
+        // Brak błędów bo furgonetka musi dostać status ok jak hash się zgadza
+        return Response::json([
             'status' => 'OK',
         ]);
     }
@@ -72,21 +72,22 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
     public function createPackage(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'order_id' => 'required|integer',
-            'package_template_id' => 'required|integer',
+            'order_id' => ['required', 'integer'],
+            'package_template_id' => ['required', 'integer'],
         ]);
 
         $order = Order::findOrFail($validated['order_id']);
         $packageTemplate = PackageTemplate::findOrFail($validated['package_template_id']);
 
         $validator = Validator::make($order->deliveryAddress->toArray(), [
-            'country' => 'required|in:PL',
-            'phone' => 'required|phone:PL'
+            'country' => ['required', 'in:PL'],
+            'phone' => ['required', 'phone:PL'],
         ]);
 
         if ($validator->fails()) {
             return Error::abort(
-                'Order address not in Poland/invalid phone number' . $order->deliveryAddress->phoneSimple,
+                'Order address not in Poland/invalid phone number' .
+                    $order->deliveryAddress->phoneSimple,
                 502,
             );
         }
@@ -96,7 +97,7 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
                 'trace' => true,
                 'cache_wsdl' => false,
             ]);
-        } catch (Exception $e) {
+        } catch (Exception $error) {
             return Error::abort(
                 'Could not connect to API',
                 502,
@@ -185,7 +186,7 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
         $packageData = [
             'data' => [
                 'auth' => $auth,
-                'partner_reference_number' => $order->code . '_' . date("d-m-Y_H-i-s"),
+                'partner_reference_number' => $order->code . '_' . date('d-m-Y_H-i-s'),
                 'service_id' => $service_id,
                 'type' => 'package',
                 'regulations_accept' => $regulations_accept,
@@ -217,7 +218,6 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
                         'width' => $packageTemplate->width,
                         'height' => $packageTemplate->height,
                         'depth' => $packageTemplate->depth,
-                        'value' => $order->summary,
                         'weight' => $packageTemplate->weight,
                         'value' => $order->summary,
                         'description' => 'Zamówienie ' . $order->code,
@@ -228,7 +228,7 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
 
         $validate = $client->validatePackage($packageData)->validatePackageResult;
 
-        if (!empty($validate->errors)) {
+        if ($validate->errors) {
             return Error::abort(
                 $validate->errors->item,
                 502,
@@ -237,7 +237,7 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
 
         $package = $client->createPackage($packageData)->createPackageResult;
 
-        if (!empty($package->errors)) {
+        if ($package->errors) {
             return Error::abort(
                 $package->errors->item,
                 502,
@@ -253,7 +253,8 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
         ], 201);
     }
 
-    private function getApiKey($refresh = false) : string {
+    private function getApiKey($refresh = false): string
+    {
         if (Storage::missing('furgonetka.key') || $refresh) {
             $response = Http::withBasicAuth(
                 config('furgonetka.client_id'),

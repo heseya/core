@@ -2,77 +2,57 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\AuthControllerSwagger;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
-use App\Http\Resources\AuthResource;
-use App\Http\Resources\LoginHistoryResource;
-use Carbon\Carbon;
+use App\Http\Requests\PasswordResetRequest;
+use App\Http\Requests\PasswordResetSaveRequest;
+use App\Services\Contracts\AuthServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Laravel\Passport\Passport;
 
 class AuthController extends Controller implements AuthControllerSwagger
 {
-    public function login(LoginRequest $request)
+    private AuthServiceContract $authServiceContract;
+
+    public function __construct(AuthServiceContract $authServiceContract)
     {
-        if (!Auth::guard('web')->attempt([
-            'email' => $request->input('email'),
-            'password' => $request->input('password'),
-        ])) {
-            return Error::abort('Invalid credentials.', 400);
-        }
+        $this->authServiceContract = $authServiceContract;
+    }
 
-        $user = Auth::guard('web')->user();
-        $token = $user->createToken('Admin');
-
-        $token->token->update([
-            'ip' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
-
-        return AuthResource::make($token);
+    public function login(LoginRequest $request): JsonResource
+    {
+        return $this->authServiceContract->login($request);
     }
 
     public function logout(Request $request): JsonResponse
     {
-        if ($token = $request->user()->token()) {
-            $token->update([
-                'revoked' => true,
-                'expires_at' => Carbon::now(),
-            ]);
-        }
+        return $this->authServiceContract->logout($request);
+    }
 
-        return response()->json(null, 204);
+    public function resetPassword(PasswordResetRequest $request): JsonResponse
+    {
+        return $this->authServiceContract->resetPassword($request);
+    }
+
+    public function showResetPasswordForm(Request $request): JsonResource
+    {
+        return $this->authServiceContract->showResetPasswordForm($request);
+    }
+
+    public function saveResetPassword(PasswordResetSaveRequest $request): JsonResponse
+    {
+        return $this->authServiceContract->saveResetPassword($request);
     }
 
     public function changePassword(PasswordChangeRequest $request): JsonResponse
     {
-        $user = $request->user();
-
-        if (!Hash::check($request->input('password'), $user->password)) {
-            return Error::abort('Invalid credentials.', 400);
-        }
-
-        $user->update([
-            'password' => Hash::make($request->input('password_new')),
-        ]);
-
-        return response()->json(null, 204);
+        return $this->authServiceContract->changePassword($request);
     }
 
     public function loginHistory(Request $request): JsonResource
     {
-        $tokens = Passport::token()
-            ->where('user_id', $request->user()->getKey())
-            ->orderBy('created_at', 'DESC');
-
-        return LoginHistoryResource::collection(
-            $tokens->paginate(12),
-        );
+        return $this->authServiceContract->loginHistory($request);
     }
 }

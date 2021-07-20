@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
+ *
+ * @mixin IdeHelperDeposit
  */
 class Deposit extends Model
 {
@@ -37,11 +39,15 @@ class Deposit extends Model
      *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
      * )
      */
-
     protected $fillable = [
         'quantity',
         'item_id',
         'order_product_id',
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function items(): BelongsTo

@@ -2,19 +2,29 @@
 
 namespace App\Exceptions;
 
-use Throwable;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Throwable;
 
-class Handler extends ExceptionHandler
+final class Handler extends ExceptionHandler
 {
-    /**
-     * A list of the exception types that are not reported.
-     *
-     * @var array
-     */
-    protected $dontReport = [
-        //
+    protected array $errors = [
+        AuthenticationException::class => [
+            'message' => 'Unauthorized',
+            'code' => 401,
+        ],
+        NotFoundHttpException::class => [
+            'message' => 'Page not found',
+            'code' => 404,
+        ],
+        ValidationException::class => [
+            'code' => 422,
+        ],
+        StoreException::class => [
+            'code' => 400,
+        ],
     ];
 
     /**
@@ -25,33 +35,35 @@ class Handler extends ExceptionHandler
     protected $dontFlash = [
         'password',
         'password_confirmation',
+        'token',
     ];
 
     /**
-     * Report or log an exception.
-     *
-     * @param  \Exception  $exception
-     * @return void
-     */
-    public function report(Throwable $exception)
-    {
-        parent::report($exception);
-    }
-
-    /**
      * Render an exception into an HTTP response.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Exception  $exception
-     * @return \Illuminate\Http\Response
      */
     public function render($request, Throwable $exception)
     {
-        return parent::render($request, $exception);
-    }
+        $class = get_class($exception);
 
-    protected function unauthenticated($request, AuthenticationException $exception)
-    {
-        return Error::abort('Unauthorized.', 401);
+        if (isset($this->errors[$class])) {
+            $error = new Error(
+                $this->errors[$class]['message'] ?? $exception->getMessage(),
+                $this->errors[$class]['code'] ?? 500,
+                method_exists($exception, 'errors') ? $exception->errors() : [],
+            );
+        } else {
+            if (app()->bound('sentry')) {
+                app('sentry')->captureException($exception);
+            }
+
+            if (config('app.debug') === true) {
+                return parent::render($request, $exception);
+            }
+            $error = new Error();
+        }
+
+        return ErrorResource::make($error)
+            ->response()
+            ->setStatusCode($error->code);
     }
 }

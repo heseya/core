@@ -2,27 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\Error;
+use App\Exceptions\StoreException;
 use App\Http\Controllers\Swagger\PaymentControllerSwagger;
+use App\Http\Requests\Payments\PaymentStoreRequest;
 use App\Http\Resources\PaymentResource;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Throwable;
 
 class PaymentController extends Controller implements PaymentControllerSwagger
 {
-    public function store(Order $order, string $method, Request $request)
+    public function store(Order $order, string $method, PaymentStoreRequest $request): JsonResource
     {
-        $request->validate([
-            'continue_url' => 'required|string',
-        ]);
-
         if ($order->isPayed()) {
-            return Error::abort('Order is already paid.', 409);
+            throw new StoreException('Order is already paid.');
         }
 
         if (!array_key_exists($method, config('payable.aliases'))) {
-            return Error::abort('Unknown payment method.', 404);
+            throw new StoreException('Unknown payment method.');
         }
 
         $method_class = config('payable.aliases')[$method];
@@ -36,8 +34,8 @@ class PaymentController extends Controller implements PaymentControllerSwagger
 
         try {
             $payment->update($method_class::generateUrl($payment));
-        } catch (Throwable $e) {
-            return Error::abort('Cannot generate payment url.', 500);
+        } catch (Throwable $error) {
+            throw new StoreException('Cannot generate payment url.');
         }
 
         return PaymentResource::make($payment);
@@ -46,7 +44,7 @@ class PaymentController extends Controller implements PaymentControllerSwagger
     public function update(string $method, Request $request)
     {
         if (!array_key_exists($method, config('payable.aliases'))) {
-            return Error::abort('Unknown payment method.', 404);
+            throw new StoreException('Unknown payment method.');
         }
 
         $method_class = config('payable.aliases')[$method];

@@ -26,13 +26,13 @@ class AppService implements AppServiceContract
             ]);
 
             if ($response->failed()) {
-                throw new Exception;
+                throw new Exception();
             }
 
             $response = $response->object();
 
             if (!$this->isValidRegisterResponse($response)) {
-                throw new Exception;
+                throw new Exception();
             }
         } catch (Exception $exception) {
             $app->delete();

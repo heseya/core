@@ -26,7 +26,7 @@ class PageFactory extends Factory
             'name' => $name,
             'slug' => Str::slug($name),
             'public' => $this->faker->boolean,
-            'content_md' => $this->faker->sentence(rand(20, 40)),
+            'content_html' => '<p>' . $this->faker->sentence(rand(20, 40)) . '</p>',
         ];
     }
 }

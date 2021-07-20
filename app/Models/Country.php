@@ -5,24 +5,23 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
  *
- * @OA\Property(
+ * @OA\Property (
  *   property="code",
  *   type="string",
  *   example="PL",
  * )
- *
- * @OA\Property(
+ * @OA\Property (
  *   property="name",
  *   type="string",
  *   example="Poland",
  * )
+ *
+ * @mixin IdeHelperCountry
  */
 class Country extends Model
 {
-    public $timestamps = null;
-
     protected $fillable = [
         'code',
         'name',

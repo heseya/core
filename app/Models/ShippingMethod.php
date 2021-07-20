@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * @OA\Schema()
+ * @OA\Schema ()
+ *
+ * @mixin IdeHelperShippingMethod
  */
 class ShippingMethod extends Model
 {
@@ -45,12 +47,9 @@ class ShippingMethod extends Model
 
     /**
      * The attributes that are mass assignable.
-     *
-     * @var array
      */
     protected $fillable = [
         'name',
-        'price',
         'public',
         'order',
         'black_list',
@@ -65,6 +64,8 @@ class ShippingMethod extends Model
         'price' => 'float',
         'public' => 'boolean',
         'black_list' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function orders(): HasMany
@@ -99,5 +100,52 @@ class ShippingMethod extends Model
     public function countries(): BelongsToMany
     {
         return $this->belongsToMany(Country::class, 'shipping_method_country');
+    }
+
+    /**
+     * @OA\Property(
+     *   property="price_ranges (request)",
+     *   type="array",
+     *   @OA\Items(
+     *     type="object",
+     *     @OA\Property(
+     *       property="start",
+     *       description="start of the range (min = 0);
+     *         range goes from start to start of next range or infinity",
+     *       type="number",
+     *       example=0.0
+     *     ),
+     *     @OA\Property(
+     *       property="value",
+     *       description="price in this range",
+     *       type="number",
+     *       example=18.70
+     *     ),
+     *   ),
+     * )
+     */
+
+    /**
+     * @OA\Property(
+     *   property="price_ranges (response)",
+     *   type="array",
+     *   @OA\Items(ref="#/components/schemas/PriceRange"),
+     * )
+     */
+    public function priceRanges(): HasMany
+    {
+        return $this
+            ->hasMany(PriceRange::class, 'shipping_method_id')
+            ->orderBy('start');
+    }
+
+    public function getPrice(float $orderTotal): float
+    {
+        $priceRange = $this->priceRanges()
+            ->where('start', '<=', $orderTotal)
+            ->orderBy('start', 'desc')
+            ->first();
+
+        return $priceRange ? $priceRange->prices()->first()->value : 0;
     }
 }

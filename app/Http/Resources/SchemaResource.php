@@ -24,7 +24,7 @@ class SchemaResource extends Resource
             'pattern' => $this->pattern,
             'validation' => $this->validation,
             'options' => OptionResource::collection($this->options),
-            'used_schemas' => $this->usedSchemas->map(fn($schema) => $schema->getKey()),
+            'used_schemas' => $this->usedSchemas->map(fn ($schema) => $schema->getKey()),
         ];
     }
 

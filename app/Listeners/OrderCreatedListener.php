@@ -7,8 +7,6 @@ use App\Notifications\OrderCreated;
 
 class OrderCreatedListener
 {
-    public $tries = 3;
-
     public function handle(OrderCreatedEvent $event): void
     {
         $order = $event->getOrder();

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Item;
+use App\Models\Option;
 use App\Models\Schema;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -80,6 +81,81 @@ class SchemaTest extends TestCase
         $this->assertDatabaseHas('option_items', [
             'option_id' => $option->id,
             'item_id' => $item->getKey(),
+        ]);
+    }
+
+    public function testUpdate(): void
+    {
+        $schema = Schema::factory()->create();
+
+        $item = Item::factory()->create();
+        $item2 = Item::factory()->create();
+
+        $option = Option::factory()->create([
+            'name' => 'L',
+            'price' => 0,
+            'disabled' => false,
+            'schema_id' => $schema->getKey(),
+        ]);
+        $option->items()->sync([
+            $item->getKey(),
+            $item2->getKey(),
+        ]);
+
+        $option2 = Option::factory()->create([
+            'name' => 'XL',
+            'price' => 0,
+            'disabled' => false,
+            'schema_id' => $schema->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->user)->patchJson('/schemas/id:' . $schema->getKey() , [
+            'name' => 'Test Updated',
+            'price' => 200,
+            'type' => 'select',
+            'description' => 'test test',
+            'hidden' => false,
+            'required' => false,
+            'options' => [
+                [
+                    'id' => $option->getKey(),
+                    'name' => 'L',
+                    'price' => 0,
+                    'disabled' => true,
+                    'items' => [
+                        $item->getKey(),
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('schemas', [
+            'name' => 'Test Updated',
+            'price' => 200,
+        ]);
+
+        $this->assertDatabaseHas('options', [
+            'id' => $option->getKey(),
+            'name' => 'L',
+            'price' => 0,
+            'disabled' => 1,
+            'schema_id' => $schema->getKey(),
+        ]);
+
+        $this->assertDatabaseMissing('options', [
+            'id' => $option2->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('option_items', [
+            'option_id' => $option->getKey(),
+            'item_id' => $item->getKey(),
+        ]);
+
+        $this->assertDatabaseMissing('option_items', [
+            'option_id' => $option->getKey(),
+            'item_id' => $item2->getKey(),
         ]);
     }
 

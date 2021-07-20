@@ -8,7 +8,6 @@ use App\Http\Requests\ProductShowRequest;
 use App\Http\Requests\ProductUpdateRequest;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 interface ProductControllerSwagger
@@ -192,6 +191,14 @@ interface ProductControllerSwagger
      *         )
      *       ),
      *       @OA\Property(
+     *         property="tags",
+     *         type="array",
+     *         @OA\Items(
+     *           type="string",
+     *           example="0006c3a0-21af-4485-b7fe-9c42233cf03a",
+     *         )
+     *       ),
+     *       @OA\Property(
      *         property="schemas",
      *         type="array",
      *         @OA\Items(
@@ -267,6 +274,14 @@ interface ProductControllerSwagger
      *       ),
      *       @OA\Property(
      *         property="media",
+     *         type="array",
+     *         @OA\Items(
+     *           type="string",
+     *           example="0006c3a0-21af-4485-b7fe-9c42233cf03a",
+     *         )
+     *       ),
+     *      @OA\Property(
+     *         property="tags",
      *         type="array",
      *         @OA\Items(
      *           type="string",

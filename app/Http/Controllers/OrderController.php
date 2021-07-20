@@ -2,24 +2,28 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\OrderUpdateDto;
 use App\Events\OrderCreated;
 use App\Events\OrderStatusUpdated;
-use App\Exceptions\Error;
+use App\Exceptions\StoreException;
 use App\Http\Controllers\Swagger\OrderControllerSwagger;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderIndexRequest;
 use App\Http\Requests\OrderItemsRequest;
 use App\Http\Requests\OrderSyncRequest;
+use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Resources\OrderPublicResource;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
+use App\Models\Discount;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Services\Contracts\NameServiceContract;
+use App\Services\Contracts\OrderServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Throwable;
@@ -27,10 +31,12 @@ use Throwable;
 class OrderController extends Controller implements OrderControllerSwagger
 {
     private NameServiceContract $nameService;
+    private OrderServiceContract $orderService;
 
-    public function __construct(NameServiceContract $nameService)
+    public function __construct(NameServiceContract $nameService, OrderServiceContract $orderService)
     {
         $this->nameService = $nameService;
+        $this->orderService = $orderService;
     }
 
     public function index(OrderIndexRequest $request): JsonResource
@@ -68,7 +74,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             'comment' => $request->input('comment'),
             'currency' => 'PLN',
             'shipping_method_id' => $shippingMethod->getKey(),
-            'shipping_price' => $shippingMethod->price,
+            'shipping_price' => 0.0,
             'status_id' => Status::select('id')->orderBy('order')->first()->getKey(),
             'delivery_address_id' => $deliveryAddress->getKey(),
             'invoice_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
@@ -115,10 +121,24 @@ class OrderController extends Controller implements OrderControllerSwagger
                     ]);
                 }
             }
-        } catch (Throwable $e) {
+
+            $discounts = [];
+            foreach ($request->input('discounts', []) as $discount) {
+                $discount = Discount::where('code', $discount)->firstOrFail();
+                $discounts[$discount->getKey()] = [
+                    'type' => $discount->type,
+                    'discount' => $discount->discount,
+                ];
+            }
+            $order->discounts()->sync($discounts);
+
+            $order->update([
+                'shipping_price' => $shippingMethod->getPrice($order->summary),
+            ]);
+        } catch (Throwable $exception) {
             $order->delete();
 
-            throw $e;
+            throw $exception;
         }
 
         // logs
@@ -196,7 +216,6 @@ class OrderController extends Controller implements OrderControllerSwagger
     public function verify(OrderItemsRequest $request): JsonResponse
     {
         foreach ($request->input('items', []) as $item) {
-
             $product = Product::findOrFail($item['product_id']);
             $schemas = $item['schemas'] ?? [];
 
@@ -214,11 +233,10 @@ class OrderController extends Controller implements OrderControllerSwagger
     public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResponse
     {
         if ($order->status->cancel) {
-            return Error::abort('Nie można zmienić statusu anulowanego zamówienia', 400);
+            throw new StoreException(__('admin.error.order_change_status_canceled'));
         }
 
         $status = Status::findOrFail($request->input('status_id'));
-
         $order->update([
             'status_id' => $status->getKey(),
         ]);
@@ -230,5 +248,12 @@ class OrderController extends Controller implements OrderControllerSwagger
         OrderStatusUpdated::dispatch($order);
 
         return OrderResource::make($order)->response();
+    }
+
+    public function update(OrderUpdateRequest $request, Order $order): JsonResponse
+    {
+        $orderUpdateDto = OrderUpdateDto::instantiateFromRequest($request);
+
+        return $this->orderService->update($orderUpdateDto, $order);
     }
 }

@@ -90,7 +90,7 @@ return [
     |
      */
 
-    'locale' => 'pl',
+    'locale' => 'en',
 
     /*
     |--------------------------------------------------------------------------
@@ -179,7 +179,6 @@ return [
         Laravel\Passport\PassportServiceProvider::class,
         Parsedown\Providers\ParsedownServiceProvider::class,
         Jenssegers\Agent\AgentServiceProvider::class,
-        // SammyK\LaravelFacebookSdk\LaravelFacebookSdkServiceProvider::class,
 
         /*
          * Application Service Providers...
