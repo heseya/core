@@ -6,27 +6,31 @@ use App\Http\Controllers\Swagger\MediaControllerSwagger;
 use App\Http\Requests\MediaStoreRequest;
 use App\Http\Resources\MediaResource;
 use App\Models\Media;
-use Exception;
+use App\Services\Contracts\MediaServiceContract;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Response;
 
 class MediaController extends Controller implements MediaControllerSwagger
 {
+    private MediaServiceContract $mediaServiceContract;
+
+    public function __construct(MediaServiceContract $mediaServiceContract)
+    {
+        $this->mediaServiceContract = $mediaServiceContract;
+    }
+
     public function store(MediaStoreRequest $request): JsonResource
     {
-        $response = Http::attach('file', $request->file('file')->getContent(), 'file')
-            ->withHeaders(['Authorization' => config('silverbox.key')])
-            ->post(config('silverbox.host') . '/' . config('silverbox.client'));
-
-        if ($response->failed()) {
-            throw new Exception('CDN responded with an error');
-        }
-
-        $media = Media::create([
-            'type' => Media::PHOTO,
-            'url' => config('silverbox.host') . '/' . $response[0]['path'],
-        ]);
+        $media = $this->mediaServiceContract->store($request->file('file'));
 
         return MediaResource::make($media);
+    }
+
+    public function destroy(Media $media): JsonResponse
+    {
+        $this->mediaServiceContract->destroy($media);
+
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

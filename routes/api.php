@@ -8,6 +8,11 @@ use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
 
+Route::prefix('users')->group(function () {
+    Route::get('/reset-password/{token?}/{email?}', 'AuthController@showResetPasswordForm');
+    Route::post('/reset-password', 'AuthController@resetPassword');
+    Route::patch('/save-reset-password', 'AuthController@saveResetPassword');
+});
 Route::post('login', 'AuthController@login');
 Route::patch('user/password', 'AuthController@changePassword')->middleware('auth:api');
 
@@ -127,7 +132,10 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('deposits', 'DepositController@index');
 
-    Route::post('media', 'MediaController@store');
+    Route::prefix('media')->group(function () {
+        Route::post(null, 'MediaController@store');
+        Route::delete('id:{media:id}', 'MediaController@destroy');
+    });
 
     Route::prefix('schemas')->group(function () {
         Route::get(null, 'SchemaController@index');
