@@ -61,6 +61,32 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
 
     public static function instantiateFromRequest(Request $request): self
     {
+        $deliveryAddress = null;
+        if ($request->exists('delivery_address')) {
+            $deliveryAddress = new AddressDto(
+                $request->input('delivery_address.name'),
+                $request->input('delivery_address.phone'),
+                $request->input('delivery_address.address'),
+                $request->input('delivery_address.vat'),
+                $request->input('delivery_address.zip'),
+                $request->input('delivery_address.city'),
+                $request->input('delivery_address.country'),
+            );
+        }
+
+        $invoiceAddress = null;
+        if ($request->exists('invoice_address')) {
+            $invoiceAddress = new AddressDto(
+                $request->input('invoice_address.name'),
+                $request->input('invoice_address.phone'),
+                $request->input('invoice_address.address'),
+                $request->input('invoice_address.vat'),
+                $request->input('invoice_address.zip'),
+                $request->input('invoice_address.city'),
+                $request->input('invoice_address.country'),
+            );
+        }
+
         return new self(
             $request->input('code'),
             $request->input('email'),
@@ -70,24 +96,8 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
             $request->input('shipping_price'),
             $request->input('status_id'),
             $request->input('shipping_method'),
-            new AddressDto(
-                $request->input('delivery_address.name'),
-                $request->input('delivery_address.phone'),
-                $request->input('delivery_address.address'),
-                $request->input('delivery_address.vat'),
-                $request->input('delivery_address.zip'),
-                $request->input('delivery_address.city'),
-                $request->input('delivery_address.country'),
-            ),
-            new AddressDto(
-                $request->input('invoice_address.name'),
-                $request->input('invoice_address.phone'),
-                $request->input('invoice_address.address'),
-                $request->input('invoice_address.vat'),
-                $request->input('invoice_address.zip'),
-                $request->input('invoice_address.city'),
-                $request->input('invoice_address.country'),
-            ),
+            $deliveryAddress,
+            $invoiceAddress,
         );
     }
 
