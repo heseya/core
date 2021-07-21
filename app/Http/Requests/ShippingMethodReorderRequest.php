@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * @OA\RequestBody(
- *   request="ShippingMethodOrder",
+ *   request="ShippingMethodReorder",
  *   @OA\JsonContent(
  *     @OA\Property(
  *       property="shipping_methods",
@@ -16,7 +16,7 @@ use Illuminate\Foundation\Http\FormRequest;
  *   )
  * )
  */
-class ShippingMethodOrderRequest extends FormRequest
+class ShippingMethodReorderRequest extends FormRequest
 {
     public function rules(): array
     {

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Swagger;
 
 use App\Http\Requests\ShippingMethodIndexRequest;
-use App\Http\Requests\ShippingMethodOrderRequest;
+use App\Http\Requests\ShippingMethodReorderRequest;
 use App\Http\Requests\ShippingMethodStoreRequest;
 use App\Http\Requests\ShippingMethodUpdateRequest;
 use App\Models\ShippingMethod;
@@ -114,7 +114,7 @@ interface ShippingMethodControllerSwagger
 
     /**
      * @OA\Post(
-     *   path="/shipping-methods/order",
+     *   path="/shipping-methods/reorder",
      *   summary="order shipping method",
      *   tags={"Shipping"},
      *   @OA\Parameter(
@@ -126,7 +126,7 @@ interface ShippingMethodControllerSwagger
      *     )
      *   ),
      *   @OA\RequestBody(
-     *     ref="#/components/requestBodies/ShippingMethodOrder",
+     *     ref="#/components/requestBodies/ShippingMethodReorder",
      *   ),
      *   @OA\Response(
      *     response=204,
@@ -137,7 +137,7 @@ interface ShippingMethodControllerSwagger
      *   }
      * )
      */
-    public function reorder(ShippingMethodOrderRequest $request): JsonResponse;
+    public function reorder(ShippingMethodReorderRequest $request): JsonResponse;
 
     /**
      * @OA\Delete(

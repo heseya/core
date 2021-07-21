@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Swagger\ShippingMethodControllerSwagger;
 use App\Http\Requests\ShippingMethodIndexRequest;
-use App\Http\Requests\ShippingMethodOrderRequest;
+use App\Http\Requests\ShippingMethodReorderRequest;
 use App\Http\Requests\ShippingMethodStoreRequest;
 use App\Http\Requests\ShippingMethodUpdateRequest;
 use App\Http\Resources\ShippingMethodResource;
@@ -44,7 +44,7 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
         return ShippingMethodResource::make($shippingMethod);
     }
 
-    public function reorder(ShippingMethodOrderRequest $request): JsonResponse
+    public function reorder(ShippingMethodReorderRequest $request): JsonResponse
     {
         $this->shippingMethodServiceContract->reorder($request->input('shipping_methods'));
 
