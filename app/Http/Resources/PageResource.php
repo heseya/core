@@ -24,6 +24,7 @@ class PageResource extends Resource implements PageResourceSwagger
             'slug' => $this->slug,
             'name' => $this->name,
             'public' => $this->public,
+            'order' => $this->order,
         ];
     }
 

@@ -210,7 +210,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             ]);
         }
 
-        return response()->json(null, 204);
+        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function verify(OrderItemsRequest $request): JsonResponse
@@ -227,7 +227,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             }
         }
 
-        return response()->json(null, 204);
+        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResponse
