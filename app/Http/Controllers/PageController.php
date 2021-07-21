@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Swagger\PageControllerSwagger;
-use App\Http\Requests\PageOrderRequest;
+use App\Http\Requests\PageReorderRequest;
 use App\Http\Requests\PageStoreRequest;
 use App\Http\Requests\PageUpdateRequest;
 use App\Http\Resources\PageResource;
@@ -57,7 +57,7 @@ class PageController extends Controller implements PageControllerSwagger
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
-    public function reorder(PageOrderRequest $request): JsonResponse
+    public function reorder(PageReorderRequest $request): JsonResponse
     {
         $this->pageService->reorder($request->input('pages'));
 

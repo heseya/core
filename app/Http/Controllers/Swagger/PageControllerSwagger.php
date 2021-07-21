@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Swagger;
 
-use App\Http\Requests\PageOrderRequest;
+use App\Http\Requests\PageReorderRequest;
 use App\Http\Requests\PageStoreRequest;
 use App\Http\Requests\PageUpdateRequest;
 use App\Models\Page;
@@ -171,7 +171,7 @@ interface PageControllerSwagger
 
     /**
      * @OA\Post(
-     *   path="/pages/order",
+     *   path="/pages/reorder",
      *   summary="change pages order",
      *   tags={"Pages"},
      *   @OA\Parameter(
@@ -183,7 +183,7 @@ interface PageControllerSwagger
      *     ),
      *   ),
      *   @OA\RequestBody(
-     *     ref="#/components/requestBodies/PageOrder",
+     *     ref="#/components/requestBodies/PageReorder",
      *   ),
      *   @OA\Response(
      *     response=204,
@@ -194,5 +194,5 @@ interface PageControllerSwagger
      *   }
      * )
      */
-    public function reorder(PageOrderRequest $request): JsonResponse;
+    public function reorder(PageReorderRequest $request): JsonResponse;
 }

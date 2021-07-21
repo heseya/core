@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * @OA\RequestBody(
- *   request="PageOrder",
+ *   request="PageReorder",
  *   @OA\JsonContent(
  *     @OA\Property(
  *       property="pages",
@@ -16,7 +16,7 @@ use Illuminate\Foundation\Http\FormRequest;
  *   )
  * )
  */
-class PageOrderRequest extends FormRequest
+class PageReorderRequest extends FormRequest
 {
     public function rules(): array
     {

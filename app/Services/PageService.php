@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Page;
 use App\Services\Contracts\PageServiceContract;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PageService implements PageServiceContract
@@ -30,9 +29,9 @@ class PageService implements PageServiceContract
 
     public function create(array $attributes): Page
     {
-        $pageNextOrder = Page::select(DB::raw('MAX(`order`) + 1 as next_order'))->first();
-        if ($pageNextOrder !== null) {
-            $attributes = array_merge($attributes, ['order' => $pageNextOrder->next_order]);
+        $pageCurrentOrder = Page::orderByDesc('order')->value('order');
+        if ($pageCurrentOrder !== null) {
+            $attributes = array_merge($attributes, ['order' => $pageCurrentOrder + 1]);
         }
 
         return Page::create($attributes);
