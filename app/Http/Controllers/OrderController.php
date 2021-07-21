@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Dtos\OrderUpdateDto;
 use App\Events\OrderCreated;
 use App\Events\OrderStatusUpdated;
-use App\Exceptions\StoreException;
+use App\Exceptions\OrderException;
 use App\Http\Controllers\Swagger\OrderControllerSwagger;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderIndexRequest;
@@ -233,7 +233,7 @@ class OrderController extends Controller implements OrderControllerSwagger
     public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResponse
     {
         if ($order->status->cancel) {
-            throw new StoreException(__('admin.error.order_change_status_canceled'));
+            throw new OrderException(__('admin.error.order_change_status_canceled'));
         }
 
         $status = Status::findOrFail($request->input('status_id'));
