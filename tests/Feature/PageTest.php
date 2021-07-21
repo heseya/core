@@ -115,8 +115,10 @@ class PageTest extends TestCase
 
             $response = $this->actingAs($this->user)->postJson('/pages', $page);
             $response->assertCreated();
+
             $uuid[] = $response->getData()->data->id;
         }
+
         $this->assertCount(3, $uuid);
         $this->assertDatabaseHas('pages', [
             'id' => $uuid[0],
