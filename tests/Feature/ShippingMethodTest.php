@@ -95,6 +95,38 @@ class ShippingMethodTest extends TestCase
             ->assertJsonFragment(['id' => $shippingMethod2->getKey()]);
     }
 
+    /**
+     * Price range testing with no initial 'start' value of zero
+     */
+    public function testCreateByPriceRanges(): void
+    {
+        $shipping_method = [
+            'name' => 'Test 4',
+            'public' => false,
+        ];
+
+        $response = $this->actingAs($this->user)->postJson(
+            '/shipping-methods', $shipping_method + [
+               'price_ranges' => [
+                   [
+                       'start' => 10,
+                       'value' => 10.37,
+                   ],
+                   [
+                       'start' => 200,
+                       'value' => 0,
+                   ],
+                   [
+                       'start' => 0.1,
+                       'value' => 5000,
+                   ],
+               ],
+           ],
+        );
+
+        $response->assertStatus(422);
+    }
+
     public function testCreate(): void
     {
         $response = $this->postJson('/shipping-methods');
@@ -144,6 +176,39 @@ class ShippingMethodTest extends TestCase
             // Doesnt work bacause of extra shit in the array
 
         $this->assertDatabaseHas('shipping_methods', $shipping_method);
+    }
+
+    /**
+     * Price range testing with no initial 'start' value of zero
+     */
+    public function testUpdateByPriceRanges(): void
+    {
+        $shipping_method = [
+            'name' => 'Test 5',
+            'public' => false,
+        ];
+
+        $response = $this->actingAs($this->user)->patchJson(
+            '/shipping-methods/id:' . $this->shipping_method->getKey(),
+            $shipping_method + [
+                'price_ranges' => [
+                    [
+                        'start' => 10,
+                        'value' => 10.37,
+                    ],
+                    [
+                        'start' => 200,
+                        'value' => 0,
+                    ],
+                    [
+                        'start' => 0.1,
+                        'value' => 5000,
+                    ],
+                ],
+            ],
+        );
+
+        $response->assertStatus(422);
     }
 
     public function testUpdate(): void
