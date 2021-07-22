@@ -141,12 +141,6 @@ class OrderController extends Controller implements OrderControllerSwagger
             throw $exception;
         }
 
-        // logs
-        $order->logs()->create([
-            'content' => 'Utworzenie zamówienia.',
-            'user' => 'API',
-        ]);
-
         OrderCreated::dispatch($order);
 
         return OrderPublicResource::make($order);
