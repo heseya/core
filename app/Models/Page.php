@@ -11,21 +11,14 @@ class Page extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     */
     protected $fillable = [
+        'order',
         'name',
         'slug',
         'public',
         'content_html',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'public' => 'boolean',
         'created_at' => 'datetime',
