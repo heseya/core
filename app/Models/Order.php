@@ -221,16 +221,6 @@ class Order extends Model
             ->orderBy('updated_at', 'DESC');
     }
 
-    public function logs(): HasMany
-    {
-        return $this->hasMany(OrderLog::class)->orderBy('created_at', 'DESC');
-    }
-
-    public function notes(): HasMany
-    {
-        return $this->hasMany(OrderNote::class)->orderBy('created_at', 'DESC');
-    }
-
     public function deposits(): HasManyThrough
     {
         return $this->hasManyThrough(Deposit::class, OrderProduct::class);
