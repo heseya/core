@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\SearchTypes\ProductSetSearch;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Builder;
@@ -37,9 +38,8 @@ class ProductSet extends Model
     protected array $searchable = [
         'name' => Like::class,
         'slug' => Like::class,
-        'parent_id',
+        'search' => ProductSetSearch::class,
         'public',
-        'hide_on_index',
     ];
 
     public function getSlugOverrideAttribute(): bool
@@ -49,9 +49,14 @@ class ProductSet extends Model
         ) : false;
     }
 
-    public function scopePrivate($query)
+    public function scopePublic($query)
     {
-        return $query->withoutGlobalScope('public');
+        return $query->where('public', true)
+            ->where(function (Builder $query) {
+                $query->whereHas('parent', function (Builder $query) {
+                    $query->where('public', true);
+                })->orWhereNull('parent_id');
+            });
     }
 
     public function scopeRoot($query)
@@ -67,16 +72,12 @@ class ProductSet extends Model
 
     public function parent(): BelongsTo
     {
-        return $this->belongsTo(self::class, 'parent_id')->private();
+        return $this->belongsTo(self::class, 'parent_id');
     }
 
     public function children(): HasMany
     {
         $query = $this->hasMany(self::class, 'parent_id');
-
-        if (!$this->public) {
-            $query->private();
-        }
 
         return $query;
     }
@@ -88,11 +89,6 @@ class ProductSet extends Model
 
     protected static function booted()
     {
-        static::addGlobalScope(
-            'public',
-            fn (Builder $builder) => $builder->where('public', true),
-        );
-
         static::addGlobalScope(
             'ordered',
             fn (Builder $builder) => $builder->orderBy('order'),

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\ProductSet;
 use App\Http\Controllers\AppController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CountriesController;
@@ -62,14 +63,16 @@ Route::prefix('categories')->group(function () {
 
 Route::prefix('product-sets')->group(function () {
     Route::get(null, [ProductSetController::class, 'index']);
-
+    
     Route::middleware('auth:api')->group(function () {
+        Route::get('id:{product_set:id}', [ProductSetController::class, 'show']);
         Route::post(null, [ProductSetController::class, 'store']);
         Route::post('id:{product_set:id}', [ProductSetController::class, 'update']);
-
-        Route::post('order', 'CategoryController@reorder');
+        Route::post('order', [ProductSetController::class, 'reorder']);
         Route::delete('id:{product_set:id}', [ProductSetController::class, 'destroy']);
     });
+
+    Route::get('{product_set:slug}', [ProductSetController::class, 'show']);
 });
 
 Route::prefix('shipping-methods')->group(function () {

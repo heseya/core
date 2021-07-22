@@ -3,17 +3,14 @@
 namespace App\Http\Resources;
 
 use App\Http\Resources\Swagger\ProductSetResourceSwagger;
-use App\Models\ProductSet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 
-// Universal class but cant work because resources are broken
-class ProductSetResourceNested extends Resource implements ProductSetResourceSwagger
+class ProductSetNestedResource extends Resource implements ProductSetResourceSwagger
 {
     public function base(Request $request): array
     {
-        $children = Auth::check() ? $this->children()->private()->get() :
+        $children = !Auth::check() ? $this->children()->public()->get() :
             $this->children;
 
         return [

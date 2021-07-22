@@ -4,11 +4,11 @@ namespace App\Http\Resources\Swagger;
 
 use Illuminate\Http\Request;
 
-interface ProductSetResourceSwagger
+interface ProductSetTreeResourceSwagger
 {
     /**
      * @OA\Schema(
-     *   schema="ProductSet",
+     *   schema="ProductSetTree",
      *   @OA\Property(
      *     property="id",
      *     type="string",
@@ -44,20 +44,17 @@ interface ProductSetResourceSwagger
      *     ref="#/components/schemas/ProductSetNested",
      *   ),
      *   @OA\Property(
-     *     property="children_ids",
+     *     property="children",
      *     type="array",
      *     description="Ids of assigned subsets",
-     *     @OA\Items(
-     *       type="string",
-     *       example="026bc5f6-8373-4aeb-972e-e78d72a67121",
-     *     ),
+     *     @OA\Items(ref="#/components/schemas/ProductSetNestedTree",),
      *   ),
      * )
      */
 
     /**
      * @OA\Schema(
-     *   schema="ProductSetNested",
+     *   schema="ProductSetNestedTree",
      *   @OA\Property(
      *     property="id",
      *     type="string",
@@ -94,13 +91,9 @@ interface ProductSetResourceSwagger
      *     example="026bc5f6-8373-4aeb-972e-e78d72a67121",
      *   ),
      *   @OA\Property(
-     *     property="children_ids",
+     *     property="children",
      *     type="array",
-     *     description="Ids of assigned subsets",
-     *     @OA\Items(
-     *       type="string",
-     *       example="026bc5f6-8373-4aeb-972e-e78d72a67121",
-     *     ),
+     *     @OA\Items(ref="#/components/schemas/ProductSetNestedTree"),
      *   ),
      * )
      */

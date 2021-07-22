@@ -26,8 +26,6 @@ class CreateProductSetsTable extends Migration
             $table->unsignedTinyInteger('order')->default(0);
             $table->boolean('hide_on_index')->default(false);
             $table->timestamps();
-
-            $table->unique(['parent_id', 'order']);
         });
 
         Schema::table('products', function (Blueprint $table) {

@@ -22,7 +22,7 @@ class ProductSetFactory extends Factory
     {
         $name = $this->faker->unique()->word;
 
-        $last = ProductSet::private()->reversed()->first();
+        $last = ProductSet::reversed()->first();
         $order = $last ? $last->order + 1 : 0;
 
         return [

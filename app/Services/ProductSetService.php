@@ -8,15 +8,26 @@ use App\Models\ProductSet;
 use App\Services\Contracts\ProductSetServiceContract;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ProductSetService implements ProductSetServiceContract
 {
+    public function authorize(ProductSet $set)
+    {
+        if (
+            !Auth::check() &&
+            !ProductSet::public()->where('id', $set->getKey())->exists()
+        ) {
+            throw new NotFoundHttpException();
+        }
+    }
+
     public function searchAll(array $attributes)
     {
         $query = ProductSet::root()->search($attributes);
 
-        if (Auth::check()) {
-            $query->private();
+        if (!Auth::check()) {
+            $query->public();
         }
 
         return $query->get();
@@ -25,13 +36,13 @@ class ProductSetService implements ProductSetServiceContract
     public function create(ProductSetDto $dto): ProductSet
     {
         if ($dto->getParentId() !== null) {
-            $parent = ProductSet::private()->findOrFail($dto->getParentId());
-            $lastChild = $parent->children()->private()->reversed()->first();
+            $parent = ProductSet::findOrFail($dto->getParentId());
+            $lastChild = $parent->children()->reversed()->first();
 
             $order = $lastChild ? $lastChild->order + 1 : 0;
             $slug = $dto->getOverrideSlug() ? $dto->getOverrideSlug() : $parent->slug . '-' . $dto->getSlug();
         } else {
-            $last = ProductSet::private()->reversed()->first();
+            $last = ProductSet::reversed()->first();
             
             $order = $last ? $last->order + 1 : 0;
             $slug = $dto->getOverrideSlug() ? $dto->getOverrideSlug() : $dto->getSlug();
@@ -45,7 +56,7 @@ class ProductSetService implements ProductSetServiceContract
         if ($dto->getChildrenIds()->isNotEmpty()) {
             $dto->getChildrenIds()->each(
                 function ($id, $order) use ($set, $slug) {
-                    $child = ProductSet::private()->findOrFail($id);
+                    $child = ProductSet::findOrFail($id);
 
                     if ($child->parent()->exists() &&
                         !Str::startsWith($child->slug, $child->parent->slug . '-')
@@ -72,8 +83,8 @@ class ProductSetService implements ProductSetServiceContract
         $parentId = $set->parent ? $set->parent->getKey() : null;
 
         if ($dto->getParentId() !== null) {
-            $parent = ProductSet::private()->findOrFail($dto->getParentId());
-            $lastChild = $parent->children()->private()->reversed()->first();
+            $parent = ProductSet::findOrFail($dto->getParentId());
+            $lastChild = $parent->children()->reversed()->first();
 
             if ($parentId !== $dto->getParentId()) {
                 $order = $lastChild ? $lastChild->order + 1 : 0;
@@ -83,7 +94,7 @@ class ProductSetService implements ProductSetServiceContract
 
             $slug = $dto->getOverrideSlug() ? $dto->getOverrideSlug() : $parent->slug . '-' . $dto->getSlug();
         } else {
-            $last = ProductSet::private()->reversed()->first();
+            $last = ProductSet::reversed()->first();
             
             if ($parentId !== $dto->getParentId()) {
                 $order = $last ? $last->order + 1 : 0;
@@ -99,21 +110,9 @@ class ProductSetService implements ProductSetServiceContract
             'slug' => $slug,
         ]);
 
-        // Safe detach
-        $last = ProductSet::private()->reversed()->first(); 
-        $childOrder = $last ? $last->order + 1 : 0;
-
-        $set->children->each(
-            fn ($id, $order) => ProductSet::private()->where('id', $id)->update([
-                'parent_id' => null,
-                'order' => $childOrder + $order,
-            ]),
-        );
-
-        // Reattach
         $dto->getChildrenIds()->each(
             function ($id, $order) use ($set, $slug) {
-                $child = ProductSet::private()->findOrFail($id);
+                $child = ProductSet::findOrFail($id);
 
                 if ($child->parent()->exists() &&
                     !Str::startsWith($child->slug, $child->parent->slug . '-')

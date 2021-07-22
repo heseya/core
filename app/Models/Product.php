@@ -131,7 +131,7 @@ class Product extends Model
     /**
      * @OA\Property(
      *   property="brand",
-     *   ref="#/components/schemas/Brand",
+     *   ref="#/components/schemas/ProductSet",
      * )
      */
     public function brand(): BelongsTo
@@ -142,7 +142,7 @@ class Product extends Model
     /**
      * @OA\Property(
      *   property="category",
-     *   ref="#/components/schemas/Category",
+     *   ref="#/components/schemas/ProductSet",
      * )
      */
     public function category(): BelongsTo
@@ -226,10 +226,10 @@ class Product extends Model
      */
     public function isPublic(): bool
     {
-        $brand = $this->brand()->private()->first();
+        $brand = $this->brand()->first();
         $isBrandPublic = $brand ? $brand->public : true;
 
-        $category = $this->category()->private()->first();
+        $category = $this->category()->first();
         $isCategoryPublic = $category ? $category->public : true;
 
         return $this->public && $isBrandPublic && $isCategoryPublic;

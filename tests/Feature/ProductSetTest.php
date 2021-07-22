@@ -11,6 +11,7 @@ class ProductSetTest extends TestCase
     private ProductSet $set;
     private ProductSet $privateSet;
     private ProductSet $childSet;
+    private ProductSet $subChildSet;
 
     public function setUp(): void
     {
@@ -28,8 +29,12 @@ class ProductSetTest extends TestCase
 
         $this->childSet = ProductSet::factory()->create([
             'public' => true,
-            'order' => 0,
             'parent_id' => $this->set->getKey(),
+        ]);
+
+        $this->subChildSet = ProductSet::factory()->create([
+            'public' => false,
+            'parent_id' => $this->childSet->getKey(),
         ]);
     }
 
@@ -88,7 +93,9 @@ class ProductSetTest extends TestCase
                             'public' => $this->childSet->public,
                             'hide_on_index' => $this->childSet->hide_on_index,
                             'parent_id' => $this->childSet->parent_id,
-                            'children_ids' => [],
+                            'children_ids' => [
+                                $this->subChildSet->getKey(),
+                            ],
                         ],
                     ],
                 ],
@@ -102,6 +109,223 @@ class ProductSetTest extends TestCase
                     'parent' => null,
                     'children' => [],
                 ],
+            ]]);
+    }
+
+    public function testIndexTree(): void
+    {
+        $response = $this->getJson('/product-sets?tree');
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data') // Shoud show only public sets.
+            ->assertJson(['data' => [
+                0 => [
+                    'id' => $this->set->getKey(),
+                    'name' => $this->set->name,
+                    'slug' => $this->set->slug,
+                    'slug_override' => false,
+                    'public' => $this->set->public,
+                    'hide_on_index' => $this->set->hide_on_index,
+                    'parent' => $this->set->parent,
+                    'children' => [
+                        [
+                            'id' => $this->childSet->getKey(),
+                            'name' => $this->childSet->name,
+                            'slug' => $this->childSet->slug,
+                            'slug_override' => true,
+                            'public' => $this->childSet->public,
+                            'hide_on_index' => $this->childSet->hide_on_index,
+                            'parent_id' => $this->childSet->parent_id,
+                            'children' => [],
+                        ],
+                    ],
+                ],
+            ]]);
+    }
+
+    public function testIndexTreeAuthorized(): void
+    {
+        $response = $this->actingAs($this->user)->getJson('/product-sets?tree');
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data') // Shoud show only public sets.
+            ->assertJson(['data' => [
+                0 => [
+                    'id' => $this->set->getKey(),
+                    'name' => $this->set->name,
+                    'slug' => $this->set->slug,
+                    'slug_override' => false,
+                    'public' => $this->set->public,
+                    'hide_on_index' => $this->set->hide_on_index,
+                    'parent' => null,
+                    'children' => [
+                        [
+                            'id' => $this->childSet->getKey(),
+                            'name' => $this->childSet->name,
+                            'slug' => $this->childSet->slug,
+                            'slug_override' => true,
+                            'public' => $this->childSet->public,
+                            'hide_on_index' => $this->childSet->hide_on_index,
+                            'parent_id' => $this->childSet->parent_id,
+                            'children' => [
+                                [
+                                    'id' => $this->subChildSet->getKey(),
+                                    'name' => $this->subChildSet->name,
+                                    'slug' => $this->subChildSet->slug,
+                                    'slug_override' => true,
+                                    'public' => $this->subChildSet->public,
+                                    'hide_on_index' => $this->subChildSet->hide_on_index,
+                                    'parent_id' => $this->subChildSet->parent_id,
+                                    'children' => [],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                1 => [
+                    'id' => $this->privateSet->getKey(),
+                    'name' => $this->privateSet->name,
+                    'slug' => $this->privateSet->slug,
+                    'slug_override' => false,
+                    'public' => $this->privateSet->public,
+                    'hide_on_index' => $this->privateSet->hide_on_index,
+                    'parent' => null,
+                    'children' => [],
+                ],
+            ]]);
+    }
+
+    public function testShowUnauthorized(): void
+    {
+        $response = $this->getJson('/product-sets/id:' . $this->set->getKey());
+        $response->assertUnauthorized();
+    }
+
+    public function testShow(): void
+    {
+        $response = $this->actingAs($this->user)->getJson('/product-sets/id:' . $this->set->getKey());
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $this->set->getKey(),
+                'name' => $this->set->name,
+                'slug' => $this->set->slug,
+                'slug_override' => false,
+                'public' => $this->set->public,
+                'hide_on_index' => $this->set->hide_on_index,
+                'parent' => $this->set->parent,
+                'children' => [
+                    [
+                        'id' => $this->childSet->getKey(),
+                        'name' => $this->childSet->name,
+                        'slug' => $this->childSet->slug,
+                        'slug_override' => true,
+                        'public' => $this->childSet->public,
+                        'hide_on_index' => $this->childSet->hide_on_index,
+                        'parent_id' => $this->childSet->parent_id,
+                        'children_ids' => [
+                            $this->subChildSet->getKey(),
+                        ],
+                    ],
+                ],
+            ]]);
+    }
+
+    public function testShowPrivate(): void
+    {
+        $response = $this->actingAs($this->user)->getJson('/product-sets/id:' . $this->privateSet->getKey());
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $this->privateSet->getKey(),
+                'name' => $this->privateSet->name,
+                'slug' => $this->privateSet->slug,
+                'slug_override' => false,
+                'public' => $this->privateSet->public,
+                'hide_on_index' => $this->privateSet->hide_on_index,
+                'parent' => null,
+                'children' => [],
+            ]]);
+    }
+
+    public function testShowSlug(): void
+    {
+        $response = $this->getJson('/product-sets/' . $this->set->slug);
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $this->set->getKey(),
+                'name' => $this->set->name,
+                'slug' => $this->set->slug,
+                'slug_override' => false,
+                'public' => $this->set->public,
+                'hide_on_index' => $this->set->hide_on_index,
+                'parent' => $this->set->parent,
+                'children' => [
+                    [
+                        'id' => $this->childSet->getKey(),
+                        'name' => $this->childSet->name,
+                        'slug' => $this->childSet->slug,
+                        'slug_override' => true,
+                        'public' => $this->childSet->public,
+                        'hide_on_index' => $this->childSet->hide_on_index,
+                        'parent_id' => $this->childSet->parent_id,
+                        'children_ids' => [],
+                    ],
+                ],
+            ]]);
+    }
+
+    public function testShowSlugAuthorized(): void
+    {
+        $response = $this->actingAs($this->user)->getJson('/product-sets/' . $this->set->slug);
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $this->set->getKey(),
+                'name' => $this->set->name,
+                'slug' => $this->set->slug,
+                'slug_override' => false,
+                'public' => $this->set->public,
+                'hide_on_index' => $this->set->hide_on_index,
+                'parent' => $this->set->parent,
+                'children' => [
+                    [
+                        'id' => $this->childSet->getKey(),
+                        'name' => $this->childSet->name,
+                        'slug' => $this->childSet->slug,
+                        'slug_override' => true,
+                        'public' => $this->childSet->public,
+                        'hide_on_index' => $this->childSet->hide_on_index,
+                        'parent_id' => $this->childSet->parent_id,
+                        'children_ids' => [
+                            $this->subChildSet->getKey(),
+                        ],
+                    ],
+                ],
+            ]]);
+    }
+
+    public function testShowSlugPrivateUnauthorized(): void
+    {
+        $response = $this->getJson('/product-sets/' . $this->privateSet->slug);
+        $response->assertNotFound();
+    }
+
+    public function testShowSlugPrivate(): void
+    {
+        $response = $this->actingAs($this->user)->getJson('/product-sets/' . $this->privateSet->slug);
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $this->privateSet->getKey(),
+                'name' => $this->privateSet->name,
+                'slug' => $this->privateSet->slug,
+                'slug_override' => false,
+                'public' => $this->privateSet->public,
+                'hide_on_index' => $this->privateSet->hide_on_index,
+                'parent' => null,
+                'children' => [],
             ]]);
     }
 
@@ -297,14 +521,14 @@ class ProductSetTest extends TestCase
     public function testUpdate(): void
     {
         $newSet = ProductSet::factory()->create([
-            'public' => true,
+            'public' => false,
             'order' => 40,
         ]);
         
         $set = [
             'name' => 'Test Edit',
             'slug' => 'test-edit',
-            'public' => false,
+            'public' => true,
             'hide_on_index' => true,
         ];
 

@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Dtos\ProductSetDto;
 use App\Http\Controllers\Swagger\ProductSetControllerSwagger;
-use App\Http\Requests\CategoryIndexRequest;
-use App\Http\Requests\CategoryReorderRequest;
+use App\Http\Requests\ProductSetIndexRequest;
+use App\Http\Requests\ProductSetReorderRequest;
+use App\Http\Requests\ProductSetShowRequest;
 use App\Http\Requests\ProductSetStoreRequest;
 use App\Http\Requests\ProductSetUpdateRequest;
 use App\Http\Resources\ProductSetResource;
@@ -26,7 +27,7 @@ class ProductSetController extends Controller implements ProductSetControllerSwa
         $this->productSetService = $productSetService;
     }
 
-    public function index(CategoryIndexRequest $request): JsonResource
+    public function index(ProductSetIndexRequest $request): JsonResource
     {
         $sets = $this->productSetService->searchAll($request->validated());
 
@@ -34,6 +35,17 @@ class ProductSetController extends Controller implements ProductSetControllerSwa
             return ProductSetTreeResource::collection($sets);
         }
         return ProductSetResource::collection($sets);
+    }
+
+    public function show(ProductSet $productSet, ProductSetShowRequest $request): JsonResource
+    {
+        $this->productSetService->authorize($productSet);
+
+        if ($request->has('tree') && $request->input('tree', true) !== false) {
+            return ProductSetTreeResource::make($productSet);
+        }
+
+        return ProductSetResource::make($productSet);
     }
 
     public function store(ProductSetStoreRequest $request): JsonResource
@@ -54,7 +66,7 @@ class ProductSetController extends Controller implements ProductSetControllerSwa
         );
     }
 
-    public function reorder(CategoryReorderRequest $request): JsonResponse
+    public function reorder(ProductSetReorderRequest $request): JsonResponse
     {
         $this->productSetService->reorder($request->input('product_sets'));
 
