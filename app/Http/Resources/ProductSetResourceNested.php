@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 // Universal class but cant work because resources are broken
-class ProductSetResource extends Resource implements ProductSetResourceSwagger
+class ProductSetResourceNested extends Resource implements ProductSetResourceSwagger
 {
     public function base(Request $request): array
     {
@@ -22,8 +22,10 @@ class ProductSetResource extends Resource implements ProductSetResourceSwagger
             'slug' => $this->slug,
             'public' => $this->public,
             'hide_on_index' => $this->hide_on_index,
-            'parent' => ProductSetResourceNested::make($this->parent),
-            'children' => ProductSetResourceNested::collection($children),
+            'parent_id' => $this->parent_id,
+            'children_ids' => $children->map(
+                fn ($child) => $child->getKey(),
+            )->toArray(),
             'slug_override' => $this->slugOverride
         ];
     }

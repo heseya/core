@@ -7,6 +7,7 @@ use App\Exceptions\StoreException;
 use App\Models\ProductSet;
 use App\Services\Contracts\ProductSetServiceContract;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class ProductSetService implements ProductSetServiceContract
 {
@@ -28,22 +29,38 @@ class ProductSetService implements ProductSetServiceContract
             $lastChild = $parent->children()->private()->reversed()->first();
 
             $order = $lastChild ? $lastChild->order + 1 : 0;
+            $slug = $dto->getOverrideSlug() ? $dto->getOverrideSlug() : $parent->slug . '-' . $dto->getSlug();
         } else {
             $last = ProductSet::private()->reversed()->first();
             
             $order = $last ? $last->order + 1 : 0;
+            $slug = $dto->getOverrideSlug() ? $dto->getOverrideSlug() : $dto->getSlug();
         }
 
         $set = ProductSet::create($dto->toArray() + [
             'order' => $order,
+            'slug' => $slug,
         ]);
 
         if ($dto->getChildrenIds()->isNotEmpty()) {
             $dto->getChildrenIds()->each(
-                fn ($id, $order) => ProductSet::private()->findOrFail($id)->update([
-                    'parent_id' => $set->getKey(),
-                    'order' => $order,
-                ]),
+                function ($id, $order) use ($set, $slug) {
+                    $child = ProductSet::private()->findOrFail($id);
+
+                    if ($child->parent()->exists() &&
+                        !Str::startsWith($child->slug, $child->parent->slug . '-')
+                    ) {
+                        $childSlug = $child->slug;
+                    } else {
+                        $childSlug = $slug . '-' . $child->slug;
+                    }
+
+                    $child->update([
+                        'parent_id' => $set->getKey(),
+                        'order' => $order,
+                        'slug' => $childSlug,
+                    ]);
+                },
             );
         }
 
@@ -54,23 +71,32 @@ class ProductSetService implements ProductSetServiceContract
     {
         $parentId = $set->parent ? $set->parent->getKey() : null;
 
-        if ($parentId !== $dto->getParentId()) {
-            if ($dto->getParentId() !== null) {
-                $parent = ProductSet::private()->findOrFail($dto->getParentId());
-                $lastChild = $parent->children()->private()->reversed()->first();
-    
+        if ($dto->getParentId() !== null) {
+            $parent = ProductSet::private()->findOrFail($dto->getParentId());
+            $lastChild = $parent->children()->private()->reversed()->first();
+
+            if ($parentId !== $dto->getParentId()) {
                 $order = $lastChild ? $lastChild->order + 1 : 0;
             } else {
-                $last = ProductSet::private()->reversed()->first();
-                
-                $order = $last ? $last->order + 1 : 0;
+                $order = $set->order;
             }
+
+            $slug = $dto->getOverrideSlug() ? $dto->getOverrideSlug() : $parent->slug . '-' . $dto->getSlug();
         } else {
-            $order = $set->order;
+            $last = ProductSet::private()->reversed()->first();
+            
+            if ($parentId !== $dto->getParentId()) {
+                $order = $last ? $last->order + 1 : 0;
+            } else {
+                $order = $set->order;
+            }
+
+            $slug = $dto->getOverrideSlug() ? $dto->getOverrideSlug() : $dto->getSlug();
         }
 
         $set->update($dto->toArray() + [
             'order' => $order,
+            'slug' => $slug,
         ]);
 
         // Safe detach
@@ -79,17 +105,30 @@ class ProductSetService implements ProductSetServiceContract
 
         $set->children->each(
             fn ($id, $order) => ProductSet::private()->where('id', $id)->update([
-                'parent_id' => $set->getKey(),
+                'parent_id' => null,
                 'order' => $childOrder + $order,
             ]),
         );
 
         // Reattach
         $dto->getChildrenIds()->each(
-            fn ($id, $order) => ProductSet::private()->findOrFail($id)->update([
-                'parent_id' => $set->getKey(),
-                'order' => $order,
-            ]),
+            function ($id, $order) use ($set, $slug) {
+                $child = ProductSet::private()->findOrFail($id);
+
+                if ($child->parent()->exists() &&
+                    !Str::startsWith($child->slug, $child->parent->slug . '-')
+                ) {
+                    $childSlug = $child->slug;
+                } else {
+                    $childSlug = $slug . '-' . $child->slug;
+                }
+
+                $child->update([
+                    'parent_id' => $set->getKey(),
+                    'order' => $order,
+                    'slug' => $childSlug,
+                ]);
+            },
         );
 
         return $set;

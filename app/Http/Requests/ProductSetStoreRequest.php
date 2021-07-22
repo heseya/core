@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ProhibitedWith;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -60,7 +61,8 @@ class ProductSetStoreRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', 'unique:product_sets', 'alpha_dash'],
+            'slug' => ['required_without:slug', 'string', 'max:255', 'alpha_dash'],
+            'override_slug' => [new ProhibitedWith('child_slug'), 'string', 'max:255', 'unique:product_sets', 'alpha_dash'],
             'public' => ['boolean'],
             'hide_on_index' => ['boolean'],
             'parent_id' => ['uuid', 'nullable', 'exists:product_sets,id'],

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 /**
  * @mixin IdeHelperProductSet
@@ -41,6 +42,13 @@ class ProductSet extends Model
         'hide_on_index',
     ];
 
+    public function getSlugOverrideAttribute(): bool
+    {
+        return $this->parent ? !Str::startsWith(
+            $this->slug, $this->parent->slug . '-',
+        ) : false;
+    }
+
     public function scopePrivate($query)
     {
         return $query->withoutGlobalScope('public');
@@ -59,12 +67,18 @@ class ProductSet extends Model
 
     public function parent(): BelongsTo
     {
-        return $this->belongsTo(self::class, 'parent_id');
+        return $this->belongsTo(self::class, 'parent_id')->private();
     }
 
     public function children(): HasMany
     {
-        return $this->hasMany(self::class, 'parent_id');
+        $query = $this->hasMany(self::class, 'parent_id');
+
+        if (!$this->public) {
+            $query->private();
+        }
+
+        return $query;
     }
 
     public function products(): BelongsToMany

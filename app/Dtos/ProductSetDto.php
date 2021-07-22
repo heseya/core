@@ -10,7 +10,8 @@ use Illuminate\Support\Collection;
 class ProductSetDto implements DtoContract, InstantiateFromRequest
 {
     private string $name;
-    private string $slug;
+    private ?string $slug;
+    private ?string $override_slug;
     private bool $public;
     private bool $hide_on_index;
     private ?string $parent_id;
@@ -18,7 +19,8 @@ class ProductSetDto implements DtoContract, InstantiateFromRequest
 
     public function __construct(
         string $name,
-        string $slug,
+        ?string $slug,
+        ?string $override_slug,
         bool $public,
         bool $hide_on_index,
         ?string $parent_id,
@@ -26,6 +28,7 @@ class ProductSetDto implements DtoContract, InstantiateFromRequest
     ) {
         $this->name = $name;
         $this->slug = $slug;
+        $this->override_slug = $override_slug;
         $this->public = $public;
         $this->hide_on_index = $hide_on_index;
         $this->parent_id = $parent_id;
@@ -37,6 +40,7 @@ class ProductSetDto implements DtoContract, InstantiateFromRequest
         return [
             'name' => $this->getName(),
             'slug' => $this->getSlug(),
+            'override_slug' => $this->getOverrideSlug(),
             'public' => $this->isPublic(),
             'hide_on_index' => $this->isHiddenOnIndex(),
             'parent_id' => $this->getParentId(),
@@ -49,6 +53,7 @@ class ProductSetDto implements DtoContract, InstantiateFromRequest
         return new self(
             $request->input('name'),
             $request->input('slug'),
+            $request->input('override_slug'),
             $request->boolean('public', true),
             $request->boolean('hide_on_index', false),
             $request->input('parent_id', null),
@@ -61,9 +66,14 @@ class ProductSetDto implements DtoContract, InstantiateFromRequest
         return $this->name;
     }
 
-    public function getSlug(): string
+    public function getSlug(): ?string
     {
         return $this->slug;
+    }
+
+    public function getOverrideSlug(): ?string
+    {
+        return $this->override_slug;
     }
 
     public function isPublic(): bool

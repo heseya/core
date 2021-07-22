@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Brand;
 use App\Models\ProductSet;
 use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -53,7 +52,10 @@ class ProductSearchTest extends TestCase
 
     public function testSearchByBrand(): void
     {
-        $brand = ProductSet::factory()->create(['public' => true]);
+        $brand = ProductSet::factory()->create([
+            'public' => true,
+            'hide_on_index' => false,
+        ]);
 
         $product = Product::factory()->create([
             'category_id' => $this->category->getKey(),
