@@ -101,6 +101,7 @@ interface OrderControllerSwagger
      * )
      */
     public function show(Order $order): JsonResource;
+
     /**
      * @OA\Get(
      *   path="/orders/{code}",
@@ -245,7 +246,7 @@ interface OrderControllerSwagger
     /**
      * @OA\Patch(
      *   path="/orders/id:{order:id}",
-     *   summary="update product",
+     *   summary="update order",
      *   tags={"Orders"},
      *   @OA\Parameter(
      *     name="id",

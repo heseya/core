@@ -11,7 +11,6 @@ use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 
 class OrderService implements OrderServiceContract
@@ -69,7 +68,7 @@ class OrderService implements OrderServiceContract
 
             throw new OrderException(
                 'Error editing the order for id: ' . $order->id,
-                Response::HTTP_UNPROCESSABLE_ENTITY
+                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         }
     }
