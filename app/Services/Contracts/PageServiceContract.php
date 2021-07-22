@@ -15,4 +15,6 @@ interface PageServiceContract
     public function update(Page $page, array $attributes): Page;
 
     public function delete(Page $page);
+
+    public function reorder(array $pages): void;
 }
