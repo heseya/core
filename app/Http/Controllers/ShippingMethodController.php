@@ -25,7 +25,10 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
 
     public function index(ShippingMethodIndexRequest $request): JsonResource
     {
-        $shippingMethods = $this->shippingMethodServiceContract->index($request);
+        $shippingMethods = $this->shippingMethodServiceContract->index(
+            $request->input('country'),
+            $request->input('cart_value', 0)
+        );
 
         return ShippingMethodResource::collection($shippingMethods);
     }

@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Exceptions\StoreException;
-use App\Http\Requests\ShippingMethodIndexRequest;
 use App\Http\Requests\ShippingMethodStoreRequest;
 use App\Http\Requests\ShippingMethodUpdateRequest;
 use App\Models\ShippingMethod;
@@ -15,10 +14,9 @@ use Illuminate\Support\Facades\DB;
 
 class ShippingMethodService implements ShippingMethodServiceContract
 {
-    public function index(ShippingMethodIndexRequest $request): Collection
+    public function index(?string $country, float $cartValue): Collection
     {
         $query = ShippingMethod::query()->orderBy('order');
-
         if (Auth::check()) {
             $query->with('paymentMethods');
         } else {
@@ -27,25 +25,25 @@ class ShippingMethodService implements ShippingMethodServiceContract
                 ->where('public', true);
         }
 
-        if ($request->has('country')) {
-            $query->where(function (Builder $query) use ($request) {
-                $query->where(function (Builder $query) use ($request) {
+        if ($country) {
+            $query->where(function (Builder $query) use ($country) {
+                $query->where(function (Builder $query) use ($country) {
                     $query
                         ->where('black_list', false)
-                        ->whereHas('countries', fn ($query) => $query->where('code', $request->input('country')));
-                })->orWhere(function (Builder $query) use ($request) {
+                        ->whereHas('countries', fn ($query) => $query->where('code', $country));
+                })->orWhere(function (Builder $query) use ($country) {
                     $query
                         ->where('black_list', true)
                         ->whereDoesntHave(
                             'countries',
-                            fn ($query) => $query->where('code', $request->input('country')),
+                            fn ($query) => $query->where('code', $country),
                         );
                 });
             });
         }
 
         $shippingMethods = $query->get();
-        $shippingMethods->each(fn ($method) => $method->price = $method->getPrice($request->input('cart_value', 0)));
+        $shippingMethods->each(fn ($method) => $method->price = $method->getPrice($cartValue));
 
         return $shippingMethods;
     }

@@ -17,27 +17,48 @@ use Illuminate\Foundation\Http\FormRequest;
  *     @OA\Property(
  *       property="public",
  *       type="boolean",
- *       example="1",
+ *       example="true",
  *     ),
  *     @OA\Property(
  *       property="black_list",
  *       type="boolean",
- *       example="0",
+ *       example="false",
  *     ),
  *     @OA\Property(
  *       property="payment_methods",
  *       type="array",
- *       @OA\Items(),
+ *       @OA\Items(
+ *         type="string",
+ *         example="026bc5f6-8373-4aeb-972e-e78d72a67121",
+ *       ),
  *     ),
  *     @OA\Property(
  *       property="countries",
  *       type="array",
- *       @OA\Items(),
+ *       @OA\Items(
+ *         type="string",
+ *         example="PL",
+ *       ),
  *     ),
  *     @OA\Property(
  *       property="price_ranges",
  *       type="array",
- *       @OA\Items(),
+ *       @OA\Items(
+ *         type="object",
+ *         @OA\Property(
+ *           property="start",
+ *           description="start of the range (min = 0);
+ *             range goes from start to start of next range or infinity",
+ *           type="number",
+ *           example=0.0
+ *         ),
+ *         @OA\Property(
+ *           property="value",
+ *           description="price in this range",
+ *           type="number",
+ *           example=18.70
+ *         ),
+ *       ),
  *     ),
  *   )
  * )

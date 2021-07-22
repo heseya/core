@@ -10,8 +10,7 @@ use Illuminate\Foundation\Http\FormRequest;
  *   @OA\JsonContent(
  *     @OA\Property(
  *       property="country",
- *       type="array",
- *       @OA\Items(),
+ *       type="string",
  *     ),
  *     @OA\Property(
  *       property="cart_value",
