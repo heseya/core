@@ -29,6 +29,11 @@ class PageService implements PageServiceContract
 
     public function create(array $attributes): Page
     {
+        $pageCurrentOrder = Page::orderByDesc('order')->value('order');
+        if ($pageCurrentOrder !== null) {
+            $attributes = array_merge($attributes, ['order' => $pageCurrentOrder + 1]);
+        }
+
         return Page::create($attributes);
     }
 
@@ -42,5 +47,12 @@ class PageService implements PageServiceContract
     public function delete(Page $page)
     {
         $page->delete();
+    }
+
+    public function reorder(array $pages): void
+    {
+        foreach ($pages as $key => $id) {
+            Page::where('id', $id)->update(['order' => $key]);
+        }
     }
 }

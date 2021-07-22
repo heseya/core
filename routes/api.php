@@ -46,6 +46,7 @@ Route::prefix('pages')->group(function () {
     Route::get('{page:slug}', 'PageController@show');
     Route::patch('id:{page:id}', 'PageController@update')->middleware('auth:api');
     Route::delete('id:{page:id}', 'PageController@destroy')->middleware('auth:api');
+    Route::post('order', 'PageController@reorder')->middleware('auth:api');
 });
 
 Route::prefix('brands')->group(function () {
