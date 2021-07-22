@@ -61,9 +61,8 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
 
     public static function instantiateFromRequest(Request $request): self
     {
-        $deliveryAddress = null;
-        if ($request->exists('delivery_address')) {
-            $deliveryAddress = new AddressDto(
+        $deliveryAddress = $request->exists('delivery_address') ?
+            new AddressDto(
                 $request->input('delivery_address.name'),
                 $request->input('delivery_address.phone'),
                 $request->input('delivery_address.address'),
@@ -71,12 +70,10 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
                 $request->input('delivery_address.zip'),
                 $request->input('delivery_address.city'),
                 $request->input('delivery_address.country'),
-            );
-        }
+            ) : null;
 
-        $invoiceAddress = null;
-        if ($request->exists('invoice_address')) {
-            $invoiceAddress = new AddressDto(
+        $invoiceAddress = $request->exists('invoice_address') ?
+            new AddressDto(
                 $request->input('invoice_address.name'),
                 $request->input('invoice_address.phone'),
                 $request->input('invoice_address.address'),
@@ -84,8 +81,7 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
                 $request->input('invoice_address.zip'),
                 $request->input('invoice_address.city'),
                 $request->input('invoice_address.country'),
-            );
-        }
+            ) : null;
 
         return new self(
             $request->input('code'),
