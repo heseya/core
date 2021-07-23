@@ -1,8 +1,9 @@
 <?php
 
-use App\Models\ProductSet;
 use App\Http\Controllers\AppController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BrandController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CountriesController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\ProductSetController;
@@ -45,21 +46,8 @@ Route::prefix('pages')->group(function () {
     Route::delete('id:{page:id}', 'PageController@destroy')->middleware('auth:api');
 });
 
-Route::prefix('brands')->group(function () {
-    Route::get(null, 'BrandController@index');
-    Route::post(null, 'BrandController@store')->middleware('auth:api');
-    Route::post('order', 'BrandController@order')->middleware('auth:api');
-    Route::patch('id:{brand:id}', 'BrandController@update')->middleware('auth:api');
-    Route::delete('id:{brand:id}', 'BrandController@destroy')->middleware('auth:api');
-});
-
-Route::prefix('categories')->group(function () {
-    Route::get(null, 'CategoryController@index');
-    Route::post(null, 'CategoryController@store')->middleware('auth:api');
-    Route::post('order', 'CategoryController@reorder')->middleware('auth:api');
-    Route::patch('id:{category:id}', 'CategoryController@update')->middleware('auth:api');
-    Route::delete('id:{category:id}', 'CategoryController@destroy')->middleware('auth:api');
-});
+Route::get('brands', [BrandController::class, 'index']);
+Route::get('categories', [CategoryController::class, 'index']);
 
 Route::prefix('product-sets')->group(function () {
     Route::get(null, [ProductSetController::class, 'index']);

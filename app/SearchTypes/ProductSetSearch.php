@@ -12,6 +12,16 @@ class ProductSetSearch extends Search
         return $query->where(function (Builder $query) {
             $query->where('name', 'LIKE', '%' . $this->value . '%')
                 ->orWhere('slug', 'LIKE', '%' . $this->value . '%')
+                ->orWhereHas('brand', function (Builder $query) {
+                    $query
+                        ->where('name', 'LIKE', '%' . $this->value . '%')
+                        ->orWhere('slug', 'LIKE', '%' . $this->value . '%');
+                })
+                ->orWhereHas('category', function (Builder $query) {
+                    $query
+                        ->where('name', 'LIKE', '%' . $this->value . '%')
+                        ->orWhere('slug', 'LIKE', '%' . $this->value . '%');
+                })
                 ->orWhereHas('parent', function (Builder $query) {
                     $query
                         ->where('name', 'LIKE', '%' . $this->value . '%')

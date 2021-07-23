@@ -2,40 +2,35 @@
 
 namespace Tests\Feature;
 
-use App\Models\Brand;
 use App\Models\ProductSet;
-use App\Models\Product;
-use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class BrandTest extends TestCase
 {
-    private Brand $brand;
-    private Brand $brand_hidden;
-
-    private array $expected;
+    private ProductSet $brand;
+    private ProductSet $brand_hidden;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->brand = Brand::factory()->create([
+        $brands = ProductSet::factory()->create([
+            'name' => 'Brands',
+            'slug' => 'brands',
             'public' => true,
         ]);
 
-        $this->brand_hidden = Brand::factory()->create([
-            'public' => false,
+        $this->brand = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $brands->getKey(),
+            'order' => 0,
         ]);
 
-        /**
-         * Expected response
-         */
-        $this->expected = [
-            'id' => $this->brand->getKey(),
-            'name' => $this->brand->name,
-            'slug' => $this->brand->slug,
-            'public' => $this->brand->public,
-        ];
+        $this->brand_hidden = ProductSet::factory()->create([
+            'public' => false,
+            'parent_id' => $brands->getKey(),
+            'order' => 1,
+        ]);
     }
 
     public function testIndex(): void
@@ -45,82 +40,34 @@ class BrandTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public brands.
             ->assertJson(['data' => [
-                0 => $this->expected,
+                0 => [
+                    'id' => $this->brand->getKey(),
+                    'name' => $this->brand->name,
+                    'slug' => $this->brand->slug,
+                    'public' => $this->brand->public,
+                ],
             ]]);
     }
 
-    public function testCreate(): void
+    public function testIndexAuthorized(): void
     {
-        $response = $this->postJson('/brands');
-        $response->assertUnauthorized();
-
-        Passport::actingAs($this->user);
-
-        $brand = [
-            'name' => 'Test',
-            'slug' => 'test-test',
-            'public' => true,
-        ];
-
-        $response = $this->postJson('/brands', $brand);
-        $response
-            ->assertCreated()
-            ->assertJson(['data' => $brand]);
-
-        $this->assertDatabaseHas('brands', $brand);
-    }
-
-    public function testUpdate(): void
-    {
-        $response = $this->patchJson('/brands/id:' . $this->brand->getKey());
-        $response->assertUnauthorized();
-
-        Passport::actingAs($this->user);
-
-        $brand = [
-            'name' => 'Test 2',
-            'slug' => 'test-2',
-            'public' => false,
-        ];
-
-        $response = $this->patchJson(
-            '/brands/id:' . $this->brand->getKey(),
-            $brand,
-        );
+        $response = $this->actingAs($this->user)->getJson('/brands');
         $response
             ->assertOk()
-            ->assertJson(['data' => $brand]);
-
-        $this->assertDatabaseHas('brands', $brand + ['id' => $this->brand->getKey()]);
-    }
-
-    public function testDelete(): void
-    {
-        $response = $this->deleteJson('/brands/id:' . $this->brand->getKey());
-        $response->assertUnauthorized();
-        $this->assertDatabaseHas('brands', $this->brand->toArray());
-
-        Passport::actingAs($this->user);
-
-        $response = $this->deleteJson('/brands/id:' . $this->brand->getKey());
-        $response->assertNoContent();
-        $this->assertDeleted($this->brand);
-    }
-
-    public function testDeleteWithRelations(): void
-    {
-        Passport::actingAs($this->user);
-
-        $this->brand = Brand::factory()->create();
-        $category = ProductSet::factory()->create();
-
-        Product::factory()->create([
-            'brand_id' => $this->brand->getKey(),
-            'category_id' => $category->getKey(),
-        ]);
-
-        $response = $this->deleteJson('/brands/id:' . $this->brand->getKey());
-        $response->assertStatus(400);
-        $this->assertDatabaseHas('brands', $this->brand->toArray());
+            ->assertJsonCount(2, 'data')
+            ->assertJson(['data' => [
+                0 => [
+                    'id' => $this->brand->getKey(),
+                    'name' => $this->brand->name,
+                    'slug' => $this->brand->slug,
+                    'public' => $this->brand->public,
+                ],
+                1 => [
+                    'id' => $this->brand_hidden->getKey(),
+                    'name' => $this->brand_hidden->name,
+                    'slug' => $this->brand_hidden->slug,
+                    'public' => $this->brand_hidden->public,
+                ],
+            ]]);
     }
 }

@@ -2,10 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Brand;
 use App\Models\ProductSet;
-use App\Models\Product;
-use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class CategoryTest extends TestCase
@@ -13,29 +10,27 @@ class CategoryTest extends TestCase
     private ProductSet $category;
     private ProductSet $category_hidden;
 
-    private array $expected;
-
     public function setUp(): void
     {
         parent::setUp();
 
+        $categories = ProductSet::factory()->create([
+            'name' => 'categories',
+            'slug' => 'categories',
+            'public' => true,
+        ]);
+
         $this->category = ProductSet::factory()->create([
             'public' => true,
+            'parent_id' => $categories->getKey(),
+            'order' => 0,
         ]);
 
         $this->category_hidden = ProductSet::factory()->create([
             'public' => false,
+            'parent_id' => $categories->getKey(),
+            'order' => 1,
         ]);
-
-        /**
-         * Expected response
-         */
-        $this->expected = [
-            'id' => $this->category->getKey(),
-            'name' => $this->category->name,
-            'slug' => $this->category->slug,
-            'public' => $this->category->public,
-        ];
     }
 
     public function testIndex(): void
@@ -43,84 +38,36 @@ class CategoryTest extends TestCase
         $response = $this->getJson('/categories');
         $response
             ->assertOk()
-            ->assertJsonCount(1, 'data') // Shoud show only public categories.
+            ->assertJsonCount(1, 'data') // Should show only public categorys.
             ->assertJson(['data' => [
-                0 => $this->expected,
+                0 => [
+                    'id' => $this->category->getKey(),
+                    'name' => $this->category->name,
+                    'slug' => $this->category->slug,
+                    'public' => $this->category->public,
+                ],
             ]]);
     }
 
-    public function testCreate(): void
+    public function testIndexAuthorized(): void
     {
-        $response = $this->postJson('/categories');
-        $response->assertUnauthorized();
-
-        Passport::actingAs($this->user);
-
-        $category = [
-            'name' => 'Test',
-            'slug' => 'test-test',
-            'public' => true,
-        ];
-
-        $response = $this->postJson('/categories', $category);
-        $response
-            ->assertCreated()
-            ->assertJson(['data' => $category]);
-
-        $this->assertDatabaseHas('categories', $category);
-    }
-
-    public function testUpdate(): void
-    {
-        $response = $this->patchJson('/categories/id:' . $this->category->getKey());
-        $response->assertUnauthorized();
-
-        Passport::actingAs($this->user);
-
-        $category = [
-            'name' => 'Test 2',
-            'slug' => 'test-2',
-            'public' => false,
-        ];
-
-        $response = $this->patchJson(
-            '/categories/id:' . $this->category->getKey(),
-            $category,
-        );
+        $response = $this->actingAs($this->user)->getJson('/categories');
         $response
             ->assertOk()
-            ->assertJson(['data' => $category]);
-
-        $this->assertDatabaseHas('categories', $category + ['id' => $this->category->getKey()]);
-    }
-
-    public function testDelete(): void
-    {
-        $response = $this->deleteJson('/categories/id:' . $this->category->getKey());
-        $response->assertUnauthorized();
-        $this->assertDatabaseHas('categories', $this->category->toArray());
-
-        Passport::actingAs($this->user);
-
-        $response = $this->deleteJson('/categories/id:' . $this->category->getKey());
-        $response->assertNoContent();
-        $this->assertDeleted($this->category);
-    }
-
-    public function testDeleteWithRelations(): void
-    {
-        Passport::actingAs($this->user);
-
-        $this->category = ProductSet::factory()->create();
-        $brand = Brand::factory()->create();
-
-        Product::factory()->create([
-            'category_id' => $this->category->getKey(),
-            'brand_id' => $brand->getKey(),
-        ]);
-
-        $response = $this->delete('/categories/id:' . $this->category->getKey());
-        $response->assertStatus(400);
-        $this->assertDatabaseHas('categories', $this->category->toArray());
+            ->assertJsonCount(2, 'data')
+            ->assertJson(['data' => [
+                0 => [
+                    'id' => $this->category->getKey(),
+                    'name' => $this->category->name,
+                    'slug' => $this->category->slug,
+                    'public' => $this->category->public,
+                ],
+                1 => [
+                    'id' => $this->category_hidden->getKey(),
+                    'name' => $this->category_hidden->name,
+                    'slug' => $this->category_hidden->slug,
+                    'public' => $this->category_hidden->public,
+                ],
+            ]]);
     }
 }

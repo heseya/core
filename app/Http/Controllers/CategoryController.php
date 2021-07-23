@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Swagger\BrandControllerSwagger;
+use App\Http\Controllers\Swagger\CategoryControllerSwagger;
 use App\Http\Requests\ProductSetIndexRequest;
 use App\Http\Resources\ProductSetResource;
 use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\ProductSetService;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class BrandController extends Controller implements BrandControllerSwagger
+class CategoryController extends Controller implements CategoryControllerSwagger
 {
     private ProductSetService $productSetService;
 
@@ -23,7 +23,7 @@ class BrandController extends Controller implements BrandControllerSwagger
      */
     public function index(ProductSetIndexRequest $request): JsonResource
     {
-        $sets = $this->productSetService->brands($request->validated());
+        $sets = $this->productSetService->categories($request->validated());
 
         return ProductSetResource::collection($sets);
     }

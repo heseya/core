@@ -41,11 +41,12 @@ class ProductController extends Controller implements ProductControllerSwagger
             ]);
 
         if (!Auth::check()) {
-            $query
-                ->where('public', true)
-                ->whereHas('brand', function (Builder $query) use ($request): Builder {
-                    $query->where('public', true);
+            $query->where('public', true);
 
+            if ($request->has('brand')) {
+                $query->whereHas('brand', function (Builder $query) use ($request): Builder {
+                    $query->where('public', true);
+    
                     if (!$request->has('search')) {
                         $query->where(function (Builder $query) use ($request): Builder {
                             return $query
@@ -53,12 +54,15 @@ class ProductController extends Controller implements ProductControllerSwagger
                                 ->orWhere('slug', $request->input('brand'));
                         });
                     }
-
+    
                     return $query;
-                })
-                ->whereHas('category', function (Builder $query) use ($request): Builder {
-                    $query->where('public', true);
+                });
+            }
 
+            if ($request->has('category')) {
+                $query->whereHas('category', function (Builder $query) use ($request): Builder {
+                    $query->where('public', true);
+    
                     if (!$request->has('search')) {
                         $query->where(function (Builder $query) use ($request): Builder {
                             return $query
@@ -66,9 +70,26 @@ class ProductController extends Controller implements ProductControllerSwagger
                                 ->orWhere('slug', $request->input('category'));
                         });
                     }
-
+    
                     return $query;
                 });
+            }
+            
+            if ($request->has('set')) {
+                $query->whereHas('sets', function (Builder $query) use ($request): Builder {
+                    $query->where('public', true);
+    
+                    if (!$request->has('search')) {
+                        $query->where(function (Builder $query) use ($request): Builder {
+                            return $query
+                                ->where('hide_on_index', false)
+                                ->orWhere('slug', $request->input('sets'));
+                        });
+                    }
+    
+                    return $query;
+                });
+            }
         }
 
         $products = $query->paginate((int) $request->input('limit', 12));

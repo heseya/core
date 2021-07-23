@@ -6,6 +6,7 @@ use App\Dtos\ProductSetDto;
 use App\Exceptions\StoreException;
 use App\Models\ProductSet;
 use App\Services\Contracts\ProductSetServiceContract;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -25,6 +26,32 @@ class ProductSetService implements ProductSetServiceContract
     public function searchAll(array $attributes)
     {
         $query = ProductSet::root()->search($attributes);
+
+        if (!Auth::check()) {
+            $query->public();
+        }
+
+        return $query->get();
+    }
+
+    public function brands(array $attributes)
+    {
+        $query = ProductSet::whereHas('parent', 
+            fn (Builder $sub) => $sub->where('slug', 'brands'),
+        )->search($attributes);
+
+        if (!Auth::check()) {
+            $query->public();
+        }
+
+        return $query->get();
+    }
+
+    public function categories(array $attributes)
+    {
+        $query = ProductSet::whereHas('parent', 
+            fn (Builder $sub) => $sub->where('slug', 'categories'),
+        )->search($attributes);
 
         if (!Auth::check()) {
             $query->public();

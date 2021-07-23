@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Swagger;
 
-use App\Http\Requests\BrandIndexRequest;
+use App\Http\Requests\ProductSetIndexRequest;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 interface BrandControllerSwagger
@@ -26,5 +26,5 @@ interface BrandControllerSwagger
      *   )
      * )
      */
-    public function index(BrandIndexRequest $request): JsonResource;
+    public function index(ProductSetIndexRequest $request): JsonResource;
 }
