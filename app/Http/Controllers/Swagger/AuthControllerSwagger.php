@@ -77,7 +77,7 @@ interface AuthControllerSwagger
 
     /**
      * @OA\Post(
-     *   path="/user/reset-password",
+     *   path="/users/reset-password",
      *   summary="Reset password",
      *   tags={"Auth"},
      *   @OA\RequestBody(
@@ -96,7 +96,7 @@ interface AuthControllerSwagger
 
     /**
      * @OA\Get(
-     *   path="/user/reset-password/{token}/{email}",
+     *   path="/users/reset-password/{token}/{email}",
      *   summary="Show reset password form",
      *   tags={"Auth"},
      *   @OA\Response(
@@ -112,7 +112,7 @@ interface AuthControllerSwagger
 
     /**
      * @OA\Patch(
-     *   path="/user/save-reset-password",
+     *   path="/users/save-reset-password",
      *   summary="save the reset password",
      *   tags={"Auth"},
      *   @OA\RequestBody(
@@ -131,7 +131,7 @@ interface AuthControllerSwagger
 
     /**
      * @OA\Patch(
-     *   path="/user/password",
+     *   path="/users/password",
      *   summary="Change password",
      *   tags={"Auth"},
      *   @OA\RequestBody(
