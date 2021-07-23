@@ -175,9 +175,9 @@ class OrderUpdateTest extends TestCase
 
     public function testUpdateOrderByDeliveryAddress(): void
     {
-        $address = Address::factory()->create();
+        $this->addressDelivery = Address::factory()->create();
         $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
-            'delivery_address' => $address->toArray()
+            'delivery_address' => $this->addressDelivery->toArray()
         ]);
         $responseData = $response->getData()->data;
 
@@ -195,15 +195,15 @@ class OrderUpdateTest extends TestCase
                      "name" => $this->status->name
                  ],
                  'delivery_address' => [
-                     "address" => $address->address,
-                     "city" => $address->city,
-                     "country" => $address->country ?? null,
+                     "address" => $this->addressDelivery->address,
+                     "city" => $this->addressDelivery->city,
+                     "country" => $this->addressDelivery->country ?? null,
                      "country_name" => $responseData->delivery_address->country_name,
                      "id" => $responseData->delivery_address->id,
-                     "name" => $address->name,
-                     "phone" => $address->phone,
-                     "vat" => $address->vat,
-                     "zip" => $address->zip,
+                     "name" => $this->addressDelivery->name,
+                     "phone" => $this->addressDelivery->phone,
+                     "vat" => $this->addressDelivery->vat,
+                     "zip" => $this->addressDelivery->zip,
                  ],
              ]);
 
@@ -216,56 +216,60 @@ class OrderUpdateTest extends TestCase
             'comment' => $this->comment,
             'invoice_address_id' => $this->addressInvoice->getKey(),
         ]);
+    }
 
-        // check modifying missing address
-        $responseMissingAddress = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
-            'invoice_address' => $address->toArray()
+    public function testUpdateOrderByMissingDeliveryAddress(): void
+    {
+        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+            'invoice_address' => $this->addressDelivery->toArray()
         ]);
 
-        $responseMissingAddress
+        $response
             ->assertOk()
             ->assertJsonFragment([
                  // should remain the same
                  'delivery_address' => [
-                     "address" => $address->address,
-                     "city" => $address->city,
-                     "country" => $address->country ?? null,
-                     "country_name" => $responseData->delivery_address->country_name,
-                     "id" => $responseData->delivery_address->id,
-                     "name" => $address->name,
-                     "phone" => $address->phone,
-                     "vat" => $address->vat,
-                     "zip" => $address->zip,
+                     "address" => $this->addressDelivery->address,
+                     "city" => $this->addressDelivery->city,
+                     "country" => $this->addressDelivery->country ?? null,
+                     "country_name" => $response->getData()->data->delivery_address->country_name,
+                     "id" => $response->getData()->data->delivery_address->id,
+                     "name" => $this->addressDelivery->name,
+                     "phone" => $this->addressDelivery->phone,
+                     "vat" => $this->addressDelivery->vat,
+                     "zip" => $this->addressDelivery->zip,
                  ],
              ]);
 
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
-            'delivery_address_id' => $responseMissingAddress->getData()->data->delivery_address->id,
-            'invoice_address_id' => $responseData->invoice_address->id,
+            'delivery_address_id' => $this->addressDelivery->getKey(),
+            'invoice_address_id' =>  $response->getData()->data->invoice_address->id,
         ]);
+    }
 
-        // check modifying an empty address
-        $responseEmptyAddress = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+    public function testUpdateOrderByEmptyDeliveryAddress(): void
+    {
+        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'delivery_address' => null
         ]);
 
-        $responseEmptyAddress
+        $response
             ->assertOk()
             ->assertJsonFragment(['delivery_address' => null]);
 
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
-            'invoice_address_id' => $responseMissingAddress->getData()->data->invoice_address->id,
+            'invoice_address_id' => $this->addressInvoice->getKey(),
             'delivery_address_id' => null,
         ]);
     }
 
     public function testUpdateOrderByInvoiceAddress(): void
     {
-        $address = Address::factory()->create();
+        $this->addressInvoice = Address::factory()->create();
         $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
-            'invoice_address' => $address->toArray()
+            'invoice_address' => $this->addressInvoice->toArray()
         ]);
         $responseData = $response->getData()->data;
 
@@ -283,15 +287,15 @@ class OrderUpdateTest extends TestCase
                      "name" => $this->status->name
                  ],
                  'invoice_address' => [
-                     "address" => $address->address,
-                     "city" => $address->city,
-                     "country" => $address->country ?? null,
+                     "address" => $this->addressInvoice->address,
+                     "city" => $this->addressInvoice->city,
+                     "country" => $this->addressInvoice->country ?? null,
                      "country_name" => $responseData->invoice_address->country_name,
                      "id" => $responseData->invoice_address->id,
-                     "name" => $address->name,
-                     "phone" => $address->phone,
-                     "vat" => $address->vat,
-                     "zip" => $address->zip,
+                     "name" => $this->addressInvoice->name,
+                     "phone" => $this->addressInvoice->phone,
+                     "vat" => $this->addressInvoice->vat,
+                     "zip" => $this->addressInvoice->zip,
                  ],
              ]);
 
@@ -304,48 +308,52 @@ class OrderUpdateTest extends TestCase
             'comment' => $this->comment,
             'delivery_address_id' => $this->addressDelivery->getKey(),
         ]);
+    }
 
-        // check modifying missing address
-        $responseMissingAddress = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
-            'delivery_address' => $address->toArray()
+    public function testUpdateOrderByMissingInvoiceAddress(): void
+    {
+        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+            'delivery_address' => $this->addressInvoice->toArray()
         ]);
 
-        $responseMissingAddress
+        $response
             ->assertOk()
             ->assertJsonFragment([
                  // should remain the same
                  'invoice_address' => [
-                     "address" => $address->address,
-                     "city" => $address->city,
-                     "country" => $address->country ?? null,
-                     "country_name" => $responseData->invoice_address->country_name,
-                     "id" => $responseData->invoice_address->id,
-                     "name" => $address->name,
-                     "phone" => $address->phone,
-                     "vat" => $address->vat,
-                     "zip" => $address->zip,
+                     "address" => $this->addressInvoice->address,
+                     "city" => $this->addressInvoice->city,
+                     "country" => $this->addressInvoice->country ?? null,
+                     "country_name" => $response->getData()->data->invoice_address->country_name,
+                     "id" => $response->getData()->data->invoice_address->id,
+                     "name" => $this->addressInvoice->name,
+                     "phone" => $this->addressInvoice->phone,
+                     "vat" => $this->addressInvoice->vat,
+                     "zip" => $this->addressInvoice->zip,
                  ],
              ]);
 
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
-            'invoice_address_id' => $responseData->invoice_address->id,
-            'delivery_address_id' => $responseMissingAddress->getData()->data->delivery_address->id,
+            'invoice_address_id' => $this->addressInvoice->getKey(),
+            'delivery_address_id' => $response->getData()->data->delivery_address->id,
         ]);
+    }
 
-        // check modifying an empty address
-        $responseEmptyAddress = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+    public function testUpdateOrderByEmptyInvoiceAddress(): void
+    {
+        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'invoice_address' => null
         ]);
 
-        $responseEmptyAddress
+        $response
             ->assertOk()
             ->assertJsonFragment(['invoice_address' => null]);
 
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
+            'delivery_address_id' => $this->addressDelivery->getKey(),
             'invoice_address_id' => null,
-            'delivery_address_id' => $responseMissingAddress->getData()->data->delivery_address->id,
         ]);
     }
 }
