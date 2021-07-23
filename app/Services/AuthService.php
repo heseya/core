@@ -3,34 +3,22 @@
 namespace App\Services;
 
 use App\Exceptions\AuthException;
-use App\Http\Requests\LoginRequest;
-use App\Http\Requests\PasswordChangeRequest;
-use App\Http\Requests\PasswordResetRequest;
-use App\Http\Requests\PasswordResetSaveRequest;
-use App\Http\Resources\AuthResource;
-use App\Http\Resources\LoginHistoryResource;
-use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Notifications\CustomResetPassword;
 use App\Services\Contracts\AuthServiceContract;
 use Carbon\Carbon;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Http\Response as HttpRespone;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\Response;
 use Laravel\Passport\Passport;
 
 class AuthService implements AuthServiceContract
 {
-    public function login(LoginRequest $request): JsonResource
+    public function login(string $email, string $psswd, ?string $ip, ?string $userAgent)
     {
         if (!Auth::guard('web')->attempt([
-            'email' => $request->input('email'),
-            'password' => $request->input('password'),
+            'email' => $email,
+            'password' => $psswd,
         ])) {
             throw new AuthException('Invalid credentials');
         }
@@ -39,82 +27,70 @@ class AuthService implements AuthServiceContract
         $token = $user->createToken('Admin');
 
         $token->token->update([
-            'ip' => $request->ip(),
-            'user_agent' => $request->userAgent(),
+            'ip' => $ip,
+            'user_agent' => $userAgent,
         ]);
 
-        return AuthResource::make($token);
+        return $token;
     }
 
-    public function logout(Request $request): JsonResponse
+    public function logout(User $user): void
     {
-        $token = $request->user()->token();
+        $token = $user->token();
         if ($token) {
             $token->update([
                 'revoked' => true,
                 'expires_at' => Carbon::now(),
             ]);
         }
-
-        return Response::json(null, HttpRespone::HTTP_NO_CONTENT);
     }
 
-    public function resetPassword(PasswordResetRequest $request): JsonResponse
+    public function resetPassword(string $email): void
     {
-        $user = $this->getUserByEmail($request->input('email'));
+        $user = $this->getUserByEmail($email);
         $token = Password::createToken($user);
-        $user->notify(new CustomResetPassword($token));
 
-        return response()->json(null, HttpRespone::HTTP_NO_CONTENT);
+        $user->notify(new CustomResetPassword($token));
     }
 
-    public function showResetPasswordForm(Request $request): JsonResource
+    public function showResetPasswordForm(?string $email, ?string $token): User
     {
-        if (!$request->input('token')) {
+        if (!$token) {
             throw new AuthException('The token is invalid');
         }
 
-        $user = $this->getUserByEmail($request->input('email'));
-        $this->checkPasswordResetToken($user, $request->input('token'));
+        $user = $this->getUserByEmail($email);
+        $this->checkPasswordResetToken($user, $token);
 
-        return UserResource::make($user);
+        return $user;
     }
 
-    public function saveResetPassword(PasswordResetSaveRequest $request): JsonResponse
+    public function saveResetPassword(string $email, string $token, string $psswd): void
     {
-        $user = $this->getUserByEmail($request->input('email'));
-        $this->checkPasswordResetToken($user, $request->input('token'));
+        $user = $this->getUserByEmail($email);
+        $this->checkPasswordResetToken($user, $token);
 
         $user->update([
-            'password' => Hash::make($request->input('password')),
+            'password' => Hash::make($psswd),
         ]);
 
         Password::deleteToken($user);
-
-        return response()->json(null, HttpRespone::HTTP_NO_CONTENT);
     }
 
-    public function changePassword(PasswordChangeRequest $request): JsonResponse
+    public function changePassword(User $user, string $psswd, string $newPsswd): void
     {
-        $user = $request->user();
-        $this->checkCredentials($user, $request->input('password'));
+        $this->checkCredentials($user, $psswd);
 
         $user->update([
-            'password' => Hash::make($request->input('password_new')),
+            'password' => Hash::make($newPsswd),
         ]);
-
-        return response()->json(null, HttpRespone::HTTP_NO_CONTENT);
     }
 
-    public function loginHistory(Request $request): JsonResource
+    public function loginHistory(User $user)
     {
-        $tokens = Passport::token()
-            ->where('user_id', $request->user()->getKey())
+        return Passport::token()
+            ->where('user_id', $user->getKey())
             ->orderBy('created_at', 'DESC');
-
-        return LoginHistoryResource::collection(
-            $tokens->paginate(12),
-        );
     }
 
     private function getUserByEmail(string $email): User
