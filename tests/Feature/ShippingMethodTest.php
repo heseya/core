@@ -61,18 +61,18 @@ class ShippingMethodTest extends TestCase
             'name' => $this->shipping_method->name,
             'public' => $this->shipping_method->public,
         ];
-        
+
         $this->priceRangesWithNoInitialStart = [
             [
-                'start' => $this->faker()->randomFloat(2,1, 10),
+                'start' => $this->faker()->randomFloat(2,1, 49),
                 'value' => $this->faker()->randomFloat(2, 20),
             ],
             [
-                'start' => $this->faker()->randomFloat(2,1, 50),
+                'start' => $this->faker()->randomFloat(2,50, 99),
                 'value' => $this->faker()->randomFloat(2, 100),
             ],
             [
-                'start' => $this->faker()->numberBetween(1, 100),
+                'start' => $this->faker()->numberBetween(100, 1000),
                 'value' => $this->faker()->numberBetween(100, 1000),
             ],
         ];
