@@ -76,7 +76,7 @@ class ShippingMethodUpdateRequest extends FormRequest
             'countries' => 'array',
             'countries.*' => ['string', 'size:2', 'exists:countries,code'],
             'price_ranges' => ['array', 'min:1', new ShippingMethodPriceRanges()],
-            'price_ranges.*.start' => ['required', 'numeric', 'min:0'],
+            'price_ranges.*.start' => ['required', 'numeric', 'min:0', 'distinct'],
             'price_ranges.*.value' => ['required', 'numeric', 'min:0'],
         ];
     }

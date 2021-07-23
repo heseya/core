@@ -3,18 +3,21 @@
 namespace Tests\Feature;
 
 use App\Models\Order;
-use App\Models\Price;
 use App\Models\PriceRange;
 use App\Models\ShippingMethod;
+use Illuminate\Foundation\Testing\WithFaker;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class ShippingMethodTest extends TestCase
 {
+    use WithFaker;
+
     public ShippingMethod $shipping_method;
     public ShippingMethod $shipping_method_hidden;
 
     public array $expected;
+    public array $priceRangesWithNoInitialStart;
 
     public function setUp(): void
     {
@@ -57,6 +60,21 @@ class ShippingMethodTest extends TestCase
             'id' => $this->shipping_method->getKey(),
             'name' => $this->shipping_method->name,
             'public' => $this->shipping_method->public,
+        ];
+
+        $this->priceRangesWithNoInitialStart = [
+            [
+                'start' => $this->faker()->randomFloat(2,1, 49),
+                'value' => $this->faker()->randomFloat(2, 20),
+            ],
+            [
+                'start' => $this->faker()->randomFloat(2,50, 99),
+                'value' => $this->faker()->randomFloat(2, 100),
+            ],
+            [
+                'start' => $this->faker()->numberBetween(100, 1000),
+                'value' => $this->faker()->numberBetween(100, 1000),
+            ],
         ];
     }
 
@@ -107,19 +125,38 @@ class ShippingMethodTest extends TestCase
 
         $response = $this->actingAs($this->user)->postJson(
             '/shipping-methods', $shipping_method + [
+               'price_ranges' => $this->priceRangesWithNoInitialStart,
+           ],
+        );
+
+        $response->assertStatus(422);
+    }
+
+    /**
+     * Price range testing with duplicate "start" values
+     */
+    public function testCreateByDuplicatePriceRanges(): void
+    {
+        $shipping_method = [
+            'name' => 'Test 5',
+            'public' => false,
+        ];
+
+        $response = $this->actingAs($this->user)->postJson(
+            '/shipping-methods', $shipping_method + [
                'price_ranges' => [
                    [
-                       'start' => 10,
-                       'value' => 10.37,
-                   ],
-                   [
-                       'start' => 200,
+                       'start' => 0,
                        'value' => 0,
                    ],
                    [
-                       'start' => 0.1,
-                       'value' => 5000,
+                       'start' => 0,
+                       'value' => 0,
                    ],
+                   [
+                       'start' => 10,
+                       'value' => 0,
+                   ]
                ],
            ],
         );
@@ -184,7 +221,27 @@ class ShippingMethodTest extends TestCase
     public function testUpdateByPriceRanges(): void
     {
         $shipping_method = [
-            'name' => 'Test 5',
+            'name' => 'Test 6',
+            'public' => false,
+        ];
+
+        $response = $this->actingAs($this->user)->patchJson(
+            '/shipping-methods/id:' . $this->shipping_method->getKey(),
+            $shipping_method + [
+                'price_ranges' => $this->priceRangesWithNoInitialStart,
+            ],
+        );
+
+        $response->assertStatus(422);
+    }
+
+    /**
+     * Price range testing with duplicate "start" values
+     */
+    public function testUpdateByDuplicatePriceRanges(): void
+    {
+        $shipping_method = [
+            'name' => 'Test 7',
             'public' => false,
         ];
 
@@ -193,17 +250,17 @@ class ShippingMethodTest extends TestCase
             $shipping_method + [
                 'price_ranges' => [
                     [
-                        'start' => 10,
+                        'start' => 0,
                         'value' => 10.37,
                     ],
                     [
-                        'start' => 200,
+                        'start' => 0,
                         'value' => 0,
                     ],
                     [
-                        'start' => 0.1,
-                        'value' => 5000,
-                    ],
+                        'start' => 10,
+                        'value' => 0,
+                    ]
                 ],
             ],
         );
