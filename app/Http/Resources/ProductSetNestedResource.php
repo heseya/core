@@ -24,7 +24,7 @@ class ProductSetNestedResource extends Resource implements ProductSetResourceSwa
             'children_ids' => $children->map(
                 fn ($child) => $child->getKey(),
             )->toArray(),
-            'slug_override' => $this->slugOverride
+            'slug_override' => $this->slugOverride,
         ];
     }
 }

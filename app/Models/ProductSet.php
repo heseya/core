@@ -47,7 +47,8 @@ class ProductSet extends Model
     public function getSlugOverrideAttribute(): bool
     {
         return $this->parent ? !Str::startsWith(
-            $this->slug, $this->parent->slug . '-',
+            $this->slug,
+            $this->parent->slug . '-',
         ) : false;
     }
 
@@ -74,9 +75,7 @@ class ProductSet extends Model
 
     public function children(): HasMany
     {
-        $query = $this->hasMany(self::class, 'parent_id');
-
-        return $query;
+        return $this->hasMany(self::class, 'parent_id');
     }
 
     public function products(): BelongsToMany

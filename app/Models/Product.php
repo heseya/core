@@ -227,7 +227,7 @@ class Product extends Model
      */
     public function isPublic(): bool
     {
-        $isBrandPublic = $this->brand ? 
+        $isBrandPublic = $this->brand ?
             $this->brand->public && $this->brand->public_parent : true;
 
         $isCategoryPublic = $this->category ?
@@ -243,29 +243,34 @@ class Product extends Model
     {
         $query->where('public', true);
 
-        $query
-        ->where('public', true)
-        ->where(function (Builder $query) {
-            $query
-                ->whereDoesntHave('brand')
-                ->orWhereHas('brand',
-                    fn (Builder $builder) => $builder->where('public', true)->where('public_parent', true),
-                );
-        })
-        ->where(function (Builder $query) {
-            $query
-                ->whereDoesntHave('category')
-                ->orWhereHas('category',
-                    fn (Builder $builder) => $builder->where('public', true)->where('public_parent', true),
-                );
-        })
-        ->where(function (Builder $query) {
-            $query
-                ->whereDoesntHave('sets')
-                ->orWhereHas('sets',
-                    fn (Builder $builder) => $builder->where('public', true)->where('public_parent', true),
-                );
-        });
+        $query->where('public', true)
+            ->where(function (Builder $query) {
+                $query
+                    ->whereDoesntHave('brand')
+                    ->orWhereHas(
+                        'brand',
+                        fn (Builder $builder) => $builder
+                            ->where('public', true)->where('public_parent', true),
+                    );
+            })
+            ->where(function (Builder $query) {
+                $query
+                    ->whereDoesntHave('category')
+                    ->orWhereHas(
+                        'category',
+                        fn (Builder $builder) => $builder
+                            ->where('public', true)->where('public_parent', true),
+                    );
+            })
+            ->where(function (Builder $query) {
+                $query
+                    ->whereDoesntHave('sets')
+                    ->orWhereHas(
+                        'sets',
+                        fn (Builder $builder) => $builder
+                            ->where('public', true)->where('public_parent', true),
+                    );
+            });
 
         return $query;
     }

@@ -22,7 +22,7 @@ class ProductSetTreeResource extends Resource implements ProductSetTreeResourceS
             'hide_on_index' => $this->hide_on_index,
             'parent' => ProductSetNestedResource::make($this->parent, true),
             'children' => ProductSetNestedTreeResource::collection($children),
-            'slug_override' => $this->slugOverride
+            'slug_override' => $this->slugOverride,
         ];
     }
 }

@@ -62,7 +62,13 @@ class ProductSetUpdateRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required_without:slug', 'string', 'max:255', 'alpha_dash'],
-            'override_slug' => [new ProhibitedWith('child_slug'), 'string', 'max:255', 'unique:product_sets', 'alpha_dash'],
+            'override_slug' => [
+                new ProhibitedWith('child_slug'),
+                'string',
+                'max:255',
+                'unique:product_sets',
+                'alpha_dash',
+            ],
             'public' => ['required', 'boolean'],
             'hide_on_index' => ['required', 'boolean'],
             'parent_id' => ['present', 'nullable', 'uuid', 'exists:product_sets,id'],

@@ -22,7 +22,7 @@ class ProductSetResource extends Resource implements ProductSetResourceSwagger
             'hide_on_index' => $this->hide_on_index,
             'parent' => ProductSetNestedResource::make($this->parent),
             'children' => ProductSetNestedResource::collection($children),
-            'slug_override' => $this->slugOverride
+            'slug_override' => $this->slugOverride,
         ];
     }
 }

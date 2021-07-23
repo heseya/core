@@ -15,7 +15,8 @@ class ProductSetResourceUniversal extends Resource implements ProductSetResource
     private $nested;
     private $tree;
 
-    public function __construct(ProductSet $resource, $nested = false, $tree = false) {
+    public function __construct(ProductSet $resource, $nested = false, $tree = false)
+    {
         parent::__construct($resource);
 
         $this->nested = $nested;
