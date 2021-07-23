@@ -14,8 +14,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class SchemaController extends Controller implements SchemaControllerSwagger
 {
-    public const PAGINATE_VALUE = 12;
-
     protected OptionServiceContract $optionService;
 
     public function __construct(OptionServiceContract $optionService)
@@ -25,12 +23,10 @@ class SchemaController extends Controller implements SchemaControllerSwagger
 
     public function index(IndexSchemaRequest $request): JsonResource
     {
-        $schemas = Schema::search($request->validated())
-            ->sort($request->input('sort'));
+        $perPage = (int) config('services.pagination.per_page');
+        $schemas = Schema::search($request->validated())->sort($request->input('sort'));
 
-        return SchemaResource::collection(
-            $schemas->paginate(self::PAGINATE_VALUE),
-        );
+        return SchemaResource::collection($schemas->paginate($perPage));
     }
 
     public function store(SchemaStoreRequest $request): JsonResource
