@@ -352,10 +352,6 @@ namespace App\Models{
  * @property-read float $payed_amount
  * @property-read float $summary
  * @property-read \App\Models\Address|null $invoiceAddress
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\OrderLog[] $logs
- * @property-read int|null $logs_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\OrderNote[] $notes
- * @property-read int|null $notes_count
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection|\Illuminate\Notifications\DatabaseNotification[] $notifications
  * @property-read int|null $notifications_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Payment[] $payments
@@ -385,53 +381,6 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereUpdatedAt($value)
  */
 	class IdeHelperOrder extends \Eloquent {}
-}
-
-namespace App\Models{
-/**
- * App\Models\OrderLog
- *
- * @mixin IdeHelperOrderLog
- * @property string $id
- * @property string $order_id
- * @property string $content
- * @property string $user
- * @property string $created_at
- * @method static \Illuminate\Database\Eloquent\Builder|OrderLog newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|OrderLog newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|OrderLog query()
- * @method static \Illuminate\Database\Eloquent\Builder|OrderLog whereContent($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderLog whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderLog whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderLog whereOrderId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderLog whereUser($value)
- */
-	class IdeHelperOrderLog extends \Eloquent {}
-}
-
-namespace App\Models{
-/**
- * App\Models\OrderNote
- *
- * @mixin IdeHelperOrderNote
- * @property string $id
- * @property string $message
- * @property string $order_id
- * @property string|null $user_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\User|null $user
- * @method static \Illuminate\Database\Eloquent\Builder|OrderNote newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|OrderNote newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|OrderNote query()
- * @method static \Illuminate\Database\Eloquent\Builder|OrderNote whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderNote whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderNote whereMessage($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderNote whereOrderId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderNote whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderNote whereUserId($value)
- */
-	class IdeHelperOrderNote extends \Eloquent {}
 }
 
 namespace App\Models{

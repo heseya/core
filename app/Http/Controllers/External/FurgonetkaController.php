@@ -6,7 +6,6 @@ use App\Exceptions\Error;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Swagger\FurgonetkaControllerSwagger;
 use App\Models\Order;
-use App\Models\OrderLog;
 use App\Models\PackageTemplate;
 use App\Models\Status;
 use Exception;
@@ -55,12 +54,6 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
             $order->update([
                 'delivery_status' => $status->furgonetka_status[$request->tracking['state']],
             ]);
-
-            $order->logs()->save(new OrderLog([
-                'content' => $request->tracking['description'],
-                'user' => 'Furgonetka',
-                'created_at' => $request->tracking['datetime'],
-            ]));
         }
 
         // Brak błędów bo furgonetka musi dostać status ok jak hash się zgadza
