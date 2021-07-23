@@ -33,6 +33,12 @@ interface ProductSetResourceSwagger
      *     example=true,
      *   ),
      *   @OA\Property(
+     *     property="public_parent",
+     *     type="boolean",
+     *     description="When any parent node is set to private, this setting overrides set visibility",
+     *     example=true,
+     *   ),
+     *   @OA\Property(
      *     property="hide_on_index",
      *     type="boolean",
      *     description="Whether set products should be hidden from the main page",

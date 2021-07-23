@@ -18,6 +18,7 @@ class ProductSetTreeResource extends Resource implements ProductSetTreeResourceS
             'name' => $this->name,
             'slug' => $this->slug,
             'public' => $this->public,
+            'public_parent' => $this->public_parent,
             'hide_on_index' => $this->hide_on_index,
             'parent' => ProductSetNestedResource::make($this->parent, true),
             'children' => ProductSetNestedTreeResource::collection($children),

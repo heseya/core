@@ -29,7 +29,13 @@ interface ProductSetTreeResourceSwagger
      *   @OA\Property(
      *     property="public",
      *     type="boolean",
-     *     description="Whether set is visible to unauthorized users",
+     *     description="Whether set should be visible to unauthorized users",
+     *     example=true,
+     *   ),
+     *   @OA\Property(
+     *     property="public_parent",
+     *     type="boolean",
+     *     description="When any parent node is set to private, this setting overrides set visibility",
      *     example=true,
      *   ),
      *   @OA\Property(

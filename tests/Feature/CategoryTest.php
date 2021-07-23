@@ -18,16 +18,19 @@ class CategoryTest extends TestCase
             'name' => 'categories',
             'slug' => 'categories',
             'public' => true,
+            'public_parent' => true,
         ]);
 
         $this->category = ProductSet::factory()->create([
             'public' => true,
+            'public_parent' => true,
             'parent_id' => $categories->getKey(),
             'order' => 0,
         ]);
 
         $this->category_hidden = ProductSet::factory()->create([
             'public' => false,
+            'public_parent' => true,
             'parent_id' => $categories->getKey(),
             'order' => 1,
         ]);

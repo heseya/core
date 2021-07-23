@@ -36,7 +36,8 @@ class ProductSetService implements ProductSetServiceContract
 
     public function brands(array $attributes)
     {
-        $query = ProductSet::whereHas('parent', 
+        $query = ProductSet::whereHas(
+            'parent',
             fn (Builder $sub) => $sub->where('slug', 'brands'),
         )->search($attributes);
 
@@ -49,7 +50,8 @@ class ProductSetService implements ProductSetServiceContract
 
     public function categories(array $attributes)
     {
-        $query = ProductSet::whereHas('parent', 
+        $query = ProductSet::whereHas(
+            'parent',
             fn (Builder $sub) => $sub->where('slug', 'categories'),
         )->search($attributes);
 
@@ -68,21 +70,26 @@ class ProductSetService implements ProductSetServiceContract
 
             $order = $lastChild ? $lastChild->order + 1 : 0;
             $slug = $dto->getOverrideSlug() ? $dto->getOverrideSlug() : $parent->slug . '-' . $dto->getSlug();
+            $publicParent = $parent->public && $parent->public_parent;
         } else {
             $last = ProductSet::reversed()->first();
-            
+
             $order = $last ? $last->order + 1 : 0;
             $slug = $dto->getOverrideSlug() ? $dto->getOverrideSlug() : $dto->getSlug();
+            $publicParent = true;
         }
 
         $set = ProductSet::create($dto->toArray() + [
             'order' => $order,
             'slug' => $slug,
+            'public_parent' => $publicParent,
         ]);
+
+        $publicParent = $publicParent && $dto->isPublic();
 
         if ($dto->getChildrenIds()->isNotEmpty()) {
             $dto->getChildrenIds()->each(
-                function ($id, $order) use ($set, $slug) {
+                function ($id, $order) use ($set, $slug, $publicParent) {
                     $child = ProductSet::findOrFail($id);
 
                     if ($child->parent()->exists() &&
@@ -97,6 +104,7 @@ class ProductSetService implements ProductSetServiceContract
                         'parent_id' => $set->getKey(),
                         'order' => $order,
                         'slug' => $childSlug,
+                        'public_parent' => $publicParent,
                     ]);
                 },
             );
@@ -120,9 +128,10 @@ class ProductSetService implements ProductSetServiceContract
             }
 
             $slug = $dto->getOverrideSlug() ? $dto->getOverrideSlug() : $parent->slug . '-' . $dto->getSlug();
+            $publicParent = $parent->public && $parent->public_parent;
         } else {
             $last = ProductSet::reversed()->first();
-            
+
             if ($parentId !== $dto->getParentId()) {
                 $order = $last ? $last->order + 1 : 0;
             } else {
@@ -130,15 +139,19 @@ class ProductSetService implements ProductSetServiceContract
             }
 
             $slug = $dto->getOverrideSlug() ? $dto->getOverrideSlug() : $dto->getSlug();
+            $publicParent = true;
         }
 
         $set->update($dto->toArray() + [
             'order' => $order,
             'slug' => $slug,
+            'public_parent' => $publicParent,
         ]);
 
+        $publicParent = $publicParent && $dto->isPublic();
+
         $dto->getChildrenIds()->each(
-            function ($id, $order) use ($set, $slug) {
+            function ($id, $order) use ($set, $slug, $publicParent) {
                 $child = ProductSet::findOrFail($id);
 
                 if ($child->parent()->exists() &&
@@ -153,6 +166,7 @@ class ProductSetService implements ProductSetServiceContract
                     'parent_id' => $set->getKey(),
                     'order' => $order,
                     'slug' => $childSlug,
+                    'public_parent' => $publicParent,
                 ]);
             },
         );
@@ -160,8 +174,13 @@ class ProductSetService implements ProductSetServiceContract
         return $set;
     }
 
-    public function reorder(array $sets)
+    public function reorder(ProductSet $parent, array $sets)
     {
+        foreach ($sets as $id) {
+            ProductSet::where('parent_id', $parent ? $parent->getKey() : null)
+                ->findOrFail($id);
+        }
+
         foreach ($sets as $key => $id) {
             ProductSet::where('id', $id)->update(['order' => $key]);
         }
@@ -169,7 +188,7 @@ class ProductSetService implements ProductSetServiceContract
 
     public function delete(ProductSet $set)
     {
-        if ($set->products()->count() > 0) {
+        if ($set->products()->count() > 0 || $set->children()->count() > 0) {
             throw new StoreException(__('admin.error.delete_with_relations'));
         }
 

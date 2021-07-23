@@ -18,6 +18,7 @@ class ProductSetResource extends Resource implements ProductSetResourceSwagger
             'name' => $this->name,
             'slug' => $this->slug,
             'public' => $this->public,
+            'public_parent' => $this->public_parent,
             'hide_on_index' => $this->hide_on_index,
             'parent' => ProductSetNestedResource::make($this->parent),
             'children' => ProductSetNestedResource::collection($children),

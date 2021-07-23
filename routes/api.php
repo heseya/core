@@ -51,13 +51,14 @@ Route::get('categories', [CategoryController::class, 'index']);
 
 Route::prefix('product-sets')->group(function () {
     Route::get(null, [ProductSetController::class, 'index']);
-    
+
     Route::middleware('auth:api')->group(function () {
         Route::get('id:{product_set:id}', [ProductSetController::class, 'show']);
         Route::post(null, [ProductSetController::class, 'store']);
         Route::post('id:{product_set:id}', [ProductSetController::class, 'update']);
-        Route::post('order', [ProductSetController::class, 'reorder']);
         Route::delete('id:{product_set:id}', [ProductSetController::class, 'destroy']);
+        Route::post('reorder', [ProductSetController::class, 'reorder']);
+        Route::post('reorder/id:{product_set:id}', [ProductSetController::class, 'reorder']);
     });
 
     Route::get('{product_set:slug}', [ProductSetController::class, 'show']);

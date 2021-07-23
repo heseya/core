@@ -160,30 +160,6 @@ interface ProductSetControllerSwagger
     public function update(ProductSet $set, ProductSetUpdateRequest $request): JsonResource;
 
     /**
-     * @OA\Post(
-     *   path="/product-sets/reorder/id:{id}",
-     *   tags={"Product Sets"},
-     *   @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="string",
-     *       example="0006c3a0-21af-4485-b7fe-9c42233cf03a",
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=204,
-     *     description="Success",
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-    public function reorder(ProductSetReorderRequest $request);
-
-    /**
      * @OA\Delete(
      *   path="/product-sets/id:{id}",
      *   tags={"Product Sets"},
@@ -206,4 +182,28 @@ interface ProductSetControllerSwagger
      * )
      */
     public function destroy(ProductSet $category);
+
+    /**
+     * @OA\Post(
+     *   path="/product-sets/reorder/id:{id}",
+     *   tags={"Product Sets"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *       example="0006c3a0-21af-4485-b7fe-9c42233cf03a",
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=204,
+     *     description="Success",
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function reorder(ProductSet $productSet, ProductSetReorderRequest $request);
 }

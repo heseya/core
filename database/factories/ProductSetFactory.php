@@ -29,6 +29,7 @@ class ProductSetFactory extends Factory
             'name' => $name,
             'slug' => Str::of($name)->slug(),
             'public' => $this->faker->boolean,
+            'public_parent' => true,
             'order' => $order,
             'hide_on_index' => $this->faker->boolean,
         ];

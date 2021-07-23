@@ -66,9 +66,9 @@ class ProductSetController extends Controller implements ProductSetControllerSwa
         );
     }
 
-    public function reorder(ProductSetReorderRequest $request): JsonResponse
+    public function reorder(ProductSet $productSet, ProductSetReorderRequest $request): JsonResponse
     {
-        $this->productSetService->reorder($request->input('product_sets'));
+        $this->productSetService->reorder($productSet, $request->input('product_sets'));
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }

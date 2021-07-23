@@ -23,6 +23,7 @@ class ProductSet extends Model
         'name',
         'slug',
         'public',
+        'public_parent',
         'order',
         'hide_on_index',
         'parent_id',
@@ -30,6 +31,7 @@ class ProductSet extends Model
 
     protected $casts = [
         'public' => 'boolean',
+        'public_parent' => 'boolean',
         'hide_on_index' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -51,12 +53,7 @@ class ProductSet extends Model
 
     public function scopePublic($query)
     {
-        return $query->where('public', true)
-            ->where(function (Builder $query) {
-                $query->whereHas('parent', function (Builder $query) {
-                    $query->where('public', true);
-                })->orWhereNull('parent_id');
-            });
+        return $query->where('public', true)->where('public_parent', true);
     }
 
     public function scopeRoot($query)

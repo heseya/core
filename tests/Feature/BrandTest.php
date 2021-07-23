@@ -18,16 +18,19 @@ class BrandTest extends TestCase
             'name' => 'Brands',
             'slug' => 'brands',
             'public' => true,
+            'public_parent' => true,
         ]);
 
         $this->brand = ProductSet::factory()->create([
             'public' => true,
+            'public_parent' => true,
             'parent_id' => $brands->getKey(),
             'order' => 0,
         ]);
 
         $this->brand_hidden = ProductSet::factory()->create([
             'public' => false,
+            'public_parent' => true,
             'parent_id' => $brands->getKey(),
             'order' => 1,
         ]);

@@ -18,6 +18,7 @@ class ProductSetNestedResource extends Resource implements ProductSetResourceSwa
             'name' => $this->name,
             'slug' => $this->slug,
             'public' => $this->public,
+            'public_parent' => $this->public_parent,
             'hide_on_index' => $this->hide_on_index,
             'parent_id' => $this->parent_id,
             'children_ids' => $children->map(

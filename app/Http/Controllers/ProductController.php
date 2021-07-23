@@ -11,7 +11,6 @@ use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
@@ -41,12 +40,12 @@ class ProductController extends Controller implements ProductControllerSwagger
             ]);
 
         if (!Auth::check()) {
-            $query->where('public', true);
+            $query->public();
 
             if ($request->has('brand')) {
                 $query->whereHas('brand', function (Builder $query) use ($request): Builder {
-                    $query->where('public', true);
-    
+                    $query->where('public', true)->where('public_parent', true);
+
                     if (!$request->has('search')) {
                         $query->where(function (Builder $query) use ($request): Builder {
                             return $query
@@ -54,15 +53,15 @@ class ProductController extends Controller implements ProductControllerSwagger
                                 ->orWhere('slug', $request->input('brand'));
                         });
                     }
-    
+
                     return $query;
                 });
             }
 
             if ($request->has('category')) {
                 $query->whereHas('category', function (Builder $query) use ($request): Builder {
-                    $query->where('public', true);
-    
+                    $query->where('public', true)->where('public_parent', true);
+
                     if (!$request->has('search')) {
                         $query->where(function (Builder $query) use ($request): Builder {
                             return $query
@@ -70,15 +69,15 @@ class ProductController extends Controller implements ProductControllerSwagger
                                 ->orWhere('slug', $request->input('category'));
                         });
                     }
-    
+
                     return $query;
                 });
             }
-            
+
             if ($request->has('set')) {
                 $query->whereHas('sets', function (Builder $query) use ($request): Builder {
-                    $query->where('public', true);
-    
+                    $query->where('public', true)->where('public_parent', true);
+
                     if (!$request->has('search')) {
                         $query->where(function (Builder $query) use ($request): Builder {
                             return $query
@@ -86,7 +85,7 @@ class ProductController extends Controller implements ProductControllerSwagger
                                 ->orWhere('slug', $request->input('sets'));
                         });
                     }
-    
+
                     return $query;
                 });
             }

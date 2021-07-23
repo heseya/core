@@ -22,6 +22,7 @@ class CreateProductSetsTable extends Migration
             $table->string('name');
             $table->string('slug')->unique()->index();
             $table->uuid('parent_id')->nullable()->index();
+            $table->boolean('public_parent')->default(true);
             $table->boolean('public')->default(true);
             $table->unsignedTinyInteger('order')->default(0);
             $table->boolean('hide_on_index')->default(false);
@@ -58,6 +59,7 @@ class CreateProductSetsTable extends Migration
     public function down(): void
     {
         Schema::dropIfExists('product_sets');
+        Schema::dropIfExists('product_set_product');
     }
 
     private function moveSets(string $set, int $order): void

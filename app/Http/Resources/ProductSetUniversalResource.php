@@ -45,6 +45,7 @@ class ProductSetResourceUniversal extends Resource implements ProductSetResource
             'slug' => $this->slug,
             'slug_override' => Str::startsWith($this->slug, $this->parent->slug . '-'),
             'public' => $this->public,
+            'public_parent' => $this->public_parent,
             'hide_on_index' => $this->hide_on_index,
         ] + $parent + $childrenResource;
     }

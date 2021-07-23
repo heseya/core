@@ -20,5 +20,4 @@ use vendor\Illuminate\Support\Collection;
 //     }
 // }
 
-
 var_dump(Collection::make(1));
