@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Hash;
 
 class Authenticate extends Middleware
 {
+    /**
+     * @return mixed
+     */
     public function handle($request, Closure $next, ...$guards)
     {
         if (
@@ -31,6 +34,8 @@ class Authenticate extends Middleware
 
     /**
      * Get the path the user should be redirected to when they are not authenticated.
+     *
+     * @return null
      */
     protected function redirectTo($request)
     {

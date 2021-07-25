@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Swagger;
 
 use App\Models\PackageTemplate;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -56,7 +57,7 @@ interface PackageTemplateControllerSwagger
      *   }
      * )
      */
-    public function store(Request $request);
+    public function store(Request $request): JsonResource;
 
     /**
      * @OA\Patch(
@@ -115,5 +116,5 @@ interface PackageTemplateControllerSwagger
      *   }
      * )
      */
-    public function destroy(PackageTemplate $package);
+    public function destroy(PackageTemplate $package): JsonResponse;
 }

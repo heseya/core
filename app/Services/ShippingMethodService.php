@@ -26,12 +26,12 @@ class ShippingMethodService implements ShippingMethodServiceContract
         }
 
         if ($country) {
-            $query->where(function (Builder $query) use ($country) {
-                $query->where(function (Builder $query) use ($country) {
+            $query->where(function (Builder $query) use ($country): void {
+                $query->where(function (Builder $query) use ($country): void {
                     $query
                         ->where('black_list', false)
                         ->whereHas('countries', fn ($query) => $query->where('code', $country));
-                })->orWhere(function (Builder $query) use ($country) {
+                })->orWhere(function (Builder $query) use ($country): void {
                     $query
                         ->where('black_list', true)
                         ->whereDoesntHave(

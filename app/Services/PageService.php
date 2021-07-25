@@ -4,19 +4,20 @@ namespace App\Services;
 
 use App\Models\Page;
 use App\Services\Contracts\PageServiceContract;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PageService implements PageServiceContract
 {
-    public function authorize(Page $page)
+    public function authorize(Page $page): void
     {
         if (!Auth::check() && $page->public !== true) {
             throw new NotFoundHttpException();
         }
     }
 
-    public function getPaginated(int $itemsPerPage = 14)
+    public function getPaginated(int $itemsPerPage = 14): LengthAwarePaginator
     {
         $query = Page::query();
 
@@ -44,7 +45,7 @@ class PageService implements PageServiceContract
         return $page;
     }
 
-    public function delete(Page $page)
+    public function delete(Page $page): void
     {
         $page->delete();
     }

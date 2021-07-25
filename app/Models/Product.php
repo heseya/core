@@ -211,7 +211,6 @@ class Product extends Model
     }
 
     /**
-     * @return bool
      */
     public function isPublic(): bool
     {

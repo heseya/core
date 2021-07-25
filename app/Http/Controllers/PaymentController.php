@@ -41,6 +41,9 @@ class PaymentController extends Controller implements PaymentControllerSwagger
         return PaymentResource::make($payment);
     }
 
+    /**
+     * @return mixed
+     */
     public function update(string $method, Request $request)
     {
         if (!array_key_exists($method, config('payable.aliases'))) {

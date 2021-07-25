@@ -6,6 +6,7 @@ use App\Http\Requests\CategoryCreateRequest;
 use App\Http\Requests\CategoryIndexRequest;
 use App\Http\Requests\CategoryUpdateRequest;
 use App\Models\Category;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 interface CategoryControllerSwagger
@@ -114,5 +115,5 @@ interface CategoryControllerSwagger
      *   }
      * )
      */
-    public function destroy(Category $category);
+    public function destroy(Category $category): JsonResponse;
 }

@@ -72,6 +72,8 @@ interface PaymentControllerSwagger
      *     description="Success",
      *   )
      * )
+     *
+     * @return mixed
      */
     public function update(string $method, Request $request);
 }
