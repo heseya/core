@@ -110,9 +110,6 @@ return [
             'absoluteLineLimit' => 120,
             'ignoreComments' => false,
         ],
-        ReturnTypeHintSniff::class => [
-
-        ],
     ],
 
     /*
