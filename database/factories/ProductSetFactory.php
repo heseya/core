@@ -2,18 +2,18 @@
 
 namespace Database\Factories;
 
-use App\Models\Category;
+use App\Models\ProductSet;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
-class CategoryFactory extends Factory
+class ProductSetFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Category::class;
+    protected $model = ProductSet::class;
 
     /**
      * Define the model's default state.
@@ -22,10 +22,16 @@ class CategoryFactory extends Factory
     {
         $name = $this->faker->unique()->word;
 
+        $last = ProductSet::reversed()->first();
+        $order = $last ? $last->order + 1 : 0;
+
         return [
             'name' => $name,
-            'slug' => Str::slug($name),
-            'public' => rand(0, 1),
+            'slug' => Str::of($name)->slug(),
+            'public' => $this->faker->boolean,
+            'public_parent' => true,
+            'order' => $order,
+            'hide_on_index' => $this->faker->boolean,
         ];
     }
 }
