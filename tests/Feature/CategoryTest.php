@@ -41,7 +41,7 @@ class CategoryTest extends TestCase
         $response = $this->getJson('/categories');
         $response
             ->assertOk()
-            ->assertJsonCount(1, 'data') // Should show only public categorys.
+            ->assertJsonCount(1, 'data') // Should show only public categories.
             ->assertJson(['data' => [
                 0 => [
                     'id' => $this->category->getKey(),
