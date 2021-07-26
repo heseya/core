@@ -2,27 +2,21 @@
 
 namespace App\Services\Contracts;
 
-use App\Http\Requests\LoginRequest;
-use App\Http\Requests\PasswordChangeRequest;
-use App\Http\Requests\PasswordResetRequest;
-use App\Http\Requests\PasswordResetSaveRequest;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Models\User;
 
 interface AuthServiceContract
 {
-    public function login(LoginRequest $request): JsonResource;
+    public function login(string $email, string $psswd, ?string $ip, ?string $userAgent);
 
-    public function logout(Request $request): JsonResponse;
+    public function logout(User $user): void;
 
-    public function resetPassword(PasswordResetRequest $request): JsonResponse;
+    public function resetPassword(string $email): void;
 
-    public function showResetPasswordForm(Request $request): JsonResource;
+    public function showResetPasswordForm(?string $email, ?string $token): User;
 
-    public function saveResetPassword(PasswordResetSaveRequest $request): JsonResponse;
+    public function saveResetPassword(string $email, string $token, string $psswd): void;
 
-    public function changePassword(PasswordChangeRequest $request): JsonResponse;
+    public function changePassword(User $user, string $psswd, string $newPsswd): void;
 
-    public function loginHistory(Request $request): JsonResource;
+    public function loginHistory(User $user);
 }

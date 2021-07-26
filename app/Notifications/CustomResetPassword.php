@@ -44,7 +44,7 @@ class CustomResetPassword extends Notification
             'token' => $this->token,
             'email' => $notifiable->getEmailForPasswordReset(),
         ]);
-        $url = config('app.admin_url') . '/user/reset-password?' . $param;
+        $url = config('app.admin_url') . '/new-password?' . $param;
 
         return $this->buildMailMessage($url);
     }
