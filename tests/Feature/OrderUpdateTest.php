@@ -246,6 +246,8 @@ class OrderUpdateTest extends TestCase
             'delivery_address_id' => $this->addressDelivery->getKey(),
             'invoice_address_id' =>  $response->getData()->data->invoice_address->id,
         ]);
+
+        $this->checkAddress($this->addressDelivery);
     }
 
     public function testUpdateOrderByEmptyDeliveryAddress(): void
@@ -338,6 +340,8 @@ class OrderUpdateTest extends TestCase
             'invoice_address_id' => $this->addressInvoice->getKey(),
             'delivery_address_id' => $response->getData()->data->delivery_address->id,
         ]);
+
+        $this->checkAddress($this->addressInvoice);
     }
 
     public function testUpdateOrderByEmptyInvoiceAddress(): void
@@ -354,6 +358,20 @@ class OrderUpdateTest extends TestCase
             'id' => $this->order->getKey(),
             'delivery_address_id' => $this->addressDelivery->getKey(),
             'invoice_address_id' => null,
+        ]);
+    }
+
+    private function checkAddress(Address $address): void
+    {
+        $this->assertDatabaseHas('addresses', [
+            'id' => $address->getKey(),
+            'name' => $address->name,
+            'phone' =>  $address->phone,
+            'address' =>  $address->address,
+            'vat' =>  $address->vat,
+            'zip' =>  $address->zip,
+            'city' =>  $address->city,
+            'country' =>  $address->country,
         ]);
     }
 }
