@@ -4,11 +4,12 @@
     "description": "Store API by Heseya",
     "license": "proprietary",
     "require": {
-        "php": "^7.4|^8.0",
+        "php": "^8.0",
         "barryvdh/laravel-ide-helper": "^2.10",
         "bensampo/laravel-enum": "^3.3",
         "darkaonline/l5-swagger": "^8.0",
         "doctrine/dbal": "^3.1",
+        "fakerphp/faker": "^1.15",
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.3",
@@ -28,14 +29,13 @@
         "srmklive/paypal": "^3.0"
     },
     "require-dev": {
+        "brianium/paratest": "^6.3",
         "facade/ignition": "^2.9",
-        "fzaninotto/faker": "^1.9",
-        "mbezhanov/faker-provider-collection": "^1.2",
+        "heseya/insights": "*",
         "mockery/mockery": "^1.4",
         "nunomaduro/collision": "^5.3",
-        "phpunit/phpunit": "^9.5",
         "nunomaduro/phpinsights": "^2.0",
-        "heseya/insights": "*"
+        "phpunit/phpunit": "^9.5"
     },
     "config": {
         "optimize-autoloader": true,
