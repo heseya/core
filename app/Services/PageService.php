@@ -24,7 +24,7 @@ class PageService implements PageServiceContract
             $query->where('public', true);
         }
 
-        return $query->paginate($itemsPerPage);
+        return $query->orderBy('order')->orderBy('updated_at')->paginate($itemsPerPage);
     }
 
     public function create(array $attributes): Page
