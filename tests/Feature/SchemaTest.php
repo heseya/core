@@ -2,10 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\SchemaController;
+use App\Http\Requests\IndexSchemaRequest;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Schema;
+use App\Services\Contracts\OptionServiceContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;
 
 class SchemaTest extends TestCase
@@ -22,6 +26,20 @@ class SchemaTest extends TestCase
             ->assertOk()
             ->assertJsonCount(5, 'data');
     }
+
+    /*public function testIndexWithPagination(): void
+    {
+        $optionServiceContractMock = $this->createMock(OptionServiceContract::class);
+
+        $request = new IndexSchemaRequest();
+        $request->merge(['limit' => 50, 'page' => 1]);
+
+        $validator = Validator::make(['name' => 'test 1'], $request->rules());
+        $this->assertTrue($validator->passes());
+
+        $response = (new SchemaController($optionServiceContractMock))->index($request, static function ($request) { });
+        $this->assertEquals($request->limit, $response->resource->toArray()['per_page']);
+    }*/
 
     public function testShow(): void
     {
