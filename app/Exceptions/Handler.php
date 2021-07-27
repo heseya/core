@@ -43,7 +43,7 @@ final class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
-        $class = get_class($exception);
+        $class = $exception::class;
 
         if (isset($this->errors[$class])) {
             $error = new Error(

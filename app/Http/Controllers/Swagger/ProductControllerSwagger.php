@@ -66,6 +66,14 @@ interface ProductControllerSwagger
      *     ),
      *   ),
      *   @OA\Parameter(
+     *     name="set",
+     *     in="query",
+     *     description="Product set slug search",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
      *     name="sort",
      *     in="query",
      *     description="Sorting string",
