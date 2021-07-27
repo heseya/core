@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Page;
 use App\Services\Contracts\MarkdownServiceContract;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
@@ -215,5 +216,39 @@ class PageTest extends TestCase
         $response = $this->deleteJson('/pages/id:' . $this->page->getKey());
         $response->assertNoContent();
         $this->assertDeleted($this->page);
+    }
+
+    public function testSortByOrder(): void
+    {
+        DB::table('pages')->delete();
+        $page = Page::factory()->count(10)->create();
+
+        $this->actingAs($this->user)->postJson('/pages/order', [
+            'pages' => $page->pluck('id')->toArray(),
+        ])->assertNoContent();
+
+        $response = $this->getJson('/pages');
+        $data = $response->getData()->data;
+        $response
+            ->assertOk()
+            ->assertJsonCount(10, 'data')
+            ->assertJsonFragment(
+                [
+                     'id' => $data[3]->id,
+                     'name' => $data[3]->name,
+                     'public' => $data[3]->public,
+                     'order' => 3,
+                     'slug' => $data[3]->slug,
+                ],
+            );
+
+        $this->assertDatabaseHas('pages', [
+            'id' => $data[3]->id,
+            'order' => 3,
+        ]);
+        $this->assertDatabaseHas('pages', [
+            'id' => $data[6]->id,
+            'order' => 6,
+        ]);
     }
 }
