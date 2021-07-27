@@ -61,15 +61,7 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
 
     public static function instantiateFromRequest(Request $request): self
     {
-        return new self(
-            $request->input('code'),
-            $request->input('email'),
-            $request->input('currency', 'PLN'),
-            $request->exists('comment') ? ($request->input('comment') ?? '') : null,
-            $request->input('shipping_number'),
-            $request->input('shipping_price'),
-            $request->input('status_id'),
-            $request->input('shipping_method'),
+        $deliveryAddress = $request->exists('delivery_address') ?
             new AddressDto(
                 $request->input('delivery_address.name'),
                 $request->input('delivery_address.phone'),
@@ -78,7 +70,9 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
                 $request->input('delivery_address.zip'),
                 $request->input('delivery_address.city'),
                 $request->input('delivery_address.country'),
-            ),
+            ) : null;
+
+        $invoiceAddress = $request->exists('invoice_address') ?
             new AddressDto(
                 $request->input('invoice_address.name'),
                 $request->input('invoice_address.phone'),
@@ -87,7 +81,19 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
                 $request->input('invoice_address.zip'),
                 $request->input('invoice_address.city'),
                 $request->input('invoice_address.country'),
-            ),
+            ) : null;
+
+        return new self(
+            $request->input('code'),
+            $request->input('email'),
+            $request->input('currency', 'PLN'),
+            $request->exists('comment') ? $request->input('comment', '') : null,
+            $request->input('shipping_number'),
+            $request->input('shipping_price'),
+            $request->input('status_id'),
+            $request->input('shipping_method'),
+            $deliveryAddress,
+            $invoiceAddress,
         );
     }
 
