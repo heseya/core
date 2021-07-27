@@ -93,6 +93,35 @@ class AuthService implements AuthServiceContract
             ->orderBy('created_at', 'DESC');
     }
 
+    public function killUserSession(User $user)
+    {
+        $token = $user->token();
+        if ($token) {
+            $result = $token->revoke();
+            if (!$result) {
+                throw new AuthException('User session invalidation error');
+            }
+        }
+
+        return $this->loginHistory($user);
+    }
+
+    public function killAllOldUserSessions(User $user): void
+    {
+        if (!$user->token()) {
+            throw new AuthException('User token does not exist');
+        }
+
+        $currentToken = $user->token()->getKey();
+        foreach ($user->tokens()->get() as $token) {
+            if ($currentToken === $token->getKey()) {
+                continue;
+            }
+
+            $token->revoke();
+        }
+    }
+
     private function getUserByEmail(string $email): User
     {
         $user = User::whereEmail($email)->first();

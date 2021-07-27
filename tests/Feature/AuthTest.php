@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
+use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
@@ -107,5 +108,43 @@ class AuthTest extends TestCase
     {
         $response = $this->actingAs($this->user)->getJson('/auth/login-history');
         $response->assertOk();
+    }
+
+    public function testKillUserSession(): void
+    {
+        $user = User::factory()->create();
+
+//        $tokenResult = $user->createToken('Test Access Token');
+//        \Log::info(print_r($tokenResult->token->id, true));
+//        $token = $user->tokens()->find($tokenResult->token->id);
+//        $token->delete();
+//        \Log::info(print_r($user->tokens()->get()->toArray(), true));
+    //    \Log::info(print_r($tokenResult->toArray(), true));
+    //    \Log::info(print_r($tokenResult->token->user()->get()->toArray(), true));
+
+//        $response = $this->postJson('/login', [
+//            'email' => $user->email,
+//            'password' => $user->password,
+//        ]); //->assertOk();
+//
+//        \Log::info(print_r($response->getData(), true));
+        Passport::actingAs($user);
+        $response = $this->postJson('/auth/kill-session')
+            ->assertUnauthorized();
+        \Log::debug(print_r($response->getData()->data, true));
+
+        //$tokenResult->token->revoke();
+        //$tokenResult->token->delete();
+
+//        $responseSessions = $this->getJson('/auth/login-history');
+//        \Log::debug(print_r($responseSessions->getData()->data, true));
+//        $responseSessions->assertOk();
+    }
+
+    public function testKillAllOldUserSessions(): void
+    {
+        $user = User::factory()->create();
+        Passport::actingAs($user);
+        $this->postJson('/auth/kill-old-sessions')->assertNoContent();
     }
 }

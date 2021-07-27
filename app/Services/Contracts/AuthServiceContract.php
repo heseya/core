@@ -19,4 +19,8 @@ interface AuthServiceContract
     public function changePassword(User $user, string $psswd, string $newPsswd): void;
 
     public function loginHistory(User $user);
+
+    public function killUserSession(User $user);
+
+    public function killAllOldUserSessions(User $user): void;
 }
