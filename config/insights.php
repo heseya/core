@@ -78,9 +78,6 @@ return [
     ],
 
     'add' => [
-        Code::class => [
-            HeseyaReturnTypeHintSniff::class,
-        ],
         Style::class => [
             NotSpaceAfterNot::class,
         ],
@@ -94,6 +91,7 @@ return [
         ForbiddenTraits::class,
         ParameterTypeHintSniff::class,
         PropertyTypeHintSniff::class,
+        ReturnTypeHintSniff::class,
         UselessFunctionDocCommentSniff::class,
         SuperfluousExceptionNamingSniff::class,
         UnusedParameterSniff::class,
@@ -102,7 +100,6 @@ return [
         LineEndingsSniff::class,
 
         // replaced with own
-        ReturnTypeHintSniff::class,
         SpaceAfterNotSniff::class,
     ],
 
