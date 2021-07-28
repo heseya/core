@@ -20,10 +20,16 @@ use Illuminate\Foundation\Http\FormRequest;
  *       example="AGD",
  *     ),
  *     @OA\Property(
- *       property="slug",
+ *       property="slug_suffix",
  *       type="string",
- *       description="Name used in the URL path",
+ *       description="Name used in the URL path usually proceeded by parent slug",
  *       example="agd",
+ *     ),
+ *     @OA\Property(
+ *       property="slug_override",
+ *       type="boolean",
+ *       description="Whether to use slug as suffix to parent or to override the entire slug",
+ *       example=true,
  *     ),
  *     @OA\Property(
  *       property="public",
@@ -61,14 +67,13 @@ class ProductSetUpdateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'slug' => ['required_without:slug', 'string', 'max:255', 'alpha_dash'],
-            'override_slug' => [
-                new ProhibitedWith('child_slug'),
+            'slug_suffix' => [
+                'required',
                 'string',
                 'max:255',
-                'unique:product_sets',
                 'alpha_dash',
             ],
+            'slug_override' => ['required', 'boolean'],
             'public' => ['required', 'boolean'],
             'hide_on_index' => ['required', 'boolean'],
             'parent_id' => ['present', 'nullable', 'uuid', 'exists:product_sets,id'],

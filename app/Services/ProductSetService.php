@@ -8,6 +8,7 @@ use App\Models\ProductSet;
 use App\Services\Contracts\ProductSetServiceContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -69,15 +70,19 @@ class ProductSetService implements ProductSetServiceContract
             $lastChild = $parent->children()->reversed()->first();
 
             $order = $lastChild ? $lastChild->order + 1 : 0;
-            $slug = $dto->getOverrideSlug() ? $dto->getOverrideSlug() : $parent->slug . '-' . $dto->getSlug();
+            $slug = $dto->isSlugOverridden() ? $dto->getSlugSuffix() : $parent->slug . '-' . $dto->getSlugSuffix();
             $publicParent = $parent->public && $parent->public_parent;
         } else {
             $last = ProductSet::reversed()->first();
 
             $order = $last ? $last->order + 1 : 0;
-            $slug = $dto->getOverrideSlug() ? $dto->getOverrideSlug() : $dto->getSlug();
+            $slug = $dto->getSlugSuffix();
             $publicParent = true;
         }
+
+        Validator::make(['slug' => $slug], [
+            'slug' => 'unique:product_sets,slug',
+        ])->validate();
 
         $set = ProductSet::create($dto->toArray() + [
             'order' => $order,
@@ -127,7 +132,7 @@ class ProductSetService implements ProductSetServiceContract
                 $order = $set->order;
             }
 
-            $slug = $dto->getOverrideSlug() ? $dto->getOverrideSlug() : $parent->slug . '-' . $dto->getSlug();
+            $slug = $dto->isSlugOverridden() ? $dto->getSlugSuffix() : $parent->slug . '-' . $dto->getSlugSuffix();
             $publicParent = $parent->public && $parent->public_parent;
         } else {
             $last = ProductSet::reversed()->first();
@@ -138,9 +143,13 @@ class ProductSetService implements ProductSetServiceContract
                 $order = $set->order;
             }
 
-            $slug = $dto->getOverrideSlug() ? $dto->getOverrideSlug() : $dto->getSlug();
+            $slug = $dto->getSlugSuffix();
             $publicParent = true;
         }
+
+        Validator::make(['slug' => $slug], [
+            'slug' => 'unique:product_sets,slug',
+        ])->validate();
 
         $set->update($dto->toArray() + [
             'order' => $order,

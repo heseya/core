@@ -19,6 +19,7 @@ interface ProductSetControllerSwagger
      *   @OA\Parameter(
      *     name="tree",
      *     in="query",
+     *     allowEmptyValue=true,
      *     description="Return resource with recursively nested children instead of id's",
      *     @OA\Schema(
      *       type="bool",
@@ -88,6 +89,15 @@ interface ProductSetControllerSwagger
      *       type="string",
      *     )
      *   ),
+     *   @OA\Parameter(
+     *     name="tree",
+     *     in="query",
+     *     allowEmptyValue=true,
+     *     description="Return resource with recursively nested children instead of id's",
+     *     @OA\Schema(
+     *       type="bool",
+     *     ),
+     *   ),
      *   @OA\Response(
      *     response=200,
      *     description="Success",
@@ -120,7 +130,7 @@ interface ProductSetControllerSwagger
      *   @OA\Parameter(
      *     name="tree",
      *     in="query",
-     *     allowEmptyValue: true
+     *     allowEmptyValue=true,
      *     description="Return resource with recursively nested children instead of id's",
      *     @OA\Schema(
      *       type="bool",
