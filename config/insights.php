@@ -41,6 +41,7 @@ return [
     */
 
     'preset' => 'laravel',
+
     /*
     |--------------------------------------------------------------------------
     | IDE
@@ -60,6 +61,7 @@ return [
     */
 
     'ide' => 'phpstorm',
+
     /*
     |--------------------------------------------------------------------------
     | Configuration
@@ -98,9 +100,10 @@ return [
         ForbiddenPublicPropertySniff::class,
         FunctionLengthSniff::class,
         LineEndingsSniff::class,
-        SpaceAfterNotSniff::class,
+
+        // replaced with own
         ReturnTypeHintSniff::class,
-        UselessOverridingMethodSniff::class,
+        SpaceAfterNotSniff::class,
     ],
 
     'config' => [
@@ -111,6 +114,11 @@ return [
             'lineLimit' => 120,
             'absoluteLineLimit' => 120,
             'ignoreComments' => false,
+        ],
+        UselessOverridingMethodSniff::class => [
+            'exclude' => [
+                'app/Exceptions',
+            ],
         ],
     ],
 
