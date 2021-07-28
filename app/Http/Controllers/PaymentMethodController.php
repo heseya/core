@@ -7,6 +7,7 @@ use App\Http\Requests\PaymentMethodIndexRequest;
 use App\Http\Resources\PaymentMethodResource;
 use App\Models\PaymentMethod;
 use App\Models\ShippingMethod;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
@@ -29,7 +30,7 @@ class PaymentMethodController extends Controller implements PaymentMethodControl
         return PaymentMethodResource::collection($query->get());
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResource
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -55,7 +56,7 @@ class PaymentMethodController extends Controller implements PaymentMethodControl
         return PaymentMethodResource::make($payment_method);
     }
 
-    public function destroy(PaymentMethod $payment_method)
+    public function destroy(PaymentMethod $payment_method): JsonResponse
     {
         $payment_method->delete();
 

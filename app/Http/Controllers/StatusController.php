@@ -55,7 +55,7 @@ class StatusController extends Controller implements StatusControllerSwagger
         return response()->json(null, 204);
     }
 
-    public function destroy(Status $status)
+    public function destroy(Status $status): JsonResponse
     {
         if (Status::count() <= 1) {
             return Error::abort(

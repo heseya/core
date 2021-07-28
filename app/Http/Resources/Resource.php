@@ -74,8 +74,6 @@ class Resource extends JsonResource
      *
      * @param mixed $resource
      * @param bool $full
-     *
-     * @return Collection
      */
     public static function collection($resource, bool $full = false): Collection
     {
