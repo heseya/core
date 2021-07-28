@@ -16,8 +16,45 @@ interface ProductSetControllerSwagger
      * @OA\Get(
      *   path="/product-sets",
      *   tags={"Product Sets"},
-     *   @OA\RequestBody(
-     *     ref="#/components/requestBodies/ProductSetIndex",
+     *   @OA\Parameter(
+     *     name="tree",
+     *     in="query",
+     *     description="Return resource with recursively nested children instead of id's",
+     *     @OA\Schema(
+     *       type="bool",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="search",
+     *     in="query",
+     *     description="Full text search",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="name",
+     *     in="query",
+     *     description="Name search",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="slug",
+     *     in="query",
+     *     description="Slug search",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="public",
+     *     in="query",
+     *     description="Is public search",
+     *     @OA\Schema(
+     *       type="bool",
+     *     ),
      *   ),
      *   @OA\Response(
      *     response=200,
@@ -74,10 +111,19 @@ interface ProductSetControllerSwagger
      *   tags={"Product Sets"},
      *   @OA\Parameter(
      *     name="id",
-     *     in="query",
+     *     in="path",
      *     required=true,
      *     @OA\Schema(
      *       type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="tree",
+     *     in="query",
+     *     allowEmptyValue: true
+     *     description="Return resource with recursively nested children instead of id's",
+     *     @OA\Schema(
+     *       type="bool",
      *     ),
      *   ),
      *   @OA\Response(
@@ -103,9 +149,7 @@ interface ProductSetControllerSwagger
      *   path="/product-sets",
      *   tags={"Product Sets"},
      *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       ref="#/components/schemas/ProductSet",
-     *     ),
+     *     ref="#/components/requestBodies/ProductSetStore",
      *   ),
      *   @OA\Response(
      *     response=201,
@@ -138,9 +182,7 @@ interface ProductSetControllerSwagger
      *     )
      *   ),
      *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       ref="#/components/schemas/ProductSet",
-     *     ),
+     *     ref="#/components/requestBodies/ProductSetUpdate",
      *   ),
      *   @OA\Response(
      *     response=200,
@@ -195,6 +237,9 @@ interface ProductSetControllerSwagger
      *       type="string",
      *       example="0006c3a0-21af-4485-b7fe-9c42233cf03a",
      *     )
+     *   ),
+     *   @OA\RequestBody(
+     *     ref="#/components/requestBodies/ProductSetReorder",
      *   ),
      *   @OA\Response(
      *     response=204,
