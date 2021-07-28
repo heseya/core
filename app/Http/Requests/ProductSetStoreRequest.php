@@ -72,7 +72,7 @@ class ProductSetStoreRequest extends FormRequest
             'public' => ['boolean'],
             'hide_on_index' => ['boolean'],
             'parent_id' => ['uuid', 'nullable', 'exists:product_sets,id'],
-            'children_ids' => ['array', 'min:1'],
+            'children_ids' => ['array'],
             'children_ids.*' => ['uuid', 'exists:product_sets,id'],
         ];
     }
