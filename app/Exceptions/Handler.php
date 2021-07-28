@@ -62,6 +62,7 @@ final class Handler extends ExceptionHandler
             if (config('app.debug') === true) {
                 return parent::render($request, $exception);
             }
+
             $error = new Error();
         }
 
