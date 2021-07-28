@@ -570,7 +570,7 @@ class ProductSetTest extends TestCase
             'children_ids' => [],
         ];
 
-        $response = $this->postJson('/product-sets/id:' . $this->set->getKey(), $set);
+        $response = $this->patchJson('/product-sets/id:' . $this->set->getKey(), $set);
         $response->assertUnauthorized();
     }
 
@@ -580,7 +580,7 @@ class ProductSetTest extends TestCase
             'public' => false,
             'order' => 40,
         ]);
-        
+
         $set = [
             'name' => 'Test Edit',
             'slug' => 'test-edit',
@@ -592,8 +592,8 @@ class ProductSetTest extends TestCase
             'parent_id' => null,
         ];
 
-        $response = $this->actingAs($this->user)->postJson(
-            '/product-sets/id:' . $newSet->getKey(), 
+        $response = $this->actingAs($this->user)->patchJson(
+            '/product-sets/id:' . $newSet->getKey(),
             $set + $parentId + [
                 'children_ids' => [],
             ],
