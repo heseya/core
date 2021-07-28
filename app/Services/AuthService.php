@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Notifications\CustomResetPassword;
 use App\Services\Contracts\AuthServiceContract;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -20,7 +21,7 @@ class AuthService implements AuthServiceContract
             'email' => $email,
             'password' => $psswd,
         ])) {
-            throw new AuthException('Invalid credentials');
+            throw new AuthException('Invalid credentials', JsonResponse::HTTP_UNAUTHORIZED);
         }
 
         $user = Auth::guard('web')->user();

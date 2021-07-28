@@ -4,6 +4,7 @@ namespace App\Exceptions;
 
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
@@ -13,17 +14,20 @@ final class Handler extends ExceptionHandler
     protected array $errors = [
         AuthenticationException::class => [
             'message' => 'Unauthorized',
-            'code' => 401,
+            'code' => JsonResponse::HTTP_UNAUTHORIZED,
         ],
         NotFoundHttpException::class => [
             'message' => 'Page not found',
-            'code' => 404,
+            'code' => JsonResponse::HTTP_NOT_FOUND,
         ],
         ValidationException::class => [
-            'code' => 422,
+            'code' => JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
         ],
         StoreException::class => [
-            'code' => 400,
+            'code' => JsonResponse::HTTP_BAD_REQUEST,
+        ],
+        AuthException::class => [
+            'code' => JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
         ],
     ];
 
@@ -48,7 +52,9 @@ final class Handler extends ExceptionHandler
         if (isset($this->errors[$class])) {
             $error = new Error(
                 $this->errors[$class]['message'] ?? $exception->getMessage(),
-                $this->errors[$class]['code'] ?? 500,
+                $exception->getCode()
+                    ?: ($this->errors[$class]['code'] ??
+                    JsonResponse::HTTP_INTERNAL_SERVER_ERROR),
                 method_exists($exception, 'errors') ? $exception->errors() : [],
             );
         } else {
