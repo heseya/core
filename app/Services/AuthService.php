@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Notifications\CustomResetPassword;
 use App\Services\Contracts\AuthServiceContract;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -93,20 +94,28 @@ class AuthService implements AuthServiceContract
             ->orderBy('created_at', 'DESC');
     }
 
-    public function killUserSession(User $user)
+    public function killActiveSession(User $user, string $oauthAccessTokensId)
     {
-        $token = $user->token();
-        if ($token) {
-            $result = $token->revoke();
-            if (!$result) {
-                throw new AuthException('User session invalidation error');
-            }
+        $token = Passport::token()->where('id', $oauthAccessTokensId)->first();
+        if (!$token) {
+            throw new AuthException('User token does not exist');
         }
+
+        if ($user->token() && $user->token()->getKey() === $token->id) {
+            abort(JsonResponse::HTTP_FORBIDDEN, 'No right to delete your this session');
+        }
+
+        $token->update(
+            [
+                'revoked' => true,
+                'expires_at' => Carbon::now(),
+            ]
+        );
 
         return $this->loginHistory($user);
     }
 
-    public function killAllOldUserSessions(User $user)
+    public function killAllSessions(User $user)
     {
         if (!$user->token()) {
             throw new AuthException('User token does not exist');

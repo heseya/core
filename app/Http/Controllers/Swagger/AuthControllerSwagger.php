@@ -176,8 +176,8 @@ interface AuthControllerSwagger
     public function loginHistory(Request $request): JsonResource;
 
     /**
-     * @OA\Post(
-     *   path="/auth/kill-session",
+     * @OA\Get(
+     *   path="/auth/kill-session/id:{auth:id}",
      *   summary="Allow to 'kill' active session",
      *   tags={"Auth"},
      *   @OA\Response(
@@ -189,12 +189,12 @@ interface AuthControllerSwagger
      *   }
      * )
      */
-    public function killUserSession(Request $request): JsonResource;
+    public function killActiveSession(Request $request, string $oauthAccessTokensId): JsonResource;
 
     /**
-     * @OA\Post(
+     * @OA\Get(
      *   path="/auth/kill-all-sessions",
-     *   summary="Allow to 'kill' all sessions",
+     *   summary="Allow to 'kill' all old sessions",
      *   tags={"Auth"},
      *   @OA\Response(
      *     response=200,
@@ -205,5 +205,5 @@ interface AuthControllerSwagger
      *   }
      * )
      */
-    public function killAllOldUserSessions(Request $request): JsonResource;
+    public function killAllSessions(Request $request): JsonResource;
 }

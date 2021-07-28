@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Request;
-use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
@@ -111,39 +110,53 @@ class AuthTest extends TestCase
         $response->assertOk();
     }
 
-    public function testKillUserSession(): void
+    public function testKillActiveSession(): void
     {
-        $this->withExceptionHandling();
         $user = User::factory()->create();
+        $token1 = $user->createToken('Test A Access Token');
+        $token2 = $user->createToken('Test B Access Token');
+        $token3 = $user->createToken('Test C Access Token');
 
-//        $tokenResult = $user->createToken('Test Access Token');
-//        \Log::info(print_r($tokenResult->token->id, true));
-//        $token = $user->tokens()->find($tokenResult->token->id);
-//        $token->delete();
-//        \Log::info(print_r($user->tokens()->get()->toArray(), true));
-    //    \Log::info(print_r($tokenResult->toArray(), true));
-    //    \Log::info(print_r($tokenResult->token->user()->get()->toArray(), true));
+        $token3->token->update([
+           'ip' => Request::ip(),
+         ]);
 
-//        $response = $this->postJson('/login', [
-//            'email' => $user->email,
-//            'password' => $user->password,
-//        ]); //->assertOk();
-//
-//        \Log::info(print_r($response->getData(), true));
-        Passport::actingAs($user);
-        $response = $this->postJson('/auth/kill-session');
-       //     ->assertUnauthorized();
-    //    \Log::debug(print_r($response->getData()->data, true));
+        $headers = ['Authorization' => 'Bearer ' . $token1->accessToken];
 
-        //$tokenResult->token->revoke();
-        //$tokenResult->token->delete();
+        // call the same session
+        $this->getJson('/auth/kill-session/id:' . $token1->token->id, $headers)
+            ->assertForbidden();
 
-//        $responseSessions = $this->getJson('/auth/login-history');
-//        \Log::debug(print_r($responseSessions->getData()->data, true));
-//        $responseSessions->assertOk();
+        // revoke selected sessions
+        $this->getJson('/auth/kill-session/id:' . $token3->token->id, $headers)
+            ->assertOk()
+            ->assertJsonCount(3, 'data')
+            ->assertJsonFragment(
+                [
+                    'id' => $token3->token->id,
+                    'token_status' => false,
+                    'revoked' => true,
+                ],
+            );
+
+        $this->assertDatabaseHas('oauth_access_tokens', [
+            'id' => $token1->token->id,
+            'user_id' => $user->getKey(),
+            'revoked' => false,
+        ]);
+        $this->assertDatabaseHas('oauth_access_tokens', [
+            'id' => $token2->token->id,
+            'user_id' => $user->getKey(),
+            'revoked' => false,
+        ]);
+        $this->assertDatabaseHas('oauth_access_tokens', [
+            'id' => $token3->token->id,
+            'user_id' => $user->getKey(),
+            'revoked' => true,
+        ]);
     }
 
-    public function testKillAllOldUserSessions(): void
+    public function testKillAllSessions(): void
     {
         $user = User::factory()->create();
 
@@ -156,15 +169,11 @@ class AuthTest extends TestCase
         ]);
 
         $headers = ['Authorization' => 'Bearer ' . $token->accessToken];
-        $this->postJson('/auth/kill-all-sessions', [], $headers)
+        $this->getJson('/auth/kill-all-sessions', $headers)
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(
                 [
-                    'device' => null,
-                    'platform' => null,
-                    'browser' => null,
-                    'browser_ver' => null,
                     'ip' => Request::ip(),
                     'revoked' => false,
                 ],

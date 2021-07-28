@@ -20,7 +20,7 @@ interface AuthServiceContract
 
     public function loginHistory(User $user);
 
-    public function killUserSession(User $user);
+    public function killActiveSession(User $user, string $oauthAccessTokensId);
 
-    public function killAllOldUserSessions(User $user);
+    public function killAllSessions(User $user);
 }

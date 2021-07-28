@@ -106,7 +106,7 @@ class PageTest extends TestCase
     public function testCreateByOrder(): void
     {
         for ($i = 0; $i < 3; $i++) {
-            $name = ' order test ' . $this->faker->sentence(rand(1, 3));
+            $name = ' order test ' . $this->faker->sentence(rand(3, 10));
             $page = [
                 'name' => $name,
                 'slug' => Str::slug($name),
@@ -221,7 +221,7 @@ class PageTest extends TestCase
     public function testSortByOrder(): void
     {
         DB::table('pages')->delete();
-        $page = Page::factory()->count(10)->create();
+        $page = Page::factory()->count(5)->create();
 
         $this->actingAs($this->user)->postJson('/pages/order', [
             'pages' => $page->pluck('id')->toArray(),
@@ -231,7 +231,7 @@ class PageTest extends TestCase
         $data = $response->getData()->data;
         $response
             ->assertOk()
-            ->assertJsonCount(10, 'data')
+            ->assertJsonCount(5, 'data')
             ->assertJsonFragment(
                 [
                      'id' => $data[3]->id,
@@ -247,8 +247,8 @@ class PageTest extends TestCase
             'order' => 3,
         ]);
         $this->assertDatabaseHas('pages', [
-            'id' => $data[6]->id,
-            'order' => 6,
+            'id' => $data[4]->id,
+            'order' => 4,
         ]);
     }
 }
