@@ -102,10 +102,10 @@ class AuthController extends Controller implements AuthControllerSwagger
         );
     }
 
-    public function killAllOldUserSessions(Request $request): JsonResponse
+    public function killAllOldUserSessions(Request $request): JsonResource
     {
-        $this->authServiceContract->killAllOldUserSessions($request->user());
+        $session = $this->authServiceContract->killAllOldUserSessions($request->user());
 
-        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
+        return LoginHistoryResource::collection($session);
     }
 }

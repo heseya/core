@@ -106,7 +106,7 @@ class AuthService implements AuthServiceContract
         return $this->loginHistory($user);
     }
 
-    public function killAllOldUserSessions(User $user): void
+    public function killAllOldUserSessions(User $user)
     {
         if (!$user->token()) {
             throw new AuthException('User token does not exist');
@@ -119,7 +119,13 @@ class AuthService implements AuthServiceContract
             }
 
             $token->revoke();
+            $token->expires_at = Carbon::now();
         }
+
+        return Passport::token()
+            ->where('user_id', $user->getKey())
+            ->where('revoked', false)
+            ->get();
     }
 
     private function getUserByEmail(string $email): User

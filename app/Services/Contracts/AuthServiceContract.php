@@ -22,5 +22,5 @@ interface AuthServiceContract
 
     public function killUserSession(User $user);
 
-    public function killAllOldUserSessions(User $user): void;
+    public function killAllOldUserSessions(User $user);
 }

@@ -162,7 +162,7 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('auth')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::post('kill-session', [AuthController::class, 'killUserSession']);
-        Route::post('kill-old-sessions', [AuthController::class, 'killAllOldUserSessions']);
+        Route::post('kill-all-sessions', [AuthController::class, 'killAllOldUserSessions']);
         Route::get('login-history', [AuthController::class, 'loginHistory']);
     });
 
