@@ -53,7 +53,7 @@ class Przelewy24 implements PaymentMethod
         ];
     }
 
-    public static function translateNotification(Request $request): void
+    public static function translateNotification(Request $request): mixed
     {
         $request->validate([
             'sessionId' => 'required|integer|exists:payments,id',

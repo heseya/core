@@ -10,9 +10,8 @@ use Illuminate\Support\Facades\Hash;
 class Authenticate extends Middleware
 {
     /**
-     * @return mixed
      */
-    public function handle($request, Closure $next, ...$guards)
+    public function handle($request, Closure $next, ...$guards): mixed
     {
         if (
             $request->hasHeader('x-app-id') &&

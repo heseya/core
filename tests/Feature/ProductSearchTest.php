@@ -2,8 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Brand;
-use App\Models\Category;
+use App\Models\ProductSet;
 use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -12,15 +11,27 @@ class ProductSearchTest extends TestCase
 {
     use RefreshDatabase;
 
-    private Category $category;
-    private Brand $brand;
+    private ProductSet $category;
+    private ProductSet $brand;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->category = Category::factory()->create(['public' => true]);
-        $this->brand = Brand::factory()->create(['public' => true]);
+        $this->category = ProductSet::factory()->create([
+            'public' => true,
+            'hide_on_index' => false,
+        ]);
+
+        $this->brand = ProductSet::factory()->create([
+            'public' => true,
+            'hide_on_index' => false,
+        ]);
+
+        $this->brand = ProductSet::factory()->create([
+            'public' => true,
+            'hide_on_index' => false,
+        ]);
     }
 
     public function testSearch(): void
@@ -53,7 +64,10 @@ class ProductSearchTest extends TestCase
 
     public function testSearchByBrand(): void
     {
-        $brand = Brand::factory()->create(['public' => true]);
+        $brand = ProductSet::factory()->create([
+            'public' => true,
+            'hide_on_index' => false,
+        ]);
 
         $product = Product::factory()->create([
             'category_id' => $this->category->getKey(),
@@ -76,7 +90,10 @@ class ProductSearchTest extends TestCase
 
     public function testSearchByCategory(): void
     {
-        $category = Category::factory()->create(['public' => true]);
+        $category = ProductSet::factory()->create([
+            'public' => true,
+            'hide_on_index' => false,
+        ]);
 
         $product = Product::factory()->create([
             'category_id' => $category->getKey(),
@@ -91,6 +108,32 @@ class ProductSearchTest extends TestCase
         ]);
 
         $response = $this->getJson('/products?category=' . $category->slug);
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $product->getKey()]);
+    }
+
+    public function testSearchBySet(): void
+    {
+        $set = ProductSet::factory()->create([
+            'public' => true,
+            'hide_on_index' => false,
+        ]);
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $set->products()->attach($product);
+
+        Product::factory()->create([
+            'category_id' => $this->category->getKey(),
+            'brand_id' => $this->brand->getKey(),
+            'public' => true,
+        ]);
+
+        $response = $this->getJson('/products?set=' . $set->slug);
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data')

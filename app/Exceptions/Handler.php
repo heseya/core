@@ -43,12 +43,10 @@ final class Handler extends ExceptionHandler
 
     /**
      * Render an exception into an HTTP response.
-     *
-     * @return JsonResponse|Response|object|SymfonyResponse
      */
-    public function render($request, Throwable $exception)
+    public function render($request, Throwable $exception): JsonResponse | Response | SymfonyResponse
     {
-        $class = get_class($exception);
+        $class = $exception::class;
 
         if (isset($this->errors[$class])) {
             $error = new Error(

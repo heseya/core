@@ -3,10 +3,7 @@
 namespace App\Payments;
 
 use App\Models\Payment;
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Redirector;
 use Omnipay\Omnipay;
 
 class PayPal implements PaymentMethod
@@ -39,10 +36,7 @@ class PayPal implements PaymentMethod
         ];
     }
 
-    /**
-     * @return Application|Redirector|RedirectResponse|string|null
-     */
-    public static function translateNotification(Request $request)
+    public static function translateNotification(Request $request): mixed
     {
         $gateway = Omnipay::create('PayPal_Rest');
         $gateway->setClientId(config('paypal.client_id'));

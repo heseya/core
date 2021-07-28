@@ -13,8 +13,5 @@ interface PaymentMethod
      */
     public static function generateUrl(Payment $payment): array;
 
-    /**
-     * @return mixed
-     */
-    public static function translateNotification(Request $request);
+    public static function translateNotification(Request $request): mixed;
 }

@@ -2,8 +2,11 @@
 
 use App\Http\Controllers\AppController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BrandController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CountriesController;
 use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\ProductSetController;
 use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
@@ -49,20 +52,22 @@ Route::prefix('pages')->group(function (): void {
     Route::post('order', 'PageController@reorder')->middleware('auth:api');
 });
 
-Route::prefix('brands')->group(function (): void {
-    Route::get(null, 'BrandController@index');
-    Route::post(null, 'BrandController@store')->middleware('auth:api');
-    Route::post('order', 'BrandController@order')->middleware('auth:api');
-    Route::patch('id:{brand:id}', 'BrandController@update')->middleware('auth:api');
-    Route::delete('id:{brand:id}', 'BrandController@destroy')->middleware('auth:api');
-});
+Route::get('brands', [BrandController::class, 'index']);
+Route::get('categories', [CategoryController::class, 'index']);
 
-Route::prefix('categories')->group(function (): void {
-    Route::get(null, 'CategoryController@index');
-    Route::post(null, 'CategoryController@store')->middleware('auth:api');
-    Route::post('order', 'CategoryController@order')->middleware('auth:api');
-    Route::patch('id:{category:id}', 'CategoryController@update')->middleware('auth:api');
-    Route::delete('id:{category:id}', 'CategoryController@destroy')->middleware('auth:api');
+Route::prefix('product-sets')->group(function (): void {
+    Route::get(null, [ProductSetController::class, 'index']);
+
+    Route::middleware('auth:api')->group(function (): void {
+        Route::get('id:{product_set:id}', [ProductSetController::class, 'show']);
+        Route::post(null, [ProductSetController::class, 'store']);
+        Route::post('id:{product_set:id}', [ProductSetController::class, 'update']);
+        Route::delete('id:{product_set:id}', [ProductSetController::class, 'destroy']);
+        Route::post('reorder', [ProductSetController::class, 'reorder']);
+        Route::post('reorder/id:{product_set:id}', [ProductSetController::class, 'reorder']);
+    });
+
+    Route::get('{product_set:slug}', [ProductSetController::class, 'show']);
 });
 
 Route::prefix('shipping-methods')->group(function (): void {

@@ -2,12 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\Brand;
-use App\Models\Category;
+use App\Models\ProductSet;
 use App\Models\Product;
 use App\Models\Schema;
-use Carbon\Carbon;
-use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class ProductTest extends TestCase
@@ -23,8 +20,14 @@ class ProductTest extends TestCase
     {
         parent::setUp();
 
-        $brand = Brand::factory()->create(['public' => true]);
-        $category = Category::factory()->create(['public' => true]);
+        $brand = ProductSet::factory()->create([
+            'public' => true,
+            'hide_on_index' => false,
+        ]);
+        $category = ProductSet::factory()->create([
+            'public' => true,
+            'hide_on_index' => false,
+        ]);
 
         $this->product = Product::factory()->create([
             'brand_id' => $brand->getKey(),
@@ -69,8 +72,8 @@ class ProductTest extends TestCase
         ]);
 
         // Hidden
-        $brand_hidden = Brand::factory()->create(['public' => false]);
-        $category_hidden = Category::factory()->create(['public' => false]);
+        $brand_hidden = ProductSet::factory()->create(['public' => false]);
+        $category_hidden = ProductSet::factory()->create(['public' => false]);
 
         $this->hidden_products = [
             Product::factory()->create([
@@ -106,6 +109,21 @@ class ProductTest extends TestCase
             Product::factory()->create([
                 'brand_id' => $brand_hidden->getKey(),
                 'category_id' => $category_hidden->getKey(),
+                'public' => false,
+            ]),
+            Product::factory()->create([
+                'brand_id' => null,
+                'category_id' => $category->getKey(),
+                'public' => false,
+            ]),
+            Product::factory()->create([
+                'brand_id' => $brand->getKey(),
+                'category_id' => null,
+                'public' => false,
+            ]),
+            Product::factory()->create([
+                'brand_id' => null,
+                'category_id' => null,
                 'public' => false,
             ]),
         ];
