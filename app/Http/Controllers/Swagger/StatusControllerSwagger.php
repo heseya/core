@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Swagger;
 
 use App\Models\Status;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -115,5 +116,5 @@ interface StatusControllerSwagger
      *   }
      * )
      */
-    public function destroy(Status $status);
+    public function destroy(Status $status): JsonResponse;
 }

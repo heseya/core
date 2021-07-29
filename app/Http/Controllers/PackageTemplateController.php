@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Swagger\PackageTemplateControllerSwagger;
 use App\Http\Resources\PackageTemplateResource;
 use App\Models\PackageTemplate;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -17,7 +18,7 @@ class PackageTemplateController extends Controller implements PackageTemplateCon
         return PackageTemplateResource::collection($packages);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResource
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -47,7 +48,7 @@ class PackageTemplateController extends Controller implements PackageTemplateCon
         return PackageTemplateResource::make($package);
     }
 
-    public function destroy(PackageTemplate $package)
+    public function destroy(PackageTemplate $package): JsonResponse
     {
         $package->delete();
 

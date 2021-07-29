@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Swagger;
 
 use App\Http\Requests\PaymentMethodIndexRequest;
 use App\Models\PaymentMethod;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -61,7 +62,7 @@ interface PaymentMethodControllerSwagger
      *   }
      * )
      */
-    public function store(Request $request);
+    public function store(Request $request): JsonResource;
 
     /**
      * @OA\Patch(
@@ -120,5 +121,5 @@ interface PaymentMethodControllerSwagger
      *   }
      * )
      */
-    public function destroy(PaymentMethod $payment_method);
+    public function destroy(PaymentMethod $payment_method): JsonResponse;
 }

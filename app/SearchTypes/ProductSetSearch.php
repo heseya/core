@@ -9,25 +9,25 @@ class ProductSetSearch extends Search
 {
     public function query(Builder $query): Builder
     {
-        return $query->where(function (Builder $query) {
+        return $query->where(function (Builder $query): void {
             $query->where('name', 'LIKE', '%' . $this->value . '%')
                 ->orWhere('slug', 'LIKE', '%' . $this->value . '%')
-                ->orWhereHas('brand', function (Builder $query) {
+                ->orWhereHas('brand', function (Builder $query): void {
                     $query
                         ->where('name', 'LIKE', '%' . $this->value . '%')
                         ->orWhere('slug', 'LIKE', '%' . $this->value . '%');
                 })
-                ->orWhereHas('category', function (Builder $query) {
+                ->orWhereHas('category', function (Builder $query): void {
                     $query
                         ->where('name', 'LIKE', '%' . $this->value . '%')
                         ->orWhere('slug', 'LIKE', '%' . $this->value . '%');
                 })
-                ->orWhereHas('parent', function (Builder $query) {
+                ->orWhereHas('parent', function (Builder $query): void {
                     $query
                         ->where('name', 'LIKE', '%' . $this->value . '%')
                         ->orWhere('slug', 'LIKE', '%' . $this->value . '%');
                 })
-                ->orWhereHas('children', function (Builder $query) {
+                ->orWhereHas('children', function (Builder $query): void {
                     $query
                         ->where('name', 'LIKE', '%' . $this->value . '%')
                         ->orWhere('slug', 'LIKE', '%' . $this->value . '%');

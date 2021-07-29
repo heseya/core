@@ -5,7 +5,9 @@ namespace App\Exceptions;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
@@ -45,7 +47,7 @@ final class Handler extends ExceptionHandler
     /**
      * Render an exception into an HTTP response.
      */
-    public function render($request, Throwable $exception)
+    public function render($request, Throwable $exception): JsonResponse | Response | SymfonyResponse
     {
         $class = $exception::class;
 
@@ -65,6 +67,7 @@ final class Handler extends ExceptionHandler
             if (config('app.debug') === true) {
                 return parent::render($request, $exception);
             }
+
             $error = new Error();
         }
 
