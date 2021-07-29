@@ -367,21 +367,24 @@ class ProductSetTest extends TestCase
     {
         $set = [
             'name' => 'Test',
-            'slug_suffix' => 'test',
-            'slug_override' => false,
         ];
 
         $defaults = [
             'public' => true,
             'hide_on_index' => false,
+            'slug' => 'test',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/product-sets', $set);
+        $response = $this->actingAs($this->user)->postJson('/product-sets', $set + [
+            'slug_suffix' => 'test',
+            'slug_override' => false,
+        ]);
         $response
             ->assertCreated()
             ->assertJson(['data' => $set + $defaults + [
+                'slug_override' => false,
+                'slug_suffix' => 'test',
                 'parent' => null,
-                'slug' => 'test',
             ]]);
 
         $this->assertDatabaseHas('product_sets', $set + $defaults + [
@@ -393,22 +396,26 @@ class ProductSetTest extends TestCase
     {
         $set = [
             'name' => 'Test',
-            'slug_suffix' => 'test',
-            'slug_override' => false,
             'public' => false,
             'hide_on_index' => true,
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/product-sets', $set);
+        $response = $this->actingAs($this->user)->postJson('/product-sets', $set + [
+            'slug_suffix' => 'test',
+            'slug_override' => false,
+        ]);
         $response
             ->assertCreated()
             ->assertJson(['data' => $set + [
+                'slug_suffix' => 'test',
+                'slug_override' => false,
                 'parent' => null,
                 'slug' => 'test',
             ]]);
 
         $this->assertDatabaseHas('product_sets', $set + [
             'parent_id' => null,
+            'slug' => 'test',
         ]);
     }
 
@@ -416,10 +423,11 @@ class ProductSetTest extends TestCase
     {
         $set = [
             'name' => 'Test Parent',
-            'slug_suffix' => 'test-parent',
         ];
 
         $response = $this->actingAs($this->user)->postJson('/product-sets', $set + [
+            'slug_override' => false,
+            'slug_suffix' => 'test-parent',
             'children_ids' => [
                 $this->privateSet->getKey(),
                 $this->set->getKey(),
@@ -429,8 +437,9 @@ class ProductSetTest extends TestCase
         $response
             ->assertCreated()
             ->assertJson(['data' => $set + [
-                'slug' => 'test-parent',
                 'slug_override' => false,
+                'slug_suffix' => 'test-parent',
+                'slug' => 'test-parent',
                 'children' => [
                     [
                         'id' => $this->privateSet->getKey(),
@@ -457,7 +466,9 @@ class ProductSetTest extends TestCase
                 ],
             ]]);
 
-        $this->assertDatabaseHas('product_sets', $set);
+        $this->assertDatabaseHas('product_sets', $set + [
+            'slug' => 'test-parent',
+        ]);
 
         $parentId = $response->json('data.id');
 
@@ -484,21 +495,27 @@ class ProductSetTest extends TestCase
 
         $set = [
             'name' => 'Test Child',
-            'slug' => 'test-child',
         ];
 
         $parentId = [
             'parent_id' => $parent->getKey(),
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/product-sets', $set + $parentId);
+        $response = $this->actingAs($this->user)->postJson('/product-sets', $set + $parentId + [
+            'slug_suffix' => 'test-child',
+            'slug_override' => false,
+        ]);
         $response
             ->assertCreated()
             ->assertJson(['data' => $set + [
+                'slug' => $parent->slug . '-test-child',
+                'slug_suffix' => 'test-child',
+                'slug_override' => false,
                 'parent' => [
                     'id' => $parent->getKey(),
                     'name' => $parent->name,
                     'slug' => $parent->slug,
+                    'slug_suffix' => $parent->slugSuffix,
                     'slug_override' => false,
                     'public' => $parent->public,
                     'visible' => $parent->public && $parent->public_parent,
@@ -506,7 +523,9 @@ class ProductSetTest extends TestCase
                 ]
             ]]);
 
-        $this->assertDatabaseHas('product_sets', $set + $parentId);
+        $this->assertDatabaseHas('product_sets', $set + $parentId + [
+            'slug' => $parent->slug . '-test-child',
+        ]);
     }
 
     public function testCreateOrder(): void
@@ -518,22 +537,30 @@ class ProductSetTest extends TestCase
 
         $set = [
             'name' => 'Test Order',
-            'slug' => 'test-order',
         ];
 
         $order = [
             'order' => 21,
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/product-sets', $set);
+        $response = $this->actingAs($this->user)->postJson('/product-sets', $set + [
+            'slug_suffix' => 'test-order',
+            'slug_override' => false,
+        ]);
         $response
             ->assertCreated()
-            ->assertJson(['data' => $set]);
+            ->assertJson(['data' => $set + [
+                'slug' => 'test-order',
+                'slug_suffix' => 'test-order',
+                'slug_override' => false,
+            ]]);
 
-        $this->assertDatabaseHas('product_sets', $set + $order);
+        $this->assertDatabaseHas('product_sets', $set + $order + [
+            'slug' => 'test-order',
+        ]);
     }
 
-    public function testCreateParentVisibility(): void
+    public function testCreateChildVisibility(): void
     {
         $parent = ProductSet::factory()->create([
             'public' => true,
@@ -543,23 +570,29 @@ class ProductSetTest extends TestCase
 
         $set = [
             'name' => 'Test Child',
-            'slug_suffix' => 'test-child',
+            'public' => true,
         ];
 
         $parentId = [
             'parent_id' => $parent->getKey(),
         ];
 
-        $visibility = [
-            'visible' => false,
-        ];
-
-        $response = $this->actingAs($this->user)->postJson('/product-sets', $set + $parentId);
+        $response = $this->actingAs($this->user)->postJson('/product-sets', $set + $parentId + [
+            'slug_suffix' => 'test-child',
+            'slug_override' => true,
+        ]);
         $response
             ->assertCreated()
-            ->assertJson(['data' => $set + $visibility]);
+            ->assertJson(['data' => $set + [
+                'visible' => false,
+                'slug' => 'test-child',
+                'slug_suffix' => 'test-child',
+                'slug_override' => true,
+            ]]);
 
-        $this->assertDatabaseHas('product_sets', $set + $visibility);
+        $this->assertDatabaseHas('product_sets', $set + $parentId + [
+            'public_parent' => false,
+        ]);
     }
 
     public function testUpdateUnauthorized(): void
@@ -586,7 +619,6 @@ class ProductSetTest extends TestCase
 
         $set = [
             'name' => 'Test Edit',
-            'slug' => 'test-edit',
             'public' => true,
             'hide_on_index' => true,
         ];
@@ -599,6 +631,8 @@ class ProductSetTest extends TestCase
             '/product-sets/id:' . $newSet->getKey(),
             $set + $parentId + [
                 'children_ids' => [],
+                'slug_suffix' => 'test-edit',
+                'slug_override' => false,
             ],
         );
         $response
@@ -606,10 +640,14 @@ class ProductSetTest extends TestCase
             ->assertJson(['data' => $set + [
                 'parent' => null,
                 'children' => [],
+                'slug' => 'test-edit',
+                'slug_suffix' => 'test-edit',
                 'slug_override' => false,
             ]]);
 
-        $this->assertDatabaseHas('product_sets', $set + $parentId);
+        $this->assertDatabaseHas('product_sets', $set + $parentId + [
+            'slug' => 'test-edit',
+        ]);
     }
 
     public function testDeleteUnauthorized(): void
