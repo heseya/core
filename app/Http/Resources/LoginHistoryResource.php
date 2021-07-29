@@ -13,7 +13,7 @@ class LoginHistoryResource extends Resource
 
         return [
             'id' => $this->id,
-            'token_status' => $request->user()->token()->id === $this->id,
+            'current_session' => $request->user()->token()->id === $this->id,
             'device' => $agent->device() === false ? null : $agent->device(),
             'platform' => $agent->platform() === false ? null : $agent->platform(),
             'browser' => $browser = $agent->browser() === false ? null : $agent->browser(),

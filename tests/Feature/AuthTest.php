@@ -134,7 +134,7 @@ class AuthTest extends TestCase
             ->assertJsonFragment(
                 [
                     'id' => $token3->token->id,
-                    'token_status' => false,
+                    'current_session' => false,
                     'revoked' => true,
                 ],
             );

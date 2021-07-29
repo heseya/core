@@ -7,12 +7,10 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Lang;
 
 /**
- * Class CustomResetPassword
- *
  * @see https://laracasts.com/discuss/channels/laravel/trying-to-setup-a-new-notification-for-updating-user-password
  * @see https://laracasts.com/discuss/channels/laravel/how-to-override-the-tomail-function-in-illuminateauthnotificationsresetpasswordphp
  */
-class CustomResetPassword extends Notification
+class ResetPassword extends Notification
 {
     /**
      * The password reset token.
@@ -30,7 +28,7 @@ class CustomResetPassword extends Notification
     /**
      * Get the notification's delivery channels.
      */
-    public function via($notifiable)
+    public function via($notifiable): array
     {
         return ['mail'];
     }
@@ -38,7 +36,7 @@ class CustomResetPassword extends Notification
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail($notifiable)
+    public function toMail($notifiable): MailMessage
     {
         $param = http_build_query([
             'token' => $this->token,
@@ -52,17 +50,17 @@ class CustomResetPassword extends Notification
     /**
      * Get the reset password notification mail message for the given URL.
      */
-    protected function buildMailMessage($url)
+    protected function buildMailMessage($url): MailMessage
     {
         return (new MailMessage())
             ->subject(Lang::get('Reset Password Notification'))
-            ->line(
-                Lang::get('You are receiving this email because we received a password reset request for your account.')
-            )
+            ->line(Lang::get(
+                'You are receiving this email because we received a password reset request for your account.'
+            ))
             ->action(Lang::get('Reset Password'), $url)
             ->line(
                 Lang::get('This password reset link will expire in :count minutes.', [
-                    'count' => config('auth.passwords.'.config('auth.defaults.passwords').'.expire'),
+                    'count' => config('auth.passwords.' . config('auth.defaults.passwords') . '.expire'),
                 ])
             )
             ->line(

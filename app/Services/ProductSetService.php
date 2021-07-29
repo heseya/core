@@ -7,13 +7,14 @@ use App\Exceptions\StoreException;
 use App\Models\ProductSet;
 use App\Services\Contracts\ProductSetServiceContract;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ProductSetService implements ProductSetServiceContract
 {
-    public function authorize(ProductSet $set)
+    public function authorize(ProductSet $set): void
     {
         if (
             !Auth::check() &&
@@ -23,7 +24,7 @@ class ProductSetService implements ProductSetServiceContract
         }
     }
 
-    public function searchAll(array $attributes)
+    public function searchAll(array $attributes): Collection
     {
         $query = ProductSet::root()->search($attributes);
 
@@ -34,7 +35,7 @@ class ProductSetService implements ProductSetServiceContract
         return $query->get();
     }
 
-    public function brands(array $attributes)
+    public function brands(array $attributes): Collection
     {
         $query = ProductSet::whereHas(
             'parent',
@@ -48,7 +49,7 @@ class ProductSetService implements ProductSetServiceContract
         return $query->get();
     }
 
-    public function categories(array $attributes)
+    public function categories(array $attributes): Collection
     {
         $query = ProductSet::whereHas(
             'parent',
@@ -89,7 +90,7 @@ class ProductSetService implements ProductSetServiceContract
 
         if ($dto->getChildrenIds()->isNotEmpty()) {
             $dto->getChildrenIds()->each(
-                function ($id, $order) use ($set, $slug, $publicParent) {
+                function ($id, $order) use ($set, $slug, $publicParent): void {
                     $child = ProductSet::findOrFail($id);
 
                     if ($child->parent()->exists() &&
@@ -151,7 +152,7 @@ class ProductSetService implements ProductSetServiceContract
         $publicParent = $publicParent && $dto->isPublic();
 
         $dto->getChildrenIds()->each(
-            function ($id, $order) use ($set, $slug, $publicParent) {
+            function ($id, $order) use ($set, $slug, $publicParent): void {
                 $child = ProductSet::findOrFail($id);
 
                 if ($child->parent()->exists() &&
@@ -174,7 +175,7 @@ class ProductSetService implements ProductSetServiceContract
         return $set;
     }
 
-    public function reorder(ProductSet $parent, array $sets)
+    public function reorder(ProductSet $parent, array $sets): void
     {
         foreach ($sets as $id) {
             ProductSet::where('parent_id', $parent ? $parent->getKey() : null)
@@ -186,7 +187,7 @@ class ProductSetService implements ProductSetServiceContract
         }
     }
 
-    public function delete(ProductSet $set)
+    public function delete(ProductSet $set): void
     {
         if ($set->products()->count() > 0 || $set->children()->count() > 0) {
             throw new StoreException(__('admin.error.delete_with_relations'));

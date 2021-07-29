@@ -46,23 +46,23 @@ class ProductSet extends Model
 
     public function getSlugOverrideAttribute(): bool
     {
-        return $this->parent ? !Str::startsWith(
+        return $this->parent && !Str::startsWith(
             $this->slug,
             $this->parent->slug . '-',
-        ) : false;
+        );
     }
 
-    public function scopePublic($query)
+    public function scopePublic($query): Builder
     {
         return $query->where('public', true)->where('public_parent', true);
     }
 
-    public function scopeRoot($query)
+    public function scopeRoot($query): Builder
     {
         return $query->whereNull('parent_id');
     }
 
-    public function scopeReversed($query)
+    public function scopeReversed($query): Builder
     {
         return $query->withoutGlobalScope('ordered')
             ->orderBy('order', 'desc');
@@ -83,7 +83,7 @@ class ProductSet extends Model
         return $this->belongsToMany(Product::class, 'product_set_product');
     }
 
-    protected static function booted()
+    protected static function booted(): void
     {
         static::addGlobalScope(
             'ordered',

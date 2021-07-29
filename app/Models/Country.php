@@ -37,7 +37,7 @@ class Country extends Model
         return 'string';
     }
 
-    public function getKeyName()
+    public function getKeyName(): string
     {
         return 'code';
     }

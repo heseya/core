@@ -41,7 +41,9 @@ class PaymentController extends Controller implements PaymentControllerSwagger
         return PaymentResource::make($payment);
     }
 
-    public function update(string $method, Request $request)
+    /**
+     */
+    public function update(string $method, Request $request): mixed
     {
         if (!array_key_exists($method, config('payable.aliases'))) {
             throw new StoreException('Unknown payment method.');

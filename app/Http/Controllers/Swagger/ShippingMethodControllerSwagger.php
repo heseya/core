@@ -161,5 +161,5 @@ interface ShippingMethodControllerSwagger
      *   }
      * )
      */
-    public function destroy(ShippingMethod $shippingMethod);
+    public function destroy(ShippingMethod $shippingMethod): JsonResponse;
 }

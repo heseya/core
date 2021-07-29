@@ -116,8 +116,6 @@ class Order extends Model
      *   type="float",
      *   example=199.99
      * )
-     *
-     * @return float
      */
     public function getPayedAmountAttribute(): float
     {

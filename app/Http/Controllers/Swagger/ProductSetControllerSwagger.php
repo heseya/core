@@ -8,6 +8,7 @@ use App\Http\Requests\ProductSetShowRequest;
 use App\Http\Requests\ProductSetStoreRequest;
 use App\Http\Requests\ProductSetUpdateRequest;
 use App\Models\ProductSet;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 interface ProductSetControllerSwagger
@@ -181,7 +182,7 @@ interface ProductSetControllerSwagger
      *   }
      * )
      */
-    public function destroy(ProductSet $category);
+    public function destroy(ProductSet $category): JsonResponse;
 
     /**
      * @OA\Post(
@@ -205,5 +206,5 @@ interface ProductSetControllerSwagger
      *   }
      * )
      */
-    public function reorder(ProductSet $productSet, ProductSetReorderRequest $request);
+    public function reorder(ProductSet $productSet, ProductSetReorderRequest $request): JsonResponse;
 }

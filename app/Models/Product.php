@@ -223,28 +223,25 @@ class Product extends Model
     }
 
     /**
-     * @return bool
      */
     public function isPublic(): bool
     {
-        $isBrandPublic = $this->brand ?
-            $this->brand->public && $this->brand->public_parent : true;
+        $isBrandPublic = !$this->brand || $this->brand->public && $this->brand->public_parent;
 
-        $isCategoryPublic = $this->category ?
-            $this->category->public && $this->category->public_parent : true;
+        $isCategoryPublic = !$this->category || $this->category->public && $this->category->public_parent;
 
-        $isAnySetPublic = $this->sets()->count() > 0 ?
-            $this->sets()->where('public', true)->where('public_parent', true) : true;
+        $isAnySetPublic = !($this->sets()->count() > 0) ||
+            $this->sets()->where('public', true)->where('public_parent', true);
 
         return $this->public && $isBrandPublic && $isCategoryPublic && $isAnySetPublic;
     }
 
-    public function scopePublic($query)
+    public function scopePublic($query): Builder
     {
         $query->where('public', true);
 
         $query->where('public', true)
-            ->where(function (Builder $query) {
+            ->where(function (Builder $query): void {
                 $query
                     ->whereDoesntHave('brand')
                     ->orWhereHas(
@@ -253,7 +250,7 @@ class Product extends Model
                             ->where('public', true)->where('public_parent', true),
                     );
             })
-            ->where(function (Builder $query) {
+            ->where(function (Builder $query): void {
                 $query
                     ->whereDoesntHave('category')
                     ->orWhereHas(
@@ -262,7 +259,7 @@ class Product extends Model
                             ->where('public', true)->where('public_parent', true),
                     );
             })
-            ->where(function (Builder $query) {
+            ->where(function (Builder $query): void {
                 $query
                     ->whereDoesntHave('sets')
                     ->orWhereHas(
