@@ -15,6 +15,13 @@ Route::prefix('users')->group(function (): void {
     Route::get('/reset-password/{token?}/{email?}', 'AuthController@showResetPasswordForm');
     Route::post('/reset-password', 'AuthController@resetPassword');
     Route::patch('/save-reset-password', 'AuthController@saveResetPassword');
+
+    //TODO temporarily without authorization until it is fully created ...
+    Route::prefix('managements')->group(function (): void {
+        Route::get(null, 'UserManagementController@index');
+        Route::get('id:{user:id}', 'UserManagementController@show');
+        Route::post(null, 'UserManagementController@store');
+    });
 });
 Route::post('login', 'AuthController@login');
 Route::patch('user/password', 'AuthController@changePassword')->middleware('auth:api');

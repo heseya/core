@@ -20,6 +20,7 @@ use App\Services\Contracts\ReorderServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
 use App\Services\Contracts\ShippingMethodServiceContract;
+use App\Services\Contracts\UserManagementServiceContract;
 use App\Services\DiscountService;
 use App\Services\MarkdownService;
 use App\Services\MediaService;
@@ -32,6 +33,7 @@ use App\Services\ReorderService;
 use App\Services\SchemaService;
 use App\Services\SettingsService;
 use App\Services\ShippingMethodService;
+use App\Services\UserManagementService;
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
 use Illuminate\Support\ServiceProvider;
 
@@ -53,6 +55,7 @@ class AppServiceProvider extends ServiceProvider
         PageServiceContract::class => PageService::class,
         ShippingMethodServiceContract::class => ShippingMethodService::class,
         ProductSetServiceContract::class => ProductSetService::class,
+        UserManagementServiceContract::class => UserManagementService::class,
     ];
 
     /**
