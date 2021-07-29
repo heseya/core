@@ -46,13 +46,19 @@ class ProductSet extends Model
 
     public function getSlugOverrideAttribute(): bool
     {
-        return $this->parent && !Str::startsWith(
+        return $this->parent()->exists() && !Str::startsWith(
             $this->slug,
             $this->parent->slug . '-',
         );
     }
 
-    public function scopePublic($query): Builder
+    public function getSlugSuffixAttribute(): string
+    {
+        return $this->slugOverride || $this->parent()->doesntExist() ? $this->slug :
+            Str::after($this->slug, $this->parent->slug . '-');
+    }
+
+    public function scopePublic($query)
     {
         return $query->where('public', true)->where('public_parent', true);
     }

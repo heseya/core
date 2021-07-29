@@ -78,7 +78,7 @@ class CreateProductSetsTable extends Migration
         ]);
 
         foreach ($children as $child) {
-            ProductSet::create([
+            $newSet = ProductSet::create([
                 'id' => $child->getKey(),
                 'name' => $child->name,
                 'slug' => $child->slug,
@@ -87,6 +87,11 @@ class CreateProductSetsTable extends Migration
                 'order' => $child->order,
                 'hide_on_index' => $child->hide_on_index,
             ]);
+
+            Product::where(Str::of($set)->snake() . '_id', $newSet->getKey())->get()
+                ->each(function ($product) use ($newSet) {
+                   $product->sets()->syncWithoutDetaching($newSet->getKey());
+                });
         }
     }
 }
