@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\ProhibitedWith;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

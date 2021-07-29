@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -134,7 +133,6 @@ class ProductSetService implements ProductSetServiceContract
             'slug' => Rule::unique('product_sets', 'slug')->ignoreModel($set),
         ])->validate();
 
-
         $children = $dto->getChildrenIds()->map(fn ($id) => ProductSet::findOrFail($id));
         $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->isPublic());
 
@@ -176,7 +174,8 @@ class ProductSetService implements ProductSetServiceContract
         $set->delete();
     }
 
-    public function updateChildren(Collection $children, string $parentId, string $parentSlug, bool $publicParent) {
+    public function updateChildren(Collection $children, string $parentId, string $parentSlug, bool $publicParent)
+    {
         $children->each(
             function ($child, $order) use ($parentId, $parentSlug, $publicParent) {
                 if ($child->slugOverride) {
