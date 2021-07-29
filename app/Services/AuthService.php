@@ -105,15 +105,10 @@ class AuthService implements AuthServiceContract
         }
 
         if ($user->token() && $user->token()->getKey() === $token->id) {
-            abort(JsonResponse::HTTP_FORBIDDEN, 'No right to delete your this session');
+            throw new AuthException('Can\'t delete your current session', JsonResponse::HTTP_FORBIDDEN);
         }
 
-        $token->update(
-            [
-                'revoked' => true,
-                'expires_at' => Carbon::now(),
-            ]
-        );
+        $token->revoke();
 
         return $this->loginHistory($user);
     }
@@ -131,7 +126,6 @@ class AuthService implements AuthServiceContract
             }
 
             $token->revoke();
-            $token->expires_at = Carbon::now();
         }
 
         return Passport::token()

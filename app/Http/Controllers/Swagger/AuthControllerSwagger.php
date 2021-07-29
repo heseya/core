@@ -177,9 +177,19 @@ interface AuthControllerSwagger
 
     /**
      * @OA\Get(
-     *   path="/auth/kill-session/id:{auth:id}",
+     *   path="/auth/kill-session/id:{id}",
      *   summary="Allow to 'kill' active session",
      *   tags={"Auth"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     description="token id from the table 'oauth_access_tokens'",
+     *     @OA\Schema(
+     *       type="string",
+     *       example="47e380b746d6cacb20473b82d911b2701a3c05422c65cbc4872045a100fcb72be554ad1680aef2bf",
+     *     )
+     *   ),
      *   @OA\Response(
      *     response=200,
      *     description="Success",

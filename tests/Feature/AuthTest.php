@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Request;
+use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
@@ -113,21 +114,27 @@ class AuthTest extends TestCase
     public function testKillActiveSession(): void
     {
         $user = User::factory()->create();
+        $token = $user->createToken('Test Active Token');
+        $headers = ['Authorization' => 'Bearer ' . $token->accessToken];
+
+        $this->getJson('/auth/kill-session/id:' . $token->token->id, $headers)
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('oauth_access_tokens', [
+            'id' => $token->token->id,
+            'user_id' => $user->getKey(),
+            'revoked' => false,
+        ]);
+    }
+
+    public function testKillOldSession(): void
+    {
+        $user = User::factory()->create();
         $token1 = $user->createToken('Test A Access Token');
         $token2 = $user->createToken('Test B Access Token');
         $token3 = $user->createToken('Test C Access Token');
 
-        $token3->token->update([
-           'ip' => Request::ip(),
-         ]);
-
         $headers = ['Authorization' => 'Bearer ' . $token1->accessToken];
-
-        // call the same session
-        $this->getJson('/auth/kill-session/id:' . $token1->token->id, $headers)
-            ->assertForbidden();
-
-        // revoke selected sessions
         $this->getJson('/auth/kill-session/id:' . $token3->token->id, $headers)
             ->assertOk()
             ->assertJsonCount(3, 'data')
@@ -160,29 +167,45 @@ class AuthTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $user->createToken('Test 1 Access Token');
-        $user->createToken('Test 2 Access Token');
-        $token = $user->createToken('Test 3 Access Token');
+        $token1 = $user->createToken('Test 1 Access Token');
+        $token2 = $user->createToken('Test 2 Access Token');
+        $token3 = $user->createToken('Test 3 Access Token');
 
-        $token->token->update([
+        $token3->token->update([
           'ip' => Request::ip(),
         ]);
 
-        $headers = ['Authorization' => 'Bearer ' . $token->accessToken];
+        $headers = ['Authorization' => 'Bearer ' . $token3->accessToken];
         $this->getJson('/auth/kill-all-sessions', $headers)
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(
                 [
+                    'current_session' => true,
                     'ip' => Request::ip(),
                     'revoked' => false,
                 ],
             );
 
         $this->assertDatabaseHas('oauth_access_tokens', [
-            'id' => $token->token->id,
+            'id' => $token3->token->id,
             'user_id' => $user->getKey(),
             'revoked' => false,
         ]);
+
+        // check revoked sessions
+        $resultToken1 = $this->checkToken($token1->token->id, true);
+        $this->assertCount(1, $resultToken1);
+
+        $resultToken2 = $this->checkToken($token2->token->id, true);
+        $this->assertCount(1, $resultToken2);
+    }
+
+    private function checkToken(string $idToken, bool $isRevoke)
+    {
+        return Passport::token()
+            ->where('id', $idToken)
+            ->where('revoked', $isRevoke)
+            ->get();
     }
 }
