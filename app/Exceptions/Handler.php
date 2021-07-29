@@ -31,6 +31,12 @@ final class Handler extends ExceptionHandler
         AuthException::class => [
             'code' => JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
         ],
+        MediaException::class => [
+            'code' => JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
+        ],
+        OrderException::class => [
+            'code' => JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
+        ],
     ];
 
     /**
