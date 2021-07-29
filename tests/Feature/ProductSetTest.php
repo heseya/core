@@ -665,6 +665,81 @@ class ProductSetTest extends TestCase
         ]);
     }
 
+    public function testUpdateParentSlug(): void
+    {
+        $parent = ProductSet::factory()->create([
+            'name' => 'Parent',
+            'slug' => 'parent',
+        ]);
+
+        $child = ProductSet::factory()->create([
+            'parent_id' => $parent->getKey(),
+            'name' => 'Child',
+            'slug' => 'parent-child',
+        ]);
+
+        $grandchild = ProductSet::factory()->create([
+            'parent_id' => $child->getKey(),
+            'name' => 'Grandchild',
+            'slug' => 'parent-child-grandchild',
+        ]);
+
+        $response = $this->actingAs($this->user)->patchJson(
+            '/product-sets/id:' . $parent->getKey(),
+            [
+                'name' => 'New',
+                'public' => true,
+                'hide_on_index' => true,
+                'parent_id' => null,
+                'children_ids' => [
+                    $child->getKey(),
+                ],
+                'slug_suffix' => 'new',
+                'slug_override' => false,
+            ],
+        );
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                    'parent' => null,
+                    'children' => [
+                        [
+                            'id' => $child->getKey(),
+                            'name' => 'Child',
+                            'slug' => 'new-child',
+                            'slug_suffix' => 'child',
+                            'slug_override' => false,
+                            'public' => true,
+                            'visible' => true,
+                            'hide_on_index' => true,
+                            'parent_id' => $parent->getKey(),
+                            'children_ids' => [
+                                $grandchild->getKey(),
+                            ],
+                        ]
+                    ],
+                    'slug' => 'new',
+                    'slug_suffix' => 'new',
+                    'slug_override' => false,
+                ]]);
+
+        $this->assertDatabaseHas('product_sets', [
+            'id' => $parent->getKey(),
+            'slug' => 'new',
+        ]);
+
+        $this->assertDatabaseHas('product_sets', [
+            'id' => $child->getKey(),
+            'slug' => 'new-child',
+        ]);
+
+        $this->assertDatabaseHas('product_sets', [
+            'id' => $grandchild->getKey(),
+            'slug' => 'new-child-grandchild',
+        ]);
+
+    }
+
     public function testDeleteUnauthorized(): void
     {
         $newSet = ProductSet::factory()->create([

@@ -47,9 +47,9 @@ class ProductSet extends Model
     public function getSlugOverrideAttribute(): bool
     {
         return $this->parent()->exists() && !Str::startsWith(
-                $this->slug,
-                $this->parent->slug . '-',
-            );
+            $this->slug,
+            $this->parent->slug . '-',
+        );
     }
 
     public function getSlugSuffixAttribute(): string

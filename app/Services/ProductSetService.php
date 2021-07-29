@@ -7,6 +7,7 @@ use App\Exceptions\StoreException;
 use App\Models\ProductSet;
 use App\Services\Contracts\ProductSetServiceContract;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -91,27 +92,9 @@ class ProductSetService implements ProductSetServiceContract
             'public_parent' => $publicParent,
         ]);
 
-        $publicParent = $publicParent && $dto->isPublic();
-
         if ($dto->getChildrenIds()->isNotEmpty()) {
-            $dto->getChildrenIds()->each(
-                function ($id, $order) use ($set, $slug, $publicParent) {
-                    $child = ProductSet::findOrFail($id);
-
-                    if ($child->slugOverride) {
-                        $childSlug = $child->slug;
-                    } else {
-                        $childSlug = $slug . '-' . $child->slugSuffix;
-                    }
-
-                    $child->update([
-                        'parent_id' => $set->getKey(),
-                        'order' => $order,
-                        'slug' => $childSlug,
-                        'public_parent' => $publicParent,
-                    ]);
-                },
-            );
+            $children = $dto->getChildrenIds()->map(fn ($id) => ProductSet::findOrFail($id));
+            $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->isPublic());
         }
 
         return $set;
@@ -151,39 +134,23 @@ class ProductSetService implements ProductSetServiceContract
             'slug' => Rule::unique('product_sets', 'slug')->ignoreModel($set),
         ])->validate();
 
+
+        $children = $dto->getChildrenIds()->map(fn ($id) => ProductSet::findOrFail($id));
+        $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->isPublic());
+
+        $rootOrder = ProductSet::reversed()->first()->order + 1;
+
+        $set->children()->whereNotIn('id', $dto->getChildrenIds())
+            ->get()->each(fn ($child, $order) => $child->update([
+                'parent_id' => null,
+                'order' => $rootOrder + $order,
+            ]));
+
         $set->update($dto->toArray() + [
             'order' => $order,
             'slug' => $slug,
             'public_parent' => $publicParent,
         ]);
-
-        $publicParent = $publicParent && $dto->isPublic();
-
-        $rootOrder = ProductSet::reversed()->first()->order + 1;
-
-        $set->children->each(fn ($child, $order) => $child->update([
-            'parent_id' => null,
-            'order' => $rootOrder + $order,
-        ]));
-
-        $dto->getChildrenIds()->each(
-            function ($id, $order) use ($set, $slug, $publicParent) {
-                $child = ProductSet::findOrFail($id);
-
-                if ($child->slugOverride) {
-                    $childSlug = $child->slug;
-                } else {
-                    $childSlug = $slug . '-' . $child->slugSuffix;
-                }
-
-                $child->update([
-                    'parent_id' => $set->getKey(),
-                    'order' => $order,
-                    'slug' => $childSlug,
-                    'public_parent' => $publicParent,
-                ]);
-            },
-        );
 
         return $set;
     }
@@ -207,5 +174,31 @@ class ProductSetService implements ProductSetServiceContract
         }
 
         $set->delete();
+    }
+
+    public function updateChildren(Collection $children, string $parentId, string $parentSlug, bool $publicParent) {
+        $children->each(
+            function ($child, $order) use ($parentId, $parentSlug, $publicParent) {
+                if ($child->slugOverride) {
+                    $childSlug = $child->slug;
+                } else {
+                    $childSlug = $parentSlug . '-' . $child->slugSuffix;
+                }
+
+                $this->updateChildren(
+                    $child->children,
+                    $child->getKey(),
+                    $childSlug,
+                    $publicParent && $child->public
+                );
+
+                $child->update([
+                    'parent_id' => $parentId,
+                    'order' => $order,
+                    'slug' => $childSlug,
+                    'public_parent' => $publicParent,
+                ]);
+            },
+        );
     }
 }
