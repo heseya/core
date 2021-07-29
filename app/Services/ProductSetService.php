@@ -101,7 +101,7 @@ class ProductSetService implements ProductSetServiceContract
                     if ($child->slugOverride) {
                         $childSlug = $child->slug;
                     } else {
-                        $childSlug = $slug . '-' . $child->slug;
+                        $childSlug = $slug . '-' . $child->slugSuffux;
                     }
 
                     $child->update([
@@ -173,7 +173,7 @@ class ProductSetService implements ProductSetServiceContract
                 if ($child->slugOverride) {
                     $childSlug = $child->slug;
                 } else {
-                    $childSlug = $slug . '-' . $child->slug;
+                    $childSlug = $slug . '-' . $child->slugSuffux;
                 }
 
                 $child->update([
