@@ -670,18 +670,27 @@ class ProductSetTest extends TestCase
         $parent = ProductSet::factory()->create([
             'name' => 'Parent',
             'slug' => 'parent',
+            'hide_on_index' => false,
+            'public' => true,
+            'public_parent' => false,
         ]);
 
         $child = ProductSet::factory()->create([
             'parent_id' => $parent->getKey(),
             'name' => 'Child',
             'slug' => 'parent-child',
+            'hide_on_index' => false,
+            'public' => true,
+            'public_parent' => false,
         ]);
 
         $grandchild = ProductSet::factory()->create([
             'parent_id' => $child->getKey(),
             'name' => 'Grandchild',
             'slug' => 'parent-child-grandchild',
+            'hide_on_index' => false,
+            'public' => true,
+            'public_parent' => false,
         ]);
 
         $response = $this->actingAs($this->user)->patchJson(
@@ -689,7 +698,7 @@ class ProductSetTest extends TestCase
             [
                 'name' => 'New',
                 'public' => true,
-                'hide_on_index' => true,
+                'hide_on_index' => false,
                 'parent_id' => null,
                 'children_ids' => [
                     $child->getKey(),
@@ -711,7 +720,7 @@ class ProductSetTest extends TestCase
                             'slug_override' => false,
                             'public' => true,
                             'visible' => true,
-                            'hide_on_index' => true,
+                            'hide_on_index' => false,
                             'parent_id' => $parent->getKey(),
                             'children_ids' => [
                                 $grandchild->getKey(),
