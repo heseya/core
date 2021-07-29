@@ -595,6 +595,21 @@ class ProductSetTest extends TestCase
         ]);
     }
 
+    public function testCreateDuplicateSlug(): void
+    {
+        ProductSet::factory()->create([
+            'name' => 'Test duplicate',
+            'slug' => 'test-duplicate',
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/product-sets', [
+            'name' => 'New set',
+            'slug_suffix' => 'test-duplicate',
+            'slug_override' => false,
+        ]);
+        $response->assertStatus(422);
+    }
+
     public function testUpdateUnauthorized(): void
     {
         $set = [

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ProductSetService implements ProductSetServiceContract
@@ -97,9 +98,7 @@ class ProductSetService implements ProductSetServiceContract
                 function ($id, $order) use ($set, $slug, $publicParent) {
                     $child = ProductSet::findOrFail($id);
 
-                    if ($child->parent()->exists() &&
-                        !Str::startsWith($child->slug, $child->parent->slug . '-')
-                    ) {
+                    if ($child->slugOverride) {
                         $childSlug = $child->slug;
                     } else {
                         $childSlug = $slug . '-' . $child->slug;
@@ -132,8 +131,9 @@ class ProductSetService implements ProductSetServiceContract
                 $order = $set->order;
             }
 
-            $slug = $dto->isSlugOverridden() ? $dto->getSlugSuffix() : $parent->slug . '-' . $dto->getSlugSuffix();
             $publicParent = $parent->public && $parent->public_parent;
+            $slug = $dto->isSlugOverridden() ? $dto->getSlugSuffix() :
+                $parent->slug . '-' . $dto->getSlugSuffix();
         } else {
             $last = ProductSet::reversed()->first();
 
@@ -143,12 +143,12 @@ class ProductSetService implements ProductSetServiceContract
                 $order = $set->order;
             }
 
-            $slug = $dto->getSlugSuffix();
             $publicParent = true;
+            $slug = $dto->getSlugSuffix();
         }
 
         Validator::make(['slug' => $slug], [
-            'slug' => 'unique:product_sets,slug',
+            'slug' => Rule::unique('product_sets', 'slug')->ignoreModel($set),
         ])->validate();
 
         $set->update($dto->toArray() + [
@@ -159,13 +159,18 @@ class ProductSetService implements ProductSetServiceContract
 
         $publicParent = $publicParent && $dto->isPublic();
 
+        $rootOrder = ProductSet::reversed()->first()->order + 1;
+
+        $set->children->each(fn ($child, $order) => $child->update([
+            'parent_id' => null,
+            'order' => $rootOrder + $order,
+        ]));
+
         $dto->getChildrenIds()->each(
             function ($id, $order) use ($set, $slug, $publicParent) {
                 $child = ProductSet::findOrFail($id);
 
-                if ($child->parent()->exists() &&
-                    !Str::startsWith($child->slug, $child->parent->slug . '-')
-                ) {
+                if ($child->slugOverride) {
                     $childSlug = $child->slug;
                 } else {
                     $childSlug = $slug . '-' . $child->slug;
