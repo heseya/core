@@ -17,6 +17,7 @@ use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
 use SlevomatCodingStandard\Sniffs\Classes\ForbiddenPublicPropertySniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
 use SlevomatCodingStandard\Sniffs\Commenting\UselessFunctionDocCommentSniff;
+use SlevomatCodingStandard\Sniffs\ControlStructures\DisallowShortTernaryOperatorSniff;
 use SlevomatCodingStandard\Sniffs\Functions\FunctionLengthSniff;
 use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\DeclareStrictTypesSniff;
@@ -101,6 +102,7 @@ return [
 
         // replaced with own
         SpaceAfterNotSniff::class,
+        DisallowShortTernaryOperatorSniff::class,
     ],
 
     'config' => [
