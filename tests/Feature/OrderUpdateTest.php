@@ -173,6 +173,25 @@ class OrderUpdateTest extends TestCase
         ]);
     }
 
+    public function testUpdateOrderByEmptyComment(): void
+    {
+        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+            'comment' => ''
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                 'id' => $this->order->getKey(),
+                 'comment' => '',
+             ]);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'comment' => '',
+        ]);
+    }
+
     public function testUpdateOrderByDeliveryAddress(): void
     {
         $this->addressDelivery = Address::factory()->create();
