@@ -2,6 +2,9 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
 /**
  * @OA\RequestBody(
  *   request="UserUpdate",
@@ -16,21 +19,16 @@ namespace App\Http\Requests;
  *       type="string",
  *       example="admin@example.com",
  *     ),
- *     @OA\Property(
- *       property="password",
- *       type="string",
- *     ),
- *     @OA\Property(
- *       property="remember_token",
- *       type="string",
- *     ),
  *   )
  * )
  */
-class UserUpdateRequest extends UserCreateRequest
+class UserUpdateRequest extends FormRequest
 {
     public function rules(): array
     {
-        return parent::rules();
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users')->where('email', $this->email)],
+        ];
     }
 }

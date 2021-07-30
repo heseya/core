@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Swagger;
 
 use App\Http\Requests\UserCreateRequest;
+use App\Http\Requests\UserIndexRequest;
 use App\Http\Requests\UserUpdateRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 interface UserManagementControllerSwagger
@@ -29,7 +29,7 @@ interface UserManagementControllerSwagger
      *   )
      * )
      */
-    public function index(Request $request): JsonResource;
+    public function index(UserIndexRequest $request): JsonResource;
 
     /**
      * @OA\Get(
@@ -107,7 +107,7 @@ interface UserManagementControllerSwagger
      *   }
      * )
      */
-    public function update(UserUpdateRequest $request, User $user): JsonResponse;
+    public function update(User $user, UserUpdateRequest $request): JsonResource;
 
     /**
      * @OA\Delete(
