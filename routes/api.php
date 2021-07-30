@@ -21,6 +21,8 @@ Route::prefix('users')->group(function (): void {
         Route::get(null, 'UserManagementController@index');
         Route::get('id:{user:id}', 'UserManagementController@show');
         Route::post(null, 'UserManagementController@store');
+        Route::patch('id:{user:id}', 'UserManagementController@update');
+        Route::delete('id:{user:id}', 'UserManagementController@destroy');
     });
 });
 Route::post('login', 'AuthController@login');
