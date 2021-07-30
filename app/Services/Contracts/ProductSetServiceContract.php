@@ -22,7 +22,12 @@ interface ProductSetServiceContract
 
     public function reorder(ProductSet $parent, array $sets): void;
 
-    public function updateChildren(Collection $children, string $parentId, string $parentSlug, bool $publicParent): void;
+    public function updateChildren(
+        Collection $children,
+        string $parentId,
+        string $parentSlug,
+        bool $publicParent
+    ): void;
 
     public function delete(ProductSet $set): void;
 }
