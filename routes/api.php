@@ -61,7 +61,7 @@ Route::prefix('product-sets')->group(function (): void {
     Route::middleware('auth:api')->group(function (): void {
         Route::get('id:{product_set:id}', [ProductSetController::class, 'show']);
         Route::post(null, [ProductSetController::class, 'store']);
-        Route::post('id:{product_set:id}', [ProductSetController::class, 'update']);
+        Route::patch('id:{product_set:id}', [ProductSetController::class, 'update']);
         Route::delete('id:{product_set:id}', [ProductSetController::class, 'destroy']);
         Route::post('reorder', [ProductSetController::class, 'reorder']);
         Route::post('reorder/id:{product_set:id}', [ProductSetController::class, 'reorder']);

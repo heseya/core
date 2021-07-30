@@ -10,8 +10,8 @@ use Illuminate\Support\Collection;
 class ProductSetDto implements DtoContract, InstantiateFromRequest
 {
     private string $name;
-    private ?string $slug;
-    private ?string $override_slug;
+    private ?string $slug_suffix;
+    private bool $slug_override;
     private bool $public;
     private bool $hide_on_index;
     private ?string $parent_id;
@@ -19,16 +19,16 @@ class ProductSetDto implements DtoContract, InstantiateFromRequest
 
     public function __construct(
         string $name,
-        ?string $slug,
-        ?string $override_slug,
+        ?string $slug_suffix,
+        bool $slug_override,
         bool $public,
         bool $hide_on_index,
         ?string $parent_id,
         array $children_ids
     ) {
         $this->name = $name;
-        $this->slug = $slug;
-        $this->override_slug = $override_slug;
+        $this->slug_suffix = $slug_suffix;
+        $this->slug_override = $slug_override;
         $this->public = $public;
         $this->hide_on_index = $hide_on_index;
         $this->parent_id = $parent_id;
@@ -39,8 +39,8 @@ class ProductSetDto implements DtoContract, InstantiateFromRequest
     {
         return [
             'name' => $this->getName(),
-            'slug' => $this->getSlug(),
-            'override_slug' => $this->getOverrideSlug(),
+            'slug_suffix' => $this->getSlugSuffix(),
+            'slug_override' => $this->isSlugOverridden(),
             'public' => $this->isPublic(),
             'hide_on_index' => $this->isHiddenOnIndex(),
             'parent_id' => $this->getParentId(),
@@ -52,8 +52,8 @@ class ProductSetDto implements DtoContract, InstantiateFromRequest
     {
         return new self(
             $request->input('name'),
-            $request->input('slug'),
-            $request->input('override_slug'),
+            $request->input('slug_suffix'),
+            $request->boolean('slug_override', false),
             $request->boolean('public', true),
             $request->boolean('hide_on_index', false),
             $request->input('parent_id', null),
@@ -66,14 +66,14 @@ class ProductSetDto implements DtoContract, InstantiateFromRequest
         return $this->name;
     }
 
-    public function getSlug(): ?string
+    public function getSlugSuffix(): ?string
     {
-        return $this->slug;
+        return $this->slug_suffix;
     }
 
-    public function getOverrideSlug(): ?string
+    public function isSlugOverridden(): bool
     {
-        return $this->override_slug;
+        return $this->slug_override;
     }
 
     public function isPublic(): bool

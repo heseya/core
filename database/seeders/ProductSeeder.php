@@ -25,14 +25,41 @@ class ProductSeeder extends Seeder
 
         $sets = ProductSet::all();
 
-        $products->each(function ($product) use ($sets) {
+        $brands = ProductSet::factory([
+            'name' => 'Brands',
+            'slug' => 'brands',
+        ])->create();
+        $brands = ProductSet::factory([
+            'parent_id' => $brands->getKey(),
+        ])->count(4)->create();
+
+        $categories = ProductSet::factory([
+            'name' => 'Categories',
+            'slug' => 'categories',
+        ])->create();
+        $categories = ProductSet::factory([
+            'parent_id' => $categories->getKey(),
+        ])->count(4)->create();
+
+        $products->each(function ($product, $index) use ($sets, $brands, $categories) {
             if (rand(0, 1)) {
                 $this->schemas($product);
             }
 
             $this->media($product);
             $this->sets($product, $sets);
+
+            if ($index >= 75) {
+                $this->brands($product, $brands);
+            } elseif ($index >= 50) {
+                $this->categories($product, $categories);
+            } elseif ($index >= 25) {
+                $this->brands($product, $brands);
+                $this->categories($product, $categories);
+            }
         });
+
+
     }
 
     private function schemas(Product $product): void
@@ -59,5 +86,19 @@ class ProductSeeder extends Seeder
         for ($i = 0; $i < rand(0, 3); $i++) {
             $product->sets()->syncWithoutDetaching($sets->random());
         }
+    }
+
+    private function categories(Product $product, Collection $categories): void
+    {
+        $product->update([
+            'category_id' => $categories->random()->getKey(),
+        ]);
+    }
+
+    private function brands(Product $product, Collection $brands): void
+    {
+        $product->update([
+            'brand_id' => $brands->random()->getKey(),
+        ]);
     }
 }
