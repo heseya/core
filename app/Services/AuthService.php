@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Notifications\ResetPassword;
 use App\Services\Contracts\AuthServiceContract;
 use Carbon\Carbon;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -22,7 +23,7 @@ class AuthService implements AuthServiceContract
             'email' => $email,
             'password' => $password,
         ])) {
-            throw new AuthException('Invalid credentials');
+            throw new AuthenticationException('Invalid credentials');
         }
 
         $user = Auth::guard('web')->user();

@@ -17,14 +17,15 @@ class ProductSetNestedResource extends Resource implements ProductSetResourceSwa
             'id' => $this->getKey(),
             'name' => $this->name,
             'slug' => $this->slug,
+            'slug_suffix' => $this->slugSuffix,
+            'slug_override' => $this->slugOverride,
             'public' => $this->public,
-            'public_parent' => $this->public_parent,
+            'visible' => $this->public_parent && $this->public,
             'hide_on_index' => $this->hide_on_index,
             'parent_id' => $this->parent_id,
             'children_ids' => $children->map(
                 fn ($child) => $child->getKey(),
             )->toArray(),
-            'slug_override' => $this->slugOverride,
         ];
     }
 }

@@ -53,7 +53,7 @@ interface ProductSetTreeResourceSwagger
      *     property="children",
      *     type="array",
      *     description="Ids of assigned subsets",
-     *     @OA\Items(ref="#/components/schemas/ProductSetNestedTree",),
+     *     @OA\Items(ref="#/components/schemas/ProductSetNestedTree"),
      *   ),
      * )
      */
