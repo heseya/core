@@ -8,7 +8,6 @@ use App\Notifications\ResetPassword;
 use App\Services\Contracts\AuthServiceContract;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -105,7 +104,7 @@ class AuthService implements AuthServiceContract
         }
 
         if ($user->token() && $user->token()->getKey() === $token->id) {
-            throw new AuthException('Can\'t delete your current session', JsonResponse::HTTP_FORBIDDEN);
+            throw new AuthException('Can\'t delete your current session');
         }
 
         $token->revoke();

@@ -118,7 +118,7 @@ class AuthTest extends TestCase
         $headers = ['Authorization' => 'Bearer ' . $token->accessToken];
 
         $this->getJson('/auth/kill-session/id:' . $token->token->id, $headers)
-            ->assertForbidden();
+            ->assertNoContent();
 
         $this->assertDatabaseHas('oauth_access_tokens', [
             'id' => $token->token->id,
