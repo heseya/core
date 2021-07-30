@@ -173,7 +173,7 @@ class ProductSetService implements ProductSetServiceContract
         $set->delete();
     }
 
-    public function updateChildren(Collection $children, string $parentId, string $parentSlug, bool $publicParent)
+    public function updateChildren(Collection $children, string $parentId, string $parentSlug, bool $publicParent): void
     {
         $children->each(
             function ($child, $order) use ($parentId, $parentSlug, $publicParent) {
