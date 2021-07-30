@@ -68,7 +68,7 @@ interface ProductSetControllerSwagger
      *         @OA\Items(
      *           oneOf={
      *             @OA\Schema(ref="#/components/schemas/ProductSet"),
-     *             @OA\Schema(ref="#/components/schemas/ProductSetTree"),
+     *             @OA\Schema(ref="#/components/schemas/ProductSetChildren"),
      *           },
      *         )
      *       )
@@ -107,8 +107,8 @@ interface ProductSetControllerSwagger
      *         property="data",
      *         type="object",
      *         oneOf={
-     *           @OA\Schema(ref="#/components/schemas/ProductSet"),
-     *           @OA\Schema(ref="#/components/schemas/ProductSetTree"),
+     *           @OA\Schema(ref="#/components/schemas/ProductSetParent"),
+     *           @OA\Schema(ref="#/components/schemas/ProductSetParentChildren"),
      *         }
      *       )
      *     )
@@ -145,8 +145,8 @@ interface ProductSetControllerSwagger
      *         property="data",
      *         type="object",
      *         oneOf={
-     *           @OA\Schema(ref="#/components/schemas/ProductSet"),
-     *           @OA\Schema(ref="#/components/schemas/ProductSetTree"),
+     *           @OA\Schema(ref="#/components/schemas/ProductSetParent"),
+     *           @OA\Schema(ref="#/components/schemas/ProductSetParentChildren"),
      *         }
      *       )
      *     )
@@ -179,8 +179,8 @@ interface ProductSetControllerSwagger
      *         property="data",
      *         type="object",
      *         oneOf={
-     *           @OA\Schema(ref="#/components/schemas/ProductSet"),
-     *           @OA\Schema(ref="#/components/schemas/ProductSetTree"),
+     *           @OA\Schema(ref="#/components/schemas/ProductSetParent"),
+     *           @OA\Schema(ref="#/components/schemas/ProductSetParentChildren"),
      *         }
      *       )
      *     )
@@ -225,8 +225,8 @@ interface ProductSetControllerSwagger
      *         property="data",
      *         type="object",
      *         oneOf={
-     *           @OA\Schema(ref="#/components/schemas/ProductSet"),
-     *           @OA\Schema(ref="#/components/schemas/ProductSetTree"),
+     *           @OA\Schema(ref="#/components/schemas/ProductSetParent"),
+     *           @OA\Schema(ref="#/components/schemas/ProductSetParentChildren"),
      *         }
      *       )
      *     )

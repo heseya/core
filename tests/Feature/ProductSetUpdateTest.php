@@ -57,7 +57,7 @@ class ProductSetUpdateTest extends TestCase
             ->assertOk()
             ->assertJson(['data' => $set + [
                 'parent' => null,
-                'children' => [],
+                'children_ids' => [],
                 'slug' => 'test-edit',
                 'slug_suffix' => 'test-edit',
                 'slug_override' => false,
@@ -117,21 +117,8 @@ class ProductSetUpdateTest extends TestCase
                 'slug' => 'new',
                 'slug_suffix' => 'new',
                 'slug_override' => false,
-                'children' => [
-                    [
-                        'id' => $child->getKey(),
-                        'name' => 'Child',
-                        'slug' => 'new-child',
-                        'slug_suffix' => 'child',
-                        'slug_override' => false,
-                        'public' => true,
-                        'visible' => true,
-                        'hide_on_index' => false,
-                        'parent_id' => $parent->getKey(),
-                        'children_ids' => [
-                            $grandchild->getKey(),
-                        ],
-                    ]
+                'children_ids' => [
+                    $child->getKey(),
                 ],
             ]]);
 
@@ -151,7 +138,7 @@ class ProductSetUpdateTest extends TestCase
         ]);
     }
 
-    public function testUpdateTreeView(): void
+    public function testUpdateParentSlugTree(): void
     {
         $parent = ProductSet::factory()->create([
             'name' => 'Parent',

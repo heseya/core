@@ -47,7 +47,7 @@ class ProductSetIndexTest extends TestCase
         $response = $this->getJson('/product-sets');
         $response
             ->assertOk()
-            ->assertJsonCount(1, 'data') // Shoud show only public sets.
+            ->assertJsonCount(2, 'data') // Shoud show only public sets.
             ->assertJson(['data' => [
                 0 => [
                     'id' => $this->set->getKey(),
@@ -57,20 +57,21 @@ class ProductSetIndexTest extends TestCase
                     'public' => $this->set->public,
                     'visible' => $this->set->public && $this->set->public_parent,
                     'hide_on_index' => $this->set->hide_on_index,
-                    'parent' => $this->set->parent,
-                    'children' => [
-                        [
-                            'id' => $this->childSet->getKey(),
-                            'name' => $this->childSet->name,
-                            'slug' => $this->childSet->slug,
-                            'slug_override' => true,
-                            'public' => $this->childSet->public,
-                            'visible' => $this->childSet->public && $this->childSet->public_parent,
-                            'hide_on_index' => $this->childSet->hide_on_index,
-                            'parent_id' => $this->childSet->parent_id,
-                            'children_ids' => [],
-                        ],
+                    'parent_id' => $this->set->parent_id,
+                    'children_ids' => [
+                        $this->childSet->getKey(),
                     ],
+                ],
+                1 => [
+                    'id' => $this->childSet->getKey(),
+                    'name' => $this->childSet->name,
+                    'slug' => $this->childSet->slug,
+                    'slug_override' => true,
+                    'public' => $this->childSet->public,
+                    'visible' => $this->childSet->public && $this->childSet->public_parent,
+                    'hide_on_index' => $this->childSet->hide_on_index,
+                    'parent_id' => $this->childSet->parent_id,
+                    'children_ids' => [],
                 ],
             ]]);
     }
@@ -78,6 +79,87 @@ class ProductSetIndexTest extends TestCase
     public function testIndexAuthorized(): void
     {
         $response = $this->actingAs($this->user)->getJson('/product-sets');
+        $response
+            ->assertOk()
+            ->assertJsonCount(4, 'data') // Shoud show only public sets.
+            ->assertJson(['data' => [
+                0 => [
+                    'id' => $this->set->getKey(),
+                    'name' => $this->set->name,
+                    'slug' => $this->set->slug,
+                    'slug_override' => false,
+                    'public' => $this->set->public,
+                    'visible' => $this->set->public && $this->set->public_parent,
+                    'hide_on_index' => $this->set->hide_on_index,
+                    'parent_id' => null,
+                    'children_ids' => [
+                        $this->childSet->getKey(),
+                    ],
+                ],
+                1 => [
+                    'id' => $this->privateSet->getKey(),
+                    'name' => $this->privateSet->name,
+                    'slug' => $this->privateSet->slug,
+                    'slug_override' => false,
+                    'public' => $this->privateSet->public,
+                    'visible' => $this->privateSet->public && $this->privateSet->public_parent,
+                    'hide_on_index' => $this->privateSet->hide_on_index,
+                    'parent_id' => null,
+                    'children_ids' => [],
+                ],
+                2 => [
+                    'id' => $this->childSet->getKey(),
+                    'name' => $this->childSet->name,
+                    'slug' => $this->childSet->slug,
+                    'slug_override' => true,
+                    'public' => $this->childSet->public,
+                    'visible' => $this->childSet->public && $this->childSet->public_parent,
+                    'hide_on_index' => $this->childSet->hide_on_index,
+                    'parent_id' => $this->childSet->parent_id,
+                    'children_ids' => [
+                        $this->subChildSet->getKey(),
+                    ],
+                ],
+                3 => [
+                    'id' => $this->subChildSet->getKey(),
+                    'name' => $this->subChildSet->name,
+                    'slug' => $this->subChildSet->slug,
+                    'slug_override' => true,
+                    'public' => $this->subChildSet->public,
+                    'visible' => $this->subChildSet->public && $this->subChildSet->public_parent,
+                    'hide_on_index' => $this->subChildSet->hide_on_index,
+                    'parent_id' => $this->subChildSet->parent_id,
+                    'children_ids' => [],
+                ],
+            ]]);
+    }
+
+    public function testIndexRoot(): void
+    {
+        $response = $this->getJson('/product-sets?root');
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data') // Shoud show only public sets.
+            ->assertJson(['data' => [
+                [
+                    'id' => $this->set->getKey(),
+                    'name' => $this->set->name,
+                    'slug' => $this->set->slug,
+                    'slug_override' => false,
+                    'public' => $this->set->public,
+                    'visible' => $this->set->public && $this->set->public_parent,
+                    'hide_on_index' => $this->set->hide_on_index,
+                    'parent_id' => $this->set->parent_id,
+                    'children_ids' => [
+                        $this->childSet->getKey(),
+                    ],
+                ],
+            ]]);
+    }
+
+    public function testIndexRootAuthorized(): void
+    {
+        $response = $this->actingAs($this->user)->getJson('/product-sets?root');
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data') // Shoud show only public sets.
@@ -90,21 +172,9 @@ class ProductSetIndexTest extends TestCase
                     'public' => $this->set->public,
                     'visible' => $this->set->public && $this->set->public_parent,
                     'hide_on_index' => $this->set->hide_on_index,
-                    'parent' => null,
-                    'children' => [
-                        [
-                            'id' => $this->childSet->getKey(),
-                            'name' => $this->childSet->name,
-                            'slug' => $this->childSet->slug,
-                            'slug_override' => true,
-                            'public' => $this->childSet->public,
-                            'visible' => $this->childSet->public && $this->childSet->public_parent,
-                            'hide_on_index' => $this->childSet->hide_on_index,
-                            'parent_id' => $this->childSet->parent_id,
-                            'children_ids' => [
-                                $this->subChildSet->getKey(),
-                            ],
-                        ],
+                    'parent_id' => null,
+                    'children_ids' => [
+                        $this->childSet->getKey(),
                     ],
                 ],
                 1 => [
@@ -115,8 +185,8 @@ class ProductSetIndexTest extends TestCase
                     'public' => $this->privateSet->public,
                     'visible' => $this->privateSet->public && $this->privateSet->public_parent,
                     'hide_on_index' => $this->privateSet->hide_on_index,
-                    'parent' => null,
-                    'children' => [],
+                    'parent_id' => null,
+                    'children_ids' => [],
                 ],
             ]]);
     }
@@ -128,7 +198,7 @@ class ProductSetIndexTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data') // Shoud show only public sets.
             ->assertJson(['data' => [
-                0 => [
+                [
                     'id' => $this->set->getKey(),
                     'name' => $this->set->name,
                     'slug' => $this->set->slug,
@@ -136,7 +206,7 @@ class ProductSetIndexTest extends TestCase
                     'public' => $this->set->public,
                     'visible' => $this->set->public && $this->set->public_parent,
                     'hide_on_index' => $this->set->hide_on_index,
-                    'parent' => $this->set->parent,
+                    'parent_id' => $this->set->parent_id,
                     'children' => [
                         [
                             'id' => $this->childSet->getKey(),
@@ -169,7 +239,7 @@ class ProductSetIndexTest extends TestCase
                     'public' => $this->set->public,
                     'visible' => $this->set->public && $this->set->public_parent,
                     'hide_on_index' => $this->set->hide_on_index,
-                    'parent' => null,
+                    'parent_id' => null,
                     'children' => [
                         [
                             'id' => $this->childSet->getKey(),
@@ -204,7 +274,7 @@ class ProductSetIndexTest extends TestCase
                     'public' => $this->privateSet->public,
                     'visible' => $this->privateSet->public && $this->privateSet->public_parent,
                     'hide_on_index' => $this->privateSet->hide_on_index,
-                    'parent' => null,
+                    'parent_id' => null,
                     'children' => [],
                 ],
             ]]);

@@ -130,29 +130,9 @@ class ProductSetCreateTest extends TestCase
                 'slug_override' => false,
                 'slug_suffix' => 'test-parent',
                 'slug' => 'test-parent',
-                'children' => [
-                    [
-                        'id' => $this->privateSet->getKey(),
-                        'name' => $this->privateSet->name,
-                        'slug' => 'test-parent-' . $this->privateSet->slug,
-                        'slug_override' => false,
-                        'public' => $this->privateSet->public,
-                        'visible' => $this->privateSet->public && $this->privateSet->public_parent,
-                        'hide_on_index' => $this->privateSet->hide_on_index,
-                        'children_ids' => [],
-                    ],
-                    [
-                        'id' => $this->set->getKey(),
-                        'name' => $this->set->name,
-                        'slug' => 'test-parent-' . $this->set->slug,
-                        'slug_override' => false,
-                        'public' => $this->set->public,
-                        'visible' => $this->set->public && $this->set->public_parent,
-                        'hide_on_index' => $this->set->hide_on_index,
-                        'children_ids' => [
-                            $this->childSet->getKey(),
-                        ],
-                    ],
+                'children_ids' => [
+                    0 => $this->privateSet->getKey(),
+                    1 => $this->set->getKey(),
                 ],
             ]]);
 

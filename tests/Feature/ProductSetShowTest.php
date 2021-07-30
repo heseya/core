@@ -62,20 +62,8 @@ class ProductSetShowTest extends TestCase
                 'visible' => $this->set->public && $this->set->public_parent,
                 'hide_on_index' => $this->set->hide_on_index,
                 'parent' => $this->set->parent,
-                'children' => [
-                    [
-                        'id' => $this->childSet->getKey(),
-                        'name' => $this->childSet->name,
-                        'slug' => $this->childSet->slug,
-                        'slug_override' => true,
-                        'public' => $this->childSet->public,
-                        'visible' => $this->childSet->public && $this->childSet->public_parent,
-                        'hide_on_index' => $this->childSet->hide_on_index,
-                        'parent_id' => $this->childSet->parent_id,
-                        'children_ids' => [
-                            $this->subChildSet->getKey(),
-                        ],
-                    ],
+                'children_ids' => [
+                    $this->childSet->getKey(),
                 ],
             ]]);
     }
@@ -94,10 +82,51 @@ class ProductSetShowTest extends TestCase
                 'visible' => $this->privateSet->public && $this->privateSet->public_parent,
                 'hide_on_index' => $this->privateSet->hide_on_index,
                 'parent' => null,
-                'children' => [],
+                'children_ids' => [],
             ]]);
     }
 
+    public function testShowTree(): void
+    {
+        $response = $this->actingAs($this->user)->getJson('/product-sets/id:' . $this->set->getKey() . '?tree');
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $this->set->getKey(),
+                'name' => $this->set->name,
+                'slug' => $this->set->slug,
+                'slug_override' => false,
+                'public' => $this->set->public,
+                'visible' => $this->set->public && $this->set->public_parent,
+                'hide_on_index' => $this->set->hide_on_index,
+                'parent' => $this->set->parent,
+                'children' => [
+                    [
+                        'id' => $this->childSet->getKey(),
+                        'name' => $this->childSet->name,
+                        'slug' => $this->childSet->slug,
+                        'slug_override' => true,
+                        'public' => $this->childSet->public,
+                        'visible' => $this->childSet->public && $this->childSet->public_parent,
+                        'hide_on_index' => $this->childSet->hide_on_index,
+                        'parent_id' => $this->childSet->parent_id,
+                        'children' => [
+                            [
+                                'id' => $this->subChildSet->getKey(),
+                                'name' => $this->subChildSet->name,
+                                'slug' => $this->subChildSet->slug,
+                                'slug_override' => true,
+                                'public' => $this->subChildSet->public,
+                                'visible' => $this->subChildSet->public && $this->subChildSet->public_parent,
+                                'hide_on_index' => $this->subChildSet->hide_on_index,
+                                'parent_id' => $this->subChildSet->parent_id,
+                                'children' => [],
+                            ]
+                        ],
+                    ],
+                ],
+            ]]);
+    }
     public function testShowSlug(): void
     {
         $response = $this->getJson('/product-sets/' . $this->set->slug);
@@ -112,25 +141,16 @@ class ProductSetShowTest extends TestCase
                 'visible' => $this->set->public && $this->set->public_parent,
                 'hide_on_index' => $this->set->hide_on_index,
                 'parent' => $this->set->parent,
-                'children' => [
-                    [
-                        'id' => $this->childSet->getKey(),
-                        'name' => $this->childSet->name,
-                        'slug' => $this->childSet->slug,
-                        'slug_override' => true,
-                        'public' => $this->childSet->public,
-                        'visible' => $this->childSet->public && $this->childSet->public_parent,
-                        'hide_on_index' => $this->childSet->hide_on_index,
-                        'parent_id' => $this->childSet->parent_id,
-                        'children_ids' => [],
-                    ],
+                'children_ids' => [
+                    $this->childSet->getKey(),
                 ],
             ]]);
     }
 
-    public function testShowSlugAuthorized(): void
+
+    public function testShowSlugTree(): void
     {
-        $response = $this->actingAs($this->user)->getJson('/product-sets/' . $this->set->slug);
+        $response = $this->getJson('/product-sets/' . $this->set->slug . '?tree');
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -152,8 +172,48 @@ class ProductSetShowTest extends TestCase
                         'visible' => $this->childSet->public && $this->childSet->public_parent,
                         'hide_on_index' => $this->childSet->hide_on_index,
                         'parent_id' => $this->childSet->parent_id,
-                        'children_ids' => [
-                            $this->subChildSet->getKey(),
+                        'children' => [],
+                    ],
+                ],
+            ]]);
+    }
+
+    public function testShowSlugTreeAuthorized(): void
+    {
+        $response = $this->actingAs($this->user)->getJson('/product-sets/' . $this->set->slug . '?tree');
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $this->set->getKey(),
+                'name' => $this->set->name,
+                'slug' => $this->set->slug,
+                'slug_override' => false,
+                'public' => $this->set->public,
+                'visible' => $this->set->public && $this->set->public_parent,
+                'hide_on_index' => $this->set->hide_on_index,
+                'parent' => $this->set->parent,
+                'children' => [
+                    [
+                        'id' => $this->childSet->getKey(),
+                        'name' => $this->childSet->name,
+                        'slug' => $this->childSet->slug,
+                        'slug_override' => true,
+                        'public' => $this->childSet->public,
+                        'visible' => $this->childSet->public && $this->childSet->public_parent,
+                        'hide_on_index' => $this->childSet->hide_on_index,
+                        'parent_id' => $this->childSet->parent_id,
+                        'children' => [
+                            [
+                                'id' => $this->subChildSet->getKey(),
+                                'name' => $this->subChildSet->name,
+                                'slug' => $this->subChildSet->slug,
+                                'slug_override' => true,
+                                'public' => $this->subChildSet->public,
+                                'visible' => $this->subChildSet->public && $this->subChildSet->public_parent,
+                                'hide_on_index' => $this->subChildSet->hide_on_index,
+                                'parent_id' => $this->subChildSet->parent_id,
+                                'children' => [],
+                            ]
                         ],
                     ],
                 ],
@@ -180,7 +240,7 @@ class ProductSetShowTest extends TestCase
                 'visible' => $this->privateSet->public && $this->privateSet->public_parent,
                 'hide_on_index' => $this->privateSet->hide_on_index,
                 'parent' => null,
-                'children' => [],
+                'children_ids' => [],
             ]]);
     }
 }
