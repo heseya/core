@@ -178,8 +178,7 @@ class ProductSetService implements ProductSetServiceContract
         string $parentId,
         string $parentSlug,
         bool $publicParent
-    ): void
-    {
+    ): void {
         $children->each(
             function ($child, $order) use ($parentId, $parentSlug, $publicParent) {
                 if ($child->slugOverride) {
