@@ -51,19 +51,25 @@ class ProductSetController extends Controller implements ProductSetControllerSwa
     public function store(ProductSetStoreRequest $request): JsonResource
     {
         $dto = ProductSetDto::instantiateFromRequest($request);
+        $productSet = $this->productSetService->create($dto);
 
-        return ProductSetResource::make(
-            $this->productSetService->create($dto),
-        );
+        if ($request->has('tree') && $request->input('tree', true) !== false) {
+            return ProductSetTreeResource::make($productSet);
+        }
+
+        return ProductSetResource::make($productSet);
     }
 
     public function update(ProductSet $productSet, ProductSetUpdateRequest $request): JsonResource
     {
         $dto = ProductSetDto::instantiateFromRequest($request);
+        $productSet = $this->productSetService->update($productSet, $dto);
 
-        return ProductSetResource::make(
-            $this->productSetService->update($productSet, $dto),
-        );
+        if ($request->has('tree') && $request->input('tree', true) !== false) {
+            return ProductSetTreeResource::make($productSet);
+        }
+
+        return ProductSetResource::make($productSet);
     }
 
     public function reorder(ProductSet $productSet, ProductSetReorderRequest $request): JsonResponse

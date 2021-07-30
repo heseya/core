@@ -159,6 +159,15 @@ interface ProductSetControllerSwagger
      * @OA\Post(
      *   path="/product-sets",
      *   tags={"Product Sets"},
+     *   @OA\Parameter(
+     *     name="tree",
+     *     in="query",
+     *     allowEmptyValue=true,
+     *     description="Return resource with recursively nested children instead of id's",
+     *     @OA\Schema(
+     *       type="bool",
+     *     ),
+     *   ),
      *   @OA\RequestBody(
      *     ref="#/components/requestBodies/ProductSetStore",
      *   ),
@@ -168,7 +177,11 @@ interface ProductSetControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/ProductSet",
+     *         type="object",
+     *         oneOf={
+     *           @OA\Schema(ref="#/components/schemas/ProductSet"),
+     *           @OA\Schema(ref="#/components/schemas/ProductSetTree"),
+     *         }
      *       )
      *     )
      *   ),
@@ -192,6 +205,15 @@ interface ProductSetControllerSwagger
      *       example="0006c3a0-21af-4485-b7fe-9c42233cf03a",
      *     )
      *   ),
+     *   @OA\Parameter(
+     *     name="tree",
+     *     in="query",
+     *     allowEmptyValue=true,
+     *     description="Return resource with recursively nested children instead of id's",
+     *     @OA\Schema(
+     *       type="bool",
+     *     ),
+     *   ),
      *   @OA\RequestBody(
      *     ref="#/components/requestBodies/ProductSetUpdate",
      *   ),
@@ -201,7 +223,11 @@ interface ProductSetControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/ProductSet",
+     *         type="object",
+     *         oneOf={
+     *           @OA\Schema(ref="#/components/schemas/ProductSet"),
+     *           @OA\Schema(ref="#/components/schemas/ProductSetTree"),
+     *         }
      *       )
      *     )
      *   ),
@@ -235,6 +261,23 @@ interface ProductSetControllerSwagger
      * )
      */
     public function destroy(ProductSet $category): JsonResponse;
+
+    /**
+     * @OA\Post(
+     *   path="/product-sets/reorder",
+     *   tags={"Product Sets"},
+     *   @OA\RequestBody(
+     *     ref="#/components/requestBodies/ProductSetReorder",
+     *   ),
+     *   @OA\Response(
+     *     response=204,
+     *     description="Success",
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
 
     /**
      * @OA\Post(
