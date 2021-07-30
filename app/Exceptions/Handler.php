@@ -16,17 +16,26 @@ final class Handler extends ExceptionHandler
     protected array $errors = [
         AuthenticationException::class => [
             'message' => 'Unauthorized',
-            'code' => 401,
+            'code' => JsonResponse::HTTP_UNAUTHORIZED,
         ],
         NotFoundHttpException::class => [
             'message' => 'Page not found',
-            'code' => 404,
+            'code' => JsonResponse::HTTP_NOT_FOUND,
         ],
         ValidationException::class => [
-            'code' => 422,
+            'code' => JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
         ],
         StoreException::class => [
-            'code' => 400,
+            'code' => JsonResponse::HTTP_BAD_REQUEST,
+        ],
+        AuthException::class => [
+            'code' => JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
+        ],
+        MediaException::class => [
+            'code' => JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
+        ],
+        OrderException::class => [
+            'code' => JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
         ],
     ];
 
