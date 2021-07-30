@@ -5,19 +5,10 @@ namespace App\Services;
 use App\Models\User;
 use App\Services\Contracts\UserManagementServiceContract;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class UserManagementService implements UserManagementServiceContract
 {
-    public function authorize(): void
-    {
-        if (!Auth::check()) {
-            throw new NotFoundHttpException();
-        }
-    }
-
     public function index(array $search, ?string $sort, int $limit): LengthAwarePaginator
     {
         return User::search($search)

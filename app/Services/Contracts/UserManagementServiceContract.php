@@ -7,8 +7,6 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 interface UserManagementServiceContract
 {
-    public function authorize(): void;
-
     public function index(array $search, ?string $sort, int $limit): LengthAwarePaginator;
 
     public function create(array $attributes): User;

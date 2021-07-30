@@ -35,8 +35,6 @@ class UserManagementController extends Controller implements UserManagementContr
 
     public function show(User $user): JsonResource
     {
-        $this->userManagementServiceContract->authorize();
-
         return UserResource::make($user);
     }
 

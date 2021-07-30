@@ -16,13 +16,14 @@ Route::prefix('users')->group(function (): void {
     Route::post('/reset-password', 'AuthController@resetPassword');
     Route::patch('/save-reset-password', 'AuthController@saveResetPassword');
 
-    //TODO temporarily without authorization until it is fully created ...
     Route::prefix('managements')->group(function (): void {
-        Route::get(null, 'UserManagementController@index');
-        Route::get('id:{user:id}', 'UserManagementController@show');
-        Route::post(null, 'UserManagementController@store');
-        Route::patch('id:{user:id}', 'UserManagementController@update');
-        Route::delete('id:{user:id}', 'UserManagementController@destroy');
+        Route::middleware('auth:api')->group(function (): void {
+            Route::get(null, 'UserManagementController@index');
+            Route::get('id:{user:id}', 'UserManagementController@show');
+            Route::post(null, 'UserManagementController@store');
+            Route::patch('id:{user:id}', 'UserManagementController@update');
+            Route::delete('id:{user:id}', 'UserManagementController@destroy');
+        });
     });
 });
 Route::post('login', 'AuthController@login');
