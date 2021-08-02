@@ -22,8 +22,10 @@ class ProductSetResource extends Resource implements ProductSetResourceSwagger
             'public' => $this->public,
             'visible' => $this->public_parent && $this->public,
             'hide_on_index' => $this->hide_on_index,
-            'parent' => ProductSetNestedResource::make($this->parent),
-            'children' => ProductSetNestedResource::collection($children),
+            'parent_id' => $this->parent_id,
+            'children_ids' => $children->map(
+                fn ($child) => $child->getKey(),
+            )->toArray(),
         ];
     }
 }

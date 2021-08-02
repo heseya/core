@@ -25,12 +25,16 @@ class ProductSetService implements ProductSetServiceContract
         }
     }
 
-    public function searchAll(array $attributes): Collection
+    public function searchAll(array $attributes, bool $root): Collection
     {
-        $query = ProductSet::root()->search($attributes);
+        $query = ProductSet::search($attributes);
 
         if (!Auth::check()) {
             $query->public();
+        }
+
+        if ($root) {
+            $query->root();
         }
 
         return $query->get();

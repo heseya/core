@@ -9,8 +9,10 @@ use App\Http\Requests\ProductSetReorderRequest;
 use App\Http\Requests\ProductSetShowRequest;
 use App\Http\Requests\ProductSetStoreRequest;
 use App\Http\Requests\ProductSetUpdateRequest;
+use App\Http\Resources\ProductSetChildrenResource;
+use App\Http\Resources\ProductSetParentChildrenResource;
+use App\Http\Resources\ProductSetParentResource;
 use App\Http\Resources\ProductSetResource;
-use App\Http\Resources\ProductSetTreeResource;
 use App\Models\ProductSet;
 use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\ProductSetService;
@@ -29,11 +31,16 @@ class ProductSetController extends Controller implements ProductSetControllerSwa
 
     public function index(ProductSetIndexRequest $request): JsonResource
     {
-        $sets = $this->productSetService->searchAll($request->validated());
+        $sets = $this->productSetService->searchAll(
+            $request->validated(),
+            $request->has('tree') && $request->input('tree', true) !== false ||
+            $request->has('root') && $request->input('root', true) !== false
+        );
 
         if ($request->has('tree') && $request->input('tree', true) !== false) {
-            return ProductSetTreeResource::collection($sets);
+            return ProductSetChildrenResource::collection($sets);
         }
+
         return ProductSetResource::collection($sets);
     }
 
@@ -42,28 +49,34 @@ class ProductSetController extends Controller implements ProductSetControllerSwa
         $this->productSetService->authorize($productSet);
 
         if ($request->has('tree') && $request->input('tree', true) !== false) {
-            return ProductSetTreeResource::make($productSet);
+            return ProductSetParentChildrenResource::make($productSet);
         }
 
-        return ProductSetResource::make($productSet);
+        return ProductSetParentResource::make($productSet);
     }
 
     public function store(ProductSetStoreRequest $request): JsonResource
     {
         $dto = ProductSetDto::instantiateFromRequest($request);
+        $productSet = $this->productSetService->create($dto);
 
-        return ProductSetResource::make(
-            $this->productSetService->create($dto),
-        );
+        if ($request->has('tree') && $request->input('tree', true) !== false) {
+            return ProductSetParentChildrenResource::make($productSet);
+        }
+
+        return ProductSetParentResource::make($productSet);
     }
 
     public function update(ProductSet $productSet, ProductSetUpdateRequest $request): JsonResource
     {
         $dto = ProductSetDto::instantiateFromRequest($request);
+        $productSet = $this->productSetService->update($productSet, $dto);
 
-        return ProductSetResource::make(
-            $this->productSetService->update($productSet, $dto),
-        );
+        if ($request->has('tree') && $request->input('tree', true) !== false) {
+            return ProductSetParentChildrenResource::make($productSet);
+        }
+
+        return ProductSetParentResource::make($productSet);
     }
 
     public function reorder(ProductSet $productSet, ProductSetReorderRequest $request): JsonResponse

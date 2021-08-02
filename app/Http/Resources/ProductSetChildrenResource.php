@@ -2,11 +2,11 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\Swagger\ProductSetTreeResourceSwagger;
+use App\Http\Resources\Swagger\ProductSetResourceSwagger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class ProductSetTreeResource extends Resource implements ProductSetTreeResourceSwagger
+class ProductSetChildrenResource extends Resource implements ProductSetResourceSwagger
 {
     public function base(Request $request): array
     {
@@ -22,8 +22,8 @@ class ProductSetTreeResource extends Resource implements ProductSetTreeResourceS
             'public' => $this->public,
             'visible' => $this->public_parent && $this->public,
             'hide_on_index' => $this->hide_on_index,
-            'parent' => ProductSetNestedResource::make($this->parent, true),
-            'children' => ProductSetNestedTreeResource::collection($children),
+            'parent_id' => $this->parent_id,
+            'children' => ProductSetChildrenResource::collection($children),
         ];
     }
 }
