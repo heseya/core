@@ -87,7 +87,7 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
             $request->input('code'),
             $request->input('email'),
             $request->input('currency', 'PLN'),
-            $request->exists('comment') ? $request->input('comment', '') : null,
+            $request->exists('comment') ? ($request->input('comment') ?? '') : null,
             $request->input('shipping_number'),
             $request->input('shipping_price'),
             $request->input('status_id'),
