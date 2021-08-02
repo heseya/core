@@ -15,7 +15,7 @@ class StrongPassword implements Rule
      * StrongPassword constructor.
      */
     public function __construct(
-        int $minLength = 20,
+        int $minLength = 8,
         bool $needsNumber = true,
         bool $needsUppercaseLetter = true,
         bool $needsSpecialCharacter = true

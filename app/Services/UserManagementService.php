@@ -16,16 +16,23 @@ class UserManagementService implements UserManagementServiceContract
             ->paginate($limit);
     }
 
-    public function create(array $attributes): User
+    public function create(string $name, string $email, string $password): User
     {
-        $attributes['password'] = Hash::make($attributes['password']);
-
-        return User::create($attributes);
+        return User::create([
+            'name' => $name,
+            'email' => $email,
+            'password' => Hash::make($password),
+        ]);
     }
 
-    public function update(User $user, array $attributes): User
+    public function update(User $user, ?string $name, ?string $email): User
     {
-        $user->update($attributes);
+        $user->update(
+            [
+                'name' => $name ?? $user->name,
+                'email' => $email ?? $user->email,
+            ]
+        );
 
         return $user;
     }

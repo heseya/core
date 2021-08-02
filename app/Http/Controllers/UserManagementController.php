@@ -40,14 +40,22 @@ class UserManagementController extends Controller implements UserManagementContr
 
     public function store(UserCreateRequest $request): JsonResource
     {
-        $user = $this->userManagementServiceContract->create($request->validated());
+        $user = $this->userManagementServiceContract->create(
+            $request->input('name'),
+            $request->input('email'),
+            $request->input('password'),
+        );
 
         return UserResource::make($user);
     }
 
     public function update(User $user, UserUpdateRequest $request): JsonResource
     {
-        $resultUser = $this->userManagementServiceContract->update($user, $request->validated());
+        $resultUser = $this->userManagementServiceContract->update(
+            $user,
+            $request->input('name'),
+            $request->input('email'),
+        );
 
         return UserResource::make($resultUser);
     }
