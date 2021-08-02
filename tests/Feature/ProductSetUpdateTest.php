@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\ProductSet;
-use App\Models\Product;
 use Tests\TestCase;
 
 class ProductSetUpdateTest extends TestCase
@@ -61,7 +60,8 @@ class ProductSetUpdateTest extends TestCase
                 'slug' => 'test-edit',
                 'slug_suffix' => 'test-edit',
                 'slug_override' => false,
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('product_sets', $set + $parentId + [
             'slug' => 'test-edit',
@@ -120,7 +120,8 @@ class ProductSetUpdateTest extends TestCase
                 'children_ids' => [
                     $child->getKey(),
                 ],
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('product_sets', [
             'id' => $parent->getKey(),
@@ -210,10 +211,11 @@ class ProductSetUpdateTest extends TestCase
                                 'hide_on_index' => false,
                                 'parent_id' => $child->getKey(),
                                 'children' => [],
-                            ]
+                            ],
                         ],
-                    ]
+                    ],
                 ],
-            ]]);
+            ],
+            ]);
     }
 }

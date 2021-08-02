@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\ProductSet;
-use App\Models\Product;
 use Tests\TestCase;
 
 class ProductSetIndexTest extends TestCase
@@ -73,7 +72,8 @@ class ProductSetIndexTest extends TestCase
                     'parent_id' => $this->childSet->parent_id,
                     'children_ids' => [],
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     public function testIndexAuthorized(): void
@@ -131,7 +131,8 @@ class ProductSetIndexTest extends TestCase
                     'parent_id' => $this->subChildSet->parent_id,
                     'children_ids' => [],
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     public function testIndexRoot(): void
@@ -154,7 +155,8 @@ class ProductSetIndexTest extends TestCase
                         $this->childSet->getKey(),
                     ],
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     public function testIndexRootAuthorized(): void
@@ -188,7 +190,8 @@ class ProductSetIndexTest extends TestCase
                     'parent_id' => null,
                     'children_ids' => [],
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     public function testIndexTree(): void
@@ -221,7 +224,8 @@ class ProductSetIndexTest extends TestCase
                         ],
                     ],
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     public function testIndexTreeAuthorized(): void
@@ -277,6 +281,7 @@ class ProductSetIndexTest extends TestCase
                     'parent_id' => null,
                     'children' => [],
                 ],
-            ]]);
+            ],
+            ]);
     }
 }

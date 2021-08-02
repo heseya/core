@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\ProductSet;
-use App\Models\Product;
 use Tests\TestCase;
 
 class ProductSetCreateTest extends TestCase
@@ -75,7 +74,8 @@ class ProductSetCreateTest extends TestCase
                 'slug_override' => false,
                 'slug_suffix' => 'test',
                 'parent' => null,
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('product_sets', $set + $defaults + [
             'parent_id' => null,
@@ -101,7 +101,8 @@ class ProductSetCreateTest extends TestCase
                 'slug_override' => false,
                 'parent' => null,
                 'slug' => 'test',
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('product_sets', $set + [
             'parent_id' => null,
@@ -134,7 +135,8 @@ class ProductSetCreateTest extends TestCase
                     0 => $this->privateSet->getKey(),
                     1 => $this->set->getKey(),
                 ],
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('product_sets', $set + [
             'slug' => 'test-parent',
@@ -190,8 +192,9 @@ class ProductSetCreateTest extends TestCase
                     'public' => $parent->public,
                     'visible' => $parent->public && $parent->public_parent,
                     'hide_on_index' => $parent->hide_on_index,
-                ]
-            ]]);
+                ],
+            ],
+            ]);
 
         $this->assertDatabaseHas('product_sets', $set + $parentId + [
             'slug' => $parent->slug . '-test-child',
@@ -223,7 +226,8 @@ class ProductSetCreateTest extends TestCase
                 'slug' => 'test-order',
                 'slug_suffix' => 'test-order',
                 'slug_override' => false,
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('product_sets', $set + $order + [
             'slug' => 'test-order',
@@ -258,7 +262,8 @@ class ProductSetCreateTest extends TestCase
                 'slug' => 'test-child',
                 'slug_suffix' => 'test-child',
                 'slug_override' => true,
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('product_sets', $set + $parentId + [
             'public_parent' => false,
@@ -339,10 +344,11 @@ class ProductSetCreateTest extends TestCase
                                 'hide_on_index' => false,
                                 'parent_id' => $child->getKey(),
                                 'children' => [],
-                            ]
+                            ],
                         ],
-                    ]
+                    ],
                 ],
-            ]]);
+            ],
+            ]);
     }
 }

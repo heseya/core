@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\ProductSet;
-use App\Models\Product;
 use Tests\TestCase;
 
 class ProductSetShowTest extends TestCase
@@ -65,7 +64,8 @@ class ProductSetShowTest extends TestCase
                 'children_ids' => [
                     $this->childSet->getKey(),
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     public function testShowPrivate(): void
@@ -83,7 +83,8 @@ class ProductSetShowTest extends TestCase
                 'hide_on_index' => $this->privateSet->hide_on_index,
                 'parent' => null,
                 'children_ids' => [],
-            ]]);
+            ],
+            ]);
     }
 
     public function testShowTree(): void
@@ -121,11 +122,12 @@ class ProductSetShowTest extends TestCase
                                 'hide_on_index' => $this->subChildSet->hide_on_index,
                                 'parent_id' => $this->subChildSet->parent_id,
                                 'children' => [],
-                            ]
+                            ],
                         ],
                     ],
                 ],
-            ]]);
+            ],
+            ]);
     }
     public function testShowSlug(): void
     {
@@ -144,9 +146,9 @@ class ProductSetShowTest extends TestCase
                 'children_ids' => [
                     $this->childSet->getKey(),
                 ],
-            ]]);
+            ],
+            ]);
     }
-
 
     public function testShowSlugTree(): void
     {
@@ -175,7 +177,8 @@ class ProductSetShowTest extends TestCase
                         'children' => [],
                     ],
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     public function testShowSlugTreeAuthorized(): void
@@ -213,11 +216,12 @@ class ProductSetShowTest extends TestCase
                                 'hide_on_index' => $this->subChildSet->hide_on_index,
                                 'parent_id' => $this->subChildSet->parent_id,
                                 'children' => [],
-                            ]
+                            ],
                         ],
                     ],
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     public function testShowSlugPrivateUnauthorized(): void
@@ -241,6 +245,7 @@ class ProductSetShowTest extends TestCase
                 'hide_on_index' => $this->privateSet->hide_on_index,
                 'parent' => null,
                 'children_ids' => [],
-            ]]);
+            ],
+            ]);
     }
 }

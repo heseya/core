@@ -18,10 +18,19 @@ interface ProductSetControllerSwagger
      *   path="/product-sets",
      *   tags={"Product Sets"},
      *   @OA\Parameter(
+     *     name="root",
+     *     in="query",
+     *     allowEmptyValue=true,
+     *     description="Return only root lists",
+     *     @OA\Schema(
+     *       type="bool",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
      *     name="tree",
      *     in="query",
      *     allowEmptyValue=true,
-     *     description="Return resource with recursively nested children instead of id's",
+     *     description="Return sets starting from root with recursively nested children instead of id's",
      *     @OA\Schema(
      *       type="bool",
      *     ),
@@ -94,7 +103,7 @@ interface ProductSetControllerSwagger
      *     name="tree",
      *     in="query",
      *     allowEmptyValue=true,
-     *     description="Return resource with recursively nested children instead of id's",
+     *     description="Return set with recursively nested children instead of id's",
      *     @OA\Schema(
      *       type="bool",
      *     ),
@@ -132,7 +141,7 @@ interface ProductSetControllerSwagger
      *     name="tree",
      *     in="query",
      *     allowEmptyValue=true,
-     *     description="Return resource with recursively nested children instead of id's",
+     *     description="Return set with recursively nested children instead of id's",
      *     @OA\Schema(
      *       type="bool",
      *     ),
@@ -163,7 +172,7 @@ interface ProductSetControllerSwagger
      *     name="tree",
      *     in="query",
      *     allowEmptyValue=true,
-     *     description="Return resource with recursively nested children instead of id's",
+     *     description="Return set with recursively nested children instead of id's",
      *     @OA\Schema(
      *       type="bool",
      *     ),
@@ -209,7 +218,7 @@ interface ProductSetControllerSwagger
      *     name="tree",
      *     in="query",
      *     allowEmptyValue=true,
-     *     description="Return resource with recursively nested children instead of id's",
+     *     description="Return set with recursively nested children instead of id's",
      *     @OA\Schema(
      *       type="bool",
      *     ),
