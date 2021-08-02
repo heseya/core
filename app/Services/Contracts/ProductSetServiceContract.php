@@ -10,7 +10,7 @@ interface ProductSetServiceContract
 {
     public function authorize(ProductSet $set): void;
 
-    public function searchAll(array $attributes): Collection;
+    public function searchAll(array $attributes, bool $root): Collection;
 
     public function brands(array $attributes): Collection;
 

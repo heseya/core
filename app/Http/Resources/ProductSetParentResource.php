@@ -6,7 +6,7 @@ use App\Http\Resources\Swagger\ProductSetResourceSwagger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class ProductSetNestedResource extends Resource implements ProductSetResourceSwagger
+class ProductSetParentResource extends Resource implements ProductSetResourceSwagger
 {
     public function base(Request $request): array
     {
@@ -22,7 +22,7 @@ class ProductSetNestedResource extends Resource implements ProductSetResourceSwa
             'public' => $this->public,
             'visible' => $this->public_parent && $this->public,
             'hide_on_index' => $this->hide_on_index,
-            'parent_id' => $this->parent_id,
+            'parent' => ProductSetResource::make($this->parent),
             'children_ids' => $children->map(
                 fn ($child) => $child->getKey(),
             )->toArray(),
