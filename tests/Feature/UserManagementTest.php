@@ -60,23 +60,11 @@ class UserManagementTest extends TestCase
         $response->assertUnauthorized();
     }
 
-    public function testCreateByBusyEmail(): void
-    {
-        $data = [
-            'name' => $this->faker->name,
-            'email' => $this->user->email,
-            'password' => $this->faker->password(10),
-        ];
-
-        $response = $this->actingAs($this->user)->postJson('/users/managements', $data);
-        $response->assertStatus(422);
-    }
-
     public function testCreate(): void
     {
         $data = [
             'name' => $this->faker->name,
-            'email' => $this->faker->unique()->safeEmail,
+            'email' => $this->faker->email,
             'password' => $this->faker->password(10),
         ];
 
@@ -99,6 +87,18 @@ class UserManagementTest extends TestCase
         ]);
     }
 
+    public function testCreateByBusyEmail(): void
+    {
+        $data = [
+            'name' => $this->faker->name,
+            'email' => $this->user->email,
+            'password' => $this->faker->password(10),
+        ];
+
+        $response = $this->actingAs($this->user)->postJson('/users/managements', $data);
+        $response->assertStatus(422);
+    }
+
     public function testUpdateUnauthorized(): void
     {
         $response = $this->patchJson('/users/managements/id:' . $this->user->getKey());
@@ -109,7 +109,7 @@ class UserManagementTest extends TestCase
     {
         $data = [
             'name' => $this->faker->name,
-            'email' => $this->faker->unique()->safeEmail,
+            'email' => $this->faker->email,
         ];
 
         $response = $this->actingAs($this->user)->patchJson(
@@ -128,7 +128,7 @@ class UserManagementTest extends TestCase
                   ]
              ]);
 
-        $this->user = User::find($this->user->getKey())->first();
+        $this->user = User::find($this->user->getKey());
         $this->assertDatabaseHas('users', [
             'id' => $this->user->getKey(),
             'name' => $this->user->name,
