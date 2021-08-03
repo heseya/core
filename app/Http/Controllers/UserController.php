@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Swagger\UserManagementControllerSwagger;
+use App\Http\Controllers\Swagger\UserControllerSwagger;
 use App\Http\Requests\UserCreateRequest;
 use App\Http\Requests\UserIndexRequest;
 use App\Http\Requests\UserUpdateRequest;
@@ -13,7 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
 
-class UserManagementController extends Controller implements UserManagementControllerSwagger
+class UserController extends Controller implements UserControllerSwagger
 {
     private UserManagementServiceContract $userManagementServiceContract;
 

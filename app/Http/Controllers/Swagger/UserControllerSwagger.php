@@ -9,7 +9,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-interface UserManagementControllerSwagger
+interface UserControllerSwagger
 {
     /**
      * @OA\Get(

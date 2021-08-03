@@ -4,9 +4,10 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-class UserManagementTest extends TestCase
+class UserTest extends TestCase
 {
     use WithFaker;
 
@@ -26,29 +27,37 @@ class UserManagementTest extends TestCase
 
     public function testIndexUnauthorized(): void
     {
-        $response = $this->getJson('/users/managements');
+        $response = $this->getJson('/users');
         $response->assertUnauthorized();
     }
 
     public function testIndex(): void
     {
-        $response = $this->actingAs($this->user)->getJson('/users/managements');
+        $other = User::factory()->create();
+
+        $response = $this->actingAs($this->user)->getJson('/users');
         $response
             ->assertOk()
             ->assertJson(['data' => [
                 0 => $this->expected,
+                1 => [
+                    'id' => $other->getKey(),
+                    'email' => $other->email,
+                    'name' => $other->name,
+                    'avatar' => $other->avatar,
+                ],
             ]]);
     }
 
     public function testShowUnauthorized(): void
     {
-        $response = $this->getJson('/users/managements/id:' . $this->user->getKey());
+        $response = $this->getJson('/users/id:' . $this->user->getKey());
         $response->assertUnauthorized();
     }
 
     public function testShow(): void
     {
-        $response = $this->actingAs($this->user)->getJson('/users/managements/id:' . $this->user->getKey());
+        $response = $this->actingAs($this->user)->getJson('/users/id:' . $this->user->getKey());
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
@@ -56,7 +65,7 @@ class UserManagementTest extends TestCase
 
     public function testCreateUnauthorized(): void
     {
-        $response = $this->getJson('/users/managements');
+        $response = $this->getJson('/users');
         $response->assertUnauthorized();
     }
 
@@ -68,23 +77,22 @@ class UserManagementTest extends TestCase
             'password' => $this->faker->password(10),
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/users/managements', $data);
+        $response = $this->actingAs($this->user)->postJson('/users', $data);
         $response
             ->assertCreated()
-            ->assertJson(['data' =>
-                  [
-                      'id' => $response->getData()->data->id,
-                      'email' => $data['email'],
-                      'name' => $data['name'],
-                      'avatar' => $response->getData()->data->avatar,
-                  ]
-             ]);
+            ->assertJsonPath('data.email', $data['email'])
+            ->assertJsonPath('data.name', $data['name']);
+
+        $userId = $response->getData()->data->id;
 
         $this->assertDatabaseHas('users', [
-            'id' => $response->getData()->data->id,
+            'id' => $userId,
             'name' => $data['name'],
             'email' => $data['email'],
         ]);
+
+        $user = User::find($userId);
+        $this->assertTrue(Hash::check($data['password'], $user->password));
     }
 
     public function testCreateByBusyEmail(): void
@@ -95,13 +103,13 @@ class UserManagementTest extends TestCase
             'password' => $this->faker->password(10),
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/users/managements', $data);
+        $response = $this->actingAs($this->user)->postJson('/users', $data);
         $response->assertStatus(422);
     }
 
     public function testUpdateUnauthorized(): void
     {
-        $response = $this->patchJson('/users/managements/id:' . $this->user->getKey());
+        $response = $this->patchJson('/users/id:' . $this->user->getKey());
         $response->assertUnauthorized();
     }
 
@@ -113,51 +121,34 @@ class UserManagementTest extends TestCase
         ];
 
         $response = $this->actingAs($this->user)->patchJson(
-            '/users/managements/id:' . $this->user->getKey(),
+            '/users/id:' . $this->user->getKey(),
             $data,
         );
 
         $response
             ->assertOk()
-            ->assertJson(['data' =>
-                  [
-                      'id' => $this->user->getKey(),
-                      'email' => $data['email'],
-                      'name' => $data['name'],
-                      'avatar' => $response->getData()->data->avatar,
-                  ]
-             ]);
+            ->assertJsonPath('data.id', $this->user->getKey())
+            ->assertJsonPath('data.email', $data['email'])
+            ->assertJsonPath('data.name', $data['name']);
 
-        $this->user = User::find($this->user->getKey());
         $this->assertDatabaseHas('users', [
             'id' => $this->user->getKey(),
-            'name' => $this->user->name,
-            'email' => $this->user->email,
+            'name' => $data['name'],
+            'email' => $data['email'],
         ]);
     }
 
     public function testUpdateByEmptyData(): void
     {
-        $response = $this->actingAs($this->user)->patchJson(
-            '/users/managements/id:' . $this->user->getKey(),
-            [],
-        );
-
+        $response = $this->actingAs($this->user)->patchJson('/users/id:' . $this->user->getKey());
         $response
             ->assertOk()
-            ->assertJson(['data' =>
-                  [
-                      'id' => $this->user->getKey(),
-                      'email' => $this->user->email,
-                      'name' => $this->user->name,
-                      'avatar' => $response->getData()->data->avatar,
-                  ]
-             ]);
+            ->assertJsonPath('data.id', $this->user->getKey())
+            ->assertJsonPath('data.email', $this->user->email)
+            ->assertJsonPath('data.name', $this->user->name);
 
         $this->assertDatabaseHas('users', [
             'id' => $this->user->getKey(),
-
-            // should remain the same
             'name' => $this->user->name,
             'email' => $this->user->email,
         ]);
@@ -165,16 +156,11 @@ class UserManagementTest extends TestCase
 
     public function testUpdateByBusyEmail(): void
     {
-        $user = User::factory()->count(3)->create();
+        $other = User::factory()->create();
 
-        $data = [
-            'email' => $user[1]->email,
-        ];
-
-        $response = $this->actingAs($this->user)->patchJson(
-            '/users/managements/id:' . $this->user->getKey(),
-            $data,
-        );
+        $response = $this->actingAs($this->user)->patchJson('/users/id:' . $this->user->getKey(), [
+            'email' => $other->email,
+        ]);
         $response->assertStatus(422);
 
         $this->assertDatabaseHas('users', [
@@ -185,13 +171,13 @@ class UserManagementTest extends TestCase
 
     public function testDeleteUnauthorized(): void
     {
-        $response = $this->deleteJson('/users/managements/id:' . $this->user->getKey());
+        $response = $this->deleteJson('/users/id:' . $this->user->getKey());
         $response->assertUnauthorized();
     }
 
     public function testDelete(): void
     {
-        $response = $this->actingAs($this->user)->deleteJson('/users/managements/id:' . $this->user->getKey());
+        $response = $this->actingAs($this->user)->deleteJson('/users/id:' . $this->user->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($this->user);
     }

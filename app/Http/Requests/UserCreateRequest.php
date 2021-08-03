@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\StrongPassword;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 /**
  * @OA\RequestBody(
@@ -35,7 +35,7 @@ class UserCreateRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->where('email', $this->email)],
-            'password' => ['required', 'string', 'max:255', new StrongPassword(10)],
+            'password' => ['required', 'string', 'max:255', Password::defaults()],
         ];
     }
 }
