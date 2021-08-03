@@ -13,9 +13,9 @@ interface UserControllerSwagger
 {
     /**
      * @OA\Get(
-     *   path="/users/managements",
+     *   path="/users",
      *   summary="user list",
-     *   tags={"User Management"},
+     *   tags={"Users"},
      *   @OA\Response(
      *     response=200,
      *     description="Success",
@@ -33,9 +33,9 @@ interface UserControllerSwagger
 
     /**
      * @OA\Get(
-     *   path="/users/managements/id:{id}",
+     *   path="/users/id:{id}",
      *   summary="user view",
-     *   tags={"User Management"},
+     *   tags={"Users"},
      *   @OA\Response(
      *     response=200,
      *     description="Success",
@@ -55,9 +55,9 @@ interface UserControllerSwagger
 
     /**
      * @OA\Post(
-     *   path="/users/managements",
+     *   path="/users",
      *   summary="add new user",
-     *   tags={"User Management"},
+     *   tags={"Users"},
      *   @OA\RequestBody(
      *     ref="#/components/requestBodies/UserCreate",
      *   ),
@@ -77,9 +77,9 @@ interface UserControllerSwagger
 
     /**
      * @OA\Patch(
-     *   path="/users/managements/id:{user:id}",
+     *   path="/users/id:{id}",
      *   summary="update user",
-     *   tags={"User Management"},
+     *   tags={"Users"},
      *   @OA\Parameter(
      *     name="id",
      *     in="path",
@@ -111,9 +111,9 @@ interface UserControllerSwagger
 
     /**
      * @OA\Delete(
-     *   path="/users/managements/id:{id}",
+     *   path="/users/id:{id}",
      *   summary="delete user",
-     *   tags={"User Management"},
+     *   tags={"Users"},
      *   @OA\Parameter(
      *     name="id",
      *     in="path",
