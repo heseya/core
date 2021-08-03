@@ -97,6 +97,43 @@ class AuthService implements AuthServiceContract
             ->orderBy('created_at', 'DESC');
     }
 
+    public function killActiveSession(User $user, string $oauthAccessTokensId)
+    {
+        $token = Passport::token()->where('id', $oauthAccessTokensId)->first();
+        if (!$token) {
+            throw new AuthException('User token does not exist');
+        }
+
+        if ($user->token() && $user->token()->getKey() === $token->id) {
+            throw new AuthException('Can\'t delete your current session');
+        }
+
+        $token->revoke();
+
+        return $this->loginHistory($user);
+    }
+
+    public function killAllSessions(User $user)
+    {
+        if (!$user->token()) {
+            throw new AuthException('User token does not exist');
+        }
+
+        $currentToken = $user->token()->getKey();
+        foreach ($user->tokens()->get() as $token) {
+            if ($currentToken === $token->getKey()) {
+                continue;
+            }
+
+            $token->revoke();
+        }
+
+        return Passport::token()
+            ->where('user_id', $user->getKey())
+            ->where('revoked', false)
+            ->get();
+    }
+
     private function getUserByEmail(string $email): User
     {
         $user = User::whereEmail($email)->first();

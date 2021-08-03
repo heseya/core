@@ -21,4 +21,8 @@ interface AuthServiceContract
     public function changePassword(User $user, string $password, string $newPassword): void;
 
     public function loginHistory(User $user): Builder;
+
+    public function killActiveSession(User $user, string $oauthAccessTokensId);
+
+    public function killAllSessions(User $user);
 }

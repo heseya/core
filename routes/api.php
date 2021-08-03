@@ -162,6 +162,8 @@ Route::middleware('auth:api')->group(function (): void {
     Route::prefix('auth')->group(function (): void {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::get('login-history', [AuthController::class, 'loginHistory']);
+        Route::get('kill-session/id:{id}', [AuthController::class, 'killActiveSession']);
+        Route::get('kill-all-sessions', [AuthController::class, 'killAllSessions']);
     });
 
     Route::prefix('apps')->group(function (): void {
