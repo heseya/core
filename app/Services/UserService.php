@@ -3,11 +3,11 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Services\Contracts\UserManagementServiceContract;
+use App\Services\Contracts\UserServiceContract;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Hash;
 
-class UserManagementService implements UserManagementServiceContract
+class UserService implements UserServiceContract
 {
     public function index(array $search, ?string $sort, int $limit): LengthAwarePaginator
     {

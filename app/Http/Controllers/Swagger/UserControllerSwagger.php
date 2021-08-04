@@ -16,6 +16,48 @@ interface UserControllerSwagger
      *   path="/users",
      *   summary="user list",
      *   tags={"Users"},
+     *   @OA\Parameter(
+     *     name="search",
+     *     in="query",
+     *     description="Full text search",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="name",
+     *     in="query",
+     *     description="Name search",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="name",
+     *     in="query",
+     *     description="Email search",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="sort",
+     *     in="query",
+     *     description="Sorting string",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *     example="name:desc"
+     *   ),
+     *   @OA\Parameter(
+     *     name="pagination_limit",
+     *     in="query",
+     *     description="Number of elements per page",
+     *     @OA\Schema(
+     *       type="number",
+     *     ),
+     *     example=12
+     *   ),
      *   @OA\Response(
      *     response=200,
      *     description="Success",
@@ -36,6 +78,15 @@ interface UserControllerSwagger
      *   path="/users/id:{id}",
      *   summary="user view",
      *   tags={"Users"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *       example="1c8705ce-5fae-4468-b88a-8784cb5414a0",
+     *     ),
+     *   ),
      *   @OA\Response(
      *     response=200,
      *     description="Success",

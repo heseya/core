@@ -3,15 +3,14 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\WithFaker;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class UserTest extends TestCase
 {
-    use WithFaker;
-
     public array $expected;
+    private string $validPassword = 'V@l1dPa55word';
 
     public function setUp(): void
     {
@@ -33,20 +32,108 @@ class UserTest extends TestCase
 
     public function testIndex(): void
     {
-        $other = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $otherUser->created_at = Carbon::now()->addHour();
+        $otherUser->save();
 
         $response = $this->actingAs($this->user)->getJson('/users');
         $response
             ->assertOk()
+            ->assertJsonCount(2, 'data')
             ->assertJson(['data' => [
-                0 => $this->expected,
-                1 => [
-                    'id' => $other->getKey(),
-                    'email' => $other->email,
-                    'name' => $other->name,
-                    'avatar' => $other->avatar,
+                $this->expected,
+                [
+                    'id' => $otherUser->getKey(),
+                    'email' => $otherUser->email,
+                    'name' => $otherUser->name,
+                    'avatar' => $otherUser->avatar,
                 ],
             ]]);
+    }
+
+    public function testIndexSorted(): void
+    {
+        $otherUser = User::factory()->create();
+        $otherUser->created_at = Carbon::now()->addHour();
+        $otherUser->save();
+
+        $response = $this->actingAs($this->user)->getJson('/users?sort=created_at:desc');
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJson(['data' => [
+                [
+                    'id' => $otherUser->getKey(),
+                    'email' => $otherUser->email,
+                    'name' => $otherUser->name,
+                    'avatar' => $otherUser->avatar,
+                ],
+                $this->expected,
+            ]]);
+    }
+
+    public function testIndexNameSearch(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($this->user)->getJson('/users?name=' . $user->name);
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0', [
+                'id' => $user->getKey(),
+                'email' => $user->email,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+            ]);
+    }
+
+    public function testIndexEmailSearch(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($this->user)->getJson('/users?email=' . $user->email);
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0', [
+                'id' => $user->getKey(),
+                'email' => $user->email,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+            ]);
+    }
+
+    public function testIndexFullSearchName(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($this->user)->getJson('/users?search=' . $user->name);
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0', [
+                'id' => $user->getKey(),
+                'email' => $user->email,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+            ]);
+    }
+
+    public function testIndexFullSearchEmail(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($this->user)->getJson('/users?search=' . $user->email);
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0', [
+                'id' => $user->getKey(),
+                'email' => $user->email,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+            ]);
     }
 
     public function testShowUnauthorized(): void
@@ -71,10 +158,8 @@ class UserTest extends TestCase
 
     public function testCreate(): void
     {
-        $data = [
-            'name' => $this->faker->name,
-            'email' => $this->faker->email,
-            'password' => $this->faker->password(10),
+        $data = User::factory()->raw() + [
+            'password' => $this->validPassword,
         ];
 
         $response = $this->actingAs($this->user)->postJson('/users', $data);
@@ -95,12 +180,12 @@ class UserTest extends TestCase
         $this->assertTrue(Hash::check($data['password'], $user->password));
     }
 
-    public function testCreateByBusyEmail(): void
+    public function testCreateTakenEmail(): void
     {
         $data = [
-            'name' => $this->faker->name,
+            'name' => User::factory()->raw()['name'],
             'email' => $this->user->email,
-            'password' => $this->faker->password(10),
+            'password' => $this->validPassword,
         ];
 
         $response = $this->actingAs($this->user)->postJson('/users', $data);
@@ -115,10 +200,7 @@ class UserTest extends TestCase
 
     public function testUpdate(): void
     {
-        $data = [
-            'name' => $this->faker->name,
-            'email' => $this->faker->email,
-        ];
+        $data = User::factory()->raw();
 
         $response = $this->actingAs($this->user)->patchJson(
             '/users/id:' . $this->user->getKey(),
@@ -138,9 +220,11 @@ class UserTest extends TestCase
         ]);
     }
 
-    public function testUpdateByEmptyData(): void
+    public function testUpdateSameEmail(): void
     {
-        $response = $this->actingAs($this->user)->patchJson('/users/id:' . $this->user->getKey());
+        $response = $this->actingAs($this->user)->patchJson('/users/id:' . $this->user->getKey(), [
+            'email' => $this->user->email,
+        ]);
         $response
             ->assertOk()
             ->assertJsonPath('data.id', $this->user->getKey())
@@ -154,7 +238,25 @@ class UserTest extends TestCase
         ]);
     }
 
-    public function testUpdateByBusyEmail(): void
+    public function testUpdateSameName(): void
+    {
+        $response = $this->actingAs($this->user)->patchJson('/users/id:' . $this->user->getKey(), [
+            'name' => $this->user->name,
+        ]);
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.id', $this->user->getKey())
+            ->assertJsonPath('data.email', $this->user->email)
+            ->assertJsonPath('data.name', $this->user->name);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $this->user->getKey(),
+            'name' => $this->user->name,
+            'email' => $this->user->email,
+        ]);
+    }
+
+    public function testUpdateTakenEmail(): void
     {
         $other = User::factory()->create();
 

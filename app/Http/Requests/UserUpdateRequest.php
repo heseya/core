@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * @OA\RequestBody(
@@ -27,7 +28,12 @@ class UserUpdateRequest extends FormRequest
     {
         return [
             'name' => ['nullable', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255', 'unique:users'],
+            'email' => [
+                'nullable',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignoreModel($this->route('user'))
+            ],
         ];
     }
 }

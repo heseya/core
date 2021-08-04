@@ -5,7 +5,7 @@ namespace App\Services\Contracts;
 use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-interface UserManagementServiceContract
+interface UserServiceContract
 {
     public function index(array $search, ?string $sort, int $limit): LengthAwarePaginator;
 

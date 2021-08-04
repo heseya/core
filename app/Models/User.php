@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\SearchTypes\UserSearch;
 use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
@@ -79,6 +80,7 @@ class User extends Model implements
     protected array $searchable = [
         'name' => Like::class,
         'email' => Like::class,
+        'search' => UserSearch::class,
     ];
 
     protected array $sortable = [

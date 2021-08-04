@@ -9,9 +9,11 @@ class UserIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'search' => ['nullable', 'string', 'max:255'],
+            'search' => ['nullable', 'string'],
+            'name' => ['nullable', 'string'],
+            'email' => ['nullable', 'string'],
             'sort' => ['nullable', 'string'],
-            'limit' => ['nullable', 'integer', 'min:1', 'max:500'],
+            'pagination_limit' => ['nullable', 'integer', 'min:1'],
         ];
     }
 }
