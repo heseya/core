@@ -26,6 +26,9 @@ class ProductCreateRequest extends FormRequest
 
             'schemas' => ['nullable', 'array'],
             'schemas.*' => ['uuid', 'exists:schemas,id'],
+
+            'sets' => ['nullable', 'array'],
+            'sets.*' => ['uuid', 'exists:product_sets,id'],
         ];
     }
 }

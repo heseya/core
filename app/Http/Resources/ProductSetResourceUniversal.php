@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 // Universal class but cant work because resources are broken
-class ProductSetResourceUniversal extends Resource implements ProductSetResourceSwagger, ProductSetTreeResourceSwagger
+class ProductSetResourceUniversal extends Resource implements ProductSetResourceSwagger
 {
     private $nested;
     private $tree;
