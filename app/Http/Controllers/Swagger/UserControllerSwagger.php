@@ -68,7 +68,10 @@ interface UserControllerSwagger
      *         @OA\Items(ref="#/components/schemas/User"),
      *       )
      *     )
-     *   )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
      * )
      */
     public function index(UserIndexRequest $request): JsonResource;
@@ -121,7 +124,10 @@ interface UserControllerSwagger
      *         ref="#/components/schemas/User",
      *       )
      *     )
-     *   )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
      * )
      */
     public function store(UserCreateRequest $request): JsonResource;
