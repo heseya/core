@@ -15,7 +15,16 @@ Route::prefix('users')->group(function (): void {
     Route::get('/reset-password/{token?}/{email?}', 'AuthController@showResetPasswordForm');
     Route::post('/reset-password', 'AuthController@resetPassword');
     Route::patch('/save-reset-password', 'AuthController@saveResetPassword');
+
+    Route::middleware('auth:api')->group(function (): void {
+        Route::get(null, 'UserController@index');
+        Route::get('id:{user:id}', 'UserController@show');
+        Route::post(null, 'UserController@store');
+        Route::patch('id:{user:id}', 'UserController@update');
+        Route::delete('id:{user:id}', 'UserController@destroy');
+    });
 });
+
 Route::post('login', 'AuthController@login');
 Route::patch('user/password', 'AuthController@changePassword')->middleware('auth:api');
 
