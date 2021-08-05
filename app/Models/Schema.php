@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -285,6 +286,18 @@ class Schema extends Model
     private function getUsedPrice($value, $schemas): float
     {
         $price = $this->price;
+
+        if (!$this->required && $value === null) {
+            return 0;
+        }
+
+        if (($this->type === 0 || $this->type === 1) && Str::length(trim($value)) === 0) {
+            return 0;
+        }
+
+        if ($this->type === 2 && ((bool) $value) === false) {
+            return 0;
+        }
 
         if ($this->type === 4) {
             $option = $this->options()->findOrFail($value);
