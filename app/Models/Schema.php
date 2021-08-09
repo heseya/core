@@ -193,7 +193,7 @@ class Schema extends Model
             $validation->push(new OptionAvailable($this, $quantity));
         }
 
-        if ($this->type === 6) {
+        if ($this->type === 1 || $this->type === 6 || $this->type === 7) {
             $validation->push('numeric');
         }
 
