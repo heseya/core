@@ -96,13 +96,13 @@ class AuthTest extends TestCase
 
         $response = $this->actingAs($user)->patchJson('/user/password', [
             'password' => 'test',
-            'password_new' => 'test123456',
+            'password_new' => 'Test1@3456',
         ]);
 
         $response->assertNoContent();
 
         $user->refresh();
-        $this->assertTrue(Hash::check('test123456', $user->password));
+        $this->assertTrue(Hash::check('Test1@3456', $user->password));
     }
 
     public function testLoginHistory(): void

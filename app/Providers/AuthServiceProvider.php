@@ -27,7 +27,7 @@ class AuthServiceProvider extends ServiceProvider
         Passport::personalAccessTokensExpireIn(now()->addDays(25));
 
         Password::defaults(function () {
-            return Password::min(8)
+            return Password::min(10)
                 ->letters()
                 ->mixedCase()
                 ->numbers()
