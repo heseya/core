@@ -19,8 +19,8 @@ class ProductResource extends Resource implements ProductResourceSwagger
             'visible' => $this->isPublic(),
             'available' => $this->available,
             'quantity_step' => $this->quantity_step,
-            'brand' => BrandResource::make($this->brand),
-            'category' => CategoryResource::make($this->category),
+            'brand' => ProductSetResource::make($this->brand),
+            'category' => ProductSetResource::make($this->category),
             'cover' => MediaResource::make($this->media()->first()),
             'tags' => TagResource::collection($this->tags),
         ];
