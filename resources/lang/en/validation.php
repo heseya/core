@@ -116,6 +116,13 @@ return [
     'uploaded' => 'The :attribute failed to upload.',
     'url' => 'The :attribute format is invalid.',
     'uuid' => 'The :attribute must be a valid UUID.',
+    'schema' => [
+        'required' => 'The :attribute product option is required.',
+        'numeric' => 'The :attribute product option must be a number.',
+        'uuid' => 'The :attribute product option must be a valid UUID.',
+        'min' => 'The :attribute product option must be at least :min.',
+        'max' => 'The :attribute product option may not be greater than :max.',
+    ],
 
     /*
     |--------------------------------------------------------------------------

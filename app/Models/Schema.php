@@ -10,6 +10,7 @@ use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -197,9 +198,22 @@ class Schema extends Model
             $validation->push('numeric');
         }
 
+        $validationStrings = [
+            'attribute' => $this->name,
+            'min' => $this->min,
+            'max' => $this->max,
+        ];
+
         $validator = Validator::make(
-            [$this->name => $input],
-            [$this->name => $validation],
+            [$this->getKey() => $input],
+            [$this->getKey() => $validation],
+            [
+                'required' => Lang::get('validation.schema.required', $validationStrings),
+                'numeric' => Lang::get('validation.schema.numeric', $validationStrings),
+                'uuid' => Lang::get('validation.schema.uuid', $validationStrings),
+                'min' => Lang::get('validation.schema.min', $validationStrings),
+                'max' => Lang::get('validation.schema.max', $validationStrings),
+            ],
         );
 
         if ($validator->fails()) {
