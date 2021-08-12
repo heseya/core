@@ -116,6 +116,13 @@ return [
     'uploaded' => 'Nie udało się wgrać pliku :attribute.',
     'url' => 'Format :attribute jest nieprawidłowy.',
     'uuid' => ':attribute musi być poprawnym identyfikatorem UUID.',
+    'schema' => [
+        'required' => 'Opcja produktu :attribute jest wymagana.',
+        'numeric' => 'Opcja produktu :attribute musi być liczbą.',
+        'uuid' => 'Opcja produktu :attribute musi być poprawnym identyfikatorem UUID.',
+        'min' => 'Opcja produktu :attribute musi być nie mniejsza od :min.',
+        'max' => 'Opcja produktu :attribute nie może być większa niż :max.',
+    ],
 
     /*
     |--------------------------------------------------------------------------
