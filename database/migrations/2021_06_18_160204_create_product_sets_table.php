@@ -32,9 +32,6 @@ class CreateProductSetsTable extends Migration
         Schema::table('products', function (Blueprint $table) {
             $table->dropForeign('products_category_id_foreign');
             $table->dropForeign('products_brand_id_foreign');
-
-            $table->foreign('category_id')->references('id')->on('product_sets')->onDelete('restrict');
-            $table->foreign('brand_id')->references('id')->on('product_sets')->onDelete('restrict');
         });
 
         Schema::create('product_set_product', function (Blueprint $table) {
@@ -43,12 +40,21 @@ class CreateProductSetsTable extends Migration
 
             $table->primary(['product_id', 'product_set_id']);
 
-            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
-            $table->foreign('product_set_id')->references('id')->on('product_sets')->onDelete('cascade');
+            $table->foreign('product_id')->references('id')
+                ->on('products')->onDelete('cascade');
+            $table->foreign('product_set_id')->references('id')
+                ->on('product_sets')->onDelete('cascade');
         });
 
-        $this->moveSets('Categories', 0);
-        $this->moveSets('Brands', 1);
+        $this->moveSets('Categories', 'category_id', 0);
+        $this->moveSets('Brands', 'brand_id', 1);
+
+        Schema::table('products', function (Blueprint $table) {
+            $table->foreign('category_id')->references('id')
+                ->on('product_sets')->onDelete('restrict');
+            $table->foreign('brand_id')->references('id')
+                ->on('product_sets')->onDelete('restrict');
+        });
     }
 
     /**
@@ -58,11 +64,21 @@ class CreateProductSetsTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('product_sets');
+        Schema::table('products', function (Blueprint $table) {
+            $table->dropForeign('products_category_id_foreign');
+            $table->dropForeign('products_brand_id_foreign');
+        });
         Schema::dropIfExists('product_set_product');
+        Schema::table('products', function (Blueprint $table) {
+            $table->foreign('category_id')->references('id')
+                ->on('categories')->onDelete('restrict');
+            $table->foreign('brand_id')->references('id')
+                ->on('brands')->onDelete('restrict');
+        });
+        Schema::dropIfExists('product_sets');
     }
 
-    private function moveSets(string $set, int $order): void
+    private function moveSets(string $set, string $idColumn, int $order): void
     {
         $children = DB::table(Str::of($set)->snake())->get();
 
@@ -79,7 +95,6 @@ class CreateProductSetsTable extends Migration
 
         foreach ($children as $child) {
             $newSet = ProductSet::create([
-                'id' => $child->getKey(),
                 'name' => $child->name,
                 'slug' => $child->slug,
                 'parent_id' => $parent->getKey(),
@@ -87,8 +102,10 @@ class CreateProductSetsTable extends Migration
                 'order' => $child->order,
                 'hide_on_index' => $child->hide_on_index,
             ]);
+            $newSet->id =  $child->id;
+            $newSet->save();
 
-            Product::where(Str::of($set)->snake() . '_id', $newSet->getKey())->get()
+            Product::where($idColumn, $newSet->getKey())->get()
                 ->each(function ($product) use ($newSet) {
                    $product->sets()->syncWithoutDetaching($newSet->getKey());
                 });
