@@ -71,6 +71,7 @@ Route::prefix('product-sets')->group(function (): void {
         Route::get('id:{product_set:id}', [ProductSetController::class, 'show']);
         Route::post(null, [ProductSetController::class, 'store']);
         Route::patch('id:{product_set:id}', [ProductSetController::class, 'update']);
+        Route::post('id:{product_set:id}/products', [ProductSetController::class, 'attach']);
         Route::delete('id:{product_set:id}', [ProductSetController::class, 'destroy']);
         Route::post('reorder', [ProductSetController::class, 'reorder']);
         Route::post('reorder/id:{product_set:id}', [ProductSetController::class, 'reorder']);
