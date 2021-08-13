@@ -77,7 +77,7 @@ use Illuminate\Foundation\Http\FormRequest;
  *       ),
  *     ),
  *   ),
-   ),
+ * )
  */
 class ProductCreateRequest extends FormRequest
 {

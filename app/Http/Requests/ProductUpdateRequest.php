@@ -77,7 +77,7 @@ use Illuminate\Validation\Rule;
  *       ),
  *     ),
  *   ),
-),
+ * )
  */
 class ProductUpdateRequest extends ProductCreateRequest
 {
