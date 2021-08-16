@@ -51,9 +51,9 @@ class CreateProductSetsTable extends Migration
 
         Schema::table('products', function (Blueprint $table) {
             $table->foreign('category_id')->references('id')
-                ->on('product_sets')->onDelete('restrict');
+                ->on('product_sets')->onDelete('set null');
             $table->foreign('brand_id')->references('id')
-                ->on('product_sets')->onDelete('restrict');
+                ->on('product_sets')->onDelete('set null');
         });
     }
 
