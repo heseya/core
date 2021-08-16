@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Swagger;
 
+use App\Http\Requests\ProductSetAttachRequest;
 use App\Http\Requests\ProductSetIndexRequest;
 use App\Http\Requests\ProductSetReorderRequest;
 use App\Http\Requests\ProductSetShowRequest;
@@ -315,4 +316,39 @@ interface ProductSetControllerSwagger
      * )
      */
     public function reorder(ProductSet $productSet, ProductSetReorderRequest $request): JsonResponse;
+
+    /**
+     * @OA\Post(
+     *   path="/product-sets/id:{id}/products",
+     *   tags={"Product Sets"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     description="List of product id's",
+     *     @OA\Schema(
+     *       type="string",
+     *       example="0006c3a0-21af-4485-b7fe-9c42233cf03a",
+     *     )
+     *   ),
+     *   @OA\RequestBody(
+     *     ref="#/components/requestBodies/ProductSetAttach",
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         type="array",
+     *         @OA\Items(ref="#/components/schemas/Product"),
+     *       )
+     *     )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function attach(ProductSet $productSet, ProductSetAttachRequest $request): JsonResource;
 }

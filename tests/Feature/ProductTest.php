@@ -221,6 +221,52 @@ class ProductTest extends TestCase
             ->assertJson(['data' => $this->expected]);
     }
 
+    public function testShowSets(): void
+    {
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $set1 = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+        $set2 = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $product->sets()->sync([$set1->getKey(), $set2->getKey()]);
+
+        $response = $this->getJson('/products/' . $product->slug);
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['sets' => [
+                [
+                    'id' => $set1->getKey(),
+                    'name' => $set1->name,
+                    'slug' => $set1->slug,
+                    'slug_suffix' => $set1->slugSuffix,
+                    'slug_override' => $set1->slugOverride,
+                    'public' => $set1->public,
+                    'visible' => $set1->public_parent && $set1->public,
+                    'hide_on_index' => $set1->hide_on_index,
+                    'parent_id' => $set1->parent_id,
+                    'children_ids' => [],
+                ],
+                [
+                    'id' => $set2->getKey(),
+                    'name' => $set2->name,
+                    'slug' => $set2->slug,
+                    'slug_suffix' => $set2->slugSuffix,
+                    'slug_override' => $set2->slugOverride,
+                    'public' => $set2->public,
+                    'visible' => $set2->public_parent && $set2->public,
+                    'hide_on_index' => $set2->hide_on_index,
+                    'parent_id' => $set2->parent_id,
+                    'children_ids' => [],
+                ],
+            ]]);
+    }
+
     public function testShowAdminUnauthorized(): void
     {
         $response = $this->getJson('/products/id:' . $this->product->getKey());
@@ -335,6 +381,48 @@ class ProductTest extends TestCase
         ]);
     }
 
+    public function testCreateWithSets(): void
+    {
+        $set1 = ProductSet::factory()->create();
+        $set2 = ProductSet::factory()->create();
+
+        $response = $this->actingAs($this->user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 150,
+            'brand_id' => $this->product->brand->getKey(),
+            'category_id' => $this->product->category->getKey(),
+            'public' => false,
+            'sets' => [
+                $set1->getKey(),
+                $set2->getKey(),
+            ],
+        ]);
+
+        $response->assertCreated();
+        $product = $response->getData()->data;
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 150,
+            'public' => false,
+            'description_md' => null,
+            'brand_id' => $this->product->brand->getKey(),
+            'category_id' => $this->product->category->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product', [
+            'product_id' => $product->id,
+            'product_set_id' => $set1->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product', [
+            'product_id' => $product->id,
+            'product_set_id' => $set2->getKey(),
+        ]);
+    }
+
     public function testUpdateUnauthorized(): void
     {
         $response = $this->patchJson('/products/id:' . $this->product->getKey());
@@ -364,6 +452,69 @@ class ProductTest extends TestCase
             'category_id' => $this->product->category->getKey(),
             'description_md' => '# New description',
             'public' => false,
+        ]);
+    }
+
+    public function testUpdateChangeSets(): void
+    {
+        $product = Product::factory()->create();
+
+        $set1 = ProductSet::factory()->create();
+        $set2 = ProductSet::factory()->create();
+        $set3 = ProductSet::factory()->create();
+
+        $product->sets()->sync([$set1->getKey(), $set2->getKey()]);
+
+        $response = $this->actingAs($this->user)->patchJson('/products/id:' . $product->getKey(), [
+            'name' => $product->name,
+            'slug' => $product->slug,
+            'price' => $product->price,
+            'public' => $product->public,
+            'sets' => [
+                $set2->getKey(),
+                $set3->getKey(),
+            ],
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('product_set_product', [
+            'product_id' => $product->getKey(),
+            'product_set_id' => $set2->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_set_product', [
+            'product_id' => $product->getKey(),
+            'product_set_id' => $set3->getKey(),
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product', [
+            'product_id' => $product->getKey(),
+            'product_set_id' => $set1->getKey(),
+        ]);
+    }
+
+    public function testUpdateDeleteSets(): void
+    {
+        $product = Product::factory()->create();
+
+        $set1 = ProductSet::factory()->create();
+        $set2 = ProductSet::factory()->create();
+
+        $product->sets()->sync([$set1->getKey(), $set2->getKey()]);
+
+        $response = $this->actingAs($this->user)->patchJson('/products/id:' . $product->getKey(), [
+            'name' => $product->name,
+            'slug' => $product->slug,
+            'price' => $product->price,
+            'public' => $product->public,
+            'sets' => [],
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseMissing('product_set_product', [
+            'product_id' => $product->getKey(),
         ]);
     }
 

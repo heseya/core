@@ -126,6 +126,10 @@ class ProductController extends Controller implements ProductControllerSwagger
             $this->schemaService->sync($product, $request->input('schemas'));
         }
 
+        if ($request->has('sets')) {
+            $product->sets()->sync($request->input('sets'));
+        }
+
         return ProductResource::make($product);
     }
 
@@ -138,6 +142,10 @@ class ProductController extends Controller implements ProductControllerSwagger
 
         if ($request->has('schemas')) {
             $this->schemaService->sync($product, $request->input('schemas'));
+        }
+
+        if ($request->has('sets')) {
+            $product->sets()->sync($request->input('sets'));
         }
 
         return ProductResource::make($product);

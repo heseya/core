@@ -167,6 +167,13 @@ class ProductSetService implements ProductSetServiceContract
         }
     }
 
+    public function attach(ProductSet $set, array $products): Collection
+    {
+        $set->products()->sync($products);
+
+        return $set->products;
+    }
+
     public function delete(ProductSet $set): void
     {
         if ($set->children()->count() > 0) {

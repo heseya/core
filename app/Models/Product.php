@@ -14,56 +14,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * @OA\Schema ()
- *
  * @mixin IdeHelperProduct
  */
 class Product extends Model
 {
     use HasFactory, SoftDeletes, Searchable, Sortable;
-
-    /**
-     * @OA\Property(
-     *   property="id",
-     *   type="string",
-     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
-     * )
-     *
-     * @OA\Property(
-     *   property="name",
-     *   type="string",
-     *   example="Snake Ring",
-     * )
-     *
-     * @OA\Property(
-     *   property="slug",
-     *   type="string",
-     *   example="snake-ring",
-     * )
-     *
-     * @OA\Property(
-     *   property="price",
-     *   type="number",
-     *   example=229.99,
-     * )
-     *
-     * @OA\Property(
-     *   property="description_md",
-     *   type="string",
-     *   description="Description in MD.",
-     *   example="# Awesome stuff!",
-     * )
-     *
-     * @OA\Property(
-     *   property="public",
-     *   type="boolean",
-     * )
-     *
-     * @OA\Property(
-     *   property="visible",
-     *   type="boolean",
-     * )
-     */
 
     protected $fillable = [
         'name',
@@ -76,11 +31,6 @@ class Product extends Model
         'quantity_step',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'price' => 'float',
         'public' => 'bool',
@@ -118,46 +68,21 @@ class Product extends Model
             ->orderByPivot('order');
     }
 
-    /**
-     * @OA\Property(
-     *   property="set",
-     *   ref="#/components/schemas/ProductSet",
-     * )
-     */
     public function sets(): BelongsToMany
     {
         return $this->belongsToMany(ProductSet::class, 'product_set_product');
     }
 
-    /**
-     * @OA\Property(
-     *   property="brand",
-     *   ref="#/components/schemas/ProductSet",
-     * )
-     */
     public function brand(): BelongsTo
     {
         return $this->belongsTo(ProductSet::class, 'brand_id');
     }
 
-    /**
-     * @OA\Property(
-     *   property="category",
-     *   ref="#/components/schemas/ProductSet",
-     * )
-     */
     public function category(): BelongsTo
     {
         return $this->belongsTo(ProductSet::class, 'category_id');
     }
 
-    /**
-     * @OA\Property(
-     *   property="schemas",
-     *   type="array",
-     *   @OA\Items(ref="#/components/schemas/Schema"),
-     * )
-     */
     public function schemas(): BelongsToMany
     {
         return $this
@@ -172,40 +97,16 @@ class Product extends Model
             ->using(OrderProduct::class);
     }
 
-    /**
-     * @OA\Property(
-     *   property="tags",
-     *   type="array",
-     *   @OA\Items(ref="#/components/schemas/Tag"),
-     * )
-     */
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'product_tags');
     }
 
-    /**
-     * @OA\Property(
-     *   property="description_html",
-     *   type="string",
-     *   example="<h1>Awesome stuff!</h1>",
-     *   description="Description in HTML.",
-     * )
-     *
-     * @var string
-     */
     public function getDescriptionHtmlAttribute(): string
     {
         return parsedown(strip_tags($this->description_md));
     }
 
-    /**
-     * @OA\Property(
-     *   property="available",
-     *   type="boolean",
-     *   description="Whether product is available.",
-     * )
-     */
     public function getAvailableAttribute(): bool
     {
         if ($this->schemas()->count() <= 0) {
@@ -222,8 +123,6 @@ class Product extends Model
         return true;
     }
 
-    /**
-     */
     public function isPublic(): bool
     {
         $isBrandPublic = !$this->brand || $this->brand->public && $this->brand->public_parent;
