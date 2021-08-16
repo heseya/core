@@ -35,20 +35,73 @@ class ProductSetOtherTest extends TestCase
         $this->assertDeleted($newSet);
     }
 
-    public function testDeleteWithRelations(): void
+    public function testDeleteWithProducts(): void
     {
-        $set = ProductSet::factory()->create([
+        $newSet = ProductSet::factory()->create([
             'public' => true,
-            'order' => 60,
         ]);
 
-        $set->products()->save(Product::factory()->make());
+        $product1 = Product::factory()->create();
+        $product2 = Product::factory()->create();
+        $product3 = Product::factory()->create();
+
+        $newSet->products()->sync([
+            $product1->getKey(),
+            $product2->getKey(),
+            $product3->getKey(),
+        ]);
 
         $response = $this->actingAs($this->user)->delete(
-            '/product-sets/id:' . $set->getKey(),
+            '/product-sets/id:' . $newSet->getKey(),
         );
-        $response->assertStatus(400);
-        $this->assertDatabaseHas('product_sets', $set->toArray());
+        $response->assertNoContent();
+        $this->assertDeleted($newSet);
+
+        $this->assertDatabaseMissing('product_set_product', [
+            'product_id' => $product1->getKey(),
+            'product_set_id' => $newSet->getKey(),
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product', [
+            'product_id' => $product2->getKey(),
+            'product_set_id' => $newSet->getKey(),
+        ]);
+
+        $this->assertDatabaseMissing('product_set_product', [
+            'product_id' => $product3->getKey(),
+            'product_set_id' => $newSet->getKey(),
+        ]);
+    }
+
+    public function testDeleteWithSubsets(): void
+    {
+        $newSet = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $subset1 = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $newSet->getKey(),
+        ]);
+
+        $subset2 = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $newSet->getKey(),
+        ]);
+
+        $subset3 = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $newSet->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->user)->delete(
+            '/product-sets/id:' . $newSet->getKey(),
+        );
+        $response->assertNoContent();
+        $this->assertDeleted($newSet);
+        $this->assertDeleted($subset1);
+        $this->assertDeleted($subset2);
+        $this->assertDeleted($subset3);
     }
 
     public function testReorderRoot(): void
