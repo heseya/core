@@ -76,6 +76,7 @@ Route::prefix('product-sets')->group(function (): void {
         Route::post('reorder/id:{product_set:id}', [ProductSetController::class, 'reorder']);
     });
 
+    Route::get('id:{product_set:id}/products', [ProductSetController::class, 'products']);
     Route::get('{product_set:slug}', [ProductSetController::class, 'show']);
 });
 

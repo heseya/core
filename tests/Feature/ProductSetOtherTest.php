@@ -119,4 +119,76 @@ class ProductSetOtherTest extends TestCase
             'order' => 2,
         ]);
     }
+
+    public function testShowProducts(): void
+    {
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $product2 = Product::factory()->create([
+            'public' => false,
+        ]);
+        $productNotInSet = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $set->products()->sync([
+            $product1->getKey(),
+            $product2->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->user)->getJson(
+            '/product-sets/id:' . $set->getKey() . '/products',
+        );
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $product1->getKey(),
+                'name' => $product1->name,
+                'slug' => $product1->slug,
+            ])
+            ->assertJsonFragment([
+                'id' => $product2->getKey(),
+                'name' => $product2->name,
+                'slug' => $product2->slug,
+            ]);
+    }
+
+    public function testShowProductsUnauthorized(): void
+    {
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $product2 = Product::factory()->create([
+            'public' => false,
+        ]);
+
+        $set->products()->sync([
+            $product1->getKey(),
+            $product2->getKey(),
+        ]);
+
+        $response = $this->getJson('/product-sets/id:' . $set->getKey() . '/products');
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJson(['data' => [
+                [
+                    'id' => $product1->getKey(),
+                    'name' => $product1->name,
+                    'slug' => $product1->slug,
+                ]
+            ]]);
+    }
 }

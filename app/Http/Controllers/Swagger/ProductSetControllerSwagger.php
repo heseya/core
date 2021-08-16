@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Swagger;
 
 use App\Http\Requests\ProductSetIndexRequest;
+use App\Http\Requests\ProductSetProductsRequest;
 use App\Http\Requests\ProductSetReorderRequest;
 use App\Http\Requests\ProductSetShowRequest;
 use App\Http\Requests\ProductSetStoreRequest;
@@ -314,4 +315,34 @@ interface ProductSetControllerSwagger
      * )
      */
     public function reorder(ProductSet $productSet, ProductSetReorderRequest $request): JsonResponse;
+
+    /**
+     * @OA\Get(
+     *   path="/product-sets/id:{id}/products",
+     *   tags={"Product Sets"},
+     *   @OA\Parameter(
+     *     name="limit",
+     *     in="query",
+     *     description="Pagination limit",
+     *     @OA\Schema(
+     *       type="number",
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         type="array",
+     *         @OA\Items(ref="#/components/schemas/Product"),
+     *       )
+     *     )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function products(ProductSet $productSet, ProductSetProductsRequest $request): JsonResource;
 }
