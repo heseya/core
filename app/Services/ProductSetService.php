@@ -177,7 +177,8 @@ class ProductSetService implements ProductSetServiceContract
         $set->delete();
     }
 
-    public function products(ProductSet $set, $limit) {
+    public function products(ProductSet $set, $limit)
+    {
         $query = $set->products();
 
         if (!Auth::check()) {
