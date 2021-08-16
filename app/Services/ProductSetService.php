@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Dtos\ProductSetDto;
-use App\Exceptions\StoreException;
 use App\Models\ProductSet;
 use App\Services\Contracts\ProductSetServiceContract;
 use Illuminate\Database\Eloquent\Builder;
@@ -170,8 +169,8 @@ class ProductSetService implements ProductSetServiceContract
 
     public function delete(ProductSet $set): void
     {
-        if ($set->products()->count() > 0 || $set->children()->count() > 0) {
-            throw new StoreException(__('admin.error.delete_with_relations'));
+        if ($set->children()->count() > 0) {
+            $set->children->each(fn ($subset) => $this->delete($subset));
         }
 
         $set->delete();

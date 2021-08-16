@@ -251,6 +251,7 @@ interface ProductSetControllerSwagger
      * @OA\Delete(
      *   path="/product-sets/id:{id}",
      *   tags={"Product Sets"},
+     *   description="Delete set with all of it's subsets",
      *   @OA\Parameter(
      *     name="id",
      *     in="path",
