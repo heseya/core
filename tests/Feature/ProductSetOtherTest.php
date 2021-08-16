@@ -12,7 +12,6 @@ class ProductSetOtherTest extends TestCase
     {
         $newSet = ProductSet::factory()->create([
             'public' => true,
-            'order' => 50,
         ]);
 
         $response = $this->deleteJson('/product-sets/id:' . $newSet->getKey());
@@ -23,16 +22,57 @@ class ProductSetOtherTest extends TestCase
     {
         $newSet = ProductSet::factory()->create([
             'public' => true,
-            'order' => 60,
         ]);
-
-        $this->assertDatabaseHas('product_sets', $newSet->toArray());
 
         $response = $this->actingAs($this->user)->deleteJson(
             '/product-sets/id:' . $newSet->getKey(),
         );
         $response->assertNoContent();
         $this->assertDeleted($newSet);
+    }
+
+    public function testDeleteAsBrand(): void
+    {
+        $newSet = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $product = Product::factory()->create([
+           'brand_id' => $newSet->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->user)->deleteJson(
+            '/product-sets/id:' . $newSet->getKey(),
+        );
+        $response->assertNoContent();
+        $this->assertDeleted($newSet);
+
+        $this->assertDatabaseHas('products', [
+            $product->getKeyName() => $product->getKey(),
+            'brand_id' => null,
+        ]);
+    }
+
+    public function testDeleteAsCategory(): void
+    {
+        $newSet = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $product = Product::factory()->create([
+            'category_id' => $newSet->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->user)->deleteJson(
+            '/product-sets/id:' . $newSet->getKey(),
+        );
+        $response->assertNoContent();
+        $this->assertDeleted($newSet);
+
+        $this->assertDatabaseHas('products', [
+            $product->getKeyName() => $product->getKey(),
+            'category_id' => null,
+        ]);
     }
 
     public function testDeleteWithProducts(): void
