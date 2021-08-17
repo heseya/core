@@ -126,6 +126,14 @@ Route::prefix('discounts')->group(function (): void {
         ->middleware('auth:api');
 });
 
+Route::prefix('roles')->middleware('auth:api')->group(function (): void {
+    Route::get(null, [RoleController::class, 'index']);
+    Route::post(null, [RoleController::class, 'store']);
+    Route::get('id:{role:id}', [RoleController::class, 'show']);
+    Route::patch('id:{role:id}', [RoleController::class, 'update']);
+    Route::delete('id:{role:id}', [RoleController::class, 'destroy']);
+});
+
 Route::middleware('auth:api')->group(function (): void {
     Route::prefix('items')->group(function (): void {
         Route::get(null, 'ItemController@index');
