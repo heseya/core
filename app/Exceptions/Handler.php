@@ -12,7 +12,7 @@ use Throwable;
 
 final class Handler extends ExceptionHandler
 {
-    const ERRORS = [
+    private const ERRORS = [
         AuthenticationException::class => [
             'message' => 'Unauthorized',
             'code' => Response::HTTP_UNAUTHORIZED,

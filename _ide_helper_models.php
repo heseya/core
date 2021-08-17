@@ -555,7 +555,6 @@ namespace App\Models{
 /**
  * App\Models\Product
  *
- * @OA\Schema ()
  * @mixin IdeHelperProduct
  * @property string $id
  * @property string $name
