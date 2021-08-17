@@ -16,7 +16,7 @@ class ShippingMethodResource extends Resource
             'black_list' => $this->black_list,
             'payment_methods' => PaymentMethodResource::collection($this->paymentMethods),
             'countries' => CountryResource::collection($this->countries),
-            'price_ranges' => PriceRangeResource::collection($this->priceRanges),
+            'price_ranges' => PriceRangeResource::collection($this->priceRanges->sortBy('start')),
         ];
     }
 }

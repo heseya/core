@@ -29,12 +29,6 @@ class ShippingMethod extends Model
      * )
      *
      * @OA\Property(
-     *   property="price",
-     *   type="number",
-     *   example=10.99,
-     * )
-     *
-     * @OA\Property(
      *   property="public",
      *   type="boolean",
      * )
@@ -61,7 +55,6 @@ class ShippingMethod extends Model
      * @var array
      */
     protected $casts = [
-        'price' => 'float',
         'public' => 'boolean',
         'black_list' => 'boolean',
         'created_at' => 'datetime',
@@ -134,9 +127,7 @@ class ShippingMethod extends Model
      */
     public function priceRanges(): HasMany
     {
-        return $this
-            ->hasMany(PriceRange::class, 'shipping_method_id')
-            ->orderBy('start');
+        return $this->hasMany(PriceRange::class, 'shipping_method_id');
     }
 
     public function getPrice(float $orderTotal): float
