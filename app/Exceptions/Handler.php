@@ -3,39 +3,42 @@
 namespace App\Exceptions;
 
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 final class Handler extends ExceptionHandler
 {
-    protected array $errors = [
+    const ERRORS = [
         AuthenticationException::class => [
             'message' => 'Unauthorized',
-            'code' => JsonResponse::HTTP_UNAUTHORIZED,
+            'code' => Response::HTTP_UNAUTHORIZED,
         ],
         NotFoundHttpException::class => [
             'message' => 'Page not found',
-            'code' => JsonResponse::HTTP_NOT_FOUND,
+            'code' => Response::HTTP_NOT_FOUND,
+        ],
+        ModelNotFoundException::class => [
+            'message' => 'Page not found',
+            'code' => Response::HTTP_NOT_FOUND,
         ],
         ValidationException::class => [
-            'code' => JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
+            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
         ],
         StoreException::class => [
-            'code' => JsonResponse::HTTP_BAD_REQUEST,
+            'code' => Response::HTTP_BAD_REQUEST,
         ],
         AuthException::class => [
-            'code' => JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
+            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
         ],
         MediaException::class => [
-            'code' => JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
+            'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
         ],
         OrderException::class => [
-            'code' => JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
+            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
         ],
     ];
 
@@ -53,14 +56,14 @@ final class Handler extends ExceptionHandler
     /**
      * Render an exception into an HTTP response.
      */
-    public function render($request, Throwable $exception): JsonResponse | Response | SymfonyResponse
+    public function render($request, Throwable $exception): Response
     {
         $class = $exception::class;
 
-        if (isset($this->errors[$class])) {
+        if (array_key_exists($class, self::ERRORS)) {
             $error = new Error(
-                $this->errors[$class]['message'] ?? $exception->getMessage(),
-                $this->errors[$class]['code'] ?? 500,
+                self::ERRORS[$class]['message'] ?? $exception->getMessage(),
+                self::ERRORS[$class]['code'] ?? 500,
                 method_exists($exception, 'errors') ? $exception->errors() : [],
             );
         } else {
