@@ -12,7 +12,8 @@ class RoleUpdateDto implements DtoContract, InstantiateFromRequest
         private ?string $name,
         private ?string $description,
         private ?array $permissions,
-    ) {}
+    ) {
+    }
 
     public function toArray(): array
     {
