@@ -6,6 +6,7 @@ use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CountriesController;
 use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProductSetController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ShippingMethodController;
@@ -134,6 +135,8 @@ Route::prefix('roles')->middleware('auth:api')->group(function (): void {
     Route::patch('id:{role:id}', [RoleController::class, 'update']);
     Route::delete('id:{role:id}', [RoleController::class, 'destroy']);
 });
+
+Route::get('permissions', [PermissionController::class, 'index'])->middleware('auth:api');
 
 Route::middleware('auth:api')->group(function (): void {
     Route::prefix('items')->group(function (): void {

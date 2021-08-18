@@ -4,11 +4,11 @@ namespace App\Http\Resources\Swagger;
 
 use Illuminate\Http\Request;
 
-interface RoleResourceSwagger
+interface PermissionResourceSwagger
 {
     /**
      * @OA\Schema(
-     *   schema="Role",
+     *   schema="Permission",
      *   @OA\Property(
      *     property="id",
      *     type="string",
@@ -17,14 +17,14 @@ interface RoleResourceSwagger
      *   @OA\Property(
      *     property="name",
      *     type="string",
-     *     description="Name of the role",
-     *     example="Admin",
+     *     description="Name of the permission",
+     *     example="products.add",
      *   ),
      *   @OA\Property(
      *     property="description",
      *     type="string",
-     *     description="Description of the role",
-     *     example="Role with permission to everything",
+     *     description="Description of the permission",
+     *     example="Permission to add products",
      *   ),
      *   @OA\Property(
      *     property="assignable",
@@ -35,23 +35,4 @@ interface RoleResourceSwagger
      * )
      */
     public function base(Request $request): array;
-
-    /**
-     * @OA\Schema(
-     *   schema="RoleView",
-     *   allOf={
-     *     @OA\Schema(ref="#/components/schemas/Role"),
-     *   },
-     *   @OA\Property(
-     *     property="permissions",
-     *     type="array",
-     *     description="Permission names",
-     *     @OA\Items(
-     *       type="string",
-     *       example="roles.show_details",
-     *     ),
-     *   ),
-     * )
-     */
-    public function view(Request $request): array;
 }
