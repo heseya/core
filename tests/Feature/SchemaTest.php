@@ -48,11 +48,21 @@ class SchemaTest extends TestCase
             'options' => [
                 [
                     'name' => 'L',
-                    'price' => 0,
+                    'price' => 100,
                     'disabled' => false,
                     'items' => [
                         $item->getKey(),
                     ],
+                ],
+                [
+                    'name' => 'A',
+                    'price' => 1000,
+                    'disabled' => false,
+                ],
+                [
+                    'name' => 'B',
+                    'price' => 0,
+                    'disabled' => false,
                 ],
             ],
         ]);
@@ -73,9 +83,26 @@ class SchemaTest extends TestCase
         $this->assertDatabaseHas('options', [
             'id' => $option->id,
             'name' => 'L',
+            'price' => 100,
+            'disabled' => 0,
+            'schema_id' => $schema->id,
+            'order' => 0,
+        ]);
+
+        $this->assertDatabaseHas('options', [
+            'name' => 'A',
+            'price' => 1000,
+            'disabled' => 0,
+            'schema_id' => $schema->id,
+            'order' => 1,
+        ]);
+
+        $this->assertDatabaseHas('options', [
+            'name' => 'B',
             'price' => 0,
             'disabled' => 0,
             'schema_id' => $schema->id,
+            'order' => 2,
         ]);
 
         $this->assertDatabaseHas('option_items', [
