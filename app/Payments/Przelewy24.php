@@ -53,7 +53,14 @@ class Przelewy24 implements PaymentMethod
         ];
     }
 
-    public static function translateNotification(Request $request)
+    private static function sign(array $fields): string
+    {
+        $json = json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        return hash('sha384', $json);
+    }
+
+    public static function translateNotification(Request $request): mixed
     {
         $request->validate([
             'sessionId' => 'required|integer|exists:payments,id',
@@ -122,12 +129,5 @@ class Przelewy24 implements PaymentMethod
             'external_id' => $validated['orderId'],
             'payed' => true,
         ]);
-    }
-
-    private static function sign(array $fields): string
-    {
-        $json = json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-        return hash('sha384', $json);
     }
 }
