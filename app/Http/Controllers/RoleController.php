@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Dtos\RoleCreateDto;
 use App\Dtos\RoleSearchDto;
+use App\Dtos\RoleUpdateDto;
+use App\Http\Controllers\Swagger\RoleControllerSwagger;
 use App\Http\Requests\RoleIndexRequest;
 use App\Http\Requests\RoleStoreRequest;
 use App\Http\Requests\RoleUpdateRequest;
@@ -58,6 +60,6 @@ class RoleController extends Controller implements RoleControllerSwagger
     {
         $this->roleService->delete($role);
 
-        return JsonResponse::fromJsonString(null, JsonResponse::HTTP_NO_CONTENT);
+        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

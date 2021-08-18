@@ -18,15 +18,15 @@ class RoleUpdateDto implements DtoContract, InstantiateFromRequest
     {
         $data = [];
 
-        if ($this->getName()) {
+        if ($this->getName() !== null) {
             $data['name'] = $this->getName();
         }
 
-        if ($this->getDescription()) {
+        if ($this->getDescription() !== null) {
             $data['description'] = $this->getDescription();
         }
 
-        if ($this->getPermissions()) {
+        if ($this->getPermissions() !== null) {
             $data['permissions'] = $this->getPermissions();
         }
 

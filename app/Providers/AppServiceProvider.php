@@ -17,6 +17,7 @@ use App\Services\Contracts\OrderServiceContract;
 use App\Services\Contracts\PageServiceContract;
 use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
+use App\Services\Contracts\RoleServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
 use App\Services\Contracts\ShippingMethodServiceContract;
@@ -30,6 +31,7 @@ use App\Services\OrderService;
 use App\Services\PageService;
 use App\Services\ProductSetService;
 use App\Services\ReorderService;
+use App\Services\RoleService;
 use App\Services\SchemaService;
 use App\Services\SettingsService;
 use App\Services\ShippingMethodService;
@@ -56,6 +58,7 @@ class AppServiceProvider extends ServiceProvider
         ShippingMethodServiceContract::class => ShippingMethodService::class,
         ProductSetServiceContract::class => ProductSetService::class,
         UserServiceContract::class => UserService::class,
+        RoleServiceContract::class => RoleService::class,
     ];
 
     /**

@@ -14,7 +14,7 @@ interface RoleServiceContract
 
     public function create(RoleCreateDto $dto): Role;
 
-    public function update(Role $page, RoleUpdateDto $dto): Role;
+    public function update(Role $role, RoleUpdateDto $dto): Role;
 
-    public function delete(Role $page): void;
+    public function delete(Role $role): void;
 }

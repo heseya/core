@@ -13,14 +13,14 @@ class RoleResource extends Resource implements RoleResourceSwagger
             'id' => $this->getKey(),
             'name' => $this->name,
             'description' => $this->description,
-            'assignable' => false,
+            'assignable' => true,
         ];
     }
 
     public function view(Request $request): array
     {
         return [
-            'permissions' => $this->getPermissionNames(),
+            'permissions' => $this->getPermissionNames()->sort()->values(),
         ];
     }
 }

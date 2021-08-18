@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Swagger;
 
+use App\Http\Requests\RoleIndexRequest;
 use App\Http\Requests\RoleStoreRequest;
 use App\Http\Requests\RoleUpdateRequest;
 use App\Models\Role;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 interface RoleControllerSwagger
@@ -64,7 +64,7 @@ interface RoleControllerSwagger
      *   }
      * )
      */
-    public function index(Request $request): JsonResource;
+    public function index(RoleIndexRequest $request): JsonResource;
 
     /**
      * @OA\Get(

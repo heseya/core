@@ -19,19 +19,19 @@ class RoleSearchDto implements DtoContract, InstantiateFromRequest
     {
         $data = [];
 
-        if ($this->getSearch()) {
+        if ($this->getSearch() !== null) {
             $data['search'] = $this->getSearch();
         }
 
-        if ($this->getName()) {
+        if ($this->getName() !== null) {
             $data['name'] = $this->getName();
         }
 
-        if ($this->getDescription()) {
+        if ($this->getDescription() !== null) {
             $data['description'] = $this->getDescription();
         }
 
-        if ($this->getAssignable()) {
+        if ($this->getAssignable() !== null) {
             $data['assignable'] = $this->getAssignable();
         }
 
@@ -44,7 +44,7 @@ class RoleSearchDto implements DtoContract, InstantiateFromRequest
             $request->input('search', null),
             $request->input('name', null),
             $request->input('description', null),
-            $request->input('assignable', null),
+            $request->has('assignable') ? $request->boolean('assignable') : null,
         );
     }
 

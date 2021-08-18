@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CountriesController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\ProductSetController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
