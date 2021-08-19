@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 /**
  * @OA\Schema ()
@@ -35,6 +36,7 @@ class User extends Model implements
         CanResetPassword,
         MustVerifyEmail,
         HasFactory,
+        HasRoles,
         SoftDeletes,
         Searchable,
         Sortable;
