@@ -216,4 +216,26 @@ interface AuthControllerSwagger
      * )
      */
     public function killAllSessions(Request $request): JsonResource;
+
+    /**
+     * @OA\Get(
+     *   path="/auth/profile",
+     *   summary="get your own user resource",
+     *   tags={"Auth"},
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/User",
+     *       )
+     *     )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function profile(Request $request): JsonResource;
 }

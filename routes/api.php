@@ -187,6 +187,7 @@ Route::middleware('auth:api')->group(function (): void {
         Route::get('login-history', [AuthController::class, 'loginHistory']);
         Route::get('kill-session/id:{id}', [AuthController::class, 'killActiveSession']);
         Route::get('kill-all-sessions', [AuthController::class, 'killAllSessions']);
+        Route::get('profile', [AuthController::class, 'profile']);
     });
 
     Route::prefix('apps')->group(function (): void {

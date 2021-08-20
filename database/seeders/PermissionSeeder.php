@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Page;
 use App\Models\Permission;
+use App\Models\Role;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -148,5 +149,8 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(['name' => 'roles.add']);
         Permission::updateOrCreate(['name' => 'roles.edit']);
         Permission::updateOrCreate(['name' => 'roles.remove']);
+
+        Role::updateOrCreate(['name' => 'Owner'])
+            ->syncPermissions(Permission::all());
     }
 }

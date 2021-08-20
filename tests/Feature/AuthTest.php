@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Hash;
@@ -218,5 +220,36 @@ class AuthTest extends TestCase
             ->where('id', $idToken)
             ->where('revoked', $isRevoke)
             ->get();
+    }
+
+    public function testProfile(): void
+    {
+        $user = User::factory()->create();
+        $role1 = Role::create(['name' => 'Role 1']);
+
+        $permission1 = Permission::create(['name' => 'permission.1']);
+        $permission2 = Permission::create(['name' => 'permission.2']);
+
+        $role1->syncPermissions([$permission1, $permission2]);
+        $user->syncRoles([$role1]);
+
+        $this->actingAs($user)->getJson('/auth/profile')
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $user->getKey(),
+                'email' => $user->email,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+                'roles' => [[
+                    $role1->getKeyName() => $role1->getKey(),
+                    'name' => $role1->name,
+                    'description' => $role1->description,
+                    'assignable' => true,
+                ]],
+                'permissions' => [
+                    'permission.1',
+                    'permission.2',
+                ],
+            ]]);
     }
 }

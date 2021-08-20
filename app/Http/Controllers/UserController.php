@@ -44,6 +44,7 @@ class UserController extends Controller implements UserControllerSwagger
             $request->input('name'),
             $request->input('email'),
             $request->input('password'),
+            $request->input('roles', []),
         );
 
         return UserResource::make($user);
@@ -55,6 +56,7 @@ class UserController extends Controller implements UserControllerSwagger
             $user,
             $request->input('name'),
             $request->input('email'),
+            $request->input('roles'),
         );
 
         return UserResource::make($resultUser);
