@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Request;
 use Laravel\Passport\Passport;
+use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
@@ -35,6 +36,16 @@ class AuthTest extends TestCase
                 ],
                 'scopes' => [],
             ]]);
+    }
+
+    public function testLoginInvalidCredential(): void
+    {
+        $response = $this->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => 'bad-password',
+        ]);
+
+        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 
     public function testLogout(): void
