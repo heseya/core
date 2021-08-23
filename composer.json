@@ -24,7 +24,8 @@
         "propaganistas/laravel-phone": "^4.3",
         "sentry/sentry-laravel": "^2.6",
         "spatie/laravel-permission": "^4.2",
-        "srmklive/paypal": "^3.0"
+        "srmklive/paypal": "^3.0",
+        "barryvdh/laravel-ide-helper": "^2.10"
     },
     "require-dev": {
         "brianium/paratest": "^6.3",
@@ -36,7 +37,6 @@
         "nunomaduro/collision": "^5.3",
         "nunomaduro/phpinsights": "^2.0",
         "phpunit/phpunit": "^9.5",
-        "barryvdh/laravel-ide-helper": "^2.10",
         "laravel/tinker": "^2.6"
     },
     "config": {

@@ -250,6 +250,7 @@ class Schema extends Model
     public function options(): HasMany
     {
         return $this->hasMany(Option::class)
+            ->orderBy('order')
             ->orderBy('created_at')
             ->orderBy('name', 'DESC');
     }
