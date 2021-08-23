@@ -6,7 +6,9 @@ use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CountriesController;
 use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProductSetController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
@@ -126,6 +128,16 @@ Route::prefix('discounts')->group(function (): void {
         ->middleware('auth:api');
 });
 
+Route::prefix('roles')->middleware('auth:api')->group(function (): void {
+    Route::get(null, [RoleController::class, 'index']);
+    Route::post(null, [RoleController::class, 'store']);
+    Route::get('id:{role:id}', [RoleController::class, 'show']);
+    Route::patch('id:{role:id}', [RoleController::class, 'update']);
+    Route::delete('id:{role:id}', [RoleController::class, 'destroy']);
+});
+
+Route::get('permissions', [PermissionController::class, 'index'])->middleware('auth:api');
+
 Route::middleware('auth:api')->group(function (): void {
     Route::prefix('items')->group(function (): void {
         Route::get(null, 'ItemController@index');
@@ -175,6 +187,7 @@ Route::middleware('auth:api')->group(function (): void {
         Route::get('login-history', [AuthController::class, 'loginHistory']);
         Route::get('kill-session/id:{id}', [AuthController::class, 'killActiveSession']);
         Route::get('kill-all-sessions', [AuthController::class, 'killAllSessions']);
+        Route::get('profile', [AuthController::class, 'profile']);
     });
 
     Route::prefix('apps')->group(function (): void {

@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -21,6 +23,8 @@ class UserTest extends TestCase
             'email' => $this->user->email,
             'name' => $this->user->name,
             'avatar' => $this->user->avatar,
+            'roles' => [],
+            'permissions' => [],
         ];
     }
 
@@ -47,6 +51,8 @@ class UserTest extends TestCase
                     'email' => $otherUser->email,
                     'name' => $otherUser->name,
                     'avatar' => $otherUser->avatar,
+                    'roles' => [],
+                    'permissions' => [],
                 ],
             ]]);
     }
@@ -67,6 +73,8 @@ class UserTest extends TestCase
                     'email' => $otherUser->email,
                     'name' => $otherUser->name,
                     'avatar' => $otherUser->avatar,
+                    'roles' => [],
+                    'permissions' => [],
                 ],
                 $this->expected,
             ]]);
@@ -85,6 +93,8 @@ class UserTest extends TestCase
                 'email' => $user->email,
                 'name' => $user->name,
                 'avatar' => $user->avatar,
+                'roles' => [],
+                'permissions' => [],
             ]);
     }
 
@@ -101,6 +111,8 @@ class UserTest extends TestCase
                 'email' => $user->email,
                 'name' => $user->name,
                 'avatar' => $user->avatar,
+                'roles' => [],
+                'permissions' => [],
             ]);
     }
 
@@ -117,6 +129,8 @@ class UserTest extends TestCase
                 'email' => $user->email,
                 'name' => $user->name,
                 'avatar' => $user->avatar,
+                'roles' => [],
+                'permissions' => [],
             ]);
     }
 
@@ -133,6 +147,8 @@ class UserTest extends TestCase
                 'email' => $user->email,
                 'name' => $user->name,
                 'avatar' => $user->avatar,
+                'roles' => [],
+                'permissions' => [],
             ]);
     }
 
@@ -192,6 +208,59 @@ class UserTest extends TestCase
         $response->assertStatus(422);
     }
 
+    public function testCreateRoles(): void
+    {
+        $role1 = Role::create(['name' => 'Role 1']);
+        $role2 = Role::create(['name' => 'Role 2']);
+
+        $permission1 = Permission::create(['name' => 'permission.1']);
+        $permission2 = Permission::create(['name' => 'permission.2']);
+
+        $role1->syncPermissions([$permission1, $permission2]);
+
+        $data = User::factory()->raw() + [
+            'password' => $this->validPassword,
+            'roles' => [
+                $role1->getKey(),
+                $role2->getKey(),
+            ],
+        ];
+
+        $response = $this->actingAs($this->user)->postJson('/users', $data);
+        $response
+            ->assertCreated()
+            ->assertJsonPath('data.email', $data['email'])
+            ->assertJsonPath('data.name', $data['name'])
+            ->assertJsonFragment([
+                'id' => $role1->getKey(),
+                'name' => $role1->name,
+                'description' => $role1->description,
+                'assignable' => true,
+            ])->assertJsonFragment([
+                'id' => $role2->getKey(),
+                'name' => $role2->name,
+                'description' => $role2->description,
+                'assignable' => true,
+            ])->assertJsonPath('data.permissions', [
+                'permission.1',
+                'permission.2',
+            ]);
+
+        $user = User::findOrFail($response->getData()->data->id);
+
+        $this->assertTrue(
+            $user->hasAllRoles([$role1, $role2]),
+        );
+
+        $this->assertTrue(
+            $user->hasAllPermissions([$permission1, $permission2]),
+        );
+
+        $this->assertTrue(
+            Hash::check($data['password'], $user->password),
+        );
+    }
+
     public function testUpdateUnauthorized(): void
     {
         $response = $this->patchJson('/users/id:' . $this->user->getKey());
@@ -200,24 +269,73 @@ class UserTest extends TestCase
 
     public function testUpdate(): void
     {
+        $user = User::factory()->create();
         $data = User::factory()->raw();
 
         $response = $this->actingAs($this->user)->patchJson(
-            '/users/id:' . $this->user->getKey(),
+            '/users/id:' . $user->getKey(),
             $data,
         );
 
         $response
             ->assertOk()
-            ->assertJsonPath('data.id', $this->user->getKey())
+            ->assertJsonPath('data.id', $user->getKey())
             ->assertJsonPath('data.email', $data['email'])
             ->assertJsonPath('data.name', $data['name']);
 
         $this->assertDatabaseHas('users', [
-            'id' => $this->user->getKey(),
+            'id' => $user->getKey(),
             'name' => $data['name'],
             'email' => $data['email'],
         ]);
+    }
+
+    public function testUpdateRoles(): void
+    {
+        $user = User::factory()->create();
+        $role1 = Role::create(['name' => 'Role 1']);
+        $role2 = Role::create(['name' => 'Role 2']);
+
+        $permission1 = Permission::create(['name' => 'permission.1']);
+        $permission2 = Permission::create(['name' => 'permission.2']);
+
+        $role1->syncPermissions([$permission1, $permission2]);
+
+        $data = [
+            'roles' => [
+                $role1->getKey(),
+                $role2->getKey(),
+            ],
+        ];
+
+        $response = $this->actingAs($this->user)->patchJson(
+            '/users/id:' . $user->getKey(),
+            $data,
+        );
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $role1->getKey(),
+                'name' => $role1->name,
+                'description' => $role1->description,
+                'assignable' => true,
+            ])->assertJsonFragment([
+                'id' => $role2->getKey(),
+                'name' => $role2->name,
+                'description' => $role2->description,
+                'assignable' => true,
+            ])->assertJsonPath('data.permissions', [
+                'permission.1',
+                'permission.2',
+            ]);
+
+        $this->assertTrue(
+            $user->hasAllRoles([$role1, $role2]),
+        );
+
+        $this->assertTrue(
+            $user->hasAllPermissions([$permission1, $permission2]),
+        );
     }
 
     public function testUpdateSameEmail(): void

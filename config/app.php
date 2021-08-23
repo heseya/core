@@ -179,6 +179,7 @@ return [
         Laravel\Passport\PassportServiceProvider::class,
         Parsedown\Providers\ParsedownServiceProvider::class,
         Jenssegers\Agent\AgentServiceProvider::class,
+        Spatie\Permission\PermissionServiceProvider::class,
 
         /*
          * Application Service Providers...
