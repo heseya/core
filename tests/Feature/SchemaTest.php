@@ -27,11 +27,37 @@ class SchemaTest extends TestCase
     {
         $schema = Schema::factory()->create();
 
-        $response = $this->actingAs($this->user)->getJson('/schemas/id:' . $schema->getKey());
+        $option1 = Option::factory()->create([
+            'name' => 'A',
+            'price' => 10,
+            'disabled' => false,
+            'order' => 0,
+            'schema_id' => $schema->getKey(),
+        ]);
+        $option2 = Option::factory()->create([
+            'name' => 'C',
+            'price' => 100,
+            'disabled' => false,
+            'order' => 2,
+            'schema_id' => $schema->getKey(),
+        ]);
+        $option3 = Option::factory()->create([
+            'name' => 'B',
+            'price' => 0,
+            'disabled' => false,
+            'order' => 1,
+            'schema_id' => $schema->getKey(),
+        ]);
 
-        $response
+        $response = $this->actingAs($this->user)->getJson('/schemas/id:' . $schema->getKey())
             ->assertOk()
             ->assertJsonFragment(['id' => $schema->getKey()]);
+
+        $response = $response->json();
+
+        $this->assertEquals($option1->getKey(), $response['data']['options'][0]['id']);
+        $this->assertEquals($option3->getKey(), $response['data']['options'][1]['id']);
+        $this->assertEquals($option2->getKey(), $response['data']['options'][2]['id']);
     }
 
     public function testCreate(): void
