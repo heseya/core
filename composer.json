@@ -5,7 +5,6 @@
     "license": "proprietary",
     "require": {
         "php": "^8.0",
-        "barryvdh/laravel-ide-helper": "^2.10",
         "bensampo/laravel-enum": "^3.3",
         "darkaonline/l5-swagger": "^8.0",
         "doctrine/dbal": "^3.1",
@@ -16,7 +15,6 @@
         "jenssegers/agent": "^2.6",
         "laravel/framework": "^8.44",
         "laravel/passport": "^10.1",
-        "laravel/tinker": "^2.6",
         "league/html-to-markdown": "^5.0",
         "league/omnipay": "^3.1",
         "omnipay/common": "^3",
@@ -37,7 +35,9 @@
         "mockery/mockery": "^1.4",
         "nunomaduro/collision": "^5.3",
         "nunomaduro/phpinsights": "^2.0",
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit": "^9.5",
+        "barryvdh/laravel-ide-helper": "^2.10",
+        "laravel/tinker": "^2.6"
     },
     "config": {
         "optimize-autoloader": true,
