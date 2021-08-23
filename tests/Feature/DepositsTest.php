@@ -29,30 +29,38 @@ class DepositsTest extends TestCase
         ];
     }
 
+    public function testIndexUnauthorized(): void
+    {
+        $response = $this->actingAs($this->user)->getJson('/deposits');
+        $response->assertForbidden();
+    }
+
     public function testIndex(): void
     {
-        $response = $this->getJson('/deposits');
-        $response->assertUnauthorized();
+        $this->user->givePermissionTo('deposits.show');
 
-        Passport::actingAs($this->user);
-
-        $response = $this->getJson('/deposits');
+        $response = $this->actingAs($this->user)->getJson('/deposits');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
+    }
+
+    public function testViewUnauthorized(): void
+    {
+        $response = $this->actingAs($this->user)
+            ->getJson('/items/id:' . $this->item->getKey() . '/deposits');
+        $response->assertForbidden();
     }
 
     public function testView(): void
     {
-        $response = $this->getJson('/items/id:' . $this->item->getKey() . '/deposits');
-        $response->assertUnauthorized();
+        $this->user->givePermissionTo('deposits.show');
 
-        Passport::actingAs($this->user);
-
-        $response = $this->getJson('/items/id:' . $this->item->getKey() . '/deposits');
+        $response = $this->actingAs($this->user)
+            ->getJson('/items/id:' . $this->item->getKey() . '/deposits');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -61,18 +69,29 @@ class DepositsTest extends TestCase
             ]]);
     }
 
+    public function testCreateUnauthorized(): void
+    {
+        $deposit = [
+            'quantity' => 12.5,
+        ];
+
+        $response = $this->actingAs($this->user)->postJson(
+            '/items/id:' . $this->item->getKey() . '/deposits',
+            $deposit,
+        );
+
+        $response->assertForbidden();
+    }
+
     public function testCreate(): void
     {
-        $response = $this->postJson('/items/id:' . $this->item->getKey() . '/deposits');
-        $response->assertUnauthorized();
-
-        Passport::actingAs($this->user);
+        $this->user->givePermissionTo('deposits.add');
 
         $deposit = [
             'quantity' => 12.5,
         ];
 
-        $response = $this->postJson(
+        $response = $this->actingAs($this->user)->postJson(
             '/items/id:' . $this->item->getKey() . '/deposits',
             $deposit,
         );

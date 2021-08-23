@@ -14,9 +14,12 @@ use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('users')->group(function (): void {
-    Route::get('/reset-password/{token?}/{email?}', 'AuthController@showResetPasswordForm');
-    Route::post('/reset-password', 'AuthController@resetPassword');
-    Route::patch('/save-reset-password', 'AuthController@saveResetPassword');
+    Route::get('/reset-password/{token?}/{email?}', 'AuthController@showResetPasswordForm')
+        ->middleware('can:auth.password_reset');
+    Route::post('/reset-password', 'AuthController@resetPassword')
+        ->middleware('can:auth.password_reset');
+    Route::patch('/save-reset-password', 'AuthController@saveResetPassword')
+        ->middleware('can:auth.password_reset');
 
     Route::middleware('auth:api')->group(function (): void {
         Route::get(null, 'UserController@index');
@@ -27,8 +30,9 @@ Route::prefix('users')->group(function (): void {
     });
 });
 
-Route::post('login', 'AuthController@login');
-Route::patch('user/password', 'AuthController@changePassword')->middleware('auth:api');
+Route::post('login', 'AuthController@login')->middleware('can:auth.login');
+Route::patch('user/password', 'AuthController@changePassword')
+    ->middleware('can:auth.password_change');
 
 Route::prefix('products')->group(function (): void {
     Route::get(null, 'ProductController@index');
@@ -63,8 +67,10 @@ Route::prefix('pages')->group(function (): void {
     Route::post('order', 'PageController@reorder')->middleware('auth:api');
 });
 
-Route::get('brands', [BrandController::class, 'index']);
-Route::get('categories', [CategoryController::class, 'index']);
+Route::get('brands', [BrandController::class, 'index'])
+    ->middleware('can:product_sets.show');
+Route::get('categories', [CategoryController::class, 'index'])
+    ->middleware('can:product_sets.show');
 
 Route::prefix('product-sets')->group(function (): void {
     Route::get(null, [ProductSetController::class, 'index']);
@@ -118,7 +124,8 @@ Route::prefix('package-templates')->middleware('auth:api')->group(function (): v
     Route::delete('id:{package:id}', 'PackageTemplateController@destroy');
 });
 
-Route::get('countries', [CountriesController::class, 'index']);
+Route::get('countries', [CountriesController::class, 'index'])
+    ->middleware('can:countries.show');
 
 Route::prefix('discounts')->group(function (): void {
     Route::get(null, [DiscountController::class, 'index'])->middleware('auth:api');
@@ -138,6 +145,32 @@ Route::prefix('roles')->middleware('auth:api')->group(function (): void {
 
 Route::get('permissions', [PermissionController::class, 'index'])->middleware('auth:api');
 
+Route::prefix('analytics')->group(function (): void {
+    Route::get('payments', 'AnalyticsController@payments')
+        ->middleware('can:analytics.payments');
+});
+
+Route::prefix('auth')->group(function (): void {
+    Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:api');
+    Route::get('login-history', [AuthController::class, 'loginHistory'])
+        ->middleware('can:auth.sessions.show');
+    Route::get('kill-session/id:{id}', [AuthController::class, 'killActiveSession'])
+        ->middleware('can:auth.sessions.revoke');
+    Route::get('kill-all-sessions', [AuthController::class, 'killAllSessions'])
+        ->middleware('can:auth.sessions.revoke');
+    Route::get('profile', [AuthController::class, 'profile']);
+});
+
+Route::get('deposits', 'DepositController@index')
+    ->middleware('can:deposits.show');
+
+Route::prefix('items')->group(function (): void {
+    Route::get('id:{item:id}/deposits', 'DepositController@show')
+        ->middleware('can:deposits.show');
+    Route::post('id:{item:id}/deposits', 'DepositController@store')
+        ->middleware('can:deposits.add');
+});
+
 Route::middleware('auth:api')->group(function (): void {
     Route::prefix('items')->group(function (): void {
         Route::get(null, 'ItemController@index');
@@ -145,9 +178,6 @@ Route::middleware('auth:api')->group(function (): void {
         Route::get('id:{item:id}', 'ItemController@show');
         Route::patch('id:{item:id}', 'ItemController@update');
         Route::delete('id:{item:id}', 'ItemController@destroy');
-
-        Route::get('id:{item:id}/deposits', 'DepositController@show');
-        Route::post('id:{item:id}/deposits', 'DepositController@store');
     });
 
     Route::prefix('statuses')->group(function (): void {
@@ -157,8 +187,6 @@ Route::middleware('auth:api')->group(function (): void {
         Route::patch('id:{status:id}', 'StatusController@update');
         Route::delete('id:{status:id}', 'StatusController@destroy');
     });
-
-    Route::get('deposits', 'DepositController@index');
 
     Route::prefix('media')->group(function (): void {
         Route::post(null, 'MediaController@store');
@@ -182,21 +210,9 @@ Route::middleware('auth:api')->group(function (): void {
         Route::delete('id:{option:id}', 'OptionController@destroy');
     });
 
-    Route::prefix('auth')->group(function (): void {
-        Route::post('logout', [AuthController::class, 'logout']);
-        Route::get('login-history', [AuthController::class, 'loginHistory']);
-        Route::get('kill-session/id:{id}', [AuthController::class, 'killActiveSession']);
-        Route::get('kill-all-sessions', [AuthController::class, 'killAllSessions']);
-        Route::get('profile', [AuthController::class, 'profile']);
-    });
-
     Route::prefix('apps')->group(function (): void {
         Route::get(null, [AppController::class, 'index']);
         Route::post(null, [AppController::class, 'store']);
-    });
-
-    Route::prefix('analytics')->group(function (): void {
-        Route::get('payments', 'AnalyticsController@payments');
     });
 
     Route::prefix('tags')->group(function (): void {

@@ -18,9 +18,21 @@ class AuthTest extends TestCase
 {
     use WithFaker;
 
+    public function testLoginUnauthorized(): void
+    {
+        $response = $this->actingAs($this->user)->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+        ]);
+
+        $response->assertForbidden();
+    }
+
     public function testLogin(): void
     {
-        $response = $this->postJson('/login', [
+        $this->user->givePermissionTo('auth.login');
+
+        $response = $this->actingAs($this->user)->postJson('/login', [
             'email' => $this->user->email,
             'password' => $this->password,
         ]);
@@ -52,11 +64,12 @@ class AuthTest extends TestCase
 
     public function testLogout(): void
     {
-        $response = $this->actingAs($this->user)->postJson('/auth/logout');
+        $response = $this->actingAs($this->user)->actingAs($this->user)
+            ->postJson('/auth/logout');
         $response->assertNoContent();
     }
 
-    public function testResetPassword(): void
+    public function testResetPasswordUnauthorized(): void
     {
         $email = $this->faker->unique()->safeEmail;
         $password = 'Passwd###111';
@@ -70,14 +83,36 @@ class AuthTest extends TestCase
         Mail::fake();
         Mail::assertNothingSent();
 
-        $response = $this->postJson('/users/reset-password', [
+        $response = $this->actingAs($user)->postJson('/users/reset-password', [
+            'email' => $user->email,
+        ]);
+
+        $response->assertForbidden();
+    }
+
+    public function testResetPassword(): void
+    {
+        $email = $this->faker->unique()->safeEmail;
+        $password = 'Passwd###111';
+
+        $user = User::factory()->create([
+            'name' => $this->faker->firstName() . ' '  . $this->faker->lastName(),
+            'email' => $email,
+            'password' => Hash::make($password),
+        ]);
+        $user->givePermissionTo('auth.password_reset');
+
+        Mail::fake();
+        Mail::assertNothingSent();
+
+        $response = $this->actingAs($user)->postJson('/users/reset-password', [
             'email' => $user->email,
         ]);
 
         $response->assertNoContent();
     }
 
-    public function testSaveResetPassword(): void
+    public function testSaveResetPasswordUnauthorized(): void
     {
         $email = $this->faker->unique()->safeEmail;
         $newPassword = 'NewPasswd###111';
@@ -88,9 +123,32 @@ class AuthTest extends TestCase
         ]);
 
         $token = Password::createToken($user);
+
+        $response = $this->actingAs($this->user)->patchJson('/users/save-reset-password', [
+            'email' => $email,
+            'password' => $newPassword,
+            'token' => $token,
+        ]);
+
+        $response->assertForbidden();
+    }
+
+    function testSaveResetPassword(): void
+    {
+        $email = $this->faker->unique()->safeEmail;
+        $newPassword = 'NewPasswd###111';
+
+        $user = User::factory()->create([
+            'name' => $this->faker->firstName() . ' '  . $this->faker->lastName(),
+            'email' => $email,
+        ]);
+
+        $user->givePermissionTo('auth.password_reset');
+
+        $token = Password::createToken($user);
         $this->assertTrue(Password::tokenExists($user, $token));
 
-        $this->patchJson('/users/save-reset-password', [
+        $this->actingAs($user)->patchJson('/users/save-reset-password', [
             'email' => $email,
             'password' => $newPassword,
             'token' => $token,
@@ -101,11 +159,27 @@ class AuthTest extends TestCase
         $this->assertFalse(Password::tokenExists($user, $token));
     }
 
+    public function testChangePasswordUnauthorized(): void
+    {
+        $user = User::factory()->create([
+            'password' => Hash::make('test'),
+        ]);
+
+        $response = $this->actingAs($user)->patchJson('/user/password', [
+            'password' => 'test',
+            'password_new' => 'Test1@3456',
+        ]);
+
+        $response->assertForbidden();
+    }
+
     public function testChangePassword(): void
     {
         $user = User::factory()->create([
             'password' => Hash::make('test'),
         ]);
+
+        $user->givePermissionTo('auth.password_change');
 
         $response = $this->actingAs($user)->patchJson('/user/password', [
             'password' => 'test',
@@ -118,15 +192,35 @@ class AuthTest extends TestCase
         $this->assertTrue(Hash::check('Test1@3456', $user->password));
     }
 
-    public function testLoginHistory(): void
+    public function testLoginHistoryUnauthorized(): void
     {
         $response = $this->actingAs($this->user)->getJson('/auth/login-history');
+        $response->assertForbidden();
+    }
+
+    public function testLoginHistory(): void
+    {
+        $this->user->givePermissionTo('auth.sessions.show');
+
+        $response = $this->actingAs($this->user)->getJson('/auth/login-history');
         $response->assertOk();
+    }
+
+    public function testKillActiveSessionUnauthorized(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('Test Active Token');
+        $headers = ['Authorization' => 'Bearer ' . $token->accessToken];
+
+        $this->getJson('/auth/kill-session/id:' . $token->token->id, $headers)
+            ->assertForbidden();
     }
 
     public function testKillActiveSession(): void
     {
         $user = User::factory()->create();
+        $user->givePermissionTo('auth.sessions.revoke');
+
         $token = $user->createToken('Test Active Token');
         $headers = ['Authorization' => 'Bearer ' . $token->accessToken];
 
@@ -140,9 +234,22 @@ class AuthTest extends TestCase
         ]);
     }
 
+    public function testKillOldSessionUnauthorized(): void
+    {
+        $user = User::factory()->create();
+        $token1 = $user->createToken('Test A Access Token');
+        $token3 = $user->createToken('Test C Access Token');
+
+        $headers = ['Authorization' => 'Bearer ' . $token1->accessToken];
+        $this->getJson('/auth/kill-session/id:' . $token3->token->id, $headers)
+            ->assertForbidden();
+    }
+
     public function testKillOldSession(): void
     {
         $user = User::factory()->create();
+        $user->givePermissionTo('auth.sessions.revoke');
+
         $token1 = $user->createToken('Test A Access Token');
         $token2 = $user->createToken('Test B Access Token');
         $token3 = $user->createToken('Test C Access Token');
@@ -176,16 +283,32 @@ class AuthTest extends TestCase
         ]);
     }
 
+    public function testKillAllSessionsUnauthorized(): void
+    {
+        $user = User::factory()->create();
+
+        $token3 = $user->createToken('Test 3 Access Token');
+
+        $token3->token->update([
+          'ip' => Request::ip(),
+        ]);
+
+        $headers = ['Authorization' => 'Bearer ' . $token3->accessToken];
+        $this->getJson('/auth/kill-all-sessions', $headers)
+            ->assertForbidden();
+    }
+
     public function testKillAllSessions(): void
     {
         $user = User::factory()->create();
+        $user->givePermissionTo('auth.sessions.revoke');
 
         $token1 = $user->createToken('Test 1 Access Token');
         $token2 = $user->createToken('Test 2 Access Token');
         $token3 = $user->createToken('Test 3 Access Token');
 
         $token3->token->update([
-          'ip' => Request::ip(),
+            'ip' => Request::ip(),
         ]);
 
         $headers = ['Authorization' => 'Bearer ' . $token3->accessToken];

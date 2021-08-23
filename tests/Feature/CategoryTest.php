@@ -36,9 +36,17 @@ class CategoryTest extends TestCase
         ]);
     }
 
+    public function testIndexUnauthorized(): void
+    {
+        $response = $this->actingAs($this->user)->getJson('/categories');
+        $response->assertForbidden();
+    }
+
     public function testIndex(): void
     {
-        $response = $this->getJson('/categories');
+        $this->user->givePermissionTo('product_sets.show');
+
+        $response = $this->actingAs($this->user)->getJson('/categories');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public categories.
@@ -52,8 +60,13 @@ class CategoryTest extends TestCase
             ]]);
     }
 
-    public function testIndexAuthorized(): void
+    public function testIndexHidden(): void
     {
+        $this->user->givePermissionTo([
+            'product_sets.show',
+            'product_sets.show_hidden',
+        ]);
+
         $response = $this->actingAs($this->user)->getJson('/categories');
         $response
             ->assertOk()

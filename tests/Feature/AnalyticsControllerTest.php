@@ -11,8 +11,24 @@ class AnalyticsControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function testPaymentsUnauthorized(): void
+    {
+        $to = Carbon::today();
+        $from = $to->copy()->subDays(30);
+
+        $response = $this->actingAs($this->user)->getJson('/analytics/payments', [
+            'from' => $from->toDateString(),
+            'to' => $to->toDateString(),
+            'group' => 'total',
+        ]);
+
+        $response->assertForbidden();
+    }
+
     public function testPayments(): void
     {
+        $this->user->givePermissionTo('analytics.payments');
+
         $to = Carbon::today();
         $from = $to->copy()->subDays(30);
 
@@ -31,7 +47,7 @@ class AnalyticsControllerTest extends TestCase
             'to' => $to->toDateString(),
             'group' => 'total',
         ]);
-        
+
         $response->assertOk()
             ->assertJson([
                 "data" => [

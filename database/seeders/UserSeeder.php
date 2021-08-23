@@ -24,6 +24,14 @@ class UserSeeder extends Seeder
             Role::where('name', 'Owner')->firstOrFail(),
         );
 
+        User::factory()->create([
+            'name' => 'Unauthenticated',
+            'email' => 'unauthenticated@heseya.com',
+            'password' => Hash::make('secret'),
+        ])->assignRole(
+            Role::where('name', 'Unauthenticated')->firstOrFail(),
+        );
+
         User::factory()->count(5)->create();
     }
 }

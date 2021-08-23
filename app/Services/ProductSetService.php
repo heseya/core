@@ -46,7 +46,7 @@ class ProductSetService implements ProductSetServiceContract
             fn (Builder $sub) => $sub->where('slug', 'brands'),
         )->search($attributes);
 
-        if (!Auth::check()) {
+        if (!Auth::user()->can('product_sets.show_hidden')) {
             $query->public();
         }
 
@@ -60,7 +60,7 @@ class ProductSetService implements ProductSetServiceContract
             fn (Builder $sub) => $sub->where('slug', 'categories'),
         )->search($attributes);
 
-        if (!Auth::check()) {
+        if (!Auth::user()->can('product_sets.show_hidden')) {
             $query->public();
         }
 
