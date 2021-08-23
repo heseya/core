@@ -77,7 +77,7 @@ interface AuthControllerSwagger
 
     /**
      * @OA\Post(
-     *   path="/user/reset-password",
+     *   path="/users/reset-password",
      *   summary="Reset password",
      *   tags={"Auth"},
      *   @OA\RequestBody(
@@ -96,7 +96,7 @@ interface AuthControllerSwagger
 
     /**
      * @OA\Get(
-     *   path="/user/reset-password/{token}/{email}",
+     *   path="/users/reset-password/{token}/{email}",
      *   summary="Show reset password form",
      *   tags={"Auth"},
      *   @OA\Response(
@@ -112,7 +112,7 @@ interface AuthControllerSwagger
 
     /**
      * @OA\Patch(
-     *   path="/user/save-reset-password",
+     *   path="/users/save-reset-password",
      *   summary="save the reset password",
      *   tags={"Auth"},
      *   @OA\RequestBody(
@@ -131,7 +131,7 @@ interface AuthControllerSwagger
 
     /**
      * @OA\Patch(
-     *   path="/user/password",
+     *   path="/users/password",
      *   summary="Change password",
      *   tags={"Auth"},
      *   @OA\RequestBody(
@@ -174,4 +174,68 @@ interface AuthControllerSwagger
      * )
      */
     public function loginHistory(Request $request): JsonResource;
+
+    /**
+     * @OA\Get(
+     *   path="/auth/kill-session/id:{id}",
+     *   summary="Allow to 'kill' active session",
+     *   tags={"Auth"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     description="token id from the table 'oauth_access_tokens'",
+     *     @OA\Schema(
+     *       type="string",
+     *       example="47e380b746d6cacb20473b82d911b2701a3c05422c65cbc4872045a100fcb72be554ad1680aef2bf",
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function killActiveSession(Request $request, string $oauthAccessTokensId): JsonResource;
+
+    /**
+     * @OA\Get(
+     *   path="/auth/kill-all-sessions",
+     *   summary="Allow to 'kill' all old sessions",
+     *   tags={"Auth"},
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function killAllSessions(Request $request): JsonResource;
+
+    /**
+     * @OA\Get(
+     *   path="/auth/profile",
+     *   summary="get your own user resource",
+     *   tags={"Auth"},
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/User",
+     *       )
+     *     )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function profile(Request $request): JsonResource;
 }

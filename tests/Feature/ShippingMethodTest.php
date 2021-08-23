@@ -3,18 +3,21 @@
 namespace Tests\Feature;
 
 use App\Models\Order;
-use App\Models\Price;
 use App\Models\PriceRange;
 use App\Models\ShippingMethod;
+use Illuminate\Foundation\Testing\WithFaker;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class ShippingMethodTest extends TestCase
 {
+    use WithFaker;
+
     public ShippingMethod $shipping_method;
     public ShippingMethod $shipping_method_hidden;
 
     public array $expected;
+    public array $priceRangesWithNoInitialStart;
 
     public function setUp(): void
     {
@@ -58,6 +61,21 @@ class ShippingMethodTest extends TestCase
             'name' => $this->shipping_method->name,
             'public' => $this->shipping_method->public,
         ];
+
+        $this->priceRangesWithNoInitialStart = [
+            [
+                'start' => $this->faker()->randomFloat(2,1, 49),
+                'value' => $this->faker()->randomFloat(2, 20),
+            ],
+            [
+                'start' => $this->faker()->randomFloat(2,50, 99),
+                'value' => $this->faker()->randomFloat(2, 100),
+            ],
+            [
+                'start' => $this->faker()->numberBetween(100, 1000),
+                'value' => $this->faker()->numberBetween(100, 1000),
+            ],
+        ];
     }
 
     public function testIndex(): void
@@ -93,6 +111,57 @@ class ShippingMethodTest extends TestCase
             ->assertJsonCount(2, 'data') // Should show only public shipping methods.
             ->assertJsonFragment(['id' => $this->shipping_method->getKey()])
             ->assertJsonFragment(['id' => $shippingMethod2->getKey()]);
+    }
+
+    /**
+     * Price range testing with no initial 'start' value of zero
+     */
+    public function testCreateByPriceRanges(): void
+    {
+        $shipping_method = [
+            'name' => 'Test 4',
+            'public' => false,
+        ];
+
+        $response = $this->actingAs($this->user)->postJson(
+            '/shipping-methods', $shipping_method + [
+               'price_ranges' => $this->priceRangesWithNoInitialStart,
+           ],
+        );
+
+        $response->assertStatus(422);
+    }
+
+    /**
+     * Price range testing with duplicate "start" values
+     */
+    public function testCreateByDuplicatePriceRanges(): void
+    {
+        $shipping_method = [
+            'name' => 'Test 5',
+            'public' => false,
+        ];
+
+        $response = $this->actingAs($this->user)->postJson(
+            '/shipping-methods', $shipping_method + [
+               'price_ranges' => [
+                   [
+                       'start' => 0,
+                       'value' => 0,
+                   ],
+                   [
+                       'start' => 0,
+                       'value' => 0,
+                   ],
+                   [
+                       'start' => 10,
+                       'value' => 0,
+                   ]
+               ],
+           ],
+        );
+
+        $response->assertStatus(422);
     }
 
     public function testCreate(): void
@@ -144,6 +213,59 @@ class ShippingMethodTest extends TestCase
             // Doesnt work bacause of extra shit in the array
 
         $this->assertDatabaseHas('shipping_methods', $shipping_method);
+    }
+
+    /**
+     * Price range testing with no initial 'start' value of zero
+     */
+    public function testUpdateByPriceRanges(): void
+    {
+        $shipping_method = [
+            'name' => 'Test 6',
+            'public' => false,
+        ];
+
+        $response = $this->actingAs($this->user)->patchJson(
+            '/shipping-methods/id:' . $this->shipping_method->getKey(),
+            $shipping_method + [
+                'price_ranges' => $this->priceRangesWithNoInitialStart,
+            ],
+        );
+
+        $response->assertStatus(422);
+    }
+
+    /**
+     * Price range testing with duplicate "start" values
+     */
+    public function testUpdateByDuplicatePriceRanges(): void
+    {
+        $shipping_method = [
+            'name' => 'Test 7',
+            'public' => false,
+        ];
+
+        $response = $this->actingAs($this->user)->patchJson(
+            '/shipping-methods/id:' . $this->shipping_method->getKey(),
+            $shipping_method + [
+                'price_ranges' => [
+                    [
+                        'start' => 0,
+                        'value' => 10.37,
+                    ],
+                    [
+                        'start' => 0,
+                        'value' => 0,
+                    ],
+                    [
+                        'start' => 10,
+                        'value' => 0,
+                    ]
+                ],
+            ],
+        );
+
+        $response->assertStatus(422);
     }
 
     public function testUpdate(): void

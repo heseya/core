@@ -2,9 +2,11 @@
 
 namespace App\Http\Resources;
 
+use App\Http\Resources\Swagger\ProductResourceSwagger;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
-class ProductResource extends Resource
+class ProductResource extends Resource implements ProductResourceSwagger
 {
     public function base(Request $request): array
     {
@@ -17,8 +19,8 @@ class ProductResource extends Resource
             'visible' => $this->isPublic(),
             'available' => $this->available,
             'quantity_step' => $this->quantity_step,
-            'brand' => BrandResource::make($this->brand),
-            'category' => CategoryResource::make($this->category),
+            'brand' => ProductSetResource::make($this->brand),
+            'category' => ProductSetResource::make($this->category),
             'cover' => MediaResource::make($this->media()->first()),
             'tags' => TagResource::collection($this->tags),
         ];
@@ -26,6 +28,8 @@ class ProductResource extends Resource
 
     public function view(Request $request): array
     {
+        $sets = Auth::check() ? $this->sets : $this->sets()->public()->get();
+
         return [
             'user_id' => $this->user_id,
             'original_id' => $this->original_id,
@@ -34,6 +38,7 @@ class ProductResource extends Resource
             'meta_description' => str_replace("\n", ' ', trim(strip_tags($this->description_html))),
             'gallery' => MediaResource::collection($this->media),
             'schemas' => SchemaResource::collection($this->schemas),
+            'sets' => ProductSetResource::collection($sets),
         ];
     }
 }

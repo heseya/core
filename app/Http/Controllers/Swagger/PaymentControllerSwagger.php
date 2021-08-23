@@ -73,5 +73,5 @@ interface PaymentControllerSwagger
      *   )
      * )
      */
-    public function update(string $method, Request $request);
+    public function update(string $method, Request $request): mixed;
 }

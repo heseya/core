@@ -9,7 +9,7 @@ class ItemSearch extends Search
 {
     public function query(Builder $query): Builder
     {
-        return $query->where(function (Builder $query) {
+        return $query->where(function (Builder $query): void {
             $query->where('name', 'LIKE', '%' . $this->value . '%')
                 ->orWhere('sku', 'LIKE', '%' . $this->value . '%');
         });

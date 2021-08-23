@@ -33,7 +33,6 @@ class OrderUpdateRequest extends FormRequest
 {
     public function rules(): array
     {
-        //dd($this->request->all());
         return [
             'email' => ['nullable', 'email'],
             'comment' => ['nullable', 'string', 'max:1000'],

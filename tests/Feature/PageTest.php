@@ -4,11 +4,16 @@ namespace Tests\Feature;
 
 use App\Models\Page;
 use App\Services\Contracts\MarkdownServiceContract;
+use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class PageTest extends TestCase
 {
+    use WithFaker;
+
     private Page $page;
     private Page $page_hidden;
 
@@ -98,6 +103,55 @@ class PageTest extends TestCase
         $response->assertOk();
     }
 
+    public function testCreateByOrder(): void
+    {
+        for ($i = 0; $i < 3; $i++) {
+            $name = ' order test ' . $this->faker->sentence(rand(1, 3));
+            $page = [
+                'name' => $name,
+                'slug' => Str::slug($name),
+                'public' => $this->faker->boolean,
+                'content_html' => '<p>' . $this->faker->sentence(rand(10, 30)) . '</p>',
+            ];
+
+            $response = $this->actingAs($this->user)->postJson('/pages', $page);
+            $response->assertCreated();
+
+            $uuid[] = $response->getData()->data->id;
+        }
+
+        $this->assertCount(3, $uuid);
+        $this->assertDatabaseHas('pages', [
+            'id' => $uuid[0],
+            'order' => 1,
+        ]);
+        $this->assertDatabaseHas('pages', [
+            'id' => $uuid[2],
+            'order' => 3,
+        ]);
+
+        // change
+        $response = $this->actingAs($this->user)->postJson('/pages/order', [
+            'pages' => $uuid,
+        ]);
+        $response->assertNoContent();
+
+        // check
+        $response = $this->actingAs($this->user)->getJson('/pages/id:' . $uuid[0]);
+        $response->assertOk();
+        $this->assertDatabaseHas('pages', [
+            'id' => $uuid[0],
+            'order' => 0,
+        ]);
+
+        $response = $this->actingAs($this->user)->getJson('/pages/id:' . $uuid[2]);
+        $response->assertOk();
+        $this->assertDatabaseHas('pages', [
+            'id' => $uuid[2],
+            'order' => 2,
+        ]);
+    }
+
     public function testCreate(): void
     {
         $response = $this->postJson('/pages');
@@ -162,5 +216,39 @@ class PageTest extends TestCase
         $response = $this->deleteJson('/pages/id:' . $this->page->getKey());
         $response->assertNoContent();
         $this->assertDeleted($this->page);
+    }
+
+    public function testSortByOrder(): void
+    {
+        DB::table('pages')->delete();
+        $page = Page::factory()->count(10)->create();
+
+        $this->actingAs($this->user)->postJson('/pages/order', [
+            'pages' => $page->pluck('id')->toArray(),
+        ])->assertNoContent();
+
+        $response = $this->getJson('/pages');
+        $data = $response->getData()->data;
+        $response
+            ->assertOk()
+            ->assertJsonCount(10, 'data')
+            ->assertJsonFragment(
+                [
+                     'id' => $data[3]->id,
+                     'name' => $data[3]->name,
+                     'public' => $data[3]->public,
+                     'order' => 3,
+                     'slug' => $data[3]->slug,
+                ],
+            );
+
+        $this->assertDatabaseHas('pages', [
+            'id' => $data[3]->id,
+            'order' => 3,
+        ]);
+        $this->assertDatabaseHas('pages', [
+            'id' => $data[6]->id,
+            'order' => 6,
+        ]);
     }
 }

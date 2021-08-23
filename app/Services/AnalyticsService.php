@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Payment;
 use App\Services\Contracts\AnalyticsServiceContract;
 use Carbon\Carbon;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Facades\DB;
 
 class AnalyticsService implements AnalyticsServiceContract
@@ -15,7 +16,7 @@ class AnalyticsService implements AnalyticsServiceContract
         $count = DB::raw('COUNT(*) AS count');
         $key = $this->getGroupQuery($group);
 
-        return Payment::select($amount, $count, $key)
+        return Payment::select([$amount, $count, $key])
             ->where('payed', true)
             ->whereDate('created_at', '>=', $from)
             ->whereDate('created_at', '<=', $to)
@@ -29,7 +30,7 @@ class AnalyticsService implements AnalyticsServiceContract
             ])->toArray();
     }
 
-    private function getGroupQuery(string $group)
+    private function getGroupQuery(string $group): Expression
     {
         switch ($group) {
             case 'yearly':

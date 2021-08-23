@@ -75,72 +75,6 @@ namespace App\Models{
 
 namespace App\Models{
 /**
- * App\Models\Brand
- *
- * @OA\Schema ()
- * @mixin IdeHelperBrand
- * @property string $id
- * @property string $name
- * @property string $slug
- * @property bool $public
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property int $order
- * @property bool $hide_on_index
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Product[] $products
- * @property-read int|null $products_count
- * @method static \Database\Factories\BrandFactory factory(...$parameters)
- * @method static \Illuminate\Database\Eloquent\Builder|Brand newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Brand newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Brand query()
- * @method static \Illuminate\Database\Eloquent\Builder|Brand search(array $params = [])
- * @method static \Illuminate\Database\Eloquent\Builder|Brand whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Brand whereHideOnIndex($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Brand whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Brand whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Brand whereOrder($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Brand wherePublic($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Brand whereSlug($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Brand whereUpdatedAt($value)
- */
-	class IdeHelperBrand extends \Eloquent {}
-}
-
-namespace App\Models{
-/**
- * App\Models\Category
- *
- * @OA\Schema ()
- * @mixin IdeHelperCategory
- * @property string $id
- * @property string $name
- * @property string $slug
- * @property bool $public
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property int $order
- * @property bool $hide_on_index
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Product[] $products
- * @property-read int|null $products_count
- * @method static \Database\Factories\CategoryFactory factory(...$parameters)
- * @method static \Illuminate\Database\Eloquent\Builder|Category newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Category newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Category query()
- * @method static \Illuminate\Database\Eloquent\Builder|Category search(array $params = [])
- * @method static \Illuminate\Database\Eloquent\Builder|Category whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Category whereHideOnIndex($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Category whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Category whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Category whereOrder($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Category wherePublic($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Category whereSlug($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Category whereUpdatedAt($value)
- */
-	class IdeHelperCategory extends \Eloquent {}
-}
-
-namespace App\Models{
-/**
  * App\Models\Country
  *
  * @OA\Schema ()
@@ -352,10 +286,6 @@ namespace App\Models{
  * @property-read float $payed_amount
  * @property-read float $summary
  * @property-read \App\Models\Address|null $invoiceAddress
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\OrderLog[] $logs
- * @property-read int|null $logs_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\OrderNote[] $notes
- * @property-read int|null $notes_count
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection|\Illuminate\Notifications\DatabaseNotification[] $notifications
  * @property-read int|null $notifications_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Payment[] $payments
@@ -385,53 +315,6 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereUpdatedAt($value)
  */
 	class IdeHelperOrder extends \Eloquent {}
-}
-
-namespace App\Models{
-/**
- * App\Models\OrderLog
- *
- * @mixin IdeHelperOrderLog
- * @property string $id
- * @property string $order_id
- * @property string $content
- * @property string $user
- * @property string $created_at
- * @method static \Illuminate\Database\Eloquent\Builder|OrderLog newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|OrderLog newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|OrderLog query()
- * @method static \Illuminate\Database\Eloquent\Builder|OrderLog whereContent($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderLog whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderLog whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderLog whereOrderId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderLog whereUser($value)
- */
-	class IdeHelperOrderLog extends \Eloquent {}
-}
-
-namespace App\Models{
-/**
- * App\Models\OrderNote
- *
- * @mixin IdeHelperOrderNote
- * @property string $id
- * @property string $message
- * @property string $order_id
- * @property string|null $user_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\User|null $user
- * @method static \Illuminate\Database\Eloquent\Builder|OrderNote newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|OrderNote newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|OrderNote query()
- * @method static \Illuminate\Database\Eloquent\Builder|OrderNote whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderNote whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderNote whereMessage($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderNote whereOrderId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderNote whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|OrderNote whereUserId($value)
- */
-	class IdeHelperOrderNote extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -534,6 +417,7 @@ namespace App\Models{
  * @property string $slug
  * @property bool $public
  * @property string $name
+ * @property int $order
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property string $content_html
@@ -541,10 +425,12 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Page newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Page newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Page query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Page sort(?string $sortString = null)
  * @method static \Illuminate\Database\Eloquent\Builder|Page whereContentHtml($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Page whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Page whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Page whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Page whereOrder($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Page wherePublic($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Page whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Page whereUpdatedAt($value)
@@ -617,6 +503,36 @@ namespace App\Models{
 
 namespace App\Models{
 /**
+ * App\Models\Permission
+ *
+ * @mixin IdeHelperPermission
+ * @property string $id
+ * @property string $name
+ * @property string $guard_name
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|Permission[] $permissions
+ * @property-read int|null $permissions_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Role[] $roles
+ * @property-read int|null $roles_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $users
+ * @property-read int|null $users_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Permission newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Permission newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Permission permission($permissions)
+ * @method static \Illuminate\Database\Eloquent\Builder|Permission query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Permission role($roles, $guard = null)
+ * @method static \Illuminate\Database\Eloquent\Builder|Permission whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Permission whereGuardName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Permission whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Permission whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Permission whereUpdatedAt($value)
+ */
+	class IdeHelperPermission extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
  * App\Models\Price
  *
  * @OA\Schema ()
@@ -669,7 +585,6 @@ namespace App\Models{
 /**
  * App\Models\Product
  *
- * @OA\Schema ()
  * @mixin IdeHelperProduct
  * @property string $id
  * @property string $name
@@ -684,8 +599,8 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property float $quantity_step
  * @property int $order
- * @property-read \App\Models\Brand|null $brand
- * @property-read \App\Models\Category|null $category
+ * @property-read \App\Models\ProductSet|null $brand
+ * @property-read \App\Models\ProductSet|null $category
  * @property-read bool $available
  * @property-read string $description_html
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Media[] $media
@@ -694,32 +609,107 @@ namespace App\Models{
  * @property-read int|null $orders_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Schema[] $schemas
  * @property-read int|null $schemas_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProductSet[] $sets
+ * @property-read int|null $sets_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Tag[] $tags
  * @property-read int|null $tags_count
  * @method static \Database\Factories\ProductFactory factory(...$parameters)
- * @method static \Illuminate\Database\Eloquent\Builder|Product newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|Product newQuery()
+ * @method static Builder|Product newModelQuery()
+ * @method static Builder|Product newQuery()
  * @method static \Illuminate\Database\Query\Builder|Product onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder|Product query()
- * @method static \Illuminate\Database\Eloquent\Builder|Product search(array $params = [])
- * @method static \Illuminate\Database\Eloquent\Builder|Product sort(?string $sortString = null)
- * @method static \Illuminate\Database\Eloquent\Builder|Product whereBrandId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Product whereCategoryId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Product whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Product whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Product whereDescriptionMd($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Product whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Product whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Product whereOrder($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Product wherePrice($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Product wherePublic($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Product whereQuantityStep($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Product whereSlug($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Product whereUpdatedAt($value)
+ * @method static Builder|Product public()
+ * @method static Builder|Product query()
+ * @method static Builder|Product search(array $params = [])
+ * @method static Builder|Product sort(?string $sortString = null)
+ * @method static Builder|Product whereBrandId($value)
+ * @method static Builder|Product whereCategoryId($value)
+ * @method static Builder|Product whereCreatedAt($value)
+ * @method static Builder|Product whereDeletedAt($value)
+ * @method static Builder|Product whereDescriptionMd($value)
+ * @method static Builder|Product whereId($value)
+ * @method static Builder|Product whereName($value)
+ * @method static Builder|Product whereOrder($value)
+ * @method static Builder|Product wherePrice($value)
+ * @method static Builder|Product wherePublic($value)
+ * @method static Builder|Product whereQuantityStep($value)
+ * @method static Builder|Product whereSlug($value)
+ * @method static Builder|Product whereUpdatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|Product withTrashed()
  * @method static \Illuminate\Database\Query\Builder|Product withoutTrashed()
  */
 	class IdeHelperProduct extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * App\Models\ProductSet
+ *
+ * @mixin IdeHelperProductSet
+ * @property string $id
+ * @property string $name
+ * @property string $slug
+ * @property string|null $parent_id
+ * @property bool $public_parent
+ * @property bool $public
+ * @property int $order
+ * @property bool $hide_on_index
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|ProductSet[] $children
+ * @property-read int|null $children_count
+ * @property-read bool $slug_override
+ * @property-read string $slug_suffix
+ * @property-read ProductSet|null $parent
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Product[] $products
+ * @property-read int|null $products_count
+ * @method static \Database\Factories\ProductSetFactory factory(...$parameters)
+ * @method static Builder|ProductSet newModelQuery()
+ * @method static Builder|ProductSet newQuery()
+ * @method static Builder|ProductSet public()
+ * @method static Builder|ProductSet query()
+ * @method static Builder|ProductSet reversed()
+ * @method static Builder|ProductSet root()
+ * @method static Builder|ProductSet search(array $params = [])
+ * @method static Builder|ProductSet whereCreatedAt($value)
+ * @method static Builder|ProductSet whereHideOnIndex($value)
+ * @method static Builder|ProductSet whereId($value)
+ * @method static Builder|ProductSet whereName($value)
+ * @method static Builder|ProductSet whereOrder($value)
+ * @method static Builder|ProductSet whereParentId($value)
+ * @method static Builder|ProductSet wherePublic($value)
+ * @method static Builder|ProductSet wherePublicParent($value)
+ * @method static Builder|ProductSet whereSlug($value)
+ * @method static Builder|ProductSet whereUpdatedAt($value)
+ */
+	class IdeHelperProductSet extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * App\Models\Role
+ *
+ * @mixin IdeHelperRole
+ * @property string $id
+ * @property string $name
+ * @property string $guard_name
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Permission[] $permissions
+ * @property-read int|null $permissions_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $users
+ * @property-read int|null $users_count
+ * @method static \Database\Factories\RoleFactory factory(...$parameters)
+ * @method static \Illuminate\Database\Eloquent\Builder|Role newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Role newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Role permission($permissions)
+ * @method static \Illuminate\Database\Eloquent\Builder|Role query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Role whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Role whereGuardName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Role whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Role whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Role whereUpdatedAt($value)
+ */
+	class IdeHelperRole extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -921,6 +911,7 @@ namespace App\Models{
  * @property string|null $remember_token
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Passport\Client[] $clients
  * @property-read int|null $clients_count
  * @property-read string $avatar
@@ -931,14 +922,20 @@ namespace App\Models{
  * @method static \Database\Factories\UserFactory factory(...$parameters)
  * @method static \Illuminate\Database\Eloquent\Builder|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|User newQuery()
+ * @method static \Illuminate\Database\Query\Builder|User onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|User query()
+ * @method static \Illuminate\Database\Eloquent\Builder|User search(array $params = [])
+ * @method static \Illuminate\Database\Eloquent\Builder|User sort(?string $sortString = null)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User wherePassword($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereRememberToken($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Query\Builder|User withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|User withoutTrashed()
  */
 	class IdeHelperUser extends \Eloquent implements \Illuminate\Contracts\Auth\Authenticatable, \Illuminate\Contracts\Auth\Access\Authorizable, \Illuminate\Contracts\Auth\CanResetPassword {}
 }

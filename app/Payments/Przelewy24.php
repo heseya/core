@@ -2,7 +2,7 @@
 
 namespace App\Payments;
 
-use App\Exceptions\Error;
+use App\Exceptions\StoreException;
 use App\Models\Payment;
 use Exception;
 use Illuminate\Http\Request;
@@ -53,7 +53,7 @@ class Przelewy24 implements PaymentMethod
         ];
     }
 
-    private static function sign(array $fields): string
+    public static function translateNotification(Request $request): mixed
     {
         $json = json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
@@ -97,7 +97,7 @@ class Przelewy24 implements PaymentMethod
         ]);
 
         if ($validated['sign'] !== $sign) {
-            return Error::abort('Invalid payment', 400);
+            throw new StoreException('Invalid payment');
         }
 
         $sign = self::sign([
@@ -122,7 +122,7 @@ class Przelewy24 implements PaymentMethod
         ]);
 
         if ($response->failed()) {
-            return Error::abort('Cannot verify payment', 400);
+            throw new StoreException('Cannot verify payment');
         }
 
         $payment->update([

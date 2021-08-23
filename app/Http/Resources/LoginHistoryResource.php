@@ -12,6 +12,8 @@ class LoginHistoryResource extends Resource
         $agent->setUserAgent($this->user_agent);
 
         return [
+            'id' => $this->id,
+            'current_session' => $request->user()->token()->id === $this->id,
             'device' => $agent->device() === false ? null : $agent->device(),
             'platform' => $agent->platform() === false ? null : $agent->platform(),
             'browser' => $browser = $agent->browser() === false ? null : $agent->browser(),

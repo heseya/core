@@ -41,10 +41,11 @@ class ProductController extends Controller implements ProductControllerSwagger
             ]);
 
         if (!Auth::check()) {
-            $query
-                ->where('public', true)
-                ->whereHas('brand', function (Builder $query) use ($request): Builder {
-                    $query->where('public', true);
+            $query->public();
+
+            if ($request->has('brand')) {
+                $query->whereHas('brand', function (Builder $query) use ($request): Builder {
+                    $query->where('public', true)->where('public_parent', true);
 
                     if (!$request->has('search')) {
                         $query->where(function (Builder $query) use ($request): Builder {
@@ -55,9 +56,12 @@ class ProductController extends Controller implements ProductControllerSwagger
                     }
 
                     return $query;
-                })
-                ->whereHas('category', function (Builder $query) use ($request): Builder {
-                    $query->where('public', true);
+                });
+            }
+
+            if ($request->has('category')) {
+                $query->whereHas('category', function (Builder $query) use ($request): Builder {
+                    $query->where('public', true)->where('public_parent', true);
 
                     if (!$request->has('search')) {
                         $query->where(function (Builder $query) use ($request): Builder {
@@ -69,6 +73,23 @@ class ProductController extends Controller implements ProductControllerSwagger
 
                     return $query;
                 });
+            }
+
+            if ($request->has('set')) {
+                $query->whereHas('sets', function (Builder $query) use ($request): Builder {
+                    $query->where('public', true)->where('public_parent', true);
+
+                    if (!$request->has('search')) {
+                        $query->where(function (Builder $query) use ($request): Builder {
+                            return $query
+                                ->where('hide_on_index', false)
+                                ->orWhere('slug', $request->input('sets'));
+                        });
+                    }
+
+                    return $query;
+                });
+            }
         }
 
         $products = $query->paginate((int) $request->input('limit', 12));
@@ -105,6 +126,10 @@ class ProductController extends Controller implements ProductControllerSwagger
             $this->schemaService->sync($product, $request->input('schemas'));
         }
 
+        if ($request->has('sets')) {
+            $product->sets()->sync($request->input('sets'));
+        }
+
         return ProductResource::make($product);
     }
 
@@ -117,6 +142,10 @@ class ProductController extends Controller implements ProductControllerSwagger
 
         if ($request->has('schemas')) {
             $this->schemaService->sync($product, $request->input('schemas'));
+        }
+
+        if ($request->has('sets')) {
+            $product->sets()->sync($request->input('sets'));
         }
 
         return ProductResource::make($product);
