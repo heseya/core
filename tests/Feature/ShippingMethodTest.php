@@ -164,19 +164,20 @@ class ShippingMethodTest extends TestCase
         $response->assertStatus(422);
     }
 
-    public function testCreate(): void
+    public function testCreateUnauthorized(): void
     {
         $response = $this->postJson('/shipping-methods');
         $response->assertUnauthorized();
+    }
 
-        Passport::actingAs($this->user);
-
+    public function testCreate(): void
+    {
         $shipping_method = [
             'name' => 'Test',
             'public' => true,
         ];
 
-        $response = $this->postJson('/shipping-methods', $shipping_method + [
+        $response = $this->actingAs($this->user)->postJson('/shipping-methods', $shipping_method + [
             'price_ranges' => [
                 [
                     'start' => 0,
@@ -188,6 +189,9 @@ class ShippingMethodTest extends TestCase
                 ],
             ],
         ]);
+
+        dd($response);
+
         $response
             ->assertCreated()
             ->assertJson(['data' => $shipping_method])
