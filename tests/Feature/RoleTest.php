@@ -17,11 +17,13 @@ class RoleTest extends TestCase
     {
         $response = $this->getJson('/roles');
 
-        $response->assertUnauthorized();
+        $response->assertForbidden();
     }
 
     public function testIndex(): void
     {
+        $this->user->givePermissionTo('roles.show');
+
         $role1 = Role::create([
             'name' => 'role1',
             'description' => 'Role 1',
@@ -52,6 +54,8 @@ class RoleTest extends TestCase
 
     public function testIndexSearchByName(): void
     {
+        $this->user->givePermissionTo('roles.show');
+
         $role1 = Role::create([
             'name' => 'alpha.1',
             'description' => 'Alpha 1',
@@ -92,6 +96,8 @@ class RoleTest extends TestCase
 
     public function testIndexSearchByDescription(): void
     {
+        $this->user->givePermissionTo('roles.show');
+
         $role1 = Role::create([
             'name' => 'alpha.1',
             'description' => 'Alpha 1',
@@ -132,6 +138,8 @@ class RoleTest extends TestCase
 
     public function testIndexSearchByAssignable(): void
     {
+        $this->user->givePermissionTo('roles.show');
+
         $role1 = Role::create([
             'name' => 'role1',
             'description' => 'Role 1',
@@ -166,6 +174,8 @@ class RoleTest extends TestCase
 
     public function testIndexSearch(): void
     {
+        $this->user->givePermissionTo('roles.show');
+
         $role1 = Role::create([
             'name' => 'name.yes',
             'description' => 'Name 1',
@@ -213,11 +223,13 @@ class RoleTest extends TestCase
 
         $response = $this->getJson('/roles/id:' . $role->getKey());
 
-        $response->assertUnauthorized();
+        $response->assertForbidden();
     }
 
     public function testShow(): void
     {
+        $this->user->givePermissionTo('roles.show_details');
+
         $role = Role::create([
             'name' => 'role1',
             'description' => 'Role 1',
@@ -237,6 +249,8 @@ class RoleTest extends TestCase
 
     public function testShowPermissions(): void
     {
+        $this->user->givePermissionTo('roles.show_details');
+
         $role = Role::create([
             'name' => 'role1',
             'description' => 'Role 1',
@@ -275,11 +289,13 @@ class RoleTest extends TestCase
             ],
         ]);
 
-        $response->assertUnauthorized();
+        $response->assertForbidden();
     }
 
     public function testCreate(): void
     {
+        $this->user->givePermissionTo('roles.add');
+
         Permission::create(['name' => 'test.custom1']);
         Permission::create(['name' => 'test.custom2']);
 
@@ -330,11 +346,13 @@ class RoleTest extends TestCase
             ],
         ]);
 
-        $response->assertUnauthorized();
+        $response->assertForbidden();
     }
 
     public function testUpdate(): void
     {
+        $this->user->givePermissionTo('roles.edit');
+
         $role = Role::create([
             'name' => 'role1',
             'description' => 'Role 1',
@@ -385,11 +403,13 @@ class RoleTest extends TestCase
         ]);
 
         $response = $this->deleteJson('/roles/id:' . $role->getKey());
-        $response->assertUnauthorized();
+        $response->assertForbidden();
     }
 
     public function testDelete(): void
     {
+        $this->user->givePermissionTo('roles.remove');
+
         $role = Role::create([
             'name' => 'role1',
             'description' => 'Role 1',
@@ -405,6 +425,8 @@ class RoleTest extends TestCase
 
     public function testDeletePermissions(): void
     {
+        $this->user->givePermissionTo('roles.remove');
+
         $role = Role::create([
             'name' => 'role1',
             'description' => 'Role 1',

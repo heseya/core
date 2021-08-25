@@ -17,7 +17,7 @@ class ProductSetService implements ProductSetServiceContract
     public function authorize(ProductSet $set): void
     {
         if (
-            !Auth::check() &&
+            !Auth::user()->can('product_sets.show_hidden') &&
             !ProductSet::public()->where('id', $set->getKey())->exists()
         ) {
             throw new NotFoundHttpException();
@@ -28,7 +28,7 @@ class ProductSetService implements ProductSetServiceContract
     {
         $query = ProductSet::search($attributes);
 
-        if (!Auth::check()) {
+        if (!Auth::user()->can('product_sets.show_hidden')) {
             $query->public();
         }
 
@@ -187,7 +187,7 @@ class ProductSetService implements ProductSetServiceContract
     {
         $query = $set->products();
 
-        if (!Auth::check()) {
+        if (!Auth::user()->can('product_sets.show_hidden')) {
             $query->public();
         }
 

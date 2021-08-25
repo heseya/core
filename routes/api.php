@@ -88,20 +88,27 @@ Route::get('categories', [CategoryController::class, 'index'])
     ->middleware('can:product_sets.show');
 
 Route::prefix('product-sets')->group(function (): void {
-    Route::get(null, [ProductSetController::class, 'index']);
+    Route::get(null, [ProductSetController::class, 'index'])
+        ->middleware('can:product_sets.show');
+    Route::get('id:{product_set:id}', [ProductSetController::class, 'show'])
+        ->middleware('can:product_sets.show_details');
+    Route::get('{product_set:slug}', [ProductSetController::class, 'show'])
+        ->middleware('can:product_sets.show_details');
+    Route::post(null, [ProductSetController::class, 'store'])
+        ->middleware('can:product_sets.add');
+    Route::patch('id:{product_set:id}', [ProductSetController::class, 'update'])
+        ->middleware('can:product_sets.edit');
+    Route::post('reorder', [ProductSetController::class, 'reorder'])
+        ->middleware('can:product_sets.edit');
+    Route::post('reorder/id:{product_set:id}', [ProductSetController::class, 'reorder'])
+        ->middleware('can:product_sets.edit');
+    Route::delete('id:{product_set:id}', [ProductSetController::class, 'destroy'])
+        ->middleware('can:product_sets.remove');
 
-    Route::middleware('auth:api')->group(function (): void {
-        Route::get('id:{product_set:id}', [ProductSetController::class, 'show']);
-        Route::post(null, [ProductSetController::class, 'store']);
-        Route::patch('id:{product_set:id}', [ProductSetController::class, 'update']);
-        Route::post('id:{product_set:id}/products', [ProductSetController::class, 'attach']);
-        Route::delete('id:{product_set:id}', [ProductSetController::class, 'destroy']);
-        Route::post('reorder', [ProductSetController::class, 'reorder']);
-        Route::post('reorder/id:{product_set:id}', [ProductSetController::class, 'reorder']);
-    });
-
-    Route::get('id:{product_set:id}/products', [ProductSetController::class, 'products']);
-    Route::get('{product_set:slug}', [ProductSetController::class, 'show']);
+    Route::get('id:{product_set:id}/products', [ProductSetController::class, 'products'])
+        ->middleware('can:product_sets.show_details');
+    Route::post('id:{product_set:id}/products', [ProductSetController::class, 'attach'])
+        ->middleware('can:product_sets.edit');
 });
 
 Route::prefix('shipping-methods')->group(function (): void {
@@ -160,11 +167,16 @@ Route::prefix('discounts')->group(function (): void {
 });
 
 Route::prefix('roles')->middleware('auth:api')->group(function (): void {
-    Route::get(null, [RoleController::class, 'index']);
-    Route::post(null, [RoleController::class, 'store']);
-    Route::get('id:{role:id}', [RoleController::class, 'show']);
-    Route::patch('id:{role:id}', [RoleController::class, 'update']);
-    Route::delete('id:{role:id}', [RoleController::class, 'destroy']);
+    Route::get(null, [RoleController::class, 'index'])
+        ->middleware('can:roles.show');
+    Route::post(null, [RoleController::class, 'store'])
+        ->middleware('can:roles.add');
+    Route::get('id:{role:id}', [RoleController::class, 'show'])
+        ->middleware('can:roles.show_details');
+    Route::patch('id:{role:id}', [RoleController::class, 'update'])
+        ->middleware('can:roles.edit');
+    Route::delete('id:{role:id}', [RoleController::class, 'destroy'])
+        ->middleware('can:roles.remove');
 });
 
 Route::get('permissions', [PermissionController::class, 'index'])->middleware('auth:api');

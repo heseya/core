@@ -23,7 +23,7 @@ abstract class TestCase extends BaseTestCase
 
         Artisan::call('passport:install');
         $this->seed(PermissionSeeder::class);
-        Role::findByName('Unauthenticated')->syncPermissions([]);
+        Role::query()->delete();
 
         $this->user = User::factory()->create([
             'password' => Hash::make($this->password),

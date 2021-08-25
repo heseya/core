@@ -15,11 +15,13 @@ class ProductSetOtherTest extends TestCase
         ]);
 
         $response = $this->deleteJson('/product-sets/id:' . $newSet->getKey());
-        $response->assertUnauthorized();
+        $response->assertForbidden();
     }
 
     public function testDelete(): void
     {
+        $this->user->givePermissionTo('product_sets.remove');
+
         $newSet = ProductSet::factory()->create([
             'public' => true,
         ]);
@@ -33,6 +35,8 @@ class ProductSetOtherTest extends TestCase
 
     public function testDeleteAsBrand(): void
     {
+        $this->user->givePermissionTo('product_sets.remove');
+
         $newSet = ProductSet::factory()->create([
             'public' => true,
         ]);
@@ -55,6 +59,8 @@ class ProductSetOtherTest extends TestCase
 
     public function testDeleteAsCategory(): void
     {
+        $this->user->givePermissionTo('product_sets.remove');
+
         $newSet = ProductSet::factory()->create([
             'public' => true,
         ]);
@@ -77,6 +83,8 @@ class ProductSetOtherTest extends TestCase
 
     public function testDeleteWithProducts(): void
     {
+        $this->user->givePermissionTo('product_sets.remove');
+
         $newSet = ProductSet::factory()->create([
             'public' => true,
         ]);
@@ -115,6 +123,8 @@ class ProductSetOtherTest extends TestCase
 
     public function testDeleteWithSubsets(): void
     {
+        $this->user->givePermissionTo('product_sets.remove');
+
         $newSet = ProductSet::factory()->create([
             'public' => true,
         ]);
@@ -146,6 +156,8 @@ class ProductSetOtherTest extends TestCase
 
     public function testReorderRoot(): void
     {
+        $this->user->givePermissionTo('product_sets.edit');
+
         $set1 = ProductSet::factory()->create();
         $set2 = ProductSet::factory()->create();
         $set3 = ProductSet::factory()->create();
@@ -177,6 +189,8 @@ class ProductSetOtherTest extends TestCase
 
     public function testReorderChildren(): void
     {
+        $this->user->givePermissionTo('product_sets.edit');
+
         $parent = ProductSet::factory()->create();
         $set1 = ProductSet::factory()->create([
             'parent_id' => $parent->getKey(),
@@ -215,6 +229,8 @@ class ProductSetOtherTest extends TestCase
 
     public function testAttachProducts(): void
     {
+        $this->user->givePermissionTo('product_sets.edit');
+
         $set = ProductSet::factory()->create();
 
         $product1 = Product::factory()->create();
@@ -254,6 +270,8 @@ class ProductSetOtherTest extends TestCase
 
     public function testDetachProducts(): void
     {
+        $this->user->givePermissionTo('product_sets.edit');
+
         $set = ProductSet::factory()->create();
 
         $product1 = Product::factory()->create();
@@ -293,8 +311,23 @@ class ProductSetOtherTest extends TestCase
         ]);
     }
 
+    public function testShowProductsUnauthorized(): void
+    {
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $response = $this->actingAs($this->user)->getJson(
+            '/product-sets/id:' . $set->getKey() . '/products',
+        );
+
+        $response->assertForbidden();
+    }
+
     public function testShowProducts(): void
     {
+        $this->user->givePermissionTo('product_sets.show_details');
+
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);
@@ -307,6 +340,41 @@ class ProductSetOtherTest extends TestCase
         ]);
         $productNotInSet = Product::factory()->create([
             'public' => true,
+        ]);
+
+        $set->products()->sync([
+            $product1->getKey(),
+            $product2->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/product-sets/id:' . $set->getKey() . '/products');
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJson(['data' => [
+                [
+                    'id' => $product1->getKey(),
+                    'name' => $product1->name,
+                    'slug' => $product1->slug,
+                ]
+            ]]);
+    }
+
+    public function testShowProductsHidden(): void
+    {
+        $this->user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
+
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $product2 = Product::factory()->create([
+            'public' => false,
         ]);
 
         $set->products()->sync([
@@ -331,37 +399,5 @@ class ProductSetOtherTest extends TestCase
                 'name' => $product2->name,
                 'slug' => $product2->slug,
             ]);
-    }
-
-    public function testShowProductsUnauthorized(): void
-    {
-        $set = ProductSet::factory()->create([
-            'public' => true,
-        ]);
-
-        $product1 = Product::factory()->create([
-            'public' => true,
-        ]);
-        $product2 = Product::factory()->create([
-            'public' => false,
-        ]);
-
-        $set->products()->sync([
-            $product1->getKey(),
-            $product2->getKey(),
-        ]);
-
-        $response = $this->getJson('/product-sets/id:' . $set->getKey() . '/products');
-
-        $response
-            ->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJson(['data' => [
-                [
-                    'id' => $product1->getKey(),
-                    'name' => $product1->name,
-                    'slug' => $product1->slug,
-                ]
-            ]]);
     }
 }
