@@ -14,7 +14,8 @@ class ShippingMethodDto extends Dto implements InstantiateFromRequest
         protected array $paymentMethods,
         protected array $countries,
         protected array $priceRanges,
-    ) {}
+    ) {
+    }
 
     public static function instantiateFromRequest(Request $request): self
     {
