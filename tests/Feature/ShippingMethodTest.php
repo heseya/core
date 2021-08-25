@@ -189,9 +189,6 @@ class ShippingMethodTest extends TestCase
                 ],
             ],
         ]);
-
-        dd($response);
-
         $response
             ->assertCreated()
             ->assertJson(['data' => $shipping_method])
@@ -200,21 +197,6 @@ class ShippingMethodTest extends TestCase
             ->assertJsonFragment(['value' => 10.37])
             ->assertJsonFragment(['start' => 200])
             ->assertJsonFragment(['value' => 0]);
-            // ->assertJsonFragment(['price_ranges' => [
-            //     [
-            //         'start' => 0,
-            //         'prices' => [
-            //             ['value' => 10.37],
-            //         ],
-            //     ],
-            //     [
-            //         'start' => 200,
-            //         'prices' => [
-            //             ['value' => 0],
-            //         ],
-            //     ],
-            // ]]);
-            // Doesnt work bacause of extra shit in the array
 
         $this->assertDatabaseHas('shipping_methods', $shipping_method);
     }
