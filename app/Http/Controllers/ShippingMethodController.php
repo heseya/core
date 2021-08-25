@@ -45,7 +45,10 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
 
     public function update(ShippingMethodUpdateRequest $request, ShippingMethod $shippingMethod): JsonResource
     {
-        $shippingMethod = $this->shippingMethodServiceContract->update($request, $shippingMethod);
+        $shippingMethod = $this->shippingMethodServiceContract->update(
+            $shippingMethod,
+            ShippingMethodDto::instantiateFromRequest($request),
+        );
 
         return ShippingMethodResource::make($shippingMethod);
     }
