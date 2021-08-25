@@ -4,15 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @OA\Schema ()
  *
  * @mixin IdeHelperStatus
  */
-class Status extends Model
+class Status extends Model implements AuditableContract
 {
-    use HasFactory;
+    use HasFactory, Auditable;
 
     /**
      * @OA\Property(
