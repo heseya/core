@@ -38,7 +38,7 @@ class PaymentTest extends TestCase
         ]);
     }
 
-    public function testPayuUrl(): void
+    public function testPayuUrlUnauthorized(): void
     {
         Http::fakeSequence()
             ->push([
@@ -57,6 +57,31 @@ class PaymentTest extends TestCase
             'continue_url' => 'continue_url',
         ]);
 
+        $response->assertForbidden();
+    }
+
+    public function testPayuUrl(): void
+    {
+        $this->user->givePermissionTo('payments.add');
+
+        Http::fakeSequence()
+            ->push([
+                'access_token' => 'random_access_token',
+            ], 200)
+            ->push([
+                'status' => [
+                    'statusCode' => 'SUCCESS',
+                ],
+                'redirectUri' => 'payment_url',
+                'orderId' => 'payu_id',
+            ], 200);
+
+        $code = $this->order->code;
+        $response = $this->actingAs($this->user)
+            ->postJson("/orders/$code/pay/payu", [
+                'continue_url' => 'continue_url',
+            ]);
+
         $response
             ->assertCreated()
             ->assertJsonFragment([
@@ -69,7 +94,7 @@ class PaymentTest extends TestCase
             ]);
     }
 
-    public function testPayuNotification(): void
+    public function testPayuNotificationUnauthorized(): void
     {
         $payment = Payment::factory()->make([
             'payed' => false,
@@ -78,6 +103,26 @@ class PaymentTest extends TestCase
         $this->order->payments()->save($payment);
 
         $response = $this->postJson('payments/payu', [
+            'order' => [
+                'status' => 'COMPLETED',
+                'extOrderId' => $payment->getKey(),
+            ],
+        ]);
+
+        $response->assertForbidden();
+    }
+
+    public function testPayuNotification(): void
+    {
+        $this->user->givePermissionTo('payments.edit');
+
+        $payment = Payment::factory()->make([
+            'payed' => false,
+        ]);
+
+        $this->order->payments()->save($payment);
+
+        $response = $this->actingAs($this->user)->postJson('payments/payu', [
             'order' => [
                 'status' => 'COMPLETED',
                 'extOrderId' => $payment->getKey(),

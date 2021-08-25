@@ -38,7 +38,7 @@ class BrandTest extends TestCase
 
     public function testIndexUnauthorized(): void
     {
-        $response = $this->actingAs($this->user)->getJson('/brands');
+        $response = $this->getJson('/brands');
         $response->assertForbidden();
     }
 

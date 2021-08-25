@@ -16,7 +16,7 @@ class AnalyticsControllerTest extends TestCase
         $to = Carbon::today();
         $from = $to->copy()->subDays(30);
 
-        $response = $this->actingAs($this->user)->getJson('/analytics/payments', [
+        $response = $this->getJson('/analytics/payments', [
             'from' => $from->toDateString(),
             'to' => $to->toDateString(),
             'group' => 'total',

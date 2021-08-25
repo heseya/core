@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
@@ -14,8 +15,12 @@ final class Handler extends ExceptionHandler
 {
     private const ERRORS = [
         AuthenticationException::class => [
-            'message' => 'Unauthorized',
+            'message' => 'Unauthenticated',
             'code' => Response::HTTP_UNAUTHORIZED,
+        ],
+        AccessDeniedHttpException::class => [
+            'message' => 'Unauthorized',
+            'code' => Response::HTTP_FORBIDDEN,
         ],
         NotFoundHttpException::class => [
             'message' => 'Page not found',

@@ -37,9 +37,17 @@ class PaymentMethodTest extends TestCase
         ]);
     }
 
-    public function testIndex(): void
+    public function testIndexUnauthorized(): void
     {
         $response = $this->getJson('/payment-methods');
+        $response->assertForbidden();
+    }
+
+    public function testIndex(): void
+    {
+        $this->user->givePermissionTo('payment_methods.show');
+
+        $response = $this->actingAs($this->user)->getJson('/payment-methods');
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data') // Should show only public payment methods.
@@ -47,13 +55,21 @@ class PaymentMethodTest extends TestCase
             ->assertJsonFragment(['id' => $this->payment_method_related->getKey()]);
     }
 
-    public function testCreate(): void
+    public function testIndexHidden(): void
     {
-        $response = $this->postJson('/payment-methods');
-        $response->assertUnauthorized();
+        $this->user->givePermissionTo(['payment_methods.show', 'payment_methods.show_hidden']);
 
-        Passport::actingAs($this->user);
+        $response = $this->actingAs($this->user)->getJson('/payment-methods');
+        $response
+            ->assertOk()
+            ->assertJsonCount(3 , 'data') // Should show only public payment methods.
+            ->assertJsonFragment(['id' => $this->payment_method->getKey()])
+            ->assertJsonFragment(['id' => $this->payment_method_related->getKey()])
+            ->assertJsonFragment(['id' => $this->payment_method_hidden->getKey()]);
+    }
 
+    public function testCreateUnauthorized(): void
+    {
         $payment_method = [
             'name' => 'Test',
             'alias' => 'test',
@@ -61,18 +77,28 @@ class PaymentMethodTest extends TestCase
         ];
 
         $response = $this->postJson('/payment-methods', $payment_method);
+        $response->assertForbidden();
+    }
+
+    public function testCreate(): void
+    {
+        $this->user->givePermissionTo('payment_methods.add');
+
+        $payment_method = [
+            'name' => 'Test',
+            'alias' => 'test',
+            'public' => true,
+        ];
+
+        $response = $this->actingAs($this->user)
+            ->postJson('/payment-methods', $payment_method);
         $response
             ->assertCreated()
             ->assertJson(['data' => $payment_method]);
     }
 
-    public function testUpdate(): void
+    public function testUpdateUnauthorized(): void
     {
-        $response = $this->patchJson('/payment-methods/id:' . $this->payment_method->getKey());
-        $response->assertUnauthorized();
-
-        Passport::actingAs($this->user);
-
         $payment_method = [
             'name' => 'Test 2',
             'alias' => 'test2',
@@ -83,19 +109,40 @@ class PaymentMethodTest extends TestCase
             '/payment-methods/id:' . $this->payment_method->getKey(),
             $payment_method,
         );
+        $response->assertForbidden();
+    }
+
+    public function testUpdate(): void
+    {
+        $this->user->givePermissionTo('payment_methods.edit');
+
+        $payment_method = [
+            'name' => 'Test 2',
+            'alias' => 'test2',
+            'public' => false,
+        ];
+
+        $response = $this->actingAs($this->user)->patchJson(
+            '/payment-methods/id:' . $this->payment_method->getKey(),
+            $payment_method,
+        );
         $response
             ->assertOk()
             ->assertJson(['data' => $payment_method]);
     }
 
-    public function testDelete(): void
+    public function testDeleteUnauthorized(): void
     {
         $response = $this->deleteJson('/payment-methods/id:' . $this->payment_method->getKey());
-        $response->assertUnauthorized();
+        $response->assertForbidden();
+    }
 
-        Passport::actingAs($this->user);
+    public function testDelete(): void
+    {
+        $this->user->givePermissionTo('payment_methods.remove');
 
-        $response = $this->deleteJson('/payment-methods/id:' . $this->payment_method->getKey());
+        $response = $this->actingAs($this->user)
+            ->deleteJson('/payment-methods/id:' . $this->payment_method->getKey());
         $response->assertNoContent();
     }
 }

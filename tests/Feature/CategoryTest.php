@@ -38,7 +38,7 @@ class CategoryTest extends TestCase
 
     public function testIndexUnauthorized(): void
     {
-        $response = $this->actingAs($this->user)->getJson('/categories');
+        $response = $this->getJson('/categories');
         $response->assertForbidden();
     }
 

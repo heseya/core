@@ -40,7 +40,7 @@ class ProductController extends Controller implements ProductControllerSwagger
                 'media',
             ]);
 
-        if (!Auth::check()) {
+        if (!Auth::user()->can('products.show_hidden')) {
             $query->public();
 
             if ($request->has('brand')) {
@@ -108,7 +108,7 @@ class ProductController extends Controller implements ProductControllerSwagger
 
     public function show(ProductShowRequest $request, Product $product): JsonResource
     {
-        if (!Auth::check() && !$product->isPublic()) {
+        if (!Auth::user()->can('products.show_hidden') && !$product->isPublic()) {
             throw new NotFoundHttpException();
         }
 

@@ -31,7 +31,7 @@ class DepositsTest extends TestCase
 
     public function testIndexUnauthorized(): void
     {
-        $response = $this->actingAs($this->user)->getJson('/deposits');
+        $response = $this->getJson('/deposits');
         $response->assertForbidden();
     }
 
@@ -50,8 +50,7 @@ class DepositsTest extends TestCase
 
     public function testViewUnauthorized(): void
     {
-        $response = $this->actingAs($this->user)
-            ->getJson('/items/id:' . $this->item->getKey() . '/deposits');
+        $response = $this->getJson('/items/id:' . $this->item->getKey() . '/deposits');
         $response->assertForbidden();
     }
 
@@ -75,7 +74,7 @@ class DepositsTest extends TestCase
             'quantity' => 12.5,
         ];
 
-        $response = $this->actingAs($this->user)->postJson(
+        $response = $this->postJson(
             '/items/id:' . $this->item->getKey() . '/deposits',
             $deposit,
         );

@@ -8,7 +8,7 @@ class CountryTest extends TestCase
 {
     public function testIndexUnauthorized(): void
     {
-        $response = $this->actingAs($this->user)->getJson('/countries');
+        $response = $this->getJson('/countries');
 
         $response->assertForbidden();
     }

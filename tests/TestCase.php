@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use App\Models\Role;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,6 +23,7 @@ abstract class TestCase extends BaseTestCase
 
         Artisan::call('passport:install');
         $this->seed(PermissionSeeder::class);
+        Role::findByName('Unauthenticated')->syncPermissions([]);
 
         $this->user = User::factory()->create([
             'password' => Hash::make($this->password),

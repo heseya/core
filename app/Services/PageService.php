@@ -12,7 +12,7 @@ class PageService implements PageServiceContract
 {
     public function authorize(Page $page): void
     {
-        if (!Auth::check() && $page->public !== true) {
+        if (!Auth::user()->can('pages.show_hidden') && $page->public !== true) {
             throw new NotFoundHttpException();
         }
     }
@@ -21,7 +21,7 @@ class PageService implements PageServiceContract
     {
         $query = Page::query();
 
-        if (!Auth::check()) {
+        if (!Auth::user()->can('pages.show_hidden')) {
             $query->where('public', true);
         }
 

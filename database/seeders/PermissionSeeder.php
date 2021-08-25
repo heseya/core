@@ -154,6 +154,6 @@ class PermissionSeeder extends Seeder
             ->syncPermissions(Permission::all());
 
         Role::updateOrCreate(['name' => 'Unauthenticated'])
-            ->syncPermissions(['product_sets.show']);
+            ->syncPermissions(['auth.login']);
     }
 }

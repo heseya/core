@@ -20,7 +20,7 @@ class AuthTest extends TestCase
 
     public function testLoginUnauthorized(): void
     {
-        $response = $this->actingAs($this->user)->postJson('/login', [
+        $response = $this->postJson('/login', [
             'email' => $this->user->email,
             'password' => $this->password,
         ]);
@@ -54,7 +54,9 @@ class AuthTest extends TestCase
 
     public function testLoginInvalidCredential(): void
     {
-        $response = $this->postJson('/login', [
+        $this->user->givePermissionTo('auth.login');
+
+        $response = $this->actingAs($this->user)->postJson('/login', [
             'email' => $this->user->email,
             'password' => 'bad-password',
         ]);
@@ -83,7 +85,7 @@ class AuthTest extends TestCase
         Mail::fake();
         Mail::assertNothingSent();
 
-        $response = $this->actingAs($user)->postJson('/users/reset-password', [
+        $response = $this->postJson('/users/reset-password', [
             'email' => $user->email,
         ]);
 
@@ -92,6 +94,8 @@ class AuthTest extends TestCase
 
     public function testResetPassword(): void
     {
+        $this->user->givePermissionTo('auth.password_reset');
+
         $email = $this->faker->unique()->safeEmail;
         $password = 'Passwd###111';
 
@@ -100,12 +104,11 @@ class AuthTest extends TestCase
             'email' => $email,
             'password' => Hash::make($password),
         ]);
-        $user->givePermissionTo('auth.password_reset');
 
         Mail::fake();
         Mail::assertNothingSent();
 
-        $response = $this->actingAs($user)->postJson('/users/reset-password', [
+        $response = $this->actingAs($this->user)->postJson('/users/reset-password', [
             'email' => $user->email,
         ]);
 
@@ -124,7 +127,7 @@ class AuthTest extends TestCase
 
         $token = Password::createToken($user);
 
-        $response = $this->actingAs($this->user)->patchJson('/users/save-reset-password', [
+        $response = $this->patchJson('/users/save-reset-password', [
             'email' => $email,
             'password' => $newPassword,
             'token' => $token,
@@ -135,6 +138,8 @@ class AuthTest extends TestCase
 
     function testSaveResetPassword(): void
     {
+        $this->user->givePermissionTo('auth.password_reset');
+
         $email = $this->faker->unique()->safeEmail;
         $newPassword = 'NewPasswd###111';
 
@@ -143,12 +148,10 @@ class AuthTest extends TestCase
             'email' => $email,
         ]);
 
-        $user->givePermissionTo('auth.password_reset');
-
         $token = Password::createToken($user);
         $this->assertTrue(Password::tokenExists($user, $token));
 
-        $this->actingAs($user)->patchJson('/users/save-reset-password', [
+        $this->actingAs($this->user)->patchJson('/users/save-reset-password', [
             'email' => $email,
             'password' => $newPassword,
             'token' => $token,
@@ -374,5 +377,16 @@ class AuthTest extends TestCase
                     'permission.2',
                 ],
             ]]);
+    }
+
+    public function testAuthWithRevokedToken(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('Test Access Token');
+        $token->token->revoke();
+
+        $headers = ['Authorization' => 'Bearer ' . $token->accessToken];
+        $this->getJson('/auth/kill-all-sessions', $headers)
+            ->assertUnauthorized();
     }
 }

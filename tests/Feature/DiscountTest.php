@@ -18,22 +18,33 @@ class DiscountTest extends TestCase
     public function testIndexUnauthorized(): void
     {
         $response = $this->getJson('/discounts');
-        $response->assertUnauthorized();
+        $response->assertForbidden();
     }
 
     public function testIndex(): void
     {
+        $this->user->givePermissionTo('discounts.show');
+
         $response = $this->actingAs($this->user)->getJson('/discounts');
         $response
             ->assertOk()
             ->assertJsonCount(10, 'data');
     }
 
-    public function testShow(): void
+    public function testShowUnauthorized(): void
     {
         $discount = Discount::factory()->create();
 
         $response = $this->getJson('/discounts/' . $discount->code);
+        $response->assertForbidden();
+    }
+
+    public function testShow(): void
+    {
+        $this->user->givePermissionTo('discounts.show_details');
+        $discount = Discount::factory()->create();
+
+        $response = $this->actingAs($this->user)->getJson('/discounts/' . $discount->code);
         $response
             ->assertOk()
             ->assertJsonFragment(['id' => $discount->getKey()]);
@@ -42,11 +53,13 @@ class DiscountTest extends TestCase
     public function testCreateUnauthorized(): void
     {
         $response = $this->postJson('/discounts');
-        $response->assertUnauthorized();
+        $response->assertForbidden();
     }
 
     public function testCreate(): void
     {
+        $this->user->givePermissionTo('discounts.add');
+
         $response = $this->actingAs($this->user)->postJson('/discounts', [
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',
@@ -81,20 +94,22 @@ class DiscountTest extends TestCase
         $discount = Discount::factory()->create();
 
         $response = $this->patchJson('/discounts/id:' .  $discount->getKey());
-        $response->assertUnauthorized();
+        $response->assertForbidden();
     }
 
     public function testUpdate(): void
     {
+        $this->user->givePermissionTo('discounts.edit');
         $discount = Discount::factory()->create();
 
-        $response = $this->actingAs($this->user)->patchJson('/discounts/id:' . $discount->getKey(), [
-            'description' => 'Weekend Sale',
-            'code' => 'WEEKEND',
-            'discount' => 20,
-            'type' => DiscountType::AMOUNT,
-            'max_uses' => 40,
-        ]);
+        $response = $this->actingAs($this->user)
+            ->patchJson('/discounts/id:' . $discount->getKey(), [
+                'description' => 'Weekend Sale',
+                'code' => 'WEEKEND',
+                'discount' => 20,
+                'type' => DiscountType::AMOUNT,
+                'max_uses' => 40,
+            ]);
 
         $response
             ->assertOk()

@@ -2,23 +2,33 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Role;
 use App\Models\User;
 use Closure;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
 use Illuminate\Support\Facades\Auth;
 
 class UnauthenticatedUser extends Middleware
 {
     /**
+     * @throws AuthenticationException
      */
     public function handle($request, Closure $next, ...$guards): mixed
     {
-        if (!Auth::check()) {
-            Auth::setUser(
-                User::where('name', 'Unauthenticated')->firstOrFail(),
-            );
+        if ($request->hasHeader('Authorization') && !Auth::check()) {
+            throw new AuthenticationException();
+        }
 
-            dd(Auth::user()->getAllPermissions());
+        if (!Auth::check()) {
+            $user = User::make([
+                'name' => 'Unauthenticated',
+            ]);
+
+            $roles = Role::where('name', 'Unauthenticated')->get();
+            $user->setRelation('roles', $roles);
+
+            Auth::setUser($user);
         }
 
         return $next($request);

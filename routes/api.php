@@ -35,12 +35,18 @@ Route::patch('user/password', 'AuthController@changePassword')
     ->middleware('can:auth.password_change');
 
 Route::prefix('products')->group(function (): void {
-    Route::get(null, 'ProductController@index');
-    Route::post(null, 'ProductController@store')->middleware('auth:api');
-    Route::get('id:{product:id}', 'ProductController@show')->middleware('auth:api');
-    Route::get('{product:slug}', 'ProductController@show');
-    Route::patch('id:{product:id}', 'ProductController@update')->middleware('auth:api');
-    Route::delete('id:{product:id}', 'ProductController@destroy')->middleware('auth:api');
+    Route::get(null, 'ProductController@index')
+        ->middleware('can:products.show');
+    Route::post(null, 'ProductController@store')
+        ->middleware('can:products.add');
+    Route::get('id:{product:id}', 'ProductController@show')
+        ->middleware('can:products.show_details');
+    Route::get('{product:slug}', 'ProductController@show')
+        ->middleware('can:products.show_details');
+    Route::patch('id:{product:id}', 'ProductController@update')
+        ->middleware('can:products.edit');
+    Route::delete('id:{product:id}', 'ProductController@destroy')
+        ->middleware('can:products.remove');
 });
 
 Route::prefix('orders')->group(function (): void {
@@ -52,19 +58,28 @@ Route::prefix('orders')->group(function (): void {
     Route::post('id:{order:id}/status', 'OrderController@updateStatus')->middleware('auth:api');
     Route::patch('id:{order:id}', 'OrderController@update')->middleware('auth:api');
     Route::get('{order:code}', 'OrderController@showPublic');
-    Route::post('{order:code}/pay/{method}', 'PaymentController@store');
+    Route::post('{order:code}/pay/{method}', 'PaymentController@store')
+        ->middleware('can:payments.add');
 });
 
-Route::any('payments/{method}', 'PaymentController@update');
+Route::any('payments/{method}', 'PaymentController@update')
+    ->middleware('can:payments.edit');
 
 Route::prefix('pages')->group(function (): void {
-    Route::get(null, 'PageController@index');
-    Route::post(null, 'PageController@store')->middleware('auth:api');
-    Route::get('id:{page:id}', 'PageController@show')->middleware('auth:api');
-    Route::get('{page:slug}', 'PageController@show');
-    Route::patch('id:{page:id}', 'PageController@update')->middleware('auth:api');
-    Route::delete('id:{page:id}', 'PageController@destroy')->middleware('auth:api');
-    Route::post('order', 'PageController@reorder')->middleware('auth:api');
+    Route::get(null, 'PageController@index')
+        ->middleware('can:pages.show');
+    Route::post(null, 'PageController@store')
+        ->middleware('can:pages.add');
+    Route::get('id:{page:id}', 'PageController@show')
+        ->middleware('can:pages.show_details');
+    Route::get('{page:slug}', 'PageController@show')
+        ->middleware('can:pages.show_details');
+    Route::patch('id:{page:id}', 'PageController@update')
+        ->middleware('can:pages.edit');
+    Route::delete('id:{page:id}', 'PageController@destroy')
+        ->middleware('can:pages.remove');
+    Route::post('order', 'PageController@reorder')
+        ->middleware('can:pages.edit');
 });
 
 Route::get('brands', [BrandController::class, 'index'])
@@ -101,12 +116,14 @@ Route::prefix('shipping-methods')->group(function (): void {
 });
 
 Route::prefix('payment-methods')->group(function (): void {
-    Route::get(null, 'PaymentMethodController@index');
-    Route::post(null, 'PaymentMethodController@store')->middleware('auth:api');
+    Route::get(null, 'PaymentMethodController@index')
+        ->middleware('can:payment_methods.show');
+    Route::post(null, 'PaymentMethodController@store')
+        ->middleware('can:payment_methods.add');
     Route::patch('id:{payment_method:id}', 'PaymentMethodController@update')
-        ->middleware('auth:api');
+        ->middleware('can:payment_methods.edit');
     Route::delete('id:{payment_method:id}', 'PaymentMethodController@destroy')
-        ->middleware('auth:api');
+        ->middleware('can:payment_methods.remove');
 });
 
 Route::prefix('settings')->group(function (): void {
@@ -117,22 +134,29 @@ Route::prefix('settings')->group(function (): void {
     Route::delete('{setting:name}', 'SettingController@destroy')->middleware('auth:api');
 });
 
-Route::prefix('package-templates')->middleware('auth:api')->group(function (): void {
-    Route::get(null, 'PackageTemplateController@index');
-    Route::post(null, 'PackageTemplateController@store');
-    Route::patch('id:{package:id}', 'PackageTemplateController@update');
-    Route::delete('id:{package:id}', 'PackageTemplateController@destroy');
+Route::prefix('package-templates')->group(function (): void {
+    Route::get(null, 'PackageTemplateController@index')
+        ->middleware('can:packages.show');
+    Route::post(null, 'PackageTemplateController@store')
+        ->middleware('can:packages.add');
+    Route::patch('id:{package:id}', 'PackageTemplateController@update')
+        ->middleware('can:packages.edit');
+    Route::delete('id:{package:id}', 'PackageTemplateController@destroy')
+        ->middleware('can:packages.remove');
 });
 
 Route::get('countries', [CountriesController::class, 'index'])
     ->middleware('can:countries.show');
 
 Route::prefix('discounts')->group(function (): void {
-    Route::get(null, [DiscountController::class, 'index'])->middleware('auth:api');
-    Route::get('{discount:code}', [DiscountController::class, 'show']);
-    Route::post(null, [DiscountController::class, 'store'])->middleware('auth:api');
+    Route::get(null, [DiscountController::class, 'index'])
+        ->middleware('can:discounts.show');
+    Route::get('{discount:code}', [DiscountController::class, 'show'])
+        ->middleware('can:discounts.show_details');
+    Route::post(null, [DiscountController::class, 'store'])
+        ->middleware('can:discounts.add');
     Route::patch('id:{discount:id}', [DiscountController::class, 'update'])
-        ->middleware('auth:api');
+        ->middleware('can:discounts.edit');
 });
 
 Route::prefix('roles')->middleware('auth:api')->group(function (): void {
@@ -151,7 +175,8 @@ Route::prefix('analytics')->group(function (): void {
 });
 
 Route::prefix('auth')->group(function (): void {
-    Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:api');
+    Route::post('logout', [AuthController::class, 'logout'])
+        ->middleware('auth:api');
     Route::get('login-history', [AuthController::class, 'loginHistory'])
         ->middleware('can:auth.sessions.show');
     Route::get('kill-session/id:{id}', [AuthController::class, 'killActiveSession'])
@@ -165,6 +190,17 @@ Route::get('deposits', 'DepositController@index')
     ->middleware('can:deposits.show');
 
 Route::prefix('items')->group(function (): void {
+    Route::get(null, 'ItemController@index')
+        ->middleware('can:items.show');
+    Route::post(null, 'ItemController@store')
+        ->middleware('can:items.add');
+    Route::get('id:{item:id}', 'ItemController@show')
+        ->middleware('can:items.show_details');
+    Route::patch('id:{item:id}', 'ItemController@update')
+        ->middleware('can:items.edit');
+    Route::delete('id:{item:id}', 'ItemController@destroy')
+        ->middleware('can:items.remove');
+
     Route::get('id:{item:id}/deposits', 'DepositController@show')
         ->middleware('can:deposits.show');
     Route::post('id:{item:id}/deposits', 'DepositController@store')
@@ -172,14 +208,6 @@ Route::prefix('items')->group(function (): void {
 });
 
 Route::middleware('auth:api')->group(function (): void {
-    Route::prefix('items')->group(function (): void {
-        Route::get(null, 'ItemController@index');
-        Route::post(null, 'ItemController@store');
-        Route::get('id:{item:id}', 'ItemController@show');
-        Route::patch('id:{item:id}', 'ItemController@update');
-        Route::delete('id:{item:id}', 'ItemController@destroy');
-    });
-
     Route::prefix('statuses')->group(function (): void {
         Route::get(null, 'StatusController@index');
         Route::post(null, 'StatusController@store');
