@@ -92,7 +92,7 @@ class JsonResource extends \Illuminate\Http\Resources\Json\JsonResource
     /**
      * Display only base parameters
      */
-    public function isIndex(bool $isIndex = true): self
+    public function setIsIndex(bool $isIndex = true): self
     {
         $this->isIndex = $isIndex;
 
