@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class SettingController extends Controller implements SettingControllerSwagger
 {
@@ -24,7 +25,9 @@ class SettingController extends Controller implements SettingControllerSwagger
 
     public function index(Request $request): JsonResponse
     {
-        $settings = $this->settingsService->getSettings(!Auth::check());
+        $settings = $this->settingsService->getSettings(
+            !Auth::user()->can('settings.show_hidden'),
+        );
 
         if ($request->has('array')) {
             return response()->json($settings->mapWithKeys(function ($setting) {
@@ -39,8 +42,8 @@ class SettingController extends Controller implements SettingControllerSwagger
     {
         $setting = $this->settingsService->getSetting($name);
 
-        if ($setting->public === false && !Auth::check()) {
-            abort(404);
+        if ($setting->public === false && !Auth::user()->can('settings.show_hidden')) {
+            throw new NotFoundHttpException();
         }
 
         return SettingResource::make($setting);

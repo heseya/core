@@ -21,13 +21,16 @@ Route::prefix('users')->group(function (): void {
     Route::patch('/save-reset-password', 'AuthController@saveResetPassword')
         ->middleware('can:auth.password_reset');
 
-    Route::middleware('auth:api')->group(function (): void {
-        Route::get(null, 'UserController@index');
-        Route::get('id:{user:id}', 'UserController@show');
-        Route::post(null, 'UserController@store');
-        Route::patch('id:{user:id}', 'UserController@update');
-        Route::delete('id:{user:id}', 'UserController@destroy');
-    });
+    Route::get(null, 'UserController@index')
+        ->middleware('can:users.show');
+    Route::get('id:{user:id}', 'UserController@show')
+        ->middleware('can:users.show_details');
+    Route::post(null, 'UserController@store')
+        ->middleware('can:users.add');
+    Route::patch('id:{user:id}', 'UserController@update')
+        ->middleware('can:users.edit');
+    Route::delete('id:{user:id}', 'UserController@destroy')
+        ->middleware('can:users.remove');
 });
 
 Route::post('login', 'AuthController@login')->middleware('can:auth.login');
@@ -112,14 +115,18 @@ Route::prefix('product-sets')->group(function (): void {
 });
 
 Route::prefix('shipping-methods')->group(function (): void {
-    Route::get(null, 'ShippingMethodController@index');
-    Route::post('filter', [ShippingMethodController::class, 'index']);
-    Route::post(null, 'ShippingMethodController@store')->middleware('auth:api');
-    Route::post('order', 'ShippingMethodController@reorder')->middleware('auth:api');
+    Route::get(null, 'ShippingMethodController@index')
+        ->middleware('can:shipping_methods.show');
+    Route::post('filter', [ShippingMethodController::class, 'index'])
+        ->middleware('can:shipping_methods.show');
+    Route::post(null, 'ShippingMethodController@store')
+        ->middleware('can:shipping_methods.add');
     Route::patch('id:{shipping_method:id}', 'ShippingMethodController@update')
-        ->middleware('auth:api');
+        ->middleware('can:shipping_methods.edit');
     Route::delete('id:{shipping_method:id}', 'ShippingMethodController@destroy')
-        ->middleware('auth:api');
+        ->middleware('can:shipping_methods.remove');
+    Route::post('order', 'ShippingMethodController@reorder')
+        ->middleware('can:hipping_methods.edit');
 });
 
 Route::prefix('payment-methods')->group(function (): void {
@@ -134,11 +141,16 @@ Route::prefix('payment-methods')->group(function (): void {
 });
 
 Route::prefix('settings')->group(function (): void {
-    Route::get(null, 'SettingController@index');
-    Route::get('{setting:name}', 'SettingController@show');
-    Route::post(null, 'SettingController@store')->middleware('auth:api');
-    Route::patch('{setting:name}', 'SettingController@update')->middleware('auth:api');
-    Route::delete('{setting:name}', 'SettingController@destroy')->middleware('auth:api');
+    Route::get(null, 'SettingController@index')
+        ->middleware('can:settings.show');
+    Route::get('{setting:name}', 'SettingController@show')
+        ->middleware('can:settings.show_details');
+    Route::post(null, 'SettingController@store')
+        ->middleware('can:settings.add');
+    Route::patch('{setting:name}', 'SettingController@update')
+        ->middleware('can:settings.edit');
+    Route::delete('{setting:name}', 'SettingController@destroy')
+        ->middleware('can:settings.remove');
 });
 
 Route::prefix('package-templates')->group(function (): void {
@@ -179,7 +191,8 @@ Route::prefix('roles')->middleware('auth:api')->group(function (): void {
         ->middleware('can:roles.remove');
 });
 
-Route::get('permissions', [PermissionController::class, 'index'])->middleware('auth:api');
+Route::get('permissions', [PermissionController::class, 'index'])
+    ->middleware('permission:roles.show_details|roles.add|roles.edit');
 
 Route::prefix('analytics')->group(function (): void {
     Route::get('payments', 'AnalyticsController@payments')
@@ -219,20 +232,38 @@ Route::prefix('items')->group(function (): void {
         ->middleware('can:deposits.add');
 });
 
+Route::prefix('statuses')->group(function (): void {
+    Route::get(null, 'StatusController@index')
+        ->middleware('can:statuses.show');
+    Route::post(null, 'StatusController@store')
+        ->middleware('can:statuses.add');
+    Route::patch('id:{status:id}', 'StatusController@update')
+        ->middleware('can:statuses.edit');
+    Route::post('order', 'StatusController@order')
+        ->middleware('can:statuses.edit');
+    Route::delete('id:{status:id}', 'StatusController@destroy')
+        ->middleware('can:statuses.remove');
+});
+
+Route::prefix('tags')->group(function (): void {
+    Route::get(null, [TagController::class, 'index'])
+        ->middleware('can:tags.show');
+    Route::post(null, [TagController::class, 'store'])
+        ->middleware('can:tags.add');
+    Route::patch('id:{tag:id}', [TagController::class, 'update'])
+        ->middleware('can:tags.edit');
+    Route::delete('id:{tag:id}', [TagController::class, 'destroy'])
+        ->middleware('can:tags.remove');
+});
+
+Route::prefix('media')->group(function (): void {
+    Route::post(null, 'MediaController@store')
+        ->middleware('permission:pages.add|pages.edit|products.add|products.edit');
+    Route::delete('id:{media:id}', 'MediaController@destroy')
+        ->middleware('permission:pages.add|pages.edit|products.add|products.edit');
+});
+
 Route::middleware('auth:api')->group(function (): void {
-    Route::prefix('statuses')->group(function (): void {
-        Route::get(null, 'StatusController@index');
-        Route::post(null, 'StatusController@store');
-        Route::post('order', 'StatusController@order');
-        Route::patch('id:{status:id}', 'StatusController@update');
-        Route::delete('id:{status:id}', 'StatusController@destroy');
-    });
-
-    Route::prefix('media')->group(function (): void {
-        Route::post(null, 'MediaController@store');
-        Route::delete('id:{media:id}', 'MediaController@destroy');
-    });
-
     Route::prefix('schemas')->group(function (): void {
         Route::get(null, 'SchemaController@index');
         Route::post(null, 'SchemaController@store');
@@ -253,13 +284,6 @@ Route::middleware('auth:api')->group(function (): void {
     Route::prefix('apps')->group(function (): void {
         Route::get(null, [AppController::class, 'index']);
         Route::post(null, [AppController::class, 'store']);
-    });
-
-    Route::prefix('tags')->group(function (): void {
-        Route::get(null, [TagController::class, 'index']);
-        Route::post(null, [TagController::class, 'store']);
-        Route::patch('id:{tag:id}', [TagController::class, 'update']);
-        Route::delete('id:{tag:id}', [TagController::class, 'destroy']);
     });
 });
 

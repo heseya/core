@@ -17,12 +17,20 @@ class ShippingMethodService implements ShippingMethodServiceContract
     public function index(?string $country, float $cartValue): Collection
     {
         $query = ShippingMethod::query()->orderBy('order');
-        if (Auth::check()) {
+
+        if (!Auth::user()->can('shipping_methods.show_hidden')) {
+            $query->where('public', true);
+        }
+
+        if (Auth::user()->hasAnyPermission([
+            'payment_methods.show_hidden',
+            'shipping_methods.edit',
+        ])) {
             $query->with('paymentMethods');
         } else {
-            $query
-                ->with(['paymentMethods' => fn ($query) => $query->where('public', true)])
-                ->where('public', true);
+            $query->with([
+                'paymentMethods' => fn ($query) => $query->where('public', true),
+            ]);
         }
 
         if ($country) {
