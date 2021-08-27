@@ -54,8 +54,14 @@ class ShippingMethodService implements ShippingMethodServiceContract
         );
 
         $shippingMethod = ShippingMethod::create($attributes);
-        $shippingMethod->paymentMethods()->sync($shippingMethodDto->getPaymentMethods());
-        $shippingMethod->countries()->sync($shippingMethodDto->getCountries());
+
+        if ($shippingMethodDto->getPaymentMethods() !== null) {
+            $shippingMethod->paymentMethods()->sync($shippingMethodDto->getPaymentMethods());
+        }
+
+        if ($shippingMethodDto->getCountries() !== null) {
+            $shippingMethod->countries()->sync($shippingMethodDto->getCountries());
+        }
 
         foreach ($shippingMethodDto->getPriceRanges() as $range) {
             $priceRange = $shippingMethod->priceRanges()->firstOrCreate([
@@ -72,10 +78,16 @@ class ShippingMethodService implements ShippingMethodServiceContract
     public function update(ShippingMethod $shippingMethod, ShippingMethodDto $shippingMethodDto): ShippingMethod
     {
         $shippingMethod->update($shippingMethodDto->toArray());
-        $shippingMethod->paymentMethods()->sync($shippingMethodDto->getPaymentMethods());
-        $shippingMethod->countries()->sync($shippingMethodDto->getCountries());
 
-        if ($shippingMethodDto->getPriceRanges()) {
+        if ($shippingMethodDto->getPaymentMethods() !== null) {
+            $shippingMethod->paymentMethods()->sync($shippingMethodDto->getPaymentMethods());
+        }
+
+        if ($shippingMethodDto->getCountries() !== null) {
+            $shippingMethod->countries()->sync($shippingMethodDto->getCountries());
+        }
+
+        if ($shippingMethodDto->getPriceRanges() !== null) {
             $shippingMethod->priceRanges()->delete();
 
             foreach ($shippingMethodDto->getPriceRanges() as $range) {

@@ -11,9 +11,9 @@ class ShippingMethodDto extends Dto implements InstantiateFromRequest
         protected string $name,
         protected bool $public,
         protected bool $blackList,
-        protected array $paymentMethods,
-        protected array $countries,
-        protected array $priceRanges,
+        protected ?array $paymentMethods,
+        protected ?array $countries,
+        protected ?array $priceRanges,
     ) {
     }
 
@@ -23,9 +23,9 @@ class ShippingMethodDto extends Dto implements InstantiateFromRequest
             $request->input('name'),
             $request->boolean('public'),
             $request->boolean('black_list'),
-            $request->input('payment_methods', []),
-            $request->input('countries', []),
-            $request->input('price_ranges', []),
+            $request->input('payment_methods'),
+            $request->input('countries'),
+            $request->input('price_ranges'),
         );
     }
 
@@ -44,17 +44,17 @@ class ShippingMethodDto extends Dto implements InstantiateFromRequest
         return $this->blackList;
     }
 
-    public function getPaymentMethods(): array
+    public function getPaymentMethods(): ?array
     {
         return $this->paymentMethods;
     }
 
-    public function getCountries(): array
+    public function getCountries(): ?array
     {
         return $this->countries;
     }
 
-    public function getPriceRanges(): array
+    public function getPriceRanges(): ?array
     {
         return $this->priceRanges;
     }
