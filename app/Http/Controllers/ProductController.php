@@ -100,10 +100,7 @@ class ProductController extends Controller implements ProductControllerSwagger
             });
         }
 
-        return ProductResource::collection(
-            $products,
-            $request->has('full'),
-        );
+        return ProductResource::collection($products)->full($request->has('full'));
     }
 
     public function show(ProductShowRequest $request, Product $product): JsonResource
