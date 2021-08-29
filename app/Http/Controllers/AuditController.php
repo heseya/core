@@ -11,7 +11,8 @@ class AuditController extends Controller implements AuditControllerSwagger
 {
     public function __construct(
         private AuditServiceContract $auditService,
-    ) {}
+    ) {
+    }
 
     public function index(string $class, string $id): JsonResource
     {

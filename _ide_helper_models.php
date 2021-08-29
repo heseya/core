@@ -75,6 +75,48 @@ namespace App\Models{
 
 namespace App\Models{
 /**
+ * App\Models\Audit
+ *
+ * @property string $id
+ * @property string|null $user_type
+ * @property string|null $user_id
+ * @property string $event
+ * @property string $auditable_type
+ * @property string $auditable_id
+ * @property array|null $old_values
+ * @property array|null $new_values
+ * @property string|null $url
+ * @property string|null $ip_address
+ * @property string|null $user_agent
+ * @property string|null $tags
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $auditable
+ * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $user
+ * @method static \Illuminate\Database\Eloquent\Builder|Audit newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Audit newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Audit query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Audit whereAuditableId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Audit whereAuditableType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Audit whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Audit whereEvent($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Audit whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Audit whereIpAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Audit whereNewValues($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Audit whereOldValues($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Audit whereTags($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Audit whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Audit whereUrl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Audit whereUserAgent($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Audit whereUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Audit whereUserType($value)
+ * @mixin \Eloquent
+ */
+	class IdeHelperAudit extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
  * App\Models\Country
  *
  * @OA\Schema ()
@@ -142,6 +184,8 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Audit[] $audits
+ * @property-read int|null $audits_count
  * @property-read bool $available
  * @property-read int $uses
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Order[] $orders
@@ -164,7 +208,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Query\Builder|Discount withTrashed()
  * @method static \Illuminate\Database\Query\Builder|Discount withoutTrashed()
  */
-	class IdeHelperDiscount extends \Eloquent {}
+	class IdeHelperDiscount extends \Eloquent implements \OwenIt\Auditing\Contracts\Auditable {}
 }
 
 namespace App\Models{
@@ -179,6 +223,8 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Audit[] $audits
+ * @property-read int|null $audits_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Deposit[] $deposits
  * @property-read int|null $deposits_count
  * @property-read float $quantity
@@ -198,7 +244,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Query\Builder|Item withTrashed()
  * @method static \Illuminate\Database\Query\Builder|Item withoutTrashed()
  */
-	class IdeHelperItem extends \Eloquent {}
+	class IdeHelperItem extends \Eloquent implements \OwenIt\Auditing\Contracts\Auditable {}
 }
 
 namespace App\Models{
@@ -279,6 +325,8 @@ namespace App\Models{
  * @property string|null $invoice_address_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Audit[] $audits
+ * @property-read int|null $audits_count
  * @property-read \App\Models\Address|null $deliveryAddress
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Deposit[] $deposits
  * @property-read int|null $deposits_count
@@ -316,7 +364,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereStatusId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereUpdatedAt($value)
  */
-	class IdeHelperOrder extends \Eloquent {}
+	class IdeHelperOrder extends \Eloquent implements \OwenIt\Auditing\Contracts\Auditable {}
 }
 
 namespace App\Models{
@@ -423,6 +471,8 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property string $content_html
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Audit[] $audits
+ * @property-read int|null $audits_count
  * @method static \Database\Factories\PageFactory factory(...$parameters)
  * @method static \Illuminate\Database\Eloquent\Builder|Page newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Page newQuery()
@@ -437,7 +487,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Page whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Page whereUpdatedAt($value)
  */
-	class IdeHelperPage extends \Eloquent {}
+	class IdeHelperPage extends \Eloquent implements \OwenIt\Auditing\Contracts\Auditable {}
 }
 
 namespace App\Models{
@@ -603,6 +653,8 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property float $quantity_step
  * @property int $order
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Audit[] $audits
+ * @property-read int|null $audits_count
  * @property-read \App\Models\ProductSet|null $brand
  * @property-read \App\Models\ProductSet|null $category
  * @property-read bool $available
@@ -641,7 +693,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Query\Builder|Product withTrashed()
  * @method static \Illuminate\Database\Query\Builder|Product withoutTrashed()
  */
-	class IdeHelperProduct extends \Eloquent {}
+	class IdeHelperProduct extends \Eloquent implements \OwenIt\Auditing\Contracts\Auditable {}
 }
 
 namespace App\Models{
@@ -699,6 +751,8 @@ namespace App\Models{
  * @property string $guard_name
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Audit[] $audits
+ * @property-read int|null $audits_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Permission[] $permissions
  * @property-read int|null $permissions_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $users
@@ -716,7 +770,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Role whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Role whereUpdatedAt($value)
  */
-	class IdeHelperRole extends \Eloquent {}
+	class IdeHelperRole extends \Eloquent implements \OwenIt\Auditing\Contracts\Auditable {}
 }
 
 namespace App\Models{
@@ -794,6 +848,8 @@ namespace App\Models{
  * @property bool $public
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Audit[] $audits
+ * @property-read int|null $audits_count
  * @property-read bool $permanent
  * @method static \Illuminate\Database\Eloquent\Builder|Setting newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Setting newQuery()
@@ -805,7 +861,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Setting whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Setting whereValue($value)
  */
-	class IdeHelperSetting extends \Eloquent {}
+	class IdeHelperSetting extends \Eloquent implements \OwenIt\Auditing\Contracts\Auditable {}
 }
 
 namespace App\Models{
@@ -821,6 +877,8 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $order
  * @property bool $black_list
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Audit[] $audits
+ * @property-read int|null $audits_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Country[] $countries
  * @property-read int|null $countries_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Order[] $orders
@@ -843,7 +901,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|ShippingMethod wherePublic($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ShippingMethod whereUpdatedAt($value)
  */
-	class IdeHelperShippingMethod extends \Eloquent {}
+	class IdeHelperShippingMethod extends \Eloquent implements \OwenIt\Auditing\Contracts\Auditable {}
 }
 
 namespace App\Models{
@@ -860,6 +918,8 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $order
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Audit[] $audits
+ * @property-read int|null $audits_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Order[] $orders
  * @property-read int|null $orders_count
  * @method static \Database\Factories\StatusFactory factory(...$parameters)
@@ -875,7 +935,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Status whereOrder($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Status whereUpdatedAt($value)
  */
-	class IdeHelperStatus extends \Eloquent {}
+	class IdeHelperStatus extends \Eloquent implements \OwenIt\Auditing\Contracts\Auditable {}
 }
 
 namespace App\Models{
@@ -919,6 +979,8 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Audit[] $audits
+ * @property-read int|null $audits_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Passport\Client[] $clients
  * @property-read int|null $clients_count
  * @property-read string $avatar
@@ -950,6 +1012,6 @@ namespace App\Models{
  * @method static \Illuminate\Database\Query\Builder|User withTrashed()
  * @method static \Illuminate\Database\Query\Builder|User withoutTrashed()
  */
-	class IdeHelperUser extends \Eloquent implements \Illuminate\Contracts\Auth\Authenticatable, \Illuminate\Contracts\Auth\Access\Authorizable, \Illuminate\Contracts\Auth\CanResetPassword {}
+	class IdeHelperUser extends \Eloquent implements \Illuminate\Contracts\Auth\Authenticatable, \Illuminate\Contracts\Auth\Access\Authorizable, \Illuminate\Contracts\Auth\CanResetPassword, \OwenIt\Auditing\Contracts\Auditable {}
 }
 
