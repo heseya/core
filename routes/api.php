@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AppController;
+use App\Http\Controllers\AuditController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
@@ -204,6 +205,10 @@ Route::middleware('auth:api')->group(function (): void {
         Route::post(null, [TagController::class, 'store']);
         Route::patch('id:{tag:id}', [TagController::class, 'update']);
         Route::delete('id:{tag:id}', [TagController::class, 'destroy']);
+    });
+
+    Route::prefix('audits')->group(function (): void {
+        Route::get('{class}/id:{id}', [AuditController::class, 'index']);
     });
 });
 
