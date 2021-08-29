@@ -6,7 +6,6 @@ use App\Events\OrderCreated;
 use App\Models\Address;
 use App\Models\ProductSet;
 use App\Models\Order;
-use App\Models\Price;
 use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\Schema;
@@ -50,8 +49,31 @@ class OrderCreateTest extends TestCase
         ]);
     }
 
+    public function testCreateOrderUnauthorized(): void
+    {
+        Event::fake([OrderCreated::class]);
+
+        $response = $this->postJson('/orders', [
+            'email' => 'test@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => []
+                ],
+            ],
+        ]);
+
+        $response->assertForbidden();
+        Event::assertNotDispatched(OrderCreated::class);
+    }
+
     public function testCreateSimpleOrder(): void
     {
+        $this->user->givePermissionTo('orders.add');
+
         Event::fake([OrderCreated::class]);
 
         $this->product->update([
@@ -60,7 +82,7 @@ class OrderCreateTest extends TestCase
 
         $productQuantity = 20;
 
-        $response = $this->postJson('/orders', [
+        $response = $this->actingAs($this->user)->postJson('/orders', [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
@@ -94,6 +116,8 @@ class OrderCreateTest extends TestCase
 
     public function testCreateOrder(): void
     {
+        $this->user->givePermissionTo('orders.add');
+
         Event::fake([OrderCreated::class]);
 
         $schema = Schema::factory()->create([
@@ -109,7 +133,7 @@ class OrderCreateTest extends TestCase
 
         $productQuantity = 2;
 
-        $response = $this->postJson('/orders', [
+        $response = $this->actingAs($this->user)->postJson('/orders', [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
@@ -155,6 +179,8 @@ class OrderCreateTest extends TestCase
 
     public function testCreateOrderHiddenSchema(): void
     {
+        $this->user->givePermissionTo('orders.add');
+
         Event::fake([OrderCreated::class]);
 
         $schema = Schema::factory()->create([
@@ -170,7 +196,7 @@ class OrderCreateTest extends TestCase
 
         $productQuantity = 2;
 
-        $response = $this->postJson('/orders', [
+        $response = $this->actingAs($this->user)->postJson('/orders', [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
@@ -212,5 +238,28 @@ class OrderCreateTest extends TestCase
         ]);
 
         Event::assertDispatched(OrderCreated::class);
+    }
+
+    public function testCantCreateOrderWithoutItems(): void
+    {
+        $this->user->givePermissionTo('orders.add');
+
+        $shippingMethod = ShippingMethod::factory()->create();
+
+        $response = $this->actingAs($this->user)->postJson('/orders', [
+            'email' => 'test@example.com',
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'delivery_address' => [
+                'name' => 'Wojtek Testowy',
+                'phone' => '+48123321123',
+                'address' => 'Gdańska 89/1',
+                'zip' => '12-123',
+                'city' => 'Bydgoszcz',
+                'country' => 'PL',
+            ],
+            'items' => [],
+        ]);
+
+        $response->assertStatus(422);
     }
 }

@@ -33,7 +33,8 @@ Route::prefix('users')->group(function (): void {
         ->middleware('can:users.remove');
 });
 
-Route::post('login', 'AuthController@login')->middleware('can:auth.login');
+Route::post('login', 'AuthController@login')
+    ->middleware('can:auth.login');
 Route::patch('user/password', 'AuthController@changePassword')
     ->middleware('can:auth.password_change');
 
@@ -53,14 +54,22 @@ Route::prefix('products')->group(function (): void {
 });
 
 Route::prefix('orders')->group(function (): void {
-    Route::get(null, 'OrderController@index')->middleware('auth:api');
-    Route::post(null, 'OrderController@store');
-    Route::post('sync', 'OrderController@sync')->middleware('auth:api');
-    Route::post('verify', 'OrderController@verify');
-    Route::get('id:{order:id}', 'OrderController@show')->middleware('auth:api');
-    Route::post('id:{order:id}/status', 'OrderController@updateStatus')->middleware('auth:api');
-    Route::patch('id:{order:id}', 'OrderController@update')->middleware('auth:api');
-    Route::get('{order:code}', 'OrderController@showPublic');
+    Route::get(null, 'OrderController@index')
+        ->middleware('can:orders.show');
+    Route::post(null, 'OrderController@store')
+        ->middleware('can:orders.add');
+    Route::post('sync', 'OrderController@sync')
+        ->middleware('can:orders.edit');
+    Route::post('verify', 'OrderController@verify')
+        ->middleware('can:cart.verify');
+    Route::get('id:{order:id}', 'OrderController@show')
+        ->middleware('can:orders.show_details');
+    Route::post('id:{order:id}/status', 'OrderController@updateStatus')
+        ->middleware('can:orders.edit.status');
+    Route::patch('id:{order:id}', 'OrderController@update')
+        ->middleware('can:orders.edit');
+    Route::get('{order:code}', 'OrderController@showPublic')
+        ->middleware('can:orders.show_summary');
     Route::post('{order:code}/pay/{method}', 'PaymentController@store')
         ->middleware('can:payments.add');
 });
@@ -263,28 +272,39 @@ Route::prefix('media')->group(function (): void {
         ->middleware('permission:pages.add|pages.edit|products.add|products.edit');
 });
 
-Route::middleware('auth:api')->group(function (): void {
-    Route::prefix('schemas')->group(function (): void {
-        Route::get(null, 'SchemaController@index');
-        Route::post(null, 'SchemaController@store');
-        Route::get('id:{schema:id}', 'SchemaController@show');
-        Route::patch('id:{schema:id}', 'SchemaController@update');
-        Route::delete('id:{schema:id}', 'SchemaController@destroy');
-        Route::post('id:{schema:id}/attach/id:{product:id}', 'SchemaController@attach');
-        Route::post('id:{schema:id}/detach/id:{product:id}', 'SchemaController@detach');
-    });
+Route::prefix('apps')->group(function (): void {
+    Route::get(null, [AppController::class, 'index'])
+        ->middleware('can:apps.show');
+    Route::post(null, [AppController::class, 'store'])
+        ->middleware('can:apps.install');
+});
 
-    Route::prefix('options')->group(function (): void {
-        Route::post(null, 'OptionController@store');
-        Route::get('id:{option:id}', 'OptionController@show');
-        Route::patch('id:{option:id}', 'OptionController@update');
-        Route::delete('id:{option:id}', 'OptionController@destroy');
-    });
+Route::prefix('schemas')->group(function (): void {
+    Route::get(null, 'SchemaController@index')
+        ->middleware('permission:products.add|products.edit');
+    Route::post(null, 'SchemaController@store')
+        ->middleware('permission:products.add|products.edit');
+    Route::get('id:{schema:id}', 'SchemaController@show')
+        ->middleware('permission:products.add|products.edit');
+    Route::patch('id:{schema:id}', 'SchemaController@update')
+        ->middleware('permission:products.add|products.edit');
+    Route::delete('id:{schema:id}', 'SchemaController@destroy')
+        ->middleware('can:schemas.remove');
+    Route::post('id:{schema:id}/attach/id:{product:id}', 'SchemaController@attach')
+        ->middleware('can:products.edit');
+    Route::post('id:{schema:id}/detach/id:{product:id}', 'SchemaController@detach')
+        ->middleware('can:products.edit');
+});
 
-    Route::prefix('apps')->group(function (): void {
-        Route::get(null, [AppController::class, 'index']);
-        Route::post(null, [AppController::class, 'store']);
-    });
+Route::prefix('options')->group(function (): void {
+    Route::post(null, 'OptionController@store')
+        ->middleware('permission:products.add|products.edit');
+    Route::get('id:{option:id}', 'OptionController@show')
+        ->middleware('permission:products.add|products.edit');
+    Route::patch('id:{option:id}', 'OptionController@update')
+        ->middleware('permission:products.add|products.edit');
+    Route::delete('id:{option:id}', 'OptionController@destroy')
+        ->middleware('permission:products.add|products.edit');
 });
 
 // External

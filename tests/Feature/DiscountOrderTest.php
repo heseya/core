@@ -51,12 +51,14 @@ class DiscountOrderTest extends TestCase
 
     public function testOrderCreate(): void
     {
+        $this->user->givePermissionTo('orders.add');
+
         $discount = Discount::factory()->create([
             'type' => DiscountType::PERCENTAGE,
             'discount' => 15,
         ]);
 
-        $response = $this->postJson('/orders', [
+        $response = $this->actingAs($this->user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address,
@@ -80,12 +82,14 @@ class DiscountOrderTest extends TestCase
 
     public function testOrderCreateAmountDiscount(): void
     {
+        $this->user->givePermissionTo('orders.add');
+
         $discount = Discount::factory()->create([
             'type' => DiscountType::AMOUNT,
             'discount' => 50,
         ]);
 
-        $response = $this->postJson('/orders', [
+        $response = $this->actingAs($this->user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address,
@@ -102,12 +106,14 @@ class DiscountOrderTest extends TestCase
 
     public function testOrderCreateChangeDiscount(): void
     {
+        $this->user->givePermissionTo('orders.add');
+
         $discount = Discount::factory()->create([
             'type' => DiscountType::PERCENTAGE,
             'discount' => 10,
         ]);
 
-        $response = $this->postJson('/orders', [
+        $response = $this->actingAs($this->user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address,
