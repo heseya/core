@@ -101,7 +101,7 @@ Route::get('categories', [CategoryController::class, 'index'])
 
 Route::prefix('product-sets')->group(function (): void {
     Route::get(null, [ProductSetController::class, 'index'])
-        ->middleware('can:product_sets.show');
+        ->middleware('permission:product_sets.show|products.add|products.edit');
     Route::get('id:{product_set:id}', [ProductSetController::class, 'show'])
         ->middleware('can:product_sets.show_details');
     Route::get('{product_set:slug}', [ProductSetController::class, 'show'])
@@ -256,9 +256,9 @@ Route::prefix('statuses')->group(function (): void {
 
 Route::prefix('tags')->group(function (): void {
     Route::get(null, [TagController::class, 'index'])
-        ->middleware('can:tags.show');
+        ->middleware('permission:tags.show|products.add|products.edit');
     Route::post(null, [TagController::class, 'store'])
-        ->middleware('can:tags.add');
+        ->middleware('permission:tags.add|products.add|products.edit');
     Route::patch('id:{tag:id}', [TagController::class, 'update'])
         ->middleware('can:tags.edit');
     Route::delete('id:{tag:id}', [TagController::class, 'destroy'])

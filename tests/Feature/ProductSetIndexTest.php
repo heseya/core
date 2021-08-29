@@ -47,7 +47,28 @@ class ProductSetIndexTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testIndex(): void
+    public function testIndexSetsShow(): void
+    {
+        $this->user->givePermissionTo('product_sets.show');
+
+        $this->index();
+    }
+
+    public function testIndexProductsAdd(): void
+    {
+        $this->user->givePermissionTo('products.add');
+
+        $this->index();
+    }
+
+    public function testIndexSetsProductsEdit(): void
+    {
+        $this->user->givePermissionTo('products.edit');
+
+        $this->index();
+    }
+
+    public function index(): void
     {
         $this->user->givePermissionTo('product_sets.show');
 

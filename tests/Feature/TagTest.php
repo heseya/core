@@ -16,10 +16,29 @@ class TagTest extends TestCase
         $this->getJson('/tags')->assertForbidden();
     }
 
-    public function testIndex(): void
+    public function testIndexTagsShow(): void
     {
         $this->user->givePermissionTo('tags.show');
 
+        $this->index();
+    }
+
+    public function testIndexProductsAdd(): void
+    {
+        $this->user->givePermissionTo('products.add');
+
+        $this->index();
+    }
+
+    public function testIndexProductsEdit(): void
+    {
+        $this->user->givePermissionTo('products.edit');
+
+        $this->index();
+    }
+
+    public function index(): void
+    {
         $tag = Tag::factory()->count(10)->create()->random();
 
         $product = Product::factory()->create();
@@ -38,10 +57,29 @@ class TagTest extends TestCase
         $this->postJson('/tags')->assertForbidden();
     }
 
-    public function testCreate(): void
+    public function testCreateTagsAdd(): void
     {
         $this->user->givePermissionTo('tags.add');
 
+        $this->create();
+    }
+
+    public function testCreateProductsAdd(): void
+    {
+        $this->user->givePermissionTo('products.add');
+
+        $this->create();
+    }
+
+    public function testCreateProductsEdit(): void
+    {
+        $this->user->givePermissionTo('products.edit');
+
+        $this->create();
+    }
+
+    public function create(): void
+    {
         $response = $this->actingAs($this->user)->postJson('/tags', [
             'name' => 'test sale',
             'color' => '444444',
