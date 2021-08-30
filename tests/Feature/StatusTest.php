@@ -33,26 +33,32 @@ class StatusTest extends TestCase
         ];
     }
 
-    public function testIndex(): void
+    public function testIndexUnauthorized(): void
     {
         $response = $this->getJson('/statuses');
-        $response->assertUnauthorized();
+        $response->assertForbidden();
+    }
 
-        Passport::actingAs($this->user);
+    public function testIndex(): void
+    {
+        $this->user->givePermissionTo('statuses.show');
 
-        $response = $this->getJson('/statuses');
+        $response = $this->actingAs($this->user)->getJson('/statuses');
         $response
             ->assertOk()
             ->assertJsonCount(4, 'data') // domyślne statusy z migracji + ten utworzony teraz
             ->assertJsonFragment([$this->expected]);
     }
 
-    public function testCreate(): void
+    public function testCreateUnauthorized(): void
     {
         $response = $this->postJson('/statuses');
-        $response->assertUnauthorized();
+        $response->assertForbidden();
+    }
 
-        Passport::actingAs($this->user);
+    public function testCreate(): void
+    {
+        $this->user->givePermissionTo('statuses.add');
 
         $status = [
             'name' => 'Test Status',
@@ -60,7 +66,7 @@ class StatusTest extends TestCase
             'description' => 'To jest status testowy.',
         ];
 
-        $response = $this->postJson('/statuses', $status);
+        $response = $this->actingAs($this->user)->postJson('/statuses', $status);
         $response
             ->assertCreated()
             ->assertJson(['data' => $status]);
@@ -68,12 +74,15 @@ class StatusTest extends TestCase
         $this->assertDatabaseHas('statuses', $status);
     }
 
-    public function testUpdate(): void
+    public function testUpdateUnauthorized(): void
     {
         $response = $this->patchJson('/statuses/id:' . $this->status_model->getKey());
-        $response->assertUnauthorized();
+        $response->assertForbidden();
+    }
 
-        Passport::actingAs($this->user);
+    public function testUpdate(): void
+    {
+        $this->user->givePermissionTo('statuses.edit');
 
         $status = [
             'name' => 'Test Status 2',
@@ -81,7 +90,7 @@ class StatusTest extends TestCase
             'description' => 'Testowy opis testowego statusu 2.',
         ];
 
-        $response = $this->patchJson(
+        $response = $this->actingAs($this->user)->patchJson(
             '/statuses/id:' . $this->status_model->getKey(),
             $status,
         );
@@ -92,16 +101,22 @@ class StatusTest extends TestCase
         $this->assertDatabaseHas('statuses', $status + ['id' => $this->status_model->getKey()]);
     }
 
+    public function testDeleteUnauthorized(): void
+    {
+        $this->deleteJson('/statuses/id:' . $this->status_model->getKey())
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('statuses', ['id' => $this->status_model->getKey()]);
+    }
+
     public function testDelete(): void
     {
-        $response = $this->deleteJson('/statuses/id:' . $this->status_model->getKey());
-        $response->assertUnauthorized();
-        $this->assertDatabaseHas('statuses', ['id' => $this->status_model->getKey()]);
+        $this->user->givePermissionTo('statuses.remove');
 
-        Passport::actingAs($this->user);
+        $this->actingAs($this->user)
+            ->deleteJson('/statuses/id:' . $this->status_model->getKey())
+            ->assertNoContent();
 
-        $response = $this->deleteJson('/statuses/id:' . $this->status_model->getKey());
-        $response->assertNoContent();
         $this->assertDeleted($this->status_model);
     }
 }

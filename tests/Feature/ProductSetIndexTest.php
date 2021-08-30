@@ -41,9 +41,38 @@ class ProductSetIndexTest extends TestCase
         ]);
     }
 
-    public function testIndex(): void
+    public function testIndexUnauthorized(): void
     {
         $response = $this->getJson('/product-sets');
+        $response->assertForbidden();
+    }
+
+    public function testIndexSetsShow(): void
+    {
+        $this->user->givePermissionTo('product_sets.show');
+
+        $this->index();
+    }
+
+    public function testIndexProductsAdd(): void
+    {
+        $this->user->givePermissionTo('products.add');
+
+        $this->index();
+    }
+
+    public function testIndexSetsProductsEdit(): void
+    {
+        $this->user->givePermissionTo('products.edit');
+
+        $this->index();
+    }
+
+    public function index(): void
+    {
+        $this->user->givePermissionTo('product_sets.show');
+
+        $response = $this->actingAs($this->user)->getJson('/product-sets');
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data') // Shoud show only public sets.
@@ -72,12 +101,13 @@ class ProductSetIndexTest extends TestCase
                     'parent_id' => $this->childSet->parent_id,
                     'children_ids' => [],
                 ],
-            ],
-            ]);
+            ]]);
     }
 
-    public function testIndexAuthorized(): void
+    public function testIndexHidden(): void
     {
+        $this->user->givePermissionTo(['product_sets.show', 'product_sets.show_hidden']);
+
         $response = $this->actingAs($this->user)->getJson('/product-sets');
         $response
             ->assertOk()
@@ -137,7 +167,9 @@ class ProductSetIndexTest extends TestCase
 
     public function testIndexRoot(): void
     {
-        $response = $this->getJson('/product-sets?root');
+        $this->user->givePermissionTo('product_sets.show');
+
+        $response = $this->actingAs($this->user)->getJson('/product-sets?root');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Shoud show only public sets.
@@ -159,8 +191,10 @@ class ProductSetIndexTest extends TestCase
             ]);
     }
 
-    public function testIndexRootAuthorized(): void
+    public function testIndexRootHidden(): void
     {
+        $this->user->givePermissionTo(['product_sets.show', 'product_sets.show_hidden']);
+
         $response = $this->actingAs($this->user)->getJson('/product-sets?root');
         $response
             ->assertOk()
@@ -196,7 +230,9 @@ class ProductSetIndexTest extends TestCase
 
     public function testIndexTree(): void
     {
-        $response = $this->getJson('/product-sets?tree');
+        $this->user->givePermissionTo('product_sets.show');
+
+        $response = $this->actingAs($this->user)->getJson('/product-sets?tree');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Shoud show only public sets.
@@ -228,8 +264,10 @@ class ProductSetIndexTest extends TestCase
             ]);
     }
 
-    public function testIndexTreeAuthorized(): void
+    public function testIndexTreeHidden(): void
     {
+        $this->user->givePermissionTo(['product_sets.show', 'product_sets.show_hidden']);
+
         $response = $this->actingAs($this->user)->getJson('/product-sets?tree');
         $response
             ->assertOk()

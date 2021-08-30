@@ -50,61 +50,119 @@ class PageTest extends TestCase
         ]);
     }
 
-    public function testIndex(): void
+    public function testIndexUnauthorized(): void
     {
         $response = $this->getJson('/pages');
+        $response->assertForbidden();
+    }
+
+    public function testIndex(): void
+    {
+        $this->user->givePermissionTo('pages.show');
+
+        $response = $this->actingAs($this->user)->getJson('/pages');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
+    }
 
-        Passport::actingAs($this->user);
+    public function testIndexHidden(): void
+    {
+        $this->user->givePermissionTo(['pages.show', 'pages.show_hidden']);
 
-        $response = $this->getJson('/pages');
+        $response = $this->actingAs($this->user)->getJson('/pages');
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data');
     }
 
-    public function testView(): void
+    public function testViewUnauthorized(): void
     {
         $response = $this->getJson('/pages/' . $this->page->slug);
+        $response->assertForbidden();
+
+        $response = $this->getJson('/pages/id:' . $this->page->getKey());
+        $response->assertForbidden();
+    }
+
+    public function testView(): void
+    {
+        $this->user->givePermissionTo('pages.show_details');
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/pages/' . $this->page->slug);
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected_view]);
 
-        $response = $this->getJson('/pages/id:' . $this->page->getKey());
-        $response->assertUnauthorized();
-
-        Passport::actingAs($this->user);
-
-        $response = $this->getJson('/pages/id:' . $this->page->getKey());
+        $response = $this->actingAs($this->user)
+            ->getJson('/pages/id:' . $this->page->getKey());
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected_view]);
+    }
+
+    public function testViewHiddenUnauthorized(): void
+    {
+        $this->user->givePermissionTo('pages.show_details');
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/pages/' . $this->page_hidden->slug);
+        $response->assertNotFound();
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/pages/id:' . $this->page_hidden->getKey());
+        $response->assertNotFound();
     }
 
     public function testViewHidden(): void
     {
-        $response = $this->getJson('/pages/' . $this->page_hidden->slug);
-        $response->assertNotFound();
+        $this->user->givePermissionTo(['pages.show_details', 'pages.show_hidden']);
 
-        $response = $this->getJson('/pages/id:' . $this->page_hidden->getKey());
-        $response->assertUnauthorized();
-
-        Passport::actingAs($this->user);
-
-        $response = $this->getJson('/pages/' . $this->page_hidden->slug);
+        $response = $this->actingAs($this->user)
+            ->getJson('/pages/' . $this->page_hidden->slug);
         $response->assertOk();
 
-        $response = $this->getJson('/pages/id:' . $this->page_hidden->getKey());
+        $response = $this->actingAs($this->user)
+            ->getJson('/pages/id:' . $this->page_hidden->getKey());
         $response->assertOk();
+    }
+
+    public function testCreateUnauthorized(): void
+    {
+        $response = $this->postJson('/pages');
+        $response->assertForbidden();
+    }
+
+    public function testCreate(): void
+    {
+        $this->user->givePermissionTo('pages.add');
+
+        $html = '<h1>hello world</h1>';
+        $page = [
+            'name' => 'Test',
+            'slug' => 'test-test',
+            'public' => true,
+            'content_html' => $html,
+        ];
+
+        $response = $this->actingAs($this->user)->postJson('/pages', $page);
+        $response->assertJson([
+            'data' => $page + [
+                'content_md' => $this->markdownService->fromHtml($html),
+            ],
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('pages', $page);
     }
 
     public function testCreateByOrder(): void
     {
+        $this->user->givePermissionTo('pages.add');
+
         for ($i = 0; $i < 3; $i++) {
             $name = ' order test ' . $this->faker->sentence(rand(1, 3));
             $page = [
@@ -117,70 +175,32 @@ class PageTest extends TestCase
             $response = $this->actingAs($this->user)->postJson('/pages', $page);
             $response->assertCreated();
 
-            $uuid[] = $response->getData()->data->id;
+            $uuids[] = $response->getData()->data->id;
         }
 
-        $this->assertCount(3, $uuid);
         $this->assertDatabaseHas('pages', [
-            'id' => $uuid[0],
+            'id' => $uuids[0],
             'order' => 1,
         ]);
         $this->assertDatabaseHas('pages', [
-            'id' => $uuid[2],
-            'order' => 3,
-        ]);
-
-        // change
-        $response = $this->actingAs($this->user)->postJson('/pages/order', [
-            'pages' => $uuid,
-        ]);
-        $response->assertNoContent();
-
-        // check
-        $response = $this->actingAs($this->user)->getJson('/pages/id:' . $uuid[0]);
-        $response->assertOk();
-        $this->assertDatabaseHas('pages', [
-            'id' => $uuid[0],
-            'order' => 0,
-        ]);
-
-        $response = $this->actingAs($this->user)->getJson('/pages/id:' . $uuid[2]);
-        $response->assertOk();
-        $this->assertDatabaseHas('pages', [
-            'id' => $uuid[2],
+            'id' => $uuids[1],
             'order' => 2,
+        ]);
+        $this->assertDatabaseHas('pages', [
+            'id' => $uuids[2],
+            'order' => 3,
         ]);
     }
 
-    public function testCreate(): void
+    public function testUpdateUnauthorized(): void
     {
-        $response = $this->postJson('/pages');
-        $response->assertUnauthorized();
-
-        Passport::actingAs($this->user);
-
-        $html = '<h1>hello world</h1>';
-        $page = [
-            'name' => 'Test',
-            'slug' => 'test-test',
-            'public' => true,
-            'content_html' => $html,
-        ];
-
-        $response = $this->postJson('/pages', $page);
-        $response
-            ->assertJson(['data' => $page + ['content_md' => $this->markdownService->fromHtml($html)]])
-            ->assertCreated();
-
-        $this->assertDatabaseHas('pages', $page);
+        $response = $this->patchJson('/pages/id:' . $this->page->getKey());
+        $response->assertForbidden();
     }
 
     public function testUpdate(): void
     {
-        $response = $this->patchJson('/pages/id:' . $this->page->getKey());
-        $response->assertUnauthorized();
-
-        Passport::actingAs($this->user);
+        $this->user->givePermissionTo('pages.edit');
 
         $html = '<h1>hello world 2</h1>';
         $page = [
@@ -190,7 +210,7 @@ class PageTest extends TestCase
             'content_html' => $html,
         ];
 
-        $response = $this->patchJson(
+        $response = $this->actingAs($this->user)->patchJson(
             '/pages/id:' . $this->page->getKey(),
             $page,
         );
@@ -202,53 +222,52 @@ class PageTest extends TestCase
         $this->assertDatabaseHas('pages', $page + ['id' => $this->page->getKey()]);
     }
 
-    public function testDelete(): void
+    public function testDeleteUnauthorized(): void
     {
         $page = $this->page->toArray();
         unset($page['content_html']);
 
         $response = $this->patchJson('/pages/id:' . $this->page->getKey());
-        $response->assertUnauthorized();
+        $response->assertForbidden();
         $this->assertDatabaseHas('pages', $page);
+    }
 
-        Passport::actingAs($this->user);
+    public function testDelete(): void
+    {
+        $this->user->givePermissionTo('pages.remove');
 
-        $response = $this->deleteJson('/pages/id:' . $this->page->getKey());
+        $response = $this->actingAs($this->user)
+            ->deleteJson('/pages/id:' . $this->page->getKey());
         $response->assertNoContent();
         $this->assertDeleted($this->page);
     }
 
-    public function testSortByOrder(): void
+    public function testReorderUnauthorized(): void
     {
         DB::table('pages')->delete();
         $page = Page::factory()->count(10)->create();
 
         $this->actingAs($this->user)->postJson('/pages/order', [
             'pages' => $page->pluck('id')->toArray(),
+        ])->assertForbidden();
+    }
+
+    public function testReorder(): void
+    {
+        $this->user->givePermissionTo('pages.edit');
+
+        DB::table('pages')->delete();
+        $page = Page::factory()->count(10)->create();
+
+        $ids = $page->pluck('id');
+
+        $this->actingAs($this->user)->postJson('/pages/order', [
+            'pages' => $ids->toArray(),
         ])->assertNoContent();
 
-        $response = $this->getJson('/pages');
-        $data = $response->getData()->data;
-        $response
-            ->assertOk()
-            ->assertJsonCount(10, 'data')
-            ->assertJsonFragment(
-                [
-                     'id' => $data[3]->id,
-                     'name' => $data[3]->name,
-                     'public' => $data[3]->public,
-                     'order' => 3,
-                     'slug' => $data[3]->slug,
-                ],
-            );
-
-        $this->assertDatabaseHas('pages', [
-            'id' => $data[3]->id,
-            'order' => 3,
-        ]);
-        $this->assertDatabaseHas('pages', [
-            'id' => $data[6]->id,
-            'order' => 6,
-        ]);
+        $ids->each(fn ($id, $order) => $this->assertDatabaseHas('pages', [
+            'id' => $id,
+            'order' => $order,
+        ]));
     }
 }

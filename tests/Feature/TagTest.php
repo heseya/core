@@ -13,10 +13,31 @@ class TagTest extends TestCase
 
     public function testIndexUnauthorized(): void
     {
-        $this->getJson('/tags')->assertUnauthorized();
+        $this->getJson('/tags')->assertForbidden();
     }
 
-    public function testIndex(): void
+    public function testIndexTagsShow(): void
+    {
+        $this->user->givePermissionTo('tags.show');
+
+        $this->index();
+    }
+
+    public function testIndexProductsAdd(): void
+    {
+        $this->user->givePermissionTo('products.add');
+
+        $this->index();
+    }
+
+    public function testIndexProductsEdit(): void
+    {
+        $this->user->givePermissionTo('products.edit');
+
+        $this->index();
+    }
+
+    public function index(): void
     {
         $tag = Tag::factory()->count(10)->create()->random();
 
@@ -33,10 +54,31 @@ class TagTest extends TestCase
 
     public function testCreateUnauthorized(): void
     {
-        $this->postJson('/tags')->assertUnauthorized();
+        $this->postJson('/tags')->assertForbidden();
     }
 
-    public function testCreate(): void
+    public function testCreateTagsAdd(): void
+    {
+        $this->user->givePermissionTo('tags.add');
+
+        $this->create();
+    }
+
+    public function testCreateProductsAdd(): void
+    {
+        $this->user->givePermissionTo('products.add');
+
+        $this->create();
+    }
+
+    public function testCreateProductsEdit(): void
+    {
+        $this->user->givePermissionTo('products.edit');
+
+        $this->create();
+    }
+
+    public function create(): void
     {
         $response = $this->actingAs($this->user)->postJson('/tags', [
             'name' => 'test sale',
@@ -55,11 +97,13 @@ class TagTest extends TestCase
     {
         $tag = Tag::factory()->create();
 
-        $this->patchJson('/tags/id:' . $tag->getKey())->assertUnauthorized();
+        $this->patchJson('/tags/id:' . $tag->getKey())->assertForbidden();
     }
 
     public function testUpdate(): void
     {
+        $this->user->givePermissionTo('tags.edit');
+
         $tag = Tag::factory()->create();
 
         $response = $this->actingAs($this->user)->patchJson('/tags/id:' . $tag->getKey(), [
@@ -79,11 +123,13 @@ class TagTest extends TestCase
     {
         $tag = Tag::factory()->create();
 
-        $this->deleteJson('/tags/id:' . $tag->getKey())->assertUnauthorized();
+        $this->deleteJson('/tags/id:' . $tag->getKey())->assertForbidden();
     }
 
     public function testDelete(): void
     {
+        $this->user->givePermissionTo('tags.remove');
+
         $tag = Tag::factory()->create();
 
         $response = $this->actingAs($this->user)->deleteJson('/tags/id:' . $tag->getKey());

@@ -24,11 +24,13 @@ class ProductSetUpdateTest extends TestCase
         ];
 
         $response = $this->patchJson('/product-sets/id:' . $newSet->getKey(), $set);
-        $response->assertUnauthorized();
+        $response->assertForbidden();
     }
 
     public function testUpdate(): void
     {
+        $this->user->givePermissionTo('product_sets.edit');
+
         $newSet = ProductSet::factory()->create([
             'public' => false,
             'order' => 40,
@@ -70,6 +72,8 @@ class ProductSetUpdateTest extends TestCase
 
     public function testUpdateParentSlug(): void
     {
+        $this->user->givePermissionTo('product_sets.edit');
+
         $parent = ProductSet::factory()->create([
             'name' => 'Parent',
             'slug' => 'parent',
@@ -141,6 +145,8 @@ class ProductSetUpdateTest extends TestCase
 
     public function testUpdateParentSlugTree(): void
     {
+        $this->user->givePermissionTo('product_sets.edit');
+
         $parent = ProductSet::factory()->create([
             'name' => 'Parent',
             'slug' => 'parent',

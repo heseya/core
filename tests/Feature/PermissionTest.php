@@ -17,11 +17,15 @@ class PermissionTest extends TestCase
     {
         $response = $this->getJson('/roles');
 
-        $response->assertUnauthorized();
+        $response->assertForbidden();
     }
 
     public function testIndex(): void
     {
+        $this->user->givePermissionTo('roles.show_details');
+
+        $permissionCount = Permission::count();
+
         $permission1 = Permission::create([
             'name' => 'permission1',
             'description' => 'Permission 1',
@@ -40,7 +44,7 @@ class PermissionTest extends TestCase
         $response = $this->actingAs($this->user)->getJson('/permissions');
 
         $response->assertOk()
-            ->assertJsonCount(3, 'data')
+            ->assertJsonCount($permissionCount + 3, 'data')
             ->assertJsonFragment([
                 $permission1->getKeyName() => $permission1->getKey(),
                 'name' => $permission1->name,
@@ -63,6 +67,10 @@ class PermissionTest extends TestCase
 
     public function testIndexAssignable(): void
     {
+        $this->user->givePermissionTo('roles.show_details');
+
+        $permissionCount = Permission::count();
+
         $permission1 = Permission::create([
             'name' => 'permission1',
             'description' => 'Permission 1',
@@ -76,7 +84,7 @@ class PermissionTest extends TestCase
         $response = $this->actingAs($this->user)->getJson('/permissions?assignable=1');
 
         $response->assertOk()
-            ->assertJsonCount(2, 'data')
+            ->assertJsonCount($permissionCount + 2, 'data')
             ->assertJsonFragment([
                 $permission1->getKeyName() => $permission1->getKey(),
                 'name' => $permission1->name,
@@ -93,5 +101,26 @@ class PermissionTest extends TestCase
         $this->actingAs($this->user)->getJson('/permissions?assignable=0')
             ->assertOk()
             ->assertJsonCount(0, 'data');
+    }
+
+    public function testIndexWithPermissionRolesShowDetails(): void
+    {
+        $this->user->givePermissionTo('roles.show_details');
+
+        $this->actingAs($this->user)->getJson('/permissions')->assertOk();
+    }
+
+    public function testIndexWithPermissionRolesAdd(): void
+    {
+        $this->user->givePermissionTo('roles.add');
+
+        $this->actingAs($this->user)->getJson('/permissions')->assertOk();
+    }
+
+    public function testIndexWithPermissionRolesEdit(): void
+    {
+        $this->user->givePermissionTo('roles.edit');
+
+        $this->actingAs($this->user)->getJson('/permissions')->assertOk();
     }
 }

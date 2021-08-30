@@ -34,14 +34,17 @@ class ItemTest extends TestCase
         ];
     }
 
-    public function testIndex(): void
+    public function testIndexUnauthorized(): void
     {
         $response = $this->getJson('/items');
-        $response->assertUnauthorized();
+        $response->assertForbidden();
+    }
 
-        Passport::actingAs($this->user);
+    public function testIndex(): void
+    {
+        $this->user->givePermissionTo('items.show');
 
-        $response = $this->getJson('/items');
+        $response = $this->actingAs($this->user)->getJson('/items');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -50,32 +53,39 @@ class ItemTest extends TestCase
             ]]);
     }
 
-    public function testView(): void
+    public function testViewUnauthorized(): void
     {
         $response = $this->getJson('/items/id:' . $this->item->getKey());
-        $response->assertUnauthorized();
+        $response->assertForbidden();
+    }
 
-        Passport::actingAs($this->user);
+    public function testView(): void
+    {
+        $this->user->givePermissionTo('items.show_details');
 
-        $response = $this->getJson('/items/id:' . $this->item->getKey());
+        $response = $this->actingAs($this->user)
+            ->getJson('/items/id:' . $this->item->getKey());
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
     }
 
-    public function testCreate(): void
+    public function testCreateUnauthorized(): void
     {
         $response = $this->postJson('/items');
-        $response->assertUnauthorized();
+        $response->assertForbidden();
+    }
 
-        Passport::actingAs($this->user);
+    public function testCreate(): void
+    {
+        $this->user->givePermissionTo('items.add');
 
         $item = [
             'name' => 'Test',
             'sku' => 'TES/T1',
         ];
 
-        $response = $this->postJson('/items', $item);
+        $response = $this->actingAs($this->user)->postJson('/items', $item);
         $response
             ->assertCreated()
             ->assertJson(['data' => $item]);
@@ -83,19 +93,22 @@ class ItemTest extends TestCase
         $this->assertDatabaseHas('items', $item);
     }
 
-    public function testUpdate(): void
+    public function testUpdateUnauthorized(): void
     {
         $response = $this->patchJson('/items/id:' . $this->item->getKey());
-        $response->assertUnauthorized();
+        $response->assertForbidden();
+    }
 
-        Passport::actingAs($this->user);
+    public function testUpdate(): void
+    {
+        $this->user->givePermissionTo('items.edit');
 
         $item = [
             'name' => 'Test 2',
             'sku' => 'TES/T2',
         ];
 
-        $response = $this->patchJson(
+        $response = $this->actingAs($this->user)->patchJson(
             '/items/id:' . $this->item->getKey(),
             $item,
         );
@@ -106,15 +119,19 @@ class ItemTest extends TestCase
         $this->assertDatabaseHas('items', $item + ['id' => $this->item->getKey()]);
     }
 
-    public function testDelete(): void
+    public function testDeleteUnauthorized(): void
     {
         $response = $this->deleteJson('/items/id:' . $this->item->getKey());
-        $response->assertUnauthorized();
+        $response->assertForbidden();
         $this->assertDatabaseHas('items', $this->item->toArray());
+    }
 
-        Passport::actingAs($this->user);
+    public function testDelete(): void
+    {
+        $this->user->givePermissionTo('items.remove');
 
-        $response = $this->deleteJson('/items/id:' . $this->item->getKey());
+        $response = $this->actingAs($this->user)
+            ->deleteJson('/items/id:' . $this->item->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($this->item);
     }

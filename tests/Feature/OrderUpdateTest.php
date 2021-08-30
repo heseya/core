@@ -46,11 +46,13 @@ class OrderUpdateTest extends TestCase
     public function testUpdateUnauthorized(): void
     {
         $response = $this->patchJson('/orders/id:' . $this->order->id);
-        $response->assertUnauthorized();
+        $response->assertForbidden();
     }
 
     public function testFullUpdateOrder(): void
     {
+        $this->user->givePermissionTo('orders.edit');
+
         $email = $this->faker->email();
         $comment = $this->faker->text(200);
         $address = Address::factory()->create();
@@ -109,6 +111,8 @@ class OrderUpdateTest extends TestCase
 
     public function testUpdateOrderByEmail(): void
     {
+        $this->user->givePermissionTo('orders.edit');
+
         $email = $this->faker->email();
         $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'email' => $email
@@ -142,6 +146,8 @@ class OrderUpdateTest extends TestCase
 
     public function testUpdateOrderByComment(): void
     {
+        $this->user->givePermissionTo('orders.edit');
+
         $comment = $this->faker->text(100);
         $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'comment' => $comment
@@ -175,6 +181,8 @@ class OrderUpdateTest extends TestCase
 
     public function testUpdateOrderByEmptyComment(): void
     {
+        $this->user->givePermissionTo('orders.edit');
+
         $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'comment' => ''
         ]);
@@ -194,6 +202,8 @@ class OrderUpdateTest extends TestCase
 
     public function testUpdateOrderByDeliveryAddress(): void
     {
+        $this->user->givePermissionTo('orders.edit');
+
         $this->addressDelivery = Address::factory()->create();
         $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'delivery_address' => $this->addressDelivery->toArray()
@@ -239,6 +249,8 @@ class OrderUpdateTest extends TestCase
 
     public function testUpdateOrderByMissingDeliveryAddress(): void
     {
+        $this->user->givePermissionTo('orders.edit');
+
         $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'invoice_address' => $this->addressDelivery->toArray()
         ]);
@@ -271,6 +283,8 @@ class OrderUpdateTest extends TestCase
 
     public function testUpdateOrderByEmptyDeliveryAddress(): void
     {
+        $this->user->givePermissionTo('orders.edit');
+
         $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'delivery_address' => null
         ]);
@@ -288,6 +302,8 @@ class OrderUpdateTest extends TestCase
 
     public function testUpdateOrderByInvoiceAddress(): void
     {
+        $this->user->givePermissionTo('orders.edit');
+
         $this->addressInvoice = Address::factory()->create();
         $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'invoice_address' => $this->addressInvoice->toArray()
@@ -333,6 +349,8 @@ class OrderUpdateTest extends TestCase
 
     public function testUpdateOrderByMissingInvoiceAddress(): void
     {
+        $this->user->givePermissionTo('orders.edit');
+
         $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'delivery_address' => $this->addressInvoice->toArray()
         ]);
@@ -365,6 +383,8 @@ class OrderUpdateTest extends TestCase
 
     public function testUpdateOrderByEmptyInvoiceAddress(): void
     {
+        $this->user->givePermissionTo('orders.edit');
+
         $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'invoice_address' => null
         ]);

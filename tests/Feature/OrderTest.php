@@ -66,10 +66,15 @@ class OrderTest extends TestCase
         ];
     }
 
-    public function testIndex(): void
+    public function testIndexUnauthorized(): void
     {
         $response = $this->getJson('/orders');
-        $response->assertUnauthorized();
+        $response->assertForbidden();
+    }
+
+    public function testIndex(): void
+    {
+        $this->user->givePermissionTo('orders.show');
 
         $response = $this->actingAs($this->user)->getJson('/orders');
         $response
@@ -82,45 +87,39 @@ class OrderTest extends TestCase
             ]]);
     }
 
-    public function testViewPublic(): void
+    public function testViewUnauthorized(): void
     {
-        $response = $this->getJson('/orders/' . $this->order->code);
-        $response
-            ->assertOk()
-            ->assertJsonStructure(['data' => $this->expected_structure])
-            ->assertJson(['data' => $this->expected]);
+        $response = $this->getJson('/orders/id:' . $this->order->getKey());
+        $response->assertForbidden();
     }
 
     public function testView(): void
     {
-        $response = $this->getJson('/orders/id:' . $this->order->getKey());
-        $response->assertUnauthorized();
+        $this->user->givePermissionTo('orders.show_details');
 
-        $response = $this->actingAs($this->user)->getJson('/orders/id:' . $this->order->getKey());
+        $response = $this->actingAs($this->user)
+            ->getJson('/orders/id:' . $this->order->getKey());
         $response
             ->assertOk()
             ->assertJsonFragment(['code' => $this->order->code]);
     }
 
-    public function testCantCreateOrderWithoutItems(): void
+    public function testViewSummaryUnauthorized(): void
     {
-        $shippingMethod = ShippingMethod::factory()->create();
+        $response = $this->getJson('/orders/' . $this->order->code);
+        $response->assertForbidden();
+    }
 
-        $response = $this->postJson('/orders', [
-            'email' => 'test@example.com',
-            'shipping_method_id' => $shippingMethod->getKey(),
-            'delivery_address' => [
-                'name' => 'Wojtek Testowy',
-                'phone' => '+48123321123',
-                'address' => 'Gdańska 89/1',
-                'zip' => '12-123',
-                'city' => 'Bydgoszcz',
-                'country' => 'PL',
-            ],
-            'items' => [],
-        ]);
+    public function testViewSummary(): void
+    {
+        $this->user->givePermissionTo('orders.show_summary');
 
-        $response->assertStatus(422);
+        $response = $this->actingAs($this->user)
+            ->getJson('/orders/' . $this->order->code);
+        $response
+            ->assertOk()
+            ->assertJsonStructure(['data' => $this->expected_structure])
+            ->assertJson(['data' => $this->expected]);
     }
 
     public function testUpdateOrderStatusUnauthorized(): void
@@ -133,12 +132,14 @@ class OrderTest extends TestCase
             'status_id' => $status->getKey(),
         ]);
 
-        $response->assertUnauthorized();
+        $response->assertForbidden();
         Event::assertNotDispatched(OrderStatusUpdated::class);
     }
 
     public function testUpdateOrderStatus(): void
     {
+        $this->user->givePermissionTo('orders.edit.status');
+
         Event::fake([OrderStatusUpdated::class]);
 
         $status = Status::factory()->create();

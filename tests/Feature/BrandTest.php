@@ -36,9 +36,17 @@ class BrandTest extends TestCase
         ]);
     }
 
-    public function testIndex(): void
+    public function testIndexUnauthorized(): void
     {
         $response = $this->getJson('/brands');
+        $response->assertForbidden();
+    }
+
+    public function testIndex(): void
+    {
+        $this->user->givePermissionTo('product_sets.show');
+
+        $response = $this->actingAs($this->user)->getJson('/brands');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public brands.
@@ -52,8 +60,13 @@ class BrandTest extends TestCase
             ]]);
     }
 
-    public function testIndexAuthorized(): void
+    public function testIndexHidden(): void
     {
+        $this->user->givePermissionTo([
+            'product_sets.show',
+            'product_sets.show_hidden',
+        ]);
+
         $response = $this->actingAs($this->user)->getJson('/brands');
         $response
             ->assertOk()

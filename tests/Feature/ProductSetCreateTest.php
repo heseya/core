@@ -49,11 +49,13 @@ class ProductSetCreateTest extends TestCase
         ];
 
         $response = $this->postJson('/product-sets', $set);
-        $response->assertUnauthorized();
+        $response->assertForbidden();
     }
 
     public function testCreateMinimal(): void
     {
+        $this->user->givePermissionTo('product_sets.add');
+
         $set = [
             'name' => 'Test',
         ];
@@ -74,8 +76,7 @@ class ProductSetCreateTest extends TestCase
                 'slug_override' => false,
                 'slug_suffix' => 'test',
                 'parent' => null,
-            ],
-            ]);
+            ]]);
 
         $this->assertDatabaseHas('product_sets', $set + $defaults + [
             'parent_id' => null,
@@ -84,6 +85,8 @@ class ProductSetCreateTest extends TestCase
 
     public function testCreateFull(): void
     {
+        $this->user->givePermissionTo('product_sets.add');
+
         $set = [
             'name' => 'Test',
             'public' => false,
@@ -112,6 +115,8 @@ class ProductSetCreateTest extends TestCase
 
     public function testCreateParent(): void
     {
+        $this->user->givePermissionTo('product_sets.add');
+
         $set = [
             'name' => 'Test Parent',
         ];
@@ -159,6 +164,8 @@ class ProductSetCreateTest extends TestCase
 
     public function testCreateChild(): void
     {
+        $this->user->givePermissionTo('product_sets.add');
+
         $parent = ProductSet::factory()->create([
             'public' => true,
             'public_parent' => true,
@@ -203,6 +210,8 @@ class ProductSetCreateTest extends TestCase
 
     public function testCreateOrder(): void
     {
+        $this->user->givePermissionTo('product_sets.add');
+
         ProductSet::factory()->create([
             'public' => true,
             'order' => 20,
@@ -236,6 +245,8 @@ class ProductSetCreateTest extends TestCase
 
     public function testCreateChildVisibility(): void
     {
+        $this->user->givePermissionTo('product_sets.add');
+
         $parent = ProductSet::factory()->create([
             'public' => true,
             'public_parent' => false,
@@ -272,6 +283,8 @@ class ProductSetCreateTest extends TestCase
 
     public function testCreateDuplicateSlug(): void
     {
+        $this->user->givePermissionTo('product_sets.add');
+
         ProductSet::factory()->create([
             'name' => 'Test duplicate',
             'slug' => 'test-duplicate',
@@ -287,6 +300,8 @@ class ProductSetCreateTest extends TestCase
 
     public function testCreateTreeView(): void
     {
+        $this->user->givePermissionTo('product_sets.add');
+
         $child = ProductSet::factory()->create([
             'parent_id' => 'null',
             'name' => 'Child',

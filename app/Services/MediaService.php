@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
 
 class MediaService implements MediaServiceContract
@@ -43,6 +44,10 @@ class MediaService implements MediaServiceContract
 
     public function destroy(Media $media): void
     {
+        if ($media->products()->exists()) {
+            Gate::authorize('products.edit');
+        }
+
         $media->forceDelete();
     }
 }

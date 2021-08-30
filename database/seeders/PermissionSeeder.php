@@ -49,6 +49,7 @@ class PermissionSeeder extends Seeder
         // Shipping Methods
         Permission::updateOrCreate(['name' => 'countries.show']);
         Permission::updateOrCreate(['name' => 'shipping_methods.show']);
+        Permission::updateOrCreate(['name' => 'shipping_methods.show_hidden']);
         Permission::updateOrCreate(['name' => 'shipping_methods.add']);
         Permission::updateOrCreate(['name' => 'shipping_methods.edit']);
         Permission::updateOrCreate(['name' => 'shipping_methods.remove']);
@@ -152,5 +153,8 @@ class PermissionSeeder extends Seeder
 
         Role::updateOrCreate(['name' => 'Owner'])
             ->syncPermissions(Permission::all());
+
+        Role::updateOrCreate(['name' => 'Unauthenticated'])
+            ->syncPermissions(['auth.login']);
     }
 }
