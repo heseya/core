@@ -24,7 +24,6 @@ class UserTest extends TestCase
             'name' => $this->user->name,
             'avatar' => $this->user->avatar,
             'roles' => [],
-            'permissions' => [],
         ];
     }
 
@@ -54,7 +53,6 @@ class UserTest extends TestCase
                     'name' => $otherUser->name,
                     'avatar' => $otherUser->avatar,
                     'roles' => [],
-                    'permissions' => [],
                 ],
             ]]);
     }
@@ -78,7 +76,6 @@ class UserTest extends TestCase
                     'name' => $otherUser->name,
                     'avatar' => $otherUser->avatar,
                     'roles' => [],
-                    'permissions' => [],
                 ],
                 $this->expected,
             ]]);
@@ -100,7 +97,6 @@ class UserTest extends TestCase
                 'name' => $user->name,
                 'avatar' => $user->avatar,
                 'roles' => [],
-                'permissions' => [],
             ]);
     }
 
@@ -120,7 +116,6 @@ class UserTest extends TestCase
                 'name' => $user->name,
                 'avatar' => $user->avatar,
                 'roles' => [],
-                'permissions' => [],
             ]);
     }
 
@@ -140,7 +135,6 @@ class UserTest extends TestCase
                 'name' => $user->name,
                 'avatar' => $user->avatar,
                 'roles' => [],
-                'permissions' => [],
             ]);
     }
 
@@ -160,7 +154,6 @@ class UserTest extends TestCase
                 'name' => $user->name,
                 'avatar' => $user->avatar,
                 'roles' => [],
-                'permissions' => [],
             ]);
     }
 
@@ -177,7 +170,7 @@ class UserTest extends TestCase
         $response = $this->actingAs($this->user)->getJson('/users/id:' . $this->user->getKey());
         $response
             ->assertOk()
-            ->assertJson(['data' => $this->expected]);
+            ->assertJson(['data' => $this->expected + ['permissions' => []]]);
     }
 
     public function testCreateUnauthorized(): void

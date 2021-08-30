@@ -21,7 +21,7 @@ class PayNow implements PaymentMethod
         $idempotencyKey = uniqid($orderReference . '_');
 
         $paymentData = [
-            'amount' => (int) $payment->amount * 100,
+            'amount' => (int) ($payment->amount * 100),
             'currency' => $payment->order->currency,
             'externalId' => $payment->order->code,
             'description' => 'Zakupy w sklepie internetowym.',

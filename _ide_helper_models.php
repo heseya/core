@@ -240,6 +240,7 @@ namespace App\Models{
  * @property string $schema_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int $order
  * @property-read bool $available
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Item[] $items
  * @property-read int|null $items_count
@@ -251,6 +252,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Option whereDisabled($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Option whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Option whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Option whereOrder($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Option wherePrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Option whereSchemaId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Option whereUpdatedAt($value)
@@ -508,6 +510,7 @@ namespace App\Models{
  * @mixin IdeHelperPermission
  * @property string $id
  * @property string $name
+ * @property string|null $description
  * @property string $guard_name
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -523,6 +526,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Permission query()
  * @method static \Illuminate\Database\Eloquent\Builder|Permission role($roles, $guard = null)
  * @method static \Illuminate\Database\Eloquent\Builder|Permission whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Permission whereDescription($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Permission whereGuardName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Permission whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Permission whereName($value)
@@ -691,6 +695,7 @@ namespace App\Models{
  * @mixin IdeHelperRole
  * @property string $id
  * @property string $name
+ * @property string|null $description
  * @property string $guard_name
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -703,7 +708,9 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Role newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Role permission($permissions)
  * @method static \Illuminate\Database\Eloquent\Builder|Role query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Role search(array $params = [])
  * @method static \Illuminate\Database\Eloquent\Builder|Role whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Role whereDescription($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Role whereGuardName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Role whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Role whereName($value)
@@ -917,13 +924,19 @@ namespace App\Models{
  * @property-read string $avatar
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection|\Illuminate\Notifications\DatabaseNotification[] $notifications
  * @property-read int|null $notifications_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Permission[] $permissions
+ * @property-read int|null $permissions_count
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Role[] $roles
+ * @property-read int|null $roles_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\Laravel\Passport\Token[] $tokens
  * @property-read int|null $tokens_count
  * @method static \Database\Factories\UserFactory factory(...$parameters)
  * @method static \Illuminate\Database\Eloquent\Builder|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|User newQuery()
  * @method static \Illuminate\Database\Query\Builder|User onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|User permission($permissions)
  * @method static \Illuminate\Database\Eloquent\Builder|User query()
+ * @method static \Illuminate\Database\Eloquent\Builder|User role($roles, $guard = null)
  * @method static \Illuminate\Database\Eloquent\Builder|User search(array $params = [])
  * @method static \Illuminate\Database\Eloquent\Builder|User sort(?string $sortString = null)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedAt($value)

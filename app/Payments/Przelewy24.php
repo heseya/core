@@ -17,7 +17,7 @@ class Przelewy24 implements PaymentMethod
         $fields = [
             'sessionId' => (string) $payment->id,
             'merchantId' => (int) config('przelewy24.merchant_id'),
-            'amount' => (int) $payment->amount * 100,
+            'amount' => (int) ($payment->amount * 100),
             'currency' => (string) $payment->order->currency,
             'crc' => (string) config('przelewy24.crc'),
         ];
@@ -61,7 +61,7 @@ class Przelewy24 implements PaymentMethod
 
         $payment = Payment::find($request->sesionId)->with('order');
 
-        $amount = (int) $payment->amount * 100;
+        $amount = (int) ($payment->amount * 100);
 
         $validated = $request->validate([
             'merchantId' => 'required|integer|in:' . config('przelewy24.merchant_id'),
