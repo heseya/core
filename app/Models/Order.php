@@ -16,15 +16,17 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @OA\Schema ()
  *
  * @mixin IdeHelperOrder
  */
-class Order extends Model
+class Order extends Model implements AuditableContract
 {
-    use HasFactory, Searchable, Sortable, Notifiable;
+    use HasFactory, Searchable, Sortable, Notifiable, Auditable;
 
     /**
      * @OA\Property(
@@ -70,6 +72,19 @@ class Order extends Model
         'delivery_address_id',
         'invoice_address_id',
         'created_at',
+    ];
+
+    protected $auditInclude = [
+        'code',
+        'email',
+        'currency',
+        'comment',
+        'status_id',
+        'shipping_method_id',
+        'shipping_price',
+        'shipping_number',
+        'delivery_address_id',
+        'invoice_address_id',
     ];
 
     protected $casts = [
@@ -126,13 +141,17 @@ class Order extends Model
 
     /**
      * @OA\Property(
-     *   property="payed",
-     *   type="boolean",
+     *   property="payments",
+     *   type="array",
+     *   @OA\Items(ref="#/components/schemas/Payment"),
      * )
      */
-    public function isPayed(): bool
+    public function payments(): HasMany
     {
-        return $this->summary === $this->payedAmount;
+        return $this
+            ->hasMany(Payment::class)
+            ->orderBy('payed', 'DESC')
+            ->orderBy('updated_at', 'DESC');
     }
 
     /**
@@ -146,6 +165,17 @@ class Order extends Model
         return !$this->isPayed() &&
             !$this->status->cancel &&
             $this->shippingMethod->paymentMethods()->count() > 0;
+    }
+
+    /**
+     * @OA\Property(
+     *   property="payed",
+     *   type="boolean",
+     * )
+     */
+    public function isPayed(): bool
+    {
+        return $this->summary === $this->payedAmount;
     }
 
     /**
@@ -192,33 +222,6 @@ class Order extends Model
         return $this->hasOne(Address::class, 'id', 'invoice_address_id');
     }
 
-    /**
-     * @OA\Property(
-     *   property="products",
-     *   type="array",
-     *   @OA\Items(ref="#/components/schemas/OrderProduct"),
-     * )
-     */
-    public function products(): HasMany
-    {
-        return $this->hasMany(OrderProduct::class);
-    }
-
-    /**
-     * @OA\Property(
-     *   property="payments",
-     *   type="array",
-     *   @OA\Items(ref="#/components/schemas/Payment"),
-     * )
-     */
-    public function payments(): HasMany
-    {
-        return $this
-            ->hasMany(Payment::class)
-            ->orderBy('payed', 'DESC')
-            ->orderBy('updated_at', 'DESC');
-    }
-
     public function deposits(): HasManyThrough
     {
         return $this->hasManyThrough(Deposit::class, OrderProduct::class);
@@ -240,6 +243,18 @@ class Order extends Model
             $item = OrderProduct::create($item);
             $this->products()->save($item);
         }
+    }
+
+    /**
+     * @OA\Property(
+     *   property="products",
+     *   type="array",
+     *   @OA\Items(ref="#/components/schemas/OrderProduct"),
+     * )
+     */
+    public function products(): HasMany
+    {
+        return $this->hasMany(OrderProduct::class);
     }
 
     public function generateCode(): string

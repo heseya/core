@@ -9,15 +9,17 @@ use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @OA\Schema ()
  *
  * @mixin IdeHelperDiscount
  */
-class Discount extends Model
+class Discount extends Model implements AuditableContract
 {
-    use HasFactory, Searchable, SoftDeletes;
+    use HasFactory, Searchable, SoftDeletes, Auditable;
 
     /**
      * @OA\Property(
@@ -94,13 +96,13 @@ class Discount extends Model
         return $this->orders()->count();
     }
 
-    public function getAvailableAttribute(): bool
-    {
-        return $this->max_uses > $this->uses;
-    }
-
     public function orders(): BelongsToMany
     {
         return $this->belongsToMany(Order::class, 'order_discounts');
+    }
+
+    public function getAvailableAttribute(): bool
+    {
+        return $this->max_uses > $this->uses;
     }
 }

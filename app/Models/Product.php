@@ -12,13 +12,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @mixin IdeHelperProduct
  */
-class Product extends Model
+class Product extends Model implements AuditableContract
 {
-    use HasFactory, SoftDeletes, Searchable, Sortable;
+    use HasFactory, SoftDeletes, Searchable, Sortable, Auditable;
 
     protected $fillable = [
         'name',
@@ -68,11 +70,6 @@ class Product extends Model
             ->orderByPivot('order');
     }
 
-    public function sets(): BelongsToMany
-    {
-        return $this->belongsToMany(ProductSet::class, 'product_set_product');
-    }
-
     public function brand(): BelongsTo
     {
         return $this->belongsTo(ProductSet::class, 'brand_id');
@@ -81,13 +78,6 @@ class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(ProductSet::class, 'category_id');
-    }
-
-    public function schemas(): BelongsToMany
-    {
-        return $this
-            ->belongsToMany(Schema::class, 'product_schemas')
-            ->orderByPivot('order');
     }
 
     public function orders(): BelongsToMany
@@ -123,6 +113,13 @@ class Product extends Model
         return true;
     }
 
+    public function schemas(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(Schema::class, 'product_schemas')
+            ->orderByPivot('order');
+    }
+
     public function isPublic(): bool
     {
         $isBrandPublic = !$this->brand || $this->brand->public && $this->brand->public_parent;
@@ -133,6 +130,11 @@ class Product extends Model
             $this->sets()->where('public', true)->where('public_parent', true);
 
         return $this->public && $isBrandPublic && $isCategoryPublic && $isAnySetPublic;
+    }
+
+    public function sets(): BelongsToMany
+    {
+        return $this->belongsToMany(ProductSet::class, 'product_set_product');
     }
 
     public function scopePublic($query): Builder

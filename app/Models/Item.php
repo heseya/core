@@ -9,15 +9,17 @@ use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @OA\Schema ()
  *
  * @mixin IdeHelperItem
  */
-class Item extends Model
+class Item extends Model implements AuditableContract
 {
-    use SoftDeletes, HasFactory, Searchable, Sortable;
+    use SoftDeletes, HasFactory, Searchable, Sortable, Auditable;
 
     /**
      * @OA\Property(

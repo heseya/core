@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -27,7 +29,8 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Model implements
     AuthenticatableContract,
     AuthorizableContract,
-    CanResetPasswordContract
+    CanResetPasswordContract,
+    AuditableContract
 {
     use HasApiTokens,
         Notifiable,
@@ -39,7 +42,8 @@ class User extends Model implements
         HasRoles,
         SoftDeletes,
         Searchable,
-        Sortable;
+        Sortable,
+        Auditable;
 
     /**
      * @OA\Property(

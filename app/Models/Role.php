@@ -8,14 +8,16 @@ use App\Traits\HasUuid;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use Spatie\Permission\Models\Role as SpatieRole;
 
 /**
  * @mixin IdeHelperRole
  */
-class Role extends SpatieRole
+class Role extends SpatieRole implements AuditableContract
 {
-    use Searchable, HasUuid, HasFactory;
+    use Searchable, HasUuid, HasFactory, Auditable;
 
     protected $fillable = [
         'name',

@@ -180,6 +180,7 @@ return [
         Parsedown\Providers\ParsedownServiceProvider::class,
         Jenssegers\Agent\AgentServiceProvider::class,
         Spatie\Permission\PermissionServiceProvider::class,
+        OwenIt\Auditing\AuditingServiceProvider::class,
 
         /*
          * Application Service Providers...
