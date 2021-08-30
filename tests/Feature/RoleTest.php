@@ -140,36 +140,46 @@ class RoleTest extends TestCase
     {
         $this->user->givePermissionTo('roles.show');
 
-        $role1 = Role::create([
+        $roleNoPermissions = Role::create([
             'name' => 'role1',
             'description' => 'Role 1',
         ]);
 
-        $role2 = Role::create([
+        $roleHasPermissions = Role::create([
             'name' => 'role2',
             'description' => 'Role 2',
         ]);
+        $roleHasPermissions->givePermissionTo('roles.show');
+
+        $roleHasSomePermissions = Role::create([
+            'name' => 'role3',
+            'description' => 'Role 3',
+        ]);
+        $roleHasSomePermissions->givePermissionTo('roles.show');
+        $roleHasSomePermissions->givePermissionTo('roles.add');
+
+        $roleHasNoPermissions = Role::create([
+            'name' => 'role4',
+            'description' => 'Role 4',
+        ]);
+        $roleHasNoPermissions->givePermissionTo('roles.add');
 
         $response = $this->actingAs($this->user)->getJson('/roles?assignable=1');
 
         $response->assertOk()
             ->assertJsonCount(2, 'data')
             ->assertJsonFragment([
-                $role1->getKeyName() => $role1->getKey(),
-                'name' => $role1->name,
-                'description' => $role1->description,
+                $roleNoPermissions->getKeyName() => $roleNoPermissions->getKey(),
+                'name' => $roleNoPermissions->name,
+                'description' => $roleNoPermissions->description,
                 'assignable' => true,
             ])
             ->assertJsonFragment([
-                $role2->getKeyName() => $role2->getKey(),
-                'name' => $role2->name,
-                'description' => $role2->description,
+                $roleHasPermissions->getKeyName() => $roleHasPermissions->getKey(),
+                'name' => $roleHasPermissions->name,
+                'description' => $roleHasPermissions->description,
                 'assignable' => true,
             ]);
-
-        $this->actingAs($this->user)->getJson('/roles?assignable=0')
-            ->assertOk()
-            ->assertJsonCount(0, 'data');
     }
 
     public function testIndexSearch(): void

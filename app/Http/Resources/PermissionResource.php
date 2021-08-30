@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Http\Resources\Swagger\PermissionResourceSwagger;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PermissionResource extends Resource implements PermissionResourceSwagger
 {
@@ -13,7 +14,7 @@ class PermissionResource extends Resource implements PermissionResourceSwagger
             'id' => $this->getKey(),
             'name' => $this->name,
             'description' => $this->description,
-            'assignable' => true,
+            'assignable' => Auth::user()->can($this->name),
         ];
     }
 }

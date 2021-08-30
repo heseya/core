@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Http\Resources\Swagger\RoleResourceSwagger;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class RoleResource extends Resource implements RoleResourceSwagger
 {
@@ -13,7 +14,9 @@ class RoleResource extends Resource implements RoleResourceSwagger
             'id' => $this->getKey(),
             'name' => $this->name,
             'description' => $this->description,
-            'assignable' => true,
+            'assignable' => Auth::user()->hasAllPermissions(
+                $this->getAllPermissions(),
+            ),
         ];
     }
 
