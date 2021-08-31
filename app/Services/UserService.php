@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Exceptions\AuthException;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\UserServiceContract;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class UserService implements UserServiceContract
@@ -19,13 +21,24 @@ class UserService implements UserServiceContract
 
     public function create(string $name, string $email, string $password, array $roles): User
     {
+        $roleModels = Role::findMany($roles);
+
+        $permissions = $roleModels->flatMap(
+            fn ($role) => $role->getPermissionNames(),
+        )->unique();
+
+        if (!Auth::user()->hasAllPermissions($permissions)) {
+            throw new AuthException(
+                'Can\'t give a role with permissions you don\'t have to the user',
+            );
+        }
+
         $user = User::create([
             'name' => $name,
             'email' => $email,
             'password' => Hash::make($password),
         ]);
 
-        $roleModels = Role::findMany($roles);
         $user->syncRoles($roleModels);
 
         return $user;
@@ -33,17 +46,28 @@ class UserService implements UserServiceContract
 
     public function update(User $user, ?string $name, ?string $email, ?array $roles): User
     {
+        if ($roles !== null) {
+            $roleModels = Role::findMany($roles);
+
+            $permissions = $roleModels->flatMap(
+                fn ($role) => $role->getPermissionNames(),
+            )->unique();
+
+            if (!Auth::user()->hasAllPermissions($permissions)) {
+                throw new AuthException(
+                    'Can\'t give a role with permissions you don\'t have to the user',
+                );
+            }
+
+            $user->syncRoles($roleModels);
+        }
+
         $user->update(
             [
                 'name' => $name ?? $user->name,
                 'email' => $email ?? $user->email,
             ]
         );
-
-        if ($roles !== null) {
-            $roleModels = Role::findMany($roles);
-            $user->syncRoles($roleModels);
-        }
 
         return $user;
     }

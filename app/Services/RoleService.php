@@ -20,14 +20,13 @@ class RoleService implements RoleServiceContract
 
     public function create(RoleCreateDto $dto): Role
     {
-        $role = Role::create($dto->toArray());
-
         if (!Auth::user()->hasAllPermissions($dto->getPermissions())) {
             throw new AuthException(
                 'Cant create a role with permissions you don\'t have',
             );
         }
 
+        $role = Role::create($dto->toArray());
         $role->syncPermissions($dto->getPermissions());
 
         return $role;
@@ -66,6 +65,4 @@ class RoleService implements RoleServiceContract
 
         $role->delete();
     }
-
-
 }
