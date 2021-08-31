@@ -21,7 +21,7 @@ class AuditTest extends TestCase
 
         $this
             ->json('GET', '/audits/products/id:' . $product->getKey())
-            ->assertUnauthorized();
+            ->assertForbidden();
     }
 
     private function createProduct(): Product
@@ -39,6 +39,8 @@ class AuditTest extends TestCase
 
     public function testView(): void
     {
+        $this->user->givePermissionTo('audits.show');
+
         $product =  $this->createProduct();
 
         $this
@@ -51,6 +53,8 @@ class AuditTest extends TestCase
 
     public function testViewNotAuditable(): void
     {
+        $this->user->givePermissionTo('audits.show');
+
         $tag = Tag::factory()->create();
         $tag->update(['name' => 'test']);
 

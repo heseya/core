@@ -77,6 +77,7 @@ namespace App\Models{
 /**
  * App\Models\Audit
  *
+ * @mixin IdeHelperAudit
  * @property string $id
  * @property string|null $user_type
  * @property string|null $user_id
@@ -110,7 +111,6 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Audit whereUserAgent($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Audit whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Audit whereUserType($value)
- * @mixin \Eloquent
  */
 	class IdeHelperAudit extends \Eloquent {}
 }
