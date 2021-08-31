@@ -309,7 +309,8 @@ Route::prefix('options')->group(function (): void {
 });
 
 Route::prefix('audits')->group(function (): void {
-    Route::get('{class}/id:{id}', [AuditController::class, 'index']);
+    Route::get('{class}/id:{id}', [AuditController::class, 'index'])
+        ->middleware('can:audits.show');
 });
 
 // External
