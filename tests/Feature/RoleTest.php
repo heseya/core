@@ -38,18 +38,18 @@ class RoleTest extends TestCase
 
         $response->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
+            ->assertJsonFragment([[
                 $role1->getKeyName() => $role1->getKey(),
                 'name' => $role1->name,
                 'description' => $role1->description,
                 'assignable' => true,
-            ])
-            ->assertJsonFragment([
+            ]])
+            ->assertJsonFragment([[
                 $role2->getKeyName() => $role2->getKey(),
                 'name' => $role2->name,
                 'description' => $role2->description,
                 'assignable' => true,
-            ]);
+            ]]);
     }
 
     public function testIndexSearchByName(): void
@@ -80,18 +80,18 @@ class RoleTest extends TestCase
 
         $response->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
+            ->assertJsonFragment([[
                 $role1->getKeyName() => $role1->getKey(),
                 'name' => $role1->name,
                 'description' => $role1->description,
                 'assignable' => true,
-            ])
-            ->assertJsonFragment([
+            ]])
+            ->assertJsonFragment([[
                 $role2->getKeyName() => $role2->getKey(),
                 'name' => $role2->name,
                 'description' => $role2->description,
                 'assignable' => true,
-            ]);
+            ]]);
     }
 
     public function testIndexSearchByDescription(): void
@@ -122,54 +122,110 @@ class RoleTest extends TestCase
 
         $response->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
+            ->assertJsonFragment([[
                 $role1->getKeyName() => $role1->getKey(),
                 'name' => $role1->name,
                 'description' => $role1->description,
                 'assignable' => true,
-            ])
-            ->assertJsonFragment([
+            ]])
+            ->assertJsonFragment([[
                 $role2->getKeyName() => $role2->getKey(),
                 'name' => $role2->name,
                 'description' => $role2->description,
                 'assignable' => true,
-            ]);
+            ]]);
     }
 
     public function testIndexSearchByAssignable(): void
     {
         $this->user->givePermissionTo('roles.show');
 
-        $role1 = Role::create([
+        $roleNoPermissions = Role::create([
             'name' => 'role1',
             'description' => 'Role 1',
         ]);
 
-        $role2 = Role::create([
+        $roleHasPermissions = Role::create([
             'name' => 'role2',
             'description' => 'Role 2',
         ]);
+        $roleHasPermissions->givePermissionTo('roles.show');
+
+        $roleHasSomePermissions = Role::create([
+            'name' => 'role3',
+            'description' => 'Role 3',
+        ]);
+        $roleHasSomePermissions->givePermissionTo('roles.show');
+        $roleHasSomePermissions->givePermissionTo('roles.add');
+
+        $roleHasNoPermissions = Role::create([
+            'name' => 'role4',
+            'description' => 'Role 4',
+        ]);
+        $roleHasNoPermissions->givePermissionTo('roles.add');
 
         $response = $this->actingAs($this->user)->getJson('/roles?assignable=1');
 
         $response->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
-                $role1->getKeyName() => $role1->getKey(),
-                'name' => $role1->name,
-                'description' => $role1->description,
+            ->assertJsonFragment([[
+                $roleNoPermissions->getKeyName() => $roleNoPermissions->getKey(),
+                'name' => $roleNoPermissions->name,
+                'description' => $roleNoPermissions->description,
                 'assignable' => true,
-            ])
-            ->assertJsonFragment([
-                $role2->getKeyName() => $role2->getKey(),
-                'name' => $role2->name,
-                'description' => $role2->description,
+            ]])
+            ->assertJsonFragment([[
+                $roleHasPermissions->getKeyName() => $roleHasPermissions->getKey(),
+                'name' => $roleHasPermissions->name,
+                'description' => $roleHasPermissions->description,
                 'assignable' => true,
-            ]);
+            ]]);
+    }
 
-        $this->actingAs($this->user)->getJson('/roles?assignable=0')
-            ->assertOk()
-            ->assertJsonCount(0, 'data');
+    public function testIndexSearchByUnassignable(): void
+    {
+        $this->user->givePermissionTo('roles.show');
+
+        Role::create([
+            'name' => 'role1',
+            'description' => 'Role 1',
+        ]);
+
+        $roleHasPermissions = Role::create([
+            'name' => 'role2',
+            'description' => 'Role 2',
+        ]);
+        $roleHasPermissions->givePermissionTo('roles.show');
+
+        $roleHasSomePermissions = Role::create([
+            'name' => 'role3',
+            'description' => 'Role 3',
+        ]);
+        $roleHasSomePermissions->givePermissionTo('roles.show');
+        $roleHasSomePermissions->givePermissionTo('roles.add');
+
+        $roleHasNoPermissions = Role::create([
+            'name' => 'role4',
+            'description' => 'Role 4',
+        ]);
+        $roleHasNoPermissions->givePermissionTo('roles.add');
+
+        $response = $this->actingAs($this->user)->getJson('/roles?assignable=0');
+
+        $response->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([[
+                $roleHasSomePermissions->getKeyName() => $roleHasSomePermissions->getKey(),
+                'name' => $roleHasSomePermissions->name,
+                'description' => $roleHasSomePermissions->description,
+                'assignable' => false,
+            ]])
+            ->assertJsonFragment([[
+                $roleHasNoPermissions->getKeyName() => $roleHasNoPermissions->getKey(),
+                'name' => $roleHasNoPermissions->name,
+                'description' => $roleHasNoPermissions->description,
+                'assignable' => false,
+            ]]);
     }
 
     public function testIndexSearch(): void
@@ -200,18 +256,18 @@ class RoleTest extends TestCase
 
         $response->assertOk()
             ->assertJsonCount(2, 'data')
-            ->assertJsonFragment([
+            ->assertJsonFragment([[
                 $role1->getKeyName() => $role1->getKey(),
                 'name' => $role1->name,
                 'description' => $role1->description,
                 'assignable' => true,
-            ])
-            ->assertJsonFragment([
+            ]])
+            ->assertJsonFragment([[
                 $role2->getKeyName() => $role2->getKey(),
                 'name' => $role2->name,
                 'description' => $role2->description,
                 'assignable' => true,
-            ]);
+            ]]);
     }
 
     public function testShowUnauthorized(): void
@@ -259,6 +315,36 @@ class RoleTest extends TestCase
         $permission1 = Permission::create(['name' => 'test.custom1']);
         $permission2 = Permission::create(['name' => 'test.custom2']);
         $role->syncPermissions([$permission1, $permission2]);
+        $this->user->givePermissionTo([$permission1]);
+
+        $response = $this->actingAs($this->user)->getJson('/roles/id:' . $role->getKey());
+
+        $response->assertOk()
+            ->assertJson(['data' => [
+                $role->getKeyName() => $role->getKey(),
+                'name' => $role->name,
+                'description' => $role->description,
+                'assignable' => false,
+                'permissions' => [
+                    'test.custom1',
+                    'test.custom2',
+                ],
+            ]]);
+    }
+
+    public function testShowPermissionsAssignable(): void
+    {
+        $this->user->givePermissionTo('roles.show_details');
+
+        $role = Role::create([
+            'name' => 'role1',
+            'description' => 'Role 1',
+        ]);
+
+        $permission1 = Permission::create(['name' => 'test.custom1']);
+        $permission2 = Permission::create(['name' => 'test.custom2']);
+        $role->syncPermissions([$permission1, $permission2]);
+        $this->user->givePermissionTo([$permission1, $permission2]);
 
         $response = $this->actingAs($this->user)->getJson('/roles/id:' . $role->getKey());
 
@@ -292,12 +378,36 @@ class RoleTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testCreate(): void
+    public function testCreateMissingPermisions(): void
     {
         $this->user->givePermissionTo('roles.add');
 
         Permission::create(['name' => 'test.custom1']);
         Permission::create(['name' => 'test.custom2']);
+
+        $response = $this->actingAs($this->user)->postJson('/roles', [
+            'name' => 'test_role',
+            'description' => 'Test role',
+            'permissions' => [
+                'test.custom1',
+                'test.custom2',
+            ],
+        ]);
+
+        $response->assertStatus(422);
+
+        $this->assertDatabaseMissing('roles', [
+            'name' => 'test_role',
+        ]);
+    }
+
+    public function testCreate(): void
+    {
+        $this->user->givePermissionTo('roles.add');
+
+        $permission1 = Permission::create(['name' => 'test.custom1']);
+        $permission2 = Permission::create(['name' => 'test.custom2']);
+        $this->user->givePermissionTo([$permission1, $permission2]);
 
         $response = $this->actingAs($this->user)->postJson('/roles', [
             'name' => 'test_role',
@@ -349,7 +459,36 @@ class RoleTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testUpdate(): void
+    public function testUpdateMissingPermissions(): void
+    {
+        $this->user->givePermissionTo('roles.edit');
+
+        $role = Role::create([
+            'name' => 'role1',
+            'description' => 'Role 1',
+        ]);
+
+        $permission1 = Permission::create(['name' => 'test.custom1']);
+        $permission2 = Permission::create(['name' => 'test.custom2']);
+        $permission3 = Permission::create(['name' => 'test.custom3']);
+        $role->syncPermissions([$permission1, $permission2]);
+        $this->user->givePermissionTo([$permission2, $permission3]);
+
+        $response = $this->actingAs($this->user)->patchJson('/roles/id:' . $role->getKey(), [
+            'name' => 'test_role',
+            'description' => 'Test role',
+            'permissions' => [
+                'test.custom2',
+                'test.custom3',
+            ],
+        ]);
+
+        $response->assertStatus(422);
+        $this->assertTrue($role->hasPermissionTo('test.custom1'));
+        $this->assertTrue($role->hasPermissionTo('test.custom2'));
+    }
+
+    public function testUpdateWithMissingPermissions(): void
     {
         $this->user->givePermissionTo('roles.edit');
 
@@ -362,6 +501,36 @@ class RoleTest extends TestCase
         $permission2 = Permission::create(['name' => 'test.custom2']);
         Permission::create(['name' => 'test.custom3']);
         $role->syncPermissions([$permission1, $permission2]);
+        $this->user->givePermissionTo([$permission1, $permission2]);
+
+        $response = $this->actingAs($this->user)->patchJson('/roles/id:' . $role->getKey(), [
+            'name' => 'test_role',
+            'description' => 'Test role',
+            'permissions' => [
+                'test.custom2',
+                'test.custom3',
+            ],
+        ]);
+
+        $response->assertStatus(422);
+        $this->assertTrue($role->hasPermissionTo('test.custom1'));
+        $this->assertTrue($role->hasPermissionTo('test.custom2'));
+    }
+
+    public function testUpdate(): void
+    {
+        $this->user->givePermissionTo('roles.edit');
+
+        $role = Role::create([
+            'name' => 'role1',
+            'description' => 'Role 1',
+        ]);
+
+        $permission1 = Permission::create(['name' => 'test.custom1']);
+        $permission2 = Permission::create(['name' => 'test.custom2']);
+        $permission3 = Permission::create(['name' => 'test.custom3']);
+        $role->syncPermissions([$permission1, $permission2]);
+        $this->user->givePermissionTo([$permission1, $permission2, $permission3]);
 
         $response = $this->actingAs($this->user)->patchJson('/roles/id:' . $role->getKey(), [
             'name' => 'test_role',
@@ -423,7 +592,7 @@ class RoleTest extends TestCase
         ]);
     }
 
-    public function testDeletePermissions(): void
+    public function testDeleteMissingPermissions(): void
     {
         $this->user->givePermissionTo('roles.remove');
 
@@ -436,7 +605,41 @@ class RoleTest extends TestCase
         $permission2 = Permission::create(['name' => 'test.custom2']);
         $role->syncPermissions([$permission1, $permission2]);
 
-        $response = $this->actingAs($this->user)->deleteJson('/roles/id:' . $role->getKey());
+        $response = $this->actingAs($this->user)
+            ->deleteJson('/roles/id:' . $role->getKey());
+        $response->assertStatus(422);
+
+        $this->assertDatabaseHas('roles', [
+            $role->getKeyName() => $role->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('role_has_permissions', [
+            'role_id' => $role->getKey(),
+            'permission_id' => $permission1->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('role_has_permissions', [
+            'role_id' => $role->getKey(),
+            'permission_id' => $permission2->getKey(),
+        ]);
+    }
+
+    public function testDeleteOwnedPermissions(): void
+    {
+        $this->user->givePermissionTo('roles.remove');
+
+        $role = Role::create([
+            'name' => 'role1',
+            'description' => 'Role 1',
+        ]);
+
+        $permission1 = Permission::create(['name' => 'test.custom1']);
+        $permission2 = Permission::create(['name' => 'test.custom2']);
+        $role->syncPermissions([$permission1, $permission2]);
+        $this->user->givePermissionTo([$permission1, $permission2]);
+
+        $response = $this->actingAs($this->user)
+            ->deleteJson('/roles/id:' . $role->getKey());
         $response->assertNoContent();
 
         $this->assertDatabaseMissing('roles', [

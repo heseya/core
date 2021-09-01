@@ -6,7 +6,7 @@ use Heseya\Searchable\Searches\Search;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
-class RoleAssignableSearch extends Search
+class PermissionSearch extends Search
 {
     public function query(Builder $query): Builder
     {
@@ -14,15 +14,9 @@ class RoleAssignableSearch extends Search
             ->map(fn ($perm) => $perm->getKey())->toArray();
 
         if ($this->value === true) {
-            $query->whereDoesntHave(
-                'permissions',
-                fn (Builder $sub) => $sub->whereNotIn('id', $permissions),
-            );
+            $query->whereIn('id', $permissions);
         } elseif ($this->value === false) {
-            $query->whereHas(
-                'permissions',
-                fn (Builder $sub) => $sub->whereNotIn('id', $permissions),
-            );
+            $query->whereNotIn('id', $permissions);
         }
 
         return $query;

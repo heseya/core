@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\SearchTypes\PermissionSearch;
 use App\Traits\HasUuid;
+use Heseya\Searchable\Traits\Searchable;
 use Spatie\Permission\Models\Permission as SpatiePermission;
 
 /**
@@ -10,11 +12,15 @@ use Spatie\Permission\Models\Permission as SpatiePermission;
  */
 class Permission extends SpatiePermission
 {
-    use HasUuid;
+    use Searchable, HasUuid;
 
     protected $fillable = [
         'name',
         'description',
         'guard_name',
+    ];
+
+    protected array $searchable = [
+        'assignable' => PermissionSearch::class,
     ];
 }

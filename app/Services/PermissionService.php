@@ -10,8 +10,10 @@ class PermissionService implements PermissionServiceContract
 {
     public function getAll(?bool $assignable): Collection
     {
-        if ($assignable === false) {
-            return Permission::whereIn('name', [])->get();
+        if ($assignable !== null) {
+            return Permission::search([
+                'assignable' => $assignable,
+            ])->get();
         }
 
         return Permission::all();
