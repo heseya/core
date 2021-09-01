@@ -46,8 +46,6 @@ class Product extends Model implements AuditableContract
         'name' => Like::class,
         'slug' => Like::class,
         'public',
-        'brand' => WhereHasSlug::class,
-        'category' => WhereHasSlug::class,
         'search' => ProductSearch::class,
     ];
 
