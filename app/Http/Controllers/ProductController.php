@@ -71,7 +71,7 @@ class ProductController extends Controller implements ProductControllerSwagger
         }
 
         if (!$request->hasAny(['sets', 'search', 'name', 'slug', 'public'])) {
-            $query->whereDoesntHave('sets', function (Builder $query) use ($request) {
+            $query->whereDoesntHave('sets', function (Builder $query) {
                 return $query->where('hide_on_index', true);
             });
         }
