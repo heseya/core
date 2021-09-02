@@ -646,19 +646,18 @@ namespace App\Models{
  * @property float $price
  * @property string|null $brand_id
  * @property string|null $category_id
- * @property string|null $description_md
  * @property bool $public
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property float $quantity_step
  * @property int $order
+ * @property string|null $description_html
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Audit[] $audits
  * @property-read int|null $audits_count
  * @property-read \App\Models\ProductSet|null $brand
  * @property-read \App\Models\ProductSet|null $category
  * @property-read bool $available
- * @property-read string $description_html
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Media[] $media
  * @property-read int|null $media_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Order[] $orders
@@ -681,7 +680,7 @@ namespace App\Models{
  * @method static Builder|Product whereCategoryId($value)
  * @method static Builder|Product whereCreatedAt($value)
  * @method static Builder|Product whereDeletedAt($value)
- * @method static Builder|Product whereDescriptionMd($value)
+ * @method static Builder|Product whereDescriptionHtml($value)
  * @method static Builder|Product whereId($value)
  * @method static Builder|Product whereName($value)
  * @method static Builder|Product whereOrder($value)

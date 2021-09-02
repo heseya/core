@@ -26,7 +26,7 @@ class Product extends Model implements AuditableContract
         'name',
         'slug',
         'price',
-        'description_md',
+        'description_html',
         'public',
         'brand_id',
         'category_id',
@@ -90,11 +90,6 @@ class Product extends Model implements AuditableContract
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'product_tags');
-    }
-
-    public function getDescriptionHtmlAttribute(): string
-    {
-        return parsedown(strip_tags($this->description_md));
     }
 
     public function getAvailableAttribute(): bool
