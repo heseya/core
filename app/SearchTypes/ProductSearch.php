@@ -13,7 +13,17 @@ class ProductSearch extends Search
             $query->where('id', 'LIKE', '%' . $this->value . '%')
                 ->orWhere('slug', 'LIKE', '%' . $this->value . '%')
                 ->orWhere('name', 'LIKE', '%' . $this->value . '%')
-                ->orWhere('description_html', 'LIKE', '%' . $this->value . '%');
+                ->orWhere('description_html', 'LIKE', '%' . $this->value . '%')
+                ->orWhereHas('brand', function (Builder $query): void {
+                    $query
+                        ->where('name', 'LIKE', '%' . $this->value . '%')
+                        ->orWhere('slug', 'LIKE', '%' . $this->value . '%');
+                })
+                ->orWhereHas('category', function (Builder $query): void {
+                    $query
+                        ->where('name', 'LIKE', '%' . $this->value . '%')
+                        ->orWhere('slug', 'LIKE', '%' . $this->value . '%');
+                });
         });
     }
 }
