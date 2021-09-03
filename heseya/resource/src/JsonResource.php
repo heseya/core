@@ -14,9 +14,11 @@ class JsonResource extends \Illuminate\Http\Resources\Json\JsonResource
      */
     public static function collection(mixed $resource)
     {
-        return tap(new ResourceCollection($resource, static::class), function ($collection) {
-            if (property_exists(static::class, 'preserveKeys')) {
-                $collection->preserveKeys = (new static([]))->preserveKeys === true;
+        $class = get_called_class();
+
+        return tap(new ResourceCollection($resource, $class), function ($collection) use ($class) {
+            if (property_exists($class, 'preserveKeys')) {
+                $collection->preserveKeys = (new $class)->preserveKeys === true;
             }
         });
     }
