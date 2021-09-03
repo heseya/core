@@ -71,6 +71,8 @@ Route::prefix('orders')->group(function (): void {
         ->middleware('can:orders.edit');
     Route::get('{order:code}', 'OrderController@showPublic')
         ->middleware('can:orders.show_summary');
+    Route::post('{order:code}/pay/offline', 'PaymentController@offlinePayment')
+        ->middleware('can:payments.offline');
     Route::post('{order:code}/pay/{method}', 'PaymentController@store')
         ->middleware('can:payments.add');
 });

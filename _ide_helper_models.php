@@ -575,6 +575,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Permission permission($permissions)
  * @method static \Illuminate\Database\Eloquent\Builder|Permission query()
  * @method static \Illuminate\Database\Eloquent\Builder|Permission role($roles, $guard = null)
+ * @method static \Illuminate\Database\Eloquent\Builder|Permission search(array $params = [])
  * @method static \Illuminate\Database\Eloquent\Builder|Permission whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Permission whereDescription($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Permission whereGuardName($value)

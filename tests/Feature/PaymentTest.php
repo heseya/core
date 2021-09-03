@@ -136,6 +136,45 @@ class PaymentTest extends TestCase
         ]);
     }
 
+    public function testOfflinePaymentUnauthorized(): void
+    {
+        $code = $this->order->code;
+        $response = $this->actingAs($this->user)
+            ->postJson("/orders/$code/pay/offline");
+
+        $response->assertForbidden();
+    }
+
+    public function testOfflinePayment(): void
+    {
+        $this->user->givePermissionTo('payments.offline');
+
+        $code = $this->order->code;
+        $response = $this->actingAs($this->user)
+            ->postJson("/orders/$code/pay/offline");
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'method' => 'offline',
+                'payed' => true,
+                'amount' => $this->order->summary,
+                'external_id' => null,
+                'redirect_url' => null,
+                'continue_url' => null,
+            ]);
+
+        $this->assertDatabaseHas('payments', [
+            'order_id' => $this->order->getKey(),
+            'method' => 'offline',
+            'payed' => true,
+            'amount' => $this->order->summary,
+        ]);
+
+        $this->order->refresh();
+        $this->assertTrue($this->order->isPayed());
+    }
+
 //    public function testPayPalNotification(): void
 //    {
 //        Http::fake();
