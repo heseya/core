@@ -1,0 +1,22 @@
+{
+    "name": "heseya/graphql",
+    "description": "GraphQL interface for Heseya Store API",
+    "type": "library",
+    "require": {
+        "nuwave/lighthouse": "^5.23",
+        "mll-lab/laravel-graphql-playground": "^2.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Heseya\\GraphQL\\": "src/",
+            "Heseya\\GraphQL\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Heseya\\GraphQL\\ServiceProvider"
+            ]
+        }
+    }
+}

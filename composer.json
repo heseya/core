@@ -14,6 +14,7 @@
         "guzzlehttp/guzzle": "^7.3",
         "heseya/laravel-searchable": "^1.0",
         "heseya/resource": "*",
+        "heseya/graphql": "*",
         "jenssegers/agent": "^2.6",
         "laravel/framework": "^8.44",
         "laravel/passport": "^10.1",
@@ -101,6 +102,10 @@
         {
           "type": "path",
           "url": "./heseya/resource"
+        },
+        {
+            "type": "path",
+            "url": "./heseya/graphql"
         }
     ]
 }
