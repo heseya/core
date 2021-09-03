@@ -104,6 +104,7 @@ class PermissionSeeder extends Seeder
         // Payments
         Permission::updateOrCreate(['name' => 'payments.add']);
         Permission::updateOrCreate(['name' => 'payments.edit']);
+        Permission::updateOrCreate(['name' => 'payments.offline']);
 
         // Payment Methods
         Permission::updateOrCreate(['name' => 'payment_methods.show']);

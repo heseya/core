@@ -74,4 +74,31 @@ interface PaymentControllerSwagger
      * )
      */
     public function update(string $method, Request $request): mixed;
+
+    /**
+     * @OA\Post(
+     *   path="/orders/{code}/pay/offline",
+     *   summary="manualy create fulfilled order payment",
+     *   tags={"Orders"},
+     *   @OA\Parameter(
+     *     name="code",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=201,
+     *     description="Created",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/Payment",
+     *       )
+     *     )
+     *   )
+     * )
+     */
+    public function offlinePayment(Order $order): JsonResource;
 }
