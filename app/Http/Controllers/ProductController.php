@@ -9,9 +9,11 @@ use App\Http\Requests\ProductShowRequest;
 use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
+use App\Models\ProductSet;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
@@ -40,56 +42,38 @@ class ProductController extends Controller implements ProductControllerSwagger
                 'media',
             ]);
 
-        if (!Auth::check()) {
-            $query->public();
+        if (!Auth::user()->can('products.show_hidden')) {
+            if (!Auth::user()->can('product_sets.show_hidden')) {
+                $query->public();
+            } else {
+                $query->where('public', true);
+            }
+        }
 
-            if ($request->has('brand')) {
-                $query->whereHas('brand', function (Builder $query) use ($request): Builder {
-                    $query->where('public', true)->where('public_parent', true);
+        if ($request->has('sets')) {
+            if (!Auth::user()->can('product_sets.show_hidden')) {
+                $setsFound = ProductSet::public()->whereIn(
+                    'slug',
+                    $request->input('sets'),
+                )->count();
 
-                    if (!$request->has('search')) {
-                        $query->where(function (Builder $query) use ($request): Builder {
-                            return $query
-                                ->where('hide_on_index', false)
-                                ->orWhere('slug', $request->input('brand'));
-                        });
-                    }
-
-                    return $query;
-                });
+                if ($setsFound < count($request->input('sets'))) {
+                    throw new ModelNotFoundException('Can\'t find the given product set');
+                }
             }
 
-            if ($request->has('category')) {
-                $query->whereHas('category', function (Builder $query) use ($request): Builder {
-                    $query->where('public', true)->where('public_parent', true);
+            $query->whereHas('sets', function (Builder $query) use ($request) {
+                return $query->whereIn(
+                    'slug',
+                    $request->input('sets'),
+                );
+            });
+        }
 
-                    if (!$request->has('search')) {
-                        $query->where(function (Builder $query) use ($request): Builder {
-                            return $query
-                                ->where('hide_on_index', false)
-                                ->orWhere('slug', $request->input('category'));
-                        });
-                    }
-
-                    return $query;
-                });
-            }
-
-            if ($request->has('set')) {
-                $query->whereHas('sets', function (Builder $query) use ($request): Builder {
-                    $query->where('public', true)->where('public_parent', true);
-
-                    if (!$request->has('search')) {
-                        $query->where(function (Builder $query) use ($request): Builder {
-                            return $query
-                                ->where('hide_on_index', false)
-                                ->orWhere('slug', $request->input('sets'));
-                        });
-                    }
-
-                    return $query;
-                });
-            }
+        if (!$request->hasAny(['sets', 'search', 'name', 'slug', 'public'])) {
+            $query->whereDoesntHave('sets', function (Builder $query) {
+                return $query->where('hide_on_index', true);
+            });
         }
 
         $products = $query->paginate((int) $request->input('limit', 12));
