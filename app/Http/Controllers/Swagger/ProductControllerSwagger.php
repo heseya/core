@@ -50,25 +50,10 @@ interface ProductControllerSwagger
      *     ),
      *   ),
      *   @OA\Parameter(
-     *     name="brand",
+     *     name="sets[]",
      *     in="query",
-     *     description="Brand slug search",
-     *     @OA\Schema(
-     *       type="string",
-     *     ),
-     *   ),
-     *   @OA\Parameter(
-     *     name="category",
-     *     in="query",
-     *     description="Category slug search",
-     *     @OA\Schema(
-     *       type="string",
-     *     ),
-     *   ),
-     *   @OA\Parameter(
-     *     name="set",
-     *     in="query",
-     *     description="Product set slug search",
+     *     description="Product set array slug search",
+     *     example="sets[]=category-teapots&sets[]=category-mugs",
      *     @OA\Schema(
      *       type="string",
      *     ),

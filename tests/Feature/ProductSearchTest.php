@@ -62,58 +62,6 @@ class ProductSearchTest extends TestCase
             ->assertJsonFragment(['id' => $product->getKey()]);
     }
 
-    public function testSearchByBrand(): void
-    {
-        $brand = ProductSet::factory()->create([
-            'public' => true,
-            'hide_on_index' => false,
-        ]);
-
-        $product = Product::factory()->create([
-            'category_id' => $this->category->getKey(),
-            'brand_id' => $brand->getKey(),
-            'public' => true,
-        ]);
-
-        Product::factory()->create([
-            'category_id' => $this->category->getKey(),
-            'brand_id' => $this->brand->getKey(),
-            'public' => true,
-        ]);
-
-        $response = $this->getJson('/products?brand=' . $brand->slug);
-        $response
-            ->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['id' => $product->getKey()]);
-    }
-
-    public function testSearchByCategory(): void
-    {
-        $category = ProductSet::factory()->create([
-            'public' => true,
-            'hide_on_index' => false,
-        ]);
-
-        $product = Product::factory()->create([
-            'category_id' => $category->getKey(),
-            'brand_id' => $this->brand->getKey(),
-            'public' => true,
-        ]);
-
-        Product::factory()->create([
-            'category_id' => $this->category->getKey(),
-            'brand_id' => $this->brand->getKey(),
-            'public' => true,
-        ]);
-
-        $response = $this->getJson('/products?category=' . $category->slug);
-        $response
-            ->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['id' => $product->getKey()]);
-    }
-
     public function testSearchBySet(): void
     {
         $set = ProductSet::factory()->create([
@@ -125,6 +73,11 @@ class ProductSearchTest extends TestCase
             'public' => true,
         ]);
 
+        // Product not in set
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
         $set->products()->attach($product);
 
         Product::factory()->create([
@@ -133,7 +86,114 @@ class ProductSearchTest extends TestCase
             'public' => true,
         ]);
 
-        $response = $this->getJson('/products?set=' . $set->slug);
+        $response = $this->actingAs($this->user)
+            ->getJson('/products?sets[]=' . $set->slug);
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $product->getKey()]);
+    }
+
+    public function testSearchBySets(): void
+    {
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $set2 = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $product2 = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        // Product not in set
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $set->products()->attach($product);
+        $set2->products()->attach($product2);
+
+        Product::factory()->create([
+            'category_id' => $this->category->getKey(),
+            'brand_id' => $this->brand->getKey(),
+            'public' => true,
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/products?sets[]=' . $set->slug . '&sets[]=' . $set2->slug);
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment(['id' => $product->getKey()])
+            ->assertJsonFragment(['id' => $product2->getKey()]);
+    }
+
+    public function testSearchBySetHiddenUnauthorized(): void
+    {
+        $set = ProductSet::factory()->create([
+            'public' => false,
+        ]);
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        // Product not in set
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $set->products()->attach($product);
+
+        Product::factory()->create([
+            'category_id' => $this->category->getKey(),
+            'brand_id' => $this->brand->getKey(),
+            'public' => true,
+        ]);
+
+        $response = $this->getJson('/products?sets[]=' . $set->slug);
+
+        $response->assertNotFound();
+    }
+
+    public function testSearchBySetHidden(): void
+    {
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $privateSet = ProductSet::factory()->create([
+            'public' => false,
+        ]);
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        // Product not in set
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $set->products()->attach($product);
+
+        Product::factory()->create([
+            'category_id' => $this->category->getKey(),
+            'brand_id' => $this->brand->getKey(),
+            'public' => true,
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/products?sets[]=' . $set->slug);
+
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data')

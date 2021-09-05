@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\SearchTypes\ProductSearch;
-use App\SearchTypes\WhereHasSlug;
 use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
@@ -44,8 +43,6 @@ class Product extends Model
         'name' => Like::class,
         'slug' => Like::class,
         'public',
-        'brand' => WhereHasSlug::class,
-        'category' => WhereHasSlug::class,
         'search' => ProductSearch::class,
     ];
 
