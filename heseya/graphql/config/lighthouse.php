@@ -29,11 +29,9 @@ return [
          * make sure to return spec-compliant responses in case an error is thrown.
          */
         'middleware' => [
+            \App\Http\Middleware\UnauthenticatedUser::class,
             \Nuwave\Lighthouse\Support\Http\Middleware\AcceptJson::class,
-
-            // Logs in a user if they are authenticated. In contrast to Laravel's 'auth'
-            // middleware, this delegates auth and permission checks to the field level.
-            \Nuwave\Lighthouse\Support\Http\Middleware\AttemptAuthentication::class,
+            \Fruitcake\Cors\HandleCors::class,
 
             // Logs every incoming GraphQL query.
             // \Nuwave\Lighthouse\Support\Http\Middleware\LogGraphQLQueries::class,
@@ -70,7 +68,7 @@ return [
     */
 
     'schema' => [
-        'register' => __DIR__ . '/../schema.graphql',
+        'register' => __DIR__ . '/../schemas/schema.graphql',
     ],
 
     /*
@@ -135,14 +133,14 @@ return [
 
     'namespaces' => [
         'models' => ['App\\Models'],
-        'queries' => 'App\\GraphQL\\Queries',
-        'mutations' => 'App\\GraphQL\\Mutations',
-        'subscriptions' => 'App\\GraphQL\\Subscriptions',
-        'interfaces' => 'App\\GraphQL\\Interfaces',
-        'unions' => 'App\\GraphQL\\Unions',
-        'scalars' => 'App\\GraphQL\\Scalars',
-        'directives' => ['App\\GraphQL\\Directives'],
-        'validators' => ['App\\GraphQL\\Validators'],
+        'queries' => 'Heseya\\GraphQL\\Queries',
+        'mutations' => 'Heseya\\GraphQL\\Mutations',
+        'subscriptions' => 'Heseya\\GraphQL\\Subscriptions',
+        'interfaces' => 'Heseya\\GraphQL\\Interfaces',
+        'unions' => 'Heseya\\GraphQL\\Unions',
+        'scalars' => 'Heseya\\GraphQL\\Scalars',
+        'directives' => ['Heseya\\GraphQL\\Directives'],
+        'validators' => ['Heseya\\GraphQL\\Validators'],
     ],
 
     /*
@@ -344,7 +342,7 @@ return [
         /*
          * Determines if broadcasts should be queued by default.
          */
-        'queue_broadcasts' => env('LIGHTHOUSE_QUEUE_BROADCASTS', true),
+        'queue_broadcasts' => env('LIGHTHOUSE_QUEUE_BROADCASTS', false),
 
         /*
          * Determines the queue to use for broadcasting queue jobs.
@@ -443,7 +441,7 @@ return [
         /*
          * Location of resolver classes when resolving the `_entities` field.
          */
-        'entities_resolver_namespace' => 'App\\GraphQL\\Entities',
+        'entities_resolver_namespace' => 'Heseya\\GraphQL\\Entities',
     ],
 
 ];

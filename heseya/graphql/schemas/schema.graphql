@@ -4,23 +4,33 @@ scalar Date @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\Date")
 "A datetime string with format `Y-m-d H:i:s`, e.g. `2018-05-23 13:43:32`."
 scalar DateTime @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
 
+scalar UUID @scalar(class: "Heseya\\GraphQL\\Scalars\\UUID")
+
 type Query {
-    users: [User!]! @all
-    user(id: ID @eq): User @find
-    product(id: ID @eq): Product @find
+    users: [User!]! @all @can(ability: "adminOnly")
+    user(id: UUID @eq): User @find
+    me: User @auth
+    products: [Product!]! @all
+    product(id: UUID @eq): Product @find
 }
 
 type User {
-    id: ID!
+    id: UUID!
     name: String!
     email: String!
+    avatar: String!
     created_at: DateTime!
     updated_at: DateTime!
 }
 
 type Product {
-    id: ID!
+    id: UUID!
     name: String!
+    slug: String!
+    public: Boolean!
+    price: Float!
+    quantity_step: Float
+    description_html: String
     created_at: DateTime!
     updated_at: DateTime!
 }

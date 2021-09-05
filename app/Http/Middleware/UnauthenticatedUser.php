@@ -21,9 +21,9 @@ class UnauthenticatedUser extends Middleware
         }
 
         if (!Auth::check()) {
-            $user = User::make([
-                'name' => 'Unauthenticated',
-            ]);
+            $user = new User;
+            $user->id = 'x';
+            $user->name = 'Unauthenticated';
 
             $roles = Role::where('name', 'Unauthenticated')->get();
             $user->setRelation('roles', $roles);
