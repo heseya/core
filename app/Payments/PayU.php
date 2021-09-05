@@ -20,7 +20,7 @@ class PayU implements PaymentMethod
                 $client_id . '&client_secret=' . $client_secret,
         )->throw();
 
-        $amount = (int) $payment->amount * 100;
+        $amount = (int) ($payment->amount * 100);
 
         $response = Http::withToken($response['access_token'])->withOptions([
             'allow_redirects' => false,
