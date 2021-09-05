@@ -205,7 +205,7 @@ class UserTest extends TestCase
         $this->assertTrue(Hash::check($data['password'], $user->password));
     }
 
-    public function testCreateTakenEmail(): void
+    public function testCreateEmailTaken(): void
     {
         $this->user->givePermissionTo('users.add');
 
@@ -217,6 +217,29 @@ class UserTest extends TestCase
 
         $response = $this->actingAs($this->user)->postJson('/users', $data);
         $response->assertStatus(422);
+    }
+
+    public function testCreateEmailTakenByDeletedUser(): void
+    {
+        $this->user->givePermissionTo('users.add');
+
+        $user = User::factory()->create();
+        $user->delete();
+
+        $name = User::factory()->raw()['name'];
+        $data = [
+            'name' => $name,
+            'email' => $user->email,
+            'password' => $this->validPassword,
+        ];
+
+        $response = $this->actingAs($this->user)->postJson('/users', $data);
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('users', [
+            'name' => $name,
+            'email' => $user->email,
+        ]);
     }
 
     public function testCreateRolesMissingPermissions(): void
@@ -484,7 +507,7 @@ class UserTest extends TestCase
         ]);
     }
 
-    public function testUpdateTakenEmail(): void
+    public function testUpdateEmailTaken(): void
     {
         $this->user->givePermissionTo('users.edit');
 
@@ -498,6 +521,24 @@ class UserTest extends TestCase
         $this->assertDatabaseHas('users', [
             'id' => $this->user->getKey(),
             'email' => $this->user->email,
+        ]);
+    }
+
+    public function testUpdateEmailTakenByDeletedUser(): void
+    {
+        $this->user->givePermissionTo('users.edit');
+
+        $other = User::factory()->create();
+        $other->delete();
+
+        $response = $this->actingAs($this->user)->patchJson('/users/id:' . $this->user->getKey(), [
+            'email' => $other->email,
+        ]);
+        $response->assertOk();
+
+        $this->assertDatabaseHas('users', [
+            'id' => $this->user->getKey(),
+            'email' => $other->email,
         ]);
     }
 

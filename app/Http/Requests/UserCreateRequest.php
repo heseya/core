@@ -43,7 +43,12 @@ class UserCreateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->where('email', $this->email)],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users')->whereNull('deleted_at'),
+            ],
             'password' => ['required', 'string', 'max:255', Password::defaults()],
             'roles' => ['array'],
             'roles.*' => ['uuid', 'exists:roles,id'],
