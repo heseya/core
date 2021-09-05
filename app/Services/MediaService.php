@@ -28,7 +28,7 @@ class MediaService implements MediaServiceContract
     {
         $response = Http::attach('file', $file
             ->getContent(), 'file')
-            ->withHeaders(['Authorization' => config('silverbox.key')])
+            ->withHeaders(['x-api-key' => config('silverbox.key')])
             ->post(config('silverbox.host') . '/' . config('silverbox.client'));
 
         if ($response->failed()) {
