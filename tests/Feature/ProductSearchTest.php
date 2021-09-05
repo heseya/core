@@ -159,16 +159,13 @@ class ProductSearchTest extends TestCase
             'public' => true,
         ]);
 
-        $response = $this->actingAs($this->user)
-            ->getJson('/products?sets[]=' . $set->slug);
+        $response = $this->getJson('/products?sets[]=' . $set->slug);
 
         $response->assertNotFound();
     }
 
     public function testSearchBySetHidden(): void
     {
-        $this->user->givePermissionTo(['products.show', 'product_sets.show_hidden']);
-
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);

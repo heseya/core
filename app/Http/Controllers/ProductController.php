@@ -42,16 +42,12 @@ class ProductController extends Controller implements ProductControllerSwagger
                 'media',
             ]);
 
-        if (!Auth::user()->can('products.show_hidden')) {
-            if (!Auth::user()->can('product_sets.show_hidden')) {
-                $query->public();
-            } else {
-                $query->where('public', true);
-            }
+        if (!Auth::check()) {
+            $query->public();
         }
 
         if ($request->has('sets')) {
-            if (!Auth::user()->can('product_sets.show_hidden')) {
+            if (!Auth::check()) {
                 $setsFound = ProductSet::public()->whereIn(
                     'slug',
                     $request->input('sets'),
