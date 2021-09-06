@@ -28,9 +28,12 @@ class ResetDatabase extends Command
     public function handle(): void
     {
         Artisan::call('db:wipe');
+        $this->info('Database wiped');
 
         DB::unprepared(file_get_contents($this->option('file') ?? storage_path('demo.sql')));
+        $this->info('Backup uploaded');
 
-        $this->info('Database reset');
+        Artisan::call('migrate');
+        $this->info('Migration completed');
     }
 }
