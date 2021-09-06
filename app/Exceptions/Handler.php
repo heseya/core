@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
@@ -19,6 +20,10 @@ final class Handler extends ExceptionHandler
             'code' => JsonResponse::HTTP_UNAUTHORIZED,
         ],
         NotFoundHttpException::class => [
+            'message' => 'Page not found',
+            'code' => JsonResponse::HTTP_NOT_FOUND,
+        ],
+        ModelNotFoundException::class => [
             'message' => 'Page not found',
             'code' => JsonResponse::HTTP_NOT_FOUND,
         ],
