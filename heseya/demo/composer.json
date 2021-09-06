@@ -1,0 +1,24 @@
+{
+    "name": "heseya/demo",
+    "description": "Helpers for Heseya Demo Store",
+    "type": "library",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Heseya\\Demo\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Heseya\\Demo\\ServiceProvider"
+            ]
+        }
+    },
+    "authors": [
+        {
+            "name": "Jędrzej Buliński",
+            "email": "jedrzej@heseya.com"
+        }
+    ]
+}
