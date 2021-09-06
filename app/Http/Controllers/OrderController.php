@@ -61,11 +61,13 @@ class OrderController extends Controller implements OrderControllerSwagger
 
     public function store(OrderCreateRequest $request): JsonResource
     {
+        $validated = $request->validated();
+
         $shippingMethod = ShippingMethod::findOrFail($request->input('shipping_method_id'));
-        $deliveryAddress = Address::firstOrCreate($request->input('delivery_address'));
+        $deliveryAddress = Address::firstOrCreate($validated['delivery_address']);
 
         if ($request->filled('invoice_address.name')) {
-            $invoiceAddress = Address::firstOrCreate($request->input('invoice_address'));
+            $invoiceAddress = Address::firstOrCreate($validated['invoice_address']);
         }
 
         $order = Order::create([
@@ -149,7 +151,7 @@ class OrderController extends Controller implements OrderControllerSwagger
     public function sync(OrderSyncRequest $request): JsonResponse
     {
         foreach ($request->input('items', []) as $item) {
-            $product = Product::findOrFail($item['product_id']);
+            Product::findOrFail($item['product_id']);
         }
 
         $deliveryAddress = Address::firstOrCreate($request->input('delivery_address'));
