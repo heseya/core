@@ -28,6 +28,6 @@ class ResourceCollection extends AnonymousResourceCollection
 
     public function with($request): array
     {
-        return $this->collection->first()->with($request);
+        return $this->collection?->first()?->with($request) ?? [];
     }
 }
