@@ -12,13 +12,11 @@ class JsonResource extends \Illuminate\Http\Resources\Json\JsonResource
     /**
      * Create a new anonymous resource collection.
      */
-    public static function collection(mixed $resource)
+    public static function collection($resource)
     {
-        $class = get_called_class();
-
-        return tap(new ResourceCollection($resource, $class), function ($collection) use ($class) {
-            if (property_exists($class, 'preserveKeys')) {
-                $collection->preserveKeys = (new $class)->preserveKeys === true;
+        return tap(new ResourceCollection($resource, static::class), function ($collection) {
+            if (property_exists(static::class, 'preserveKeys')) {
+                $collection->preserveKeys = (new static([]))->preserveKeys === true;
             }
         });
     }
