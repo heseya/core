@@ -12,6 +12,7 @@
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.3",
         "heseya/laravel-searchable": "^1.0",
+        "heseya/demo": "dev-master",
         "jenssegers/agent": "^2.6",
         "laravel/framework": "^8.44",
         "laravel/passport": "^10.1",
@@ -95,6 +96,10 @@
         {
             "type": "path",
             "url": "./heseya/insights"
+        },
+        {
+          "type": "path",
+          "url": "./heseya/demo"
         }
     ]
 }
