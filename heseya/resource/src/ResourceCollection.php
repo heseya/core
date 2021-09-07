@@ -25,9 +25,4 @@ class ResourceCollection extends AnonymousResourceCollection
     {
         return $this->collection->each(fn ($el) => $el->setIsIndex(!$this->full)->toArray($request))->all();
     }
-
-    public function with($request): array
-    {
-        return $this->collection?->first()?->with($request) ?? [];
-    }
 }

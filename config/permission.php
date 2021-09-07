@@ -138,6 +138,6 @@ return [
          * file. Using 'default' here means to use the `default` set in cache.php.
          */
 
-        'store' => 'array',
+        'store' => 'default',
     ],
 ];
