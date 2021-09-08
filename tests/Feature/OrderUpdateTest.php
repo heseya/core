@@ -173,14 +173,33 @@ class OrderUpdateTest extends TestCase
         ]);
     }
 
-    public function testUpdateOrderByDeliveryAddress(): void
+    public function testUpdateOrderByEmptyComment(): void
     {
-        $address = Address::factory()->create();
         $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
-            'delivery_address' => $address->toArray()
+            'comment' => ''
         ]);
 
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                 'id' => $this->order->getKey(),
+                 'comment' => '',
+             ]);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'comment' => '',
+        ]);
+    }
+
+    public function testUpdateOrderByDeliveryAddress(): void
+    {
+        $this->addressDelivery = Address::factory()->create();
+        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+            'delivery_address' => $this->addressDelivery->toArray()
+        ]);
         $responseData = $response->getData()->data;
+
         $response
             ->assertOk()
             ->assertJsonFragment([
@@ -195,15 +214,15 @@ class OrderUpdateTest extends TestCase
                      "name" => $this->status->name
                  ],
                  'delivery_address' => [
-                     "address" => $address->address,
-                     "city" => $address->city,
-                     "country" => $address->country ?? null,
+                     "address" => $this->addressDelivery->address,
+                     "city" => $this->addressDelivery->city,
+                     "country" => $this->addressDelivery->country ?? null,
                      "country_name" => $responseData->delivery_address->country_name,
                      "id" => $responseData->delivery_address->id,
-                     "name" => $address->name,
-                     "phone" => $address->phone,
-                     "vat" => $address->vat,
-                     "zip" => $address->zip,
+                     "name" => $this->addressDelivery->name,
+                     "phone" => $this->addressDelivery->phone,
+                     "vat" => $this->addressDelivery->vat,
+                     "zip" => $this->addressDelivery->zip,
                  ],
              ]);
 
@@ -218,14 +237,63 @@ class OrderUpdateTest extends TestCase
         ]);
     }
 
-    public function testUpdateOrderByInvoiceAddress(): void
+    public function testUpdateOrderByMissingDeliveryAddress(): void
     {
-        $address = Address::factory()->create();
         $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
-            'invoice_address' => $address->toArray()
+            'invoice_address' => $this->addressDelivery->toArray()
         ]);
 
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                 // should remain the same
+                 'delivery_address' => [
+                     "address" => $this->addressDelivery->address,
+                     "city" => $this->addressDelivery->city,
+                     "country" => $this->addressDelivery->country ?? null,
+                     "country_name" => $response->getData()->data->delivery_address->country_name,
+                     "id" => $response->getData()->data->delivery_address->id,
+                     "name" => $this->addressDelivery->name,
+                     "phone" => $this->addressDelivery->phone,
+                     "vat" => $this->addressDelivery->vat,
+                     "zip" => $this->addressDelivery->zip,
+                 ],
+             ]);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'delivery_address_id' => $this->addressDelivery->getKey(),
+            'invoice_address_id' =>  $response->getData()->data->invoice_address->id,
+        ]);
+
+        $this->checkAddress($this->addressDelivery);
+    }
+
+    public function testUpdateOrderByEmptyDeliveryAddress(): void
+    {
+        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+            'delivery_address' => null
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['delivery_address' => null]);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'invoice_address_id' => $this->addressInvoice->getKey(),
+            'delivery_address_id' => null,
+        ]);
+    }
+
+    public function testUpdateOrderByInvoiceAddress(): void
+    {
+        $this->addressInvoice = Address::factory()->create();
+        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+            'invoice_address' => $this->addressInvoice->toArray()
+        ]);
         $responseData = $response->getData()->data;
+
         $response
             ->assertOk()
             ->assertJsonFragment([
@@ -240,15 +308,15 @@ class OrderUpdateTest extends TestCase
                      "name" => $this->status->name
                  ],
                  'invoice_address' => [
-                     "address" => $address->address,
-                     "city" => $address->city,
-                     "country" => $address->country ?? null,
+                     "address" => $this->addressInvoice->address,
+                     "city" => $this->addressInvoice->city,
+                     "country" => $this->addressInvoice->country ?? null,
                      "country_name" => $responseData->invoice_address->country_name,
                      "id" => $responseData->invoice_address->id,
-                     "name" => $address->name,
-                     "phone" => $address->phone,
-                     "vat" => $address->vat,
-                     "zip" => $address->zip,
+                     "name" => $this->addressInvoice->name,
+                     "phone" => $this->addressInvoice->phone,
+                     "vat" => $this->addressInvoice->vat,
+                     "zip" => $this->addressInvoice->zip,
                  ],
              ]);
 
@@ -260,6 +328,69 @@ class OrderUpdateTest extends TestCase
             'email' => self::EMAIL,
             'comment' => $this->comment,
             'delivery_address_id' => $this->addressDelivery->getKey(),
+        ]);
+    }
+
+    public function testUpdateOrderByMissingInvoiceAddress(): void
+    {
+        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+            'delivery_address' => $this->addressInvoice->toArray()
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                 // should remain the same
+                 'invoice_address' => [
+                     "address" => $this->addressInvoice->address,
+                     "city" => $this->addressInvoice->city,
+                     "country" => $this->addressInvoice->country ?? null,
+                     "country_name" => $response->getData()->data->invoice_address->country_name,
+                     "id" => $response->getData()->data->invoice_address->id,
+                     "name" => $this->addressInvoice->name,
+                     "phone" => $this->addressInvoice->phone,
+                     "vat" => $this->addressInvoice->vat,
+                     "zip" => $this->addressInvoice->zip,
+                 ],
+             ]);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'invoice_address_id' => $this->addressInvoice->getKey(),
+            'delivery_address_id' => $response->getData()->data->delivery_address->id,
+        ]);
+
+        $this->checkAddress($this->addressInvoice);
+    }
+
+    public function testUpdateOrderByEmptyInvoiceAddress(): void
+    {
+        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+            'invoice_address' => null
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['invoice_address' => null]);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'delivery_address_id' => $this->addressDelivery->getKey(),
+            'invoice_address_id' => null,
+        ]);
+    }
+
+    private function checkAddress(Address $address): void
+    {
+        $this->assertDatabaseHas('addresses', [
+            'id' => $address->getKey(),
+            'name' => $address->name,
+            'phone' =>  $address->phone,
+            'address' =>  $address->address,
+            'vat' =>  $address->vat,
+            'zip' =>  $address->zip,
+            'city' =>  $address->city,
+            'country' =>  $address->country,
         ]);
     }
 }

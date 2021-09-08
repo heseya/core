@@ -4,6 +4,7 @@ namespace App\Payments;
 
 use App\Models\Payment;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -58,7 +59,7 @@ class PayU implements PaymentMethod
         ];
     }
 
-    public static function translateNotification(Request $request)
+    public static function translateNotification(Request $request): JsonResponse
     {
         // Optional signature verification; lackluster docs
         // $signature = $request->header('OpenPayu-Signature');

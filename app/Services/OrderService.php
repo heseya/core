@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Dtos\AddressDto;
 use App\Dtos\OrderUpdateDto;
 use App\Exceptions\OrderException;
 use App\Http\Resources\OrderResource;
@@ -11,7 +12,6 @@ use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 
 class OrderService implements OrderServiceContract
@@ -47,18 +47,22 @@ class OrderService implements OrderServiceContract
         try {
             $deliveryAddress = $this->modifyAddress(
                 $order->delivery_address_id,
-                $dto->getDeliveryAddress()->toArray()
+                $dto->getDeliveryAddress()
             );
             $invoiceAddress = $this->modifyAddress(
                 $order->invoice_address_id,
-                $dto->getInvoiceAddress()->toArray()
+                $dto->getInvoiceAddress()
             );
 
             $order->update([
                 'email' => $dto->getEmail() ?? $order->email,
                 'comment' => $dto->getComment() ?? $order->comment,
-                'delivery_address_id' => $deliveryAddress ? $deliveryAddress->getKey() : $order->delivery_address_id,
-                'invoice_address_id' => $invoiceAddress ? $invoiceAddress->getKey() : $order->invoice_address_id,
+                'delivery_address_id' => $deliveryAddress === null ?
+                    (is_object($dto->getDeliveryAddress()) ? null : $order->delivery_address_id) :
+                    $deliveryAddress->getKey(),
+                'invoice_address_id' => $invoiceAddress === null ?
+                    (is_object($dto->getInvoiceAddress()) ? null : $order->invoice_address_id) :
+                    $invoiceAddress->getKey(),
             ]);
 
             DB::commit();
@@ -69,19 +73,24 @@ class OrderService implements OrderServiceContract
 
             throw new OrderException(
                 'Error editing the order for id: ' . $order->id,
-                Response::HTTP_UNPROCESSABLE_ENTITY
+                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         }
     }
 
-    private function modifyAddress(?string $uuid, ?array $data = null): ?Address
+    private function modifyAddress(?string $uuid, ?AddressDto $addressDto): ?Address
     {
-        foreach ($data as $item) {
+        if ($addressDto === null) {
+            return null;
+        }
+
+        $address = $addressDto->toArray();
+        foreach ($address as $item) {
             if ($item !== null) {
                 $exsistAddress = true;
             }
         }
 
-        return !isset($exsistAddress) ? null : Address::updateOrCreate(['id' => $uuid], $data);
+        return !isset($exsistAddress) ? null : Address::updateOrCreate(['id' => $uuid], $address);
     }
 }

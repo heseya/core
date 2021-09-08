@@ -11,7 +11,7 @@ class DiscountIndexRequest extends FormRequest
      *
      * @return array
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             'search' => ['string', 'max:255'],

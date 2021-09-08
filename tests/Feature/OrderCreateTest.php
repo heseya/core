@@ -4,8 +4,7 @@ namespace Tests\Feature;
 
 use App\Events\OrderCreated;
 use App\Models\Address;
-use App\Models\Brand;
-use App\Models\Category;
+use App\Models\ProductSet;
 use App\Models\Order;
 use App\Models\Price;
 use App\Models\PriceRange;
@@ -21,8 +20,8 @@ class OrderCreateTest extends TestCase
     use RefreshDatabase;
 
     private ShippingMethod $shippingMethod;
-    private Category $category;
-    private Brand $brand;
+    private ProductSet $category;
+    private ProductSet $brand;
     private Address $address;
     private Product $product;
 
@@ -39,8 +38,9 @@ class OrderCreateTest extends TestCase
 
         $this->shippingMethod->priceRanges()->saveMany([$lowRange, $highRange]);
 
-        $this->category = Category::factory()->create(['public' => true]);
-        $this->brand = Brand::factory()->create(['public' => true]);
+
+        $this->category = ProductSet::factory()->create(['public' => true]);
+        $this->brand = ProductSet::factory()->create(['public' => true]);
         $this->address = Address::factory()->make();
 
         $this->product = Product::factory()->create([

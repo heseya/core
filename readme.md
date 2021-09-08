@@ -22,7 +22,7 @@ make bash
 ```
 
 If port is taken you can change DOCKER_PORT in .env to your liking  
-Easy start only works with default dirname `store-api` for now
+Easy start only works with default dirname `store-api` for now.
 
 ## Git hooks
 Project uses git pre-commit hook to automaticly generate IDE Helper docs and fix style issues
@@ -77,14 +77,6 @@ composer docs
 The generated documentation is available at `/docs`.
 
 Locally I recommend set `L5_SWAGGER_GENERATE_ALWAYS` option in .env to `true`, then the documentation will be generated with every refresh.
-
-## IDE-helper
-Laravel [IDE Helper](https://packagist.org/packages/barryvdh/laravel-ide-helper), generates correct PHPDocs for all Facade classes, to improve auto-completion.
-
-Set the ide-helper for the new model:
-```
-composer ide-helper
-```
 
 ## Release checklist
 This project uses [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html)

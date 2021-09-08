@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Swagger;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 interface FurgonetkaControllerSwagger
@@ -32,5 +33,5 @@ interface FurgonetkaControllerSwagger
      *   }
      * )
      */
-    public function createPackage(Request $request);
+    public function createPackage(Request $request): JsonResponse;
 }

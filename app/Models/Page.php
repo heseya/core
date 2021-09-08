@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
@@ -9,26 +10,25 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class Page extends Model
 {
-    use HasFactory;
+    use HasFactory, Sortable;
 
-    /**
-     * The attributes that are mass assignable.
-     */
     protected $fillable = [
+        'order',
         'name',
         'slug',
         'public',
         'content_html',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'public' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+    ];
+
+    protected array $sortable = [
+        'order',
+        'created_at',
+        'updated_at',
     ];
 }

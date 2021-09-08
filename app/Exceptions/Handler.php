@@ -3,8 +3,12 @@
 namespace App\Exceptions;
 
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
@@ -13,17 +17,30 @@ final class Handler extends ExceptionHandler
     protected array $errors = [
         AuthenticationException::class => [
             'message' => 'Unauthorized',
-            'code' => 401,
+            'code' => JsonResponse::HTTP_UNAUTHORIZED,
         ],
         NotFoundHttpException::class => [
             'message' => 'Page not found',
-            'code' => 404,
+            'code' => JsonResponse::HTTP_NOT_FOUND,
+        ],
+        ModelNotFoundException::class => [
+            'message' => 'Page not found',
+            'code' => JsonResponse::HTTP_NOT_FOUND,
         ],
         ValidationException::class => [
-            'code' => 422,
+            'code' => JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
         ],
         StoreException::class => [
-            'code' => 400,
+            'code' => JsonResponse::HTTP_BAD_REQUEST,
+        ],
+        AuthException::class => [
+            'code' => JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
+        ],
+        MediaException::class => [
+            'code' => JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
+        ],
+        OrderException::class => [
+            'code' => JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
         ],
     ];
 
@@ -41,9 +58,9 @@ final class Handler extends ExceptionHandler
     /**
      * Render an exception into an HTTP response.
      */
-    public function render($request, Throwable $exception)
+    public function render($request, Throwable $exception): JsonResponse | Response | SymfonyResponse
     {
-        $class = get_class($exception);
+        $class = $exception::class;
 
         if (isset($this->errors[$class])) {
             $error = new Error(
@@ -59,6 +76,7 @@ final class Handler extends ExceptionHandler
             if (config('app.debug') === true) {
                 return parent::render($request, $exception);
             }
+
             $error = new Error();
         }
 

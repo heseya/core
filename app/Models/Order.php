@@ -116,8 +116,6 @@ class Order extends Model
      *   type="float",
      *   example=199.99
      * )
-     *
-     * @return float
      */
     public function getPayedAmountAttribute(): float
     {
@@ -219,16 +217,6 @@ class Order extends Model
             ->hasMany(Payment::class)
             ->orderBy('payed', 'DESC')
             ->orderBy('updated_at', 'DESC');
-    }
-
-    public function logs(): HasMany
-    {
-        return $this->hasMany(OrderLog::class)->orderBy('created_at', 'DESC');
-    }
-
-    public function notes(): HasMany
-    {
-        return $this->hasMany(OrderNote::class)->orderBy('created_at', 'DESC');
     }
 
     public function deposits(): HasManyThrough

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Dtos\OrderUpdateDto;
 use App\Events\OrderCreated;
 use App\Events\OrderStatusUpdated;
-use App\Exceptions\StoreException;
+use App\Exceptions\OrderException;
 use App\Http\Controllers\Swagger\OrderControllerSwagger;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderIndexRequest;
@@ -61,11 +61,13 @@ class OrderController extends Controller implements OrderControllerSwagger
 
     public function store(OrderCreateRequest $request): JsonResource
     {
+        $validated = $request->validated();
+
         $shippingMethod = ShippingMethod::findOrFail($request->input('shipping_method_id'));
-        $deliveryAddress = Address::firstOrCreate($request->input('delivery_address'));
+        $deliveryAddress = Address::firstOrCreate($validated['delivery_address']);
 
         if ($request->filled('invoice_address.name')) {
-            $invoiceAddress = Address::firstOrCreate($request->input('invoice_address'));
+            $invoiceAddress = Address::firstOrCreate($validated['invoice_address']);
         }
 
         $order = Order::create([
@@ -141,12 +143,6 @@ class OrderController extends Controller implements OrderControllerSwagger
             throw $exception;
         }
 
-        // logs
-        $order->logs()->create([
-            'content' => 'Utworzenie zamówienia.',
-            'user' => 'API',
-        ]);
-
         OrderCreated::dispatch($order);
 
         return OrderPublicResource::make($order);
@@ -155,7 +151,7 @@ class OrderController extends Controller implements OrderControllerSwagger
     public function sync(OrderSyncRequest $request): JsonResponse
     {
         foreach ($request->input('items', []) as $item) {
-            $product = Product::findOrFail($item['product_id']);
+            Product::findOrFail($item['product_id']);
         }
 
         $deliveryAddress = Address::firstOrCreate($request->input('delivery_address'));
@@ -210,7 +206,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             ]);
         }
 
-        return response()->json(null, 204);
+        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function verify(OrderItemsRequest $request): JsonResponse
@@ -227,13 +223,13 @@ class OrderController extends Controller implements OrderControllerSwagger
             }
         }
 
-        return response()->json(null, 204);
+        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResponse
     {
         if ($order->status->cancel) {
-            throw new StoreException(__('admin.error.order_change_status_canceled'));
+            throw new OrderException(__('admin.error.order_change_status_canceled'));
         }
 
         $status = Status::findOrFail($request->input('status_id'));
