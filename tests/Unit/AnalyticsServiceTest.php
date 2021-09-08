@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Unit;
 
 use App\Models\Order;
 use App\Models\Payment;
@@ -68,6 +68,22 @@ class AnalyticsServiceTest extends TestCase
         ], $this->analyticsService->getPaymentsOverPeriod($from, $to, 'total'));
     }
 
+    public function testGetPaymentsOverPeriodYearly(): void
+    {
+        $from = Carbon::parse('2020-01-01');
+        $to = Carbon::parse('2021-12-31');
+
+        $this->testGetPaymentsOverPeriodGroup(
+            $from,
+            $from->copy()->addMonth(),
+            $to->copy()->subMonth(),
+            $to,
+            '2020',
+            '2021',
+            'yearly',
+        );
+    }
+
     private function testGetPaymentsOverPeriodGroup(
         Carbon $groupOne0, Carbon $groupOne1, Carbon $groupTwo0, Carbon $groupTwo1,
         string $labelOne, string $labelTwo, string $group
@@ -113,22 +129,6 @@ class AnalyticsServiceTest extends TestCase
                 'count' => 2,
             ],
         ], $this->analyticsService->getPaymentsOverPeriod($groupOne0, $groupTwo1, $group));
-    }
-
-    public function testGetPaymentsOverPeriodYearly(): void
-    {
-        $from = Carbon::parse('2020-01-01');
-        $to = Carbon::parse('2021-12-31');
-
-        $this->testGetPaymentsOverPeriodGroup(
-            $from,
-            $from->copy()->addMonth(),
-            $to->copy()->subMonth(),
-            $to,
-            '2020',
-            '2021',
-            'yearly',
-        );
     }
 
     public function testGetPaymentsOverPeriodMonthly(): void
