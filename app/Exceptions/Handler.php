@@ -45,6 +45,9 @@ final class Handler extends ExceptionHandler
         OrderException::class => [
             'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
         ],
+        RoleException::class => [
+            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+        ],
     ];
 
     /**

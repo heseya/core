@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\RoleType;
 use App\Models\Page;
 use App\Models\Permission;
 use App\Models\Role;
@@ -155,10 +156,14 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(['name' => 'roles.edit']);
         Permission::updateOrCreate(['name' => 'roles.remove']);
 
-        Role::updateOrCreate(['name' => 'Owner'])
-            ->syncPermissions(Permission::all());
+        $owner = Role::updateOrCreate(['name' => 'Owner'])
+            ->givePermissionTo(Permission::all());
+        $owner->type = RoleType::OWNER;
+        $owner->save();
 
-        Role::updateOrCreate(['name' => 'Unauthenticated'])
-            ->syncPermissions(['auth.login']);
+        $unauthenticated = Role::updateOrCreate(['name' => 'Unauthenticated'])
+            ->givePermissionTo(['auth.login']);
+        $unauthenticated->type = RoleType::UNAUTHENTICATED;
+        $unauthenticated->save();
     }
 }
