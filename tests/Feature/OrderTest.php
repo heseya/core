@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Events\OrderStatusUpdated;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
@@ -66,6 +67,18 @@ class OrderTest extends TestCase
         ];
     }
 
+    public function testOverpayed(): void
+    {
+        $this->order->payments()->save(Payment::factory()->make([
+            'amount' => $this->order->summary * 2,
+            'payed' => true,
+        ]));
+
+        $this->assertTrue(
+            Order::findOrFail($this->order->getKey())->isPayed(),
+        );
+    }
+
     public function testIndexUnauthorized(): void
     {
         $response = $this->getJson('/orders');
@@ -120,6 +133,38 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonStructure(['data' => $this->expected_structure])
             ->assertJson(['data' => $this->expected]);
+    }
+
+    public function testViewOverpayed(): void
+    {
+        $this->user->givePermissionTo('orders.show_details');
+
+        $this->order->payments()->save(Payment::factory()->make([
+            'amount' => $this->order->summary * 2,
+            'payed' => true,
+        ]));
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/orders/id:' . $this->order->getKey());
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['payed' => true]);
+    }
+
+    public function testViewOverpayedSummary(): void
+    {
+        $this->user->givePermissionTo('orders.show_summary');
+
+        $this->order->payments()->save(Payment::factory()->make([
+            'amount' => $this->order->summary * 2,
+            'payed' => true,
+        ]));
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/orders/' . $this->order->code);
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['payed' => true]);
     }
 
     public function testUpdateOrderStatusUnauthorized(): void
