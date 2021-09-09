@@ -41,7 +41,7 @@ class RoleStoreRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string'],
-            'description' => ['string'],
+            'description' => ['nullable', 'string'],
             'permissions' => ['array'],
             'permissions.*' => ['string'],
         ];
