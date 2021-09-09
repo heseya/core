@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\RoleType;
 use App\Models\Role;
 use App\Models\User;
 use Closure;
@@ -25,7 +26,7 @@ class UnauthenticatedUser extends Middleware
                 'name' => 'Unauthenticated',
             ]);
 
-            $roles = Role::where('name', 'Unauthenticated')->get();
+            $roles = Role::where('type', RoleType::UNAUTHENTICATED)->get();
             $user->setRelation('roles', $roles);
 
             Auth::setUser($user);

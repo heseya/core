@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\RoleType;
 use App\SearchTypes\RoleAssignableSearch;
 use App\SearchTypes\RoleSearch;
 use App\Traits\HasUuid;
@@ -23,6 +24,10 @@ class Role extends SpatieRole implements AuditableContract
         'name',
         'description',
         'guard_name',
+    ];
+
+    protected $casts = [
+        'type' => RoleType::class,
     ];
 
     protected array $searchable = [
