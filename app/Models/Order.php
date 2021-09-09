@@ -175,7 +175,7 @@ class Order extends Model implements AuditableContract
      */
     public function isPayed(): bool
     {
-        return $this->summary === $this->payedAmount;
+        return $this->payedAmount >= $this->summary;
     }
 
     /**
