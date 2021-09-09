@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\RoleType;
 use App\Models\Permission;
 use App\Models\Role;
 use Tests\TestCase;
@@ -43,12 +44,14 @@ class RoleTest extends TestCase
                 'name' => $role1->name,
                 'description' => $role1->description,
                 'assignable' => true,
+                'deletable' => true,
             ]])
             ->assertJsonFragment([[
                 $role2->getKeyName() => $role2->getKey(),
                 'name' => $role2->name,
                 'description' => $role2->description,
                 'assignable' => true,
+                'deletable' => true,
             ]]);
     }
 
@@ -85,12 +88,14 @@ class RoleTest extends TestCase
                 'name' => $role1->name,
                 'description' => $role1->description,
                 'assignable' => true,
+                'deletable' => true,
             ]])
             ->assertJsonFragment([[
                 $role2->getKeyName() => $role2->getKey(),
                 'name' => $role2->name,
                 'description' => $role2->description,
                 'assignable' => true,
+                'deletable' => true,
             ]]);
     }
 
@@ -127,12 +132,14 @@ class RoleTest extends TestCase
                 'name' => $role1->name,
                 'description' => $role1->description,
                 'assignable' => true,
+                'deletable' => true,
             ]])
             ->assertJsonFragment([[
                 $role2->getKeyName() => $role2->getKey(),
                 'name' => $role2->name,
                 'description' => $role2->description,
                 'assignable' => true,
+                'deletable' => true,
             ]]);
     }
 
@@ -173,12 +180,14 @@ class RoleTest extends TestCase
                 'name' => $roleNoPermissions->name,
                 'description' => $roleNoPermissions->description,
                 'assignable' => true,
+                'deletable' => true,
             ]])
             ->assertJsonFragment([[
                 $roleHasPermissions->getKeyName() => $roleHasPermissions->getKey(),
                 'name' => $roleHasPermissions->name,
                 'description' => $roleHasPermissions->description,
                 'assignable' => true,
+                'deletable' => true,
             ]]);
     }
 
@@ -219,12 +228,14 @@ class RoleTest extends TestCase
                 'name' => $roleHasSomePermissions->name,
                 'description' => $roleHasSomePermissions->description,
                 'assignable' => false,
+                'deletable' => true,
             ]])
             ->assertJsonFragment([[
                 $roleHasNoPermissions->getKeyName() => $roleHasNoPermissions->getKey(),
                 'name' => $roleHasNoPermissions->name,
                 'description' => $roleHasNoPermissions->description,
                 'assignable' => false,
+                'deletable' => true,
             ]]);
     }
 
@@ -261,12 +272,14 @@ class RoleTest extends TestCase
                 'name' => $role1->name,
                 'description' => $role1->description,
                 'assignable' => true,
+                'deletable' => true,
             ]])
             ->assertJsonFragment([[
                 $role2->getKeyName() => $role2->getKey(),
                 'name' => $role2->name,
                 'description' => $role2->description,
                 'assignable' => true,
+                'deletable' => true,
             ]]);
     }
 
@@ -299,6 +312,7 @@ class RoleTest extends TestCase
                 'name' => $role->name,
                 'description' => $role->description,
                 'assignable' => true,
+                'deletable' => true,
                 'permissions' => [],
             ]]);
     }
@@ -325,6 +339,7 @@ class RoleTest extends TestCase
                 'name' => $role->name,
                 'description' => $role->description,
                 'assignable' => false,
+                'deletable' => true,
                 'permissions' => [
                     'test.custom1',
                     'test.custom2',
@@ -354,6 +369,7 @@ class RoleTest extends TestCase
                 'name' => $role->name,
                 'description' => $role->description,
                 'assignable' => true,
+                'deletable' => true,
                 'permissions' => [
                     'test.custom1',
                     'test.custom2',
@@ -423,6 +439,7 @@ class RoleTest extends TestCase
                 'name' => 'test_role',
                 'description' => 'Test role',
                 'assignable' => true,
+                'deletable' => true,
                 'permissions' => [
                     'test.custom1',
                     'test.custom2',
@@ -517,6 +534,39 @@ class RoleTest extends TestCase
         $this->assertTrue($role->hasPermissionTo('test.custom2'));
     }
 
+    public function testUpdateOwnerPermissions(): void
+    {
+        Permission::create(['name' => 'test.custom1']);
+
+        $this->user->givePermissionTo(Permission::all());
+
+        $owner = Role::create([
+            'name' => 'owner',
+            'description' => 'Owner',
+        ]);
+        $owner->type = RoleType::OWNER;
+        $owner->save();
+        $owner->givePermissionTo(Permission::all());
+
+        $response = $this->actingAs($this->user)->patchJson('/roles/id:' . $owner->getKey(), [
+            'name' => 'Owner 2',
+            'description' => 'Owner 2',
+            'permissions' => [
+                'test.custom1',
+            ],
+        ]);
+
+        $response->assertStatus(422);
+
+        $this->assertDatabaseHas('roles', [
+            $owner->getKeyName() => $owner->getKey(),
+            'name' => 'owner',
+            'description' => 'Owner',
+        ]);
+
+        $this->assertTrue($owner->hasAllPermissions(Permission::all()));
+    }
+
     public function testUpdate(): void
     {
         $this->user->givePermissionTo('roles.edit');
@@ -546,6 +596,7 @@ class RoleTest extends TestCase
                 'name' => 'test_role',
                 'description' => 'Test role',
                 'assignable' => true,
+                'deletable' => true,
                 'permissions' => [
                     'test.custom2',
                     'test.custom3',
@@ -654,6 +705,46 @@ class RoleTest extends TestCase
         $this->assertDatabaseMissing('role_has_permissions', [
             'role_id' => $role->getKey(),
             'permission_id' => $permission2->getKey(),
+        ]);
+    }
+
+    public function testDeleteOwnerRole(): void
+    {
+        $this->user->givePermissionTo(Permission::all());
+
+        $owner = Role::create([
+            'name' => 'Owner',
+            'description' => 'Owner',
+        ]);
+        $owner->type = RoleType::OWNER;
+        $owner->save();
+
+        $response = $this->actingAs($this->user)
+            ->deleteJson('/roles/id:' . $owner->getKey());
+        $response->assertStatus(422);
+
+        $this->assertDatabaseHas('roles', [
+            $owner->getKeyName() => $owner->getKey(),
+        ]);
+    }
+
+    public function testDeleteUnauthenticatedRole(): void
+    {
+        $this->user->givePermissionTo(Permission::all());
+
+        $owner = Role::create([
+            'name' => 'Unauthenticated',
+            'description' => 'Unauthenticated',
+        ]);
+        $owner->type = RoleType::UNAUTHENTICATED;
+        $owner->save();
+
+        $response = $this->actingAs($this->user)
+            ->deleteJson('/roles/id:' . $owner->getKey());
+        $response->assertStatus(422);
+
+        $this->assertDatabaseHas('roles', [
+            $owner->getKeyName() => $owner->getKey(),
         ]);
     }
 }

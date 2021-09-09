@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\RoleType;
 use App\Http\Resources\Swagger\RoleResourceSwagger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,7 @@ class RoleResource extends Resource implements RoleResourceSwagger
             'assignable' => Auth::user()->hasAllPermissions(
                 $this->getAllPermissions(),
             ),
+            'deletable' => $this->type->is(RoleType::REGULAR),
         ];
     }
 
@@ -24,6 +26,7 @@ class RoleResource extends Resource implements RoleResourceSwagger
     {
         return [
             'permissions' => $this->getPermissionNames()->sort()->values(),
+            'locked_permissions' => $this->type->is(RoleType::OWNER),
         ];
     }
 }

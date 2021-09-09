@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\RoleType;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
@@ -13,6 +14,7 @@ class UserTest extends TestCase
 {
     public array $expected;
     private string $validPassword = 'V@l1dPa55word';
+    private Role $owner;
 
     public function setUp(): void
     {
@@ -25,6 +27,12 @@ class UserTest extends TestCase
             'avatar' => $this->user->avatar,
             'roles' => [],
         ];
+
+        // Owner role needs to exist for user service to function properly
+        $this->owner = Role::updateOrCreate(['name' => 'Owner'])
+            ->givePermissionTo(Permission::all());
+        $this->owner->type = RoleType::OWNER;
+        $this->owner->save();
     }
 
     public function testIndexUnauthorized(): void
@@ -308,16 +316,19 @@ class UserTest extends TestCase
                 'name' => $role1->name,
                 'description' => $role1->description,
                 'assignable' => true,
+                'deletable' => true,
             ]])->assertJsonFragment([[
                 'id' => $role2->getKey(),
                 'name' => $role2->name,
                 'description' => $role2->description,
                 'assignable' => true,
+                'deletable' => true,
             ]])->assertJsonFragment([[
                 'id' => $role3->getKey(),
                 'name' => $role3->name,
                 'description' => $role3->description,
                 'assignable' => true,
+                'deletable' => true,
             ]])->assertJsonPath('data.permissions', [
                 'permission.1',
                 'permission.2',
@@ -369,7 +380,7 @@ class UserTest extends TestCase
         ]);
     }
 
-    public function testUpdateRolesMissingPermissions(): void
+    public function testUpdateAddRolesMissingPermissions(): void
     {
         $this->user->givePermissionTo('users.edit');
 
@@ -398,6 +409,7 @@ class UserTest extends TestCase
             $data,
         );
         $response->assertStatus(422);
+        $user->refresh();
 
         $this->assertFalse(
             $user->hasAnyRole([$role1, $role2, $role3]),
@@ -408,7 +420,7 @@ class UserTest extends TestCase
         );
     }
 
-    public function testUpdateRoles(): void
+    public function testUpdateAddRoles(): void
     {
         $this->user->givePermissionTo('users.edit');
 
@@ -443,20 +455,25 @@ class UserTest extends TestCase
                 'name' => $role1->name,
                 'description' => $role1->description,
                 'assignable' => true,
+                'deletable' => true,
             ]])->assertJsonFragment([[
                 'id' => $role2->getKey(),
                 'name' => $role2->name,
                 'description' => $role2->description,
                 'assignable' => true,
+                'deletable' => true,
             ]])->assertJsonFragment([[
                 'id' => $role3->getKey(),
                 'name' => $role3->name,
                 'description' => $role3->description,
                 'assignable' => true,
+                'deletable' => true,
             ]])->assertJsonPath('data.permissions', [
                 'permission.1',
                 'permission.2',
             ]);
+
+        $user->refresh();
 
         $this->assertTrue(
             $user->hasAllRoles([$role1, $role2, $role3]),
@@ -464,6 +481,83 @@ class UserTest extends TestCase
 
         $this->assertTrue(
             $user->hasAllPermissions([$permission1, $permission2]),
+        );
+    }
+
+    public function testUpdateRemoveRolesMissingPermissions(): void
+    {
+        $this->user->givePermissionTo('users.edit');
+
+        $user = User::factory()->create();
+        $role1 = Role::create(['name' => 'Role 1']);
+        $role2 = Role::create(['name' => 'Role 2']);
+        $role3 = Role::create(['name' => 'Role 3']);
+        $user->assignRole([$role1, $role2, $role3]);
+
+        $permission1 = Permission::create(['name' => 'permission.1']);
+        $permission2 = Permission::create(['name' => 'permission.2']);
+
+        $role1->syncPermissions([$permission1, $permission2]);
+        $role2->syncPermissions([$permission1]);
+        $this->user->givePermissionTo([$permission2]);
+
+        $data = [
+            'roles' => [],
+        ];
+
+        $response = $this->actingAs($this->user)->patchJson(
+            '/users/id:' . $user->getKey(),
+            $data,
+        );
+        $response->assertStatus(422);
+        $user->refresh();
+
+        $this->assertTrue(
+            $user->hasAllRoles([$role1, $role2, $role3]),
+        );
+
+        $this->assertTrue(
+            $user->hasAllPermissions([$permission1, $permission2]),
+        );
+    }
+
+    public function testUpdateRemoveRoles(): void
+    {
+        $this->user->givePermissionTo('users.edit');
+
+        $user = User::factory()->create();
+        $role1 = Role::create(['name' => 'Role 1']);
+        $role2 = Role::create(['name' => 'Role 2']);
+        $role3 = Role::create(['name' => 'Role 3']);
+        $user->assignRole([$role1, $role2, $role3]);
+
+        $permission1 = Permission::create(['name' => 'permission.1']);
+        $permission2 = Permission::create(['name' => 'permission.2']);
+
+        $role1->syncPermissions([$permission1, $permission2]);
+        $role2->syncPermissions([$permission1]);
+        $this->user->givePermissionTo([$permission1, $permission2]);
+
+        $data = [
+            'roles' => [],
+        ];
+
+        $response = $this->actingAs($this->user)->patchJson(
+            '/users/id:' . $user->getKey(),
+            $data,
+        );
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.roles', [])
+            ->assertJsonPath('data.permissions', []);
+        $user->refresh();
+
+        $this->assertFalse(
+            $user->hasAnyRole([$role1, $role2, $role3]),
+        );
+
+        $this->assertFalse(
+            $user->hasAnyPermission([$permission1, $permission2]),
         );
     }
 
@@ -555,5 +649,38 @@ class UserTest extends TestCase
         $response = $this->actingAs($this->user)->deleteJson('/users/id:' . $this->user->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($this->user);
+    }
+
+    public function testDeleteOwnerUnauthorized(): void
+    {
+        $this->user->givePermissionTo('users.remove');
+
+        $owner = User::factory()->create();
+        $owner->assignRole($this->owner);
+
+        $response = $this->actingAs($this->user)->deleteJson('/users/id:' . $owner->getKey());
+        $response->assertStatus(422);
+    }
+
+    public function testDeleteOnlyOwner(): void
+    {
+        $this->user->givePermissionTo('users.remove');
+        $this->user->assignRole($this->owner);
+
+        $response = $this->actingAs($this->user)->deleteJson('/users/id:' . $this->user->getKey());
+        $response->assertStatus(422);
+    }
+
+    public function testDeleteOwner(): void
+    {
+        $this->user->givePermissionTo('users.remove');
+
+        $owner = User::factory()->create();
+        $owner->assignRole($this->owner);
+        $this->user->assignRole($this->owner);
+
+        $response = $this->actingAs($this->user)->deleteJson('/users/id:' . $owner->getKey());
+        $response->assertNoContent();
+        $this->assertSoftDeleted($owner);
     }
 }

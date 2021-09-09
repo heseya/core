@@ -30,6 +30,7 @@ class RoleService implements RoleServiceContract
 
         $role = Role::create($dto->toArray());
         $role->syncPermissions($dto->getPermissions());
+        $role->refresh();
 
         return $role;
     }

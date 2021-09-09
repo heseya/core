@@ -32,6 +32,12 @@ interface RoleResourceSwagger
      *     example=true,
      *     description="Whether the role assignable by current user.",
      *   ),
+     *   @OA\Property(
+     *     property="deletable",
+     *     type="boolean",
+     *     example=true,
+     *     description="Whether the role can be deleted with appropreiate permissions.",
+     *   ),
      * )
      */
     public function base(Request $request): array;
@@ -50,6 +56,12 @@ interface RoleResourceSwagger
      *       type="string",
      *       example="roles.show_details",
      *     ),
+     *   ),
+     *   @OA\Property(
+     *     property="locked_permissions",
+     *     type="boolean",
+     *     example=true,
+     *     description="Whether the permissions can be edited with appropreiate permissions.",
      *   ),
      * )
      */

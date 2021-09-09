@@ -751,6 +751,7 @@ namespace App\Models{
  * @property string $guard_name
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property RoleType $type
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Audit[] $audits
  * @property-read int|null $audits_count
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Permission[] $permissions
@@ -768,6 +769,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Role whereGuardName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Role whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Role whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Role whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Role whereUpdatedAt($value)
  */
 	class IdeHelperRole extends \Eloquent implements \OwenIt\Auditing\Contracts\Auditable {}
