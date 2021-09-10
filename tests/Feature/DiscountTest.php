@@ -130,4 +130,22 @@ class DiscountTest extends TestCase
             'max_uses' => 40,
         ]);
     }
+
+    public function testDeleteUnauthorized(): void
+    {
+        $discount = Discount::factory()->create();
+
+        $response = $this->deleteJson('/discounts/id:' . $discount->getKey());
+        $response->assertForbidden();
+    }
+
+    public function testDelete(): void
+    {
+        $this->user->givePermissionTo('discounts.remove');
+        $discount = Discount::factory()->create();
+
+        $response = $this->actingAs($this->user)->deleteJson('/discounts/id:' . $discount->getKey());
+        $response->assertNoContent();
+        $this->assertSoftDeleted($discount);
+    }
 }
