@@ -137,8 +137,10 @@ Route::prefix('shipping-methods')->group(function (): void {
         ->middleware('can:shipping_methods.edit');
     Route::delete('id:{shipping_method:id}', 'ShippingMethodController@destroy')
         ->middleware('can:shipping_methods.remove');
-    Route::post('order', 'ShippingMethodController@reorder')
-        ->middleware('can:hipping_methods.edit');
+    Route::post('reorder', 'ShippingMethodController@reorder')
+        ->middleware('can:shipping_methods.edit');
+    Route::post('order', 'ShippingMethodController@reorder') // deprecated
+        ->middleware('can:shipping_methods.edit');
 });
 
 Route::prefix('payment-methods')->group(function (): void {
