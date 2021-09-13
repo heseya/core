@@ -113,7 +113,6 @@ interface ShippingMethodControllerSwagger
      */
     public function update(ShippingMethodUpdateRequest $request, ShippingMethod $shipping_method): JsonResource;
 
-
     /**
      * @OA\Post(
      *   path="/shipping-methods/order",
