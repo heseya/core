@@ -184,6 +184,8 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property \Illuminate\Support\Carbon|null $starts_at
+ * @property \Illuminate\Support\Carbon|null $expires_at
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Audit[] $audits
  * @property-read int|null $audits_count
  * @property-read bool $available
@@ -201,8 +203,10 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder|Discount whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Discount whereDescription($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Discount whereDiscount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Discount whereExpiresAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Discount whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Discount whereMaxUses($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Discount whereStartsAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Discount whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Discount whereUpdatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|Discount withTrashed()

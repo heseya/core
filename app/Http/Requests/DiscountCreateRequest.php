@@ -19,6 +19,8 @@ class DiscountCreateRequest extends FormRequest
             'discount' => ['required', 'numeric'],
             'type' => ['required', new EnumValue(DiscountType::class, false)],
             'max_uses' => ['required', 'integer', 'min:0'],
+            'starts_at' => ['nullable', 'date'],
+            'expires_at' => ['nullable', 'date', 'after:starts_at']
         ];
     }
 }

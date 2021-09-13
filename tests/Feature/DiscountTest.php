@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\DiscountType;
 use App\Models\Discount;
+use Carbon\Carbon;
 use Tests\TestCase;
 
 class DiscountTest extends TestCase
@@ -66,6 +67,8 @@ class DiscountTest extends TestCase
             'discount' => 10,
             'type' => DiscountType::PERCENTAGE,
             'max_uses' => 20,
+            'starts_at' => Carbon::yesterday(),
+            'expires_at' => Carbon::tomorrow()
         ]);
 
         $response
@@ -78,6 +81,8 @@ class DiscountTest extends TestCase
                 'max_uses' => 20,
                 'uses' => 0,
                 'available' => true,
+                'starts_at' => Carbon::yesterday(),
+                'expires_at' => Carbon::tomorrow()
             ]);
 
         $this->assertDatabaseHas('discounts', [
@@ -86,6 +91,8 @@ class DiscountTest extends TestCase
             'discount' => 10,
             'max_uses' => 20,
             'type' => DiscountType::PERCENTAGE,
+            'starts_at' => Carbon::yesterday(),
+            'expires_at' => Carbon::tomorrow()
         ]);
     }
 
