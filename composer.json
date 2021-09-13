@@ -15,6 +15,7 @@
         "heseya/laravel-searchable": "^1.0",
         "heseya/demo": "dev-master",
         "heseya/resource": "*",
+        "heseya/pagination": "*",
         "jenssegers/agent": "^2.6",
         "laravel/framework": "^8.44",
         "laravel/passport": "^10.1",
@@ -106,6 +107,10 @@
         {
           "type": "path",
           "url": "./heseya/resource"
+        },
+        {
+            "type": "path",
+            "url": "./heseya/pagination"
         }
     ]
 }

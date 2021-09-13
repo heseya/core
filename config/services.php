@@ -44,8 +44,4 @@ return [
         ],
     ],
 
-    'pagination' => [
-        'per_page' => env('PAGINATION_LIMIT', 12),
-    ],
-
 ];
