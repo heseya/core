@@ -5,6 +5,7 @@ namespace Heseya\Pagination\Http\Middleware;
 use App\Exceptions\StoreException;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Validator;
 
 class Pagination
@@ -16,8 +17,6 @@ class Pagination
      */
     public function handle(Request $request, Closure $next): mixed
     {
-        $response = $next($request);
-
         if ($request->exists(self::LIMIT_NAME)) {
             $validator = Validator::make($request->only(self::LIMIT_NAME), [
                 self::LIMIT_NAME => ['integer', 'min:1', 'max:' . config('pagination.max')],
@@ -27,9 +26,9 @@ class Pagination
                 throw new StoreException($validator->errors()->first());
             }
 
-            config(['pagination.per_page' => $request->input(self::LIMIT_NAME)]);
+            Config::set('pagination.per_page', $request->input(self::LIMIT_NAME));
         }
 
-        return $response;
+        return $next($request);
     }
 }

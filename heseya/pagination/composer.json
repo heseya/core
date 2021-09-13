@@ -5,9 +5,6 @@
     "require": {
         "laravel/framework": "^8.0"
     },
-    "require-dev": {
-        "orchestra/testbench": "^6.21"
-    },
     "autoload": {
         "psr-4": {
             "Heseya\\Pagination\\": "src/",

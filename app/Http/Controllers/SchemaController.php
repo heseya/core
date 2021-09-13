@@ -11,6 +11,7 @@ use App\Models\Schema;
 use App\Services\Contracts\OptionServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Config;
 
 class SchemaController extends Controller implements SchemaControllerSwagger
 {
@@ -23,10 +24,11 @@ class SchemaController extends Controller implements SchemaControllerSwagger
 
     public function index(IndexSchemaRequest $request): JsonResource
     {
-        $perPage = (int) config('services.pagination.per_page');
         $schemas = Schema::search($request->validated())->sort($request->input('sort'));
 
-        return SchemaResource::collection($schemas->paginate($perPage));
+        return SchemaResource::collection(
+            $schemas->paginate(Config::get('pagination.per_page')),
+        );
     }
 
     public function store(SchemaStoreRequest $request): JsonResource

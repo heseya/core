@@ -6,6 +6,7 @@ use App\Exceptions\StoreException;
 use Heseya\Pagination\Http\Middleware\Pagination;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Tests\CreatesApplication;
 
 class MiddlewareTest extends TestCase
@@ -32,9 +33,29 @@ class MiddlewareTest extends TestCase
         $this->assertEquals(config('pagination.per_page'), 50);
     }
 
+    public function testLimitValidation()
+    {
+        $request = Request::create('/admin?limit=TEST', 'GET');
+
+        $middleware = new Pagination;
+
+        $this->expectException(StoreException::class);
+        $middleware->handle($request, function () {});
+    }
+
     public function testLimitMax()
     {
         $request = Request::create('/admin?limit=1000', 'GET');
+
+        $middleware = new Pagination;
+
+        $this->expectException(StoreException::class);
+        $middleware->handle($request, function () {});
+    }
+
+    public function testLimitMin()
+    {
+        $request = Request::create('/admin?limit=-1', 'GET');
 
         $middleware = new Pagination;
 
@@ -46,9 +67,7 @@ class MiddlewareTest extends TestCase
     {
         parent::setUp();
 
-        config([
-            'pagination.per_page' => 100,
-            'pagination.max' => 500,
-        ]);
+        Config::set('pagination.per_page', 100);
+        Config::set('pagination.max', 500);
     }
 }
