@@ -30,4 +30,6 @@ interface ProductSetServiceContract
     ): void;
 
     public function delete(ProductSet $set): void;
+
+    public function products(ProductSet $set): mixed;
 }

@@ -14,6 +14,7 @@ use App\Services\Contracts\AuthServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 
 class AuthController extends Controller implements AuthControllerSwagger
@@ -89,7 +90,7 @@ class AuthController extends Controller implements AuthControllerSwagger
         $session = $this->authServiceContract->loginHistory($request->user());
 
         return LoginHistoryResource::collection(
-            $session->paginate(12),
+            $session->paginate(Config::get('pagination.per_page')),
         );
     }
 
@@ -98,7 +99,7 @@ class AuthController extends Controller implements AuthControllerSwagger
         $session = $this->authServiceContract->killActiveSession($request->user(), $oauthAccessTokensId);
 
         return LoginHistoryResource::collection(
-            $session->paginate(12),
+            $session->paginate(Config::get('pagination.per_page')),
         );
     }
 

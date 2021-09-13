@@ -10,6 +10,7 @@ use App\Http\Resources\ItemResource;
 use App\Models\Item;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Config;
 
 class ItemController extends Controller implements ItemControllerSwagger
 {
@@ -19,7 +20,7 @@ class ItemController extends Controller implements ItemControllerSwagger
             ->sort($request->input('sort', 'sku'));
 
         return ItemResource::collection(
-            $items->paginate(12),
+            $items->paginate(Config::get('pagination.per_page')),
         );
     }
 
