@@ -20,7 +20,7 @@ class ShippingMethodReorderTest extends TestCase
                 $shippingMethod3->getKey(),
                 $shippingMethod2->getKey(),
             ])
-            ->assertStatus(403);
+            ->assertForbidden();
     }
 
     public function testReorderDeprecated(): void
