@@ -188,6 +188,8 @@ Route::prefix('discounts')->group(function (): void {
         ->middleware('can:discounts.add');
     Route::patch('id:{discount:id}', [DiscountController::class, 'update'])
         ->middleware('can:discounts.edit');
+    Route::delete('id:{discount:id}', [DiscountController::class, 'destroy'])
+        ->middleware('can:discounts.remove');
 });
 
 Route::prefix('roles')->middleware('auth:api')->group(function (): void {
