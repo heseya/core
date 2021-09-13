@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exceptions\AuthException;
+use App\Models\App;
 use App\Models\User;
 use App\Notifications\ResetPassword;
 use App\Services\Contracts\AuthServiceContract;
@@ -11,27 +12,31 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Laravel\Passport\Passport;
-use Laravel\Passport\PersonalAccessTokenResult;
 
 class AuthService implements AuthServiceContract
 {
-    public function login(string $email, string $password, ?string $ip, ?string $userAgent): PersonalAccessTokenResult
+    public function login(string $email, string $password, ?string $ip, ?string $userAgent)
     {
-        if (!Auth::guard('web')->attempt([
+        $token = Auth::claims(['typ' => 'identity'])->attempt([
             'email' => $email,
             'password' => $password,
-        ])) {
+        ]);
+
+        if ($token === null) {
             throw new AuthException('Invalid credentials');
         }
 
-        $user = Auth::guard('web')->user();
-        $token = $user->createToken('Admin');
+//        $user = Auth::guard('web')->user();
+//        $token = $user->createToken('Admin');
+//
+//        $token->token->update([
+//            'ip' => $ip,
+//            'user_agent' => $userAgent,
+//        ]);
 
-        $token->token->update([
-            'ip' => $ip,
-            'user_agent' => $userAgent,
-        ]);
+//        $user = App::factory()->create();
+//
+//        $token = auth()->login($user);
 
         return $token;
     }
