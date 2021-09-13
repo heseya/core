@@ -10,7 +10,7 @@ class DepositCreateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'quantity' => array_merge(['required'], Decimal::defaults()),
+            'quantity' => ['required', ...Decimal::defaults()],
         ];
     }
 }
