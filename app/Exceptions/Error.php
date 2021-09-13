@@ -2,6 +2,8 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Http\JsonResponse;
+
 /**
  * @OA\Schema()
  */
@@ -46,12 +48,9 @@ final class Error
     /**
      * Return http error response.
      *
-     * @param string $message
-     * @param int $code Http code.
-     *
      * @deprecated
      */
-    public static function abort($message = 'Internal Server Error', $code = 500)
+    public static function abort($message = 'Internal Server Error', $code = 500): JsonResponse
     {
         $error = new self(
             $message,

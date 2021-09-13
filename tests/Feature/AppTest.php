@@ -17,11 +17,13 @@ class AppTest extends TestCase
     {
         $response = $this->getJson('/apps');
 
-        $response->assertUnauthorized();
+        $response->assertForbidden();
     }
 
     public function testIndex(): void
     {
+        $this->user->givePermissionTo('apps.show');
+
         App::factory()->count(10)->create();
 
         $response = $this->actingAs($this->user)->getJson('/apps');
@@ -35,11 +37,13 @@ class AppTest extends TestCase
     {
         $response = $this->postJson('/apps');
 
-        $response->assertUnauthorized();
+        $response->assertForbidden();
     }
 
     public function testRegisterNotFound(): void
     {
+        $this->user->givePermissionTo('apps.install');
+
         Http::fake([
             $this->url => Http::response([], 404),
         ]);
@@ -54,6 +58,8 @@ class AppTest extends TestCase
 
     public function testRegister(): void
     {
+        $this->user->givePermissionTo('apps.install');
+
         Http::fake([
             $this->url => Http::response([
                 'name' => 'Test App',

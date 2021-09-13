@@ -21,7 +21,7 @@ trait HasUuid
      */
     public static function boot(): void
     {
-        static::creating(function ($model) {
+        static::creating(function ($model): void {
             if (!$model->getKey()) {
                 $model->{$model->getKeyName()} = Str::uuid()->toString();
             }

@@ -36,7 +36,7 @@ class PayPal implements PaymentMethod
         ];
     }
 
-    public static function translateNotification(Request $request)
+    public static function translateNotification(Request $request): mixed
     {
         $gateway = Omnipay::create('PayPal_Rest');
         $gateway->setClientId(config('paypal.client_id'));

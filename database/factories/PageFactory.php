@@ -20,7 +20,7 @@ class PageFactory extends Factory
      */
     public function definition(): array
     {
-        $name = $this->faker->sentence(rand(1, 3));
+        $name = $this->faker->sentence(rand(2, 4));
 
         return [
             'name' => $name,

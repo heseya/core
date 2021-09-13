@@ -2,36 +2,42 @@
 
 namespace App\Services;
 
+use App\Dtos\ShippingMethodDto;
 use App\Exceptions\StoreException;
-use App\Http\Requests\ShippingMethodStoreRequest;
-use App\Http\Requests\ShippingMethodUpdateRequest;
 use App\Models\ShippingMethod;
 use App\Services\Contracts\ShippingMethodServiceContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class ShippingMethodService implements ShippingMethodServiceContract
 {
     public function index(?string $country, float $cartValue): Collection
     {
         $query = ShippingMethod::query()->orderBy('order');
-        if (Auth::check()) {
+
+        if (!Auth::user()->can('shipping_methods.show_hidden')) {
+            $query->where('public', true);
+        }
+
+        if (Auth::user()->hasAnyPermission([
+            'payment_methods.show_hidden',
+            'shipping_methods.edit',
+        ])) {
             $query->with('paymentMethods');
         } else {
-            $query
-                ->with(['paymentMethods' => fn ($query) => $query->where('public', true)])
-                ->where('public', true);
+            $query->with([
+                'paymentMethods' => fn ($query) => $query->where('public', true),
+            ]);
         }
 
         if ($country) {
-            $query->where(function (Builder $query) use ($country) {
-                $query->where(function (Builder $query) use ($country) {
+            $query->where(function (Builder $query) use ($country): void {
+                $query->where(function (Builder $query) use ($country): void {
                     $query
                         ->where('black_list', false)
                         ->whereHas('countries', fn ($query) => $query->where('code', $country));
-                })->orWhere(function (Builder $query) use ($country) {
+                })->orWhere(function (Builder $query) use ($country): void {
                     $query
                         ->where('black_list', true)
                         ->whereDoesntHave(
@@ -48,19 +54,24 @@ class ShippingMethodService implements ShippingMethodServiceContract
         return $shippingMethods;
     }
 
-    public function store(ShippingMethodStoreRequest $request): ShippingMethod
+    public function store(ShippingMethodDto $shippingMethodDto): ShippingMethod
     {
-        $attributes = $request->validated();
-        $shippingMethodNextOrder = ShippingMethod::select(DB::raw('MAX(`order`) + 1 as next_order'))->first();
-        if ($shippingMethodNextOrder !== null) {
-            $attributes = array_merge($attributes, ['order' => $shippingMethodNextOrder->next_order]);
-        }
+        $attributes = array_merge(
+            $shippingMethodDto->toArray(),
+            ['order' => ShippingMethod::count()],
+        );
 
         $shippingMethod = ShippingMethod::create($attributes);
-        $shippingMethod->paymentMethods()->sync($request->input('payment_methods', []));
-        $shippingMethod->countries()->sync($request->input('countries', []));
 
-        foreach ($request->input('price_ranges') as $range) {
+        if ($shippingMethodDto->getPaymentMethods() !== null) {
+            $shippingMethod->paymentMethods()->sync($shippingMethodDto->getPaymentMethods());
+        }
+
+        if ($shippingMethodDto->getCountries() !== null) {
+            $shippingMethod->countries()->sync($shippingMethodDto->getCountries());
+        }
+
+        foreach ($shippingMethodDto->getPriceRanges() as $range) {
             $priceRange = $shippingMethod->priceRanges()->firstOrCreate([
                 'start' => $range['start'],
             ]);
@@ -72,16 +83,22 @@ class ShippingMethodService implements ShippingMethodServiceContract
         return $shippingMethod;
     }
 
-    public function update(ShippingMethodUpdateRequest $request, ShippingMethod $shippingMethod): ShippingMethod
+    public function update(ShippingMethod $shippingMethod, ShippingMethodDto $shippingMethodDto): ShippingMethod
     {
-        $shippingMethod->update($request->validated());
-        $shippingMethod->paymentMethods()->sync($request->input('payment_methods', []));
-        $shippingMethod->countries()->sync($request->input('countries', []));
+        $shippingMethod->update($shippingMethodDto->toArray());
 
-        if ($request->has('price_ranges')) {
+        if ($shippingMethodDto->getPaymentMethods() !== null) {
+            $shippingMethod->paymentMethods()->sync($shippingMethodDto->getPaymentMethods());
+        }
+
+        if ($shippingMethodDto->getCountries() !== null) {
+            $shippingMethod->countries()->sync($shippingMethodDto->getCountries());
+        }
+
+        if ($shippingMethodDto->getPriceRanges() !== null) {
             $shippingMethod->priceRanges()->delete();
 
-            foreach ($request->input('price_ranges') as $range) {
+            foreach ($shippingMethodDto->getPriceRanges() as $range) {
                 $priceRange = $shippingMethod->priceRanges()->firstOrCreate([
                     'start' => $range['start'],
                 ]);

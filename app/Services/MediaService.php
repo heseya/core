@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
 
 class MediaService implements MediaServiceContract
@@ -28,7 +29,7 @@ class MediaService implements MediaServiceContract
     {
         $response = Http::attach('file', $file
             ->getContent(), 'file')
-            ->withHeaders(['Authorization' => config('silverbox.key')])
+            ->withHeaders(['x-api-key' => config('silverbox.key')])
             ->post(config('silverbox.host') . '/' . config('silverbox.client'));
 
         if ($response->failed()) {
@@ -43,6 +44,10 @@ class MediaService implements MediaServiceContract
 
     public function destroy(Media $media): void
     {
+        if ($media->products()->exists()) {
+            Gate::authorize('products.edit');
+        }
+
         $media->forceDelete();
     }
 }

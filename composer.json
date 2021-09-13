@@ -4,7 +4,7 @@
     "description": "Store API by Heseya",
     "license": "proprietary",
     "require": {
-        "php": "^7.4|^8.0",
+        "php": "^8.0",
         "barryvdh/laravel-ide-helper": "^2.10",
         "bensampo/laravel-enum": "^3.3",
         "darkaonline/l5-swagger": "^8.0",
@@ -13,29 +13,34 @@
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.3",
         "heseya/laravel-searchable": "^1.0",
+        "heseya/demo": "dev-master",
+        "heseya/resource": "*",
         "jenssegers/agent": "^2.6",
         "laravel/framework": "^8.44",
         "laravel/passport": "^10.1",
-        "laravel/tinker": "^2.6",
         "league/html-to-markdown": "^5.0",
         "league/omnipay": "^3.1",
         "omnipay/common": "^3",
         "omnipay/paypal": "^3.0",
+        "owen-it/laravel-auditing": "^12.0",
         "parsedown/laravel": "^1.2",
         "php-http/curl-client": "^2.2",
         "propaganistas/laravel-phone": "^4.3",
         "sentry/sentry-laravel": "^2.6",
+        "spatie/laravel-permission": "^4.2",
         "srmklive/paypal": "^3.0"
     },
     "require-dev": {
+        "brianium/paratest": "^6.3",
         "facade/ignition": "^2.9",
-        "fzaninotto/faker": "^1.9",
-        "mbezhanov/faker-provider-collection": "^1.2",
+        "fakerphp/faker": "^v1.15",
+        "mbezhanov/faker-provider-collection": "^2.0",
+        "heseya/insights": "*",
         "mockery/mockery": "^1.4",
         "nunomaduro/collision": "^5.3",
-        "phpunit/phpunit": "^9.5",
         "nunomaduro/phpinsights": "^2.0",
-        "heseya/insights": "*"
+        "phpunit/phpunit": "^9.5",
+        "laravel/tinker": "^2.6"
     },
     "config": {
         "optimize-autoloader": true,
@@ -93,6 +98,14 @@
         {
             "type": "path",
             "url": "./heseya/insights"
+        },
+        {
+          "type": "path",
+          "url": "./heseya/demo"
+        },
+        {
+          "type": "path",
+          "url": "./heseya/resource"
         }
     ]
 }

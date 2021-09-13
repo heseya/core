@@ -10,7 +10,9 @@ use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -192,13 +194,26 @@ class Schema extends Model
             $validation->push(new OptionAvailable($this, $quantity));
         }
 
-        if ($this->type === 6) {
+        if ($this->type === 1 || $this->type === 6 || $this->type === 7) {
             $validation->push('numeric');
         }
 
+        $validationStrings = [
+            'attribute' => $this->name,
+            'min' => $this->min,
+            'max' => $this->max,
+        ];
+
         $validator = Validator::make(
-            [$this->name => $input],
-            [$this->name => $validation],
+            [$this->getKey() => $input],
+            [$this->getKey() => $validation],
+            [
+                'required' => Lang::get('validation.schema.required', $validationStrings),
+                'numeric' => Lang::get('validation.schema.numeric', $validationStrings),
+                'uuid' => Lang::get('validation.schema.uuid', $validationStrings),
+                'min' => Lang::get('validation.schema.min', $validationStrings),
+                'max' => Lang::get('validation.schema.max', $validationStrings),
+            ],
         );
 
         if ($validator->fails()) {
@@ -235,6 +250,7 @@ class Schema extends Model
     public function options(): HasMany
     {
         return $this->hasMany(Option::class)
+            ->orderBy('order')
             ->orderBy('created_at')
             ->orderBy('name', 'DESC');
     }
@@ -285,6 +301,18 @@ class Schema extends Model
     private function getUsedPrice($value, $schemas): float
     {
         $price = $this->price;
+
+        if (!$this->required && $value === null) {
+            return 0;
+        }
+
+        if (($this->type === 0 || $this->type === 1) && Str::length(trim($value)) === 0) {
+            return 0;
+        }
+
+        if ($this->type === 2 && ((bool) $value) === false) {
+            return 0;
+        }
 
         if ($this->type === 4) {
             $option = $this->options()->findOrFail($value);

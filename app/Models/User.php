@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\SearchTypes\UserSearch;
+use App\Traits\Sortable;
+use Heseya\Searchable\Searches\Like;
+use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -9,9 +13,13 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use Spatie\Permission\Traits\HasRoles;
 
 /**
  * @OA\Schema ()
@@ -21,7 +29,8 @@ use Laravel\Passport\HasApiTokens;
 class User extends Model implements
     AuthenticatableContract,
     AuthorizableContract,
-    CanResetPasswordContract
+    CanResetPasswordContract,
+    AuditableContract
 {
     use HasApiTokens,
         Notifiable,
@@ -29,7 +38,12 @@ class User extends Model implements
         Authorizable,
         CanResetPassword,
         MustVerifyEmail,
-        HasFactory;
+        HasFactory,
+        HasRoles,
+        SoftDeletes,
+        Searchable,
+        Sortable,
+        Auditable;
 
     /**
      * @OA\Property(
@@ -52,36 +66,33 @@ class User extends Model implements
      * )
      */
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
     ];
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+    ];
+
+    protected array $searchable = [
+        'name' => Like::class,
+        'email' => Like::class,
+        'search' => UserSearch::class,
+    ];
+
+    protected array $sortable = [
+        'name',
+        'created_at',
+        'updated_at',
     ];
 
     /**

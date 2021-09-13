@@ -3,52 +3,22 @@
 declare(strict_types=1);
 
 use Heseya\Insights\Sniffs\NotSpaceAfterNot;
+use NunoMaduro\PhpInsights\Domain\Insights\Composer\ComposerMustBeValid;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenDefineFunctions;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenPrivateMethods;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenTraits;
-use NunoMaduro\PhpInsights\Domain\Metrics\Code\Code;
 use NunoMaduro\PhpInsights\Domain\Metrics\Style\Style;
-use PHP_CodeSniffer\Standards\Generic\Sniffs\Arrays\DisallowLongArraySyntaxSniff;
-use PHP_CodeSniffer\Standards\Generic\Sniffs\CodeAnalysis\UnconditionalIfStatementSniff;
+use PHP_CodeSniffer\Standards\Generic\Sniffs\CodeAnalysis\UselessOverridingMethodSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineEndingsSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
-use PHP_CodeSniffer\Standards\Generic\Sniffs\NamingConventions\UpperCaseConstantNameSniff;
-use PHP_CodeSniffer\Standards\Generic\Sniffs\PHP\BacktickOperatorSniff;
-use PHP_CodeSniffer\Standards\Generic\Sniffs\PHP\LowerCaseConstantSniff;
-use PHP_CodeSniffer\Standards\Generic\Sniffs\PHP\LowerCaseKeywordSniff;
-use PHP_CodeSniffer\Standards\Generic\Sniffs\PHP\LowerCaseTypeSniff;
-use PHP_CodeSniffer\Standards\Generic\Sniffs\WhiteSpace\DisallowTabIndentSniff;
-use PHP_CodeSniffer\Standards\PSR1\Sniffs\Methods\CamelCapsMethodNameSniff;
-use PHP_CodeSniffer\Standards\PSR2\Sniffs\ControlStructures\ElseIfDeclarationSniff;
-use PHP_CodeSniffer\Standards\PSR2\Sniffs\Files\ClosingTagSniff;
-use PHP_CodeSniffer\Standards\PSR2\Sniffs\Files\EndFileNewlineSniff;
-use PHP_CodeSniffer\Standards\Squiz\Sniffs\WhiteSpace\LanguageConstructSpacingSniff;
-use PhpCsFixer\Fixer\ArrayNotation\NoTrailingCommaInSinglelineArrayFixer;
-use PhpCsFixer\Fixer\ArrayNotation\NoWhitespaceBeforeCommaInArrayFixer;
-use PhpCsFixer\Fixer\Basic\BracesFixer;
-use PhpCsFixer\Fixer\Casing\LowercaseStaticReferenceFixer;
-use PhpCsFixer\Fixer\CastNotation\ShortScalarCastFixer;
-use PhpCsFixer\Fixer\ClassNotation\OrderedClassElementsFixer;
-use PhpCsFixer\Fixer\Comment\NoTrailingWhitespaceInCommentFixer;
-use PhpCsFixer\Fixer\Import\SingleImportPerStatementFixer;
-use PhpCsFixer\Fixer\Operator\BinaryOperatorSpacesFixer;
-use PhpCsFixer\Fixer\Operator\StandardizeNotEqualsFixer;
-use PhpCsFixer\Fixer\Phpdoc\PhpdocVarAnnotationCorrectOrderFixer;
-use PhpCsFixer\Fixer\PhpTag\FullOpeningTagFixer;
-use PhpCsFixer\Fixer\StringNotation\SingleQuoteFixer;
-use SlevomatCodingStandard\Sniffs\Arrays\TrailingArrayCommaSniff;
 use SlevomatCodingStandard\Sniffs\Classes\ForbiddenPublicPropertySniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
 use SlevomatCodingStandard\Sniffs\Commenting\UselessFunctionDocCommentSniff;
+use SlevomatCodingStandard\Sniffs\ControlStructures\DisallowShortTernaryOperatorSniff;
 use SlevomatCodingStandard\Sniffs\Functions\FunctionLengthSniff;
 use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
-use SlevomatCodingStandard\Sniffs\Namespaces\AlphabeticallySortedUsesSniff;
-use SlevomatCodingStandard\Sniffs\Namespaces\NamespaceSpacingSniff;
-use SlevomatCodingStandard\Sniffs\Namespaces\UnusedUsesSniff;
-use SlevomatCodingStandard\Sniffs\Namespaces\UseDoesNotStartWithBackslashSniff;
-use SlevomatCodingStandard\Sniffs\Operators\RequireCombinedAssignmentOperatorSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\DeclareStrictTypesSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\DisallowMixedTypeHintSniff;
 use SlevomatCodingStandard\Sniffs\TypeHints\ParameterTypeHintSniff;
@@ -71,6 +41,7 @@ return [
     */
 
     'preset' => 'laravel',
+
     /*
     |--------------------------------------------------------------------------
     | IDE
@@ -90,6 +61,7 @@ return [
     */
 
     'ide' => 'phpstorm',
+
     /*
     |--------------------------------------------------------------------------
     | Configuration
@@ -102,46 +74,12 @@ return [
     */
 
     'exclude' => [
-        './heseya',
+        'heseya',
     ],
 
     'add' => [
-        Code::class => [
-            ShortScalarCastFixer::class,
-            UnconditionalIfStatementSniff::class,
-            RequireCombinedAssignmentOperatorSniff::class,
-        ],
         Style::class => [
-            DisallowLongArraySyntaxSniff::class,
-            DisallowTabIndentSniff::class,
-            LowerCaseConstantSniff::class,
-            PhpdocVarAnnotationCorrectOrderFixer::class,
-            TrailingArrayCommaSniff::class,
-            EndFileNewlineSniff::class,
-            CamelCapsMethodNameSniff::class,
-            ElseIfDeclarationSniff::class,
-            UpperCaseConstantNameSniff::class,
-            AlphabeticallySortedUsesSniff::class,
-            NamespaceSpacingSniff::class,
-            UnusedUsesSniff::class,
-            UseDoesNotStartWithBackslashSniff::class,
-            NoTrailingCommaInSinglelineArrayFixer::class,
-            NoWhitespaceBeforeCommaInArrayFixer::class,
-            BracesFixer::class,
-            LowercaseStaticReferenceFixer::class,
-            NoTrailingWhitespaceInCommentFixer::class,
-            BinaryOperatorSpacesFixer::class,
-            StandardizeNotEqualsFixer::class,
-            FullOpeningTagFixer::class,
-            OrderedClassElementsFixer::class,
-            SingleImportPerStatementFixer::class,
-            ClosingTagSniff::class,
-            BacktickOperatorSniff::class,
-            LowerCaseKeywordSniff::class,
-            LowerCaseTypeSniff::class,
-            LanguageConstructSpacingSniff::class,
             NotSpaceAfterNot::class,
-            SingleQuoteFixer::class,
         ],
     ],
 
@@ -160,7 +98,11 @@ return [
         ForbiddenPublicPropertySniff::class,
         FunctionLengthSniff::class,
         LineEndingsSniff::class,
+        ComposerMustBeValid::class,
+
+        // replaced with own
         SpaceAfterNotSniff::class,
+        DisallowShortTernaryOperatorSniff::class,
     ],
 
     'config' => [
@@ -171,6 +113,11 @@ return [
             'lineLimit' => 120,
             'absoluteLineLimit' => 120,
             'ignoreComments' => false,
+        ],
+        UselessOverridingMethodSniff::class => [
+            'exclude' => [
+                'app/Exceptions',
+            ],
         ],
     ],
 
@@ -187,7 +134,7 @@ return [
 
     'requirements' => [
         'min-quality' => 100,
-        'min-complexity' => 80,
+        'min-complexity' => 75,
         'min-architecture' => 100,
         'min-style' => 100,
         'disable-security-check' => false,

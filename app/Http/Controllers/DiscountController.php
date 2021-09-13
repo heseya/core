@@ -8,7 +8,9 @@ use App\Http\Requests\DiscountIndexRequest;
 use App\Http\Requests\DiscountUpdateRequest;
 use App\Http\Resources\DiscountResource;
 use App\Models\Discount;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Response;
 
 class DiscountController extends Controller implements DiscountControllerSwagger
 {
@@ -36,5 +38,12 @@ class DiscountController extends Controller implements DiscountControllerSwagger
         $discount->update($request->validated());
 
         return DiscountResource::make($discount);
+    }
+
+    public function destroy(Discount $discount): JsonResponse
+    {
+        $discount->delete();
+
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

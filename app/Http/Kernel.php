@@ -32,6 +32,7 @@ class Kernel extends HttpKernel
     protected $middlewareGroups = [
         'api' => [
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\UnauthenticatedUser::class,
         ],
     ];
 
@@ -47,6 +48,7 @@ class Kernel extends HttpKernel
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
+        'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
     ];
 
     /**
@@ -59,6 +61,7 @@ class Kernel extends HttpKernel
     protected $middlewarePriority = [
         \Fruitcake\Cors\HandleCors::class,
         \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        \App\Http\Middleware\UnauthenticatedUser::class,
         \App\Http\Middleware\Authenticate::class,
         \Illuminate\Auth\Middleware\Authorize::class,
         \App\Http\Middleware\SecureHeaders::class,

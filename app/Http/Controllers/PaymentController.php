@@ -41,7 +41,9 @@ class PaymentController extends Controller implements PaymentControllerSwagger
         return PaymentResource::make($payment);
     }
 
-    public function update(string $method, Request $request)
+    /**
+     */
+    public function update(string $method, Request $request): mixed
     {
         if (!array_key_exists($method, config('payable.aliases'))) {
             throw new StoreException('Unknown payment method.');
@@ -50,5 +52,16 @@ class PaymentController extends Controller implements PaymentControllerSwagger
         $method_class = config('payable.aliases')[$method];
 
         return $method_class::translateNotification($request);
+    }
+
+    public function offlinePayment(Order $order): JsonResource
+    {
+        $payment = $order->payments()->create([
+            'method' => 'offline',
+            'amount' => $order->summary - $order->payed,
+            'payed' => true,
+        ]);
+
+        return PaymentResource::make($payment);
     }
 }
