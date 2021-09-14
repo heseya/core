@@ -91,6 +91,10 @@ Route::prefix('shipping-methods')->group(function (): void {
         ->middleware('auth:api');
     Route::delete('id:{shipping_method:id}', 'ShippingMethodController@destroy')
         ->middleware('auth:api');
+    Route::post('reorder', 'ShippingMethodController@reorder')
+        ->middleware('auth:api');
+    Route::post('order', 'ShippingMethodController@reorder')
+        ->middleware('auth:api');  // deprecated
 });
 
 Route::prefix('payment-methods')->group(function (): void {

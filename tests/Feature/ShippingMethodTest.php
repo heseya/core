@@ -6,7 +6,6 @@ use App\Models\Order;
 use App\Models\PriceRange;
 use App\Models\ShippingMethod;
 use Illuminate\Foundation\Testing\WithFaker;
-use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class ShippingMethodTest extends TestCase
