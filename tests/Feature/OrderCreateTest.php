@@ -260,7 +260,7 @@ class OrderCreateTest extends TestCase
         ]);
         $shippingMethod = ShippingMethod::factory()->create();
 
-        $response = $this->actingAs($this->user)->postJson('/orders', [
+        $response = $this->actingAs($this->user)->json('POST', '/orders', [
             'email' => 'test@example.com',
             'shipping_method_id' => $shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
@@ -279,7 +279,7 @@ class OrderCreateTest extends TestCase
         $order = Order::find($response->getData()->data->id);
 
         $this->assertDatabaseHas('orders', [
-            'id' => $order->id,
+            'id' => $order->getKey(),
             'email' => 'test@example.com',
             'shipping_price' => $shippingMethod->getPrice(
                 $this->product->price * 1,
@@ -295,7 +295,7 @@ class OrderCreateTest extends TestCase
 
         $shippingMethod = ShippingMethod::factory()->create();
 
-        $response = $this->actingAs($this->user)->postJson('/orders', [
+        $response = $this->actingAs($this->user)->json('POST', '/orders', [
             'email' => 'test@example.com',
             'shipping_method_id' => $shippingMethod->getKey(),
             'delivery_address' => [
@@ -312,7 +312,7 @@ class OrderCreateTest extends TestCase
         $response->assertStatus(422);
     }
 
-    public function testCantCreateOrderWithInvalidDiscount():void
+    public function testCantCreateOrderWithExpiredDiscount():void
     {
         $this->user->givePermissionTo('orders.add');
 
@@ -327,7 +327,40 @@ class OrderCreateTest extends TestCase
         ]);
         $shippingMethod = ShippingMethod::factory()->create();
 
-        $response = $this->actingAs($this->user)->postJson('/orders', [
+        $response = $this->actingAs($this->user)->json('POST', '/orders', [
+            'email' => 'test@example.com',
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'delivery_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+            'discounts' => [
+                $discount->code
+            ],
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function testCantCreateOrderWithDiscountBeforeStart():void
+    {
+        $this->user->givePermissionTo('orders.add');
+
+        $discount = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'code' => 'S43SA2',
+            'discount' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'max_uses' => 20,
+            'starts_at' => Carbon::now()->addDay(),
+            'expires_at' => Carbon::now()->addDays(2)
+        ]);
+        $shippingMethod = ShippingMethod::factory()->create();
+
+        $response = $this->actingAs($this->user)->json('POST', '/orders', [
             'email' => 'test@example.com',
             'shipping_method_id' => $shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
