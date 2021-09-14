@@ -11,6 +11,7 @@ use App\Http\Resources\AuthResource;
 use App\Http\Resources\LoginHistoryResource;
 use App\Http\Resources\UserResource;
 use App\Services\Contracts\AuthServiceContract;
+use App\Services\Contracts\TokenServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -18,23 +19,18 @@ use Illuminate\Support\Facades\Response;
 
 class AuthController extends Controller implements AuthControllerSwagger
 {
-    private AuthServiceContract $authServiceContract;
-
-    public function __construct(AuthServiceContract $authServiceContract)
-    {
-        $this->authServiceContract = $authServiceContract;
-    }
+    public function __construct(private AuthServiceContract $authServiceContract) {}
 
     public function login(LoginRequest $request): JsonResource
     {
-        $token = $this->authServiceContract->login(
+        $tokens = $this->authServiceContract->login(
             $request->input('email'),
             $request->input('password'),
             $request->ip(),
             $request->userAgent()
         );
 
-        return AuthResource::make($token);
+        return AuthResource::make($tokens);
     }
 
     public function logout(Request $request): JsonResponse

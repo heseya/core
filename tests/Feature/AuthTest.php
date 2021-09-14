@@ -41,14 +41,15 @@ class AuthTest extends TestCase
             ->assertOk()
             ->assertJsonStructure(['data' => [
                 'token',
-                'expires_at',
+                'identity_token',
+                'refresh_token',
+                'token',
                 'user' => [
                     'id',
                     'email',
                     'name',
                     'avatar',
                 ],
-                'scopes' => [],
             ]]);
     }
 

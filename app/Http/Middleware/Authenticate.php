@@ -3,19 +3,15 @@
 namespace App\Http\Middleware;
 
 use App\Enums\RoleType;
+use App\Enums\TokenType;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\App;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
-use Tymon\JWTAuth\Http\Parser\Parser;
-use Tymon\JWTAuth\JWT;
-use Tymon\JWTAuth\Manager;
-use Tymon\JWTAuth\Payload;
 
 class Authenticate extends Middleware
 {
@@ -41,22 +37,13 @@ class Authenticate extends Middleware
                 $user->setRelation('roles', $roles);
                 $user->id = 'null';
 
-                Auth::claims(['typ' => 'access'])->login($user);
+                Auth::claims(['typ' => TokenType::ACCESS])->login($user);
             }
         }
 
-        if (Auth::payload()->get('typ') !== 'access') {
+        if (Auth::getClaim('typ') !== TokenType::ACCESS) {
             throw new AuthenticationException();
         }
-
-////        Token service
-//
-//        $token = Auth::getToken();
-//
-//        $jwt = new JWT(app(Manager::class), new Parser(new Request()));
-//        $jwt->setToken($token);
-//
-//        dd($jwt->payload());
 
         return $next($request);
     }

@@ -8,7 +8,7 @@ use Laravel\Passport\PersonalAccessTokenResult;
 
 interface AuthServiceContract
 {
-    public function login(string $email, string $password, ?string $ip, ?string $userAgent);
+    public function login(string $email, string $password, ?string $ip, ?string $userAgent): array;
 
     public function logout(User $user): void;
 
