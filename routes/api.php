@@ -129,7 +129,7 @@ Route::prefix('product-sets')->group(function (): void {
 Route::prefix('shipping-methods')->group(function (): void {
     Route::get(null, 'ShippingMethodController@index')
         ->middleware('can:shipping_methods.show');
-    Route::post('filter', [ShippingMethodController::class, 'index'])
+    Route::get('filter', [ShippingMethodController::class, 'index'])
         ->middleware('can:shipping_methods.show');
     Route::post(null, 'ShippingMethodController@store')
         ->middleware('can:shipping_methods.add');

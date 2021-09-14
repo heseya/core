@@ -32,10 +32,28 @@ interface ShippingMethodControllerSwagger
      */
 
     /**
-     * @OA\Post(
+     * @OA\Get (
      *   path="/shipping-methods/filter",
      *   summary="list shipping methods by filters",
      *   tags={"Shipping"},
+     *   @OA\Parameter(
+     *     name="country",
+     *     in="query",
+     *     required=false,
+     *     @OA\Schema(
+     *       type="string",
+     *       example="DE",
+     *     )
+     *   ),
+     *     @OA\Parameter(
+     *     name="cart_value",
+     *     in="query",
+     *     required=false,
+     *     @OA\Schema(
+     *       type="float",
+     *       example=1200
+     *     )
+     *   ),
      *   @OA\RequestBody(
      *     ref="#/components/requestBodies/ShippingMethodIndex",
      *   ),
