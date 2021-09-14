@@ -217,7 +217,7 @@ class ShippingMethodTest extends TestCase
         $shippingMethod2->countries()->sync(['DE']);
 
         $response = $this->actingAs($this->user)
-            ->json('GET', '/shipping-methods/filter', ['country' => 'DE']);
+            ->json('GET', '/shipping-methods', ['country' => 'DE']);
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data') // Should show only public shipping methods.
