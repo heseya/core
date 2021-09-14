@@ -10,18 +10,9 @@ class RoleCreateDto implements DtoContract, InstantiateFromRequest
 {
     public function __construct(
         private string $name,
-        private string $description,
+        private ?string $description,
         private array $permissions,
     ) {
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'name' => $this->getName(),
-            'description' => $this->getDescription(),
-            'permissions' => $this->getPermissions(),
-        ];
     }
 
     public static function instantiateFromRequest(Request $request): self
@@ -33,12 +24,21 @@ class RoleCreateDto implements DtoContract, InstantiateFromRequest
         );
     }
 
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->getName(),
+            'description' => $this->getDescription(),
+            'permissions' => $this->getPermissions(),
+        ];
+    }
+
     public function getName(): string
     {
         return $this->name;
     }
 
-    public function getDescription(): string
+    public function getDescription(): ?string
     {
         return $this->description;
     }

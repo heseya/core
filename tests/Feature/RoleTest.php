@@ -394,7 +394,7 @@ class RoleTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testCreateMissingPermisions(): void
+    public function testCreateMissingPermissions(): void
     {
         $this->user->givePermissionTo('roles.add');
 
@@ -434,7 +434,8 @@ class RoleTest extends TestCase
             ],
         ]);
 
-        $response->assertCreated()
+        $response
+            ->assertCreated()
             ->assertJson(['data' => [
                 'name' => 'test_role',
                 'description' => 'Test role',
@@ -446,10 +447,37 @@ class RoleTest extends TestCase
                 ],
             ]]);
 
+        $this->assertDatabaseHas('roles', [
+            'name' => 'test_role',
+            'description' => 'Test role',
+        ]);
+
         $role = Role::findByName('test_role');
 
         $this->assertTrue($role->hasPermissionTo('test.custom1'));
         $this->assertTrue($role->hasPermissionTo('test.custom2'));
+    }
+
+    public function testCreateWithoutDescription(): void
+    {
+        $this->user->givePermissionTo('roles.add');
+
+        $this->actingAs($this->user)->postJson('/roles', [
+                'name' => 'test_role',
+            ])
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'name' => 'test_role',
+                'description' => null,
+                'assignable' => true,
+                'deletable' => true,
+                'permissions' => [],
+            ]]);
+
+        $this->assertDatabaseHas('roles', [
+            'name' => 'test_role',
+            'description' => null,
+        ]);
     }
 
     public function testUpdateUnauthorized(): void

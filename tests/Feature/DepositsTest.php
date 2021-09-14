@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Deposit;
 use App\Models\Item;
-use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class DepositsTest extends TestCase
@@ -87,11 +86,11 @@ class DepositsTest extends TestCase
         $this->user->givePermissionTo('deposits.add');
 
         $deposit = [
-            'quantity' => 12.5,
+            'quantity' => 1200000.50,
         ];
 
         $response = $this->actingAs($this->user)->postJson(
-            '/items/id:' . $this->item->getKey() . '/deposits',
+            "/items/id:{$this->item->getKey()}/deposits",
             $deposit,
         );
 
@@ -102,5 +101,37 @@ class DepositsTest extends TestCase
             ]]);
 
         $this->assertDatabaseHas('deposits', ['item_id' => $this->item->getKey()] + $deposit);
+    }
+
+    public function testCreateValidation(): void
+    {
+        $this->user->givePermissionTo('deposits.add');
+
+        $deposit = [
+            'quantity' => 'test',
+        ];
+
+        $response = $this->actingAs($this->user)->postJson(
+            "/items/id:{$this->item->getKey()}/deposits",
+            $deposit,
+        );
+
+        $response->assertStatus(422);
+    }
+
+    public function testCreateValidation2(): void
+    {
+        $this->user->givePermissionTo('deposits.add');
+
+        $deposit = [
+            'quantity' => 1000000000000,
+        ];
+
+        $response = $this->actingAs($this->user)->postJson(
+            "/items/id:{$this->item->getKey()}/deposits",
+            $deposit,
+        );
+
+        $response->assertStatus(422);
     }
 }
