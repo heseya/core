@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\DiscountType;
 use App\Models\Discount;
+use Carbon\Carbon;
 use Tests\TestCase;
 
 class DiscountTest extends TestCase
@@ -60,12 +61,14 @@ class DiscountTest extends TestCase
     {
         $this->user->givePermissionTo('discounts.add');
 
-        $response = $this->actingAs($this->user)->postJson('/discounts', [
+        $response = $this->actingAs($this->user)->json('POST', '/discounts', [
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',
             'discount' => 10,
             'type' => DiscountType::PERCENTAGE,
             'max_uses' => 20,
+            'starts_at' => Carbon::yesterday(),
+            'expires_at' => Carbon::tomorrow()
         ]);
 
         $response
@@ -78,6 +81,8 @@ class DiscountTest extends TestCase
                 'max_uses' => 20,
                 'uses' => 0,
                 'available' => true,
+                'starts_at' => Carbon::yesterday(),
+                'expires_at' => Carbon::tomorrow()
             ]);
 
         $this->assertDatabaseHas('discounts', [
@@ -86,6 +91,8 @@ class DiscountTest extends TestCase
             'discount' => 10,
             'max_uses' => 20,
             'type' => DiscountType::PERCENTAGE,
+            'starts_at' => Carbon::yesterday(),
+            'expires_at' => Carbon::tomorrow()
         ]);
     }
 
@@ -103,12 +110,14 @@ class DiscountTest extends TestCase
         $discount = Discount::factory()->create();
 
         $response = $this->actingAs($this->user)
-            ->patchJson('/discounts/id:' . $discount->getKey(), [
+            ->json('PATCH', '/discounts/id:' . $discount->getKey(), [
                 'description' => 'Weekend Sale',
                 'code' => 'WEEKEND',
                 'discount' => 20,
                 'type' => DiscountType::AMOUNT,
                 'max_uses' => 40,
+                'starts_at' => Carbon::yesterday(),
+                'expires_at' => Carbon::tomorrow()
             ]);
 
         $response
@@ -119,6 +128,8 @@ class DiscountTest extends TestCase
                 'code' => 'WEEKEND',
                 'discount' => 20,
                 'type' => DiscountType::AMOUNT,
+                'starts_at' => Carbon::yesterday(),
+                'expires_at' => Carbon::tomorrow()
             ]);
 
         $this->assertDatabaseHas('discounts', [
@@ -128,6 +139,8 @@ class DiscountTest extends TestCase
             'discount' => 20,
             'type' => DiscountType::AMOUNT,
             'max_uses' => 40,
+            'starts_at' => Carbon::yesterday(),
+            'expires_at' => Carbon::tomorrow()
         ]);
     }
 
