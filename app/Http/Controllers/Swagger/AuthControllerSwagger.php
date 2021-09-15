@@ -279,5 +279,5 @@ interface AuthControllerSwagger
      *   }
      * )
      */
-    public function profile(Request $request): JsonResource;
+    public function profile(Request $request): JsonResponse;
 }

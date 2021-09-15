@@ -115,8 +115,10 @@ class AuthController extends Controller implements AuthControllerSwagger
 //        return LoginHistoryResource::collection($session);
 //    }
 
-    public function profile(Request $request): JsonResource
+    public function profile(Request $request): JsonResponse
     {
-        return UserResource::make($request->user());
+        return UserResource::make($request->user())
+            ->response()
+            ->setStatusCode(200);
     }
 }
