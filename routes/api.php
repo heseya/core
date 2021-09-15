@@ -300,17 +300,6 @@ Route::prefix('schemas')->group(function (): void {
         ->middleware('can:products.edit');
 });
 
-Route::prefix('options')->group(function (): void {
-    Route::post(null, 'OptionController@store')
-        ->middleware('permission:products.add|products.edit');
-    Route::get('id:{option:id}', 'OptionController@show')
-        ->middleware('permission:products.add|products.edit');
-    Route::patch('id:{option:id}', 'OptionController@update')
-        ->middleware('permission:products.add|products.edit');
-    Route::delete('id:{option:id}', 'OptionController@destroy')
-        ->middleware('permission:products.add|products.edit');
-});
-
 Route::prefix('audits')->group(function (): void {
     Route::get('{class}/id:{id}', [AuditController::class, 'index'])
         ->middleware('can:audits.show');
