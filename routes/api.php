@@ -10,7 +10,6 @@ use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProductSetController;
 use App\Http\Controllers\RoleController;
-use App\Http\Controllers\ShippingMethodController;
 use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
 
@@ -128,8 +127,6 @@ Route::prefix('product-sets')->group(function (): void {
 
 Route::prefix('shipping-methods')->group(function (): void {
     Route::get(null, 'ShippingMethodController@index')
-        ->middleware('can:shipping_methods.show');
-    Route::get('filter', [ShippingMethodController::class, 'index'])
         ->middleware('can:shipping_methods.show');
     Route::post(null, 'ShippingMethodController@store')
         ->middleware('can:shipping_methods.add');

@@ -13,27 +13,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 interface ShippingMethodControllerSwagger
 {
     /**
-     * @OA\Get(
-     *   path="/shipping-methods",
-     *   summary="list shipping methods",
-     *   tags={"Shipping"},
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         type="array",
-     *         @OA\Items(ref="#/components/schemas/ShippingMethod"),
-     *       )
-     *     )
-     *   )
-     * )
-     */
-
-    /**
      * @OA\Get (
-     *   path="/shipping-methods/filter",
+     *   path="/shipping-methods",
      *   summary="list shipping methods by filters",
      *   tags={"Shipping"},
      *   @OA\Parameter(
