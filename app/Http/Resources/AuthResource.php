@@ -2,11 +2,9 @@
 
 namespace App\Http\Resources;
 
-use App\Models\User;
 use App\Services\Contracts\TokenServiceContract;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Auth;
 
 class AuthResource extends Resource
 {

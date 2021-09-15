@@ -23,7 +23,8 @@ class TokenService implements TokenServiceContract
     private EloquentUserProvider $userProvider;
     private EloquentUserProvider $appProvider;
 
-    public function __construct(Manager $manager) {
+    public function __construct(Manager $manager)
+    {
         $this->jwt = new JWT($manager, new Parser(new Request()));
         $this->userProvider = new EloquentUserProvider(app(Hasher::class), User::class);
         $this->appProvider = new EloquentUserProvider(app(Hasher::class), App::class);
@@ -62,7 +63,7 @@ class TokenService implements TokenServiceContract
         return $this->validate($token) ? $this->jwt->payload() : null;
     }
 
-    public function createToken(JWTSubject $user, TokenType $type): string
+    public function createToken(JWTSubject $user, TokenType $type, ?string $uuid = null): string
     {
         $typ = $type->value;
 
@@ -73,7 +74,12 @@ class TokenService implements TokenServiceContract
         ];
 
         $this->jwt->factory()->setTTL($exp[$typ]);
+        $claims = ['typ' => $typ];
 
-        return $this->jwt->claims(['typ' => $typ])->fromUser($user);
+        if ($uuid !== null) {
+            $claims['jti'] = $uuid;
+        }
+
+        return $this->jwt->claims($claims)->fromUser($user);
     }
 }

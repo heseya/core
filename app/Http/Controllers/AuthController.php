@@ -8,18 +8,17 @@ use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Requests\PasswordResetRequest;
 use App\Http\Requests\PasswordResetSaveRequest;
 use App\Http\Resources\AuthResource;
-use App\Http\Resources\LoginHistoryResource;
 use App\Http\Resources\UserResource;
 use App\Services\Contracts\AuthServiceContract;
-use App\Services\Contracts\TokenServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Response;
 
 class AuthController extends Controller implements AuthControllerSwagger
 {
-    public function __construct(private AuthServiceContract $authServiceContract) {}
+    public function __construct(private AuthServiceContract $authServiceContract)
+    {
+    }
 
     public function login(LoginRequest $request): JsonResource
     {
@@ -33,12 +32,23 @@ class AuthController extends Controller implements AuthControllerSwagger
         return AuthResource::make($tokens);
     }
 
-    public function logout(Request $request): JsonResponse
+    public function refresh(Request $request): JsonResource
     {
-        $this->authServiceContract->logout($request->user());
+        $tokens = $this->authServiceContract->refresh(
+            $request->input('refresh_token'),
+            $request->ip(),
+            $request->userAgent(),
+        );
 
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+        return AuthResource::make($tokens);
     }
+
+//    public function logout(Request $request): JsonResponse
+//    {
+//        $this->authServiceContract->logout($request->user());
+//
+//        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+//    }
 
     public function resetPassword(PasswordResetRequest $request): JsonResponse
     {
@@ -80,30 +90,30 @@ class AuthController extends Controller implements AuthControllerSwagger
         return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
-    public function loginHistory(Request $request): JsonResource
-    {
-        $session = $this->authServiceContract->loginHistory($request->user());
-
-        return LoginHistoryResource::collection(
-            $session->paginate(12),
-        );
-    }
-
-    public function killActiveSession(Request $request, string $oauthAccessTokensId): JsonResource
-    {
-        $session = $this->authServiceContract->killActiveSession($request->user(), $oauthAccessTokensId);
-
-        return LoginHistoryResource::collection(
-            $session->paginate(12),
-        );
-    }
-
-    public function killAllSessions(Request $request): JsonResource
-    {
-        $session = $this->authServiceContract->killAllSessions($request->user());
-
-        return LoginHistoryResource::collection($session);
-    }
+//    public function loginHistory(Request $request): JsonResource
+//    {
+//        $session = $this->authServiceContract->loginHistory($request->user());
+//
+//        return LoginHistoryResource::collection(
+//            $session->paginate(12),
+//        );
+//    }
+//
+//    public function killActiveSession(Request $request, string $oauthAccessTokensId): JsonResource
+//    {
+//        $session = $this->authServiceContract->killActiveSession($request->user(), $oauthAccessTokensId);
+//
+//        return LoginHistoryResource::collection(
+//            $session->paginate(12),
+//        );
+//    }
+//
+//    public function killAllSessions(Request $request): JsonResource
+//    {
+//        $session = $this->authServiceContract->killAllSessions($request->user());
+//
+//        return LoginHistoryResource::collection($session);
+//    }
 
     public function profile(Request $request): JsonResource
     {

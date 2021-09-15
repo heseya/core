@@ -4,9 +4,9 @@ namespace App\Http\Middleware;
 
 use App\Enums\RoleType;
 use App\Enums\TokenType;
+use App\Models\App;
 use App\Models\Role;
 use App\Models\User;
-use App\Models\App;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\Authenticate as Middleware;

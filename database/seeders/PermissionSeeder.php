@@ -36,6 +36,7 @@ class PermissionSeeder extends Seeder
 
         // Auth
         Permission::updateOrCreate(['name' => 'auth.login']);
+        Permission::updateOrCreate(['name' => 'auth.refresh']);
         Permission::updateOrCreate(['name' => 'auth.register']);
         Permission::updateOrCreate(['name' => 'auth.password_reset']);
         Permission::updateOrCreate(['name' => 'auth.password_change']);
@@ -162,7 +163,7 @@ class PermissionSeeder extends Seeder
         $owner->save();
 
         $unauthenticated = Role::updateOrCreate(['name' => 'Unauthenticated'])
-            ->givePermissionTo(['auth.login']);
+            ->givePermissionTo(['auth.login', 'auth.refresh']);
         $unauthenticated->type = RoleType::UNAUTHENTICATED;
         $unauthenticated->save();
     }

@@ -4,7 +4,6 @@ namespace App\Services\Contracts;
 
 use App\Enums\TokenType;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Laravel\Passport\PersonalAccessTokenResult;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Tymon\JWTAuth\Payload;
 
@@ -45,5 +44,5 @@ interface TokenServiceContract
      *
      * @return string
      */
-    public function createToken(JWTSubject $user, TokenType $type): string;
+    public function createToken(JWTSubject $user, TokenType $type, ?string $uuid): string;
 }
