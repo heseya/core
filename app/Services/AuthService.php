@@ -144,6 +144,24 @@ class AuthService implements AuthServiceContract
         ]);
     }
 
+    /**
+     * @throws AuthException
+     */
+    public function userByIdentity(string $identityToken): User
+    {
+        $user = $this->tokenService->getUser($identityToken);
+        $isIdentityToken = $this->tokenService->isTokenType(
+            $identityToken,
+            new TokenType(TokenType::IDENTITY),
+        );
+
+        if (!($user instanceof User) || !$isIdentityToken) {
+            throw new AuthException('Invalid identity token');
+        }
+
+        return $user;
+    }
+
 //    public function loginHistory(User $user): Builder
 //    {
 //        return Passport::token()

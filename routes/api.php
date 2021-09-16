@@ -224,6 +224,8 @@ Route::prefix('auth')->group(function (): void {
     Route::post('refresh', [AuthController::class, 'refresh'])
         ->middleware('can:auth.login');
     Route::get('profile', [AuthController::class, 'profile']);
+    Route::get('profile/{identity_token}', [AuthController::class, 'identityProfile'])
+        ->middleware('can:auth.identity_profile');
 });
 
 Route::get('deposits', 'DepositController@index')

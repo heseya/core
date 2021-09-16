@@ -280,4 +280,23 @@ interface AuthControllerSwagger
      * )
      */
     public function profile(Request $request): JsonResponse;
+
+    /**
+     * @OA\Get(
+     *   path="/auth/profile/{identity_token}",
+     *   summary="get profile resource from identity token",
+     *   tags={"Auth"},
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/ProfileView",
+     *       )
+     *     )
+     *   ),
+     * )
+     */
+    public function identityProfile(string $identityToken, Request $request): JsonResource;
 }

@@ -458,7 +458,66 @@ class AuthTest extends TestCase
             ]]);
     }
 
-//    public function testAuthWithRevokedToken(): void
+    public function testIdentityProfileUnauthorized(): void
+    {
+        $user = User::factory()->create();
+
+        $token = $this->tokenService->createToken(
+            $user,
+            new TokenType(TokenType::IDENTITY),
+        );
+
+        $this->actingAs($user)->getJson("/auth/profile/$token")
+            ->assertForbidden();
+    }
+
+    public function testIdentityProfile(): void
+    {
+        $this->user->givePermissionTo('auth.identity_profile');
+
+        $user = User::factory()->create();
+        $role1 = Role::create(['name' => 'Role 1']);
+
+        $permission1 = Permission::create(['name' => 'permission.1']);
+        $permission2 = Permission::create(['name' => 'permission.2']);
+
+        $role1->syncPermissions([$permission1, $permission2]);
+        $user->syncRoles([$role1]);
+
+        $token = $this->tokenService->createToken(
+            $user,
+            new TokenType(TokenType::IDENTITY),
+        );
+
+        $this->actingAs($this->user)->getJson("/auth/profile/$token")
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $user->getKey(),
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+                'permissions' => [
+                    'permission.1',
+                    'permission.2',
+                ],
+            ]]);
+    }
+
+    public function testIdentityProfileInvalidToken(): void
+    {
+        $this->user->givePermissionTo('auth.identity_profile');
+
+        $user = User::factory()->create();
+
+        $token = $this->tokenService->createToken(
+            $user,
+            new TokenType(TokenType::IDENTITY),
+        ) . 'invalid_hash';
+
+        $this->actingAs($this->user)->getJson("/auth/profile/$token")
+            ->assertStatus(422);
+    }
+
+//    public function testAuthWithReokedToken(): void
 //    {
 //        $user = User::factory()->create();
 //        $token = $user->createToken('Test Access Token');
