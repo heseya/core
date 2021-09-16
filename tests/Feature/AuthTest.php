@@ -2,14 +2,17 @@
 
 namespace Tests\Feature;
 
+use App\Enums\TokenType;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\Contracts\TokenServiceContract;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Str;
 use Laravel\Passport\Passport;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
@@ -41,14 +44,14 @@ class AuthTest extends TestCase
             ->assertOk()
             ->assertJsonStructure(['data' => [
                 'token',
-                'expires_at',
+                'identity_token',
+                'refresh_token',
                 'user' => [
                     'id',
                     'email',
                     'name',
                     'avatar',
                 ],
-                'scopes' => [],
             ]]);
     }
 
@@ -64,11 +67,87 @@ class AuthTest extends TestCase
         $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 
+    public function testRefreshTokenUnauthorized(): void
+    {
+        $token = App::make(TokenServiceContract::class)->createToken(
+            $this->user,
+            new TokenType(TokenType::REFRESH),
+        );
+
+        $response = $this->actingAs($this->user)->postJson('/auth/refresh', [
+            'refresh_token' => $token,
+        ]);
+
+        $response->assertForbidden();
+    }
+
+    public function testRefreshToken(): void
+    {
+        $this->user->givePermissionTo('auth.login');
+
+        $token = App::make(TokenServiceContract::class)->createToken(
+            $this->user,
+            new TokenType(TokenType::REFRESH),
+        );
+
+        $response = $this->actingAs($this->user)->postJson('/auth/refresh', [
+            'refresh_token' => $token,
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonStructure(['data' => [
+                'token',
+                'identity_token',
+                'refresh_token',
+                'user' => [
+                    'id',
+                    'email',
+                    'name',
+                    'avatar',
+                ],
+            ]]);
+    }
+
+    public function testRefreshTokenInvalidated(): void
+    {
+        $this->user->givePermissionTo('auth.login');
+
+        $token = App::make(TokenServiceContract::class)->createToken(
+            $this->user,
+            new TokenType(TokenType::REFRESH),
+        );
+        $this->tokenService->invalidateToken($token);
+
+        $response = $this->actingAs($this->user)->postJson('/auth/refresh', [
+            'refresh_token' => $token,
+        ]);
+
+        $response->assertStatus(422);
+    }
+
     public function testLogout(): void
     {
-        $response = $this->actingAs($this->user)->actingAs($this->user)
+        $uuid = Str::uuid()->toString();
+        $token = $this->tokenService->createToken(
+            $this->user,
+            new TokenType(TokenType::ACCESS),
+            $uuid,
+        );
+
+        $this->withHeaders(
+            $this->defaultHeaders + ['Authorization' => 'Bearer ' . $token],
+        );
+
+        $response = $this
+            ->withHeaders($this->defaultHeaders + ['Authorization' => 'Bearer ' . $token])
             ->postJson('/auth/logout');
         $response->assertNoContent();
+
+        $this->assertDatabaseHas('tokens', [
+            'id' => $uuid,
+            'invalidated' => true,
+        ]);
     }
 
     public function testResetPasswordUnauthorized(): void
@@ -195,158 +274,158 @@ class AuthTest extends TestCase
         $this->assertTrue(Hash::check('Test1@3456', $user->password));
     }
 
-    public function testLoginHistoryUnauthorized(): void
-    {
-        $response = $this->actingAs($this->user)->getJson('/auth/login-history');
-        $response->assertForbidden();
-    }
-
-    public function testLoginHistory(): void
-    {
-        $this->user->givePermissionTo('auth.sessions.show');
-
-        $response = $this->actingAs($this->user)->getJson('/auth/login-history');
-        $response->assertOk();
-    }
-
-    public function testKillActiveSessionUnauthorized(): void
-    {
-        $user = User::factory()->create();
-        $token = $user->createToken('Test Active Token');
-        $headers = ['Authorization' => 'Bearer ' . $token->accessToken];
-
-        $this->getJson('/auth/kill-session/id:' . $token->token->id, $headers)
-            ->assertForbidden();
-    }
-
-    public function testKillActiveSession(): void
-    {
-        $user = User::factory()->create();
-        $user->givePermissionTo('auth.sessions.revoke');
-
-        $token = $user->createToken('Test Active Token');
-        $headers = ['Authorization' => 'Bearer ' . $token->accessToken];
-
-        $this->getJson('/auth/kill-session/id:' . $token->token->id, $headers)
-            ->assertStatus(422);
-
-        $this->assertDatabaseHas('oauth_access_tokens', [
-            'id' => $token->token->id,
-            'user_id' => $user->getKey(),
-            'revoked' => false,
-        ]);
-    }
-
-    public function testKillOldSessionUnauthorized(): void
-    {
-        $user = User::factory()->create();
-        $token1 = $user->createToken('Test A Access Token');
-        $token3 = $user->createToken('Test C Access Token');
-
-        $headers = ['Authorization' => 'Bearer ' . $token1->accessToken];
-        $this->getJson('/auth/kill-session/id:' . $token3->token->id, $headers)
-            ->assertForbidden();
-    }
-
-    public function testKillOldSession(): void
-    {
-        $user = User::factory()->create();
-        $user->givePermissionTo('auth.sessions.revoke');
-
-        $token1 = $user->createToken('Test A Access Token');
-        $token2 = $user->createToken('Test B Access Token');
-        $token3 = $user->createToken('Test C Access Token');
-
-        $headers = ['Authorization' => 'Bearer ' . $token1->accessToken];
-        $this->getJson('/auth/kill-session/id:' . $token3->token->id, $headers)
-            ->assertOk()
-            ->assertJsonCount(3, 'data')
-            ->assertJsonFragment(
-                [
-                    'id' => $token3->token->id,
-                    'current_session' => false,
-                    'revoked' => true,
-                ],
-            );
-
-        $this->assertDatabaseHas('oauth_access_tokens', [
-            'id' => $token1->token->id,
-            'user_id' => $user->getKey(),
-            'revoked' => false,
-        ]);
-        $this->assertDatabaseHas('oauth_access_tokens', [
-            'id' => $token2->token->id,
-            'user_id' => $user->getKey(),
-            'revoked' => false,
-        ]);
-        $this->assertDatabaseHas('oauth_access_tokens', [
-            'id' => $token3->token->id,
-            'user_id' => $user->getKey(),
-            'revoked' => true,
-        ]);
-    }
-
-    public function testKillAllSessionsUnauthorized(): void
-    {
-        $user = User::factory()->create();
-
-        $token3 = $user->createToken('Test 3 Access Token');
-
-        $token3->token->update([
-          'ip' => Request::ip(),
-        ]);
-
-        $headers = ['Authorization' => 'Bearer ' . $token3->accessToken];
-        $this->getJson('/auth/kill-all-sessions', $headers)
-            ->assertForbidden();
-    }
-
-    public function testKillAllSessions(): void
-    {
-        $user = User::factory()->create();
-        $user->givePermissionTo('auth.sessions.revoke');
-
-        $token1 = $user->createToken('Test 1 Access Token');
-        $token2 = $user->createToken('Test 2 Access Token');
-        $token3 = $user->createToken('Test 3 Access Token');
-
-        $token3->token->update([
-            'ip' => Request::ip(),
-        ]);
-
-        $headers = ['Authorization' => 'Bearer ' . $token3->accessToken];
-        $this->getJson('/auth/kill-all-sessions', $headers)
-            ->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(
-                [
-                    'current_session' => true,
-                    'ip' => Request::ip(),
-                    'revoked' => false,
-                ],
-            );
-
-        $this->assertDatabaseHas('oauth_access_tokens', [
-            'id' => $token3->token->id,
-            'user_id' => $user->getKey(),
-            'revoked' => false,
-        ]);
-
-        // check revoked sessions
-        $resultToken1 = $this->checkToken($token1->token->id, true);
-        $this->assertCount(1, $resultToken1);
-
-        $resultToken2 = $this->checkToken($token2->token->id, true);
-        $this->assertCount(1, $resultToken2);
-    }
-
-    private function checkToken(string $idToken, bool $isRevoke)
-    {
-        return Passport::token()
-            ->where('id', $idToken)
-            ->where('revoked', $isRevoke)
-            ->get();
-    }
+//    public function testLoginHistoryUnauthorized(): void
+//    {
+//        $response = $this->actingAs($this->user)->getJson('/auth/login-history');
+//        $response->assertForbidden();
+//    }
+//
+//    public function testLoginHistory(): void
+//    {
+//        $this->user->givePermissionTo('auth.sessions.show');
+//
+//        $response = $this->actingAs($this->user)->getJson('/auth/login-history');
+//        $response->assertOk();
+//    }
+//
+//    public function testKillActiveSessionUnauthorized(): void
+//    {
+//        $user = User::factory()->create();
+//        $token = $user->createToken('Test Active Token');
+//        $headers = ['Authorization' => 'Bearer ' . $token->accessToken];
+//
+//        $this->getJson('/auth/kill-session/id:' . $token->token->id, $headers)
+//            ->assertForbidden();
+//    }
+//
+//    public function testKillActiveSession(): void
+//    {
+//        $user = User::factory()->create();
+//        $user->givePermissionTo('auth.sessions.revoke');
+//
+//        $token = $user->createToken('Test Active Token');
+//        $headers = ['Authorization' => 'Bearer ' . $token->accessToken];
+//
+//        $this->getJson('/auth/kill-session/id:' . $token->token->id, $headers)
+//            ->assertStatus(422);
+//
+//        $this->assertDatabaseHas('oauth_access_tokens', [
+//            'id' => $token->token->id,
+//            'user_id' => $user->getKey(),
+//            'revoked' => false,
+//        ]);
+//    }
+//
+//    public function testKillOldSessionUnauthorized(): void
+//    {
+//        $user = User::factory()->create();
+//        $token1 = $user->createToken('Test A Access Token');
+//        $token3 = $user->createToken('Test C Access Token');
+//
+//        $headers = ['Authorization' => 'Bearer ' . $token1->accessToken];
+//        $this->getJson('/auth/kill-session/id:' . $token3->token->id, $headers)
+//            ->assertForbidden();
+//    }
+//
+//    public function testKillOldSession(): void
+//    {
+//        $user = User::factory()->create();
+//        $user->givePermissionTo('auth.sessions.revoke');
+//
+//        $token1 = $user->createToken('Test A Access Token');
+//        $token2 = $user->createToken('Test B Access Token');
+//        $token3 = $user->createToken('Test C Access Token');
+//
+//        $headers = ['Authorization' => 'Bearer ' . $token1->accessToken];
+//        $this->getJson('/auth/kill-session/id:' . $token3->token->id, $headers)
+//            ->assertOk()
+//            ->assertJsonCount(3, 'data')
+//            ->assertJsonFragment(
+//                [
+//                    'id' => $token3->token->id,
+//                    'current_session' => false,
+//                    'revoked' => true,
+//                ],
+//            );
+//
+//        $this->assertDatabaseHas('oauth_access_tokens', [
+//            'id' => $token1->token->id,
+//            'user_id' => $user->getKey(),
+//            'revoked' => false,
+//        ]);
+//        $this->assertDatabaseHas('oauth_access_tokens', [
+//            'id' => $token2->token->id,
+//            'user_id' => $user->getKey(),
+//            'revoked' => false,
+//        ]);
+//        $this->assertDatabaseHas('oauth_access_tokens', [
+//            'id' => $token3->token->id,
+//            'user_id' => $user->getKey(),
+//            'revoked' => true,
+//        ]);
+//    }
+//
+//    public function testKillAllSessionsUnauthorized(): void
+//    {
+//        $user = User::factory()->create();
+//
+//        $token3 = $user->createToken('Test 3 Access Token');
+//
+//        $token3->token->update([
+//          'ip' => Request::ip(),
+//        ]);
+//
+//        $headers = ['Authorization' => 'Bearer ' . $token3->accessToken];
+//        $this->getJson('/auth/kill-all-sessions', $headers)
+//            ->assertForbidden();
+//    }
+//
+//    public function testKillAllSessions(): void
+//    {
+//        $user = User::factory()->create();
+//        $user->givePermissionTo('auth.sessions.revoke');
+//
+//        $token1 = $user->createToken('Test 1 Access Token');
+//        $token2 = $user->createToken('Test 2 Access Token');
+//        $token3 = $user->createToken('Test 3 Access Token');
+//
+//        $token3->token->update([
+//            'ip' => Request::ip(),
+//        ]);
+//
+//        $headers = ['Authorization' => 'Bearer ' . $token3->accessToken];
+//        $this->getJson('/auth/kill-all-sessions', $headers)
+//            ->assertOk()
+//            ->assertJsonCount(1, 'data')
+//            ->assertJsonFragment(
+//                [
+//                    'current_session' => true,
+//                    'ip' => Request::ip(),
+//                    'revoked' => false,
+//                ],
+//            );
+//
+//        $this->assertDatabaseHas('oauth_access_tokens', [
+//            'id' => $token3->token->id,
+//            'user_id' => $user->getKey(),
+//            'revoked' => false,
+//        ]);
+//
+//        // check revoked sessions
+//        $resultToken1 = $this->checkToken($token1->token->id, true);
+//        $this->assertCount(1, $resultToken1);
+//
+//        $resultToken2 = $this->checkToken($token2->token->id, true);
+//        $this->assertCount(1, $resultToken2);
+//    }
+//
+//    private function checkToken(string $idToken, bool $isRevoke)
+//    {
+//        return Passport::token()
+//            ->where('id', $idToken)
+//            ->where('revoked', $isRevoke)
+//            ->get();
+//    }
 
     public function testProfile(): void
     {
@@ -379,14 +458,14 @@ class AuthTest extends TestCase
             ]]);
     }
 
-    public function testAuthWithRevokedToken(): void
-    {
-        $user = User::factory()->create();
-        $token = $user->createToken('Test Access Token');
-        $token->token->revoke();
-
-        $headers = ['Authorization' => 'Bearer ' . $token->accessToken];
-        $this->getJson('/auth/kill-all-sessions', $headers)
-            ->assertUnauthorized();
-    }
+//    public function testAuthWithRevokedToken(): void
+//    {
+//        $user = User::factory()->create();
+//        $token = $user->createToken('Test Access Token');
+//        $token->token->revoke();
+//
+//        $headers = ['Authorization' => 'Bearer ' . $token->accessToken];
+//        $this->getJson('/auth/kill-all-sessions', $headers)
+//            ->assertUnauthorized();
+//    }
 }
