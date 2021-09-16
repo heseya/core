@@ -13,6 +13,7 @@ use App\Services\Contracts\AuthServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Response;
 
 class AuthController extends Controller implements AuthControllerSwagger
 {
@@ -47,14 +48,14 @@ class AuthController extends Controller implements AuthControllerSwagger
     {
         $this->authServiceContract->logout();
 
-        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function resetPassword(PasswordResetRequest $request): JsonResponse
     {
         $this->authServiceContract->resetPassword($request->input('email'));
 
-        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function showResetPasswordForm(Request $request): JsonResource
@@ -75,7 +76,7 @@ class AuthController extends Controller implements AuthControllerSwagger
             $request->input('password')
         );
 
-        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function changePassword(PasswordChangeRequest $request): JsonResponse
@@ -87,7 +88,7 @@ class AuthController extends Controller implements AuthControllerSwagger
             $request->input('password_new')
         );
 
-        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
 //    public function loginHistory(Request $request): JsonResource
