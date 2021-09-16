@@ -45,4 +45,11 @@ interface TokenServiceContract
      * @return string
      */
     public function createToken(JWTSubject $user, TokenType $type, ?string $uuid): string;
+
+    /**
+     * Invalidates the given token
+     *
+     * @param string $token
+     */
+    public function invalidateToken(string $token): void;
 }

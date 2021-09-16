@@ -2,15 +2,17 @@
 
 namespace Tests;
 
+use App\Enums\TokenType;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\Contracts\TokenServiceContract;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -18,10 +20,13 @@ abstract class TestCase extends BaseTestCase
 
     public User $user;
     public string $password = 'secret';
+    public TokenServiceContract $tokenService;
 
     public function setUp(): void
     {
         parent::setUp();
+
+        $this->tokenService = App::make(TokenServiceContract::class);
 
         $this->seed(PermissionSeeder::class);
         Role::query()->delete();
@@ -32,7 +37,11 @@ abstract class TestCase extends BaseTestCase
     }
     public function actingAs(Authenticatable $user, $guard = null)
     {
-        $token = Auth::claims(['typ' => 'access'])->login($user);
+        $token = $this->tokenService->createToken(
+            $user,
+            new TokenType(TokenType::ACCESS),
+            Str::uuid()->toString(),
+        );
 
         $this->withHeaders(
             $this->defaultHeaders + ['Authorization' => 'Bearer ' . $token],

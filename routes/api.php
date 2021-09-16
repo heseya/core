@@ -214,8 +214,8 @@ Route::prefix('analytics')->group(function (): void {
 });
 
 Route::prefix('auth')->group(function (): void {
-//    Route::post('logout', [AuthController::class, 'logout'])
-//        ->middleware('auth:api');
+    Route::post('logout', [AuthController::class, 'logout'])
+        ->middleware('auth:api');
 //    Route::get('login-history', [AuthController::class, 'loginHistory'])
 //        ->middleware('can:auth.sessions.show');
 //    Route::get('kill-session/id:{id}', [AuthController::class, 'killActiveSession'])
@@ -223,7 +223,7 @@ Route::prefix('auth')->group(function (): void {
 //    Route::get('kill-all-sessions', [AuthController::class, 'killAllSessions'])
 //        ->middleware('can:auth.sessions.revoke');
     Route::post('refresh', [AuthController::class, 'refresh'])
-        ->middleware('can:auth.refresh');
+        ->middleware('can:auth.login');
     Route::get('profile', [AuthController::class, 'profile']);
 });
 

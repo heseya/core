@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Laravel\Passport\Passport;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
@@ -82,7 +83,7 @@ class AuthTest extends TestCase
 
     public function testRefreshToken(): void
     {
-        $this->user->givePermissionTo('auth.refresh');
+        $this->user->givePermissionTo('auth.login');
 
         $token = App::make(TokenServiceContract::class)->createToken(
             $this->user,
@@ -106,15 +107,48 @@ class AuthTest extends TestCase
                     'avatar',
                 ],
             ]]);
-
     }
 
-//    public function testLogout(): void
-//    {
-//        $response = $this->actingAs($this->user)->actingAs($this->user)
-//            ->postJson('/auth/logout');
-//        $response->assertNoContent();
-//    }
+    public function testRefreshTokenInvalidated(): void
+    {
+        $this->user->givePermissionTo('auth.login');
+
+        $token = App::make(TokenServiceContract::class)->createToken(
+            $this->user,
+            new TokenType(TokenType::REFRESH),
+        );
+        $this->tokenService->invalidateToken($token);
+
+        $response = $this->actingAs($this->user)->postJson('/auth/refresh', [
+            'refresh_token' => $token,
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function testLogout(): void
+    {
+        $uuid = Str::uuid()->toString();
+        $token = $this->tokenService->createToken(
+            $this->user,
+            new TokenType(TokenType::ACCESS),
+            $uuid,
+        );
+
+        $this->withHeaders(
+            $this->defaultHeaders + ['Authorization' => 'Bearer ' . $token],
+        );
+
+        $response = $this
+            ->withHeaders($this->defaultHeaders + ['Authorization' => 'Bearer ' . $token])
+            ->postJson('/auth/logout');
+        $response->assertNoContent();
+
+        $this->assertDatabaseHas('tokens', [
+            'id' => $uuid,
+            'invalidated' => true,
+        ]);
+    }
 
     public function testResetPasswordUnauthorized(): void
     {

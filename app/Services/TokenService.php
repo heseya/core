@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\TokenType;
 use App\Models\App;
+use App\Models\Token;
 use App\Models\User;
 use App\Services\Contracts\TokenServiceContract;
 use Illuminate\Auth\EloquentUserProvider;
@@ -84,5 +85,18 @@ class TokenService implements TokenServiceContract
         }
 
         return $this->jwt->claims($claims)->fromUser($user);
+    }
+
+    public function invalidateToken(string $token): void
+    {
+        $payload = $this->payload($token);
+
+        if ($payload !== null) {
+            Token::updateOrCreate([
+                'id' => $payload->get('jti'),
+                'invalidated' => true,
+                'expires_at' => $payload->get('exp'),
+            ]);
+        }
     }
 }

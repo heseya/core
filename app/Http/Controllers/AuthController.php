@@ -43,12 +43,12 @@ class AuthController extends Controller implements AuthControllerSwagger
         return AuthResource::make($tokens);
     }
 
-//    public function logout(Request $request): JsonResponse
-//    {
-//        $this->authServiceContract->logout($request->user());
-//
-//        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
-//    }
+    public function logout(Request $request): JsonResponse
+    {
+        $this->authServiceContract->logout();
+
+        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
+    }
 
     public function resetPassword(PasswordResetRequest $request): JsonResponse
     {

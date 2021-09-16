@@ -63,24 +63,17 @@ class AuthService implements AuthServiceContract
         }
 
         $payload = $this->tokenService->payload($refreshToken);
-        $tokenId = $payload->get('jti');
 
         if (
             $payload->get('typ') !== TokenType::REFRESH ||
-            Token::where('id', $tokenId)->where('invalidated', true)->exists()
+            Token::where('id', $payload->get('jti'))->where('invalidated', true)->exists()
         ) {
             throw new AuthException('Invalid token');
         }
 
-        // Adding previous refresh token to blacklist
-        Token::create([
-            'id' => $tokenId,
-            'invalidated' => true,
-            'expires_at' => $payload->get('exp'),
-        ]);
-
-        $user = $this->tokenService->getUser($refreshToken);
         $uuid = Str::uuid()->toString();
+        $user = $this->tokenService->getUser($refreshToken);
+        $this->tokenService->invalidateToken($refreshToken);
 
         $token = $this->tokenService->createToken(
             $user,
@@ -105,17 +98,10 @@ class AuthService implements AuthServiceContract
         ];
     }
 
-//    public function logout(User $user): void
-//    {
-//        $token = $user->token();
-//
-//        if ($token) {
-//            $token->update([
-//                'revoked' => true,
-//                'expires_at' => Carbon::now(),
-//            ]);
-//        }
-//    }
+    public function logout(): void
+    {
+        $this->tokenService->invalidateToken(Auth::getToken());
+    }
 
     public function resetPassword(string $email): void
     {
