@@ -74,7 +74,10 @@ class TokenService implements TokenServiceContract
         ];
 
         $this->jwt->factory()->setTTL($exp[$typ]);
-        $claims = ['typ' => $typ];
+        $claims = [
+            'iss' => Config::get('app.url'),
+            'typ' => $typ,
+        ];
 
         if ($uuid !== null) {
             $claims['jti'] = $uuid;

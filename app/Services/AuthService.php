@@ -10,6 +10,7 @@ use App\Notifications\ResetPassword;
 use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\TokenServiceContract;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -25,7 +26,8 @@ class AuthService implements AuthServiceContract
         $uuid = Str::uuid()->toString();
 
         $token = Auth::claims([
-            'typ' => 'access',
+            'iss' => Config::get('app.url'),
+            'typ' => TokenType::ACCESS,
             'jti' => $uuid,
         ])->attempt([
             'email' => $email,
