@@ -8,6 +8,7 @@ use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Requests\PasswordResetRequest;
 use App\Http\Requests\PasswordResetSaveRequest;
 use App\Http\Resources\AuthResource;
+use App\Http\Resources\ProfileResource;
 use App\Http\Resources\UserResource;
 use App\Services\Contracts\AuthServiceContract;
 use Illuminate\Http\JsonResponse;
@@ -16,13 +17,13 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class AuthController extends Controller implements AuthControllerSwagger
 {
-    public function __construct(private AuthServiceContract $authServiceContract)
+    public function __construct(private AuthServiceContract $authService)
     {
     }
 
     public function login(LoginRequest $request): JsonResource
     {
-        $tokens = $this->authServiceContract->login(
+        $tokens = $this->authService->login(
             $request->input('email'),
             $request->input('password'),
             $request->ip(),
@@ -34,7 +35,7 @@ class AuthController extends Controller implements AuthControllerSwagger
 
     public function refresh(Request $request): JsonResource
     {
-        $tokens = $this->authServiceContract->refresh(
+        $tokens = $this->authService->refresh(
             $request->input('refresh_token'),
             $request->ip(),
             $request->userAgent(),
@@ -45,21 +46,21 @@ class AuthController extends Controller implements AuthControllerSwagger
 
     public function logout(Request $request): JsonResponse
     {
-        $this->authServiceContract->logout();
+        $this->authService->logout();
 
         return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function resetPassword(PasswordResetRequest $request): JsonResponse
     {
-        $this->authServiceContract->resetPassword($request->input('email'));
+        $this->authService->resetPassword($request->input('email'));
 
         return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function showResetPasswordForm(Request $request): JsonResource
     {
-        $user = $this->authServiceContract->showResetPasswordForm(
+        $user = $this->authService->showResetPasswordForm(
             $request->input('email'),
             $request->input('token')
         );
@@ -69,7 +70,7 @@ class AuthController extends Controller implements AuthControllerSwagger
 
     public function saveResetPassword(PasswordResetSaveRequest $request): JsonResponse
     {
-        $this->authServiceContract->saveResetPassword(
+        $this->authService->saveResetPassword(
             $request->input('email'),
             $request->input('token'),
             $request->input('password')
@@ -81,7 +82,7 @@ class AuthController extends Controller implements AuthControllerSwagger
     public function changePassword(PasswordChangeRequest $request): JsonResponse
     {
         $user = $request->user();
-        $this->authServiceContract->changePassword(
+        $this->authService->changePassword(
             $user,
             $request->input('password'),
             $request->input('password_new')
@@ -120,5 +121,12 @@ class AuthController extends Controller implements AuthControllerSwagger
         return UserResource::make($request->user())
             ->response()
             ->setStatusCode(200);
+    }
+
+    public function identityProfile(string $identityToken, Request $request): JsonResource
+    {
+        $user = $this->authService->userByIdentity($identityToken);
+
+        return ProfileResource::make($user);
     }
 }

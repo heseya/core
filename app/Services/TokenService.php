@@ -99,4 +99,15 @@ class TokenService implements TokenServiceContract
             ]);
         }
     }
+
+    public function isTokenType(string $token, TokenType $type): bool
+    {
+        $payload = $this->payload($token);
+
+        if ($payload === null) {
+            return false;
+        }
+
+        return $type->is($payload->get('typ'));
+    }
 }

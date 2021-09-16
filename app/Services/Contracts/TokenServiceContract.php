@@ -14,7 +14,7 @@ interface TokenServiceContract
      *
      * @param string $token
      *
-     * @return Payload|null
+     * @return bool
      */
     public function validate(string $token): bool;
 
@@ -23,7 +23,7 @@ interface TokenServiceContract
      *
      * @param string $token
      *
-     * @return Payload|null
+     * @return Authenticatable|null
      */
     public function getUser(string $token): ?Authenticatable;
 
@@ -52,4 +52,14 @@ interface TokenServiceContract
      * @param string $token
      */
     public function invalidateToken(string $token): void;
+
+    /**
+     * Returns whether token is of given type
+     *
+     * @param string $token
+     * @param TokenType $type
+     *
+     * @return bool
+     */
+    public function isTokenType(string $token, TokenType $type): bool;
 }
