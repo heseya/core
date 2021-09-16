@@ -159,7 +159,7 @@ interface AuthControllerSwagger
     public function changePassword(PasswordChangeRequest $request): JsonResponse;
 
     /**
-     * @OA\Get(
+     * @OA\Post(
      *   path="/auth/refresh",
      *   summary="Refresh access and identity tokens",
      *   tags={"Auth"},

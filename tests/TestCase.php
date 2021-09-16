@@ -25,6 +25,7 @@ abstract class TestCase extends BaseTestCase
     public function setUp(): void
     {
         parent::setUp();
+        ini_set('memory_limit', '1024M');
 
         $this->tokenService = App::make(TokenServiceContract::class);
 
