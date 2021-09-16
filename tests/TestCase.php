@@ -20,6 +20,7 @@ abstract class TestCase extends BaseTestCase
     public function setUp(): void
     {
         parent::setUp();
+        ini_set('memory_limit', '1024M');
 
         Artisan::call('passport:install');
         $this->seed(PermissionSeeder::class);
