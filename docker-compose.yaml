@@ -16,7 +16,7 @@ services:
         php artisan key:generate
         sleep 15
         php artisan migrate --seed
-        php artisan passport:install
+        php artisan jwt:secret --always-no
         touch /usr/src/init
       fi
       exec apache2-foreground
