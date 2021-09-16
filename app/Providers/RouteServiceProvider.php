@@ -32,10 +32,10 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function mapApiRoutes(): void
     {
-        foreach (File::allFiles('../routes/api') as $route_file) {
+        foreach (File::allFiles(base_path('/routes/api')) as $routeFile) {
             Route::middleware('api')
                 ->namespace($this->namespace)
-                ->group(base_path($route_file->getPathname()));
+                ->group(base_path($routeFile->getPathname()));
         }
     }
 }
