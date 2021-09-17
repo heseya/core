@@ -46,6 +46,7 @@ Route::prefix('orders')->group(function (): void {
     Route::post('id:{order:id}/status', 'OrderController@updateStatus')->middleware('auth:api');
     Route::patch('id:{order:id}', 'OrderController@update')->middleware('auth:api');
     Route::get('{order:code}', 'OrderController@showPublic');
+    Route::post('{order:code}/pay/offline', 'PaymentController@offlinePayment')->middleware('auth:api');
     Route::post('{order:code}/pay/{method}', 'PaymentController@store');
 });
 
@@ -90,6 +91,10 @@ Route::prefix('shipping-methods')->group(function (): void {
         ->middleware('auth:api');
     Route::delete('id:{shipping_method:id}', 'ShippingMethodController@destroy')
         ->middleware('auth:api');
+    Route::post('reorder', 'ShippingMethodController@reorder')
+        ->middleware('auth:api');
+    Route::post('order', 'ShippingMethodController@reorder')
+        ->middleware('auth:api');  // deprecated
 });
 
 Route::prefix('payment-methods')->group(function (): void {

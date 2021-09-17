@@ -53,4 +53,15 @@ class PaymentController extends Controller implements PaymentControllerSwagger
 
         return $method_class::translateNotification($request);
     }
+
+    public function offlinePayment(Order $order): JsonResource
+    {
+        $payment = $order->payments()->create([
+            'method' => 'offline',
+            'amount' => $order->summary - $order->payed,
+            'payed' => true,
+        ]);
+
+        return PaymentResource::make($payment);
+    }
 }

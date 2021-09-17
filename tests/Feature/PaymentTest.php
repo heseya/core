@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Order;
-use App\Events\OrderStatusUpdated;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ShippingMethod;
@@ -89,6 +88,42 @@ class PaymentTest extends TestCase
             'id' => $payment->getKey(),
             'payed' => true,
         ]);
+    }
+
+    public function testOfflinePaymentUnauthorized(): void
+    {
+        $code = $this->order->code;
+        $response = $this->postJson("/orders/$code/pay/offline");
+
+        $response->assertUnauthorized();
+    }
+
+    public function testOfflinePayment(): void
+    {
+        $code = $this->order->code;
+        $response = $this->actingAs($this->user)
+            ->postJson("/orders/$code/pay/offline");
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'method' => 'offline',
+                'payed' => true,
+                'amount' => $this->order->summary,
+                'external_id' => null,
+                'redirect_url' => null,
+                'continue_url' => null,
+            ]);
+
+        $this->assertDatabaseHas('payments', [
+            'order_id' => $this->order->getKey(),
+            'method' => 'offline',
+            'payed' => true,
+            'amount' => $this->order->summary,
+        ]);
+
+        $this->order->refresh();
+        $this->assertTrue($this->order->isPayed());
     }
 
 //    public function testPayPalNotification(): void
