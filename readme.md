@@ -51,6 +51,7 @@ php artisan insights
 ```
 
 Additional:
+- don't use laravel class aliases like `\DB`, `\Arr`, use full import instead (we deleted aliases, so it's won't work either),
 - all variables in this project should be `snake_case` and functions (relations too) `camelCase`,
 - variables containing links like `avatar_url` should always end with `_url`,
 - all models must have uuid4 formatted ID,
