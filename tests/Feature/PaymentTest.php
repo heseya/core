@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Order;
-use App\Events\OrderStatusUpdated;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ShippingMethod;
@@ -94,16 +93,13 @@ class PaymentTest extends TestCase
     public function testOfflinePaymentUnauthorized(): void
     {
         $code = $this->order->code;
-        $response = $this->actingAs($this->user)
-            ->postJson("/orders/$code/pay/offline");
+        $response = $this->postJson("/orders/$code/pay/offline");
 
         $response->assertForbidden();
     }
 
     public function testOfflinePayment(): void
     {
-        $this->user->givePermissionTo('payments.offline');
-
         $code = $this->order->code;
         $response = $this->actingAs($this->user)
             ->postJson("/orders/$code/pay/offline");
