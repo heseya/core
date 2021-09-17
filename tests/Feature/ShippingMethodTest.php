@@ -168,14 +168,12 @@ class ShippingMethodTest extends TestCase
         $response = $this->postJson('/shipping-methods');
         $response->assertUnauthorized();
 
-        Passport::actingAs($this->user);
-
         $shipping_method = [
             'name' => 'Test',
             'public' => true,
         ];
 
-        $response = $this->postJson('/shipping-methods', $shipping_method + [
+        $response = $this->actingAs($this->user)->postJson('/shipping-methods', $shipping_method + [
             'price_ranges' => [
                 [
                     'start' => 0,
@@ -272,14 +270,12 @@ class ShippingMethodTest extends TestCase
         $response = $this->patchJson('/shipping-methods/id:' . $this->shipping_method->getKey());
         $response->assertUnauthorized();
 
-        Passport::actingAs($this->user);
-
         $shipping_method = [
             'name' => 'Test 2',
             'public' => false,
         ];
 
-        $response = $this->patchJson(
+        $response = $this->actingAs($this->user)->patchJson(
             '/shipping-methods/id:' . $this->shipping_method->getKey(),
             $shipping_method + [
                 'price_ranges' => [
@@ -316,24 +312,20 @@ class ShippingMethodTest extends TestCase
         $response->assertUnauthorized();
         $this->assertDatabaseHas('shipping_methods', $this->shipping_method->toArray());
 
-        Passport::actingAs($this->user);
-
-        $response = $this->deleteJson('/shipping-methods/id:' . $this->shipping_method->getKey());
+        $response = $this->actingAs($this->user)->deleteJson('/shipping-methods/id:' . $this->shipping_method->getKey());
         $response->assertNoContent();
         $this->assertDeleted($this->shipping_method);
     }
 
     public function testDeleteWithRelations(): void
     {
-        Passport::actingAs($this->user);
-
         $this->shipping_method = ShippingMethod::factory()->create();
 
         Order::factory()->create([
             'shipping_method_id' => $this->shipping_method->getKey(),
         ]);
 
-        $response = $this->deleteJson('/shipping-methods/id:' . $this->shipping_method->getKey());
+        $response = $this->actingAs($this->user)->deleteJson('/shipping-methods/id:' . $this->shipping_method->getKey());
         $response->assertStatus(400);
         $this->assertDatabaseHas('shipping_methods', $this->shipping_method->toArray());
     }

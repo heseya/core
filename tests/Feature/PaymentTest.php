@@ -95,7 +95,7 @@ class PaymentTest extends TestCase
         $code = $this->order->code;
         $response = $this->postJson("/orders/$code/pay/offline");
 
-        $response->assertForbidden();
+        $response->assertUnauthorized();
     }
 
     public function testOfflinePayment(): void
