@@ -28,7 +28,7 @@ class ShippingMethodPriceRangesTest extends TestCase
         $priceRange3->prices()->create(['value' => 0]);
 
         $this->actingAs($this->user)
-            ->postJson('/shipping-methods/filter', ['cart_value' => 1200])
+            ->json('GET', '/shipping-methods', ['cart_value' => 1200])
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['price' => 10]);

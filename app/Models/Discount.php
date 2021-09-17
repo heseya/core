@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\DiscountType;
 use App\SearchTypes\DiscountSearch;
+use Carbon\Carbon;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -69,6 +70,16 @@ class Discount extends Model implements AuditableContract
      *   type="boolean",
      *   example="true",
      * )
+     * @OA\Property(
+     *   property="starts_at",
+     *   type="datetime",
+     *   example="2021-09-13 11:11",
+     * )
+     * @OA\Property(
+     *   property="expires_at",
+     *   type="datetime",
+     *   example="2021-09-13 11:11",
+     * )
      */
     protected $fillable = [
         'description',
@@ -76,6 +87,8 @@ class Discount extends Model implements AuditableContract
         'discount',
         'type',
         'max_uses',
+        'starts_at',
+        'expires_at',
     ];
 
     protected $casts = [
@@ -83,6 +96,8 @@ class Discount extends Model implements AuditableContract
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'starts_at' => 'datetime',
+        'expires_at' => 'datetime',
     ];
 
     protected array $searchable = [
@@ -103,6 +118,24 @@ class Discount extends Model implements AuditableContract
 
     public function getAvailableAttribute(): bool
     {
-        return $this->max_uses > $this->uses;
+        if ($this->uses >= $this->max_uses) {
+            return false;
+        }
+
+        $today = Carbon::now();
+
+        if ($this->starts_at !== null && $this->expires_at !== null) {
+            return $today >= $this->starts_at && $today <= $this->expires_at;
+        }
+
+        if ($this->starts_at !== null) {
+            return $today >= $this->starts_at;
+        }
+
+        if ($this->expires_at !== null) {
+            return $today <= $this->expires_at;
+        }
+
+        return true;
     }
 }

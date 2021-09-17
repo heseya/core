@@ -7,7 +7,6 @@ use App\Models\PaymentMethod;
 use App\Models\PriceRange;
 use App\Models\ShippingMethod;
 use Illuminate\Foundation\Testing\WithFaker;
-use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class ShippingMethodTest extends TestCase
@@ -218,7 +217,7 @@ class ShippingMethodTest extends TestCase
         $shippingMethod2->countries()->sync(['DE']);
 
         $response = $this->actingAs($this->user)
-            ->postJson('/shipping-methods/filter', ['country' => 'DE']);
+            ->json('GET', '/shipping-methods', ['country' => 'DE']);
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data') // Should show only public shipping methods.

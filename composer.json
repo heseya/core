@@ -12,13 +12,12 @@
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.3",
-        "heseya/laravel-searchable": "^1.0",
         "heseya/demo": "dev-master",
+        "heseya/laravel-searchable": "^1.0",
         "heseya/resource": "*",
         "heseya/pagination": "*",
         "jenssegers/agent": "^2.6",
         "laravel/framework": "^8.44",
-        "laravel/passport": "^10.1",
         "league/html-to-markdown": "^5.0",
         "league/omnipay": "^3.1",
         "omnipay/common": "^3",
@@ -29,7 +28,8 @@
         "propaganistas/laravel-phone": "^4.3",
         "sentry/sentry-laravel": "^2.6",
         "spatie/laravel-permission": "^4.2",
-        "srmklive/paypal": "^3.0"
+        "srmklive/paypal": "^3.0",
+        "tymon/jwt-auth": "^1.0.2"
     },
     "require-dev": {
         "brianium/paratest": "^6.3",

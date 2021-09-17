@@ -13,29 +13,28 @@ use Illuminate\Http\Resources\Json\JsonResource;
 interface ShippingMethodControllerSwagger
 {
     /**
-     * @OA\Get(
+     * @OA\Get (
      *   path="/shipping-methods",
-     *   summary="list shipping methods",
-     *   tags={"Shipping"},
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         type="array",
-     *         @OA\Items(ref="#/components/schemas/ShippingMethod"),
-     *       )
-     *     )
-     *   )
-     * )
-     */
-
-    /**
-     * @OA\Post(
-     *   path="/shipping-methods/filter",
      *   summary="list shipping methods by filters",
      *   tags={"Shipping"},
+     *   @OA\Parameter(
+     *     name="country",
+     *     in="query",
+     *     required=false,
+     *     @OA\Schema(
+     *       type="string",
+     *       example="DE",
+     *     )
+     *   ),
+     *     @OA\Parameter(
+     *     name="cart_value",
+     *     in="query",
+     *     required=false,
+     *     @OA\Schema(
+     *       type="float",
+     *       example=1200
+     *     )
+     *   ),
      *   @OA\RequestBody(
      *     ref="#/components/requestBodies/ShippingMethodIndex",
      *   ),
@@ -89,7 +88,8 @@ interface ShippingMethodControllerSwagger
      *     in="path",
      *     required=true,
      *     @OA\Schema(
-     *       type="integer",
+     *       type="string",
+     *       example="d1365285-ad58-48da-88e2-99e9f4c0800d",
      *     )
      *   ),
      *   @OA\RequestBody(
@@ -114,17 +114,28 @@ interface ShippingMethodControllerSwagger
 
     /**
      * @OA\Post(
-     *   path="/shipping-methods/reorder",
-     *   summary="order shipping method",
+     *   path="/shipping-methods/order",
+     *   deprecated=true,
+     *   summary="Reorder shipping method",
      *   tags={"Shipping"},
-     *   @OA\Parameter(
-     *     name="order",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="string",
-     *     )
+     *   @OA\RequestBody(
+     *     ref="#/components/requestBodies/ShippingMethodReorder",
      *   ),
+     *   @OA\Response(
+     *     response=204,
+     *     description="Success",
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+
+    /**
+     * @OA\Post(
+     *   path="/shipping-methods/reorder",
+     *   summary="Reorder shipping method",
+     *   tags={"Shipping"},
      *   @OA\RequestBody(
      *     ref="#/components/requestBodies/ShippingMethodReorder",
      *   ),
@@ -149,7 +160,8 @@ interface ShippingMethodControllerSwagger
      *     in="path",
      *     required=true,
      *     @OA\Schema(
-     *       type="integer",
+     *       type="string",
+     *       example="d1365285-ad58-48da-88e2-99e9f4c0800d",
      *     )
      *   ),
      *   @OA\Response(
