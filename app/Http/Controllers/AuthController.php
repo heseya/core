@@ -14,7 +14,6 @@ use App\Services\Contracts\AuthServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 
 class AuthController extends Controller implements AuthControllerSwagger
