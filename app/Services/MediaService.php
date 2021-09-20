@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\MediaType;
 use App\Exceptions\MediaException;
 use App\Models\Media;
 use App\Models\Product;
@@ -37,7 +38,7 @@ class MediaService implements MediaServiceContract
         }
 
         return Media::create([
-            'type' => Media::PHOTO,
+            'type' => $this->getMediaType($file->extension()),
             'url' => config('silverbox.host') . '/' . $response[0]['path'],
         ]);
     }
@@ -49,5 +50,18 @@ class MediaService implements MediaServiceContract
         }
 
         $media->forceDelete();
+    }
+
+    private function getMediaType(string $extension): int
+    {
+        $imageExtensions = ['jpeg', 'png', 'gif', 'bmp', 'svg'];
+        $videoExtensions = ['mp4', 'webm'];
+        if (in_array($extension, $imageExtensions)) {
+            return MediaType::PHOTO;
+        }
+        if (in_array($extension, $videoExtensions)) {
+            return MediaType::VIDEO;
+        }
+        return MediaType::OTHER;
     }
 }
