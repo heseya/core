@@ -73,12 +73,12 @@ class Discount extends Model implements AuditableContract
      * @OA\Property(
      *   property="starts_at",
      *   type="datetime",
-     *   example="2021-09-13 11:11",
+     *   example="2021-09-13T11:11",
      * )
      * @OA\Property(
      *   property="expires_at",
      *   type="datetime",
-     *   example="2021-09-13 11:11",
+     *   example="2021-09-13T11:11",
      * )
      */
     protected $fillable = [

@@ -67,8 +67,8 @@ class DiscountTest extends TestCase
             'discount' => 10,
             'type' => DiscountType::PERCENTAGE,
             'max_uses' => 20,
-            'starts_at' => Carbon::yesterday(),
-            'expires_at' => Carbon::tomorrow()
+            'starts_at' => Carbon::yesterday()->format('Y-m-d\TH:i'),
+            'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i')
         ]);
 
         $response
@@ -81,8 +81,8 @@ class DiscountTest extends TestCase
                 'max_uses' => 20,
                 'uses' => 0,
                 'available' => true,
-                'starts_at' => Carbon::yesterday(),
-                'expires_at' => Carbon::tomorrow()
+                'starts_at' => Carbon::yesterday()->format('Y-m-d\TH:i'),
+                'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i')
             ]);
 
         $this->assertDatabaseHas('discounts', [
@@ -91,8 +91,8 @@ class DiscountTest extends TestCase
             'discount' => 10,
             'max_uses' => 20,
             'type' => DiscountType::PERCENTAGE,
-            'starts_at' => Carbon::yesterday(),
-            'expires_at' => Carbon::tomorrow()
+            'starts_at' => Carbon::yesterday()->format('Y-m-d\TH:i'),
+            'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i')
         ]);
     }
 
@@ -116,8 +116,8 @@ class DiscountTest extends TestCase
                 'discount' => 20,
                 'type' => DiscountType::AMOUNT,
                 'max_uses' => 40,
-                'starts_at' => Carbon::yesterday(),
-                'expires_at' => Carbon::tomorrow()
+                'starts_at' => Carbon::yesterday()->format('Y-m-d\TH:i'),
+                'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i')
             ]);
 
         $response
@@ -128,8 +128,8 @@ class DiscountTest extends TestCase
                 'code' => 'WEEKEND',
                 'discount' => 20,
                 'type' => DiscountType::AMOUNT,
-                'starts_at' => Carbon::yesterday(),
-                'expires_at' => Carbon::tomorrow()
+                'starts_at' => Carbon::yesterday()->format('Y-m-d\TH:i'),
+                'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i')
             ]);
 
         $this->assertDatabaseHas('discounts', [
@@ -139,8 +139,8 @@ class DiscountTest extends TestCase
             'discount' => 20,
             'type' => DiscountType::AMOUNT,
             'max_uses' => 40,
-            'starts_at' => Carbon::yesterday(),
-            'expires_at' => Carbon::tomorrow()
+            'starts_at' => Carbon::yesterday()->format('Y-m-d\TH:i'),
+            'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i')
         ]);
     }
 
@@ -160,5 +160,43 @@ class DiscountTest extends TestCase
         $response = $this->actingAs($this->user)->deleteJson('/discounts/id:' . $discount->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($discount);
+    }
+
+    public function testCreateCheckDatetime(): void
+    {
+        $this->user->givePermissionTo('discounts.add');
+
+        $response = $this->actingAs($this->user)->json('POST', '/discounts', [
+            'description' => 'Testowy kupon',
+            'code' => 'S43SA2',
+            'discount' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'max_uses' => 20,
+            'starts_at' => '2021-09-20T12:00',
+            'expires_at' => '2021-09-21T12:00',
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'description' => 'Testowy kupon',
+                'code' => 'S43SA2',
+                'discount' => 10,
+                'type' => DiscountType::PERCENTAGE,
+                'max_uses' => 20,
+                'uses' => 0,
+                'starts_at' => '2021-09-20T12:00',
+                'expires_at' => '2021-09-21T12:00',
+            ]);
+
+        $this->assertDatabaseHas('discounts', [
+            'description' => 'Testowy kupon',
+            'code' => 'S43SA2',
+            'discount' => 10,
+            'max_uses' => 20,
+            'type' => DiscountType::PERCENTAGE,
+            'starts_at' => '2021-09-20T12:00',
+            'expires_at' => '2021-09-21T12:00',
+        ]);
     }
 }

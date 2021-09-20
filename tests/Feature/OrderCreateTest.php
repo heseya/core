@@ -255,8 +255,8 @@ class OrderCreateTest extends TestCase
             'discount' => 10,
             'type' => DiscountType::PERCENTAGE,
             'max_uses' => 20,
-            'starts_at' => Carbon::yesterday(),
-            'expires_at' => Carbon::tomorrow()
+            'starts_at' => Carbon::yesterday()->format('Y-m-d\TH:i'),
+            'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i')
         ]);
         $shippingMethod = ShippingMethod::factory()->create();
 
@@ -322,8 +322,8 @@ class OrderCreateTest extends TestCase
             'discount' => 10,
             'type' => DiscountType::PERCENTAGE,
             'max_uses' => 20,
-            'starts_at' => Carbon::now()->subDay(),
-            'expires_at' => Carbon::now()->subHour()
+            'starts_at' => Carbon::now()->subDay()->format('Y-m-d\TH:i'),
+            'expires_at' => Carbon::now()->subHour()->format('Y-m-d\TH:i')
         ]);
         $shippingMethod = ShippingMethod::factory()->create();
 
@@ -355,8 +355,8 @@ class OrderCreateTest extends TestCase
             'discount' => 10,
             'type' => DiscountType::PERCENTAGE,
             'max_uses' => 20,
-            'starts_at' => Carbon::now()->addDay(),
-            'expires_at' => Carbon::now()->addDays(2)
+            'starts_at' => Carbon::now()->addDay()->format('Y-m-d\TH:i'),
+            'expires_at' => Carbon::now()->addDays(2)->format('Y-m-d\TH:i')
         ]);
         $shippingMethod = ShippingMethod::factory()->create();
 
