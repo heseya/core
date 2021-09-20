@@ -10,7 +10,7 @@ class MediaResource extends Resource
     {
         return [
             'id' => $this->getKey(),
-            'type' => 'photo',
+            'type' => $this->type,
             'url' => $this->url,
         ];
     }
