@@ -35,7 +35,7 @@ class JsonResource extends \Illuminate\Http\Resources\Json\JsonResource
         }
 
         if (is_array($this->resource)) {
-            return $this->resource;
+            $this->resource = (object) $this->resource;
         }
 
         if ($this->baseOnly) {

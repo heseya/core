@@ -67,7 +67,7 @@ class OrderTest extends TestCase
         ];
     }
 
-    public function testOverpayed(): void
+    public function testOverpaid(): void
     {
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $this->order->summary * 2,
@@ -135,7 +135,7 @@ class OrderTest extends TestCase
             ->assertJson(['data' => $this->expected]);
     }
 
-    public function testViewOverpayed(): void
+    public function testViewOverpaid(): void
     {
         $this->user->givePermissionTo('orders.show_details');
 
@@ -151,7 +151,7 @@ class OrderTest extends TestCase
             ->assertJsonFragment(['payed' => true]);
     }
 
-    public function testViewOverpayedSummary(): void
+    public function testViewOverpaidSummary(): void
     {
         $this->user->givePermissionTo('orders.show_summary');
 

@@ -43,17 +43,16 @@ interface AuthControllerSwagger
      *           type="string",
      *         ),
      *         @OA\Property(
-     *           property="expires_at",
+     *           property="identity_token",
+     *           type="string",
+     *         ),
+     *         @OA\Property(
+     *           property="refresh_token",
      *           type="string",
      *         ),
      *         @OA\Property(
      *           property="user",
      *           ref="#/components/schemas/User"
-     *         ),
-     *         @OA\Property(
-     *           property="scopes",
-     *           type="array",
-     *           items="",
      *         ),
      *       )
      *     )
@@ -73,7 +72,7 @@ interface AuthControllerSwagger
      *   )
      * )
      */
-    public function logout(Request $request): JsonResponse;
+//    public function logout(Request $request): JsonResponse;
 
     /**
      * @OA\Post(
@@ -160,9 +159,52 @@ interface AuthControllerSwagger
     public function changePassword(PasswordChangeRequest $request): JsonResponse;
 
     /**
+     * @OA\Post(
+     *   path="/auth/refresh",
+     *   summary="Refresh access and identity tokens",
+     *   tags={"Auth"},
+     *   @OA\RequestBody(
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="refresh_token",
+     *         type="string",
+     *       ),
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         type="object",
+     *         @OA\Property(
+     *           property="token",
+     *           type="string",
+     *         ),
+     *         @OA\Property(
+     *           property="identity_token",
+     *           type="string",
+     *         ),
+     *         @OA\Property(
+     *           property="refresh_token",
+     *           type="string",
+     *         ),
+     *         @OA\Property(
+     *           property="user",
+     *           ref="#/components/schemas/User"
+     *         ),
+     *       )
+     *     )
+     *   )
+     * )
+     */
+    public function refresh(Request $request): JsonResource;
+
+    /**
      * @OA\Get(
      *   path="/auth/login-history",
-     *   summary="Get login history",
+     *   summary="[DISABLED] Get login history",
      *   tags={"Auth"},
      *   @OA\Response(
      *     response=200,
@@ -173,12 +215,12 @@ interface AuthControllerSwagger
      *   }
      * )
      */
-    public function loginHistory(Request $request): JsonResource;
+//    public function loginHistory(Request $request): JsonResource;
 
     /**
      * @OA\Get(
      *   path="/auth/kill-session/id:{id}",
-     *   summary="Allow to 'kill' active session",
+     *   summary="[DISABLED] Allow to 'kill' active session",
      *   tags={"Auth"},
      *   @OA\Parameter(
      *     name="id",
@@ -199,12 +241,12 @@ interface AuthControllerSwagger
      *   }
      * )
      */
-    public function killActiveSession(Request $request, string $oauthAccessTokensId): JsonResource;
+//    public function killActiveSession(Request $request, string $oauthAccessTokensId): JsonResource;
 
     /**
      * @OA\Get(
      *   path="/auth/kill-all-sessions",
-     *   summary="Allow to 'kill' all old sessions",
+     *   summary="[DISABLED] Allow to 'kill' all old sessions",
      *   tags={"Auth"},
      *   @OA\Response(
      *     response=200,
@@ -215,7 +257,7 @@ interface AuthControllerSwagger
      *   }
      * )
      */
-    public function killAllSessions(Request $request): JsonResource;
+//    public function killAllSessions(Request $request): JsonResource;
 
     /**
      * @OA\Get(
@@ -237,5 +279,24 @@ interface AuthControllerSwagger
      *   }
      * )
      */
-    public function profile(Request $request): JsonResource;
+    public function profile(Request $request): JsonResponse;
+
+    /**
+     * @OA\Get(
+     *   path="/auth/profile/{identity_token}",
+     *   summary="get profile resource from identity token",
+     *   tags={"Auth"},
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/ProfileView",
+     *       )
+     *     )
+     *   ),
+     * )
+     */
+    public function identityProfile(string $identityToken, Request $request): JsonResource;
 }
