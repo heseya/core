@@ -8,6 +8,7 @@ use App\Services\Contracts\ProductSetServiceContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -102,6 +103,37 @@ class ProductSetService implements ProductSetServiceContract
         return $set;
     }
 
+    public function updateChildren(
+        Collection $children,
+        string $parentId,
+        string $parentSlug,
+        bool $publicParent
+    ): void {
+        $children->each(
+            function ($child, $order) use ($parentId, $parentSlug, $publicParent) {
+                if ($child->slugOverride) {
+                    $childSlug = $child->slug;
+                } else {
+                    $childSlug = $parentSlug . '-' . $child->slugSuffix;
+                }
+
+                $this->updateChildren(
+                    $child->children,
+                    $child->getKey(),
+                    $childSlug,
+                    $publicParent && $child->public
+                );
+
+                $child->update([
+                    'parent_id' => $parentId,
+                    'order' => $order,
+                    'slug' => $childSlug,
+                    'public_parent' => $publicParent,
+                ]);
+            },
+        );
+    }
+
     public function update(ProductSet $set, ProductSetDto $dto): ProductSet
     {
         $parentId = $set->parent ? $set->parent->getKey() : null;
@@ -183,7 +215,7 @@ class ProductSetService implements ProductSetServiceContract
         $set->delete();
     }
 
-    public function products(ProductSet $set, $limit)
+    public function products(ProductSet $set): mixed
     {
         $query = $set->products();
 
@@ -191,37 +223,6 @@ class ProductSetService implements ProductSetServiceContract
             $query->public();
         }
 
-        return $query->paginate($limit);
-    }
-
-    public function updateChildren(
-        Collection $children,
-        string $parentId,
-        string $parentSlug,
-        bool $publicParent
-    ): void {
-        $children->each(
-            function ($child, $order) use ($parentId, $parentSlug, $publicParent) {
-                if ($child->slugOverride) {
-                    $childSlug = $child->slug;
-                } else {
-                    $childSlug = $parentSlug . '-' . $child->slugSuffix;
-                }
-
-                $this->updateChildren(
-                    $child->children,
-                    $child->getKey(),
-                    $childSlug,
-                    $publicParent && $child->public
-                );
-
-                $child->update([
-                    'parent_id' => $parentId,
-                    'order' => $order,
-                    'slug' => $childSlug,
-                    'public_parent' => $publicParent,
-                ]);
-            },
-        );
+        return $query->paginate(Config::get('pagination.per_page'));
     }
 }

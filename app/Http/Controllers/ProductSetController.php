@@ -108,7 +108,7 @@ class ProductSetController extends Controller implements ProductSetControllerSwa
 
     public function products(ProductSet $productSet, ProductSetProductsRequest $request): JsonResource
     {
-        $products = $this->productSetService->products($productSet, (int) $request->input('limit', 12));
+        $products = $this->productSetService->products($productSet);
 
         return ProductResource::collection($products);
     }

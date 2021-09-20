@@ -10,6 +10,7 @@ use App\Http\Resources\DiscountResource;
 use App\Models\Discount;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 
 class DiscountController extends Controller implements DiscountControllerSwagger
@@ -18,7 +19,9 @@ class DiscountController extends Controller implements DiscountControllerSwagger
     {
         $query = Discount::search($request->validated())->orderBy('updated_at', 'DESC');
 
-        return DiscountResource::collection($query->paginate($request->input('limit', 12)));
+        return DiscountResource::collection(
+            $query->paginate(Config::get('pagination.per_page')),
+        );
     }
 
     public function show(Discount $discount): JsonResource

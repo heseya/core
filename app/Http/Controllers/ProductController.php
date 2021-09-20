@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -76,7 +77,7 @@ class ProductController extends Controller implements ProductControllerSwagger
             });
         }
 
-        $products = $query->paginate((int) $request->input('limit', 12));
+        $products = $query->paginate(Config::get('pagination.per_page'));
 
         if ($request->has('available')) {
             $products = $products->filter(function ($product) use ($request) {

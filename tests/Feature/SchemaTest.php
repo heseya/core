@@ -6,6 +6,7 @@ use App\Models\Item;
 use App\Models\Option;
 use App\Models\Schema;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
 class SchemaTest extends TestCase
@@ -32,6 +33,21 @@ class SchemaTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(5, 'data');
+    }
+
+    public function testIndexWithPagination(): void
+    {
+        $this->user->givePermissionTo('products.add');
+
+        Schema::factory()->count(20)->create();
+
+        $this
+            ->actingAs($this->user)
+            ->json('GET', '/schemas', ['limit' => 10])
+            ->assertOk()
+            ->assertJsonCount(10, 'data');
+
+        $this->assertEquals(Config::get('pagination.per_page'), 10);
     }
 
     public function testIndexProductsEdit(): void
@@ -141,13 +157,6 @@ class SchemaTest extends TestCase
         $this->create();
     }
 
-    public function testCreateProductsEdit(): void
-    {
-        $this->user->givePermissionTo('products.edit');
-
-        $this->create();
-    }
-
     public function create(): void
     {
         $item = Item::factory()->create();
@@ -225,6 +234,13 @@ class SchemaTest extends TestCase
         ]);
     }
 
+    public function testCreateProductsEdit(): void
+    {
+        $this->user->givePermissionTo('products.edit');
+
+        $this->create();
+    }
+
     public function testCreateRelationUnauthorized(): void
     {
         $usedSchema = Schema::factory()->create();
@@ -246,13 +262,6 @@ class SchemaTest extends TestCase
     public function testCreateRelationProductsAdd(): void
     {
         $this->user->givePermissionTo('products.add');
-
-        $this->createRelation();
-    }
-
-    public function testCreateRelationProductsEdit(): void
-    {
-        $this->user->givePermissionTo('products.edit');
 
         $this->createRelation();
     }
@@ -279,6 +288,13 @@ class SchemaTest extends TestCase
             'schema_id' => $schema->id,
             'used_schema_id' => $usedSchema->getKey(),
         ]);
+    }
+
+    public function testCreateRelationProductsEdit(): void
+    {
+        $this->user->givePermissionTo('products.edit');
+
+        $this->createRelation();
     }
 
     public function testUpdateUnauthorized(): void
@@ -321,13 +337,6 @@ class SchemaTest extends TestCase
     public function testUpdateProductsAdd(): void
     {
         $this->user->givePermissionTo('products.add');
-
-        $this->update();
-    }
-
-    public function testUpdateProductsEdit(): void
-    {
-        $this->user->givePermissionTo('products.edit');
 
         $this->update();
     }
@@ -405,6 +414,13 @@ class SchemaTest extends TestCase
             'option_id' => $option->getKey(),
             'item_id' => $item2->getKey(),
         ]);
+    }
+
+    public function testUpdateProductsEdit(): void
+    {
+        $this->user->givePermissionTo('products.edit');
+
+        $this->update();
     }
 
     public function testRemoveUnauthorized(): void

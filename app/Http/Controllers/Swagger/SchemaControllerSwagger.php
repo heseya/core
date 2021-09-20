@@ -15,6 +15,9 @@ interface SchemaControllerSwagger
      *   path="/schemas",
      *   summary="all schemas list",
      *   tags={"Schemas"},
+     *   @OA\RequestBody(
+     *     ref="#/components/requestBodies/IndexSchema",
+     *   ),
      *   @OA\Response(
      *     response=200,
      *     description="Success",
