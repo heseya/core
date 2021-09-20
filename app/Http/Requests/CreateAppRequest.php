@@ -14,7 +14,11 @@ class CreateAppRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'url' => ['required', 'string'],
+            'url' => ['required', 'url'],
+            'name' => ['nullable', 'string'],
+            'licence_key' => ['nullable', 'string'],
+            'allowed_permissions' => ['array'],
+            'allowed_permissions.*' => ['string'],
         ];
     }
 }

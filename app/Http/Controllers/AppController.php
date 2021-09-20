@@ -28,11 +28,16 @@ class AppController extends Controller implements AppControllerSwagger
 
     public function store(CreateAppRequest $request): JsonResponse
     {
-        try {
-            $app = $this->appService->register($request->input('url'));
-        } catch (Exception $exception) {
-            return Error::abort('App responded with error', 400);
-        }
+//        try {
+            $app = $this->appService->install(
+                $request->input('url'),
+                $request->input('allowed_permissions'),
+                $request->input('name'),
+                $request->input('licence_key'),
+            );
+//        } catch (Exception $exception) {
+//            return Error::abort('App responded with error', 400);
+//        }
 
         return AppResource::make($app)->response();
     }

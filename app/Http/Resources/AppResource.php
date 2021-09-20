@@ -2,16 +2,29 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Request;
+
 class AppResource extends Resource
 {
-    public function base($request): array
+    public function base(Request $request): array
     {
         return [
             'id' => $this->getKey(),
-            'name' => $this->name,
             'url' => $this->url,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'microfrontend_url' => $this->microfrontend_url,
+            'name' => $this->name,
+            'slug' => $this->name,
+            'version' => $this->name,
+            'description' => $this->name,
+            'icon' => $this->name,
+            'author' => $this->name,
+        ];
+    }
+
+    public function view(Request $request): array
+    {
+        return [
+            'permissions' => $this->getPermissionNames()->sort()->values(),
         ];
     }
 }
