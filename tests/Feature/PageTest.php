@@ -247,7 +247,7 @@ class PageTest extends TestCase
         DB::table('pages')->delete();
         $page = Page::factory()->count(10)->create();
 
-        $this->actingAs($this->user)->postJson('/pages/order', [
+        $this->actingAs($this->user)->postJson('/pages/reorder', [
             'pages' => $page->pluck('id')->toArray(),
         ])->assertForbidden();
     }
@@ -261,7 +261,7 @@ class PageTest extends TestCase
 
         $ids = $page->pluck('id');
 
-        $this->actingAs($this->user)->postJson('/pages/order', [
+        $this->actingAs($this->user)->postJson('/pages/reorder', [
             'pages' => $ids->toArray(),
         ])->assertNoContent();
 

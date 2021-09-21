@@ -119,4 +119,52 @@ class StatusTest extends TestCase
 
         $this->assertDeleted($this->status_model);
     }
+
+    public function testReorderUnauthorized(): void
+    {
+        $status1 = Status::factory()->create();
+        $status2 = Status::factory()->create();
+        $status3 = Status::factory()->create();
+
+        $this->actingAs($this->user)->json('POST', '/statuses/reorder', [
+            'statuses' => [
+                $status2->getKey(),
+                $status3->getKey(),
+                $status1->getKey(),
+            ]
+        ])->assertForbidden();
+    }
+
+    public function testReorder(): void
+    {
+        $this->user->givePermissionTo('statuses.edit');
+
+        $status1 = Status::factory()->create();
+        $status2 = Status::factory()->create();
+        $status3 = Status::factory()->create();
+
+        $response = $this->actingAs($this->user)->json('POST', '/statuses/reorder', [
+           'statuses' => [
+               $status2->getKey(),
+               $status3->getKey(),
+               $status1->getKey(),
+           ]
+        ]);
+        $response->assertNoContent();
+
+        $this->assertDatabaseHas('statuses', [
+            'id' => $status2->getKey(),
+            'order' => 0,
+        ]);
+
+        $this->assertDatabaseHas('statuses', [
+            'id' => $status3->getKey(),
+            'order' => 1,
+        ]);
+
+        $this->assertDatabaseHas('statuses', [
+            'id' => $status1->getKey(),
+            'order' => 2,
+        ]);
+    }
 }

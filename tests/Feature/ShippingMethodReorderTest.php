@@ -23,11 +23,6 @@ class ShippingMethodReorderTest extends TestCase
             ->assertForbidden();
     }
 
-    public function testReorderDeprecated(): void
-    {
-        $this->testReorder('order');
-    }
-
     public function testReorder(string $url = 'reorder'): void
     {
         $this->user->givePermissionTo('shipping_methods.edit');
