@@ -44,7 +44,7 @@ class AppService implements AppServiceContract
 
         try {
             $response = Http::get($url);
-        } catch (Throwable)  {
+        } catch (Throwable) {
             throw new AppException('Failed to connect with application');
         }
 
@@ -124,7 +124,7 @@ class AppService implements AppServiceContract
                 'integration_token' => $integrationToken,
                 'refresh_token' => $refreshToken,
             ]);
-        } catch (Throwable)  {
+        } catch (Throwable) {
             throw new AppException('Failed to connect with application');
         }
 
