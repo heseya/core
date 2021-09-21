@@ -113,7 +113,7 @@ class AppService implements AppServiceContract
         $response = Http::post($url, [
             'api_url' => Config::get('app.url'),
             'api_name' => Config::get('app.name'),
-            'api_version' => Config::get('app.var'),
+            'api_version' => Config::get('app.ver'),
             'licence_key' => $licenceKey,
             'integration_token' => $integrationToken,
             'refresh_token' => $refreshToken,
