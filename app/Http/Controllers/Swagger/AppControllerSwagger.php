@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers\Swagger;
 
-use App\Http\Requests\CreateAppRequest;
-use Illuminate\Http\JsonResponse;
+use App\Http\Requests\AppStoreRequest;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 interface AppControllerSwagger
@@ -24,22 +23,22 @@ interface AppControllerSwagger
     /**
      * @OA\Post(
      *   path="/apps",
-     *   summary="Register new app",
+     *   summary="install a new app",
      *   tags={"Apps"},
      *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="url",
-     *         type="string",
-     *         example="https://test.app.heseya.com",
-     *       ),
-     *     )
+     *     ref="#/components/requestBodies/AppStore",
      *   ),
      *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *   )
+     *     response=201,
+     *     description="Created",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/AppView",
+     *       )
+     *     )
+     *   ),
      * )
      */
-    public function store(CreateAppRequest $request): JsonResponse;
+    public function store(AppStoreRequest $request): JsonResource;
 }

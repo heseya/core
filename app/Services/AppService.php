@@ -3,12 +3,12 @@
 namespace App\Services;
 
 use App\Enums\TokenType;
+use App\Exceptions\AppException;
 use App\Exceptions\AuthException;
 use App\Models\App;
 use App\Models\Permission;
 use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\TokenServiceContract;
-use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -28,7 +28,14 @@ class AppService implements AppServiceContract
         ?string $name,
         ?string $licenceKey,
     ): App {
-        if (!Auth::user()->hasAllPermissions($permissions)) {
+        $allPermissions = Permission::all()->map(fn ($perm) => $perm->name);
+        $permissions = Collection::make($permissions);
+
+        if ($permissions->diff($allPermissions)->isNotEmpty()) {
+            throw new AuthException('Assigning invalid permissions');
+        }
+
+        if (!Auth::user()->hasAllPermissions($permissions->toArray())) {
             throw new AuthException(
                 'Can\'t add an app with permissions you don\'t have',
             );
@@ -37,14 +44,14 @@ class AppService implements AppServiceContract
         $response = Http::get($url);
 
         if ($response->failed()) {
-            throw new Exception();
+            throw new AppException('Failed to connect with application');
         }
+
+        $this->validateAppRoot($response);
 
         $appConfig = $response->json();
         $name = $name ?? $appConfig['name'];
         $slug = Str::slug($name);
-
-        $this->validateAppRoot($response);
 
         $app = App::create([
             'url' => $url,
@@ -60,25 +67,28 @@ class AppService implements AppServiceContract
             'author',
         ])->toArray());
 
-        $permissions = Collection::make($permissions);
         $requiredPerm = Collection::make($appConfig['required_permissions']);
         $optionalPerm = key_exists('optional_permissions', $appConfig) ?
             $appConfig['optional_permissions'] : [];
         $advertisedPerm = $requiredPerm->concat($optionalPerm)->unique();
 
-        $allPermissions = Permission::all()->map(fn ($perm) => $perm->name);
-
         if ($advertisedPerm->diff($allPermissions)->isNotEmpty()) {
+            $app->delete();
+
             throw new AuthException('App wants invalid permissions');
         }
 
         if ($permissions->intersect($requiredPerm)->count() < $requiredPerm->count()) {
+            $app->delete();
+
             throw new AuthException(
                 'Can\'t add app without all required permissions',
             );
         }
 
         if ($permissions->intersect($advertisedPerm)->count() < $permissions->count()) {
+            $app->delete();
+
             throw new AuthException(
                 'Can\'t add any permissions application doesn\'t want',
             );
@@ -110,7 +120,19 @@ class AppService implements AppServiceContract
         ]);
 
         if ($response->failed()) {
-            throw new Exception();
+            $app->delete();
+
+            throw new AppException('Failed to install the application');
+        }
+
+        $validator = Validator::make($response->json(), [
+            'uninstall_token' => ['required', 'string'],
+        ]);
+
+        if ($validator->fails()) {
+            $app->delete();
+
+            throw new AppException('App has invalid installation response');
         }
 
         $uninstallToken = $response->json('uninstall_token');
@@ -124,7 +146,7 @@ class AppService implements AppServiceContract
 
     protected function validateAppRoot($response)
     {
-        Validator::validate($response->json(), [
+        $validator = Validator::make($response->json(), [
             'name' => ['required', 'string'],
             'author' => ['required', 'string'],
             'version' => ['required', 'string'],
@@ -135,10 +157,16 @@ class AppService implements AppServiceContract
             'licence_required' => ['nullable', 'boolean'],
             'required_permissions' => ['array'],
             'required_permissions.*' => ['string'],
+            'optional_permissions' => ['array'],
+            'optional_permissions.*' => ['string'],
             'internal_permissions' => ['array'],
             'internal_permissions.*' => ['array'],
             'internal_permissions.*.name' => ['required', 'string'],
             'internal_permissions.*.description' => ['nullable', 'string'],
         ]);
+
+        if ($validator->fails()) {
+            throw new AppException('App responded with invalid info');
+        }
     }
 }

@@ -2,14 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\AppControllerSwagger;
-use App\Http\Requests\CreateAppRequest;
+use App\Http\Requests\AppStoreRequest;
 use App\Http\Resources\AppResource;
 use App\Models\App;
 use App\Services\Contracts\AppServiceContract;
-use Exception;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class AppController extends Controller implements AppControllerSwagger
@@ -26,19 +23,15 @@ class AppController extends Controller implements AppControllerSwagger
         return AppResource::collection(App::paginate(12));
     }
 
-    public function store(CreateAppRequest $request): JsonResponse
+    public function store(AppStoreRequest $request): JsonResource
     {
-//        try {
-            $app = $this->appService->install(
-                $request->input('url'),
-                $request->input('allowed_permissions'),
-                $request->input('name'),
-                $request->input('licence_key'),
-            );
-//        } catch (Exception $exception) {
-//            return Error::abort('App responded with error', 400);
-//        }
+        $app = $this->appService->install(
+            $request->input('url'),
+            $request->input('allowed_permissions'),
+            $request->input('name'),
+            $request->input('licence_key'),
+        );
 
-        return AppResource::make($app)->response();
+        return AppResource::make($app);
     }
 }
