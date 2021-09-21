@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateAppRequest extends FormRequest
+class AppDeleteRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -14,7 +14,7 @@ class CreateAppRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'url' => ['required', 'string'],
+            'force' => ['nullable', 'boolean'],
         ];
     }
 }

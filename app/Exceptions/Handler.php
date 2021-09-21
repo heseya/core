@@ -42,6 +42,9 @@ final class Handler extends ExceptionHandler
         MediaException::class => [
             'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
         ],
+        AppException::class => [
+            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+        ],
         OrderException::class => [
             'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
         ],

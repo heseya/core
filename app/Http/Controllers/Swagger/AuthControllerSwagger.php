@@ -203,8 +203,9 @@ interface AuthControllerSwagger
 
     /**
      * @OA\Get(
+     *   deprecated=true,
      *   path="/auth/login-history",
-     *   summary="[DISABLED] Get login history",
+     *   summary="Get login history",
      *   tags={"Auth"},
      *   @OA\Response(
      *     response=200,
@@ -219,8 +220,9 @@ interface AuthControllerSwagger
 
     /**
      * @OA\Get(
+     *   deprecated=true,
      *   path="/auth/kill-session/id:{id}",
-     *   summary="[DISABLED] Allow to 'kill' active session",
+     *   summary="Allow to 'kill' active session",
      *   tags={"Auth"},
      *   @OA\Parameter(
      *     name="id",
@@ -245,8 +247,9 @@ interface AuthControllerSwagger
 
     /**
      * @OA\Get(
+     *   deprecated=true,
      *   path="/auth/kill-all-sessions",
-     *   summary="[DISABLED] Allow to 'kill' all old sessions",
+     *   summary="Allow to 'kill' all old sessions",
      *   tags={"Auth"},
      *   @OA\Response(
      *     response=200,

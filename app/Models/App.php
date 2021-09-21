@@ -7,6 +7,7 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\Access\Authorizable;
+use Spatie\Permission\Traits\HasPermissions;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 /**
@@ -19,12 +20,23 @@ class App extends Model implements
 {
     use HasFactory,
         Authorizable,
-        Authenticatable;
+        Authenticatable,
+        HasPermissions;
+
+    protected $guard_name = 'api';
 
     protected $fillable = [
-        'name',
-        'key',
         'url',
+        'microfrontend_url',
+        'name',
+        'slug',
+        'version',
+        'api_version',
+        'licence_key',
+        'description',
+        'icon',
+        'author',
+        'uninstall_token',
     ];
 
     public function getJWTIdentifier(): string
