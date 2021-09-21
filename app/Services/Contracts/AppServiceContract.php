@@ -12,4 +12,6 @@ interface AppServiceContract
         ?string $name,
         ?string $licenceKey,
     ): App;
+
+    public function uninstall(App $app, bool $force = false): void;
 }

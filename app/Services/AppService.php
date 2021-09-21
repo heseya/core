@@ -153,6 +153,27 @@ class AppService implements AppServiceContract
         return $app;
     }
 
+    public function uninstall(App $app, bool $force = false): void
+    {
+        $url = $app->url . (Str::endsWith($app->url, '/') ? 'uninstall' : '/uninstall');
+
+        try {
+            $response = Http::post($url, [
+                'uninstall_token' => $app->uninstall_token,
+            ]);
+        } catch (Throwable) {
+            if (!$force) {
+                throw new AppException('Failed to connect with application');
+            }
+        }
+
+        if (!$force && $response->failed()) {
+            throw new AppException('Failed to uninstall the application');
+        }
+
+        $app->delete();
+    }
+
     protected function validateAppRoot($response)
     {
         $validator = Validator::make($response->json(), [

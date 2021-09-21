@@ -9,31 +9,11 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-class AppTest extends TestCase
+class AppInstallTest extends TestCase
 {
     use RefreshDatabase;
 
     private string $url = 'https://example.com:9000';
-
-    public function testIndexUnauthorized(): void
-    {
-        $response = $this->getJson('/apps');
-
-        $response->assertForbidden();
-    }
-
-    public function testIndex(): void
-    {
-        $this->user->givePermissionTo('apps.show');
-
-        App::factory()->count(10)->create();
-
-        $response = $this->actingAs($this->user)->getJson('/apps');
-
-        $response
-            ->assertOk()
-            ->assertJsonCount(10, 'data');
-    }
 
     public function testInstallUnauthorized(): void
     {
@@ -290,7 +270,7 @@ class AppTest extends TestCase
                 'description' => 'Cool description',
                 'icon' => 'https://picsum.photos/200',
             ]);
-        
+
         $this->assertDatabaseHas('apps', [
             'name' => 'App name',
             'author' => 'Mr. Author',

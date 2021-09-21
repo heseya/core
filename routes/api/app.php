@@ -8,4 +8,6 @@ Route::prefix('apps')->group(function (): void {
         ->middleware('can:apps.show');
     Route::post(null, [AppController::class, 'store'])
         ->middleware('can:apps.install');
+    Route::delete('id:{app:id}', [AppController::class, 'destroy'])
+        ->middleware('can:apps.remove');
 });

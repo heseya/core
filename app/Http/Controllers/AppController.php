@@ -3,19 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Swagger\AppControllerSwagger;
+use App\Http\Requests\AppDeleteRequest;
 use App\Http\Requests\AppStoreRequest;
 use App\Http\Resources\AppResource;
 use App\Models\App;
 use App\Services\Contracts\AppServiceContract;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Response;
 
 class AppController extends Controller implements AppControllerSwagger
 {
-    private AppServiceContract $appService;
-
-    public function __construct(AppServiceContract $appService)
+    public function __construct(private AppServiceContract $appService)
     {
-        $this->appService = $appService;
     }
 
     public function index(): JsonResource
@@ -33,5 +33,13 @@ class AppController extends Controller implements AppControllerSwagger
         );
 
         return AppResource::make($app);
+    }
+
+    public function destroy(App $app, AppDeleteRequest $request): JsonResponse
+    {
+        $force = $request->has('force') && $request->input('tree', true) !== false;
+        $this->appService->uninstall($app, $force);
+
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }
