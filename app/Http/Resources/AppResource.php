@@ -14,11 +14,11 @@ class AppResource extends Resource implements AppResourceSwagger
             'url' => $this->url,
             'microfrontend_url' => $this->microfrontend_url,
             'name' => $this->name,
-            'slug' => $this->name,
-            'version' => $this->name,
-            'description' => $this->name,
-            'icon' => $this->name,
-            'author' => $this->name,
+            'slug' => $this->slug,
+            'version' => $this->version,
+            'description' => $this->description,
+            'icon' => $this->icon,
+            'author' => $this->author,
         ];
     }
 

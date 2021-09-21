@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Throwable;
 
 class AppService implements AppServiceContract
 {
@@ -41,7 +42,11 @@ class AppService implements AppServiceContract
             );
         }
 
-        $response = Http::get($url);
+        try {
+            $response = Http::get($url);
+        } catch (Throwable)  {
+            throw new AppException('Failed to connect with application');
+        }
 
         if ($response->failed()) {
             throw new AppException('Failed to connect with application');
@@ -110,14 +115,18 @@ class AppService implements AppServiceContract
 
         $url .= Str::endsWith($url, '/') ? 'install' : '/install';
 
-        $response = Http::post($url, [
-            'api_url' => Config::get('app.url'),
-            'api_name' => Config::get('app.name'),
-            'api_version' => Config::get('app.ver'),
-            'licence_key' => $licenceKey,
-            'integration_token' => $integrationToken,
-            'refresh_token' => $refreshToken,
-        ]);
+        try {
+            $response = Http::post($url, [
+                'api_url' => Config::get('app.url'),
+                'api_name' => Config::get('app.name'),
+                'api_version' => Config::get('app.ver'),
+                'licence_key' => $licenceKey,
+                'integration_token' => $integrationToken,
+                'refresh_token' => $refreshToken,
+            ]);
+        } catch (Throwable)  {
+            throw new AppException('Failed to connect with application');
+        }
 
         if ($response->failed()) {
             $app->delete();

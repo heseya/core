@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\App;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -12,7 +13,7 @@ class AppTest extends TestCase
 {
     use RefreshDatabase;
 
-    private string $url = 'https://test.app.heseya';
+    private string $url = 'https://example.com:9000';
 
     public function testIndexUnauthorized(): void
     {
@@ -202,7 +203,18 @@ class AppTest extends TestCase
             ],
         ]);
 
-        $response->assertCreated();
+        $response->assertCreated()
+            ->assertJsonFragment([
+                'url' => $this->url,
+                'microfrontend_url' => 'https://front.example.com',
+                'name' => 'App name',
+                'slug' => Str::slug('App name'),
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'description' => 'Cool description',
+                'icon' => 'https://picsum.photos/200',
+            ]);
+
         $this->assertDatabaseHas('apps', [
             'name' => 'App name',
             'author' => 'Mr. Author',
@@ -267,7 +279,18 @@ class AppTest extends TestCase
             ],
         ]);
 
-        $response->assertCreated();
+        $response->assertCreated()
+            ->assertJsonFragment([
+                'url' => $this->url,
+                'microfrontend_url' => 'https://front.example.com',
+                'name' => 'App name',
+                'slug' => Str::slug('App name'),
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'description' => 'Cool description',
+                'icon' => 'https://picsum.photos/200',
+            ]);
+        
         $this->assertDatabaseHas('apps', [
             'name' => 'App name',
             'author' => 'Mr. Author',
@@ -427,6 +450,77 @@ class AppTest extends TestCase
                     'description' => 'Setup layouts of products page',
                 ]],
             ]),
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/apps', [
+            'url' => $this->url,
+            'allowed_permissions' => [
+                'products.show',
+                'products.add',
+                'products.edit',
+            ],
+        ]);
+
+        $response->assertStatus(422);
+        $this->assertDatabaseCount('apps', 0);
+    }
+
+    public function testInstallConnectionRefusedRoot(): void
+    {
+        $this->user->givePermissionTo([
+            'apps.install',
+            'products.show',
+            'products.add',
+            'products.edit',
+        ]);
+
+        Http::fake([
+            $this->url => new ConnectionException("Test", 7),
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/apps', [
+            'url' => $this->url,
+            'allowed_permissions' => [
+                'products.show',
+                'products.add',
+                'products.edit',
+            ],
+        ]);
+
+        $response->assertStatus(422);
+        $this->assertDatabaseCount('apps', 0);
+    }
+
+    public function testInstallConnectionRefusedInstall(): void
+    {
+        $this->user->givePermissionTo([
+            'apps.install',
+            'products.show',
+            'products.add',
+            'products.edit',
+        ]);
+
+        Http::retry(0);
+
+        Http::fake([
+            $this->url => Http::response([
+                'name' => 'App name',
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
+                'description' => 'Cool description',
+                'microfrontend_url' => 'https://front.example.com',
+                'icon' => 'https://picsum.photos/200',
+                'licence_required' => false,
+                'required_permissions' => [
+                    'products.show',
+                ],
+                'internal_permissions' => [[
+                    'name' => 'product_layout',
+                    'description' => 'Setup layouts of products page',
+                ]],
+            ]),
+            $this->url . '/install' => new ConnectionException("Test", 7),
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/apps', [
