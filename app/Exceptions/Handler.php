@@ -8,6 +8,7 @@ use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
@@ -27,6 +28,10 @@ final class Handler extends ExceptionHandler
             'code' => Response::HTTP_NOT_FOUND,
         ],
         ModelNotFoundException::class => [
+            'message' => 'Page not found',
+            'code' => Response::HTTP_NOT_FOUND,
+        ],
+        MethodNotAllowedHttpException::class => [
             'message' => 'Page not found',
             'code' => Response::HTTP_NOT_FOUND,
         ],
