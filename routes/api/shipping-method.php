@@ -14,6 +14,4 @@ Route::prefix('shipping-methods')->group(function (): void {
         ->middleware('can:shipping_methods.remove');
     Route::post('reorder', [ShippingMethodController::class, 'reorder'])
         ->middleware('can:shipping_methods.edit');
-    Route::post('order', [ShippingMethodController::class, 'reorder']) // deprecated
-        ->middleware('can:shipping_methods.edit');
 });

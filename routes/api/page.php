@@ -16,6 +16,6 @@ Route::prefix('pages')->group(function (): void {
         ->middleware('can:pages.edit');
     Route::delete('id:{page:id}', [PageController::class, 'destroy'])
         ->middleware('can:pages.remove');
-    Route::post('order', [PageController::class, 'reorder'])
+    Route::post('reorder', [PageController::class, 'reorder'])
         ->middleware('can:pages.edit');
 });

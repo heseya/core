@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\Error;
 use App\Http\Controllers\Swagger\StatusControllerSwagger;
-use App\Http\Requests\StatusOrderRequest;
+use App\Http\Requests\StatusReorderRequest;
 use App\Http\Resources\StatusResource;
 use App\Models\Status;
 use Illuminate\Http\JsonResponse;
@@ -46,7 +46,7 @@ class StatusController extends Controller implements StatusControllerSwagger
         return StatusResource::make($status);
     }
 
-    public function order(StatusOrderRequest $request): JsonResponse
+    public function reorder(StatusReorderRequest $request): JsonResponse
     {
         foreach ($request->input('statuses') as $key => $id) {
             Status::where('id', $id)->update(['order' => $key]);

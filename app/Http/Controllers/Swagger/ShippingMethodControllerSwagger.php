@@ -114,25 +114,6 @@ interface ShippingMethodControllerSwagger
 
     /**
      * @OA\Post(
-     *   path="/shipping-methods/order",
-     *   deprecated=true,
-     *   summary="Reorder shipping method",
-     *   tags={"Shipping"},
-     *   @OA\RequestBody(
-     *     ref="#/components/requestBodies/ShippingMethodReorder",
-     *   ),
-     *   @OA\Response(
-     *     response=204,
-     *     description="Success",
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
-
-    /**
-     * @OA\Post(
      *   path="/shipping-methods/reorder",
      *   summary="Reorder shipping method",
      *   tags={"Shipping"},

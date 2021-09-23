@@ -10,7 +10,7 @@ Route::prefix('statuses')->group(function (): void {
         ->middleware('can:statuses.add');
     Route::patch('id:{status:id}', [StatusController::class, 'update'])
         ->middleware('can:statuses.edit');
-    Route::post('order', [StatusController::class, 'order'])
+    Route::post('reorder', [StatusController::class, 'reorder'])
         ->middleware('can:statuses.edit');
     Route::delete('id:{status:id}', [StatusController::class, 'destroy'])
         ->middleware('can:statuses.remove');
