@@ -73,12 +73,12 @@ class Discount extends Model implements AuditableContract
      * @OA\Property(
      *   property="starts_at",
      *   type="datetime",
-     *   example="2021-09-13 11:11",
+     *   example="2021-09-13T11:11",
      * )
      * @OA\Property(
      *   property="expires_at",
      *   type="datetime",
-     *   example="2021-09-13 11:11",
+     *   example="2021-09-13T11:11",
      * )
      */
     protected $fillable = [
@@ -96,8 +96,8 @@ class Discount extends Model implements AuditableContract
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
-        'starts_at' => 'datetime',
-        'expires_at' => 'datetime',
+        'starts_at' => 'datetime:c',
+        'expires_at' => 'datetime:c',
     ];
 
     protected array $searchable = [
