@@ -124,15 +124,15 @@ class Order extends Model implements AuditableContract
     }
 
     /**
-     * Summary amount of payed.
+     * Summary amount of paid.
      *
      * @OA\Property(
-     *   property="summary_payed",
+     *   property="summary_paid",
      *   type="float",
      *   example=199.99
      * )
      */
-    public function getPayedAmountAttribute(): float
+    public function getPaidAmountAttribute(): float
     {
         return $this->payments()
             ->where('payed', true)
@@ -175,7 +175,7 @@ class Order extends Model implements AuditableContract
      */
     public function isPayed(): bool
     {
-        return $this->payedAmount >= $this->summary;
+        return $this->paid_amount >= $this->summary;
     }
 
     /**

@@ -139,8 +139,10 @@ class OrderTest extends TestCase
     {
         $this->user->givePermissionTo('orders.show_details');
 
+        $summaryPaid = $this->order->summary * 2;
+
         $this->order->payments()->save(Payment::factory()->make([
-            'amount' => $this->order->summary * 2,
+            'amount' => $summaryPaid,
             'payed' => true,
         ]));
 
@@ -148,7 +150,10 @@ class OrderTest extends TestCase
             ->getJson('/orders/id:' . $this->order->getKey());
         $response
             ->assertOk()
-            ->assertJsonFragment(['payed' => true]);
+            ->assertJsonFragment([
+                'payed' => true,
+                'summary_paid' => $summaryPaid
+            ]);
     }
 
     public function testViewOverpaidSummary(): void
@@ -199,5 +204,42 @@ class OrderTest extends TestCase
             'status_id' => $status->getKey(),
         ]);
         Event::assertDispatched(OrderStatusUpdated::class);
+    }
+
+    public function testViewUnderpaid(): void
+    {
+        $this->user->givePermissionTo('orders.show_details');
+
+        $summaryPaid = $this->order->summary / 2;
+
+        $this->order->payments()->save(Payment::factory()->make([
+            'amount' => $summaryPaid,
+            'payed' => true,
+        ]));
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/orders/id:' . $this->order->getKey());
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'payed' => false,
+                'summary_paid' => $summaryPaid,
+            ]);
+    }
+
+    public function testViewUnderpaidSummary(): void
+    {
+        $this->user->givePermissionTo('orders.show_summary');
+
+        $this->order->payments()->save(Payment::factory()->make([
+            'amount' => $this->order->summary / 2,
+            'payed' => true,
+        ]));
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/orders/' . $this->order->code);
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['payed' => false]);
     }
 }
