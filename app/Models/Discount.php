@@ -96,8 +96,8 @@ class Discount extends Model implements AuditableContract
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
-        'starts_at' => 'datetime',
-        'expires_at' => 'datetime',
+        'starts_at' => 'datetime:c',
+        'expires_at' => 'datetime:c',
     ];
 
     protected array $searchable = [

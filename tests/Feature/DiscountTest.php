@@ -81,8 +81,8 @@ class DiscountTest extends TestCase
                 'max_uses' => 20,
                 'uses' => 0,
                 'available' => true,
-                'starts_at' => Carbon::yesterday()->format('Y-m-d\TH:i'),
-                'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i')
+                'starts_at' => Carbon::yesterday(),
+                'expires_at' => Carbon::tomorrow()
             ]);
 
         $this->assertDatabaseHas('discounts', [
@@ -91,8 +91,8 @@ class DiscountTest extends TestCase
             'discount' => 10,
             'max_uses' => 20,
             'type' => DiscountType::PERCENTAGE,
-            'starts_at' => Carbon::yesterday()->format('Y-m-d\TH:i'),
-            'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i')
+            'starts_at' => Carbon::yesterday(),
+            'expires_at' => Carbon::tomorrow()
         ]);
     }
 
@@ -128,8 +128,8 @@ class DiscountTest extends TestCase
                 'code' => 'WEEKEND',
                 'discount' => 20,
                 'type' => DiscountType::AMOUNT,
-                'starts_at' => Carbon::yesterday()->format('Y-m-d\TH:i'),
-                'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i')
+                'starts_at' => Carbon::yesterday(),
+                'expires_at' => Carbon::tomorrow()
             ]);
 
         $this->assertDatabaseHas('discounts', [
@@ -139,8 +139,8 @@ class DiscountTest extends TestCase
             'discount' => 20,
             'type' => DiscountType::AMOUNT,
             'max_uses' => 40,
-            'starts_at' => Carbon::yesterday()->format('Y-m-d\TH:i'),
-            'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i')
+            'starts_at' => Carbon::yesterday(),
+            'expires_at' => Carbon::tomorrow()
         ]);
     }
 
@@ -185,8 +185,8 @@ class DiscountTest extends TestCase
                 'type' => DiscountType::PERCENTAGE,
                 'max_uses' => 20,
                 'uses' => 0,
-                'starts_at' => '2021-09-20T12:00',
-                'expires_at' => '2021-09-21T12:00',
+                'starts_at' => '2021-09-20T12:00:00.000000Z',
+                'expires_at' => '2021-09-21T12:00:00.000000Z',
             ]);
 
         $this->assertDatabaseHas('discounts', [
