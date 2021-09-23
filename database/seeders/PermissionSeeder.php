@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Enums\RoleType;
-use App\Models\Page;
 use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Database\Seeder;
@@ -163,7 +162,25 @@ class PermissionSeeder extends Seeder
         $owner->save();
 
         $unauthenticated = Role::updateOrCreate(['name' => 'Unauthenticated'])
-            ->givePermissionTo(['auth.login']);
+            ->givePermissionTo(['auth.login'])
+            ->givePermissionTo(['auth.register'])
+            ->givePermissionTo(['auth.password_reset'])
+            ->givePermissionTo(['auth.password_change'])
+            ->givePermissionTo(['product_sets.show'])
+            ->givePermissionTo(['product_sets.show_details'])
+            ->givePermissionTo(['countries.show'])
+            ->givePermissionTo(['shipping_methods.show'])
+            ->givePermissionTo(['discounts.show_details'])
+            ->givePermissionTo(['cart.verify'])
+            ->givePermissionTo(['orders.add'])
+            ->givePermissionTo(['orders.show_summary'])
+            ->givePermissionTo(['pages.show'])
+            ->givePermissionTo(['pages.show_details'])
+            ->givePermissionTo(['payment_methods.show'])
+            ->givePermissionTo(['products.show'])
+            ->givePermissionTo(['products.show_details'])
+            ->givePermissionTo(['settings.show'])
+            ->givePermissionTo(['tags.show']);
         $unauthenticated->type = RoleType::UNAUTHENTICATED;
         $unauthenticated->save();
     }
