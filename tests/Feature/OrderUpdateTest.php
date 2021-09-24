@@ -20,8 +20,6 @@ class OrderUpdateTest extends TestCase
     private Address $addressDelivery;
     private Address $addressInvoice;
 
-    public const EMAIL = 'test@gmail.com';
-
     public function setUp(): void
     {
         parent::setUp();
@@ -34,7 +32,7 @@ class OrderUpdateTest extends TestCase
 
         $this->order = Order::factory()->create([
             'code' => 'XXXXXX123',
-            'email' => self::EMAIL,
+            'email' => $this->faker->freeEmail,
             'comment' => $this->comment,
             'status_id' => $this->status->getKey(),
             'shipping_method_id' => $shippingMethod->getKey(),
@@ -173,7 +171,7 @@ class OrderUpdateTest extends TestCase
             'comment' => $comment,
 
             // should remain the same
-            'email' => self::EMAIL,
+            'email' => $this->order->email,
             'delivery_address_id' => $this->addressDelivery->getKey(),
             'invoice_address_id' => $this->addressInvoice->getKey(),
         ]);
@@ -241,7 +239,7 @@ class OrderUpdateTest extends TestCase
             'delivery_address_id' => $responseData->delivery_address->id,
 
             // should remain the same
-            'email' => self::EMAIL,
+            'email' => $this->order->email,
             'comment' => $this->comment,
             'invoice_address_id' => $this->addressInvoice->getKey(),
         ]);
@@ -341,7 +339,7 @@ class OrderUpdateTest extends TestCase
             'invoice_address_id' => $responseData->invoice_address->id,
 
             // should remain the same
-            'email' => self::EMAIL,
+            'email' => $this->order->email,
             'comment' => $this->comment,
             'delivery_address_id' => $this->addressDelivery->getKey(),
         ]);
