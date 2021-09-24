@@ -22,6 +22,8 @@ class DiscountOrderTest extends TestCase
     protected array $items;
     protected array $address;
 
+    public const EMAIL = 'info@gmail.com';
+
     public function setUp(): void
     {
         parent::setUp();
@@ -59,7 +61,7 @@ class DiscountOrderTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/orders', [
-            'email' => 'info@example.com',
+            'email' => self::EMAIL,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address,
             'items' => $this->items,
@@ -90,7 +92,7 @@ class DiscountOrderTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/orders', [
-            'email' => 'info@example.com',
+            'email' => self::EMAIL,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address,
             'items' => $this->items,
@@ -114,7 +116,7 @@ class DiscountOrderTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/orders', [
-            'email' => 'info@example.com',
+            'email' => self::EMAIL,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address,
             'items' => $this->items,

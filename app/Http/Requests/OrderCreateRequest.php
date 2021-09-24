@@ -74,7 +74,7 @@ class OrderCreateRequest extends OrderItemsRequest
     public function rules(): array
     {
         return parent::rules() + [
-            'email' => ['required', 'email'],
+            'email' => ['required', 'email:rfc,dns'],
             'comment' => ['nullable', 'string', 'max:1000'],
             'shipping_method_id' => ['required', 'uuid', 'exists:shipping_methods,id'],
 

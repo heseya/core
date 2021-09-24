@@ -27,6 +27,8 @@ class OrderCreateTest extends TestCase
     private Address $address;
     private Product $product;
 
+    public const EMAIL = 'test@gmail.com';
+
     public function setUp(): void
     {
         parent::setUp();
@@ -57,7 +59,7 @@ class OrderCreateTest extends TestCase
         Event::fake([OrderCreated::class]);
 
         $response = $this->postJson('/orders', [
-            'email' => 'test@example.com',
+            'email' => self::EMAIL,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
             'items' => [
@@ -86,7 +88,7 @@ class OrderCreateTest extends TestCase
         $productQuantity = 20;
 
         $response = $this->actingAs($this->user)->postJson('/orders', [
-            'email' => 'test@example.com',
+            'email' => self::EMAIL,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
             'items' => [
@@ -102,7 +104,7 @@ class OrderCreateTest extends TestCase
 
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
-            'email' => 'test@example.com',
+            'email' => self::EMAIL,
             'shipping_price' => $this->shippingMethod->getPrice(
                 $this->product->price * $productQuantity,
             ),
@@ -137,7 +139,7 @@ class OrderCreateTest extends TestCase
         $productQuantity = 2;
 
         $response = $this->actingAs($this->user)->postJson('/orders', [
-            'email' => 'test@example.com',
+            'email' => self::EMAIL,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
             'items' => [
@@ -160,7 +162,7 @@ class OrderCreateTest extends TestCase
 
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
-            'email' => 'test@example.com',
+            'email' => self::EMAIL,
             'shipping_price' => $this->shippingMethod->getPrice(
                 ($this->product->price + $schemaPrice) * $productQuantity,
             ),
@@ -200,7 +202,7 @@ class OrderCreateTest extends TestCase
         $productQuantity = 2;
 
         $response = $this->actingAs($this->user)->postJson('/orders', [
-            'email' => 'test@example.com',
+            'email' => self::EMAIL,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
             'items' => [
@@ -223,7 +225,7 @@ class OrderCreateTest extends TestCase
 
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
-            'email' => 'test@example.com',
+            'email' => self::EMAIL,
             'shipping_price' => $this->shippingMethod->getPrice(
                 ($this->product->price + $schemaPrice) * $productQuantity,
             ),
@@ -261,7 +263,7 @@ class OrderCreateTest extends TestCase
         $shippingMethod = ShippingMethod::factory()->create();
 
         $response = $this->actingAs($this->user)->json('POST', '/orders', [
-            'email' => 'test@example.com',
+            'email' => self::EMAIL,
             'shipping_method_id' => $shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
             'items' => [
@@ -280,7 +282,7 @@ class OrderCreateTest extends TestCase
 
         $this->assertDatabaseHas('orders', [
             'id' => $order->getKey(),
-            'email' => 'test@example.com',
+            'email' => self::EMAIL,
             'shipping_price' => $shippingMethod->getPrice(
                 $this->product->price * 1,
             ),
@@ -296,7 +298,7 @@ class OrderCreateTest extends TestCase
         $shippingMethod = ShippingMethod::factory()->create();
 
         $response = $this->actingAs($this->user)->json('POST', '/orders', [
-            'email' => 'test@example.com',
+            'email' => self::EMAIL,
             'shipping_method_id' => $shippingMethod->getKey(),
             'delivery_address' => [
                 'name' => 'Wojtek Testowy',
@@ -328,7 +330,7 @@ class OrderCreateTest extends TestCase
         $shippingMethod = ShippingMethod::factory()->create();
 
         $response = $this->actingAs($this->user)->json('POST', '/orders', [
-            'email' => 'test@example.com',
+            'email' => self::EMAIL,
             'shipping_method_id' => $shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
             'items' => [
@@ -361,7 +363,7 @@ class OrderCreateTest extends TestCase
         $shippingMethod = ShippingMethod::factory()->create();
 
         $response = $this->actingAs($this->user)->json('POST', '/orders', [
-            'email' => 'test@example.com',
+            'email' => self::EMAIL,
             'shipping_method_id' => $shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
             'items' => [

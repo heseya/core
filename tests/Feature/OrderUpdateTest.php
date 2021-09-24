@@ -20,7 +20,7 @@ class OrderUpdateTest extends TestCase
     private Address $addressDelivery;
     private Address $addressInvoice;
 
-    public const EMAIL = 'test@example.com';
+    public const EMAIL = 'test@gmail.com';
 
     public function setUp(): void
     {
@@ -53,7 +53,7 @@ class OrderUpdateTest extends TestCase
     {
         $this->user->givePermissionTo('orders.edit');
 
-        $email = $this->faker->email();
+        $email = $this->faker->freeEmail;
         $comment = $this->faker->text(200);
         $address = Address::factory()->create();
 
@@ -113,7 +113,7 @@ class OrderUpdateTest extends TestCase
     {
         $this->user->givePermissionTo('orders.edit');
 
-        $email = $this->faker->email();
+        $email = $this->faker->freeEmail;
         $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'email' => $email
         ]);
