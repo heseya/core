@@ -54,7 +54,8 @@ class AppOtherTest extends TestCase
             $this->url . '/uninstall' => Http::response([], 404),
         ]);
 
-        $response = $this->actingAs($this->user)->deleteJson('/apps/id:' . $app->getKey());
+        $response = $this->actingAs($this->user)
+            ->deleteJson('/apps/id:' . $app->getKey());
 
         $response->assertStatus(422);
         $this->assertDatabaseCount('apps', 1);
@@ -87,7 +88,8 @@ class AppOtherTest extends TestCase
             $this->url . '/uninstall' => new ConnectionException("Test", 7),
         ]);
 
-        $response = $this->actingAs($this->user)->deleteJson('/apps/id:' . $app->getKey());
+        $response = $this->actingAs($this->user)
+            ->deleteJson('/apps/id:' . $app->getKey() . '?force=0');
 
         $response->assertStatus(422);
         $this->assertDatabaseCount('apps', 1);
@@ -104,7 +106,7 @@ class AppOtherTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->deleteJson('/apps/id:' . $app->getKey() . '?force');
+            ->deleteJson('/apps/id:' . $app->getKey() . '?force=1');
 
         $response->assertNoContent();
         $this->assertDatabaseCount('apps', 0);

@@ -37,7 +37,7 @@ class AppController extends Controller implements AppControllerSwagger
 
     public function destroy(App $app, AppDeleteRequest $request): JsonResponse
     {
-        $force = $request->has('force') && $request->input('tree', true) !== false;
+        $force = $request->has('force') && (!$request->filled('force') || $request->boolean('force'));
         $this->appService->uninstall($app, $force);
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
