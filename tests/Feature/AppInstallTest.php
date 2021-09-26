@@ -166,10 +166,19 @@ class AppInstallTest extends TestCase
                 'required_permissions' => [
                     'products.show',
                 ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ]],
+                'internal_permissions' => [
+                    [
+                        'name' => 'with_description',
+                        'description' => 'Permission description',
+                    ],
+                    [
+                        'name' => 'null_description',
+                        'description' => null,
+                    ],
+                    [
+                        'name' => 'no_description',
+                    ],
+                ],
             ]),
             $this->url . '/install' => Http::response([
                 'uninstall_token' => $uninstallToken,
@@ -183,11 +192,13 @@ class AppInstallTest extends TestCase
             ],
         ]);
 
+        $name = 'App name';
+
         $response->assertCreated()
             ->assertJsonFragment([
                 'url' => $this->url,
                 'microfrontend_url' => 'https://front.example.com',
-                'name' => 'App name',
+                'name' => $name,
                 'slug' => Str::slug('App name'),
                 'author' => 'Mr. Author',
                 'version' => '1.0.0',
@@ -196,7 +207,7 @@ class AppInstallTest extends TestCase
             ]);
 
         $this->assertDatabaseHas('apps', [
-            'name' => 'App name',
+            'name' => $name,
             'author' => 'Mr. Author',
             'version' => '1.0.0',
             'api_version' => '^1.4.0',
@@ -206,13 +217,35 @@ class AppInstallTest extends TestCase
             'uninstall_token' => $uninstallToken,
         ]);
 
-        $app = App::where('name', 'App name')->firstOrFail();
+        $this->assertDatabaseHas('permissions', [
+            'name' => 'app.' . Str::slug($name) . '.with_description',
+            'description' => 'Permission description',
+        ]);
+
+        $this->assertDatabaseHas('permissions', [
+            'name' => 'app.' . Str::slug($name) . '.null_description',
+            'description' => null,
+        ]);
+
+        $this->assertDatabaseHas('permissions', [
+            'name' => 'app.' . Str::slug($name) . '.no_description',
+            'description' => null,
+        ]);
+
+        $app = App::where('name', $name)->firstOrFail();
 
         $this->assertTrue($app->hasAllPermissions([
             'auth.login',
             'auth.identity_profile',
             'products.show',
         ]));
+
+        $this->assertDatabaseHas('roles', [
+            'id' => $app->role_id,
+            'name' => $name . ' owner',
+        ]);
+
+        $this->assertTrue($this->user->hasRole($app->role));
     }
 
     public function testInstallWithOptionalPermissions(): void

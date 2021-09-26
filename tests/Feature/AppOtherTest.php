@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\App;
+use App\Models\Permission;
+use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
@@ -75,6 +77,7 @@ class AppOtherTest extends TestCase
 
         $response->assertNoContent();
         $this->assertDatabaseCount('apps', 0);
+        $this->assertDeleted($app);
     }
 
     public function testUninstallConnectionRefused(): void
@@ -108,6 +111,7 @@ class AppOtherTest extends TestCase
 
         $response->assertNoContent();
         $this->assertDatabaseCount('apps', 0);
+        $this->assertDeleted($app);
     }
 
     public function testUninstall(): void
@@ -125,5 +129,41 @@ class AppOtherTest extends TestCase
 
         $response->assertNoContent();
         $this->assertDatabaseCount('apps', 0);
+        $this->assertDeleted($app);
+    }
+
+    public function testUninstallRole(): void
+    {
+        $this->user->givePermissionTo('apps.remove');
+
+        $role = Role::create(['name' => 'Appname owner']);
+
+        $app = App::factory()->create([
+            'slug' => 'appname',
+            'url' => $this->url,
+            'role_id' => $role->getKey(),
+        ]);
+
+        $permission = Permission::create(['name' => 'app.appname.permission']);
+        $role->givePermissionTo($permission);
+        $this->user->assignRole($role);
+
+        Http::fake([
+            $this->url . '/uninstall' => Http::response(status: 204),
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->deleteJson('/apps/id:' . $app->getKey());
+
+        $response->assertNoContent();
+        $this->assertDatabaseCount('apps', 0);
+
+        $this->assertDeleted($app);
+        $this->assertDeleted($role);
+        $this->assertDeleted($permission);
+
+        $this->user->refresh();
+        $this->assertFalse($this->user->hasRole($role));
+        $this->assertFalse($this->user->hasPermissionTo($permission));
     }
 }

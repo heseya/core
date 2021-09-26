@@ -7,6 +7,7 @@ use App\Exceptions\AppException;
 use App\Exceptions\AuthException;
 use App\Models\App;
 use App\Models\Permission;
+use App\Models\Role;
 use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\TokenServiceContract;
 use Illuminate\Support\Collection;
@@ -146,9 +147,26 @@ class AppService implements AppServiceContract
 
         $uninstallToken = $response->json('uninstall_token');
 
+        $internalPermissions = Collection::make($appConfig['internal_permissions']);
+
+        $internalPermissions = $internalPermissions->map(fn ($permission) => Permission::create([
+            'name' => 'app.' . $app->slug . '.' . $permission['name'],
+            'description' => key_exists('description', $permission) ?
+                $permission['description'] : null,
+        ]));
+
+        $role = Role::create([
+            'name' => $app->name . ' owner',
+        ]);
+
+        $role->syncPermissions($internalPermissions);
+
         $app->update([
+            'role_id' => $role->getKey(),
             'uninstall_token' => $uninstallToken,
         ]);
+
+        Auth::user()->assignRole($role);
 
         return $app;
     }
@@ -171,6 +189,8 @@ class AppService implements AppServiceContract
             throw new AppException('Failed to uninstall the application');
         }
 
+        Permission::where('name', 'like', 'app.' . $app->slug . '%')->delete();
+        $app->role()->delete();
         $app->delete();
     }
 
