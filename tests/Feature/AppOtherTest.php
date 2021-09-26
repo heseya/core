@@ -35,6 +35,39 @@ class AppOtherTest extends TestCase
             ->assertJsonCount(10, 'data');
     }
 
+    public function testShowUnauthorized(): void
+    {
+        $app = App::factory()->create();
+
+        $response = $this->getJson('/apps/id:' . $app->getKey());
+
+        $response->assertForbidden();
+    }
+
+    public function testShow(): void
+    {
+        $this->user->givePermissionTo('apps.show_details');
+
+        $app = App::factory()->create();
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/apps/id:' . $app->getKey());
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'url' => $app->url,
+                'microfrontend_url' => $app->microfrontend_url,
+                'name' => $app->name,
+                'slug' => $app->slug,
+                'version' => $app->version,
+                'description' => $app->description,
+                'icon' => $app->icon,
+                'author' => $app->author,
+                'permissions' => [],
+            ]]);
+    }
+
     public function testUninstallUnauthorized(): void
     {
         $app = App::factory()->create(['url' => $this->url]);

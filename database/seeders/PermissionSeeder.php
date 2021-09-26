@@ -27,6 +27,7 @@ class PermissionSeeder extends Seeder
 
         // Apps
         Permission::updateOrCreate(['name' => 'apps.show']);
+        Permission::updateOrCreate(['name' => 'apps.show_details']);
         Permission::updateOrCreate(['name' => 'apps.install']);
         Permission::updateOrCreate(['name' => 'apps.remove']);
 

@@ -10,6 +10,7 @@ use App\Models\App;
 use App\Services\Contracts\AppServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 
 class AppController extends Controller implements AppControllerSwagger
@@ -20,7 +21,12 @@ class AppController extends Controller implements AppControllerSwagger
 
     public function index(): JsonResource
     {
-        return AppResource::collection(App::paginate(12));
+        return AppResource::collection(App::paginate(Config::get('pagination.per_page')));
+    }
+
+    public function show(App $app): JsonResource
+    {
+        return AppResource::make($app);
     }
 
     public function store(AppStoreRequest $request): JsonResource
