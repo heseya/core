@@ -3,12 +3,11 @@
 namespace Tests\Feature;
 
 use App\Enums\TokenType;
+use App\Models\App;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use App\Services\Contracts\TokenServiceContract;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
@@ -69,7 +68,7 @@ class AuthTest extends TestCase
 
     public function testRefreshTokenUnauthorized(): void
     {
-        $token = App::make(TokenServiceContract::class)->createToken(
+        $token = $this->tokenService->createToken(
             $this->user,
             new TokenType(TokenType::REFRESH),
         );
@@ -85,7 +84,7 @@ class AuthTest extends TestCase
     {
         $this->user->givePermissionTo('auth.login');
 
-        $token = App::make(TokenServiceContract::class)->createToken(
+        $token = $this->tokenService->createToken(
             $this->user,
             new TokenType(TokenType::REFRESH),
         );
@@ -113,7 +112,7 @@ class AuthTest extends TestCase
     {
         $this->user->givePermissionTo('auth.login');
 
-        $token = App::make(TokenServiceContract::class)->createToken(
+        $token = $this->tokenService->createToken(
             $this->user,
             new TokenType(TokenType::REFRESH),
         );
@@ -451,6 +450,34 @@ class AuthTest extends TestCase
                     'description' => $role1->description,
                     'assignable' => true,
                 ]],
+                'permissions' => [
+                    'permission.1',
+                    'permission.2',
+                ],
+            ]]);
+    }
+
+    public function testProfileApp(): void
+    {
+        $app = App::factory()->create();
+
+        $permission1 = Permission::create(['name' => 'permission.1']);
+        $permission2 = Permission::create(['name' => 'permission.2']);
+
+        $app->syncPermissions([$permission1, $permission2]);
+
+        $this->actingAs($app)->getJson('/auth/profile')
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $app->getKey(),
+                'url' => $app->url,
+                'microfrontend_url' => $app->microfrontend_url,
+                'name' => $app->name,
+                'slug' => $app->slug,
+                'version' => $app->version,
+                'description' => $app->description,
+                'icon' => $app->icon,
+                'author' => $app->author,
                 'permissions' => [
                     'permission.1',
                     'permission.2',
