@@ -16,6 +16,7 @@
         "heseya/laravel-searchable": "^1.0",
         "heseya/resource": "*",
         "heseya/pagination": "*",
+        "heseya/dto": "*",
         "jenssegers/agent": "^2.6",
         "laravel/framework": "^8.44",
         "league/html-to-markdown": "^5.0",
@@ -111,6 +112,10 @@
         {
             "type": "path",
             "url": "./heseya/pagination"
+        },
+        {
+            "type": "path",
+            "url": "./heseya/dto"
         }
     ]
 }
