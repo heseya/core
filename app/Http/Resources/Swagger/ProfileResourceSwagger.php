@@ -38,4 +38,6 @@ interface ProfileResourceSwagger
      * )
      */
     public function base(Request $request): array;
+
+    public function stripedPermissionPrefix(?string $prefix): self;
 }

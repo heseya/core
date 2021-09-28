@@ -14,4 +14,6 @@ interface AppServiceContract
     ): App;
 
     public function uninstall(App $app, bool $force = false): void;
+
+    public function appPermissionPrefix(App $app): string;
 }

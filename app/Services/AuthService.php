@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\TokenType;
 use App\Exceptions\AuthException;
+use App\Models\App;
 use App\Models\Token;
 use App\Models\User;
 use App\Notifications\ResetPassword;
@@ -160,6 +161,16 @@ class AuthService implements AuthServiceContract
         }
 
         return $user;
+    }
+
+    public function isUserAuthenticated(): bool
+    {
+        return Auth::user() instanceof User;
+    }
+
+    public function isAppAuthenticated(): bool
+    {
+        return Auth::user() instanceof App;
     }
 
 //    public function loginHistory(User $user): Builder
