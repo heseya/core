@@ -18,10 +18,38 @@ interface AppControllerSwagger
      *   @OA\Response(
      *     response=200,
      *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         type="array",
+     *         @OA\Items(
+     *           ref="#/components/schemas/App",
+     *         ),
+     *       )
+     *     )
      *   )
      * )
      */
     public function index(): JsonResource;
+
+    /**
+     * @OA\Get(
+     *   path="/apps/id:{id}",
+     *   summary="show an app",
+     *   tags={"Apps"},
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/AppView",
+     *       )
+     *     )
+     *   ),
+     * )
+     */
+    public function show(App $app): JsonResource;
 
     /**
      * @OA\Post(
