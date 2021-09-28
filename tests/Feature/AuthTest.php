@@ -498,6 +498,21 @@ class AuthTest extends TestCase
             ->assertForbidden();
     }
 
+    public function testIdentityProfileInvalidToken(): void
+    {
+        $this->user->givePermissionTo('auth.identity_profile');
+
+        $user = User::factory()->create();
+
+        $token = $this->tokenService->createToken(
+                $user,
+                new TokenType(TokenType::IDENTITY),
+            ) . 'invalid_hash';
+
+        $this->actingAs($this->user)->getJson("/auth/profile/$token")
+            ->assertStatus(422);
+    }
+
     public function testIdentityProfile(): void
     {
         $this->user->givePermissionTo('auth.identity_profile');
@@ -529,19 +544,41 @@ class AuthTest extends TestCase
             ]]);
     }
 
-    public function testIdentityProfileInvalidToken(): void
+    public function testIdentityProfileAppMapping(): void
     {
-        $this->user->givePermissionTo('auth.identity_profile');
+        $app = App::factory()->create([
+           'slug' => 'app_slug',
+        ]);
+
+        $app->givePermissionTo('auth.identity_profile');
 
         $user = User::factory()->create();
+        $role1 = Role::create(['name' => 'Role 1']);
+
+        $permission1 = Permission::create(['name' => 'permission.1']);
+        $permission2 = Permission::create(['name' => 'permission.2']);
+        $permission3 = Permission::create(['name' => 'app.app_slug.raw_name']);
+
+        $role1->syncPermissions([$permission1, $permission2, $permission3]);
+        $user->syncRoles([$role1]);
 
         $token = $this->tokenService->createToken(
             $user,
             new TokenType(TokenType::IDENTITY),
-        ) . 'invalid_hash';
+        );
 
-        $this->actingAs($this->user)->getJson("/auth/profile/$token")
-            ->assertStatus(422);
+        $this->actingAs($app)->getJson("/auth/profile/$token")
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $user->getKey(),
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+                'permissions' => [
+                    'permission.1',
+                    'permission.2',
+                    'raw_name',
+                ],
+            ]]);
     }
 
 //    public function testAuthWithReokedToken(): void

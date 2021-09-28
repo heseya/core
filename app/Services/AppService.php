@@ -194,6 +194,11 @@ class AppService implements AppServiceContract
         $app->delete();
     }
 
+    public function appPermissionPrefix(App $app): string
+    {
+        return 'app.' . $app->slug . '.';
+    }
+
     protected function validateAppRoot($response)
     {
         $validator = Validator::make($response->json(), [

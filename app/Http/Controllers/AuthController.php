@@ -12,16 +12,20 @@ use App\Http\Resources\AuthResource;
 use App\Http\Resources\ProfileResource;
 use App\Http\Resources\UserResource;
 use App\Models\App;
+use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\AuthServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 
 class AuthController extends Controller implements AuthControllerSwagger
 {
-    public function __construct(private AuthServiceContract $authService)
-    {
+    public function __construct(
+        private AuthServiceContract $authService,
+        private AppServiceContract $appService,
+    ) {
     }
 
     public function login(LoginRequest $request): JsonResource
@@ -135,6 +139,9 @@ class AuthController extends Controller implements AuthControllerSwagger
     {
         $user = $this->authService->userByIdentity($identityToken);
 
-        return ProfileResource::make($user);
+        $prefix = $this->authService->isAppAuthenticated() ?
+            $this->appService->appPermissionPrefix(Auth::user()) : null;
+
+        return ProfileResource::make($user)->stripedPermissionPrefix($prefix);
     }
 }
