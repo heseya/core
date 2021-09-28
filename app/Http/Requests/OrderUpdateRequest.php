@@ -34,7 +34,7 @@ class OrderUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['nullable', 'email'],
+            'email' => ['nullable', 'email:rfc,dns'],
             'comment' => ['nullable', 'string', 'max:1000'],
 
             'delivery_address' => ['nullable', 'array'],
