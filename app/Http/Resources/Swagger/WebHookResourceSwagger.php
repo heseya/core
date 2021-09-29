@@ -27,6 +27,12 @@ interface WebHookResourceSwagger
      *     example="https://app.heseya.com",
      *   ),
      *   @OA\Property(
+     *     property="secret",
+     *     type="string",
+     *     description="Displayed webhook secret",
+     *     example="secret",
+     *   ),
+     *   @OA\Property(
      *     property="with_issuer",
      *     type="boolean",
      *     example=true,
@@ -37,6 +43,24 @@ interface WebHookResourceSwagger
      *     type="boolean",
      *     example=true,
      *     description="Whether hidden data are visible in WebHookEvent.",
+     *   ),
+     *   @OA\Property(
+     *     property="events",
+     *     type="array",
+     *     description="List of WebHook events",
+     *     @OA\Items(
+     *         type="string",
+     *         example="OrderCreated",
+     *     ),
+     *   ),
+     *   @OA\Property(
+     *     property="logs",
+     *     type="array",
+     *     description="List of WebHooks logs",
+     *     @OA\Items(
+     *         type="string",
+     *         example="OrderCreated",
+     *     ),
      *   ),
      * )
      */

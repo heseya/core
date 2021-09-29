@@ -12,4 +12,16 @@ class WebHookService implements WebHookServiceContract
     {
         return WebHook::search($attributes)->get();
     }
+
+    public function create(array $request): WebHook
+    {
+        return WebHook::create([
+            'name' => $request['name'],
+            'url' => $request['url'],
+            'secret' => $request['secret'],
+            'events' => $request['events'],
+            'with_issuer' => $request['with_issuer'],
+            'with_hidden' => $request['with_hidden'],
+        ]);
+    }
 }

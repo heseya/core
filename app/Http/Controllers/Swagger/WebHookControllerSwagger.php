@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Swagger;
 
+use App\Http\Requests\WebHookCreateRequest;
 use App\Http\Requests\WebHookIndexRequest;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -10,6 +11,7 @@ interface WebHookControllerSwagger
     /**
      * @OA\Get(
      *   path="/web-hooks",
+     *   summary="list webhooks by filters",
      *   tags={"WebHooks"},
      *   @OA\Parameter(
      *     name="name",
@@ -44,7 +46,30 @@ interface WebHookControllerSwagger
      */
     public function index(WebHookIndexRequest $request): JsonResource;
 
-//    public function store(Request $request): JsonResource;
+    /**
+     * @OA\Post(
+     *   path="/web-hooks",
+     *   summary="add new webhook",
+     *   tags={"WebHooks"},
+     *   @OA\RequestBody(
+     *     ref="#/components/requestBodies/WebHookCreate",
+     *   ),
+     *   @OA\Response(
+     *     response=201,
+     *     description="Created",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/WebHook",
+     *       )
+     *     )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function store(WebHookCreateRequest $request): JsonResource;
 
 //    public function update(Request $request, WebHook $webHook): JsonResource;
 

@@ -13,6 +13,7 @@ class WebHookResource extends Resource implements WebHookResourceSwagger
             'id' => $this->getKey(),
             'name' => $this->name,
             'url' => $this->url,
+            'secret' => $this->secret,
             'with_issuer' => $this->with_issuer,
             'with_hidden' => $this->with_hidden,
             'events' => $this->events,

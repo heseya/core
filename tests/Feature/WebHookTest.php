@@ -22,6 +22,7 @@ class WebHookTest extends TestCase
             'id' => $this->webHook->getKey(),
             'name' => $this->webHook->name,
             'url' => $this->webHook->url,
+            'secret' => $this->webHook->secret,
             'with_issuer' => $this->webHook->with_issuer,
             'with_hidden' => $this->webHook->with_hidden,
             'events' => $this->webHook->events,
@@ -32,6 +33,7 @@ class WebHookTest extends TestCase
             'id',
             'name',
             'url',
+            'secret',
             'with_issuer',
             'with_hidden',
             'events',
@@ -58,5 +60,94 @@ class WebHookTest extends TestCase
             ->assertJsonFragment(['data' => [
                 0 => $this->expected,
             ]]);
+    }
+
+    public function testCreateUnauthorized(): void
+    {
+        $response = $this->json('POST', '/web-hooks');
+        $response->assertForbidden();
+    }
+
+    public function testCreate(): void
+    {
+        $this->user->givePermissionTo('webhooks.add', 'orders.show', 'orders.show_details');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderCreated'
+            ]
+        ]);
+
+        $response = $this->actingAs($this->user)->json('POST', '/web-hooks', [
+            'name' => $webHook->name,
+            'url' => $webHook->url,
+            'secret' => $webHook->secret,
+            'events' => $webHook->events,
+            'with_issuer' => $webHook->with_issuer,
+            'with_hidden' => $webHook->with_hidden,
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => $webHook->name,
+                'url' => $webHook->url,
+                'events' => $webHook->events,
+                'with_issuer' => $webHook->with_issuer,
+                'with_hidden' => $webHook->with_hidden,
+            ]);
+
+        $this->assertDatabaseHas('web_hooks', [
+            'name' => $webHook->name,
+            'url' => $webHook->url,
+            'secret' => $webHook->secret,
+            'events' => json_encode($webHook->events),
+            'with_issuer' => $webHook->with_issuer,
+            'with_hidden' => $webHook->with_hidden,
+        ]);
+    }
+
+    public function testCreateNoPermissionToEvent(): void
+    {
+        $this->user->givePermissionTo('webhooks.add');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderCreated'
+            ]
+        ]);
+
+        $response = $this->actingAs($this->user)->json('POST', '/web-hooks', [
+            'name' => $webHook->name,
+            'url' => $webHook->url,
+            'secret' => $webHook->secret,
+            'events' => $webHook->events,
+            'with_issuer' => $webHook->with_issuer,
+            'with_hidden' => $webHook->with_hidden,
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function testCreateEventNotExist(): void
+    {
+        $this->user->givePermissionTo('webhooks.add');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'TestEvent'
+            ]
+        ]);
+
+        $response = $this->actingAs($this->user)->json('POST', '/web-hooks', [
+            'name' => $webHook->name,
+            'url' => $webHook->url,
+            'secret' => $webHook->secret,
+            'events' => $webHook->events,
+            'with_issuer' => $webHook->with_issuer,
+            'with_hidden' => $webHook->with_hidden,
+        ]);
+
+        $response->assertStatus(422);
     }
 }

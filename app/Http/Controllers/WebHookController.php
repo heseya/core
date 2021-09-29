@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Swagger\WebHookControllerSwagger;
+use App\Http\Requests\WebHookCreateRequest;
 use App\Http\Requests\WebHookIndexRequest;
 use App\Http\Resources\WebHookResource;
 use App\Models\WebHook;
@@ -26,9 +27,10 @@ class WebHookController extends Controller implements WebHookControllerSwagger
         return WebHookResource::collection($webHooks);
     }
 
-    public function store(Request $request)
+    public function store(WebHookCreateRequest $request): JsonResource
     {
-//        return
+        $webHook = $this->webHookService->create($request->validated());
+        return WebHookResource::make($webHook);
     }
 
     public function update(Request $request, WebHook $webHook)

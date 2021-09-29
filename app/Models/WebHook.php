@@ -9,8 +9,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
-class WebHook extends Model
+class WebHook extends Model implements AuditableContract
 {
     use HasFactory, SoftDeletes, Searchable, Sortable, Auditable;
 
@@ -50,5 +51,15 @@ class WebHook extends Model
     public function logs(): HasMany
     {
         return $this->hasMany(WebHookEventLogEntry::class);
+    }
+
+    public function getEventsAttribute($value)
+    {
+        return json_decode($value);
+    }
+
+    public function setEventsAttribute($value)
+    {
+        $this->attributes['events'] = json_encode($value);
     }
 }

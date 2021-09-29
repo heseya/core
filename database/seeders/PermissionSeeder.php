@@ -158,6 +158,7 @@ class PermissionSeeder extends Seeder
 
         // WebHooks
         Permission::updateOrCreate(['name' => 'webhooks.show']);
+        Permission::updateOrCreate(['name' => 'webhooks.add']);
         Permission::updateOrCreate(['name' => 'webhooks.edit']);
         Permission::updateOrCreate(['name' => 'webhooks.remove']);
 
