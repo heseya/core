@@ -163,25 +163,27 @@ class PermissionSeeder extends Seeder
         $owner->save();
 
         $unauthenticated = Role::updateOrCreate(['name' => 'Unauthenticated'])
-            ->givePermissionTo(['auth.login'])
-            ->givePermissionTo(['auth.register'])
-            ->givePermissionTo(['auth.password_reset'])
-            ->givePermissionTo(['auth.password_change'])
-            ->givePermissionTo(['product_sets.show'])
-            ->givePermissionTo(['product_sets.show_details'])
-            ->givePermissionTo(['countries.show'])
-            ->givePermissionTo(['shipping_methods.show'])
-            ->givePermissionTo(['discounts.show_details'])
-            ->givePermissionTo(['cart.verify'])
-            ->givePermissionTo(['orders.add'])
-            ->givePermissionTo(['orders.show_summary'])
-            ->givePermissionTo(['pages.show'])
-            ->givePermissionTo(['pages.show_details'])
-            ->givePermissionTo(['payment_methods.show'])
-            ->givePermissionTo(['products.show'])
-            ->givePermissionTo(['products.show_details'])
-            ->givePermissionTo(['settings.show'])
-            ->givePermissionTo(['tags.show']);
+            ->givePermissionTo([
+                'auth.login',
+                'auth.register',
+                'auth.password_reset',
+                'auth.password_change',
+                'product_sets.show',
+                'product_sets.show_details',
+                'countries.show',
+                'shipping_methods.show',
+                'discounts.show_details',
+                'cart.verify',
+                'orders.add',
+                'orders.show_summary',
+                'pages.show',
+                'pages.show_details',
+                'payment_methods.show',
+                'products.show',
+                'products.show_details',
+                'settings.show',
+                'tags.show',
+            ]);
         $unauthenticated->type = RoleType::UNAUTHENTICATED;
         $unauthenticated->save();
     }

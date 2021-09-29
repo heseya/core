@@ -12,6 +12,8 @@ class RoleTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+
+        Role::query()->delete();
     }
 
     public function testIndexUnauthorized(): void
@@ -162,8 +164,7 @@ class RoleTest extends TestCase
             'name' => 'role3',
             'description' => 'Role 3',
         ]);
-        $roleHasSomePermissions->givePermissionTo('roles.show');
-        $roleHasSomePermissions->givePermissionTo('roles.add');
+        $roleHasSomePermissions->givePermissionTo(['roles.show', 'roles.add']);
 
         $roleHasNoPermissions = Role::create([
             'name' => 'role4',
@@ -210,8 +211,7 @@ class RoleTest extends TestCase
             'name' => 'role3',
             'description' => 'Role 3',
         ]);
-        $roleHasSomePermissions->givePermissionTo('roles.show');
-        $roleHasSomePermissions->givePermissionTo('roles.add');
+        $roleHasSomePermissions->givePermissionTo(['roles.show', 'roles.add']);
 
         $roleHasNoPermissions = Role::create([
             'name' => 'role4',
