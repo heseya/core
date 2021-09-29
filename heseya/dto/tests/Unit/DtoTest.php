@@ -8,6 +8,7 @@ use Heseya\Dto\Tests\TestDto;
 use Heseya\Dto\Tests\TestHiddenDto;
 use Illuminate\Foundation\Testing\TestCase;
 use Tests\CreatesApplication;
+use TypeError;
 
 class DtoTest extends TestCase
 {
@@ -45,6 +46,13 @@ class DtoTest extends TestCase
         $dto = new TestDto(name: 'test name');
 
         $this->assertInstanceOf(Missing::class, $dto->getDescription());
+    }
+
+    public function testNonNullableParam(): void
+    {
+        $this->expectException(TypeError::class);
+
+        new TestDto(name: null);
     }
 
     public function testHiddenParam(): void

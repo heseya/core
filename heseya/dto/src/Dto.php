@@ -4,11 +4,14 @@ namespace Heseya\Dto;
 
 use Illuminate\Support\Collection;
 use ReflectionClass;
-use ReflectionNamedType;
 use ReflectionProperty;
+use TypeError;
 
 class Dto
 {
+    /**
+     * @throws DtoException
+     */
     public function __construct(...$data)
     {
         $data = Collection::make($data);
@@ -20,24 +23,13 @@ class Dto
             $property->setAccessible(true);
             $name = $property->getName();
 
-            $types = Collection::make(
-                $property->getType() instanceof ReflectionNamedType ? [$property->getType()]
-                    : $property->getType()->getTypes(),
-            );
-
-            $optional = $types->contains(fn ($type) => $type->getName() === Missing::class);
-            $allowsNull = $property->getType()->allowsNull();
-
             if (!$data->has($name)) {
-                if (!$optional) {
-                    throw new DtoException("Property ${name} is required");
+                try {
+                    return $property->setValue($this, new Missing());
+                } catch (TypeError) {
+                    $fullName = $this::class . '::$' . $name;
+                    throw new DtoException("Property $fullName is required");
                 }
-
-                return $property->setValue($this, new Missing());
-            }
-
-            if ($data->get($name) === null && !$allowsNull) {
-                throw new DtoException("${name} property cannot be null");
             }
 
             $property->setValue($this, $data->get($name));

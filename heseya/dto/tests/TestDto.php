@@ -7,13 +7,13 @@ use Heseya\Dto\Missing;
 
 class TestDto extends Dto
 {
-    private ?string $name;
+    private string $name;
     private string|null|Missing $description;
 
     /**
-     * @return string|null
+     * @return string
      */
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
