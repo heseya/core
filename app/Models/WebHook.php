@@ -7,6 +7,7 @@ use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
@@ -22,6 +23,8 @@ class WebHook extends Model implements AuditableContract
         'events',
         'with_issuer',
         'with_hidden',
+        'model_type',
+        'creator_id',
     ];
 
     protected $casts = [
@@ -61,5 +64,10 @@ class WebHook extends Model implements AuditableContract
     public function setEventsAttribute($value)
     {
         $this->attributes['events'] = json_encode($value);
+    }
+
+    public function hasWebHooks(): MorphTo
+    {
+        return $this->morphTo();
     }
 }

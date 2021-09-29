@@ -21,6 +21,11 @@ class CreateWebHooksTable extends Migration
             $table->json('events');
             $table->boolean('with_issuer');
             $table->boolean('with_hidden');
+
+            $table->uuid('creator_id');
+            $table->string('model_type');
+            $table->index(['creator_id', 'model_type'], 'web_hooks_creator_id_model_type_index');
+
             $table->timestamps();
             $table->softDeletes();
         });

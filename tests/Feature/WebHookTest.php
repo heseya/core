@@ -16,7 +16,10 @@ class WebHookTest extends TestCase
     {
         parent::setUp();
 
-        $this->webHook = WebHook::factory()->create();
+        $this->webHook = WebHook::factory()->create([
+            'model_type' => get_class($this->user),
+            'creator_id' => $this->user->getKey(),
+        ]);
 
         $this->expected = [
             'id' => $this->webHook->getKey(),
@@ -27,6 +30,8 @@ class WebHookTest extends TestCase
             'with_hidden' => $this->webHook->with_hidden,
             'events' => $this->webHook->events,
             'logs' => $this->webHook->logs,
+            'model_type' => $this->webHook->model_type,
+            'creator_id' => $this->webHook->creator_id,
         ];
 
         $this->expected_structure = [
@@ -38,6 +43,8 @@ class WebHookTest extends TestCase
             'with_hidden',
             'events',
             'logs',
+            'model_type',
+            'creator_id',
         ];
     }
 
@@ -75,7 +82,9 @@ class WebHookTest extends TestCase
         $webHook = WebHook::factory()->create([
             'events' => [
                 'OrderCreated'
-            ]
+            ],
+            'model_type' => get_class($this->user),
+            'creator_id' => $this->user->getKey(),
         ]);
 
         $response = $this->actingAs($this->user)->json('POST', '/web-hooks', [
@@ -92,9 +101,12 @@ class WebHookTest extends TestCase
             ->assertJsonFragment([
                 'name' => $webHook->name,
                 'url' => $webHook->url,
+                'secret' => $webHook->secret,
                 'events' => $webHook->events,
                 'with_issuer' => $webHook->with_issuer,
                 'with_hidden' => $webHook->with_hidden,
+                'model_type' => $webHook->model_type,
+                'creator_id' => $webHook->creator_id,
             ]);
 
         $this->assertDatabaseHas('web_hooks', [
@@ -104,6 +116,8 @@ class WebHookTest extends TestCase
             'events' => json_encode($webHook->events),
             'with_issuer' => $webHook->with_issuer,
             'with_hidden' => $webHook->with_hidden,
+            'model_type' => $webHook->model_type,
+            'creator_id' => $webHook->creator_id,
         ]);
     }
 
@@ -114,7 +128,9 @@ class WebHookTest extends TestCase
         $webHook = WebHook::factory()->create([
             'events' => [
                 'OrderCreated'
-            ]
+            ],
+            'model_type' => get_class($this->user),
+            'creator_id' => $this->user->getKey(),
         ]);
 
         $response = $this->actingAs($this->user)->json('POST', '/web-hooks', [
@@ -136,7 +152,9 @@ class WebHookTest extends TestCase
         $webHook = WebHook::factory()->create([
             'events' => [
                 'TestEvent'
-            ]
+            ],
+            'model_type' => get_class($this->user),
+            'creator_id' => $this->user->getKey(),
         ]);
 
         $response = $this->actingAs($this->user)->json('POST', '/web-hooks', [

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasWebHooks;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
@@ -21,7 +22,8 @@ class App extends Model implements
     use HasFactory,
         Authorizable,
         Authenticatable,
-        HasPermissions;
+        HasPermissions,
+        HasWebHooks;
 
     protected $guard_name = 'api';
 
