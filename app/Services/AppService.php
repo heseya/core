@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\RoleType;
 use App\Enums\TokenType;
 use App\Exceptions\AppException;
 use App\Exceptions\AuthException;
@@ -158,8 +159,10 @@ class AppService implements AppServiceContract
         $role = Role::create([
             'name' => $app->name . ' owner',
         ]);
+        $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
 
         $role->syncPermissions($internalPermissions);
+        $owner->syncPermissions($internalPermissions);
 
         $app->update([
             'role_id' => $role->getKey(),

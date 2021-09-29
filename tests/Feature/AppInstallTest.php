@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Enums\RoleType;
 use App\Models\App;
+use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
@@ -246,6 +248,18 @@ class AppInstallTest extends TestCase
         ]);
 
         $this->assertTrue($this->user->hasRole($app->role));
+        $this->assertTrue($app->role->hasAllPermissions([
+            'app.' . Str::slug($name) . '.with_description',
+            'app.' . Str::slug($name) . '.null_description',
+            'app.' . Str::slug($name) . '.no_description',
+        ]));
+
+        $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
+        $this->assertTrue($owner->hasAllPermissions([
+            'app.' . Str::slug($name) . '.with_description',
+            'app.' . Str::slug($name) . '.null_description',
+            'app.' . Str::slug($name) . '.no_description',
+        ]));
     }
 
     public function testInstallWithOptionalPermissions(): void
