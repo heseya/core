@@ -162,7 +162,7 @@ class AppService implements AppServiceContract
         $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
 
         $role->syncPermissions($internalPermissions);
-        $owner->syncPermissions($internalPermissions);
+        $owner->givePermissionTo($internalPermissions);
 
         $app->update([
             'role_id' => $role->getKey(),
