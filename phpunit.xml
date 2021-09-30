@@ -20,6 +20,10 @@
         <testsuite name="Pagination Unit">
             <directory suffix="Test.php">./heseya/pagination/tests/Unit</directory>
         </testsuite>
+
+        <testsuite name="Dto Unit">
+            <directory suffix="Test.php">./heseya/dto/tests/Unit</directory>
+        </testsuite>
     </testsuites>
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
