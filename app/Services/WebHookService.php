@@ -27,4 +27,15 @@ class WebHookService implements WebHookServiceContract
             'creator_id' => Auth::user()->getKey(),
         ]);
     }
+
+    public function update(WebHook $webHook, array $attributes): WebHook
+    {
+        $webHook->update($attributes);
+        return $webHook;
+    }
+
+    public function delete(WebHook $webHook): void
+    {
+        $webHook->delete();
+    }
 }

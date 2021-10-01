@@ -10,4 +10,8 @@ interface WebHookServiceContract
     public function searchAll(array $attributes): Collection;
 
     public function create(array $attributes): WebHook;
+
+    public function update(WebHook $webHook, array $attributes): WebHook;
+
+    public function delete(WebHook $webHook): void;
 }

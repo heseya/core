@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Swagger;
 
 use App\Http\Requests\WebHookCreateRequest;
 use App\Http\Requests\WebHookIndexRequest;
+use App\Http\Requests\WebHookUpdateRequest;
+use App\Models\WebHook;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 interface WebHookControllerSwagger
@@ -47,6 +50,35 @@ interface WebHookControllerSwagger
     public function index(WebHookIndexRequest $request): JsonResource;
 
     /**
+     * @OA\Get(
+     *   path="/web-hooks/id:{id}",
+     *   summary="show webhook",
+     *   tags={"WebHooks"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     description="Name search",
+     *     @OA\Schema(
+     *       type="string",
+     *       example="5b320ba6-d5ee-4870-bed2-1a101704c2c4"
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/WebHook",
+     *       )
+     *     )
+     *   )
+     * )
+     */
+    public function show(WebHook $webHook): JsonResource;
+
+    /**
      * @OA\Post(
      *   path="/web-hooks",
      *   summary="add new webhook",
@@ -71,7 +103,62 @@ interface WebHookControllerSwagger
      */
     public function store(WebHookCreateRequest $request): JsonResource;
 
-//    public function update(Request $request, WebHook $webHook): JsonResource;
+    /**
+     * @OA\Patch(
+     *   path="/web-hooks/id:{id}",
+     *   summary="update webhook",
+     *   tags={"WebHooks"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *       example="5b320ba6-d5ee-4870-bed2-1a101704c2c4",
+     *     )
+     *   ),
+     *   @OA\RequestBody(
+     *     ref="#/components/requestBodies/WebHookUpdate",
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Updated",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/WebHook",
+     *       )
+     *     )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function update(WebHook $webHook, WebHookUpdateRequest $request): JsonResource;
 
-//    public function destroy(WebHook $webHook): JsonResponse;
+    /**
+     * @OA\Delete(
+     *   path="/web-hooks/id:{id}",
+     *   summary="delete webhook",
+     *   tags={"WebHooks"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *       example="5b320ba6-d5ee-4870-bed2-1a101704c2c4",
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=204,
+     *     description="Success",
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function destroy(WebHook $webHook): JsonResponse;
 }

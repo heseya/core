@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * @OA\RequestBody (
- *   request="WebHookCreate",
+ *   request="WebHookUpdate",
  *   @OA\JsonContent(
  *     @OA\Property(
  *       property="name",
@@ -51,17 +51,17 @@ use Illuminate\Foundation\Http\FormRequest;
  *   )
  * )
  */
-class WebHookCreateRequest extends FormRequest
+class WebHookUpdateRequest extends FormRequest
 {
     public function rules(): array
     {
         return [
             'name' => ['nullable', 'string', 'max:255'],
-            'url' => ['required', 'string', 'max:255'],
+            'url' => ['nullable', 'string', 'max:255'],
             'secret' => ['nullable', 'string', 'max:255'],
-            'events' => ['bail', 'required', 'array', new EventExist()],
-            'with_issuer' => ['required'],
-            'with_hidden' => ['required'],
+            'events' => ['bail', 'nullable', 'array', new EventExist()],
+            'with_issuer' => ['nullable'],
+            'with_hidden' => ['nullable'],
         ];
     }
 }

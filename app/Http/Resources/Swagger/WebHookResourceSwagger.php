@@ -62,6 +62,18 @@ interface WebHookResourceSwagger
      *         example="OrderCreated",
      *     ),
      *   ),
+     *   @OA\Property(
+     *     property="creator_id",
+     *     type="string",
+     *     description="Webhook creator id",
+     *     example="026bc5f6-8373-4aeb-972e-e78d72a67121",
+     *   ),
+     *     @OA\Property(
+     *     property="model_type",
+     *     type="string",
+     *     description="Webhook creator model",
+     *     example="App\Models\App",
+     *   ),
      * )
      */
     public function base(Request $request): array;

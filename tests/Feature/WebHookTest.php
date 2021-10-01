@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\App;
 use App\Models\WebHook;
 use Tests\TestCase;
 
@@ -85,6 +86,8 @@ class WebHookTest extends TestCase
             ],
             'model_type' => get_class($this->user),
             'creator_id' => $this->user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
         ]);
 
         $response = $this->actingAs($this->user)->json('POST', '/web-hooks', [
@@ -167,5 +170,290 @@ class WebHookTest extends TestCase
         ]);
 
         $response->assertStatus(422);
+    }
+
+    public function testUpdateUnauthorized(): void
+    {
+        $response = $this->json('PATCH', '/web-hooks/id:' . $this->webHook->getKey());
+        $response->assertForbidden();
+    }
+
+    public function testUpdateByUser(): void
+    {
+        $this->user->givePermissionTo('webhooks.edit', 'products.show', 'products.show_details');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderCreated'
+            ],
+            'model_type' => get_class($this->user),
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => true,
+        ]);
+
+        $response = $this->actingAs($this->user)->json('PATCH', '/web-hooks/id:' . $webHook->getKey(), [
+            'name' => 'Update test',
+            'events' => [
+                'ProductCreated',
+            ],
+            'with_hidden' => false,
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'name' => 'Update test',
+                'url' => $webHook->url,
+                'secret' => $webHook->secret,
+                'events' => [
+                    'ProductCreated',
+                ],
+                'model_type' => get_class($this->user),
+                'creator_id' => $this->user->getKey(),
+                'with_issuer' => $webHook->with_issuer,
+                'with_hidden' => false,
+            ]);
+
+        $this->assertDatabaseHas('web_hooks', [
+            'name' => 'Update test',
+            'url' => $webHook->url,
+            'secret' => $webHook->secret,
+            'events' => json_encode([
+                'ProductCreated',
+            ]),
+            'model_type' => get_class($this->user),
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => $webHook->with_issuer,
+            'with_hidden' => false,
+        ]);
+    }
+
+    public function testUpdateByApp(): void
+    {
+        $app = App::factory()->create();
+        $app->givePermissionTo('webhooks.edit', 'products.show', 'products.show_details');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderCreated'
+            ],
+            'model_type' => get_class($app),
+            'creator_id' => $app->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        $response = $this->actingAs($app)->json('PATCH', '/web-hooks/id:' . $webHook->getKey(), [
+            'name' => 'Update test',
+            'events' => [
+                'ProductCreated',
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'name' => 'Update test',
+                'url' => $webHook->url,
+                'secret' => $webHook->secret,
+                'events' => [
+                    'ProductCreated',
+                ],
+                'model_type' => $webHook->model_type,
+                'creator_id' => $webHook->creator_id,
+                'with_issuer' => $webHook->with_issuer,
+                'with_hidden' => $webHook->with_hidden,
+            ]);
+
+        $this->assertDatabaseHas('web_hooks', [
+            'name' => 'Update test',
+            'url' => $webHook->url,
+            'secret' => $webHook->secret,
+            'events' => json_encode([
+                'ProductCreated',
+            ]),
+            'model_type' => $webHook->model_type,
+            'creator_id' => $webHook->creator_id,
+            'with_issuer' => $webHook->with_issuer,
+            'with_hidden' => $webHook->with_hidden,
+        ]);
+    }
+
+    public function testUpdateNoPermissionToEvent(): void
+    {
+        $this->user->givePermissionTo('webhooks.edit');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderCreated'
+            ],
+            'model_type' => get_class($this->user),
+            'creator_id' => $this->user->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->user)->json('PATCH', '/web-hooks/id:' . $webHook->getKey(), [
+            'name' => $webHook->name,
+            'url' => $webHook->url,
+            'secret' => $webHook->secret,
+            'events' => $webHook->events,
+            'with_issuer' => $webHook->with_issuer,
+            'with_hidden' => $webHook->with_hidden,
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function testCannotUpdateAppWebhookByUser(): void
+    {
+        $this->user->givePermissionTo('webhooks.edit', 'products.show', 'products.show_details');
+
+        $app = App::factory()->create();
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderCreated'
+            ],
+            'model_type' => App::class,
+            'creator_id' => $app->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        $response = $this->actingAs($this->user)->json('PATCH', '/web-hooks/id:' . $webHook->getKey(), [
+            'name' => 'Update test',
+            'events' => [
+                'ProductCreated',
+            ],
+        ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function testCannotUpdateUserWebhookByApp(): void
+    {
+        $app = App::factory()->create();
+
+        $app->givePermissionTo('webhooks.edit', 'products.show', 'products.show_details');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderCreated'
+            ],
+            'model_type' => get_class($this->user),
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        $response = $this->actingAs($app)->json('PATCH', '/web-hooks/id:' . $webHook->getKey(), [
+            'name' => 'Update test',
+            'events' => [
+                'ProductCreated',
+            ],
+        ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function testDeleteUnauthorized(): void
+    {
+        $response = $this->json('DELETE', '/web-hooks/id:' . $this->webHook->getKey());
+        $response->assertForbidden();
+    }
+
+    public function testDeleteByUser(): void
+    {
+        $this->user->givePermissionTo('webhooks.remove');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderCreated'
+            ],
+            'model_type' => get_class($this->user),
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        $response = $this->actingAs($this->user)->json('DELETE', '/web-hooks/id:' . $webHook->getKey());
+        $response->assertNoContent();
+        $this->assertSoftDeleted($webHook);
+    }
+
+    public function testDeleteByApp(): void
+    {
+        $app = App::factory()->create();
+        $app->givePermissionTo('webhooks.remove');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderCreated'
+            ],
+            'model_type' => get_class($app),
+            'creator_id' => $app->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        $response = $this->actingAs($app)->json('DELETE', '/web-hooks/id:' . $webHook->getKey());
+        $response->assertNoContent();
+        $this->assertSoftDeleted($webHook);
+    }
+
+    public function testCannotDeleteAppWebhookByUser(): void
+    {
+        $this->user->givePermissionTo('webhooks.remove');
+
+        $app = App::factory()->create();
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderCreated'
+            ],
+            'model_type' => App::class,
+            'creator_id' => $app->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        $response = $this->actingAs($this->user)->json('DELETE', '/web-hooks/id:' . $webHook->getKey());
+        $response->assertStatus(403);
+    }
+
+    public function testCannotDeleteUserWebhookByApp(): void
+    {
+        $app = App::factory()->create();
+
+        $app->givePermissionTo('webhooks.remove');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderCreated'
+            ],
+            'model_type' => get_class($this->user),
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        $response = $this->actingAs($app)->json('DELETE', '/web-hooks/id:' . $webHook->getKey());
+        $response->assertStatus(403);
+    }
+
+    public function testShowUnauthorized(): void
+    {
+        $response = $this->json('GET', '/web-hooks/id:' . $this->webHook->getKey());
+        $response->assertForbidden();
+    }
+
+    public function testShow(): void
+    {
+        $this->user->givePermissionTo('webhooks.show_details');
+
+        $response = $this->actingAs($this->user)->json('GET', '/web-hooks/id:' . $this->webHook->getKey());
+        $response
+            ->assertOk()
+            ->assertJsonFragment($this->expected);
     }
 }
