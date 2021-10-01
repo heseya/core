@@ -80,47 +80,41 @@ class WebHookTest extends TestCase
     {
         $this->user->givePermissionTo('webhooks.add', 'orders.show', 'orders.show_details');
 
-        $webHook = WebHook::factory()->create([
+        $response = $this->actingAs($this->user)->json('POST', '/web-hooks', [
+            'name' => 'WebHook test',
+            'url' => 'https://www.www.www',
+            'secret' => 'secret',
             'events' => [
                 'OrderCreated'
             ],
-            'model_type' => get_class($this->user),
-            'creator_id' => $this->user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
-        ]);
-
-        $response = $this->actingAs($this->user)->json('POST', '/web-hooks', [
-            'name' => $webHook->name,
-            'url' => $webHook->url,
-            'secret' => $webHook->secret,
-            'events' => $webHook->events,
-            'with_issuer' => $webHook->with_issuer,
-            'with_hidden' => $webHook->with_hidden,
         ]);
 
         $response
             ->assertCreated()
             ->assertJsonFragment([
-                'name' => $webHook->name,
-                'url' => $webHook->url,
-                'secret' => $webHook->secret,
-                'events' => $webHook->events,
-                'with_issuer' => $webHook->with_issuer,
-                'with_hidden' => $webHook->with_hidden,
-                'model_type' => $webHook->model_type,
-                'creator_id' => $webHook->creator_id,
+                'name' => 'WebHook test',
+                'url' => 'https://www.www.www',
+                'secret' => 'secret',
+                'events' => [
+                    'OrderCreated'
+                ],
+                'with_issuer' => false,
+                'with_hidden' => false,
+                'model_type' => get_class($this->user),
+                'creator_id' => $this->user->getKey(),
             ]);
 
         $this->assertDatabaseHas('web_hooks', [
-            'name' => $webHook->name,
-            'url' => $webHook->url,
-            'secret' => $webHook->secret,
-            'events' => json_encode($webHook->events),
-            'with_issuer' => $webHook->with_issuer,
-            'with_hidden' => $webHook->with_hidden,
-            'model_type' => $webHook->model_type,
-            'creator_id' => $webHook->creator_id,
+            'name' => 'WebHook test',
+            'url' => 'https://www.www.www',
+            'secret' => 'secret',
+            'events' => json_encode(['OrderCreated']),
+            'with_issuer' => false,
+            'with_hidden' => false,
+            'model_type' => get_class($this->user),
+            'creator_id' => $this->user->getKey(),
         ]);
     }
 
@@ -216,6 +210,7 @@ class WebHookTest extends TestCase
             ]);
 
         $this->assertDatabaseHas('web_hooks', [
+            'id' => $webHook->getKey(),
             'name' => 'Update test',
             'url' => $webHook->url,
             'secret' => $webHook->secret,
@@ -267,6 +262,7 @@ class WebHookTest extends TestCase
             ]);
 
         $this->assertDatabaseHas('web_hooks', [
+            'id' => $webHook->getKey(),
             'name' => 'Update test',
             'url' => $webHook->url,
             'secret' => $webHook->secret,
