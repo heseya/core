@@ -176,12 +176,10 @@ class WebHookTest extends TestCase
     {
         $this->user->givePermissionTo('webhooks.edit', 'products.show', 'products.show_details');
 
-        $webHook = WebHook::factory()->create([
+        $webHook = WebHook::factory()->for($this->user, 'hasWebHooks')->create([
             'events' => [
                 'OrderCreated'
             ],
-            'model_type' => get_class($this->user),
-            'creator_id' => $this->user->getKey(),
             'with_issuer' => false,
             'with_hidden' => true,
         ]);
@@ -229,12 +227,10 @@ class WebHookTest extends TestCase
         $app = App::factory()->create();
         $app->givePermissionTo('webhooks.edit', 'products.show', 'products.show_details');
 
-        $webHook = WebHook::factory()->create([
+        $webHook = WebHook::factory()->for($app, 'hasWebHooks')->create([
             'events' => [
                 'OrderCreated'
             ],
-            'model_type' => get_class($app),
-            'creator_id' => $app->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);

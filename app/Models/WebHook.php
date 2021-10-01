@@ -68,6 +68,6 @@ class WebHook extends Model implements AuditableContract
 
     public function hasWebHooks(): MorphTo
     {
-        return $this->morphTo();
+        return $this->morphTo('webhooks', 'model_type', 'creator_id', 'id');
     }
 }
