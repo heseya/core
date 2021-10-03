@@ -3,6 +3,7 @@
 namespace App\Enums;
 
 use BenSampo\Enum\Enum;
+use Illuminate\Support\Str;
 
 final class EventPermissionType extends Enum
 {
@@ -28,4 +29,23 @@ final class EventPermissionType extends Enum
     public const DISCOUNT_CREATED = 'discounts.show_details;discounts.show';
     public const DISCOUNT_UPDATED = 'discounts.show_details;discounts.show';
     public const DISCOUNT_DELETED = 'discounts.show_details;discounts.show';
+
+    public static function getPermissionsByEventName(string $event): ?array
+    {
+        $permissions = self::coerce(Str::upper(Str::snake($event)));
+        if ($permissions) {
+            return explode(';', $permissions);
+        }
+        return null;
+    }
+
+    public static function getRandomCamelCaseKey(): string
+    {
+        return self::getCamelCaseKey(self::getRandomKey());
+    }
+
+    private static function getCamelCaseKey(string $key): string
+    {
+        return Str::ucfirst(Str::camel(Str::lower(self::getKey($key))));
+    }
 }

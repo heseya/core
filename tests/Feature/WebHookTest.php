@@ -106,15 +106,18 @@ class WebHookTest extends TestCase
                 'creator_id' => $this->user->getKey(),
             ]);
 
+        $webHook = WebHook::find($response->getData()->data->id);
+
+        $this->assertEquals(['OrderCreated'], $webHook->events);
+
         $this->assertDatabaseHas('web_hooks', [
-            'name' => 'WebHook test',
-            'url' => 'https://www.www.www',
-            'secret' => 'secret',
-            'events' => json_encode(['OrderCreated']),
-            'with_issuer' => false,
-            'with_hidden' => false,
-            'model_type' => get_class($this->user),
-            'creator_id' => $this->user->getKey(),
+            'name' => $webHook->name,
+            'url' => $webHook->url,
+            'secret' => $webHook->secret,
+            'with_issuer' => $webHook->with_issuer,
+            'with_hidden' => $webHook->with_hidden,
+            'model_type' => $webHook->model_type,
+            'creator_id' => $webHook->creator_id,
         ]);
     }
 
@@ -207,14 +210,15 @@ class WebHookTest extends TestCase
                 'with_hidden' => false,
             ]);
 
+        $webHookDB = WebHook::find($webHook->getKey());
+
+        $this->assertEquals(['ProductCreated'], $webHookDB->events);
+
         $this->assertDatabaseHas('web_hooks', [
             'id' => $webHook->getKey(),
             'name' => 'Update test',
             'url' => $webHook->url,
             'secret' => $webHook->secret,
-            'events' => json_encode([
-                'ProductCreated',
-            ]),
             'model_type' => get_class($this->user),
             'creator_id' => $this->user->getKey(),
             'with_issuer' => $webHook->with_issuer,
@@ -257,14 +261,15 @@ class WebHookTest extends TestCase
                 'with_hidden' => $webHook->with_hidden,
             ]);
 
+        $webHookDB = WebHook::find($webHook->getKey());
+
+        $this->assertEquals(['ProductCreated'], $webHookDB->events);
+
         $this->assertDatabaseHas('web_hooks', [
             'id' => $webHook->getKey(),
             'name' => 'Update test',
             'url' => $webHook->url,
             'secret' => $webHook->secret,
-            'events' => json_encode([
-                'ProductCreated',
-            ]),
             'model_type' => $webHook->model_type,
             'creator_id' => $webHook->creator_id,
             'with_issuer' => $webHook->with_issuer,

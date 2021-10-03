@@ -29,7 +29,7 @@ class WebHookFactory extends Factory
             'secret' => Str::random(25),
             'with_issuer' => $this->faker->boolean,
             'with_hidden' => $this->faker->boolean,
-            'events' => json_encode([Str::camel(Str::lower(EventPermissionType::getRandomInstance()->key))]),
+            'events' => [EventPermissionType::getRandomCamelCaseKey()],
         ];
     }
 }

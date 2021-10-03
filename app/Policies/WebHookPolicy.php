@@ -4,8 +4,8 @@ namespace App\Policies;
 
 use App\Enums\EventHiddenPermissionType;
 use App\Enums\EventPermissionType;
-use App\Exceptions\WebHookEventException;
 use App\Exceptions\WebHookCreatorException;
+use App\Exceptions\WebHookEventException;
 use App\Models\App;
 use App\Models\User;
 use App\Models\WebHook;
@@ -61,11 +61,13 @@ class WebHookPolicy
         if ($webHook->model_type === App::class) {
             // Zalogowana aplikacja i aplikacja stworzyła danego Webhooka
             return ($user instanceof App) && $user->getKey() === $webHook->creator_id
-                ? Response::allow() : throw new WebHookCreatorException('Only application can ' . $method . ' this WebHook.');
+                ? Response::allow()
+                : throw new WebHookCreatorException('Only application can ' . $method . ' this WebHook.');
         }
         // Webhook stworzony przez użytkownika
         return $user instanceof User
-            ? Response::allow() : throw new WebHookCreatorException('Only user can ' . $method . ' this WebHook.');
+            ? Response::allow()
+            : throw new WebHookCreatorException('Only user can ' . $method . ' this WebHook.');
     }
 
     private function getRequiredPermissions(array $events, bool $with_issuer, bool $with_hidden): array|false
@@ -75,10 +77,10 @@ class WebHookPolicy
             array_push($result, ...['users.show', 'apps.show']);
         }
         foreach ($events as $event) {
-            $permissions = EventPermissionType::coerce(Str::upper(Str::snake($event)));
+            $permissions = EventPermissionType::getPermissionsByEventName($event);
 
             if ($permissions) {
-                array_push($result, ...explode(';', $permissions));
+                array_push($result, ...$permissions);
             }
 
             if ($with_hidden) {
