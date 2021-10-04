@@ -639,6 +639,126 @@ class RoleTest extends TestCase
 
         $role = Role::findByName('test_role');
 
+        $this->assertFalse($role->hasPermissionTo('test.custom1'));
+        $this->assertTrue($role->hasPermissionTo('test.custom2'));
+        $this->assertTrue($role->hasPermissionTo('test.custom3'));
+    }
+
+    public function testUpdateNameOnly(): void
+    {
+        $this->user->givePermissionTo('roles.edit');
+
+        $role = Role::create([
+            'name' => 'role1',
+            'description' => 'Role 1',
+        ]);
+
+        $response = $this->actingAs($this->user)->patchJson('/roles/id:' . $role->getKey(), [
+            'name' => 'test_role',
+        ]);
+
+        $response->assertOk()
+            ->assertJson(['data' => [
+                'name' => 'test_role',
+                'description' => 'Role 1',
+                'assignable' => true,
+                'deletable' => true,
+                'permissions' => [],
+            ]]);
+
+        $this->assertDatabaseHas('roles', [
+            $role->getKeyName() => $role->getKey(),
+            'name' => 'test_role',
+            'description' => 'Role 1',
+        ]);
+    }
+
+    public function testUpdateDescriptionOnly(): void
+    {
+        $this->user->givePermissionTo('roles.edit');
+
+        $role = Role::create([
+            'name' => 'role1',
+            'description' => 'Role 1',
+        ]);
+
+        $response = $this->actingAs($this->user)->patchJson('/roles/id:' . $role->getKey(), [
+            'description' => 'Test role',
+        ]);
+
+        $response->assertOk()
+            ->assertJson(['data' => [
+                'name' => 'role1',
+                'description' => 'Test role',
+                'assignable' => true,
+                'deletable' => true,
+                'permissions' => [],
+            ]]);
+
+        $this->assertDatabaseHas('roles', [
+            $role->getKeyName() => $role->getKey(),
+            'name' => 'role1',
+            'description' => 'Test role',
+        ]);
+    }
+
+    public function testUpdateDescriptionRemove(): void
+    {
+        $this->user->givePermissionTo('roles.edit');
+
+        $role = Role::create([
+            'name' => 'role1',
+            'description' => 'Role 1',
+        ]);
+
+        $response = $this->actingAs($this->user)->patchJson('/roles/id:' . $role->getKey(), [
+            'description' => null,
+        ]);
+
+        $response->assertOk()
+            ->assertJson(['data' => [
+                'name' => 'role1',
+                'description' => null,
+                'assignable' => true,
+                'deletable' => true,
+                'permissions' => [],
+            ]]);
+
+        $this->assertDatabaseHas('roles', [
+            $role->getKeyName() => $role->getKey(),
+            'name' => 'role1',
+            'description' => null,
+        ]);
+    }
+
+    public function testUpdatePermissionsOnly(): void
+    {
+        $this->user->givePermissionTo('roles.edit');
+
+        $role = Role::factory()->create();
+
+        $permission1 = Permission::create(['name' => 'test.custom1']);
+        $permission2 = Permission::create(['name' => 'test.custom2']);
+        $permission3 = Permission::create(['name' => 'test.custom3']);
+        $role->syncPermissions([$permission1, $permission2]);
+        $this->user->givePermissionTo([$permission1, $permission2, $permission3]);
+
+        $response = $this->actingAs($this->user)->patchJson('/roles/id:' . $role->getKey(), [
+            'permissions' => [
+                'test.custom2',
+                'test.custom3',
+            ],
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.permissions', [
+                'test.custom2',
+                'test.custom3',
+            ]);
+
+        $role->refresh();
+
+        $this->assertFalse($role->hasPermissionTo('test.custom1'));
         $this->assertTrue($role->hasPermissionTo('test.custom2'));
         $this->assertTrue($role->hasPermissionTo('test.custom3'));
     }

@@ -49,7 +49,7 @@ class RoleController extends Controller implements RoleControllerSwagger
 
     public function update(Role $role, RoleUpdateRequest $request): JsonResource
     {
-        $dto = RoleUpdateDto::instantiateFromRequest($request);
+        $dto = RoleUpdateDto::fromRoleUpdateRequest($request);
 
         return RoleResource::make(
             $this->roleService->update($role, $dto),
