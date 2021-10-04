@@ -11,8 +11,7 @@ use Tests\TestCase;
 class ProductTest extends TestCase
 {
     private Product $product;
-
-    private array $hidden_products;
+    private Product $hidden_product;
 
     private array $expected;
     private array $expected_short;
@@ -25,18 +24,7 @@ class ProductTest extends TestCase
 
         $this->markdownService = app(MarkdownServiceContract::class);
 
-        $brand = ProductSet::factory()->create([
-            'public' => true,
-            'hide_on_index' => false,
-        ]);
-        $category = ProductSet::factory()->create([
-            'public' => true,
-            'hide_on_index' => false,
-        ]);
-
         $this->product = Product::factory()->create([
-            'brand_id' => $brand->getKey(),
-            'category_id' => $category->getKey(),
             'public' => true,
             'order' => 1,
         ]);
@@ -76,62 +64,9 @@ class ProductTest extends TestCase
             'quantity' => 10,
         ]);
 
-        // Hidden
-        $brand_hidden = ProductSet::factory()->create(['public' => false]);
-        $category_hidden = ProductSet::factory()->create(['public' => false]);
-
-        $this->hidden_products = [
-            Product::factory()->create([
-                'brand_id' => $brand->getKey(),
-                'category_id' => $category->getKey(),
-                'public' => false,
-            ]),
-            Product::factory()->create([
-                'brand_id' => $brand_hidden->getKey(),
-                'category_id' => $category->getKey(),
-                'public' => true,
-            ]),
-            Product::factory()->create([
-                'brand_id' => $brand->getKey(),
-                'category_id' => $category_hidden->getKey(),
-                'public' => true,
-            ]),
-            Product::factory()->create([
-                'brand_id' => $brand_hidden->getKey(),
-                'category_id' => $category_hidden->getKey(),
-                'public' => true,
-            ]),
-            Product::factory()->create([
-                'brand_id' => $brand_hidden->getKey(),
-                'category_id' => $category->getKey(),
-                'public' => false,
-            ]),
-            Product::factory()->create([
-                'brand_id' => $brand->getKey(),
-                'category_id' => $category_hidden->getKey(),
-                'public' => false,
-            ]),
-            Product::factory()->create([
-                'brand_id' => $brand_hidden->getKey(),
-                'category_id' => $category_hidden->getKey(),
-                'public' => false,
-            ]),
-            Product::factory()->create([
-                'brand_id' => null,
-                'category_id' => $category->getKey(),
-                'public' => false,
-            ]),
-            Product::factory()->create([
-                'brand_id' => $brand->getKey(),
-                'category_id' => null,
-                'public' => false,
-            ]),
-            Product::factory()->create([
-                'brand_id' => null,
-                'category_id' => null,
-                'public' => false,
-            ]),
-        ];
+        $this->hidden_product = Product::factory()->create([
+            'public' => false,
+        ]);
 
         /**
          * Expected short response
@@ -144,18 +79,6 @@ class ProductTest extends TestCase
             'visible' => $this->product->isPublic(),
             'public' => (bool) $this->product->public,
             'available' => true,
-            'brand' => [
-                'id' => $this->product->brand->getKey(),
-                'name' => $this->product->brand->name,
-                'slug' => $this->product->brand->slug,
-                'public' => (bool) $this->product->brand->public,
-            ],
-            'category' => [
-                'id' => $this->product->category->getKey(),
-                'name' => $this->product->category->name,
-                'slug' => $this->product->category->slug,
-                'public' => (bool) $this->product->category->public,
-            ],
             'cover' => null,
         ];
 
@@ -224,7 +147,7 @@ class ProductTest extends TestCase
         $response = $this->actingAs($this->user)->getJson('/products');
         $response
             ->assertOk()
-            ->assertJsonCount(count($this->hidden_products) + 1, 'data'); // Should show all products.
+            ->assertJsonCount(2, 'data'); // Should show all products.
     }
 
     public function testShowUnauthorized(): void
@@ -307,11 +230,11 @@ class ProductTest extends TestCase
         $this->user->givePermissionTo('products.show_details');
 
         $response = $this->actingAs($this->user)
-            ->getJson('/products/' . $this->hidden_products[0]->slug);
+            ->getJson('/products/' . $this->hidden_product->slug);
         $response->assertNotFound();
 
         $response = $this->actingAs($this->user)
-            ->getJson('/products/id:' . $this->hidden_products[0]->getKey());
+            ->getJson('/products/id:' . $this->hidden_product->getKey());
         $response->assertNotFound();
     }
 
@@ -320,11 +243,11 @@ class ProductTest extends TestCase
         $this->user->givePermissionTo(['products.show_details', 'products.show_hidden']);
 
         $response = $this->actingAs($this->user)
-            ->getJson('/products/' . $this->hidden_products[0]->slug);
+            ->getJson('/products/' . $this->hidden_product->slug);
         $response->assertOk();
 
         $response = $this->actingAs($this->user)
-            ->getJson('/products/id:' . $this->hidden_products[0]->getKey());
+            ->getJson('/products/id:' . $this->hidden_product->getKey());
         $response->assertOk();
     }
 
@@ -341,8 +264,6 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
             'description_html' => '<h1>Description</h1>',
             'public' => true,
         ]);
@@ -356,18 +277,6 @@ class ProductTest extends TestCase
                 'public' => true,
                 'description_md' => $this->markdownService->fromHtml('<h1>Description</h1>'),
                 'description_html' => '<h1>Description</h1>',
-                'brand' => [
-                    'id' => $this->product->brand->getKey(),
-                    'name' => $this->product->brand->name,
-                    'slug' => $this->product->brand->slug,
-                    'public' => (bool) $this->product->brand->public,
-                ],
-                'category' => [
-                    'id' => $this->product->category->getKey(),
-                    'name' => $this->product->category->name,
-                    'slug' => $this->product->category->slug,
-                    'public' => (bool) $this->product->category->public,
-                ],
                 'cover' => null,
                 'gallery' => [],
             ]]);
@@ -378,8 +287,6 @@ class ProductTest extends TestCase
             'price' => 100,
             'public' => true,
             'description_html' => '<h1>Description</h1>',
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
         ]);
     }
 
@@ -393,8 +300,6 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'slug' => 'test',
             'price' => 150,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
             'public' => false,
             'schemas' => [
                 $schema->getKey(),
@@ -410,8 +315,6 @@ class ProductTest extends TestCase
             'price' => 150,
             'public' => false,
             'description_html' => null,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
         ]);
 
         $this->assertDatabaseHas('product_schemas', [
@@ -431,8 +334,6 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'slug' => 'test',
             'price' => 150,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
             'public' => false,
             'sets' => [
                 $set1->getKey(),
@@ -449,8 +350,6 @@ class ProductTest extends TestCase
             'price' => 150,
             'public' => false,
             'description_html' => null,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
         ]);
 
         $this->assertDatabaseHas('product_set_product', [
@@ -478,8 +377,6 @@ class ProductTest extends TestCase
             'name' => 'Updated',
             'slug' => 'updated',
             'price' => 150,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
             'description_html' => '<h1>New description</h1>',
             'public' => false,
         ]);
@@ -491,8 +388,6 @@ class ProductTest extends TestCase
             'name' => 'Updated',
             'slug' => 'updated',
             'price' => 150,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
             'description_html' => '<h1>New description</h1>',
             'public' => false,
         ]);

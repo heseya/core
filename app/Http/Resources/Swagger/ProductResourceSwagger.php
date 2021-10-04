@@ -57,16 +57,6 @@ interface ProductResourceSwagger
      *     example=0.05,
      *   ),
      *   @OA\Property(
-     *     property="brand",
-     *     type="object",
-     *     ref="#/components/schemas/ProductSet",
-     *   ),
-     *   @OA\Property(
-     *     property="category",
-     *     type="object",
-     *     ref="#/components/schemas/ProductSet",
-     *   ),
-     *   @OA\Property(
      *     property="cover",
      *     type="object",
      *     ref="#/components/schemas/Media",

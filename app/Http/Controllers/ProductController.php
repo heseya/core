@@ -37,8 +37,6 @@ class ProductController extends Controller implements ProductControllerSwagger
         $query = Product::search($request->validated())
             ->sort($request->input('sort', 'order'))
             ->with([
-                'brand',
-                'category',
                 'tags',
                 'media',
             ]);

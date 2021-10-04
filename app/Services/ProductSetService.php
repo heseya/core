@@ -40,34 +40,6 @@ class ProductSetService implements ProductSetServiceContract
         return $query->get();
     }
 
-    public function brands(array $attributes): Collection
-    {
-        $query = ProductSet::whereHas(
-            'parent',
-            fn (Builder $sub) => $sub->where('slug', 'brands'),
-        )->search($attributes);
-
-        if (!Auth::user()->can('product_sets.show_hidden')) {
-            $query->public();
-        }
-
-        return $query->get();
-    }
-
-    public function categories(array $attributes): Collection
-    {
-        $query = ProductSet::whereHas(
-            'parent',
-            fn (Builder $sub) => $sub->where('slug', 'categories'),
-        )->search($attributes);
-
-        if (!Auth::user()->can('product_sets.show_hidden')) {
-            $query->public();
-        }
-
-        return $query->get();
-    }
-
     public function create(ProductSetDto $dto): ProductSet
     {
         if ($dto->getParentId() !== null) {
