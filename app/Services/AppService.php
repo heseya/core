@@ -105,14 +105,17 @@ class AppService implements AppServiceContract
             $permissions->concat(['auth.login', 'auth.identity_profile']),
         );
 
+        $uuid = Str::uuid()->toString();
         $integrationToken = $this->tokenService->createToken(
             $app,
-            new TokenType(TokenType::ACCESS)
+            new TokenType(TokenType::ACCESS),
+            $uuid,
         );
 
         $refreshToken = $this->tokenService->createToken(
             $app,
-            new TokenType(TokenType::REFRESH)
+            new TokenType(TokenType::REFRESH),
+            $uuid,
         );
 
         $url .= Str::endsWith($url, '/') ? 'install' : '/install';

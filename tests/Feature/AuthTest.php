@@ -108,6 +108,41 @@ class AuthTest extends TestCase
             ]]);
     }
 
+    public function testRefreshTokenApp(): void
+    {
+        $app = App::factory()->create();
+        $app->givePermissionTo('auth.login');
+
+        $token = $this->tokenService->createToken(
+            $app,
+            new TokenType(TokenType::REFRESH),
+        );
+
+        $response = $this->actingAs($app)->postJson('/auth/refresh', [
+            'refresh_token' => $token,
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonStructure(['data' => [
+                'token',
+                'identity_token',
+                'refresh_token',
+                'user' => [
+                    'id',
+                    'url',
+                    'microfrontend_url',
+                    'name',
+                    'slug',
+                    'version',
+                    'description',
+                    'icon',
+                    'author',
+                    'permissions',
+                ],
+            ]]);
+    }
+
     public function testRefreshTokenInvalidated(): void
     {
         $this->user->givePermissionTo('auth.login');

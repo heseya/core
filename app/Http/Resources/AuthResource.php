@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\User;
 use App\Services\Contracts\TokenServiceContract;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -19,8 +20,11 @@ class AuthResource extends Resource
 
     public function base(Request $request): array
     {
+        $authenticable = $this->tokenService->getUser($this->token);
+
         return [
-            'user' => UserResource::make($this->tokenService->getUser($this->token)),
+            'user' => $authenticable instanceof User ? UserResource::make($authenticable)
+                : AppResource::make($authenticable),
             'token' => $this->token,
             'identity_token' => $this->identity_token,
             'refresh_token' => $this->refresh_token,
