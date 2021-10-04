@@ -10,6 +10,7 @@ use App\Exceptions\AuthException;
 use App\Exceptions\RoleException;
 use App\Models\Role;
 use App\Services\Contracts\RoleServiceContract;
+use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 
@@ -43,7 +44,7 @@ class RoleService implements RoleServiceContract
             );
         }
 
-        if ($dto->getPermissions()) {
+        if (!$dto->getPermissions() instanceof Missing) {
             if (
                 $role->type->is(RoleType::OWNER) &&
                 $role->getPermissionNames()->diff($dto->getPermissions())->isNotEmpty()
