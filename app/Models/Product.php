@@ -8,7 +8,6 @@ use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
@@ -27,8 +26,6 @@ class Product extends Model implements AuditableContract
         'price',
         'description_html',
         'public',
-        'brand_id',
-        'category_id',
         'quantity_step',
     ];
 
@@ -65,16 +62,6 @@ class Product extends Model implements AuditableContract
         return $this
             ->belongsToMany(Media::class, 'product_media')
             ->orderByPivot('order');
-    }
-
-    public function brand(): BelongsTo
-    {
-        return $this->belongsTo(ProductSet::class, 'brand_id');
-    }
-
-    public function category(): BelongsTo
-    {
-        return $this->belongsTo(ProductSet::class, 'category_id');
     }
 
     public function orders(): BelongsToMany
@@ -114,14 +101,10 @@ class Product extends Model implements AuditableContract
 
     public function isPublic(): bool
     {
-        $isBrandPublic = !$this->brand || $this->brand->public && $this->brand->public_parent;
-
-        $isCategoryPublic = !$this->category || $this->category->public && $this->category->public_parent;
-
-        $isAnySetPublic = !($this->sets()->count() > 0) ||
+        $isAnySetPublic = $this->sets()->count() === 0 ||
             $this->sets()->where('public', true)->where('public_parent', true);
 
-        return $this->public && $isBrandPublic && $isCategoryPublic && $isAnySetPublic;
+        return $this->public && $isAnySetPublic;
     }
 
     public function sets(): BelongsToMany
@@ -131,36 +114,15 @@ class Product extends Model implements AuditableContract
 
     public function scopePublic($query): Builder
     {
-        $query->where('public', true);
-
-        $query->where('public', true)
-            ->where(function (Builder $query): void {
-                $query
-                    ->whereDoesntHave('brand')
-                    ->orWhereHas(
-                        'brand',
-                        fn (Builder $builder) => $builder
-                            ->where('public', true)->where('public_parent', true),
-                    );
-            })
-            ->where(function (Builder $query): void {
-                $query
-                    ->whereDoesntHave('category')
-                    ->orWhereHas(
-                        'category',
-                        fn (Builder $builder) => $builder
-                            ->where('public', true)->where('public_parent', true),
-                    );
-            })
-            ->where(function (Builder $query): void {
-                $query
-                    ->whereDoesntHave('sets')
-                    ->orWhereHas(
-                        'sets',
-                        fn (Builder $builder) => $builder
-                            ->where('public', true)->where('public_parent', true),
-                    );
-            });
+        $query->where('public', true)->where(function (Builder $query): void {
+            $query
+                ->whereDoesntHave('sets')
+                ->orWhereHas(
+                    'sets',
+                    fn (Builder $builder) => $builder
+                        ->where('public', true)->where('public_parent', true),
+                );
+        });
 
         return $query;
     }

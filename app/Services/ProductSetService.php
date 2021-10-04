@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Dtos\ProductSetDto;
 use App\Models\ProductSet;
 use App\Services\Contracts\ProductSetServiceContract;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -35,34 +34,6 @@ class ProductSetService implements ProductSetServiceContract
 
         if ($root) {
             $query->root();
-        }
-
-        return $query->get();
-    }
-
-    public function brands(array $attributes): Collection
-    {
-        $query = ProductSet::whereHas(
-            'parent',
-            fn (Builder $sub) => $sub->where('slug', 'brands'),
-        )->search($attributes);
-
-        if (!Auth::user()->can('product_sets.show_hidden')) {
-            $query->public();
-        }
-
-        return $query->get();
-    }
-
-    public function categories(array $attributes): Collection
-    {
-        $query = ProductSet::whereHas(
-            'parent',
-            fn (Builder $sub) => $sub->where('slug', 'categories'),
-        )->search($attributes);
-
-        if (!Auth::user()->can('product_sets.show_hidden')) {
-            $query->public();
         }
 
         return $query->get();

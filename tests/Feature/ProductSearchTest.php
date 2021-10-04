@@ -11,52 +11,13 @@ class ProductSearchTest extends TestCase
 {
     use RefreshDatabase;
 
-    private ProductSet $category;
-    private ProductSet $brand;
-
-    public function setUp(): void
-    {
-        parent::setUp();
-
-        $this->category = ProductSet::factory()->create([
-            'public' => true,
-            'hide_on_index' => false,
-        ]);
-
-        $this->brand = ProductSet::factory()->create([
-            'public' => true,
-            'hide_on_index' => false,
-        ]);
-
-        $this->brand = ProductSet::factory()->create([
-            'public' => true,
-            'hide_on_index' => false,
-        ]);
-    }
-
     public function testSearch(): void
     {
         $this->user->givePermissionTo('products.show');
 
         $product = Product::factory()->create([
-            'category_id' => $this->category->getKey(),
-            'brand_id' => $this->brand->getKey(),
             'public' => true,
         ]);
-
-        $product2 = Product::factory()->create([
-            'category_id' => $this->category->getKey(),
-            'brand_id' => $this->brand->getKey(),
-            'public' => true,
-        ]);
-
-        $response = $this->actingAs($this->user)
-            ->getJson('/products?search=' . $product->category->name);
-        $response
-            ->assertOk()
-            ->assertJsonCount(2, 'data')
-            ->assertJsonFragment(['id' => $product->getKey()])
-            ->assertJsonFragment(['id' => $product2->getKey()]);
 
         $response = $this->actingAs($this->user)
             ->getJson('/products?search=' . $product->name);
@@ -87,8 +48,6 @@ class ProductSearchTest extends TestCase
         $set->products()->attach($product);
 
         Product::factory()->create([
-            'category_id' => $this->category->getKey(),
-            'brand_id' => $this->brand->getKey(),
             'public' => true,
         ]);
 
@@ -130,8 +89,6 @@ class ProductSearchTest extends TestCase
         $set2->products()->attach($product2);
 
         Product::factory()->create([
-            'category_id' => $this->category->getKey(),
-            'brand_id' => $this->brand->getKey(),
             'public' => true,
         ]);
 
@@ -164,8 +121,6 @@ class ProductSearchTest extends TestCase
         $set->products()->attach($product);
 
         Product::factory()->create([
-            'category_id' => $this->category->getKey(),
-            'brand_id' => $this->brand->getKey(),
             'public' => true,
         ]);
 
@@ -183,7 +138,8 @@ class ProductSearchTest extends TestCase
             'public' => true,
         ]);
 
-        $privateSet = ProductSet::factory()->create([
+        // Private set
+        ProductSet::factory()->create([
             'public' => false,
         ]);
 
@@ -199,8 +155,6 @@ class ProductSearchTest extends TestCase
         $set->products()->attach($product);
 
         Product::factory()->create([
-            'category_id' => $this->category->getKey(),
-            'brand_id' => $this->brand->getKey(),
             'public' => true,
         ]);
 
