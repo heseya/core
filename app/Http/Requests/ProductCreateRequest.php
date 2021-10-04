@@ -37,7 +37,7 @@ use Illuminate\Foundation\Http\FormRequest;
  *       example="0006c3a0-21af-4485-b7fe-9c42233cf03a",
  *     ),
  *     @OA\Property(
- *       property="description_md",
+ *       property="description_html",
  *       type="string",
  *     ),
  *     @OA\Property(
@@ -89,7 +89,7 @@ class ProductCreateRequest extends FormRequest
             'price' => ['required', 'numeric'],
             'brand_id' => ['nullable', 'uuid', 'exists:product_sets,id'],
             'category_id' => ['nullable', 'uuid', 'exists:product_sets,id'],
-            'description_md' => ['nullable', 'string'],
+            'description_html' => ['nullable', 'string'],
             'public' => ['required', 'boolean'],
             'quantity_step' => ['numeric'],
 
