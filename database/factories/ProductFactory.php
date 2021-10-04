@@ -26,7 +26,7 @@ class ProductFactory extends Factory
             'name' => $name,
             'slug' => Str::slug($name) . '-' . rand(1, 99999),
             'price' => round(rand(500, 6000), -2),
-            'description_md' => $this->faker->sentence(10),
+            'description_html' => '<p>' . $this->faker->sentence(10) . '</p>',
             'public' => $this->faker->boolean,
         ];
     }

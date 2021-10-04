@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\ProductSet;
 use App\Models\Product;
 use App\Models\Schema;
+use App\Services\Contracts\MarkdownServiceContract;
 use Tests\TestCase;
 
 class ProductTest extends TestCase
@@ -16,9 +17,13 @@ class ProductTest extends TestCase
     private array $expected;
     private array $expected_short;
 
+    private MarkdownServiceContract $markdownService;
+
     public function setUp(): void
     {
         parent::setUp();
+
+        $this->markdownService = app(MarkdownServiceContract::class);
 
         $brand = ProductSet::factory()->create([
             'public' => true,
@@ -158,8 +163,8 @@ class ProductTest extends TestCase
          * Expected full response
          */
         $this->expected = array_merge($this->expected_short, [
-            'description_md' => $this->product->description_md,
-            'description_html' => parsedown($this->product->description_md),
+            'description_md' => $this->markdownService->fromHtml($this->product->description_html),
+            'description_html' => $this->product->description_html,
             'meta_description' => strip_tags($this->product->description_html),
             'gallery' => [],
             'schemas' => [[
@@ -306,7 +311,7 @@ class ProductTest extends TestCase
             'price' => 100.00,
             'brand_id' => $this->product->brand->getKey(),
             'category_id' => $this->product->category->getKey(),
-            'description_md' => '# Description',
+            'description_html' => '<h1>Description</h1>',
             'public' => true,
         ]);
 
@@ -317,7 +322,7 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
-                'description_md' => '# Description',
+                'description_md' => $this->markdownService->fromHtml('<h1>Description</h1>'),
                 'description_html' => '<h1>Description</h1>',
                 'brand' => [
                     'id' => $this->product->brand->getKey(),
@@ -340,7 +345,7 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 100,
             'public' => true,
-            'description_md' => '# Description',
+            'description_html' => '<h1>Description</h1>',
             'brand_id' => $this->product->brand->getKey(),
             'category_id' => $this->product->category->getKey(),
         ]);
@@ -370,7 +375,7 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 150,
             'public' => false,
-            'description_md' => null,
+            'description_html' => null,
             'brand_id' => $this->product->brand->getKey(),
             'category_id' => $this->product->category->getKey(),
         ]);
@@ -407,7 +412,7 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 150,
             'public' => false,
-            'description_md' => null,
+            'description_html' => null,
             'brand_id' => $this->product->brand->getKey(),
             'category_id' => $this->product->category->getKey(),
         ]);
@@ -437,7 +442,7 @@ class ProductTest extends TestCase
             'price' => 150,
             'brand_id' => $this->product->brand->getKey(),
             'category_id' => $this->product->category->getKey(),
-            'description_md' => '# New description',
+            'description_html' => '<h1>New description</h1>',
             'public' => false,
         ]);
 
@@ -450,7 +455,7 @@ class ProductTest extends TestCase
             'price' => 150,
             'brand_id' => $this->product->brand->getKey(),
             'category_id' => $this->product->category->getKey(),
-            'description_md' => '# New description',
+            'description_html' => '<h1>New description</h1>',
             'public' => false,
         ]);
     }

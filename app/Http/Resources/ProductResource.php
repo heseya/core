@@ -3,11 +3,21 @@
 namespace App\Http\Resources;
 
 use App\Http\Resources\Swagger\ProductResourceSwagger;
+use App\Services\Contracts\MarkdownServiceContract;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ProductResource extends Resource implements ProductResourceSwagger
 {
+    protected MarkdownServiceContract $markdownService;
+
+    public function __construct($resource)
+    {
+        parent::__construct($resource);
+
+        $this->markdownService = app(MarkdownServiceContract::class);
+    }
+
     public function base(Request $request): array
     {
         return [
@@ -33,8 +43,9 @@ class ProductResource extends Resource implements ProductResourceSwagger
         return [
             'user_id' => $this->user_id,
             'original_id' => $this->original_id,
-            'description_md' => $this->description_md,
             'description_html' => $this->description_html,
+            'description_md' => $this->description_html === null ?:
+                $this->markdownService->fromHtml($this->description_html),
             'meta_description' => str_replace("\n", ' ', trim(strip_tags($this->description_html))),
             'gallery' => MediaResource::collection($this->media),
             'schemas' => SchemaResource::collection($this->schemas),
