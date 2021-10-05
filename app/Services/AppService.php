@@ -2,11 +2,13 @@
 
 namespace App\Services;
 
+use App\Enums\RoleType;
 use App\Enums\TokenType;
 use App\Exceptions\AppException;
 use App\Exceptions\AuthException;
 use App\Models\App;
 use App\Models\Permission;
+use App\Models\Role;
 use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\TokenServiceContract;
 use Illuminate\Support\Collection;
@@ -103,14 +105,17 @@ class AppService implements AppServiceContract
             $permissions->concat(['auth.login', 'auth.identity_profile']),
         );
 
+        $uuid = Str::uuid()->toString();
         $integrationToken = $this->tokenService->createToken(
             $app,
-            new TokenType(TokenType::ACCESS)
+            new TokenType(TokenType::ACCESS),
+            $uuid,
         );
 
         $refreshToken = $this->tokenService->createToken(
             $app,
-            new TokenType(TokenType::REFRESH)
+            new TokenType(TokenType::REFRESH),
+            $uuid,
         );
 
         $url .= Str::endsWith($url, '/') ? 'install' : '/install';
@@ -146,9 +151,28 @@ class AppService implements AppServiceContract
 
         $uninstallToken = $response->json('uninstall_token');
 
+        $internalPermissions = Collection::make($appConfig['internal_permissions']);
+
+        $internalPermissions = $internalPermissions->map(fn ($permission) => Permission::create([
+            'name' => 'app.' . $app->slug . '.' . $permission['name'],
+            'description' => key_exists('description', $permission) ?
+                $permission['description'] : null,
+        ]));
+
+        $role = Role::create([
+            'name' => $app->name . ' owner',
+        ]);
+        $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
+
+        $role->syncPermissions($internalPermissions);
+        $owner->givePermissionTo($internalPermissions);
+
         $app->update([
+            'role_id' => $role->getKey(),
             'uninstall_token' => $uninstallToken,
         ]);
+
+        Auth::user()->assignRole($role);
 
         return $app;
     }
@@ -171,7 +195,14 @@ class AppService implements AppServiceContract
             throw new AppException('Failed to uninstall the application');
         }
 
+        Permission::where('name', 'like', 'app.' . $app->slug . '%')->delete();
+        $app->role()->delete();
         $app->delete();
+    }
+
+    public function appPermissionPrefix(App $app): string
+    {
+        return 'app.' . $app->slug . '.';
     }
 
     protected function validateAppRoot($response)

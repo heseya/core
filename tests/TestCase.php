@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use App\Enums\RoleType;
 use App\Enums\TokenType;
 use App\Models\Role;
 use App\Models\User;
@@ -30,7 +31,7 @@ abstract class TestCase extends BaseTestCase
         $this->tokenService = App::make(TokenServiceContract::class);
 
         $this->seed(PermissionSeeder::class);
-        Role::query()->delete();
+        Role::where('type', '!=', RoleType::OWNER)->delete();
 
         $this->user = User::factory()->create([
             'password' => Hash::make($this->password),

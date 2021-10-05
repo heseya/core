@@ -22,6 +22,10 @@ interface AuthServiceContract
 
     public function userByIdentity(string $identityToken): User;
 
+    public function isUserAuthenticated(): bool;
+
+    public function isAppAuthenticated(): bool;
+
 //    public function loginHistory(User $user): Builder;
 //
 //    public function killActiveSession(User $user, string $oauthAccessTokensId);

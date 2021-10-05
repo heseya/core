@@ -72,7 +72,7 @@ interface AuthControllerSwagger
      *   )
      * )
      */
-//    public function logout(Request $request): JsonResponse;
+    public function logout(Request $request): JsonResponse;
 
     /**
      * @OA\Post(
@@ -265,7 +265,7 @@ interface AuthControllerSwagger
     /**
      * @OA\Get(
      *   path="/auth/profile",
-     *   summary="get your own user resource",
+     *   summary="get your own user or app resource",
      *   tags={"Auth"},
      *   @OA\Response(
      *     response=200,
@@ -273,7 +273,10 @@ interface AuthControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/User",
+     *         oneOf={
+     *           @OA\Schema(ref="#/components/schemas/User"),
+     *           @OA\Schema(ref="#/components/schemas/AppView"),
+     *         }
      *       )
      *     )
      *   ),

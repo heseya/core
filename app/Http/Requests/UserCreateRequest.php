@@ -45,7 +45,7 @@ class UserCreateRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => [
                 'required',
-                'email',
+                'email:rfc,dns',
                 'max:255',
                 Rule::unique('users')->whereNull('deleted_at'),
             ],

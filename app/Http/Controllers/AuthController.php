@@ -7,19 +7,25 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Requests\PasswordResetRequest;
 use App\Http\Requests\PasswordResetSaveRequest;
+use App\Http\Resources\AppResource;
 use App\Http\Resources\AuthResource;
 use App\Http\Resources\ProfileResource;
 use App\Http\Resources\UserResource;
+use App\Models\App;
+use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\AuthServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 
 class AuthController extends Controller implements AuthControllerSwagger
 {
-    public function __construct(private AuthServiceContract $authService)
-    {
+    public function __construct(
+        private AuthServiceContract $authService,
+        private AppServiceContract $appService,
+    ) {
     }
 
     public function login(LoginRequest $request): JsonResource
@@ -119,7 +125,12 @@ class AuthController extends Controller implements AuthControllerSwagger
 
     public function profile(Request $request): JsonResponse
     {
-        return UserResource::make($request->user())
+        $authenticable = $request->user();
+
+        $resource = $authenticable instanceof App ? AppResource::make($authenticable)
+            : UserResource::make($authenticable);
+
+        return $resource
             ->response()
             ->setStatusCode(200);
     }
@@ -128,6 +139,9 @@ class AuthController extends Controller implements AuthControllerSwagger
     {
         $user = $this->authService->userByIdentity($identityToken);
 
-        return ProfileResource::make($user);
+        $prefix = $this->authService->isAppAuthenticated() ?
+            $this->appService->appPermissionPrefix(Auth::user()) : null;
+
+        return ProfileResource::make($user)->stripedPermissionPrefix($prefix);
     }
 }

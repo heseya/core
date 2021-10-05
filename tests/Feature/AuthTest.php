@@ -3,12 +3,11 @@
 namespace Tests\Feature;
 
 use App\Enums\TokenType;
+use App\Models\App;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use App\Services\Contracts\TokenServiceContract;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
@@ -69,7 +68,7 @@ class AuthTest extends TestCase
 
     public function testRefreshTokenUnauthorized(): void
     {
-        $token = App::make(TokenServiceContract::class)->createToken(
+        $token = $this->tokenService->createToken(
             $this->user,
             new TokenType(TokenType::REFRESH),
         );
@@ -85,7 +84,7 @@ class AuthTest extends TestCase
     {
         $this->user->givePermissionTo('auth.login');
 
-        $token = App::make(TokenServiceContract::class)->createToken(
+        $token = $this->tokenService->createToken(
             $this->user,
             new TokenType(TokenType::REFRESH),
         );
@@ -109,11 +108,46 @@ class AuthTest extends TestCase
             ]]);
     }
 
+    public function testRefreshTokenApp(): void
+    {
+        $app = App::factory()->create();
+        $app->givePermissionTo('auth.login');
+
+        $token = $this->tokenService->createToken(
+            $app,
+            new TokenType(TokenType::REFRESH),
+        );
+
+        $response = $this->actingAs($app)->postJson('/auth/refresh', [
+            'refresh_token' => $token,
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonStructure(['data' => [
+                'token',
+                'identity_token',
+                'refresh_token',
+                'user' => [
+                    'id',
+                    'url',
+                    'microfrontend_url',
+                    'name',
+                    'slug',
+                    'version',
+                    'description',
+                    'icon',
+                    'author',
+                    'permissions',
+                ],
+            ]]);
+    }
+
     public function testRefreshTokenInvalidated(): void
     {
         $this->user->givePermissionTo('auth.login');
 
-        $token = App::make(TokenServiceContract::class)->createToken(
+        $token = $this->tokenService->createToken(
             $this->user,
             new TokenType(TokenType::REFRESH),
         );
@@ -152,7 +186,7 @@ class AuthTest extends TestCase
 
     public function testResetPasswordUnauthorized(): void
     {
-        $email = $this->faker->unique()->safeEmail;
+        $email = $this->faker->unique()->freeEmail;
         $password = 'Passwd###111';
 
         $user = User::factory()->create([
@@ -175,7 +209,7 @@ class AuthTest extends TestCase
     {
         $this->user->givePermissionTo('auth.password_reset');
 
-        $email = $this->faker->unique()->safeEmail;
+        $email = $this->faker->unique()->freeEmail;
         $password = 'Passwd###111';
 
         $user = User::factory()->create([
@@ -196,7 +230,7 @@ class AuthTest extends TestCase
 
     public function testSaveResetPasswordUnauthorized(): void
     {
-        $email = $this->faker->unique()->safeEmail;
+        $email = $this->faker->unique()->freeEmail;
         $newPassword = 'NewPasswd###111';
 
         $user = User::factory()->create([
@@ -219,7 +253,7 @@ class AuthTest extends TestCase
     {
         $this->user->givePermissionTo('auth.password_reset');
 
-        $email = $this->faker->unique()->safeEmail;
+        $email = $this->faker->unique()->freeEmail;
         $newPassword = 'NewPasswd###111';
 
         $user = User::factory()->create([
@@ -458,6 +492,34 @@ class AuthTest extends TestCase
             ]]);
     }
 
+    public function testProfileApp(): void
+    {
+        $app = App::factory()->create();
+
+        $permission1 = Permission::create(['name' => 'permission.1']);
+        $permission2 = Permission::create(['name' => 'permission.2']);
+
+        $app->syncPermissions([$permission1, $permission2]);
+
+        $this->actingAs($app)->getJson('/auth/profile')
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $app->getKey(),
+                'url' => $app->url,
+                'microfrontend_url' => $app->microfrontend_url,
+                'name' => $app->name,
+                'slug' => $app->slug,
+                'version' => $app->version,
+                'description' => $app->description,
+                'icon' => $app->icon,
+                'author' => $app->author,
+                'permissions' => [
+                    'permission.1',
+                    'permission.2',
+                ],
+            ]]);
+    }
+
     public function testIdentityProfileUnauthorized(): void
     {
         $user = User::factory()->create();
@@ -469,6 +531,21 @@ class AuthTest extends TestCase
 
         $this->actingAs($user)->getJson("/auth/profile/$token")
             ->assertForbidden();
+    }
+
+    public function testIdentityProfileInvalidToken(): void
+    {
+        $this->user->givePermissionTo('auth.identity_profile');
+
+        $user = User::factory()->create();
+
+        $token = $this->tokenService->createToken(
+                $user,
+                new TokenType(TokenType::IDENTITY),
+            ) . 'invalid_hash';
+
+        $this->actingAs($this->user)->getJson("/auth/profile/$token")
+            ->assertStatus(422);
     }
 
     public function testIdentityProfile(): void
@@ -502,19 +579,41 @@ class AuthTest extends TestCase
             ]]);
     }
 
-    public function testIdentityProfileInvalidToken(): void
+    public function testIdentityProfileAppMapping(): void
     {
-        $this->user->givePermissionTo('auth.identity_profile');
+        $app = App::factory()->create([
+           'slug' => 'app_slug',
+        ]);
+
+        $app->givePermissionTo('auth.identity_profile');
 
         $user = User::factory()->create();
+        $role1 = Role::create(['name' => 'Role 1']);
+
+        $permission1 = Permission::create(['name' => 'permission.1']);
+        $permission2 = Permission::create(['name' => 'permission.2']);
+        $permission3 = Permission::create(['name' => 'app.app_slug.raw_name']);
+
+        $role1->syncPermissions([$permission1, $permission2, $permission3]);
+        $user->syncRoles([$role1]);
 
         $token = $this->tokenService->createToken(
             $user,
             new TokenType(TokenType::IDENTITY),
-        ) . 'invalid_hash';
+        );
 
-        $this->actingAs($this->user)->getJson("/auth/profile/$token")
-            ->assertStatus(422);
+        $this->actingAs($app)->getJson("/auth/profile/$token")
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $user->getKey(),
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+                'permissions' => [
+                    'permission.1',
+                    'permission.2',
+                    'raw_name',
+                ],
+            ]]);
     }
 
 //    public function testAuthWithReokedToken(): void
