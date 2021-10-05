@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class EventTest extends TestCase
@@ -27,6 +25,10 @@ class EventTest extends TestCase
                     'name',
                     'description',
                 ]
-            ]]);
+            ]])->assertJsonFragment([
+                    'key' => 'DiscountDeleted',
+                    'name' => 'Discount deleted',
+                    'description' => __('enums.App\Enums\EventPermissionType.discount_deleted'),
+                ]);
     }
 }
