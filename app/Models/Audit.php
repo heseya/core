@@ -10,4 +10,6 @@ use App\Traits\HasUuid;
 class Audit extends \OwenIt\Auditing\Models\Audit
 {
     use HasUuid;
+
+    const UPDATED_AT = null;
 }
