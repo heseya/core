@@ -39,7 +39,7 @@ class UserUpdateRequest extends FormRequest
             'name' => ['nullable', 'string', 'max:255'],
             'email' => [
                 'nullable',
-                'email:rfc,dns',
+                'email',
                 'max:255',
                 Rule::unique('users')
                     ->ignoreModel($this->route('user'))

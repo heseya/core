@@ -14,7 +14,7 @@ class OrderSyncRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email:rfc,dns'],
+            'email' => ['required', 'email'],
             'comment' => ['nullable', 'string', 'max:1000'],
             'status_id' => ['required', 'uuid', 'exists:statuses,id'],
             'shipping_method_id' => ['required', 'uuid', 'exists:shipping_methods,id'],
