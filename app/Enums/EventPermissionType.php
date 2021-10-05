@@ -42,6 +42,6 @@ final class EventPermissionType extends Enum
 
     private static function getCamelCaseKey(string $key): string
     {
-        return Str::ucfirst(Str::camel(Str::lower(self::getKey($key))));
+        return Str::ucfirst(Str::camel(Str::lower($key)));
     }
 }
