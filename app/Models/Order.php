@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Audits\Redactors\AddressRedactor;
+use App\Audits\Redactors\ShippingMethodRedactor;
+use App\Audits\Redactors\StatusRedactor;
 use App\SearchTypes\OrderSearch;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
@@ -85,6 +88,13 @@ class Order extends Model implements AuditableContract
         'shipping_number',
         'delivery_address_id',
         'invoice_address_id',
+    ];
+
+    protected $attributeModifiers = [
+        'status_id' => StatusRedactor::class,
+        'shipping_method_id' => ShippingMethodRedactor::class,
+        'delivery_address_id' => AddressRedactor::class,
+        'invoice_address_id' => AddressRedactor::class,
     ];
 
     protected $casts = [
