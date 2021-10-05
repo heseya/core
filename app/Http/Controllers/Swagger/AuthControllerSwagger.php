@@ -274,7 +274,7 @@ interface AuthControllerSwagger
      *       @OA\Property(
      *         property="data",
      *         oneOf={
-     *           @OA\Schema(ref="#/components/schemas/User"),
+     *           @OA\Schema(ref="#/components/schemas/UserView"),
      *           @OA\Schema(ref="#/components/schemas/AppView"),
      *         }
      *       )
