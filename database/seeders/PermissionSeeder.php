@@ -164,6 +164,9 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(['name' => 'webhooks.edit']);
         Permission::updateOrCreate(['name' => 'webhooks.remove']);
 
+        // Events
+        Permission::updateOrCreate(['name' => 'events.show']);
+
         $owner = Role::updateOrCreate(['name' => 'Owner'])
             ->givePermissionTo(Permission::all());
         $owner->type = RoleType::OWNER;

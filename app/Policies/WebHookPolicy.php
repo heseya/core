@@ -2,8 +2,6 @@
 
 namespace App\Policies;
 
-use App\Enums\EventHiddenPermissionType;
-use App\Enums\EventPermissionType;
 use App\Exceptions\WebHookCreatorException;
 use App\Exceptions\WebHookEventException;
 use App\Models\App;
@@ -11,7 +9,7 @@ use App\Models\User;
 use App\Models\WebHook;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Auth\Access\Response;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Config;
 
 class WebHookPolicy
 {
@@ -73,21 +71,20 @@ class WebHookPolicy
     private function getRequiredPermissions(array $events, bool $with_issuer, bool $with_hidden): array|false
     {
         $result = [];
+        $event_permissions = Config::get('events.permissions');
+        $event_permissions_hidden = Config::get('events.permissions_hidden');
         if ($with_issuer) {
             array_push($result, ...['users.show', 'apps.show']);
         }
         foreach ($events as $event) {
-            $permissions = EventPermissionType::getPermissionsByEventName($event);
+            $permissions = $event_permissions[$event];
 
             if ($permissions) {
                 array_push($result, ...$permissions);
             }
 
-            if ($with_hidden) {
-                $permission_hidden = EventHiddenPermissionType::coerce(Str::upper(Str::snake($event)));
-                if ($permission_hidden) {
-                    array_push($result, $permission_hidden->value);
-                }
+            if ($with_hidden && array_key_exists($event, $event_permissions_hidden)) {
+                array_push($result, $event_permissions_hidden[$event]);
             }
         }
         return array_unique($result);
