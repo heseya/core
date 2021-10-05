@@ -99,24 +99,20 @@ class PayU implements PaymentMethod
      *
      * @param string $data
      *
-     * @return null|array
+     * @return array|null
      */
-    public static function parseSignature($data)
+    public static function parseSignature(string $data)
     {
-        if (empty($data)) {
-            return null;
-        }
-
-        $signatureData = array();
+        $signatureData = [];
 
         $list = explode(';', rtrim($data, ';'));
-        if (empty($list)) {
+        if (!count($list)) {
             return null;
         }
 
         foreach ($list as $value) {
             $explode = explode('=', $value);
-            if (count($explode) != 2) {
+            if (count($explode) !== 2) {
                 return null;
             }
             $signatureData[$explode[0]] = $explode[1];
@@ -140,13 +136,13 @@ class PayU implements PaymentMethod
         if (isset($signature)) {
             if ($algorithm === 'MD5') {
                 $hash = md5($message . $signatureKey);
-            } else if (in_array($algorithm, array('SHA', 'SHA1', 'SHA-1'))) {
+            } elseif (in_array($algorithm, ['SHA', 'SHA1', 'SHA-1'])) {
                 $hash = sha1($message . $signatureKey);
             } else {
                 $hash = hash('sha256', $message . $signatureKey);
             }
 
-            if (strcmp($signature, $hash) == 0) {
+            if (strcmp($signature, $hash) === 0) {
                 return true;
             }
         }
