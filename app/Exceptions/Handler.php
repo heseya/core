@@ -56,6 +56,12 @@ final class Handler extends ExceptionHandler
         RoleException::class => [
             'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
         ],
+        WebHookCreatorException::class => [
+            'code' => Response::HTTP_FORBIDDEN,
+        ],
+        WebHookEventException::class => [
+            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+        ],
     ];
 
     /**

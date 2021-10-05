@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\SearchTypes\UserSearch;
+use App\Traits\HasWebHooks;
 use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
@@ -43,7 +44,8 @@ class User extends Model implements
         SoftDeletes,
         Searchable,
         Sortable,
-        Auditable;
+        Auditable,
+        HasWebHooks;
 
     /**
      * @OA\Property(

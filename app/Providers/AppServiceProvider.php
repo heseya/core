@@ -26,6 +26,7 @@ use App\Services\Contracts\SettingsServiceContract;
 use App\Services\Contracts\ShippingMethodServiceContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UserServiceContract;
+use App\Services\Contracts\WebHookServiceContract;
 use App\Services\DiscountService;
 use App\Services\MarkdownService;
 use App\Services\MediaService;
@@ -42,6 +43,7 @@ use App\Services\SettingsService;
 use App\Services\ShippingMethodService;
 use App\Services\TokenService;
 use App\Services\UserService;
+use App\Services\WebHookService;
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
 use Illuminate\Support\ServiceProvider;
 
@@ -68,6 +70,7 @@ class AppServiceProvider extends ServiceProvider
         PermissionServiceContract::class => PermissionService::class,
         AuditServiceContract::class => AuditService::class,
         TokenServiceContract::class => TokenService::class,
+        WebHookServiceContract::class => WebHookService::class,
     ];
 
     /**
