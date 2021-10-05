@@ -122,7 +122,7 @@ interface OrderControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/Order",
+     *         ref="#/components/schemas/OrderSummary",
      *       )
      *     )
      *   )
