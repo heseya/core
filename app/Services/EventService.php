@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Enums\EventPermissionType;
+use App\Enums\EventType;
 use App\Services\Contracts\EventServiceContract;
 use Illuminate\Support\Collection;
 
@@ -10,7 +10,7 @@ class EventService implements EventServiceContract
 {
     public function index(): Collection
     {
-        $events = EventPermissionType::getEventList();
+        $events = EventType::getEventList();
         return collect($events);
     }
 }

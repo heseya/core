@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Enums\EventPermissionType;
+use App\Enums\EventType;
 use App\Models\WebHook;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -29,7 +29,7 @@ class WebHookFactory extends Factory
             'secret' => Str::random(25),
             'with_issuer' => $this->faker->boolean,
             'with_hidden' => $this->faker->boolean,
-            'events' => [EventPermissionType::getRandomCamelCaseKey()],
+            'events' => [EventType::getRandomValue()],
         ];
     }
 }

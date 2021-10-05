@@ -78,17 +78,17 @@ class WebHookTest extends TestCase
 
     public function testCreate(): void
     {
-        $this->user->givePermissionTo('webhooks.add', 'orders.show', 'orders.show_details');
+        $this->user->givePermissionTo('webhooks.add', 'products.show', 'products.show_details', 'products.show_hidden');
 
         $response = $this->actingAs($this->user)->json('POST', '/web-hooks', [
             'name' => 'WebHook test',
             'url' => 'https://www.www.www',
             'secret' => 'secret',
             'events' => [
-                'OrderCreated'
+                'ProductCreated'
             ],
             'with_issuer' => false,
-            'with_hidden' => false,
+            'with_hidden' => true,
         ]);
 
         $response
@@ -98,17 +98,17 @@ class WebHookTest extends TestCase
                 'url' => 'https://www.www.www',
                 'secret' => 'secret',
                 'events' => [
-                    'OrderCreated'
+                    'ProductCreated'
                 ],
                 'with_issuer' => false,
-                'with_hidden' => false,
+                'with_hidden' => true,
                 'model_type' => get_class($this->user),
                 'creator_id' => $this->user->getKey(),
             ]);
 
         $webHook = WebHook::find($response->getData()->data->id);
 
-        $this->assertEquals(['OrderCreated'], $webHook->events);
+        $this->assertEquals(['ProductCreated'], $webHook->events);
 
         $this->assertDatabaseHas('web_hooks', [
             'name' => $webHook->name,

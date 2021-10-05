@@ -2,9 +2,8 @@
 
 namespace App\Rules;
 
-use App\Enums\EventPermissionType;
+use App\Enums\EventType;
 use Illuminate\Contracts\Validation\Rule;
-use Illuminate\Support\Str;
 
 class EventExist implements Rule
 {
@@ -16,7 +15,7 @@ class EventExist implements Rule
     public function passes($attribute, $value)
     {
         foreach ($value as $v) {
-            if (!EventPermissionType::hasKey(Str::upper(Str::snake($v)))) {
+            if (!EventType::hasValue($v)) {
                 $this->event = $v;
                 return false;
             }

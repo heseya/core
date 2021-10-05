@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\EventType;
 use Tests\TestCase;
 
 class EventTest extends TestCase
@@ -16,6 +17,8 @@ class EventTest extends TestCase
     {
         $this->user->givePermissionTo('events.show');
 
+        $event = EventType::getRandomInstance();
+
         $response = $this->actingAs($this->user)->json('GET', '/web-hooks/events');
         $response
             ->assertOk()
@@ -26,9 +29,8 @@ class EventTest extends TestCase
                     'description',
                 ]
             ]])->assertJsonFragment([
-                    'key' => 'DiscountDeleted',
-                    'name' => 'Discount deleted',
-                    'description' => __('enums.App\Enums\EventPermissionType.discount_deleted'),
+                    'key' => $event->value,
+                    'description' => __('enums.' . EventType::class . '.' . $event->value),
                 ]);
     }
 }

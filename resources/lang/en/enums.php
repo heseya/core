@@ -1,31 +1,31 @@
 <?php
 
-use App\Enums\EventPermissionType;
+use App\Enums\EventType;
 
 return [
-    EventPermissionType::class => [
+    EventType::class => [
         // Descriptions
-        EventPermissionType::ORDER_CREATED[0] => 'Event triggered when new orders are created',
-        EventPermissionType::ORDER_UPDATED[0] => 'Event triggered after order is updated',
-        EventPermissionType::ORDER_DELETED[0] => 'Event triggered after order is deleted',
-        EventPermissionType::PRODUCT_CREATED[0] => 'Event triggered when new products are created',
-        EventPermissionType::PRODUCT_UPDATED[0] => 'Event triggered after product is updated',
-        EventPermissionType::PRODUCT_DELETED[0] => 'Event triggered after product is deleted',
-        EventPermissionType::ITEM_CREATED[0] => 'Event triggered when new items are created',
-        EventPermissionType::ITEM_UPDATED[0] => 'Event triggered after item is updated',
-        EventPermissionType::ITEM_UPDATED_QUANTITY[0] => 'Event triggered after item quantity is updated',
-        EventPermissionType::ITEM_DELETED[0] => 'Event triggered after item is deleted',
-        EventPermissionType::PAGE_CREATED[0] => 'Event triggered when new pages are created',
-        EventPermissionType::PAGE_UPDATED[0] => 'Event triggered after page is updated',
-        EventPermissionType::PAGE_DELETED[0] => 'Event triggered after page is deleted',
-        EventPermissionType::PRODUCT_SET_CREATED[0] => 'Event triggered when new product sets are created',
-        EventPermissionType::PRODUCT_SET_UPDATED[0] => 'Event triggered after product set is updated',
-        EventPermissionType::PRODUCT_SET_DELETED[0] => 'Event triggered after product set is deleted',
-        EventPermissionType::USER_CREATED[0] => 'Event triggered when new users are created',
-        EventPermissionType::USER_UPDATED[0] => 'Event triggered after user is updated',
-        EventPermissionType::USER_DELETED[0] => 'Event triggered after user is deleted',
-        EventPermissionType::DISCOUNT_CREATED[0] => 'Event triggered when new discounts are created',
-        EventPermissionType::DISCOUNT_UPDATED[0] => 'Event triggered after discount is updated',
-        EventPermissionType::DISCOUNT_DELETED[0] => 'Event triggered after discount is deleted',
+        EventType::ORDER_CREATED => 'Event triggered when new orders are created',
+        EventType::ORDER_UPDATED => 'Event triggered after order is updated',
+        EventType::ORDER_DELETED => 'Event triggered after order is deleted',
+        EventType::PRODUCT_CREATED => 'Event triggered when new products are created',
+        EventType::PRODUCT_UPDATED => 'Event triggered after product is updated',
+        EventType::PRODUCT_DELETED => 'Event triggered after product is deleted',
+        EventType::ITEM_CREATED => 'Event triggered when new items are created',
+        EventType::ITEM_UPDATED => 'Event triggered after item is updated',
+        EventType::ITEM_UPDATED_QUANTITY => 'Event triggered after item quantity is updated',
+        EventType::ITEM_DELETED => 'Event triggered after item is deleted',
+        EventType::PAGE_CREATED => 'Event triggered when new pages are created',
+        EventType::PAGE_UPDATED => 'Event triggered after page is updated',
+        EventType::PAGE_DELETED => 'Event triggered after page is deleted',
+        EventType::PRODUCT_SET_CREATED => 'Event triggered when new product sets are created',
+        EventType::PRODUCT_SET_UPDATED => 'Event triggered after product set is updated',
+        EventType::PRODUCT_SET_DELETED => 'Event triggered after product set is deleted',
+        EventType::USER_CREATED => 'Event triggered when new users are created',
+        EventType::USER_UPDATED => 'Event triggered after user is updated',
+        EventType::USER_DELETED => 'Event triggered after user is deleted',
+        EventType::DISCOUNT_CREATED => 'Event triggered when new discounts are created',
+        EventType::DISCOUNT_UPDATED => 'Event triggered after discount is updated',
+        EventType::DISCOUNT_DELETED => 'Event triggered after discount is deleted',
     ]
 ];
