@@ -7,7 +7,6 @@ use App\Models\Discount;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ShippingMethod;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 use Tests\Traits\CreateProduct;
@@ -15,7 +14,7 @@ use Tests\Traits\CreateShippingMethod;
 
 class DiscountOrderTest extends TestCase
 {
-    use CreateProduct, CreateShippingMethod, WithFaker;
+    use CreateProduct, CreateShippingMethod;
 
     protected Product $product;
     protected ShippingMethod $shippingMethod;
@@ -60,7 +59,7 @@ class DiscountOrderTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/orders', [
-            'email' => $this->faker->freeEmail,
+            'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address,
             'items' => $this->items,
@@ -91,7 +90,7 @@ class DiscountOrderTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/orders', [
-            'email' => $this->faker->freeEmail,
+            'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address,
             'items' => $this->items,
@@ -115,7 +114,7 @@ class DiscountOrderTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/orders', [
-            'email' => $this->faker->freeEmail,
+            'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address,
             'items' => $this->items,

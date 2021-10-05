@@ -32,7 +32,7 @@ class PasswordResetSaveRequest extends FormRequest
         return [
             'password' => ['required', 'string', 'max:255', Password::defaults()],
             'token' => ['required', 'string'],
-            'email' => ['required', 'email:rfc,dns', 'exists:users,email'],
+            'email' => ['required', 'email', 'exists:users,email'],
         ];
     }
 }

@@ -23,7 +23,7 @@ class UserFactory extends Factory
     {
         return [
             'name' => $this->faker->name,
-            'email' => $this->faker->unique()->freeEmail,
+            'email' => $this->faker->unique()->safeEmail,
             'password' => Hash::make('secret'),
             'remember_token' => Str::random(10),
         ];

@@ -20,6 +20,8 @@ class OrderUpdateTest extends TestCase
     private Address $addressDelivery;
     private Address $addressInvoice;
 
+    public const EMAIL = 'test@example.com';
+
     public function setUp(): void
     {
         parent::setUp();
@@ -32,7 +34,7 @@ class OrderUpdateTest extends TestCase
 
         $this->order = Order::factory()->create([
             'code' => 'XXXXXX123',
-            'email' => $this->faker->freeEmail,
+            'email' => self::EMAIL,
             'comment' => $this->comment,
             'status_id' => $this->status->getKey(),
             'shipping_method_id' => $shippingMethod->getKey(),
@@ -51,7 +53,7 @@ class OrderUpdateTest extends TestCase
     {
         $this->user->givePermissionTo('orders.edit');
 
-        $email = $this->faker->freeEmail;
+        $email = $this->faker->email();
         $comment = $this->faker->text(200);
         $address = Address::factory()->create();
 
@@ -111,7 +113,7 @@ class OrderUpdateTest extends TestCase
     {
         $this->user->givePermissionTo('orders.edit');
 
-        $email = $this->faker->freeEmail;
+        $email = $this->faker->email();
         $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'email' => $email
         ]);
@@ -171,7 +173,7 @@ class OrderUpdateTest extends TestCase
             'comment' => $comment,
 
             // should remain the same
-            'email' => $this->order->email,
+            'email' => self::EMAIL,
             'delivery_address_id' => $this->addressDelivery->getKey(),
             'invoice_address_id' => $this->addressInvoice->getKey(),
         ]);
@@ -239,7 +241,7 @@ class OrderUpdateTest extends TestCase
             'delivery_address_id' => $responseData->delivery_address->id,
 
             // should remain the same
-            'email' => $this->order->email,
+            'email' => self::EMAIL,
             'comment' => $this->comment,
             'invoice_address_id' => $this->addressInvoice->getKey(),
         ]);
@@ -339,7 +341,7 @@ class OrderUpdateTest extends TestCase
             'invoice_address_id' => $responseData->invoice_address->id,
 
             // should remain the same
-            'email' => $this->order->email,
+            'email' => self::EMAIL,
             'comment' => $this->comment,
             'delivery_address_id' => $this->addressDelivery->getKey(),
         ]);

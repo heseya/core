@@ -186,7 +186,7 @@ class AuthTest extends TestCase
 
     public function testResetPasswordUnauthorized(): void
     {
-        $email = $this->faker->unique()->freeEmail;
+        $email = $this->faker->unique()->safeEmail;
         $password = 'Passwd###111';
 
         $user = User::factory()->create([
@@ -209,7 +209,7 @@ class AuthTest extends TestCase
     {
         $this->user->givePermissionTo('auth.password_reset');
 
-        $email = $this->faker->unique()->freeEmail;
+        $email = $this->faker->unique()->safeEmail;
         $password = 'Passwd###111';
 
         $user = User::factory()->create([
@@ -230,7 +230,7 @@ class AuthTest extends TestCase
 
     public function testSaveResetPasswordUnauthorized(): void
     {
-        $email = $this->faker->unique()->freeEmail;
+        $email = $this->faker->unique()->safeEmail;
         $newPassword = 'NewPasswd###111';
 
         $user = User::factory()->create([
@@ -253,7 +253,7 @@ class AuthTest extends TestCase
     {
         $this->user->givePermissionTo('auth.password_reset');
 
-        $email = $this->faker->unique()->freeEmail;
+        $email = $this->faker->unique()->safeEmail;
         $newPassword = 'NewPasswd###111';
 
         $user = User::factory()->create([
