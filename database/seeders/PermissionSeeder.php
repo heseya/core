@@ -178,6 +178,8 @@ class PermissionSeeder extends Seeder
                 'orders.show_summary',
                 'pages.show',
                 'pages.show_details',
+                'payments.edit',
+                'payments.add',
                 'payment_methods.show',
                 'products.show',
                 'products.show_details',

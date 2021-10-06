@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
@@ -85,7 +86,6 @@ class PaymentTest extends TestCase
         $response
             ->assertCreated()
             ->assertJsonFragment([
-                'external_id' => 'payu_id',
                 'method' => 'payu',
                 'payed' => false,
                 'amount' => $this->order->summary,
@@ -102,11 +102,16 @@ class PaymentTest extends TestCase
 
         $this->order->payments()->save($payment);
 
-        $response = $this->postJson('payments/payu', [
+        $body = [
             'order' => [
                 'status' => 'COMPLETED',
                 'extOrderId' => $payment->getKey(),
             ],
+        ];
+        $signature = md5(json_encode($body) . Config::get('payu.second_key'));
+
+        $response = $this->postJson('/payments/payu', $body, [
+            'OpenPayu-Signature' => "signature=$signature;algorithm=MD5"
         ]);
 
         $response->assertForbidden();
@@ -122,12 +127,18 @@ class PaymentTest extends TestCase
 
         $this->order->payments()->save($payment);
 
-        $response = $this->actingAs($this->user)->postJson('payments/payu', [
+        $body = [
             'order' => [
                 'status' => 'COMPLETED',
                 'extOrderId' => $payment->getKey(),
             ],
-        ]);
+        ];
+        $signature = md5(json_encode($body) . Config::get('payu.second_key'));
+
+        $response = $this->actingAs($this->user)
+            ->postJson('/payments/payu', $body, [
+                'OpenPayu-Signature' => "signature=$signature;algorithm=MD5"
+            ]);
 
         $response->assertOk();
         $this->assertDatabaseHas('payments', [
@@ -159,7 +170,6 @@ class PaymentTest extends TestCase
                 'method' => 'offline',
                 'payed' => true,
                 'amount' => $this->order->summary,
-                'external_id' => null,
                 'redirect_url' => null,
                 'continue_url' => null,
             ]);
