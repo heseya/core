@@ -54,6 +54,8 @@ class OrderService implements OrderServiceContract
                 $dto->getInvoiceAddress(),
             );
 
+            $order->forceAudit('delivery_address_id', 'invoice_address_id');
+
             $order->update([
                 'email' => $dto->getEmail() ?? $order->email,
                 'comment' => $dto->getComment() ?? $order->comment,

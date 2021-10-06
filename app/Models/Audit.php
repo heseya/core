@@ -11,5 +11,5 @@ class Audit extends \OwenIt\Auditing\Models\Audit
 {
     use HasUuid;
 
-    const UPDATED_AT = null;
+    public const UPDATED_AT = null;
 }
