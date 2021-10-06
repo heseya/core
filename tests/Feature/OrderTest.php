@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Events\OrderStatusUpdated;
+use App\Events\OrderUpdatedStatus;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
@@ -174,7 +174,7 @@ class OrderTest extends TestCase
 
     public function testUpdateOrderStatusUnauthorized(): void
     {
-        Event::fake([OrderStatusUpdated::class]);
+        Event::fake([OrderUpdatedStatus::class]);
 
         $status = Status::factory()->create();
 
@@ -183,14 +183,14 @@ class OrderTest extends TestCase
         ]);
 
         $response->assertForbidden();
-        Event::assertNotDispatched(OrderStatusUpdated::class);
+        Event::assertNotDispatched(OrderUpdatedStatus::class);
     }
 
     public function testUpdateOrderStatus(): void
     {
         $this->user->givePermissionTo('orders.edit.status');
 
-        Event::fake([OrderStatusUpdated::class]);
+        Event::fake([OrderUpdatedStatus::class]);
 
         $status = Status::factory()->create();
 
@@ -203,7 +203,7 @@ class OrderTest extends TestCase
             'id' => $this->order->getKey(),
             'status_id' => $status->getKey(),
         ]);
-        Event::assertDispatched(OrderStatusUpdated::class);
+        Event::assertDispatched(OrderUpdatedStatus::class);
     }
 
     public function testViewUnderpaid(): void

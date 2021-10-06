@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Dtos\OrderUpdateDto;
 use App\Events\OrderCreated;
-use App\Events\OrderStatusUpdated;
+use App\Events\OrderUpdatedStatus;
 use App\Exceptions\OrderException;
 use App\Http\Controllers\Swagger\OrderControllerSwagger;
 use App\Http\Requests\OrderCreateRequest;
@@ -242,7 +242,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             $order->deposits()->delete();
         }
 
-        OrderStatusUpdated::dispatch($order);
+        OrderUpdatedStatus::dispatch($order);
 
         return OrderResource::make($order)->response();
     }
