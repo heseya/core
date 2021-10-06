@@ -10,7 +10,6 @@ class PaymentResource extends Resource
     {
         return [
             'id' => $this->getKey(),
-            'external_id' => 'hidden for security', // $this->external_id,
             'method' => $this->method,
             'payed' => $this->payed,
             'amount' => $this->amount,
