@@ -159,20 +159,22 @@ class AppService implements AppServiceContract
                 $permission['description'] : null,
         ]));
 
-        $role = Role::create([
-            'name' => $app->name . ' owner',
-        ]);
         $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
-
-        $role->syncPermissions($internalPermissions);
         $owner->givePermissionTo($internalPermissions);
 
-        $app->update([
-            'role_id' => $role->getKey(),
-            'uninstall_token' => $uninstallToken,
-        ]);
+        if ($internalPermissions->isNotEmpty()) {
+            $role = Role::create([
+                'name' => $app->name . ' owner',
+            ]);
+            $role->syncPermissions($internalPermissions);
 
-        Auth::user()->assignRole($role);
+            $app->update([
+                'role_id' => $role->getKey(),
+                'uninstall_token' => $uninstallToken,
+            ]);
+
+            Auth::user()->assignRole($role);
+        }
 
         return $app;
     }
