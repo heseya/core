@@ -36,9 +36,7 @@ interface UserResourceSwagger
      *     property="roles",
      *     type="array",
      *     description="User's assigned roless",
-     *     @OA\Items(
-     *       @OA\Schema(ref="#/components/schemas/Role"),
-     *     ),
+     *     @OA\Items(ref="#/components/schemas/Role"),
      *   ),
      * )
      */
