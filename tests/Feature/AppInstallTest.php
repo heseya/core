@@ -336,6 +336,53 @@ class AppInstallTest extends TestCase
         ]));
     }
 
+    public function testInstallNoInternalPermissions(): void
+    {
+        $this->user->givePermissionTo([
+            'apps.install',
+            'products.show',
+        ]);
+
+        $uninstallToken = Str::random(128);
+
+        Http::fake([
+            $this->url => Http::response([
+                'name' => 'App name',
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
+                'description' => 'Cool description',
+                'microfrontend_url' => 'https://front.example.com',
+                'icon' => 'https://picsum.photos/200',
+                'licence_required' => false,
+                'required_permissions' => [
+                    'products.show',
+                ],
+                'internal_permissions' => [],
+            ]),
+            $this->url . '/install' => Http::response([
+                'uninstall_token' => $uninstallToken,
+            ]),
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/apps', [
+            'url' => $this->url,
+            'allowed_permissions' => [
+                'products.show',
+            ],
+        ]);
+
+        $name = 'App name';
+        $response->assertCreated();
+
+        $app = App::where('name', $name)->firstOrFail();
+        $this->assertNull($app->role);
+
+        $this->assertDatabaseMissing('roles', [
+            'name' => $name . ' owner',
+        ]);
+    }
+
     public function testInstallAssignUnownedPermissions(): void
     {
         $this->user->givePermissionTo([
