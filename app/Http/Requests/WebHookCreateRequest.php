@@ -57,7 +57,7 @@ class WebHookCreateRequest extends FormRequest
     {
         return [
             'name' => ['nullable', 'string', 'max:255'],
-            'url' => ['required', 'string', 'max:255'],
+            'url' => ['required', 'url'],
             'secret' => ['nullable', 'string', 'max:255'],
             'events' => ['bail', 'required', 'array', new EventExist()],
             'with_issuer' => ['required'],

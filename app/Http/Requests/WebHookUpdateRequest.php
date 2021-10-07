@@ -57,7 +57,7 @@ class WebHookUpdateRequest extends FormRequest
     {
         return [
             'name' => ['nullable', 'string', 'max:255'],
-            'url' => ['nullable', 'string', 'max:255'],
+            'url' => ['nullable', 'url'],
             'secret' => ['nullable', 'string', 'max:255'],
             'events' => ['bail', 'nullable', 'array', new EventExist()],
             'with_issuer' => ['nullable'],
