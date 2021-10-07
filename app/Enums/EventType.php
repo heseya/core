@@ -4,6 +4,7 @@ namespace App\Enums;
 
 use BenSampo\Enum\Contracts\LocalizedEnum;
 use BenSampo\Enum\Enum;
+use Illuminate\Support\Facades\Config;
 
 final class EventType extends Enum implements LocalizedEnum
 {
@@ -34,19 +35,27 @@ final class EventType extends Enum implements LocalizedEnum
     {
         $events = self::getInstances();
         $result = [];
+
+        $required_permissions = Config::get('events.permissions');
+        $required_hidden_permissions = Config::get('events.permissions_hidden');
+
         foreach ($events as $event) {
-            array_push($result, self::getData($event));
+            $hidden_permissions = array_key_exists($event->value, $required_hidden_permissions)
+                ? $required_hidden_permissions[$event->value] : [];
+            array_push($result, self::getData($event, $required_permissions[$event->value], $hidden_permissions));
         }
 
         return $result;
     }
 
-    private static function getData(Enum $enum): array
+    private static function getData(Enum $enum, $permissions, $hidden_permissions): array
     {
         return [
             'key' => $enum->value,
             'name' => self::getFriendlyKeyName($enum->key),
             'description' => $enum->description,
+            'required_permissions' => $permissions,
+            'required_hidden_permissions' => $hidden_permissions,
         ];
     }
 }
