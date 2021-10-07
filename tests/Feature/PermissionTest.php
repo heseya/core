@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Permission;
-use App\Models\Role;
 use Tests\TestCase;
 
 class PermissionTest extends TestCase
@@ -28,6 +27,7 @@ class PermissionTest extends TestCase
 
         $permission1 = Permission::create([
             'name' => 'permission1',
+            'display_name' => 'Display name',
             'description' => 'Permission 1',
         ]);
 
@@ -49,18 +49,21 @@ class PermissionTest extends TestCase
             ->assertJsonFragment([[
                 $permission1->getKeyName() => $permission1->getKey(),
                 'name' => $permission1->name,
+                'display_name' => $permission1->display_name,
                 'description' => $permission1->description,
                 'assignable' => false,
             ]])
             ->assertJsonFragment([[
                 $permission2->getKeyName() => $permission2->getKey(),
                 'name' => $permission2->name,
+                'display_name' => null,
                 'description' => $permission2->description,
                 'assignable' => false,
             ]])
             ->assertJsonFragment([[
                 $permission3->getKeyName() => $permission3->getKey(),
                 'name' => $permission3->name,
+                'display_name' => null,
                 'description' => $permission3->description,
                 'assignable' => true,
             ]]);
@@ -88,12 +91,14 @@ class PermissionTest extends TestCase
             ->assertJsonFragment([[
                 $permission1->getKeyName() => $permission1->getKey(),
                 'name' => $permission1->name,
+                'display_name' => null,
                 'description' => $permission1->description,
                 'assignable' => true,
             ]])
             ->assertJsonMissing([[
                 $permission2->getKeyName() => $permission2->getKey(),
                 'name' => $permission2->name,
+                'display_name' => null,
                 'description' => $permission2->description,
                 'assignable' => false,
             ]])
@@ -126,12 +131,14 @@ class PermissionTest extends TestCase
             ->assertJsonFragment([[
                 $permission1->getKeyName() => $permission1->getKey(),
                 'name' => $permission1->name,
+                'display_name' => null,
                 'description' => $permission1->description,
                 'assignable' => false,
             ]])
             ->assertJsonMissing([[
                 $permission2->getKeyName() => $permission2->getKey(),
                 'name' => $permission2->name,
+                'display_name' => null,
                 'description' => $permission2->description,
                 'assignable' => true,
             ]])
