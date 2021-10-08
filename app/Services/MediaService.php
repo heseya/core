@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Enums\MediaType;
-use App\Exceptions\MediaException;
+use App\Exceptions\AppAccessException;
 use App\Models\Media;
 use App\Models\Product;
 use App\Services\Contracts\MediaServiceContract;
@@ -34,22 +34,13 @@ class MediaService implements MediaServiceContract
             ->post(config('silverbox.host') . '/' . config('silverbox.client'));
 
         if ($response->failed()) {
-            throw new MediaException('CDN responded with an error');
+            throw new AppAccessException('CDN responded with an error');
         }
 
         return Media::create([
             'type' => $this->getMediaType($file->extension()),
             'url' => config('silverbox.host') . '/' . $response[0]['path'],
         ]);
-    }
-
-    public function destroy(Media $media): void
-    {
-        if ($media->products()->exists()) {
-            Gate::authorize('products.edit');
-        }
-
-        $media->forceDelete();
     }
 
     private function getMediaType(string $extension): int
@@ -63,5 +54,14 @@ class MediaService implements MediaServiceContract
             return MediaType::VIDEO;
         }
         return MediaType::OTHER;
+    }
+
+    public function destroy(Media $media): void
+    {
+        if ($media->products()->exists()) {
+            Gate::authorize('products.edit');
+        }
+
+        $media->forceDelete();
     }
 }

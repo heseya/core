@@ -2,7 +2,22 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\AppAccessRestrict;
+use App\Http\Middleware\Authenticate;
+use App\Http\Middleware\Language;
+use App\Http\Middleware\SecureHeaders;
+use App\Http\Middleware\TrimStrings;
+use App\Http\Middleware\TrustProxies;
+use Fruitcake\Cors\HandleCors;
+use Heseya\Pagination\Http\Middleware\Pagination;
+use Illuminate\Auth\Middleware\Authorize;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
+use Illuminate\Foundation\Http\Middleware\ValidatePostSize;
+use Illuminate\Http\Middleware\SetCacheHeaders;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Routing\Middleware\ThrottleRequests;
+use Spatie\Permission\Middlewares\PermissionMiddleware;
 
 class Kernel extends HttpKernel
 {
@@ -14,25 +29,28 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $middleware = [
-        \Fruitcake\Cors\HandleCors::class,
-        \App\Http\Middleware\SecureHeaders::class,
-        \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
-        \App\Http\Middleware\Language::class,
-        \App\Http\Middleware\TrustProxies::class,
-        \App\Http\Middleware\TrimStrings::class,
-        \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
-        \Heseya\Pagination\Http\Middleware\Pagination::class,
+        HandleCors::class,
+        SecureHeaders::class,
+        ValidatePostSize::class,
+        Language::class,
+        TrustProxies::class,
+        TrimStrings::class,
+        ConvertEmptyStringsToNull::class,
+        Pagination::class,
+        Authenticate::class,
     ];
 
     /**
      * The application's route middleware groups.
      *
+     * This is the only middleware that should be here,
+     * because for some reason it doesn't want to work as it is in the main array.
+     *
      * @var array
      */
     protected $middlewareGroups = [
         'api' => [
-            \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\Authenticate::class,
+            SubstituteBindings::class,
         ],
     ];
 
@@ -44,11 +62,12 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $routeMiddleware = [
-        'auth' => \App\Http\Middleware\Authenticate::class,
-        'can' => \Illuminate\Auth\Middleware\Authorize::class,
-        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-        'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
-        'permission' => \Spatie\Permission\Middlewares\PermissionMiddleware::class,
+        'auth' => Authenticate::class,
+        'can' => Authorize::class,
+        'throttle' => ThrottleRequests::class,
+        'cache.headers' => SetCacheHeaders::class,
+        'permission' => PermissionMiddleware::class,
+        'app.restrict' => AppAccessRestrict::class,
     ];
 
     /**
@@ -59,10 +78,11 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $middlewarePriority = [
-        \Fruitcake\Cors\HandleCors::class,
-        \Illuminate\Routing\Middleware\SubstituteBindings::class,
-        \App\Http\Middleware\Authenticate::class,
-        \Illuminate\Auth\Middleware\Authorize::class,
-        \App\Http\Middleware\SecureHeaders::class,
+        HandleCors::class,
+        SecureHeaders::class,
+        SubstituteBindings::class,
+        Authenticate::class,
+        AppAccessRestrict::class,
+        Authorize::class,
     ];
 }
