@@ -13,11 +13,16 @@ class CountryTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testIndex(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
     {
-        $this->user->givePermissionTo('countries.show');
-        $response = $this->actingAs($this->user)->getJson('/countries');
+        $this->$user->givePermissionTo('countries.show');
 
-        $response->assertOk();
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/countries')
+            ->assertOk();
     }
 }

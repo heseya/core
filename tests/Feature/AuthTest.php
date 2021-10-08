@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
-use Laravel\Passport\Passport;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
@@ -66,30 +65,36 @@ class AuthTest extends TestCase
         $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 
-    public function testRefreshTokenUnauthorized(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testRefreshTokenUnauthorized($user): void
     {
         $token = $this->tokenService->createToken(
-            $this->user,
+            $this->$user,
             new TokenType(TokenType::REFRESH),
         );
 
-        $response = $this->actingAs($this->user)->postJson('/auth/refresh', [
+        $response = $this->actingAs($this->$user)->postJson('/auth/refresh', [
             'refresh_token' => $token,
         ]);
 
         $response->assertForbidden();
     }
 
-    public function testRefreshToken(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testRefreshToken($user): void
     {
-        $this->user->givePermissionTo('auth.login');
+        $this->$user->givePermissionTo('auth.login');
 
         $token = $this->tokenService->createToken(
-            $this->user,
+            $this->$user,
             new TokenType(TokenType::REFRESH),
         );
 
-        $response = $this->actingAs($this->user)->postJson('/auth/refresh', [
+        $response = $this->actingAs($this->$user)->postJson('/auth/refresh', [
             'refresh_token' => $token,
         ]);
 
@@ -143,17 +148,20 @@ class AuthTest extends TestCase
             ]]);
     }
 
-    public function testRefreshTokenInvalidated(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testRefreshTokenInvalidated($user): void
     {
-        $this->user->givePermissionTo('auth.login');
+        $this->$user->givePermissionTo('auth.login');
 
         $token = $this->tokenService->createToken(
-            $this->user,
+            $this->$user,
             new TokenType(TokenType::REFRESH),
         );
         $this->tokenService->invalidateToken($token);
 
-        $response = $this->actingAs($this->user)->postJson('/auth/refresh', [
+        $response = $this->actingAs($this->$user)->postJson('/auth/refresh', [
             'refresh_token' => $token,
         ]);
 
