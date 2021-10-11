@@ -9,12 +9,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 class WebHook extends Model implements AuditableContract
 {
-    use HasFactory, SoftDeletes, Searchable, Sortable, Auditable;
+    use HasFactory, SoftDeletes, Searchable, Sortable, Auditable, Notifiable;
 
     protected $fillable = [
         'name',

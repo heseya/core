@@ -18,7 +18,7 @@ class WebHookTest extends TestCase
         parent::setUp();
 
         $this->webHook = WebHook::factory()->create([
-            'model_type' => get_class($this->user),
+            'model_type' => $this->user::class,
             'creator_id' => $this->user->getKey(),
         ]);
 
@@ -102,7 +102,7 @@ class WebHookTest extends TestCase
                 ],
                 'with_issuer' => false,
                 'with_hidden' => true,
-                'model_type' => get_class($this->user),
+                'model_type' => $this->user::class,
                 'creator_id' => $this->user->getKey(),
             ]);
 
@@ -129,7 +129,7 @@ class WebHookTest extends TestCase
             'events' => [
                 'OrderCreated'
             ],
-            'model_type' => get_class($this->user),
+            'model_type' => $this->user::class,
             'creator_id' => $this->user->getKey(),
         ]);
 
@@ -153,7 +153,7 @@ class WebHookTest extends TestCase
             'events' => [
                 'TestEvent'
             ],
-            'model_type' => get_class($this->user),
+            'model_type' => $this->user::class,
             'creator_id' => $this->user->getKey(),
         ]);
 
@@ -204,7 +204,7 @@ class WebHookTest extends TestCase
                 'events' => [
                     'ProductCreated',
                 ],
-                'model_type' => get_class($this->user),
+                'model_type' => $this->user::class,
                 'creator_id' => $this->user->getKey(),
                 'with_issuer' => $webHook->with_issuer,
                 'with_hidden' => false,
@@ -219,7 +219,7 @@ class WebHookTest extends TestCase
             'name' => 'Update test',
             'url' => $webHook->url,
             'secret' => $webHook->secret,
-            'model_type' => get_class($this->user),
+            'model_type' => $this->user::class,
             'creator_id' => $this->user->getKey(),
             'with_issuer' => $webHook->with_issuer,
             'with_hidden' => false,
@@ -285,7 +285,7 @@ class WebHookTest extends TestCase
             'events' => [
                 'OrderCreated'
             ],
-            'model_type' => get_class($this->user),
+            'model_type' => $this->user::class,
             'creator_id' => $this->user->getKey(),
         ]);
 
@@ -337,7 +337,7 @@ class WebHookTest extends TestCase
             'events' => [
                 'OrderCreated'
             ],
-            'model_type' => get_class($this->user),
+            'model_type' => $this->user::class,
             'creator_id' => $this->user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
@@ -367,7 +367,7 @@ class WebHookTest extends TestCase
             'events' => [
                 'OrderCreated'
             ],
-            'model_type' => get_class($this->user),
+            'model_type' => $this->user::class,
             'creator_id' => $this->user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
@@ -387,7 +387,7 @@ class WebHookTest extends TestCase
             'events' => [
                 'OrderCreated'
             ],
-            'model_type' => get_class($app),
+            'model_type' => $app::class,
             'creator_id' => $app->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
@@ -428,7 +428,7 @@ class WebHookTest extends TestCase
             'events' => [
                 'OrderCreated'
             ],
-            'model_type' => get_class($this->user),
+            'model_type' => $this->user::class,
             'creator_id' => $this->user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,

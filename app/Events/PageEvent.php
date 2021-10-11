@@ -3,23 +3,30 @@
 namespace App\Events;
 
 use App\Models\Page;
+use Illuminate\Support\Str;
 
 abstract class PageEvent extends WebHookEvent
 {
-    private Page $page;
+    protected Page $page;
 
     public function __construct(Page $page)
     {
+        parent::__construct();
         $this->page = $page;
     }
 
     public function getData(): array
     {
-        return $this->page->toArray();
+        return [
+            'data' => $this->page->toArray(),
+            'data_type' => Str::remove('App\\Models\\', $this->page::class),
+            'event' => Str::remove('App\\Events\\', $this::class),
+            'triggered_at' => $this->triggered_at,
+        ];
     }
 
     public function isHidden(): bool
     {
-        return $this->page->public;
+        return !$this->page->public;
     }
 }

@@ -6,15 +6,21 @@ use App\Models\User;
 
 abstract class UserEvent extends WebHookEvent
 {
-    private User $user;
+    protected User $user;
 
     public function __construct(User $user)
     {
+        parent::__construct();
         $this->user = $user;
     }
 
     public function getData(): array
     {
-        return $this->user->toArray();
+        return [
+            'data' => $this->user->toArray(),
+            'data_type' => Str::remove('App\\Models\\', $this->user::class),
+            'event' => Str::remove('App\\Events\\', $this::class),
+            'triggered_at' => $this->triggered_at,
+        ];
     }
 }
