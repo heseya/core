@@ -9,7 +9,7 @@ class EventTest extends TestCase
 {
     public function testIndexUnauthorized(): void
     {
-        $response = $this->json('GET', '/web-hooks/events');
+        $response = $this->json('GET', '/webhooks/events');
         $response->assertForbidden();
     }
 
@@ -19,7 +19,7 @@ class EventTest extends TestCase
 
         $event = EventType::getRandomInstance();
 
-        $response = $this->actingAs($this->user)->json('GET', '/web-hooks/events');
+        $response = $this->actingAs($this->user)->json('GET', '/webhooks/events');
         $response
             ->assertOk()
             ->assertJsonStructure(['data' => [

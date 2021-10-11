@@ -31,8 +31,6 @@ class WebHookTest extends TestCase
             'with_hidden' => $this->webHook->with_hidden,
             'events' => $this->webHook->events,
             'logs' => $this->webHook->logs,
-            'model_type' => $this->webHook->model_type,
-            'creator_id' => $this->webHook->creator_id,
         ];
 
         $this->expected_structure = [
@@ -44,14 +42,12 @@ class WebHookTest extends TestCase
             'with_hidden',
             'events',
             'logs',
-            'model_type',
-            'creator_id',
         ];
     }
 
     public function testIndexUnauthorized(): void
     {
-        $response = $this->json('GET', '/web-hooks');
+        $response = $this->json('GET', '/webhooks');
         $response->assertForbidden();
     }
 
@@ -59,7 +55,7 @@ class WebHookTest extends TestCase
     {
         $this->user->givePermissionTo('webhooks.show');
 
-        $response = $this->actingAs($this->user)->json('GET', '/web-hooks');
+        $response = $this->actingAs($this->user)->json('GET', '/webhooks');
         $response
             ->assertOk()
             ->assertJsonStructure(['data' => [
@@ -72,7 +68,7 @@ class WebHookTest extends TestCase
 
     public function testCreateUnauthorized(): void
     {
-        $response = $this->json('POST', '/web-hooks');
+        $response = $this->json('POST', '/webhooks');
         $response->assertForbidden();
     }
 
@@ -80,7 +76,7 @@ class WebHookTest extends TestCase
     {
         $this->user->givePermissionTo('webhooks.add', 'products.show', 'products.show_details', 'products.show_hidden');
 
-        $response = $this->actingAs($this->user)->json('POST', '/web-hooks', [
+        $response = $this->actingAs($this->user)->json('POST', '/webhooks', [
             'name' => 'WebHook test',
             'url' => 'https://www.www.www',
             'secret' => 'secret',
@@ -102,8 +98,6 @@ class WebHookTest extends TestCase
                 ],
                 'with_issuer' => false,
                 'with_hidden' => true,
-                'model_type' => $this->user::class,
-                'creator_id' => $this->user->getKey(),
             ]);
 
         $webHook = WebHook::find($response->getData()->data->id);
@@ -116,8 +110,6 @@ class WebHookTest extends TestCase
             'secret' => $webHook->secret,
             'with_issuer' => $webHook->with_issuer,
             'with_hidden' => $webHook->with_hidden,
-            'model_type' => $webHook->model_type,
-            'creator_id' => $webHook->creator_id,
         ]);
     }
 
@@ -133,7 +125,7 @@ class WebHookTest extends TestCase
             'creator_id' => $this->user->getKey(),
         ]);
 
-        $response = $this->actingAs($this->user)->json('POST', '/web-hooks', [
+        $response = $this->actingAs($this->user)->json('POST', '/webhooks', [
             'name' => $webHook->name,
             'url' => $webHook->url,
             'secret' => $webHook->secret,
@@ -157,7 +149,7 @@ class WebHookTest extends TestCase
             'creator_id' => $this->user->getKey(),
         ]);
 
-        $response = $this->actingAs($this->user)->json('POST', '/web-hooks', [
+        $response = $this->actingAs($this->user)->json('POST', '/webhooks', [
             'name' => $webHook->name,
             'url' => $webHook->url,
             'secret' => $webHook->secret,
@@ -171,7 +163,7 @@ class WebHookTest extends TestCase
 
     public function testUpdateUnauthorized(): void
     {
-        $response = $this->json('PATCH', '/web-hooks/id:' . $this->webHook->getKey());
+        $response = $this->json('PATCH', '/webhooks/id:' . $this->webHook->getKey());
         $response->assertForbidden();
     }
 
@@ -187,7 +179,7 @@ class WebHookTest extends TestCase
             'with_hidden' => true,
         ]);
 
-        $response = $this->actingAs($this->user)->json('PATCH', '/web-hooks/id:' . $webHook->getKey(), [
+        $response = $this->actingAs($this->user)->json('PATCH', '/webhooks/id:' . $webHook->getKey(), [
             'name' => 'Update test',
             'events' => [
                 'ProductCreated',
@@ -204,8 +196,6 @@ class WebHookTest extends TestCase
                 'events' => [
                     'ProductCreated',
                 ],
-                'model_type' => $this->user::class,
-                'creator_id' => $this->user->getKey(),
                 'with_issuer' => $webHook->with_issuer,
                 'with_hidden' => false,
             ]);
@@ -239,7 +229,7 @@ class WebHookTest extends TestCase
             'with_hidden' => false,
         ]);
 
-        $response = $this->actingAs($app)->json('PATCH', '/web-hooks/id:' . $webHook->getKey(), [
+        $response = $this->actingAs($app)->json('PATCH', '/webhooks/id:' . $webHook->getKey(), [
             'name' => 'Update test',
             'events' => [
                 'ProductCreated',
@@ -255,8 +245,6 @@ class WebHookTest extends TestCase
                 'events' => [
                     'ProductCreated',
                 ],
-                'model_type' => $webHook->model_type,
-                'creator_id' => $webHook->creator_id,
                 'with_issuer' => $webHook->with_issuer,
                 'with_hidden' => $webHook->with_hidden,
             ]);
@@ -289,7 +277,7 @@ class WebHookTest extends TestCase
             'creator_id' => $this->user->getKey(),
         ]);
 
-        $response = $this->actingAs($this->user)->json('PATCH', '/web-hooks/id:' . $webHook->getKey(), [
+        $response = $this->actingAs($this->user)->json('PATCH', '/webhooks/id:' . $webHook->getKey(), [
             'name' => $webHook->name,
             'url' => $webHook->url,
             'secret' => $webHook->secret,
@@ -317,7 +305,7 @@ class WebHookTest extends TestCase
             'with_hidden' => false,
         ]);
 
-        $response = $this->actingAs($this->user)->json('PATCH', '/web-hooks/id:' . $webHook->getKey(), [
+        $response = $this->actingAs($this->user)->json('PATCH', '/webhooks/id:' . $webHook->getKey(), [
             'name' => 'Update test',
             'events' => [
                 'ProductCreated',
@@ -343,7 +331,7 @@ class WebHookTest extends TestCase
             'with_hidden' => false,
         ]);
 
-        $response = $this->actingAs($app)->json('PATCH', '/web-hooks/id:' . $webHook->getKey(), [
+        $response = $this->actingAs($app)->json('PATCH', '/webhooks/id:' . $webHook->getKey(), [
             'name' => 'Update test',
             'events' => [
                 'ProductCreated',
@@ -355,7 +343,7 @@ class WebHookTest extends TestCase
 
     public function testDeleteUnauthorized(): void
     {
-        $response = $this->json('DELETE', '/web-hooks/id:' . $this->webHook->getKey());
+        $response = $this->json('DELETE', '/webhooks/id:' . $this->webHook->getKey());
         $response->assertForbidden();
     }
 
@@ -373,7 +361,7 @@ class WebHookTest extends TestCase
             'with_hidden' => false,
         ]);
 
-        $response = $this->actingAs($this->user)->json('DELETE', '/web-hooks/id:' . $webHook->getKey());
+        $response = $this->actingAs($this->user)->json('DELETE', '/webhooks/id:' . $webHook->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($webHook);
     }
@@ -393,7 +381,7 @@ class WebHookTest extends TestCase
             'with_hidden' => false,
         ]);
 
-        $response = $this->actingAs($app)->json('DELETE', '/web-hooks/id:' . $webHook->getKey());
+        $response = $this->actingAs($app)->json('DELETE', '/webhooks/id:' . $webHook->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($webHook);
     }
@@ -414,7 +402,7 @@ class WebHookTest extends TestCase
             'with_hidden' => false,
         ]);
 
-        $response = $this->actingAs($this->user)->json('DELETE', '/web-hooks/id:' . $webHook->getKey());
+        $response = $this->actingAs($this->user)->json('DELETE', '/webhooks/id:' . $webHook->getKey());
         $response->assertStatus(403);
     }
 
@@ -434,13 +422,13 @@ class WebHookTest extends TestCase
             'with_hidden' => false,
         ]);
 
-        $response = $this->actingAs($app)->json('DELETE', '/web-hooks/id:' . $webHook->getKey());
+        $response = $this->actingAs($app)->json('DELETE', '/webhooks/id:' . $webHook->getKey());
         $response->assertStatus(403);
     }
 
     public function testShowUnauthorized(): void
     {
-        $response = $this->json('GET', '/web-hooks/id:' . $this->webHook->getKey());
+        $response = $this->json('GET', '/webhooks/id:' . $this->webHook->getKey());
         $response->assertForbidden();
     }
 
@@ -448,7 +436,7 @@ class WebHookTest extends TestCase
     {
         $this->user->givePermissionTo('webhooks.show_details');
 
-        $response = $this->actingAs($this->user)->json('GET', '/web-hooks/id:' . $this->webHook->getKey());
+        $response = $this->actingAs($this->user)->json('GET', '/webhooks/id:' . $this->webHook->getKey());
         $response
             ->assertOk()
             ->assertJsonFragment($this->expected);
