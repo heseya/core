@@ -39,7 +39,7 @@ class DepositsTest extends TestCase
      */
     public function testIndex($user): void
     {
-        $this->user->givePermissionTo('deposits.show');
+        $this->$user->givePermissionTo('deposits.show');
 
         $response = $this->actingAs($this->$user)->getJson('/deposits');
         $response

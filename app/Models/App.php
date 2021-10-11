@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Spatie\Permission\Traits\HasPermissions;
+use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 /**
@@ -22,7 +23,8 @@ class App extends Model implements
     use HasFactory,
         Authorizable,
         Authenticatable,
-        HasPermissions;
+        HasPermissions,
+        HasRoles;
 
     protected $guard_name = 'api';
 

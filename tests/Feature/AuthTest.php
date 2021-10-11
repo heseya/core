@@ -82,19 +82,16 @@ class AuthTest extends TestCase
         $response->assertForbidden();
     }
 
-    /**
-     * @dataProvider authProvider
-     */
-    public function testRefreshToken($user): void
+    public function testRefreshToken(): void
     {
-        $this->$user->givePermissionTo('auth.login');
+        $this->user->givePermissionTo('auth.login');
 
         $token = $this->tokenService->createToken(
-            $this->$user,
+            $this->user,
             new TokenType(TokenType::REFRESH),
         );
 
-        $response = $this->actingAs($this->$user)->postJson('/auth/refresh', [
+        $response = $this->actingAs($this->user)->postJson('/auth/refresh', [
             'refresh_token' => $token,
         ]);
 
