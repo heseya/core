@@ -13,7 +13,7 @@ interface WebHookControllerSwagger
 {
     /**
      * @OA\Get(
-     *   path="/web-hooks",
+     *   path="/webhooks",
      *   summary="list webhooks by filters",
      *   tags={"WebHooks"},
      *   @OA\Parameter(
@@ -51,7 +51,7 @@ interface WebHookControllerSwagger
 
     /**
      * @OA\Get(
-     *   path="/web-hooks/id:{id}",
+     *   path="/webhooks/id:{id}",
      *   summary="show webhook",
      *   tags={"WebHooks"},
      *   @OA\Parameter(
@@ -80,7 +80,7 @@ interface WebHookControllerSwagger
 
     /**
      * @OA\Post(
-     *   path="/web-hooks",
+     *   path="/webhooks",
      *   summary="add new webhook",
      *   tags={"WebHooks"},
      *   @OA\RequestBody(
@@ -105,7 +105,7 @@ interface WebHookControllerSwagger
 
     /**
      * @OA\Patch(
-     *   path="/web-hooks/id:{id}",
+     *   path="/webhooks/id:{id}",
      *   summary="update webhook",
      *   tags={"WebHooks"},
      *   @OA\Parameter(
@@ -139,7 +139,7 @@ interface WebHookControllerSwagger
 
     /**
      * @OA\Delete(
-     *   path="/web-hooks/id:{id}",
+     *   path="/webhooks/id:{id}",
      *   summary="delete webhook",
      *   tags={"WebHooks"},
      *   @OA\Parameter(

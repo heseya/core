@@ -4,7 +4,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\WebHookController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('web-hooks')->group(function (): void {
+Route::prefix('webhooks')->group(function (): void {
     Route::get(null, [WebHookController::class, 'index'])
         ->middleware('permission:webhooks.show');
     Route::get('id:{web_hook:id}', [WebHookController::class, 'show'])
