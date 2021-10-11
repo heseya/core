@@ -64,7 +64,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testView(): void
+    public function testView($user): void
     {
         $this->$user->givePermissionTo('items.show_details');
 

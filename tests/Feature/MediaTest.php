@@ -81,7 +81,7 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUploadProductsAdd(): void
+    public function testUploadProductsAdd($user): void
     {
         $this->$user->givePermissionTo('products.add');
 
