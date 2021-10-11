@@ -8,7 +8,7 @@ interface EventControllerSwagger
 {
     /**
      * @OA\Get(
-     *     path="/web-hooks/events",
+     *     path="/webhooks/events",
      *     summary="list available events",
      *     tags={"WebHooks"},
      *     @OA\Response(

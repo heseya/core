@@ -10,7 +10,7 @@ class EventTest extends TestCase
 {
     public function testIndexUnauthorized(): void
     {
-        $response = $this->json('GET', '/web-hooks/events');
+        $response = $this->json('GET', '/webhooks/events');
         $response->assertForbidden();
     }
 
@@ -23,7 +23,7 @@ class EventTest extends TestCase
         $hidden_permissions = array_key_exists($event->value, Config::get('events.permissions_hidden'))
             ? Config::get('events.permissions_hidden')[$event->value] : [];
 
-        $response = $this->actingAs($this->user)->json('GET', '/web-hooks/events');
+        $response = $this->actingAs($this->user)->json('GET', '/webhooks/events');
         $response
             ->assertOk()
             ->assertJsonStructure(['data' => [

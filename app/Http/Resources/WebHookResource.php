@@ -18,8 +18,6 @@ class WebHookResource extends Resource implements WebHookResourceSwagger
             'with_hidden' => $this->with_hidden,
             'events' => $this->events,
             'logs' => $this->logs,
-            'model_type' => $this->model_type,
-            'creator_id' => $this->creator_id,
         ];
     }
 }
