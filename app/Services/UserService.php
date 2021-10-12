@@ -79,10 +79,8 @@ class UserService implements UserServiceContract
             $owner = Role::where('type', RoleType::OWNER)->first();
 
             if (
-                $newRoles->contains($owner) && (
-                    !($authenticable instanceof User) ||
-                    !$authenticable->hasRole($owner)
-                )) {
+                $newRoles->contains($owner) && (!($authenticable instanceof User) ||
+                    !$authenticable->hasRole($owner))) {
                 throw new AuthException('Only owner can grant the owner role');
             }
 
