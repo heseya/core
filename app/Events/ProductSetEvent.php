@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\ProductSet;
+use Illuminate\Support\Str;
 
 abstract class ProductSetEvent extends WebHookEvent
 {

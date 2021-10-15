@@ -2,12 +2,21 @@
 
 namespace Tests\Feature;
 
+use App\Events\PageCreated;
+use App\Events\PageDeleted;
+use App\Events\PageUpdated;
+use App\Listeners\WebHookEventListener;
 use App\Models\Page;
+use App\Models\WebHook;
 use App\Services\Contracts\MarkdownServiceContract;
+use Illuminate\Events\CallQueuedListener;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Laravel\Passport\Passport;
+use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
 class PageTest extends TestCase
@@ -133,13 +142,19 @@ class PageTest extends TestCase
 
     public function testCreateUnauthorized(): void
     {
+        Event::fake([PageCreated::class]);
+
         $response = $this->postJson('/pages');
         $response->assertForbidden();
+
+        Event::assertNotDispatched(PageCreated::class);
     }
 
     public function testCreate(): void
     {
         $this->user->givePermissionTo('pages.add');
+
+        Event::fake([PageCreated::class]);
 
         $html = '<h1>hello world</h1>';
         $page = [
@@ -157,11 +172,69 @@ class PageTest extends TestCase
         ])->assertCreated();
 
         $this->assertDatabaseHas('pages', $page);
+
+        Event::assertDispatched(PageCreated::class);
+    }
+
+    public function testCreateWithWebHook(): void
+    {
+        $this->user->givePermissionTo('pages.add');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'PageCreated'
+            ],
+            'model_type' => $this->user::class,
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => true,
+            'with_hidden' => false,
+        ]);
+
+        Bus::fake();
+
+        $html = '<h1>hello world</h1>';
+        $page = [
+            'name' => 'Test',
+            'slug' => 'test-test',
+            'public' => true,
+            'content_html' => $html,
+        ];
+
+        $response = $this->actingAs($this->user)->postJson('/pages', $page);
+        $response->assertJson([
+            'data' => $page + [
+                    'content_md' => $this->markdownService->fromHtml($html),
+                ],
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('pages', $page);
+
+        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof PageCreated;
+        });
+
+        $page = Page::find($response->getData()->data->id);
+
+        $event = new PageCreated($page);
+        $listener = new WebHookEventListener();
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $page) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && $payload['data']['id'] === $page->getKey()
+                && $payload['data_type'] === 'Page'
+                && $payload['event'] === 'PageCreated';
+        });
     }
 
     public function testCreateByOrder(): void
     {
         $this->user->givePermissionTo('pages.add');
+
+        Event::fake([PageCreated::class]);
 
         for ($i = 0; $i < 3; $i++) {
             $name = ' order test ' . $this->faker->sentence(rand(1, 3));
@@ -190,17 +263,25 @@ class PageTest extends TestCase
             'id' => $uuids[2],
             'order' => 3,
         ]);
+
+        Event::assertDispatched(PageCreated::class);
     }
 
     public function testUpdateUnauthorized(): void
     {
+        Event::fake(PageUpdated::class);
+
         $response = $this->patchJson('/pages/id:' . $this->page->getKey());
         $response->assertForbidden();
+
+        Event::assertNotDispatched(PageUpdated::class);
     }
 
     public function testUpdate(): void
     {
         $this->user->givePermissionTo('pages.edit');
+
+        Event::fake(PageUpdated::class);
 
         $html = '<h1>hello world 2</h1>';
         $page = [
@@ -220,26 +301,134 @@ class PageTest extends TestCase
             ->assertJson(['data' => $page + ['content_md' => $this->markdownService->fromHtml($html)]]);
 
         $this->assertDatabaseHas('pages', $page + ['id' => $this->page->getKey()]);
+
+        Event::assertDispatched(PageUpdated::class);
+    }
+
+    public function testUpdateWithWebHook(): void
+    {
+        $this->user->givePermissionTo('pages.edit');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'PageUpdated'
+            ],
+            'model_type' => $this->user::class,
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => true,
+            'with_hidden' => true,
+        ]);
+
+        Bus::fake();
+
+        $html = '<h1>hello world 2</h1>';
+        $page = [
+            'name' => 'Test 2',
+            'slug' => 'test-2',
+            'public' => false,
+            'content_html' => $html,
+        ];
+
+        $response = $this->actingAs($this->user)->patchJson(
+            '/pages/id:' . $this->page->getKey(),
+            $page,
+        );
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => $page + ['content_md' => $this->markdownService->fromHtml($html)]]);
+
+        $this->assertDatabaseHas('pages', $page + ['id' => $this->page->getKey()]);
+
+        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof PageUpdated;
+        });
+
+        $page = Page::find($response->getData()->data->id);
+
+        $event = new PageUpdated($page);
+        $listener = new WebHookEventListener();
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $page) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && $payload['data']['id'] === $page->getKey()
+                && $payload['data_type'] === 'Page'
+                && $payload['event'] === 'PageUpdated';
+        });
     }
 
     public function testDeleteUnauthorized(): void
     {
+        Event::fake(PageDeleted::class);
+
         $page = $this->page->toArray();
         unset($page['content_html']);
 
         $response = $this->patchJson('/pages/id:' . $this->page->getKey());
         $response->assertForbidden();
         $this->assertDatabaseHas('pages', $page);
+
+        Event::assertNotDispatched(PageDeleted::class);
     }
 
     public function testDelete(): void
     {
         $this->user->givePermissionTo('pages.remove');
 
+        Event::fake([PageDeleted::class]);
+
         $response = $this->actingAs($this->user)
             ->deleteJson('/pages/id:' . $this->page->getKey());
         $response->assertNoContent();
         $this->assertDeleted($this->page);
+
+        Event::assertDispatched(PageDeleted::class);
+    }
+
+    public function testDeleteWithWebHook(): void
+    {
+        $this->user->givePermissionTo('pages.remove');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'PageDeleted'
+            ],
+            'model_type' => $this->user::class,
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => true,
+            'with_hidden' => true,
+        ]);
+
+        Bus::fake();
+
+        $response = $this->actingAs($this->user)
+            ->deleteJson('/pages/id:' . $this->page->getKey());
+        $response->assertNoContent();
+        $this->assertDeleted($this->page);
+
+        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof PageDeleted;
+        });
+
+        $page = $this->page;
+
+        $event = new PageDeleted($page->toArray(), $page::class);
+        $listener = new WebHookEventListener();
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $page) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && $payload['data']['id'] === $page->getKey()
+                && $payload['data_type'] === 'Page'
+                && $payload['event'] === 'PageDeleted';
+        });
     }
 
     public function testReorderUnauthorized(): void

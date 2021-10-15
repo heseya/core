@@ -3,12 +3,18 @@
 namespace Tests\Feature;
 
 use App\Events\OrderUpdatedStatus;
+use App\Listeners\WebHookEventListener;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use App\Models\WebHook;
+use Illuminate\Events\CallQueuedListener;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Queue;
+use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
 class OrderTest extends TestCase
@@ -204,6 +210,111 @@ class OrderTest extends TestCase
             'status_id' => $status->getKey(),
         ]);
         Event::assertDispatched(OrderUpdatedStatus::class);
+
+        Queue::fake();
+
+        $order = Order::find($this->order->getKey());
+        $event = new OrderUpdatedStatus($order);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    public function testUpdateOrderStatusWithWebHookQueue(): void
+    {
+        $this->user->givePermissionTo('orders.edit.status');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderUpdatedStatus'
+            ],
+            'model_type' => $this->user::class,
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Event::fake([OrderUpdatedStatus::class]);
+
+        $status = Status::factory()->create();
+
+        $response = $this->actingAs($this->user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+            'status_id' => $status->getKey(),
+        ]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+        Event::assertDispatched(OrderUpdatedStatus::class);
+
+        Queue::fake();
+
+        $order = Order::find($this->order->getKey());
+        $event = new OrderUpdatedStatus($order);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $order) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && $payload['data']['id'] === $order->getKey()
+                && $payload['data_type'] === 'Order'
+                && $payload['event'] === 'OrderUpdatedStatus';
+        });
+    }
+
+    public function testUpdateOrderStatusWithWebHookDispatched(): void
+    {
+        $this->user->givePermissionTo('orders.edit.status');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderUpdatedStatus'
+            ],
+            'model_type' => $this->user::class,
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Event::fake([OrderUpdatedStatus::class]);
+
+        $status = Status::factory()->create();
+
+        $response = $this->actingAs($this->user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+            'status_id' => $status->getKey(),
+        ]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+
+        Event::assertDispatched(OrderUpdatedStatus::class);
+
+        Bus::fake();
+
+        $order = Order::find($this->order->getKey());
+        $event = new OrderUpdatedStatus($order);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $order) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && $payload['data']['id'] === $order->getKey()
+                && $payload['data_type'] === 'Order'
+                && $payload['event'] === 'OrderUpdatedStatus';
+        });
     }
 
     public function testViewUnderpaid(): void

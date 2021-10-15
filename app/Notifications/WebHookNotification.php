@@ -24,7 +24,7 @@ class WebHookNotification extends Notification
 
     public function toWebHook($notifiable)
     {
-        $this->data['issuer'] = $notifiable->with_issuer ? $this->issuer : null;
+        $this->data['issuer'] = $notifiable->with_issuer ? $this->issuer->toArray() : null;
         return $this->data;
     }
 }

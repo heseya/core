@@ -3,6 +3,9 @@
 namespace App\Services;
 
 use App\Dtos\ProductSetDto;
+use App\Events\ProductSetCreated;
+use App\Events\ProductSetDeleted;
+use App\Events\ProductSetUpdated;
 use App\Models\ProductSet;
 use App\Services\Contracts\ProductSetServiceContract;
 use Illuminate\Database\Eloquent\Builder;
@@ -100,6 +103,8 @@ class ProductSetService implements ProductSetServiceContract
             $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->isPublic());
         }
 
+        ProductSetCreated::dispatch($set);
+
         return $set;
     }
 
@@ -184,6 +189,9 @@ class ProductSetService implements ProductSetServiceContract
             'slug' => $slug,
             'public_parent' => $publicParent,
         ]);
+
+        ProductSetUpdated::dispatch($set);
+
         return $set;
     }
 
@@ -212,7 +220,9 @@ class ProductSetService implements ProductSetServiceContract
             $set->children->each(fn ($subset) => $this->delete($subset));
         }
 
-        $set->delete();
+        if ($set->delete()) {
+            ProductSetDeleted::dispatch($set->toArray(), $set::class);
+        }
     }
 
     public function products(ProductSet $set): mixed
