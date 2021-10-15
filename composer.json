@@ -24,7 +24,6 @@
         "omnipay/common": "^3",
         "omnipay/paypal": "^3.0",
         "owen-it/laravel-auditing": "^12.0",
-        "parsedown/laravel": "^1.2",
         "php-http/curl-client": "^2.2",
         "propaganistas/laravel-phone": "^4.3",
         "sentry/sentry-laravel": "^2.6",

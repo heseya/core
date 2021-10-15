@@ -176,7 +176,6 @@ return [
          * PackageTemplate Service Providers...
          */
         L5Swagger\L5SwaggerServiceProvider::class,
-        Parsedown\Providers\ParsedownServiceProvider::class,
         Jenssegers\Agent\AgentServiceProvider::class,
         Spatie\Permission\PermissionServiceProvider::class,
         OwenIt\Auditing\AuditingServiceProvider::class,

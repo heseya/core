@@ -22,7 +22,7 @@ class ChangePageContentToHtml extends Migration
         DB::table('pages')->orderBy('id')->chunk(100, function ($pages) {
            foreach ($pages as $page) {
                 DB::table('pages')->where('id', $page->id)->update([
-                    'content_html' => parsedown($page->content_md),
+                    'content_html' => $page->content_md,
                 ]);
             }
         });
