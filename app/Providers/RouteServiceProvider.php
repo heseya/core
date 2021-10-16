@@ -13,16 +13,6 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function map(): void
     {
-        $this->mapApiRoutes();
-    }
-
-    /**
-     * Define the "api" routes for the application.
-     *
-     * These routes are typically stateless.
-     */
-    protected function mapApiRoutes(): void
-    {
         foreach (File::allFiles(base_path('routes')) as $routeFile) {
             Route::middleware('api')->group($routeFile->getPathname());
         }
