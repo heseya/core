@@ -9,15 +9,6 @@ use Illuminate\Support\Facades\Route;
 class RouteServiceProvider extends ServiceProvider
 {
     /**
-     * This namespace is applied to your controller routes.
-     *
-     * In addition, it is set as the URL generator's root namespace.
-     *
-     * @var string
-     */
-    protected $namespace = 'App\Http\Controllers';
-
-    /**
      * Define the routes for the application.
      */
     public function map(): void
@@ -33,9 +24,7 @@ class RouteServiceProvider extends ServiceProvider
     protected function mapApiRoutes(): void
     {
         foreach (File::allFiles(base_path('routes')) as $routeFile) {
-            Route::middleware('api')
-                ->namespace($this->namespace)
-                ->group($routeFile->getPathname());
+            Route::middleware('api')->group($routeFile->getPathname());
         }
     }
 }
