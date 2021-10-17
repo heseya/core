@@ -4,9 +4,9 @@ namespace App\Models;
 
 use App\Rules\OptionAvailable;
 use App\SearchTypes\SchemaSearch;
-use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
+use Heseya\Sortable\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -240,6 +240,61 @@ class Schema extends Model
         return $this->belongsToMany(Product::class, 'product_schemas');
     }
 
+    public function getPrice($value, $schemas): float
+    {
+        $schemaKeys = collect($schemas)->keys();
+
+        if ($this->usedBySchemas()->whereIn($this->getKeyName(), $schemaKeys)->exists()) {
+            return 0.0;
+        }
+
+        return $this->getUsedPrice($value, $schemas);
+    }
+
+    public function usedBySchemas(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Schema::class,
+            'schema_used_schemas',
+            'used_schema_id',
+            'schema_id',
+        );
+    }
+
+    private function getUsedPrice($value, $schemas): float
+    {
+        $price = $this->price;
+
+        if (!$this->required && $value === null) {
+            return 0;
+        }
+
+        if (($this->type === 0 || $this->type === 1) && Str::length(trim($value)) === 0) {
+            return 0;
+        }
+
+        if ($this->type === 2 && ((bool) $value) === false) {
+            return 0;
+        }
+
+        if ($this->type === 4) {
+            $option = $this->options()->findOrFail($value);
+
+            $price += $option->price;
+        }
+
+        if ($this->type === 6) {
+            $price *= (float) $value;
+        }
+
+        if ($this->type === 7) {
+            $usedSchema = $this->usedSchemas()->firstOrFail();
+            $price = $value * $usedSchema->getUsedPrice($schemas[$usedSchema->getKey()], $schemas);
+        }
+
+        return $price;
+    }
+
     /**
      * @OA\Property(
      *   property="options",
@@ -275,60 +330,5 @@ class Schema extends Model
             'schema_id',
             'used_schema_id',
         );
-    }
-
-    public function usedBySchemas(): BelongsToMany
-    {
-        return $this->belongsToMany(
-            Schema::class,
-            'schema_used_schemas',
-            'used_schema_id',
-            'schema_id',
-        );
-    }
-
-    public function getPrice($value, $schemas): float
-    {
-        $schemaKeys = collect($schemas)->keys();
-
-        if ($this->usedBySchemas()->whereIn($this->getKeyName(), $schemaKeys)->exists()) {
-            return 0.0;
-        }
-
-        return $this->getUsedPrice($value, $schemas);
-    }
-
-    private function getUsedPrice($value, $schemas): float
-    {
-        $price = $this->price;
-
-        if (!$this->required && $value === null) {
-            return 0;
-        }
-
-        if (($this->type === 0 || $this->type === 1) && Str::length(trim($value)) === 0) {
-            return 0;
-        }
-
-        if ($this->type === 2 && ((bool) $value) === false) {
-            return 0;
-        }
-
-        if ($this->type === 4) {
-            $option = $this->options()->findOrFail($value);
-
-            $price += $option->price;
-        }
-
-        if ($this->type === 6) {
-            $price *= (float) $value;
-        }
-
-        if ($this->type === 7) {
-            $usedSchema = $this->usedSchemas()->firstOrFail();
-            $price = $value * $usedSchema->getUsedPrice($schemas[$usedSchema->getKey()], $schemas);
-        }
-
-        return $price;
     }
 }
