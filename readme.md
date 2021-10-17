@@ -150,9 +150,9 @@ php artisan key:generate
 php artisan migrate --seed
 ```
 
-After migration run passport install.
+After migration run jwt install.
 ```
-php artisan passport:install
+php artisan jwt:secret
 ```
 
 Seeder creates user `admin@example.com` with password `secret`.
