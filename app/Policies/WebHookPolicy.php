@@ -84,7 +84,7 @@ class WebHookPolicy
             }
 
             if ($with_hidden && array_key_exists($event, $event_permissions_hidden)) {
-                array_push($result, $event_permissions_hidden[$event]);
+                array_push($result, ...$event_permissions_hidden[$event]);
             }
         }
         return array_unique($result);
