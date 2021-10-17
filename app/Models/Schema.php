@@ -261,40 +261,6 @@ class Schema extends Model
         );
     }
 
-    private function getUsedPrice($value, $schemas): float
-    {
-        $price = $this->price;
-
-        if (!$this->required && $value === null) {
-            return 0;
-        }
-
-        if (($this->type === 0 || $this->type === 1) && Str::length(trim($value)) === 0) {
-            return 0;
-        }
-
-        if ($this->type === 2 && ((bool) $value) === false) {
-            return 0;
-        }
-
-        if ($this->type === 4) {
-            $option = $this->options()->findOrFail($value);
-
-            $price += $option->price;
-        }
-
-        if ($this->type === 6) {
-            $price *= (float) $value;
-        }
-
-        if ($this->type === 7) {
-            $usedSchema = $this->usedSchemas()->firstOrFail();
-            $price = $value * $usedSchema->getUsedPrice($schemas[$usedSchema->getKey()], $schemas);
-        }
-
-        return $price;
-    }
-
     /**
      * @OA\Property(
      *   property="options",
@@ -330,5 +296,39 @@ class Schema extends Model
             'schema_id',
             'used_schema_id',
         );
+    }
+
+    private function getUsedPrice($value, $schemas): float
+    {
+        $price = $this->price;
+
+        if (!$this->required && $value === null) {
+            return 0;
+        }
+
+        if (($this->type === 0 || $this->type === 1) && Str::length(trim($value)) === 0) {
+            return 0;
+        }
+
+        if ($this->type === 2 && ((bool) $value) === false) {
+            return 0;
+        }
+
+        if ($this->type === 4) {
+            $option = $this->options()->findOrFail($value);
+
+            $price += $option->price;
+        }
+
+        if ($this->type === 6) {
+            $price *= (float) $value;
+        }
+
+        if ($this->type === 7) {
+            $usedSchema = $this->usedSchemas()->firstOrFail();
+            $price = $value * $usedSchema->getUsedPrice($schemas[$usedSchema->getKey()], $schemas);
+        }
+
+        return $price;
     }
 }
