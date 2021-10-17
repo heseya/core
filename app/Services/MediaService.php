@@ -43,6 +43,15 @@ class MediaService implements MediaServiceContract
         ]);
     }
 
+    public function destroy(Media $media): void
+    {
+        if ($media->products()->exists()) {
+            Gate::authorize('products.edit');
+        }
+
+        $media->forceDelete();
+    }
+
     private function getMediaType(string $extension): int
     {
         $imageExtensions = ['jpeg', 'png', 'gif', 'bmp', 'svg'];
@@ -54,14 +63,5 @@ class MediaService implements MediaServiceContract
             return MediaType::VIDEO;
         }
         return MediaType::OTHER;
-    }
-
-    public function destroy(Media $media): void
-    {
-        if ($media->products()->exists()) {
-            Gate::authorize('products.edit');
-        }
-
-        $media->forceDelete();
     }
 }

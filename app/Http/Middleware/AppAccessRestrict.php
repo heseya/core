@@ -11,7 +11,7 @@ class AppAccessRestrict
     public function handle($request, Closure $next): mixed
     {
         if ($request->user() instanceof App) {
-            throw new AppAccessException;
+            throw new AppAccessException();
         }
 
         return $next($request);
