@@ -43,13 +43,31 @@ class ItemTest extends TestCase
     {
         $this->user->givePermissionTo('items.show');
 
-        $response = $this->actingAs($this->user)->getJson('/items');
-        $response
+        $this
+            ->actingAs($this->user)
+            ->getJson('/items')
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
+
+        $this->assertQueryCountLessThan(10);
+    }
+
+    public function testIndexPerformance(): void
+    {
+        $this->user->givePermissionTo('items.show');
+
+        Item::factory()->count(499)->create();
+
+        $this
+            ->actingAs($this->user)
+            ->getJson('/items?limit=500')
+            ->assertOk()
+            ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(10);
     }
 
     public function testViewUnauthorized(): void
@@ -62,11 +80,13 @@ class ItemTest extends TestCase
     {
         $this->user->givePermissionTo('items.show_details');
 
-        $response = $this->actingAs($this->user)
-            ->getJson('/items/id:' . $this->item->getKey());
-        $response
+        $this
+            ->actingAs($this->user)
+            ->getJson('/items/id:' . $this->item->getKey())
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
+
+        $this->assertQueryCountLessThan(10);
     }
 
     public function testCreateUnauthorized(): void
