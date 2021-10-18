@@ -78,7 +78,7 @@ class Product extends Model implements AuditableContract
 
     public function getAvailableAttribute(): bool
     {
-        if ($this->schemas()->count() <= 0) {
+        if ($this->schemas->count() <= 0) {
             return true;
         }
 
@@ -101,8 +101,8 @@ class Product extends Model implements AuditableContract
 
     public function isPublic(): bool
     {
-        $isAnySetPublic = $this->sets()->count() === 0 ||
-            $this->sets()->where('public', true)->where('public_parent', true);
+        $isAnySetPublic = $this->sets->count() === 0 ||
+            $this->sets->where('public', true)->where('public_parent', true);
 
         return $this->public && $isAnySetPublic;
     }

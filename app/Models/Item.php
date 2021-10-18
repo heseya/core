@@ -72,7 +72,7 @@ class Item extends Model implements AuditableContract
 
     public function getQuantityAttribute(): float
     {
-        return $this->deposits()->sum('quantity');
+        return $this->deposits->sum('quantity');
     }
 
     public function deposits(): HasMany
