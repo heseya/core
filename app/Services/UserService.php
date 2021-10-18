@@ -78,14 +78,12 @@ class UserService implements UserServiceContract
 
             $owner = Role::where('type', RoleType::OWNER)->first();
 
-            if (
-                $newRoles->contains($owner) && (!($authenticable instanceof User) ||
-                    !$authenticable->hasRole($owner))) {
+            if ($newRoles->contains($owner) && !$authenticable->hasRole($owner)) {
                 throw new AuthException('Only owner can grant the owner role');
             }
 
             if ($removedRoles->contains($owner)) {
-                if (!($authenticable instanceof User) || !$authenticable->hasRole($owner)) {
+                if (!$authenticable->hasRole($owner)) {
                     throw new AuthException('Only owner can remove the owner role');
                 }
 
@@ -117,7 +115,7 @@ class UserService implements UserServiceContract
         $owner = Role::where('type', RoleType::OWNER)->first();
 
         if ($user->hasRole($owner)) {
-            if (!($authenticable instanceof User) || !$authenticable->hasRole($owner)) {
+            if (!$authenticable->hasRole($owner)) {
                 throw new AuthException(
                     'You need to be an Owner to delete the Owner.',
                 );

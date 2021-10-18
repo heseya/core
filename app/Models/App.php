@@ -57,6 +57,11 @@ class App extends Model implements
         return $this->belongsTo(Role::class);
     }
 
+    public function hasRole($roles, string $guard = null): bool
+    {
+        return false;
+    }
+
     protected function hasPermissionViaRole(Permission $permission): bool
     {
         return false;
