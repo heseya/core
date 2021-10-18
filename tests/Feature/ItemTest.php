@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Deposit;
 use App\Models\Item;
-use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class ItemTest extends TestCase
@@ -121,18 +120,26 @@ class ItemTest extends TestCase
 
     public function testDeleteUnauthorized(): void
     {
-        $response = $this->deleteJson('/items/id:' . $this->item->getKey());
-        $response->assertForbidden();
-        $this->assertDatabaseHas('items', $this->item->toArray());
+        $this
+            ->json('DELETE', '/items/id:' . $this->item->getKey())
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('items', [
+            'id' => $this->item->getKey(),
+            'sku' => $this->item->sku,
+            'name' => $this->item->name,
+        ]);
     }
 
     public function testDelete(): void
     {
         $this->user->givePermissionTo('items.remove');
 
-        $response = $this->actingAs($this->user)
-            ->deleteJson('/items/id:' . $this->item->getKey());
-        $response->assertNoContent();
+        $this
+            ->actingAs($this->user)
+            ->deleteJson('/items/id:' . $this->item->getKey())
+            ->assertNoContent();
+
         $this->assertSoftDeleted($this->item);
     }
 }
