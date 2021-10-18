@@ -22,6 +22,7 @@ abstract class TestCase extends BaseTestCase
 
     public User $user;
     public Application $application;
+
     public string $password = 'secret';
     public TokenServiceContract $tokenService;
 
