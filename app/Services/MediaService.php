@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Enums\MediaType;
-use App\Exceptions\MediaException;
+use App\Exceptions\AppAccessException;
 use App\Models\Media;
 use App\Models\Product;
 use App\Services\Contracts\MediaServiceContract;
@@ -34,7 +34,7 @@ class MediaService implements MediaServiceContract
             ->post(config('silverbox.host') . '/' . config('silverbox.client'));
 
         if ($response->failed()) {
-            throw new MediaException('CDN responded with an error');
+            throw new AppAccessException('CDN responded with an error');
         }
 
         return Media::create([
