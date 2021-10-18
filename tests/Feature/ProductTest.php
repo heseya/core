@@ -311,6 +311,42 @@ class ProductTest extends TestCase
         ]);
     }
 
+    public function testCreateWithZeroPrice(): void
+    {
+        $this->user->givePermissionTo('products.add');
+
+        $this
+            ->actingAs($this->user)
+            ->postJson('/products', [
+                'name' => 'Test',
+                'slug' => 'test',
+                'price' => 0,
+                'public' => true,
+            ])
+            ->assertCreated();
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 0,
+        ]);
+    }
+
+    public function testCreateWithNegativePrice(): void
+    {
+        $this->user->givePermissionTo('products.add');
+
+        $this
+            ->actingAs($this->user)
+            ->postJson('/products', [
+                'name' => 'Test',
+                'slug' => 'test',
+                'price' => -100,
+                'public' => true,
+            ])
+            ->assertUnprocessable();
+    }
+
     /**
      * @dataProvider authProvider
      */

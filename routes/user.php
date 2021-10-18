@@ -6,11 +6,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('users')->group(function (): void {
     Route::get('/reset-password/{token?}/{email?}', [AuthController::class, 'showResetPasswordForm'])
-        ->middleware('can:auth.password_reset');
+        ->middleware(['app.restrict', 'can:auth.password_reset']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])
-        ->middleware('can:auth.password_reset');
+        ->middleware(['app.restrict', 'can:auth.password_reset']);
     Route::patch('/save-reset-password', [AuthController::class, 'saveResetPassword'])
-        ->middleware('can:auth.password_reset');
+        ->middleware(['app.restrict', 'can:auth.password_reset']);
 
     Route::get(null, [UserController::class, 'index'])
         ->middleware('can:users.show');

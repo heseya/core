@@ -45,6 +45,7 @@ class MediaTest extends TestCase
 
         $response
             ->assertCreated()
+            ->assertJsonFragment(['type' => MediaType::PHOTO])
             ->assertJsonStructure(['data' => [
                 'id',
                 'type',
@@ -197,6 +198,7 @@ class MediaTest extends TestCase
 
         $response
             ->assertCreated()
+            ->assertJsonFragment(['type' => MediaType::VIDEO])
             ->assertJsonStructure(['data' => [
                 'id',
                 'type',

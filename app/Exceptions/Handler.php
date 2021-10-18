@@ -41,6 +41,9 @@ final class Handler extends ExceptionHandler
         StoreException::class => [
             'code' => Response::HTTP_BAD_REQUEST,
         ],
+        AppAccessException::class => [
+            'code' => Response::HTTP_BAD_REQUEST,
+        ],
         AuthException::class => [
             'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
         ],

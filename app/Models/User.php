@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use App\SearchTypes\UserSearch;
-use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
+use Heseya\Sortable\Sortable;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Auth\Passwords\CanResetPassword;
