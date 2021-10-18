@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\ProductSet;
 use App\Models\Product;
+use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Services\Contracts\MarkdownServiceContract;
 use Tests\TestCase;
@@ -288,6 +288,42 @@ class ProductTest extends TestCase
             'public' => true,
             'description_html' => '<h1>Description</h1>',
         ]);
+    }
+
+    public function testCreateWithZeroPrice(): void
+    {
+        $this->user->givePermissionTo('products.add');
+
+        $this
+            ->actingAs($this->user)
+            ->postJson('/products', [
+                'name' => 'Test',
+                'slug' => 'test',
+                'price' => 0,
+                'public' => true,
+            ])
+            ->assertCreated();
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 0,
+        ]);
+    }
+
+    public function testCreateWithNegativePrice(): void
+    {
+        $this->user->givePermissionTo('products.add');
+
+        $this
+            ->actingAs($this->user)
+            ->postJson('/products', [
+                'name' => 'Test',
+                'slug' => 'test',
+                'price' => -100,
+                'public' => true,
+            ])
+            ->assertUnprocessable();
     }
 
     public function testCreateWithSchemas(): void
