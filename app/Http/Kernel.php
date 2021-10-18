@@ -62,7 +62,6 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $routeMiddleware = [
-        'auth' => Authenticate::class,
         'can' => Authorize::class,
         'throttle' => ThrottleRequests::class,
         'cache.headers' => SetCacheHeaders::class,

@@ -79,8 +79,13 @@ class AppServiceProvider extends ServiceProvider
             $this->app->bind($abstract, $concrete);
         }
 
-        if ($this->app->isLocal()) {
+        if (class_exists(IdeHelperServiceProvider::class)) {
             $this->app->register(IdeHelperServiceProvider::class);
         }
+    }
+
+    public function boot(): void
+    {
+        // Model::preventLazyLoading();
     }
 }

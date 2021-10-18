@@ -3,7 +3,7 @@
 use App\Http\Controllers\RoleController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('roles')->middleware('auth:api')->group(function (): void {
+Route::prefix('roles')->group(function (): void {
     Route::get(null, [RoleController::class, 'index'])
         ->middleware('can:roles.show');
     Route::post(null, [RoleController::class, 'store'])
