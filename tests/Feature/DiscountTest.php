@@ -26,10 +26,28 @@ class DiscountTest extends TestCase
     {
         $this->user->givePermissionTo('discounts.show');
 
-        $response = $this->actingAs($this->user)->getJson('/discounts');
-        $response
+        $this
+            ->actingAs($this->user)
+            ->getJson('/discounts')
             ->assertOk()
             ->assertJsonCount(10, 'data');
+
+        $this->assertQueryCountLessThan(15);
+    }
+
+    public function testIndexPerformance(): void
+    {
+        $this->user->givePermissionTo('discounts.show');
+
+        Discount::factory()->count(490)->create();
+
+        $this
+            ->actingAs($this->user)
+            ->getJson('/discounts?limit=500')
+            ->assertOk()
+            ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(15);
     }
 
     public function testShowUnauthorized(): void
