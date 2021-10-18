@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c99171d4f01ad70c55aa8f762afb1e8f",
+    "content-hash": "a75bc1f635ee6473bcce5e51f2dd4b95",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -2663,6 +2663,31 @@
                 "MIT"
             ],
             "description": "Enhanced Laravel Json Resource",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "heseya/sortable",
+            "version": "dev-master",
+            "dist": {
+                "type": "path",
+                "url": "./heseya/sortable",
+                "reference": "830d19e0ac9d0929af4d8beadd90da27e618b6e8"
+            },
+            "require": {
+                "laravel/framework": "^8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Heseya\\Sortable\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Sortable Trait for Laravel",
             "transport-options": {
                 "relative": true
             }

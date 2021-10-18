@@ -1,0 +1,14 @@
+{
+    "name": "heseya/sortable",
+    "description": "Sortable Trait for Laravel",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Heseya\\Sortable\\": "src/"
+        }
+    },
+    "require": {
+      "laravel/framework": "^8.0"
+    }
+}
