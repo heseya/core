@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Enums\MediaType;
 use App\Models\Media;
-use App\Models\Page;
 use App\Models\Product;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
@@ -43,6 +42,7 @@ class MediaTest extends TestCase
 
         $response
             ->assertCreated()
+            ->assertJsonFragment(['type' => MediaType::PHOTO])
             ->assertJsonStructure(['data' => [
                 'id',
                 'type',
@@ -165,6 +165,7 @@ class MediaTest extends TestCase
 
         $response
             ->assertCreated()
+            ->assertJsonFragment(['type' => MediaType::VIDEO])
             ->assertJsonStructure(['data' => [
                 'id',
                 'type',
