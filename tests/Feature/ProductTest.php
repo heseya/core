@@ -142,6 +142,16 @@ class ProductTest extends TestCase
         $this->assertQueryCountLessThan(15);
     }
 
+    public function testIndexHidden(): void
+    {
+        $this->user->givePermissionTo(['products.show', 'products.show_hidden']);
+
+        $response = $this->actingAs($this->user)->getJson('/products');
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data'); // Should show all products.
+    }
+
     public function testIndexPerformance(): void
     {
         $this->user->givePermissionTo('products.show');
@@ -151,22 +161,31 @@ class ProductTest extends TestCase
             'order' => 1,
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/products?limit=500');
-        $response
+        $this
+            ->actingAs($this->user)
+            ->getJson('/products?limit=500')
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
         $this->assertQueryCountLessThan(15);
     }
 
-    public function testIndexHidden(): void
+    public function testIndexFullPerformance(): void
     {
-        $this->user->givePermissionTo(['products.show', 'products.show_hidden']);
+        $this->user->givePermissionTo('products.show');
 
-        $response = $this->actingAs($this->user)->getJson('/products');
-        $response
+        Product::factory()->count(499)->create([
+            'public' => true,
+            'order' => 1,
+        ]);
+
+        $this
+            ->actingAs($this->user)
+            ->getJson('/products?limit=500&full')
             ->assertOk()
-            ->assertJsonCount(2, 'data'); // Should show all products.
+            ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(20);
     }
 
     public function testShowUnauthorized(): void
