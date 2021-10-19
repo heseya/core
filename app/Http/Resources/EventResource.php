@@ -13,6 +13,8 @@ class EventResource extends Resource implements EventResourceSwagger
             'key' => $this->key,
             'name' => $this->name,
             'description' => $this->description,
+            'required_permissions' => $this->required_permissions,
+            'required_hidden_permissions' => $this->required_hidden_permissions,
         ];
     }
 }

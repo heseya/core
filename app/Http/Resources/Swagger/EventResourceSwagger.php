@@ -13,19 +13,37 @@ interface EventResourceSwagger
      *     property="key",
      *     type="string",
      *     description="Displayed event key",
-     *     example="ORDER_CREATED",
+     *     example="PRODUCT_CREATED",
      *   ),
      *   @OA\Property(
      *     property="name",
      *     type="string",
      *     description="Displayed event name",
-     *     example="Order created",
+     *     example="Product created",
      *   ),
      *   @OA\Property(
      *     property="description",
      *     type="string",
      *     description="Displayed event description",
-     *     example="Event triggered when new orders are created",
+     *     example="Event triggered when new products are created",
+     *   ),
+     *   @OA\Property(
+     *     property="required_permissions",
+     *     type="array",
+     *     description="List of Event required permissions",
+     *     @OA\Items(
+     *         type="string",
+     *         example="products.show",
+     *     ),
+     *   ),
+     *   @OA\Property(
+     *     property="required_hidden_permissions",
+     *     type="array",
+     *     description="List of Event required hidden permissions",
+     *     @OA\Items(
+     *         type="string",
+     *         example="products.show_hidden",
+     *     ),
      *   ),
      * )
      */

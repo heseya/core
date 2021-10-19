@@ -29,14 +29,14 @@ return [
     ],
 
     'permissions_hidden' => [
-        EventType::PRODUCT_CREATED => 'products.show_hidden',
-        EventType::PRODUCT_UPDATED => 'products.show_hidden',
-        EventType::PRODUCT_DELETED => 'products.show_hidden',
-        EventType::PAGE_CREATED => 'pages.show_hidden',
-        EventType::PAGE_UPDATED => 'pages.show_hidden',
-        EventType::PAGE_DELETED => 'pages.show_hidden',
-        EventType::PRODUCT_SET_CREATED => 'product_sets.show_hidden',
-        EventType::PRODUCT_SET_UPDATED => 'product_sets.show_hidden',
-        EventType::PRODUCT_SET_DELETED => 'product_sets.show_hidden',
+        EventType::PRODUCT_CREATED => ['products.show_hidden'],
+        EventType::PRODUCT_UPDATED => ['products.show_hidden'],
+        EventType::PRODUCT_DELETED => ['products.show_hidden'],
+        EventType::PAGE_CREATED => ['pages.show_hidden'],
+        EventType::PAGE_UPDATED => ['pages.show_hidden'],
+        EventType::PAGE_DELETED => ['pages.show_hidden'],
+        EventType::PRODUCT_SET_CREATED => ['product_sets.show_hidden'],
+        EventType::PRODUCT_SET_UPDATED => ['product_sets.show_hidden'],
+        EventType::PRODUCT_SET_DELETED => ['product_sets.show_hidden'],
     ],
 ];
