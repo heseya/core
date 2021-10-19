@@ -95,6 +95,9 @@
         ],
         "pre-commit": [
             "@composer style"
+        ],
+        "test": [
+            "@php artisan test --env=.env --parallel"
         ]
     },
     "repositories": [

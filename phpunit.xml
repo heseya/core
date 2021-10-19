@@ -4,7 +4,7 @@
   backupGlobals="false"
   backupStaticAttributes="false"
   bootstrap="vendor/autoload.php"
-  colors="true"
+  colors="false"
   convertErrorsToExceptions="true"
   convertNoticesToExceptions="true"
   convertWarningsToExceptions="true"
