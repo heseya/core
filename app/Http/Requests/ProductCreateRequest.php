@@ -86,7 +86,7 @@ class ProductCreateRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'unique:products', 'alpha_dash'],
-            'price' => ['required', 'numeric'],
+            'price' => ['required', 'numeric', 'min:0'],
             'brand_id' => ['nullable', 'uuid', 'exists:product_sets,id'],
             'category_id' => ['nullable', 'uuid', 'exists:product_sets,id'],
             'description_html' => ['nullable', 'string'],

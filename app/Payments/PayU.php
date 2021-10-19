@@ -2,10 +2,12 @@
 
 namespace App\Payments;
 
+use App\Exceptions\StoreException;
 use App\Models\Payment;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 
 class PayU implements PaymentMethod
@@ -61,8 +63,16 @@ class PayU implements PaymentMethod
 
     public static function translateNotification(Request $request): JsonResponse
     {
-        // Optional signature verification; lackluster docs
-        // $signature = $request->header('OpenPayu-Signature');
+        $signature = self::parseSignature($request->header('OpenPayu-Signature'));
+
+        if (!self::verifySignature(
+            $request->getContent(),
+            $signature['signature'],
+            Config::get('payu.second_key'),
+            $signature['algorithm']
+        )) {
+            throw new StoreException('Untrusted notification');
+        }
 
         $validated = $request->validate([
             'order' => ['required', 'array'],
@@ -82,5 +92,61 @@ class PayU implements PaymentMethod
         }
 
         return response()->json(null);
+    }
+
+    /**
+     * Function returns signature data object
+     *
+     * @param string $data
+     *
+     * @return array|null
+     */
+    public static function parseSignature(string $data)
+    {
+        $signatureData = [];
+
+        $list = explode(';', rtrim($data, ';'));
+        if (!count($list)) {
+            return null;
+        }
+
+        foreach ($list as $value) {
+            $explode = explode('=', $value);
+            if (count($explode) !== 2) {
+                return null;
+            }
+            $signatureData[$explode[0]] = $explode[1];
+        }
+
+        return $signatureData;
+    }
+
+    /**
+     * Function returns signature validate
+     *
+     * @param string $message
+     * @param string $signature
+     * @param string $signatureKey
+     * @param string $algorithm
+     *
+     * @return bool
+     */
+    public static function verifySignature($message, $signature, $signatureKey, $algorithm = 'MD5')
+    {
+        if (isset($signature)) {
+            if ($algorithm === 'MD5') {
+                $hash = md5($message . $signatureKey);
+            } elseif (in_array($algorithm, ['SHA', 'SHA1', 'SHA-1'])) {
+                $hash = sha1($message . $signatureKey);
+            } else {
+                $hash = hash('sha256', $message . $signatureKey);
+            }
+
+            if (strcmp($signature, $hash) === 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

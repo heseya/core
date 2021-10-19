@@ -34,11 +34,14 @@ class DepositsTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testIndex(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
     {
-        $this->user->givePermissionTo('deposits.show');
+        $this->$user->givePermissionTo('deposits.show');
 
-        $response = $this->actingAs($this->user)->getJson('/deposits');
+        $response = $this->actingAs($this->$user)->getJson('/deposits');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -53,11 +56,14 @@ class DepositsTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testView(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testView($user): void
     {
-        $this->user->givePermissionTo('deposits.show');
+        $this->$user->givePermissionTo('deposits.show');
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->getJson('/items/id:' . $this->item->getKey() . '/deposits');
         $response
             ->assertOk()
@@ -81,15 +87,18 @@ class DepositsTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testCreate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreate($user): void
     {
-        $this->user->givePermissionTo('deposits.add');
+        $this->$user->givePermissionTo('deposits.add');
 
         $deposit = [
             'quantity' => 1200000.50,
         ];
 
-        $response = $this->actingAs($this->user)->postJson(
+        $response = $this->actingAs($this->$user)->postJson(
             "/items/id:{$this->item->getKey()}/deposits",
             $deposit,
         );
@@ -103,15 +112,18 @@ class DepositsTest extends TestCase
         $this->assertDatabaseHas('deposits', ['item_id' => $this->item->getKey()] + $deposit);
     }
 
-    public function testCreateValidation(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateValidation($user): void
     {
-        $this->user->givePermissionTo('deposits.add');
+        $this->$user->givePermissionTo('deposits.add');
 
         $deposit = [
             'quantity' => 'test',
         ];
 
-        $response = $this->actingAs($this->user)->postJson(
+        $response = $this->actingAs($this->$user)->postJson(
             "/items/id:{$this->item->getKey()}/deposits",
             $deposit,
         );
@@ -119,15 +131,18 @@ class DepositsTest extends TestCase
         $response->assertStatus(422);
     }
 
-    public function testCreateValidation2(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateValidation2($user): void
     {
-        $this->user->givePermissionTo('deposits.add');
+        $this->$user->givePermissionTo('deposits.add');
 
         $deposit = [
             'quantity' => 1000000000000,
         ];
 
-        $response = $this->actingAs($this->user)->postJson(
+        $response = $this->actingAs($this->$user)->postJson(
             "/items/id:{$this->item->getKey()}/deposits",
             $deposit,
         );

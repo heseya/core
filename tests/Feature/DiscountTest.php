@@ -22,11 +22,14 @@ class DiscountTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testIndex(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
     {
-        $this->user->givePermissionTo('discounts.show');
+        $this->$user->givePermissionTo('discounts.show');
 
-        $response = $this->actingAs($this->user)->getJson('/discounts');
+        $response = $this->actingAs($this->$user)->getJson('/discounts');
         $response
             ->assertOk()
             ->assertJsonCount(10, 'data');
@@ -40,12 +43,15 @@ class DiscountTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testShow(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShow($user): void
     {
-        $this->user->givePermissionTo('discounts.show_details');
+        $this->$user->givePermissionTo('discounts.show_details');
         $discount = Discount::factory()->create();
 
-        $response = $this->actingAs($this->user)->getJson('/discounts/' . $discount->code);
+        $response = $this->actingAs($this->$user)->getJson('/discounts/' . $discount->code);
         $response
             ->assertOk()
             ->assertJsonFragment(['id' => $discount->getKey()]);
@@ -57,11 +63,14 @@ class DiscountTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testCreate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreate($user): void
     {
-        $this->user->givePermissionTo('discounts.add');
+        $this->$user->givePermissionTo('discounts.add');
 
-        $response = $this->actingAs($this->user)->json('POST', '/discounts', [
+        $response = $this->actingAs($this->$user)->json('POST', '/discounts', [
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',
             'discount' => 10,
@@ -104,12 +113,15 @@ class DiscountTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testUpdate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdate($user): void
     {
-        $this->user->givePermissionTo('discounts.edit');
+        $this->$user->givePermissionTo('discounts.edit');
         $discount = Discount::factory()->create();
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->json('PATCH', '/discounts/id:' . $discount->getKey(), [
                 'description' => 'Weekend Sale',
                 'code' => 'WEEKEND',
@@ -152,21 +164,27 @@ class DiscountTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testDelete(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDelete($user): void
     {
-        $this->user->givePermissionTo('discounts.remove');
+        $this->$user->givePermissionTo('discounts.remove');
         $discount = Discount::factory()->create();
 
-        $response = $this->actingAs($this->user)->deleteJson('/discounts/id:' . $discount->getKey());
+        $response = $this->actingAs($this->$user)->deleteJson('/discounts/id:' . $discount->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($discount);
     }
 
-    public function testCreateCheckDatetime(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateCheckDatetime($user): void
     {
-        $this->user->givePermissionTo('discounts.add');
+        $this->$user->givePermissionTo('discounts.add');
 
-        $response = $this->actingAs($this->user)->json('POST', '/discounts', [
+        $response = $this->actingAs($this->$user)->json('POST', '/discounts', [
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',
             'discount' => 10,

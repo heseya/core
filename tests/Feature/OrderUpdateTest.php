@@ -14,6 +14,7 @@ class OrderUpdateTest extends TestCase
 {
     use RefreshDatabase, WithFaker, CreateShippingMethod;
 
+    public const EMAIL = 'test@example.com';
     private Order $order;
     private string $comment;
     private Status $status;
@@ -32,7 +33,7 @@ class OrderUpdateTest extends TestCase
 
         $this->order = Order::factory()->create([
             'code' => 'XXXXXX123',
-            'email' => $this->faker->freeEmail,
+            'email' => self::EMAIL,
             'comment' => $this->comment,
             'status_id' => $this->status->getKey(),
             'shipping_method_id' => $shippingMethod->getKey(),
@@ -47,15 +48,18 @@ class OrderUpdateTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testFullUpdateOrder(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testFullUpdateOrder($user): void
     {
-        $this->user->givePermissionTo('orders.edit');
+        $this->$user->givePermissionTo('orders.edit');
 
-        $email = $this->faker->freeEmail;
+        $email = $this->faker->email();
         $comment = $this->faker->text(200);
         $address = Address::factory()->create();
 
-        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'email' => $email,
             'comment' => $comment,
             'delivery_address' => $address->toArray(),
@@ -107,12 +111,15 @@ class OrderUpdateTest extends TestCase
         ]);
     }
 
-    public function testUpdateOrderByEmail(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderByEmail($user): void
     {
-        $this->user->givePermissionTo('orders.edit');
+        $this->$user->givePermissionTo('orders.edit');
 
-        $email = $this->faker->freeEmail;
-        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $email = $this->faker->email();
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'email' => $email
         ]);
 
@@ -142,12 +149,15 @@ class OrderUpdateTest extends TestCase
         ]);
     }
 
-    public function testUpdateOrderByComment(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderByComment($user): void
     {
-        $this->user->givePermissionTo('orders.edit');
+        $this->$user->givePermissionTo('orders.edit');
 
         $comment = $this->faker->text(100);
-        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'comment' => $comment
         ]);
 
@@ -171,17 +181,20 @@ class OrderUpdateTest extends TestCase
             'comment' => $comment,
 
             // should remain the same
-            'email' => $this->order->email,
+            'email' => self::EMAIL,
             'delivery_address_id' => $this->addressDelivery->getKey(),
             'invoice_address_id' => $this->addressInvoice->getKey(),
         ]);
     }
 
-    public function testUpdateOrderByEmptyComment(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderWithEmptyComment($user): void
     {
-        $this->user->givePermissionTo('orders.edit');
+        $this->$user->givePermissionTo('orders.edit');
 
-        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'comment' => ''
         ]);
 
@@ -198,12 +211,15 @@ class OrderUpdateTest extends TestCase
         ]);
     }
 
-    public function testUpdateOrderByDeliveryAddress(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderWithDeliveryAddress($user): void
     {
-        $this->user->givePermissionTo('orders.edit');
+        $this->$user->givePermissionTo('orders.edit');
 
         $this->addressDelivery = Address::factory()->create();
-        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'delivery_address' => $this->addressDelivery->toArray()
         ]);
         $responseData = $response->getData()->data;
@@ -239,17 +255,20 @@ class OrderUpdateTest extends TestCase
             'delivery_address_id' => $responseData->delivery_address->id,
 
             // should remain the same
-            'email' => $this->order->email,
+            'email' => self::EMAIL,
             'comment' => $this->comment,
             'invoice_address_id' => $this->addressInvoice->getKey(),
         ]);
     }
 
-    public function testUpdateOrderByMissingDeliveryAddress(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderWithMissingDeliveryAddress($user): void
     {
-        $this->user->givePermissionTo('orders.edit');
+        $this->$user->givePermissionTo('orders.edit');
 
-        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'invoice_address' => $this->addressDelivery->toArray()
         ]);
 
@@ -279,11 +298,28 @@ class OrderUpdateTest extends TestCase
         $this->checkAddress($this->addressDelivery);
     }
 
-    public function testUpdateOrderByEmptyDeliveryAddress(): void
+    private function checkAddress(Address $address): void
     {
-        $this->user->givePermissionTo('orders.edit');
+        $this->assertDatabaseHas('addresses', [
+            'id' => $address->getKey(),
+            'name' => $address->name,
+            'phone' =>  $address->phone,
+            'address' =>  $address->address,
+            'vat' =>  $address->vat,
+            'zip' =>  $address->zip,
+            'city' =>  $address->city,
+            'country' =>  $address->country,
+        ]);
+    }
 
-        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderWithEmptyDeliveryAddress($user): void
+    {
+        $this->$user->givePermissionTo('orders.edit');
+
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'delivery_address' => null
         ]);
 
@@ -298,12 +334,15 @@ class OrderUpdateTest extends TestCase
         ]);
     }
 
-    public function testUpdateOrderByInvoiceAddress(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderByInvoiceAddress($user): void
     {
-        $this->user->givePermissionTo('orders.edit');
+        $this->$user->givePermissionTo('orders.edit');
 
         $this->addressInvoice = Address::factory()->create();
-        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'invoice_address' => $this->addressInvoice->toArray()
         ]);
         $responseData = $response->getData()->data;
@@ -339,17 +378,20 @@ class OrderUpdateTest extends TestCase
             'invoice_address_id' => $responseData->invoice_address->id,
 
             // should remain the same
-            'email' => $this->order->email,
+            'email' => self::EMAIL,
             'comment' => $this->comment,
             'delivery_address_id' => $this->addressDelivery->getKey(),
         ]);
     }
 
-    public function testUpdateOrderByMissingInvoiceAddress(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderByMissingInvoiceAddress($user): void
     {
-        $this->user->givePermissionTo('orders.edit');
+        $this->$user->givePermissionTo('orders.edit');
 
-        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'delivery_address' => $this->addressInvoice->toArray()
         ]);
 
@@ -379,11 +421,14 @@ class OrderUpdateTest extends TestCase
         $this->checkAddress($this->addressInvoice);
     }
 
-    public function testUpdateOrderByEmptyInvoiceAddress(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderByEmptyInvoiceAddress($user): void
     {
-        $this->user->givePermissionTo('orders.edit');
+        $this->$user->givePermissionTo('orders.edit');
 
-        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'invoice_address' => null
         ]);
 
@@ -395,20 +440,6 @@ class OrderUpdateTest extends TestCase
             'id' => $this->order->getKey(),
             'delivery_address_id' => $this->addressDelivery->getKey(),
             'invoice_address_id' => null,
-        ]);
-    }
-
-    private function checkAddress(Address $address): void
-    {
-        $this->assertDatabaseHas('addresses', [
-            'id' => $address->getKey(),
-            'name' => $address->name,
-            'phone' =>  $address->phone,
-            'address' =>  $address->address,
-            'vat' =>  $address->vat,
-            'zip' =>  $address->zip,
-            'city' =>  $address->city,
-            'country' =>  $address->country,
         ]);
     }
 }

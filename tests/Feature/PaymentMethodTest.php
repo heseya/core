@@ -43,11 +43,14 @@ class PaymentMethodTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testIndex(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
     {
-        $this->user->givePermissionTo('payment_methods.show');
+        $this->$user->givePermissionTo('payment_methods.show');
 
-        $response = $this->actingAs($this->user)->getJson('/payment-methods');
+        $response = $this->actingAs($this->$user)->getJson('/payment-methods');
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data') // Should show only public payment methods.
@@ -55,11 +58,14 @@ class PaymentMethodTest extends TestCase
             ->assertJsonFragment(['id' => $this->payment_method_related->getKey()]);
     }
 
-    public function testIndexHidden(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexHidden($user): void
     {
-        $this->user->givePermissionTo(['payment_methods.show', 'payment_methods.show_hidden']);
+        $this->$user->givePermissionTo(['payment_methods.show', 'payment_methods.show_hidden']);
 
-        $response = $this->actingAs($this->user)->getJson('/payment-methods');
+        $response = $this->actingAs($this->$user)->getJson('/payment-methods');
         $response
             ->assertOk()
             ->assertJsonCount(3 , 'data') // Should show only public payment methods.
@@ -80,9 +86,12 @@ class PaymentMethodTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testCreate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreate($user): void
     {
-        $this->user->givePermissionTo('payment_methods.add');
+        $this->$user->givePermissionTo('payment_methods.add');
 
         $payment_method = [
             'name' => 'Test',
@@ -90,7 +99,7 @@ class PaymentMethodTest extends TestCase
             'public' => true,
         ];
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->postJson('/payment-methods', $payment_method);
         $response
             ->assertCreated()
@@ -112,9 +121,12 @@ class PaymentMethodTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testUpdate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdate($user): void
     {
-        $this->user->givePermissionTo('payment_methods.edit');
+        $this->$user->givePermissionTo('payment_methods.edit');
 
         $payment_method = [
             'name' => 'Test 2',
@@ -122,7 +134,7 @@ class PaymentMethodTest extends TestCase
             'public' => false,
         ];
 
-        $response = $this->actingAs($this->user)->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/payment-methods/id:' . $this->payment_method->getKey(),
             $payment_method,
         );
@@ -137,11 +149,14 @@ class PaymentMethodTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testDelete(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDelete($user): void
     {
-        $this->user->givePermissionTo('payment_methods.remove');
+        $this->$user->givePermissionTo('payment_methods.remove');
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->deleteJson('/payment-methods/id:' . $this->payment_method->getKey());
         $response->assertNoContent();
     }

@@ -13,6 +13,7 @@ class PermissionResource extends Resource implements PermissionResourceSwagger
         return [
             'id' => $this->getKey(),
             'name' => $this->name,
+            'display_name' => $this->display_name,
             'description' => $this->description,
             'assignable' => Auth::user()->can($this->name),
         ];

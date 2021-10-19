@@ -41,15 +41,18 @@ class UserTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testIndex(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
     {
-        $this->user->givePermissionTo('users.show');
+        $this->$user->givePermissionTo('users.show');
 
         $otherUser = User::factory()->create();
         $otherUser->created_at = Carbon::now()->addHour();
         $otherUser->save();
 
-        $response = $this->actingAs($this->user)->getJson('/users');
+        $response = $this->actingAs($this->$user)->getJson('/users');
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -65,15 +68,18 @@ class UserTest extends TestCase
             ]]);
     }
 
-    public function testIndexSorted(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSorted($user): void
     {
-        $this->user->givePermissionTo('users.show');
+        $this->$user->givePermissionTo('users.show');
 
         $otherUser = User::factory()->create();
         $otherUser->created_at = Carbon::now()->addHour();
         $otherUser->save();
 
-        $response = $this->actingAs($this->user)->getJson('/users?sort=created_at:desc');
+        $response = $this->actingAs($this->$user)->getJson('/users?sort=created_at:desc');
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -95,8 +101,9 @@ class UserTest extends TestCase
 
         $user = User::factory()->create();
 
-        $response = $this->actingAs($this->user)->getJson('/users?name=' . $user->name);
-        $response
+        $this
+            ->actingAs($this->user)
+            ->getJson('/users?name=' . $user->name)
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0', [
@@ -114,8 +121,9 @@ class UserTest extends TestCase
 
         $user = User::factory()->create();
 
-        $response = $this->actingAs($this->user)->getJson('/users?email=' . $user->email);
-        $response
+        $this
+            ->actingAs($this->user)
+            ->getJson('/users?email=' . $user->email)
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0', [
@@ -171,11 +179,14 @@ class UserTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testShow(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShow($user): void
     {
-        $this->user->givePermissionTo('users.show_details');
+        $this->$user->givePermissionTo('users.show_details');
 
-        $response = $this->actingAs($this->user)->getJson('/users/id:' . $this->user->getKey());
+        $response = $this->actingAs($this->$user)->getJson('/users/id:' . $this->user->getKey());
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected + ['permissions' => []]]);
@@ -187,15 +198,18 @@ class UserTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testCreate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreate($user): void
     {
-        $this->user->givePermissionTo('users.add');
+        $this->$user->givePermissionTo('users.add');
 
         $data = User::factory()->raw() + [
             'password' => $this->validPassword,
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/users', $data);
+        $response = $this->actingAs($this->$user)->postJson('/users', $data);
         $response
             ->assertCreated()
             ->assertJsonPath('data.email', $data['email'])
@@ -213,6 +227,9 @@ class UserTest extends TestCase
         $this->assertTrue(Hash::check($data['password'], $user->password));
     }
 
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateEmailTaken(): void
     {
         $this->user->givePermissionTo('users.add');
@@ -227,6 +244,9 @@ class UserTest extends TestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateEmailTakenByDeletedUser(): void
     {
         $this->user->givePermissionTo('users.add');
@@ -250,6 +270,9 @@ class UserTest extends TestCase
         ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateRolesMissingPermissions(): void
     {
         $this->user->givePermissionTo('users.add');
@@ -282,6 +305,9 @@ class UserTest extends TestCase
         ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateRoles(): void
     {
         $this->user->givePermissionTo('users.add');
@@ -355,6 +381,9 @@ class UserTest extends TestCase
         $response->assertForbidden();
     }
 
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdate(): void
     {
         $this->user->givePermissionTo('users.edit');
@@ -380,6 +409,9 @@ class UserTest extends TestCase
         ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateAddRolesMissingPermissions(): void
     {
         $this->user->givePermissionTo('users.edit');
@@ -420,6 +452,9 @@ class UserTest extends TestCase
         );
     }
 
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateAddRoles(): void
     {
         $this->user->givePermissionTo('users.edit');
@@ -561,11 +596,14 @@ class UserTest extends TestCase
         );
     }
 
-    public function testUpdateSameEmail(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSameEmail($user): void
     {
-        $this->user->givePermissionTo('users.edit');
+        $this->$user->givePermissionTo('users.edit');
 
-        $response = $this->actingAs($this->user)->patchJson('/users/id:' . $this->user->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/users/id:' . $this->user->getKey(), [
             'email' => $this->user->email,
         ]);
         $response
@@ -581,11 +619,14 @@ class UserTest extends TestCase
         ]);
     }
 
-    public function testUpdateSameName(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSameName($user): void
     {
-        $this->user->givePermissionTo('users.edit');
+        $this->$user->givePermissionTo('users.edit');
 
-        $response = $this->actingAs($this->user)->patchJson('/users/id:' . $this->user->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/users/id:' . $this->user->getKey(), [
             'name' => $this->user->name,
         ]);
         $response
@@ -601,13 +642,16 @@ class UserTest extends TestCase
         ]);
     }
 
-    public function testUpdateEmailTaken(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateEmailTaken($user): void
     {
-        $this->user->givePermissionTo('users.edit');
+        $this->$user->givePermissionTo('users.edit');
 
         $other = User::factory()->create();
 
-        $response = $this->actingAs($this->user)->patchJson('/users/id:' . $this->user->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/users/id:' . $this->user->getKey(), [
             'email' => $other->email,
         ]);
         $response->assertStatus(422);
@@ -618,14 +662,17 @@ class UserTest extends TestCase
         ]);
     }
 
-    public function testUpdateEmailTakenByDeletedUser(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateEmailTakenByDeletedUser($user): void
     {
-        $this->user->givePermissionTo('users.edit');
+        $this->$user->givePermissionTo('users.edit');
 
         $other = User::factory()->create();
         $other->delete();
 
-        $response = $this->actingAs($this->user)->patchJson('/users/id:' . $this->user->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/users/id:' . $this->user->getKey(), [
             'email' => $other->email,
         ]);
         $response->assertOk();
@@ -642,23 +689,29 @@ class UserTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testDelete(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDelete($user): void
     {
-        $this->user->givePermissionTo('users.remove');
+        $this->$user->givePermissionTo('users.remove');
 
-        $response = $this->actingAs($this->user)->deleteJson('/users/id:' . $this->user->getKey());
+        $response = $this->actingAs($this->$user)->deleteJson('/users/id:' . $this->user->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($this->user);
     }
 
-    public function testDeleteOwnerUnauthorized(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteOwnerUnauthorized($user): void
     {
-        $this->user->givePermissionTo('users.remove');
+        $this->$user->givePermissionTo('users.remove');
 
         $owner = User::factory()->create();
         $owner->assignRole($this->owner);
 
-        $response = $this->actingAs($this->user)->deleteJson('/users/id:' . $owner->getKey());
+        $response = $this->actingAs($this->$user)->deleteJson('/users/id:' . $owner->getKey());
         $response->assertStatus(422);
     }
 
