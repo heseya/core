@@ -243,8 +243,7 @@ class OrderController extends Controller implements OrderControllerSwagger
         if ($status->cancel) {
             $deposits = $order->deposits()->with('item')->get();
             $order->deposits()->delete();
-            foreach ($deposits as $deposit)
-            {
+            foreach ($deposits as $deposit) {
                 ItemUpdatedQuantity::dispatch($deposit->item);
             }
         }

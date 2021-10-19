@@ -52,8 +52,7 @@ class DiscountController extends Controller implements DiscountControllerSwagger
 
     public function destroy(Discount $discount): JsonResponse
     {
-        if ($discount->delete())
-        {
+        if ($discount->delete()) {
             DiscountDeleted::dispatch($discount);
         }
 
