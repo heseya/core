@@ -3,10 +3,14 @@
 namespace Tests\Feature;
 
 use App\Enums\DiscountType;
+use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Listeners\WebHookEventListener;
 use App\Models\Address;
+use App\Models\Deposit;
 use App\Models\Discount;
+use App\Models\Item;
+use App\Models\Option;
 use App\Models\ProductSet;
 use App\Models\Order;
 use App\Models\PriceRange;
@@ -15,7 +19,6 @@ use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\WebHook;
 use Carbon\Carbon;
-use Illuminate\Events\CallQueuedListener;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Bus;
@@ -333,6 +336,116 @@ class OrderCreateTest extends TestCase
         ]);
 
         Event::assertDispatched(OrderCreated::class);
+    }
+
+    public function testCreateOrderWithWebHook(): void
+    {
+        $this->user->givePermissionTo('orders.add');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ItemUpdatedQuantity'
+            ],
+            'model_type' => $this->user::class,
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Event::fake([OrderCreated::class, ItemUpdatedQuantity::class]);
+
+        $item = Item::factory()->create();
+
+        $deposit = Deposit::factory()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => 100,
+        ]);
+
+        $schema = Schema::factory()->create([
+            'type' => 'select',
+            'price' => 10,
+            'hidden' => false,
+        ]);
+
+        $option = Option::factory()->create([
+            'name' => 'A',
+            'price' => 10,
+            'disabled' => false,
+            'order' => 0,
+            'schema_id' => $schema->getKey(),
+        ]);
+
+        $option->items()->sync([
+            $item->getKey(),
+        ]);
+
+        $this->product->schemas()->sync([$schema->getKey()]);
+        $this->product->update([
+            'price' => 100,
+        ]);
+
+        $productQuantity = 2;
+
+        $response = $this->actingAs($this->user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                    'schemas' => [
+                        $schema->getKey() => $option->getKey(),
+                    ]
+                ],
+            ],
+        ]);
+
+        $response->assertCreated();
+        $order = Order::find($response->getData()->data->id);
+
+        $schemaPrice = $schema->getPrice($option->getKey(), [
+            $schema->getKey() => $option->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'email' => $this->email,
+            'shipping_price' => $this->shippingMethod->getPrice(
+                ($this->product->price + $schemaPrice) * $productQuantity,
+            ),
+        ]);
+        $this->assertDatabaseHas('addresses', $this->address->toArray());
+        $this->assertDatabaseHas('order_products', [
+            'order_id' => $order->getKey(),
+            'product_id' => $this->product->getKey(),
+            'quantity' => 2,
+        ]);
+        $this->assertDatabaseHas('order_schemas', [
+            'order_product_id' => $order->products[0]->getKey(),
+            'name' => $schema->name,
+            'value' => $option->name,
+        ]);
+
+        Event::assertDispatched(OrderCreated::class);
+        Event::assertDispatched(ItemUpdatedQuantity::class);
+
+        Bus::fake();
+
+        $item = Item::find($item->getKey());
+        $event = new ItemUpdatedQuantity($item);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $item) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && $payload['data']['id'] === $item->getKey()
+                && $payload['data_type'] === 'Item'
+                && $payload['event'] === 'ItemUpdatedQuantity';
+        });
     }
 
     public function testCreateOrderHiddenSchema(): void

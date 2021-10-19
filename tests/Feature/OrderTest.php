@@ -2,15 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderUpdatedStatus;
 use App\Listeners\WebHookEventListener;
+use App\Models\Item;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\WebHook;
-use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
@@ -39,17 +40,24 @@ class OrderTest extends TestCase
             'status_id' => $status->getKey(),
         ]);
 
-        $item = $this->order->products()->create([
+        $item_product = $this->order->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 10,
             'price' => 247.47,
         ]);
 
-        $item->schemas()->create([
+        $item_product->schemas()->create([
             'name' => 'Grawer',
             'value' => 'HESEYA',
             'price' => 49.99,
         ]);
+
+//        $item = Item::factory()->create();
+//
+//        $item_product->deposits()->create([
+//            'item_id' => $item->getKey(),
+//            'quantity' => -1 * $item_product->quantity,
+//        ]);
 
         /**
          * Expected response
@@ -209,17 +217,68 @@ class OrderTest extends TestCase
             'id' => $this->order->getKey(),
             'status_id' => $status->getKey(),
         ]);
+
         Event::assertDispatched(OrderUpdatedStatus::class);
+    }
 
-        Queue::fake();
+    public function testUpdateOrderStatusCancel(): void
+    {
+        $this->user->givePermissionTo('orders.edit.status');
 
-        $order = Order::find($this->order->getKey());
-        $event = new OrderUpdatedStatus($order);
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ItemUpdatedQuantity'
+            ],
+            'model_type' => $this->user::class,
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Event::fake([OrderUpdatedStatus::class, ItemUpdatedQuantity::class]);
+
+        $item = Item::factory()->create();
+
+        $item_product = $this->order->products[0];
+
+        $item_product->deposits()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => -1 * $item_product->quantity,
+        ]);
+
+        $status = Status::factory()->create([
+            'cancel' => true,
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+            'status_id' => $status->getKey(),
+        ]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+
+        Event::assertDispatched(OrderUpdatedStatus::class);
+        Event::assertDispatched(ItemUpdatedQuantity::class);
+
+        Bus::fake();
+
+        $item = Item::find($item->getKey());
+        $event = new ItemUpdatedQuantity($item);
         $listener = new WebHookEventListener();
 
         $listener->handle($event);
 
-        Queue::assertNotPushed(CallWebhookJob::class);
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $item) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && $payload['data']['id'] === $item->getKey()
+                && $payload['data_type'] === 'Item'
+                && $payload['event'] === 'ItemUpdatedQuantity';
+        });
     }
 
     public function testUpdateOrderStatusWithWebHookQueue(): void

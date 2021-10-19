@@ -50,7 +50,7 @@ class Deposit extends Model
         'updated_at' => 'datetime',
     ];
 
-    public function items(): BelongsTo
+    public function item(): BelongsTo
     {
         return $this->belongsTo(Item::class);
     }
