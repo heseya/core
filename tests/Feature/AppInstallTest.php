@@ -44,7 +44,7 @@ class AppInstallTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
     public function testInstallFailed(): void
@@ -83,7 +83,7 @@ class AppInstallTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
     public function testInstallInvalidInfo(): void
@@ -105,7 +105,7 @@ class AppInstallTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
     public function testInstallInvalidInstallationResponse(): void
@@ -144,7 +144,7 @@ class AppInstallTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
     public function testInstall(): void
@@ -397,7 +397,7 @@ class AppInstallTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
     public function testInstallAssignInvalidPermissions(): void
@@ -414,7 +414,7 @@ class AppInstallTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
     public function testInstallAppWantsInvalidPermissions(): void
@@ -452,7 +452,7 @@ class AppInstallTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
     public function testInstallNotAssigningRequiredPermissions(): void
@@ -488,7 +488,7 @@ class AppInstallTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
     public function testInstallExtraPermissions(): void
@@ -533,7 +533,7 @@ class AppInstallTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
     public function testInstallConnectionRefusedRoot(): void
@@ -559,7 +559,7 @@ class AppInstallTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
     public function testInstallConnectionRefusedInstall(): void
@@ -604,6 +604,6 @@ class AppInstallTest extends TestCase
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 }

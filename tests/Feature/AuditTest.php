@@ -37,29 +37,35 @@ class AuditTest extends TestCase
         return $product;
     }
 
-    public function testView(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testView($user): void
     {
-        $this->user->givePermissionTo('audits.show');
+        $this->$user->givePermissionTo('audits.show');
 
-        $product =  $this->createProduct();
+        $product = $this->createProduct();
 
         $this
-            ->actingAs($this->user)
+            ->actingAs($this->$user)
             ->json('GET', '/audits/products/id:' . $product->getKey())
             ->assertOk()
             ->assertJsonFragment(['old_values' => ['name' => 'Old name']])
             ->assertJsonFragment(['new_values' => ['name' => 'New name']]);
     }
 
-    public function testViewNotAuditable(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewNotAuditable($user): void
     {
-        $this->user->givePermissionTo('audits.show');
+        $this->$user->givePermissionTo('audits.show');
 
         $tag = Tag::factory()->create();
         $tag->update(['name' => 'test']);
 
         $this
-            ->actingAs($this->user)
+            ->actingAs($this->$user)
             ->json('GET', '/audits/tags/id:' . $tag->getKey())
             ->assertStatus(400)
             ->assertJsonFragment(['message' => 'Model not auditable']);

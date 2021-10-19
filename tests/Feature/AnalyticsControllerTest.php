@@ -25,9 +25,12 @@ class AnalyticsControllerTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testPayments(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testPayments($auth): void
     {
-        $this->user->givePermissionTo('analytics.payments');
+        $this->$auth->givePermissionTo('analytics.payments');
 
         $to = Carbon::today();
         $from = $to->copy()->subDays(30);
@@ -42,7 +45,7 @@ class AnalyticsControllerTest extends TestCase
                 ]);
         });
 
-        $response = $this->actingAs($this->user)->getJson('/analytics/payments', [
+        $response = $this->actingAs($this->$auth)->getJson('/analytics/payments', [
             'from' => $from->toDateString(),
             'to' => $to->toDateString(),
             'group' => 'total',
@@ -50,7 +53,7 @@ class AnalyticsControllerTest extends TestCase
 
         $response->assertOk()
             ->assertJson([
-                "data" => [
+                'data' => [
                     'total' => [
                         'amount' => 1000.0,
                         'count' => 7,

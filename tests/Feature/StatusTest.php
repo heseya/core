@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Status;
-use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class StatusTest extends TestCase
@@ -39,11 +38,14 @@ class StatusTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testIndex(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
     {
-        $this->user->givePermissionTo('statuses.show');
+        $this->$user->givePermissionTo('statuses.show');
 
-        $response = $this->actingAs($this->user)->getJson('/statuses');
+        $response = $this->actingAs($this->$user)->getJson('/statuses');
         $response
             ->assertOk()
             ->assertJsonCount(4, 'data') // domyślne statusy z migracji + ten utworzony teraz
@@ -56,9 +58,12 @@ class StatusTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testCreate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreate($user): void
     {
-        $this->user->givePermissionTo('statuses.add');
+        $this->$user->givePermissionTo('statuses.add');
 
         $status = [
             'name' => 'Test Status',
@@ -66,7 +71,7 @@ class StatusTest extends TestCase
             'description' => 'To jest status testowy.',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/statuses', $status);
+        $response = $this->actingAs($this->$user)->postJson('/statuses', $status);
         $response
             ->assertCreated()
             ->assertJson(['data' => $status]);
@@ -80,9 +85,12 @@ class StatusTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testUpdate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdate($user): void
     {
-        $this->user->givePermissionTo('statuses.edit');
+        $this->$user->givePermissionTo('statuses.edit');
 
         $status = [
             'name' => 'Test Status 2',
@@ -90,7 +98,7 @@ class StatusTest extends TestCase
             'description' => 'Testowy opis testowego statusu 2.',
         ];
 
-        $response = $this->actingAs($this->user)->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/statuses/id:' . $this->status_model->getKey(),
             $status,
         );
@@ -109,24 +117,30 @@ class StatusTest extends TestCase
         $this->assertDatabaseHas('statuses', ['id' => $this->status_model->getKey()]);
     }
 
-    public function testDelete(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDelete($user): void
     {
-        $this->user->givePermissionTo('statuses.remove');
+        $this->$user->givePermissionTo('statuses.remove');
 
-        $this->actingAs($this->user)
+        $this->actingAs($this->$user)
             ->deleteJson('/statuses/id:' . $this->status_model->getKey())
             ->assertNoContent();
 
         $this->assertDeleted($this->status_model);
     }
 
-    public function testReorderUnauthorized(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testReorderUnauthorized($user): void
     {
         $status1 = Status::factory()->create();
         $status2 = Status::factory()->create();
         $status3 = Status::factory()->create();
 
-        $this->actingAs($this->user)->json('POST', '/statuses/reorder', [
+        $this->actingAs($this->$user)->json('POST', '/statuses/reorder', [
             'statuses' => [
                 $status2->getKey(),
                 $status3->getKey(),
@@ -135,15 +149,18 @@ class StatusTest extends TestCase
         ])->assertForbidden();
     }
 
-    public function testReorder(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testReorder($user): void
     {
-        $this->user->givePermissionTo('statuses.edit');
+        $this->$user->givePermissionTo('statuses.edit');
 
         $status1 = Status::factory()->create();
         $status2 = Status::factory()->create();
         $status3 = Status::factory()->create();
 
-        $response = $this->actingAs($this->user)->json('POST', '/statuses/reorder', [
+        $response = $this->actingAs($this->$user)->json('POST', '/statuses/reorder', [
            'statuses' => [
                $status2->getKey(),
                $status3->getKey(),

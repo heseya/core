@@ -19,7 +19,7 @@ class ItemTest extends TestCase
         $this->item = Item::factory()->create();
 
         Deposit::factory()->create([
-            'item_id' => $this->item->id,
+            'item_id' => $this->item->getKey(),
         ]);
 
         /**
@@ -39,9 +39,12 @@ class ItemTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testIndex(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
     {
-        $this->user->givePermissionTo('items.show');
+        $this->$user->givePermissionTo('items.show');
 
         $this
             ->actingAs($this->user)
@@ -76,9 +79,12 @@ class ItemTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testView(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testView($user): void
     {
-        $this->user->givePermissionTo('items.show_details');
+        $this->$user->givePermissionTo('items.show_details');
 
         $this
             ->actingAs($this->user)
@@ -95,16 +101,19 @@ class ItemTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testCreate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreate($user): void
     {
-        $this->user->givePermissionTo('items.add');
+        $this->$user->givePermissionTo('items.add');
 
         $item = [
             'name' => 'Test',
             'sku' => 'TES/T1',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/items', $item);
+        $response = $this->actingAs($this->$user)->postJson('/items', $item);
         $response
             ->assertCreated()
             ->assertJson(['data' => $item]);
@@ -118,16 +127,19 @@ class ItemTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testUpdate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdate($user): void
     {
-        $this->user->givePermissionTo('items.edit');
+        $this->$user->givePermissionTo('items.edit');
 
         $item = [
             'name' => 'Test 2',
             'sku' => 'TES/T2',
         ];
 
-        $response = $this->actingAs($this->user)->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/items/id:' . $this->item->getKey(),
             $item,
         );
@@ -151,9 +163,12 @@ class ItemTest extends TestCase
         ]);
     }
 
-    public function testDelete(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDelete($user): void
     {
-        $this->user->givePermissionTo('items.remove');
+        $this->$user->givePermissionTo('items.remove');
 
         $this
             ->actingAs($this->user)

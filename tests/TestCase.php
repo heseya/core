@@ -4,6 +4,7 @@ namespace Tests;
 
 use App\Enums\RoleType;
 use App\Enums\TokenType;
+use App\Models\App as Application;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\TokenServiceContract;
@@ -21,6 +22,8 @@ abstract class TestCase extends BaseTestCase
     use CreatesApplication, RefreshDatabase, JsonQueryCounter;
 
     public User $user;
+    public Application $application;
+
     public string $password = 'secret';
     public TokenServiceContract $tokenService;
 
@@ -37,17 +40,28 @@ abstract class TestCase extends BaseTestCase
         $this->user = User::factory()->create([
             'password' => Hash::make($this->password),
         ]);
+
+        $this->application = Application::factory()->create();
     }
-    public function actingAs(Authenticatable $user, $guard = null)
+
+    public function authProvider(): array
+    {
+        return [
+            'as user' => ['user'],
+            'as app' => ['application'],
+        ];
+    }
+
+    public function actingAs(Authenticatable $authenticatable, $guard = null): self
     {
         $token = $this->tokenService->createToken(
-            $user,
+            $authenticatable,
             new TokenType(TokenType::ACCESS),
             Str::uuid()->toString(),
         );
 
         $this->withHeaders(
-            $this->defaultHeaders + ['Authorization' => 'Bearer ' . $token],
+            $this->defaultHeaders + ['Authorization' => "Bearer $token"],
         );
 
         return $this;

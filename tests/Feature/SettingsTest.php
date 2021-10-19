@@ -11,11 +11,14 @@ class SettingsTest extends TestCase
         $this->getJson('/settings')->assertForbidden();
     }
 
-    public function testIndex(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
     {
-        $this->user->givePermissionTo('settings.show');
+        $this->$user->givePermissionTo('settings.show');
 
-        $this->actingAs($this->user)->getJson('/settings')->assertOk();
+        $this->actingAs($this->$user)->getJson('/settings')->assertOk();
     }
 
     public function testViewUnauthorized(): void
@@ -23,10 +26,13 @@ class SettingsTest extends TestCase
         $this->getJson('/settings/store_name')->assertForbidden();
     }
 
-    public function testView(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testView($user): void
     {
-        $this->user->givePermissionTo('settings.show_details');
+        $this->$user->givePermissionTo('settings.show_details');
 
-        $this->actingAs($this->user)->getJson('/settings/store_name')->assertOk();
+        $this->actingAs($this->$user)->getJson('/settings/store_name')->assertOk();
     }
 }

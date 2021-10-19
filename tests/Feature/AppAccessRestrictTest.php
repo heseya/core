@@ -7,15 +7,6 @@ use Tests\TestCase;
 
 class AppAccessRestrictTest extends TestCase
 {
-    protected App $application;
-
-    public function setUp(): void
-    {
-        parent::setUp();
-
-        $this->application = App::factory()->create();
-    }
-
     public function provider(): array
     {
         return [
@@ -33,8 +24,10 @@ class AppAccessRestrictTest extends TestCase
      */
     public function testAccessRestrict($method, $url): void
     {
+        $application = App::factory()->create();
+
         $this
-            ->actingAs($this->application)
+            ->actingAs($application)
             ->json($method, $url)
             ->assertStatus(400);
     }

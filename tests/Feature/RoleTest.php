@@ -23,9 +23,12 @@ class RoleTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testIndex(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
     {
-        $this->user->givePermissionTo('roles.show');
+        $this->$user->givePermissionTo('roles.show');
 
         $role1 = Role::create([
             'name' => 'role1',
@@ -37,7 +40,7 @@ class RoleTest extends TestCase
             'description' => 'Role 2',
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/roles');
+        $response = $this->actingAs($this->$user)->getJson('/roles');
 
         $response->assertOk()
             ->assertJsonCount(2, 'data')
@@ -57,9 +60,12 @@ class RoleTest extends TestCase
             ]]);
     }
 
-    public function testIndexSearchByName(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByName($user): void
     {
-        $this->user->givePermissionTo('roles.show');
+        $this->$user->givePermissionTo('roles.show');
 
         $role1 = Role::create([
             'name' => 'alpha.1',
@@ -81,7 +87,7 @@ class RoleTest extends TestCase
             'description' => 'Gamma 1',
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/roles?name=alpha');
+        $response = $this->actingAs($this->$user)->getJson('/roles?name=alpha');
 
         $response->assertOk()
             ->assertJsonCount(2, 'data')
@@ -101,9 +107,12 @@ class RoleTest extends TestCase
             ]]);
     }
 
-    public function testIndexSearchByDescription(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByDescription($user): void
     {
-        $this->user->givePermissionTo('roles.show');
+        $this->$user->givePermissionTo('roles.show');
 
         $role1 = Role::create([
             'name' => 'alpha.1',
@@ -125,7 +134,7 @@ class RoleTest extends TestCase
             'description' => 'Gamma 1',
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/roles?description=alpha');
+        $response = $this->actingAs($this->$user)->getJson('/roles?description=alpha');
 
         $response->assertOk()
             ->assertJsonCount(2, 'data')
@@ -145,9 +154,12 @@ class RoleTest extends TestCase
             ]]);
     }
 
-    public function testIndexSearchByAssignable(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByAssignable($user): void
     {
-        $this->user->givePermissionTo('roles.show');
+        $this->$user->givePermissionTo('roles.show');
 
         $roleNoPermissions = Role::create([
             'name' => 'role1',
@@ -172,7 +184,7 @@ class RoleTest extends TestCase
         ]);
         $roleHasNoPermissions->givePermissionTo('roles.add');
 
-        $response = $this->actingAs($this->user)->getJson('/roles?assignable=1');
+        $response = $this->actingAs($this->$user)->getJson('/roles?assignable=1');
 
         $response->assertOk()
             ->assertJsonCount(2, 'data')
@@ -192,9 +204,12 @@ class RoleTest extends TestCase
             ]]);
     }
 
-    public function testIndexSearchByUnassignable(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByUnassignable($user): void
     {
-        $this->user->givePermissionTo('roles.show');
+        $this->$user->givePermissionTo('roles.show');
 
         Role::create([
             'name' => 'role1',
@@ -219,7 +234,7 @@ class RoleTest extends TestCase
         ]);
         $roleHasNoPermissions->givePermissionTo('roles.add');
 
-        $response = $this->actingAs($this->user)->getJson('/roles?assignable=0');
+        $response = $this->actingAs($this->$user)->getJson('/roles?assignable=0');
 
         $response->assertOk()
             ->assertJsonCount(2, 'data')
@@ -239,9 +254,12 @@ class RoleTest extends TestCase
             ]]);
     }
 
-    public function testIndexSearch(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearch($user): void
     {
-        $this->user->givePermissionTo('roles.show');
+        $this->$user->givePermissionTo('roles.show');
 
         $role1 = Role::create([
             'name' => 'name.yes',
@@ -263,7 +281,7 @@ class RoleTest extends TestCase
             'description' => 'Description no',
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/roles?search=yes');
+        $response = $this->actingAs($this->$user)->getJson('/roles?search=yes');
 
         $response->assertOk()
             ->assertJsonCount(2, 'data')
@@ -295,16 +313,19 @@ class RoleTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testShow(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShow($user): void
     {
-        $this->user->givePermissionTo('roles.show_details');
+        $this->$user->givePermissionTo('roles.show_details');
 
         $role = Role::create([
             'name' => 'role1',
             'description' => 'Role 1',
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/roles/id:' . $role->getKey());
+        $response = $this->actingAs($this->$user)->getJson('/roles/id:' . $role->getKey());
 
         $response->assertOk()
             ->assertJson(['data' => [
@@ -317,9 +338,12 @@ class RoleTest extends TestCase
             ]]);
     }
 
-    public function testShowPermissions(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowPermissions($user): void
     {
-        $this->user->givePermissionTo('roles.show_details');
+        $this->$user->givePermissionTo('roles.show_details');
 
         $role = Role::create([
             'name' => 'role1',
@@ -329,9 +353,9 @@ class RoleTest extends TestCase
         $permission1 = Permission::create(['name' => 'test.custom1']);
         $permission2 = Permission::create(['name' => 'test.custom2']);
         $role->syncPermissions([$permission1, $permission2]);
-        $this->user->givePermissionTo([$permission1]);
+        $this->$user->givePermissionTo([$permission1]);
 
-        $response = $this->actingAs($this->user)->getJson('/roles/id:' . $role->getKey());
+        $response = $this->actingAs($this->$user)->getJson('/roles/id:' . $role->getKey());
 
         $response->assertOk()
             ->assertJson(['data' => [
@@ -347,9 +371,12 @@ class RoleTest extends TestCase
             ]]);
     }
 
-    public function testShowPermissionsAssignable(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowPermissionsAssignable($user): void
     {
-        $this->user->givePermissionTo('roles.show_details');
+        $this->$user->givePermissionTo('roles.show_details');
 
         $role = Role::create([
             'name' => 'role1',
@@ -359,9 +386,9 @@ class RoleTest extends TestCase
         $permission1 = Permission::create(['name' => 'test.custom1']);
         $permission2 = Permission::create(['name' => 'test.custom2']);
         $role->syncPermissions([$permission1, $permission2]);
-        $this->user->givePermissionTo([$permission1, $permission2]);
+        $this->$user->givePermissionTo([$permission1, $permission2]);
 
-        $response = $this->actingAs($this->user)->getJson('/roles/id:' . $role->getKey());
+        $response = $this->actingAs($this->$user)->getJson('/roles/id:' . $role->getKey());
 
         $response->assertOk()
             ->assertJson(['data' => [
@@ -394,14 +421,17 @@ class RoleTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testCreateMissingPermissions(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateMissingPermissions($user): void
     {
-        $this->user->givePermissionTo('roles.add');
+        $this->$user->givePermissionTo('roles.add');
 
         Permission::create(['name' => 'test.custom1']);
         Permission::create(['name' => 'test.custom2']);
 
-        $response = $this->actingAs($this->user)->postJson('/roles', [
+        $response = $this->actingAs($this->$user)->postJson('/roles', [
             'name' => 'test_role',
             'description' => 'Test role',
             'permissions' => [
@@ -417,15 +447,18 @@ class RoleTest extends TestCase
         ]);
     }
 
-    public function testCreate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreate($user): void
     {
-        $this->user->givePermissionTo('roles.add');
+        $this->$user->givePermissionTo('roles.add');
 
         $permission1 = Permission::create(['name' => 'test.custom1']);
         $permission2 = Permission::create(['name' => 'test.custom2']);
-        $this->user->givePermissionTo([$permission1, $permission2]);
+        $this->$user->givePermissionTo([$permission1, $permission2]);
 
-        $response = $this->actingAs($this->user)->postJson('/roles', [
+        $response = $this->actingAs($this->$user)->postJson('/roles', [
             'name' => 'test_role',
             'description' => 'Test role',
             'permissions' => [
@@ -458,11 +491,14 @@ class RoleTest extends TestCase
         $this->assertTrue($role->hasPermissionTo('test.custom2'));
     }
 
-    public function testCreateWithoutDescription(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithoutDescription($user): void
     {
-        $this->user->givePermissionTo('roles.add');
+        $this->$user->givePermissionTo('roles.add');
 
-        $this->actingAs($this->user)->postJson('/roles', [
+        $this->actingAs($this->$user)->postJson('/roles', [
                 'name' => 'test_role',
             ])
             ->assertCreated()
@@ -504,9 +540,12 @@ class RoleTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testUpdateMissingPermissions(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateMissingPermissions($user): void
     {
-        $this->user->givePermissionTo('roles.edit');
+        $this->$user->givePermissionTo('roles.edit');
 
         $role = Role::create([
             'name' => 'role1',
@@ -517,9 +556,9 @@ class RoleTest extends TestCase
         $permission2 = Permission::create(['name' => 'test.custom2']);
         $permission3 = Permission::create(['name' => 'test.custom3']);
         $role->syncPermissions([$permission1, $permission2]);
-        $this->user->givePermissionTo([$permission2, $permission3]);
+        $this->$user->givePermissionTo([$permission2, $permission3]);
 
-        $response = $this->actingAs($this->user)->patchJson('/roles/id:' . $role->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/roles/id:' . $role->getKey(), [
             'name' => 'test_role',
             'description' => 'Test role',
             'permissions' => [
@@ -533,9 +572,12 @@ class RoleTest extends TestCase
         $this->assertTrue($role->hasPermissionTo('test.custom2'));
     }
 
-    public function testUpdateWithMissingPermissions(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithMissingPermissions($user): void
     {
-        $this->user->givePermissionTo('roles.edit');
+        $this->$user->givePermissionTo('roles.edit');
 
         $role = Role::create([
             'name' => 'role1',
@@ -546,9 +588,9 @@ class RoleTest extends TestCase
         $permission2 = Permission::create(['name' => 'test.custom2']);
         Permission::create(['name' => 'test.custom3']);
         $role->syncPermissions([$permission1, $permission2]);
-        $this->user->givePermissionTo([$permission1, $permission2]);
+        $this->$user->givePermissionTo([$permission1, $permission2]);
 
-        $response = $this->actingAs($this->user)->patchJson('/roles/id:' . $role->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/roles/id:' . $role->getKey(), [
             'name' => 'test_role',
             'description' => 'Test role',
             'permissions' => [
@@ -562,11 +604,14 @@ class RoleTest extends TestCase
         $this->assertTrue($role->hasPermissionTo('test.custom2'));
     }
 
-    public function testUpdateOwnerPermissions(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOwnerPermissions($user): void
     {
         Permission::create(['name' => 'test.custom1']);
 
-        $this->user->givePermissionTo(Permission::all());
+        $this->$user->givePermissionTo(Permission::all());
 
         $owner = Role::create([
             'name' => 'owner',
@@ -576,7 +621,7 @@ class RoleTest extends TestCase
         $owner->save();
         $owner->givePermissionTo(Permission::all());
 
-        $response = $this->actingAs($this->user)->patchJson('/roles/id:' . $owner->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/roles/id:' . $owner->getKey(), [
             'name' => 'Owner 2',
             'description' => 'Owner 2',
             'permissions' => [
@@ -595,9 +640,12 @@ class RoleTest extends TestCase
         $this->assertTrue($owner->hasAllPermissions(Permission::all()));
     }
 
-    public function testUpdate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdate($user): void
     {
-        $this->user->givePermissionTo('roles.edit');
+        $this->$user->givePermissionTo('roles.edit');
 
         $role = Role::create([
             'name' => 'role1',
@@ -608,9 +656,9 @@ class RoleTest extends TestCase
         $permission2 = Permission::create(['name' => 'test.custom2']);
         $permission3 = Permission::create(['name' => 'test.custom3']);
         $role->syncPermissions([$permission1, $permission2]);
-        $this->user->givePermissionTo([$permission1, $permission2, $permission3]);
+        $this->$user->givePermissionTo([$permission1, $permission2, $permission3]);
 
-        $response = $this->actingAs($this->user)->patchJson('/roles/id:' . $role->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/roles/id:' . $role->getKey(), [
             'name' => 'test_role',
             'description' => 'Test role',
             'permissions' => [
@@ -644,16 +692,19 @@ class RoleTest extends TestCase
         $this->assertTrue($role->hasPermissionTo('test.custom3'));
     }
 
-    public function testUpdateNameOnly(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateNameOnly($user): void
     {
-        $this->user->givePermissionTo('roles.edit');
+        $this->$user->givePermissionTo('roles.edit');
 
         $role = Role::create([
             'name' => 'role1',
             'description' => 'Role 1',
         ]);
 
-        $response = $this->actingAs($this->user)->patchJson('/roles/id:' . $role->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/roles/id:' . $role->getKey(), [
             'name' => 'test_role',
         ]);
 
@@ -673,16 +724,19 @@ class RoleTest extends TestCase
         ]);
     }
 
-    public function testUpdateDescriptionOnly(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateDescriptionOnly($user): void
     {
-        $this->user->givePermissionTo('roles.edit');
+        $this->$user->givePermissionTo('roles.edit');
 
         $role = Role::create([
             'name' => 'role1',
             'description' => 'Role 1',
         ]);
 
-        $response = $this->actingAs($this->user)->patchJson('/roles/id:' . $role->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/roles/id:' . $role->getKey(), [
             'description' => 'Test role',
         ]);
 
@@ -702,16 +756,19 @@ class RoleTest extends TestCase
         ]);
     }
 
-    public function testUpdateDescriptionRemove(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateDescriptionRemove($user): void
     {
-        $this->user->givePermissionTo('roles.edit');
+        $this->$user->givePermissionTo('roles.edit');
 
         $role = Role::create([
             'name' => 'role1',
             'description' => 'Role 1',
         ]);
 
-        $response = $this->actingAs($this->user)->patchJson('/roles/id:' . $role->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/roles/id:' . $role->getKey(), [
             'description' => null,
         ]);
 
@@ -731,9 +788,12 @@ class RoleTest extends TestCase
         ]);
     }
 
-    public function testUpdatePermissionsOnly(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdatePermissionsOnly($user): void
     {
-        $this->user->givePermissionTo('roles.edit');
+        $this->$user->givePermissionTo('roles.edit');
 
         $role = Role::factory()->create();
 
@@ -741,9 +801,9 @@ class RoleTest extends TestCase
         $permission2 = Permission::create(['name' => 'test.custom2']);
         $permission3 = Permission::create(['name' => 'test.custom3']);
         $role->syncPermissions([$permission1, $permission2]);
-        $this->user->givePermissionTo([$permission1, $permission2, $permission3]);
+        $this->$user->givePermissionTo([$permission1, $permission2, $permission3]);
 
-        $response = $this->actingAs($this->user)->patchJson('/roles/id:' . $role->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/roles/id:' . $role->getKey(), [
             'permissions' => [
                 'test.custom2',
                 'test.custom3',
@@ -774,16 +834,19 @@ class RoleTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testDelete(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDelete($user): void
     {
-        $this->user->givePermissionTo('roles.remove');
+        $this->$user->givePermissionTo('roles.remove');
 
         $role = Role::create([
             'name' => 'role1',
             'description' => 'Role 1',
         ]);
 
-        $response = $this->actingAs($this->user)->deleteJson('/roles/id:' . $role->getKey());
+        $response = $this->actingAs($this->$user)->deleteJson('/roles/id:' . $role->getKey());
         $response->assertNoContent();
 
         $this->assertDatabaseMissing('roles', [
@@ -791,9 +854,12 @@ class RoleTest extends TestCase
         ]);
     }
 
-    public function testDeleteMissingPermissions(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteMissingPermissions($user): void
     {
-        $this->user->givePermissionTo('roles.remove');
+        $this->$user->givePermissionTo('roles.remove');
 
         $role = Role::create([
             'name' => 'role1',
@@ -804,7 +870,7 @@ class RoleTest extends TestCase
         $permission2 = Permission::create(['name' => 'test.custom2']);
         $role->syncPermissions([$permission1, $permission2]);
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->deleteJson('/roles/id:' . $role->getKey());
         $response->assertStatus(422);
 
@@ -823,9 +889,12 @@ class RoleTest extends TestCase
         ]);
     }
 
-    public function testDeleteOwnedPermissions(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteOwnedPermissions($user): void
     {
-        $this->user->givePermissionTo('roles.remove');
+        $this->$user->givePermissionTo('roles.remove');
 
         $role = Role::create([
             'name' => 'role1',
@@ -835,9 +904,9 @@ class RoleTest extends TestCase
         $permission1 = Permission::create(['name' => 'test.custom1']);
         $permission2 = Permission::create(['name' => 'test.custom2']);
         $role->syncPermissions([$permission1, $permission2]);
-        $this->user->givePermissionTo([$permission1, $permission2]);
+        $this->$user->givePermissionTo([$permission1, $permission2]);
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->deleteJson('/roles/id:' . $role->getKey());
         $response->assertNoContent();
 
@@ -856,9 +925,12 @@ class RoleTest extends TestCase
         ]);
     }
 
-    public function testDeleteOwnerRole(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteOwnerRole($user): void
     {
-        $this->user->givePermissionTo(Permission::all());
+        $this->$user->givePermissionTo(Permission::all());
 
         $owner = Role::create([
             'name' => 'Owner',
@@ -867,7 +939,7 @@ class RoleTest extends TestCase
         $owner->type = RoleType::OWNER;
         $owner->save();
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->deleteJson('/roles/id:' . $owner->getKey());
         $response->assertStatus(422);
 
@@ -876,9 +948,12 @@ class RoleTest extends TestCase
         ]);
     }
 
-    public function testDeleteUnauthenticatedRole(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteUnauthenticatedRole($user): void
     {
-        $this->user->givePermissionTo(Permission::all());
+        $this->$user->givePermissionTo(Permission::all());
 
         $owner = Role::create([
             'name' => 'Unauthenticated',
@@ -887,7 +962,7 @@ class RoleTest extends TestCase
         $owner->type = RoleType::UNAUTHENTICATED;
         $owner->save();
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->deleteJson('/roles/id:' . $owner->getKey());
         $response->assertStatus(422);
 
