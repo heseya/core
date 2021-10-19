@@ -7,7 +7,6 @@ use App\Services\Contracts\MarkdownServiceContract;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class PageTest extends TestCase
@@ -63,13 +62,34 @@ class PageTest extends TestCase
     {
         $this->$user->givePermissionTo('pages.show');
 
-        $response = $this->actingAs($this->$user)->getJson('/pages');
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/pages')
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
+
+        $this->assertQueryCountLessThan(10);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexPerformance($user): void
+    {
+        $this->$user->givePermissionTo('pages.show');
+
+        Page::factory()->count(499)->create(['public' => true]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/pages?limit=500')
+            ->assertOk()
+            ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(10);
     }
 
     /**

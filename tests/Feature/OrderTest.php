@@ -95,14 +95,17 @@ class OrderTest extends TestCase
         $this->assertQueryCountLessThan(15);
     }
 
-    public function testIndexPerformance(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexPerformance($user): void
     {
-        $this->user->givePermissionTo('orders.show');
+        $this->$user->givePermissionTo('orders.show');
 
         Order::factory()->count(499)->create();
 
         $this
-            ->actingAs($this->user)
+            ->actingAs($this->$user)
             ->getJson('/orders?limit=500')
             ->assertOk()
             ->assertJsonCount(500, 'data');

@@ -38,14 +38,17 @@ class DiscountTest extends TestCase
         $this->assertQueryCountLessThan(15);
     }
 
-    public function testIndexPerformance(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexPerformance($user): void
     {
-        $this->user->givePermissionTo('discounts.show');
+        $this->$user->givePermissionTo('discounts.show');
 
         Discount::factory()->count(490)->create();
 
         $this
-            ->actingAs($this->user)
+            ->actingAs($this->$user)
             ->getJson('/discounts?limit=500')
             ->assertOk()
             ->assertJsonCount(500, 'data');

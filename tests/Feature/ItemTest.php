@@ -58,14 +58,17 @@ class ItemTest extends TestCase
         $this->assertQueryCountLessThan(10);
     }
 
-    public function testIndexPerformance(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexPerformance($user): void
     {
-        $this->user->givePermissionTo('items.show');
+        $this->$user->givePermissionTo('items.show');
 
         Item::factory()->count(499)->create();
 
         $this
-            ->actingAs($this->user)
+            ->actingAs($this->$user)
             ->getJson('/items?limit=500')
             ->assertOk()
             ->assertJsonCount(500, 'data');
