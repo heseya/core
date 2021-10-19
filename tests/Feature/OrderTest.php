@@ -80,15 +80,37 @@ class OrderTest extends TestCase
     {
         $this->$user->givePermissionTo('orders.show');
 
-        $response = $this->actingAs($this->$user)->getJson('/orders');
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders')
             ->assertOk()
+            ->assertJsonCount(1, 'data')
             ->assertJsonStructure(['data' => [
                 0 => $this->expected_structure,
             ]])
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
+
+        $this->assertQueryCountLessThan(15);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexPerformance($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        Order::factory()->count(499)->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders?limit=500')
+            ->assertOk()
+            ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(15);
     }
 
     public function testViewUnauthorized(): void

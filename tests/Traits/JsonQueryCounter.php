@@ -7,22 +7,12 @@ use Illuminate\Support\Facades\DB;
 
 trait JsonQueryCounter
 {
-    public int $maxQueryCount = 15;
-
     public function json($method, $uri, array $data = [], array $headers = [])
     {
         $startQuery = (static::getQueryCount());
 
         static::trackQueries();
         $json = parent::json($method, $uri, $data, $headers);
-
-//        if ($this->maxQueryCount <= static::getQueryCount() - $startQuery) {
-//            Storage::put('json/' . $method . str_replace('/', '.', $uri) . '.json', json_encode(DB::getQueryLog()));
-//        }
-
-         dd(DB::getQueryLog());
-
-        $this->assertLessThanOrEqual($this->maxQueryCount, static::getQueryCount() - $startQuery);
 
         return $json;
     }

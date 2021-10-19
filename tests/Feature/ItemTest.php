@@ -46,13 +46,34 @@ class ItemTest extends TestCase
     {
         $this->$user->givePermissionTo('items.show');
 
-        $response = $this->actingAs($this->$user)->getJson('/items');
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/items')
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
+
+        $this->assertQueryCountLessThan(10);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexPerformance($user): void
+    {
+        $this->$user->givePermissionTo('items.show');
+
+        Item::factory()->count(499)->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/items?limit=500')
+            ->assertOk()
+            ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(10);
     }
 
     public function testViewUnauthorized(): void
@@ -68,11 +89,13 @@ class ItemTest extends TestCase
     {
         $this->$user->givePermissionTo('items.show_details');
 
-        $response = $this->actingAs($this->$user)
-            ->getJson('/items/id:' . $this->item->getKey());
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/items/id:' . $this->item->getKey())
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
+
+        $this->assertQueryCountLessThan(10);
     }
 
     public function testCreateUnauthorized(): void
@@ -132,9 +155,15 @@ class ItemTest extends TestCase
 
     public function testDeleteUnauthorized(): void
     {
-        $response = $this->deleteJson('/items/id:' . $this->item->getKey());
-        $response->assertForbidden();
-        $this->assertDatabaseHas('items', $this->item->toArray());
+        $this
+            ->json('DELETE', '/items/id:' . $this->item->getKey())
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('items', [
+            'id' => $this->item->getKey(),
+            'sku' => $this->item->sku,
+            'name' => $this->item->name,
+        ]);
     }
 
     /**
@@ -144,9 +173,11 @@ class ItemTest extends TestCase
     {
         $this->$user->givePermissionTo('items.remove');
 
-        $response = $this->actingAs($this->$user)
-            ->deleteJson('/items/id:' . $this->item->getKey());
-        $response->assertNoContent();
+        $this
+            ->actingAs($this->$user)
+            ->deleteJson('/items/id:' . $this->item->getKey())
+            ->assertNoContent();
+
         $this->assertSoftDeleted($this->item);
     }
 }

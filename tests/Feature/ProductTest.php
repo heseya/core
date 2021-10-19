@@ -134,13 +134,15 @@ class ProductTest extends TestCase
     {
         $this->$user->givePermissionTo('products.show');
 
-        $response = $this->actingAs($this->$user)->getJson('/products');
+        $response = $this->actingAs($this->$user)->getJson('/products?limit=100');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public products.
             ->assertJson(['data' => [
                 0 => $this->expected_short,
             ]]);
+
+        $this->assertQueryCountLessThan(15);
     }
 
     /**
@@ -154,6 +156,48 @@ class ProductTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data'); // Should show all products.
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexPerformance($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        Product::factory()->count(499)->create([
+            'public' => true,
+            'order' => 1,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/products?limit=500')
+            ->assertOk()
+            ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(15);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexFullPerformance($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        Product::factory()->count(499)->create([
+            'public' => true,
+            'order' => 1,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/products?limit=500&full')
+            ->assertOk()
+            ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(20);
     }
 
     public function testShowUnauthorized(): void

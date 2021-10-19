@@ -69,7 +69,7 @@ class Option extends Model
             return false;
         }
 
-        if ($this->items()->count() <= 0) {
+        if ($this->items->count() <= 0) {
             return true;
         }
 

@@ -35,7 +35,8 @@ class ProductController extends Controller implements ProductControllerSwagger
     public function index(ProductIndexRequest $request): JsonResource
     {
         $query = Product::search($request->validated())
-            ->sort($request->input('sort', 'order'));
+            ->sort($request->input('sort', 'order'))
+            ->with(['media', 'tags', 'schemas', 'sets']);
 
         if (!Auth::user()->can('products.show_hidden')) {
             if (!Auth::user()->can('product_sets.show_hidden')) {
