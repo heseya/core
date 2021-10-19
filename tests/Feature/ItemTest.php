@@ -47,7 +47,7 @@ class ItemTest extends TestCase
         $this->$user->givePermissionTo('items.show');
 
         $this
-            ->actingAs($this->user)
+            ->actingAs($this->$user)
             ->getJson('/items')
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -90,7 +90,7 @@ class ItemTest extends TestCase
         $this->$user->givePermissionTo('items.show_details');
 
         $this
-            ->actingAs($this->user)
+            ->actingAs($this->$user)
             ->getJson('/items/id:' . $this->item->getKey())
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
@@ -174,7 +174,7 @@ class ItemTest extends TestCase
         $this->$user->givePermissionTo('items.remove');
 
         $this
-            ->actingAs($this->user)
+            ->actingAs($this->$user)
             ->deleteJson('/items/id:' . $this->item->getKey())
             ->assertNoContent();
 

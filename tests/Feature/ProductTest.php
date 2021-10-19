@@ -134,7 +134,7 @@ class ProductTest extends TestCase
     {
         $this->$user->givePermissionTo('products.show');
 
-        $response = $this->actingAs($this->user)->getJson('/products?limit=100');
+        $response = $this->actingAs($this->$user)->getJson('/products?limit=100');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public products.

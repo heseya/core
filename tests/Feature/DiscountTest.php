@@ -30,7 +30,7 @@ class DiscountTest extends TestCase
         $this->$user->givePermissionTo('discounts.show');
 
         $this
-            ->actingAs($this->user)
+            ->actingAs($this->$user)
             ->getJson('/discounts')
             ->assertOk()
             ->assertJsonCount(10, 'data');

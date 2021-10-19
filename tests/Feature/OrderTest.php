@@ -81,7 +81,7 @@ class OrderTest extends TestCase
         $this->$user->givePermissionTo('orders.show');
 
         $this
-            ->actingAs($this->user)
+            ->actingAs($this->$user)
             ->getJson('/orders')
             ->assertOk()
             ->assertJsonCount(1, 'data')
