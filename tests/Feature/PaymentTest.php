@@ -9,7 +9,6 @@ use App\Models\ShippingMethod;
 use App\Models\Status;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
-use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class PaymentTest extends TestCase
@@ -60,24 +59,27 @@ class PaymentTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testPayuUrl(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testPayuUrl($user): void
     {
-        $this->user->givePermissionTo('payments.add');
+        $this->$user->givePermissionTo('payments.add');
 
         Http::fakeSequence()
             ->push([
                 'access_token' => 'random_access_token',
-            ], 200)
+            ])
             ->push([
                 'status' => [
                     'statusCode' => 'SUCCESS',
                 ],
                 'redirectUri' => 'payment_url',
                 'orderId' => 'payu_id',
-            ], 200);
+            ]);
 
         $code = $this->order->code;
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->postJson("/orders/$code/pay/payu", [
                 'continue_url' => 'continue_url',
             ]);
@@ -116,9 +118,12 @@ class PaymentTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testPayuNotification(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testPayuNotification($user): void
     {
-        $this->user->givePermissionTo('payments.edit');
+        $this->$user->givePermissionTo('payments.edit');
 
         $payment = Payment::factory()->make([
             'payed' => false,
@@ -134,7 +139,7 @@ class PaymentTest extends TestCase
         ];
         $signature = md5(json_encode($body) . Config::get('payu.second_key'));
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->postJson('/payments/payu', $body, [
                 'OpenPayu-Signature' => "signature=$signature;algorithm=MD5"
             ]);
@@ -146,21 +151,27 @@ class PaymentTest extends TestCase
         ]);
     }
 
-    public function testOfflinePaymentUnauthorized(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOfflinePaymentUnauthorized($user): void
     {
         $code = $this->order->code;
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->postJson("/orders/$code/pay/offline");
 
         $response->assertForbidden();
     }
 
-    public function testOfflinePayment(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOfflinePayment($user): void
     {
-        $this->user->givePermissionTo('payments.offline');
+        $this->$user->givePermissionTo('payments.offline');
 
         $code = $this->order->code;
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->postJson("/orders/$code/pay/offline");
 
         $response
@@ -184,9 +195,12 @@ class PaymentTest extends TestCase
         $this->assertTrue($this->order->isPayed());
     }
 
-    public function testOfflinePaymentOverpaid(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOfflinePaymentOverpaid($user): void
     {
-        $this->user->givePermissionTo('payments.offline');
+        $this->$user->givePermissionTo('payments.offline');
 
         $amount = $this->order->summary - 1;
 
@@ -197,7 +211,7 @@ class PaymentTest extends TestCase
         ]);
 
         $code = $this->order->code;
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->postJson("/orders/$code/pay/offline");
 
         $response
