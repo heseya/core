@@ -30,10 +30,6 @@ class AuthController extends Controller implements AuthControllerSwagger
 
     public function login(LoginRequest $request): JsonResource
     {
-
-
-
-        
         $tokens = $this->authService->login(
             $request->input('email'),
             $request->input('password'),
