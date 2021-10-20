@@ -15,10 +15,12 @@ abstract class WebHookEvent
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     protected $triggered_at;
+    protected $issuer;
 
     public function __construct()
     {
         $this->triggered_at = Carbon::now()->format('c');
+        $this->issuer = Auth::user();
     }
 
     public function getData(): array
@@ -37,7 +39,7 @@ abstract class WebHookEvent
 
     public function getIssuer(): Model
     {
-        return Auth::user();
+        return $this->issuer;
     }
 
     public function isHidden(): bool

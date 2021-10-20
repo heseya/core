@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\OrderUpdateDto;
+use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
 use App\Exceptions\OrderException;
@@ -114,6 +115,7 @@ class OrderController extends Controller implements OrderControllerSwagger
                                 'item_id' => $optionItem->getKey(),
                                 'quantity' => -1 * $item['quantity'],
                             ]);
+                            ItemUpdatedQuantity::dispatch($optionItem);
                         }
                     }
 
@@ -239,7 +241,11 @@ class OrderController extends Controller implements OrderControllerSwagger
         ]);
 
         if ($status->cancel) {
+            $deposits = $order->deposits()->with('item')->get();
             $order->deposits()->delete();
+            foreach ($deposits as $deposit) {
+                ItemUpdatedQuantity::dispatch($deposit->item);
+            }
         }
 
         OrderUpdatedStatus::dispatch($order);

@@ -3,6 +3,9 @@
 namespace App\Services;
 
 use App\Enums\RoleType;
+use App\Events\UserCreated;
+use App\Events\UserDeleted;
+use App\Events\UserUpdated;
 use App\Exceptions\AuthException;
 use App\Models\Role;
 use App\Models\User;
@@ -42,6 +45,8 @@ class UserService implements UserServiceContract
         ]);
 
         $user->syncRoles($roleModels);
+
+        UserCreated::dispatch($user);
 
         return $user;
     }
@@ -103,6 +108,8 @@ class UserService implements UserServiceContract
             'email' => $email ?? $user->email,
         ]);
 
+        UserUpdated::dispatch($user);
+
         return $user;
     }
 
@@ -129,6 +136,8 @@ class UserService implements UserServiceContract
             }
         }
 
-        $user->delete();
+        if ($user->delete()) {
+            UserDeleted::dispatch($user);
+        }
     }
 }

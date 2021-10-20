@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ItemCreated;
+use App\Events\ItemDeleted;
+use App\Events\ItemUpdated;
 use App\Http\Controllers\Swagger\ItemControllerSwagger;
 use App\Http\Requests\ItemCreateRequest;
 use App\Http\Requests\ItemIndexRequest;
@@ -33,6 +36,8 @@ class ItemController extends Controller implements ItemControllerSwagger
     {
         $item = Item::create($request->validated());
 
+        ItemCreated::dispatch($item);
+
         return ItemResource::make($item);
     }
 
@@ -40,12 +45,16 @@ class ItemController extends Controller implements ItemControllerSwagger
     {
         $item->update($request->validated());
 
+        ItemUpdated::dispatch($item);
+
         return ItemResource::make($item);
     }
 
     public function destroy(Item $item): JsonResponse
     {
-        $item->delete();
+        if ($item->delete()) {
+            ItemDeleted::dispatch($item);
+        }
 
         return response()->json(null, 204);
     }

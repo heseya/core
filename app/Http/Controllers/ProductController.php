@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ProductCreated;
+use App\Events\ProductDeleted;
+use App\Events\ProductUpdated;
 use App\Http\Controllers\Swagger\ProductControllerSwagger;
 use App\Http\Requests\ProductCreateRequest;
 use App\Http\Requests\ProductIndexRequest;
@@ -112,6 +115,8 @@ class ProductController extends Controller implements ProductControllerSwagger
             $product->sets()->sync($request->input('sets'));
         }
 
+        ProductCreated::dispatch($product);
+
         return ProductResource::make($product);
     }
 
@@ -130,12 +135,16 @@ class ProductController extends Controller implements ProductControllerSwagger
             $product->sets()->sync($request->input('sets'));
         }
 
+        ProductUpdated::dispatch($product);
+
         return ProductResource::make($product);
     }
 
     public function destroy(Product $product): JsonResponse
     {
-        $product->delete();
+        if ($product->delete()) {
+            ProductDeleted::dispatch($product);
+        }
 
         return Response::json(null, 204);
     }
