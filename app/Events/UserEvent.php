@@ -3,7 +3,6 @@
 namespace App\Events;
 
 use App\Models\User;
-use Illuminate\Support\Str;
 
 abstract class UserEvent extends WebHookEvent
 {

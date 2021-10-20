@@ -23,4 +23,14 @@ abstract class WebHookDeletedEvent extends WebHookEvent
     {
         return $this->data;
     }
+
+    public function getDataContent(): array
+    {
+        return $this->data['data'];
+    }
+
+    public function getDataType(): string
+    {
+        return $this->data['data_type'];
+    }
 }
