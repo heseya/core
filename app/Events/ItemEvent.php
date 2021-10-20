@@ -10,11 +10,17 @@ abstract class ItemEvent extends WebHookEvent
 
     public function __construct(Item $item)
     {
+        parent::__construct();
         $this->item = $item;
     }
 
-    public function getData(): array
+    public function getDataContent(): array
     {
         return $this->item->toArray();
+    }
+
+    public function getDataType(): string
+    {
+        return $this->getModelClass($this->item);
     }
 }

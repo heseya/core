@@ -6,20 +6,26 @@ use App\Models\Page;
 
 abstract class PageEvent extends WebHookEvent
 {
-    private Page $page;
+    protected Page $page;
 
     public function __construct(Page $page)
     {
+        parent::__construct();
         $this->page = $page;
-    }
-
-    public function getData(): array
-    {
-        return $this->page->toArray();
     }
 
     public function isHidden(): bool
     {
-        return $this->page->public;
+        return !$this->page->public;
+    }
+
+    public function getDataContent(): array
+    {
+        return $this->page->toArray();
+    }
+
+    public function getDataType(): string
+    {
+        return $this->getModelClass($this->page);
     }
 }

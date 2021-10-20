@@ -10,11 +10,17 @@ abstract class OrderEvent extends WebHookEvent
 
     public function __construct(Order $order)
     {
+        parent::__construct();
         $this->order = $order;
     }
 
-    public function getData(): array
+    public function getDataContent(): array
     {
         return $this->order->toArray();
+    }
+
+    public function getDataType(): string
+    {
+        return $this->getModelClass($this->order);
     }
 }

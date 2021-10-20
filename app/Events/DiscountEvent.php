@@ -10,11 +10,17 @@ abstract class DiscountEvent extends WebHookEvent
 
     public function __construct(Discount $discount)
     {
+        parent::__construct();
         $this->discount = $discount;
     }
 
-    public function getData(): array
+    public function getDataContent(): array
     {
         return $this->discount->toArray();
+    }
+
+    public function getDataType(): string
+    {
+        return $this->getModelClass($this->discount);
     }
 }

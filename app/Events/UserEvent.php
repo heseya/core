@@ -6,15 +6,21 @@ use App\Models\User;
 
 abstract class UserEvent extends WebHookEvent
 {
-    private User $user;
+    protected User $user;
 
     public function __construct(User $user)
     {
+        parent::__construct();
         $this->user = $user;
     }
 
-    public function getData(): array
+    public function getDataContent(): array
     {
         return $this->user->toArray();
+    }
+
+    public function getDataType(): string
+    {
+        return $this->getModelClass($this->user);
     }
 }
