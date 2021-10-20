@@ -3,7 +3,6 @@
 namespace App\Events;
 
 use App\Models\Discount;
-use Illuminate\Support\Str;
 
 abstract class DiscountEvent extends WebHookEvent
 {
@@ -15,13 +14,13 @@ abstract class DiscountEvent extends WebHookEvent
         $this->discount = $discount;
     }
 
-    public function getData(): array
+    public function getDataContent(): array
     {
-        return [
-            'data' => $this->discount->toArray(),
-            'data_type' => Str::remove('App\\Models\\', $this->discount::class),
-            'event' => Str::remove('App\\Events\\', $this::class),
-            'triggered_at' => $this->triggered_at,
-        ];
+        return $this->discount->toArray();
+    }
+
+    public function getDataType(): string
+    {
+        return $this->getModelClass($this->discount);
     }
 }

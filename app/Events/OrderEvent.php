@@ -3,7 +3,6 @@
 namespace App\Events;
 
 use App\Models\Order;
-use Illuminate\Support\Str;
 
 abstract class OrderEvent extends WebHookEvent
 {
@@ -15,13 +14,13 @@ abstract class OrderEvent extends WebHookEvent
         $this->order = $order;
     }
 
-    public function getData(): array
+    public function getDataContent(): array
     {
-        return [
-            'data' => $this->order->toArray(),
-            'data_type' => Str::remove('App\\Models\\', $this->order::class),
-            'event' => Str::remove('App\\Events\\', $this::class),
-            'triggered_at' => $this->triggered_at,
-        ];
+        return $this->order->toArray();
+    }
+
+    public function getDataType(): string
+    {
+        return $this->getModelClass($this->order);
     }
 }

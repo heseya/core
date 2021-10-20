@@ -3,7 +3,6 @@
 namespace App\Events;
 
 use App\Models\Item;
-use Illuminate\Support\Str;
 
 abstract class ItemEvent extends WebHookEvent
 {
@@ -15,13 +14,13 @@ abstract class ItemEvent extends WebHookEvent
         $this->item = $item;
     }
 
-    public function getData(): array
+    public function getDataContent(): array
     {
-        return [
-            'data' => $this->item->toArray(),
-            'data_type' => Str::remove('App\\Models\\', $this->item::class),
-            'event' => Str::remove('App\\Events\\', $this::class),
-            'triggered_at' => $this->triggered_at,
-        ];
+        return $this->item->toArray();
+    }
+
+    public function getDataType(): string
+    {
+        return $this->getModelClass($this->item);
     }
 }

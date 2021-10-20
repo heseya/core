@@ -14,18 +14,18 @@ abstract class ProductSetEvent extends WebHookEvent
         $this->productSet = $productSet;
     }
 
-    public function getData(): array
-    {
-        return [
-            'data' => $this->productSet->toArray(),
-            'data_type' => Str::remove('App\\Models\\', $this->productSet::class),
-            'event' => Str::remove('App\\Events\\', $this::class),
-            'triggered_at' => $this->triggered_at,
-        ];
-    }
-
     public function isHidden(): bool
     {
         return !$this->productSet->public;
+    }
+
+    public function getDataContent(): array
+    {
+        return $this->productSet->toArray();
+    }
+
+    public function getDataType(): string
+    {
+        return $this->getModelClass($this->productSet);
     }
 }

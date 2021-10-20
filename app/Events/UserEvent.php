@@ -14,13 +14,13 @@ abstract class UserEvent extends WebHookEvent
         $this->user = $user;
     }
 
-    public function getData(): array
+    public function getDataContent(): array
     {
-        return [
-            'data' => $this->user->toArray(),
-            'data_type' => Str::remove('App\\Models\\', $this->user::class),
-            'event' => Str::remove('App\\Events\\', $this::class),
-            'triggered_at' => $this->triggered_at,
-        ];
+        return $this->user->toArray();
+    }
+
+    public function getDataType(): string
+    {
+        return $this->getModelClass($this->user);
     }
 }

@@ -8,6 +8,7 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 abstract class WebHookEvent
 {
@@ -20,7 +21,19 @@ abstract class WebHookEvent
         $this->triggered_at = Carbon::now()->format('c');
     }
 
-    abstract public function getData(): array;
+    public function getData(): array
+    {
+        return [
+            'data' => $this->getDataContent(),
+            'data_type' => $this->getDataType(),
+            'event' => Str::remove('App\\Events\\', $this::class),
+            'triggered_at' => $this->triggered_at,
+        ];
+    }
+
+    abstract public function getDataContent(): array;
+
+    abstract public function getDataType(): string;
 
     public function getIssuer(): Model
     {
@@ -30,5 +43,10 @@ abstract class WebHookEvent
     public function isHidden(): bool
     {
         return false;
+    }
+
+    protected function getModelClass(Model $model): string
+    {
+        return Str::remove('App\\Models\\', $model::class);
     }
 }
