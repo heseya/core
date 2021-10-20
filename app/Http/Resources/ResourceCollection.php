@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Cache;
 
 class ResourceCollection extends \Heseya\Resource\ResourceCollection
 {
@@ -14,17 +15,21 @@ class ResourceCollection extends \Heseya\Resource\ResourceCollection
      */
     public function with($request): array
     {
-        return [
-            'meta' => [
-                'currency' => [
-                    'name' => 'Polski Złoty',
-                    'symbol' => 'PLN',
-                    'decimals' => 2,
-                ],
-                'language' => [
-                    'symbol' => App::currentLocale(),
-                ],
+        $meta = [
+            'currency' => [
+                'name' => 'Polski Złoty',
+                'symbol' => 'PLN',
+                'decimals' => 2,
             ],
+            'language' => [
+                'symbol' => App::currentLocale(),
+            ],
+        ];
+        if ($request->user()->hasPermissionTo('seo.show')) {
+            $meta['seo'] = SeoMetadataResource::make(Cache::get('seo.global'));
+        }
+        return [
+            'meta' => $meta,
         ];
     }
 }
