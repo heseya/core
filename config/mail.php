@@ -12,7 +12,7 @@ return [
     |
      */
 
-    'driver' => 'smtp',
+    'driver' => env('EMAIL_DRIVER', 'smtp'),
 
     'host' => env('EMAIL_HOST', ''),
     'port' => env('EMAIL_PORT', 587),
