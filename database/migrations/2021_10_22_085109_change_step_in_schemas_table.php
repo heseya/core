@@ -13,6 +13,8 @@ class ChangeStepInSchemasTable extends Migration
     {
         Schema::table('schemas', function (Blueprint $table) {
             $table->unsignedDecimal('step', 12, 8)->change();
+            $table->decimal('min', 12, 8)->change();
+            $table->decimal('max', 12, 8)->change();
         });
     }
 }
