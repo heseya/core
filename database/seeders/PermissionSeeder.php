@@ -210,7 +210,7 @@ class PermissionSeeder extends Seeder
                 'products.show_details',
                 'settings.show',
                 'tags.show',
-                'seo.show'
+                'seo.show',
             ]);
         $unauthenticated->type = RoleType::UNAUTHENTICATED;
         $unauthenticated->save();

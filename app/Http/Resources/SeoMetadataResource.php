@@ -13,7 +13,7 @@ class SeoMetadataResource extends Resource implements SeoMetadataResourceSwagger
             'title' => $this->title,
             'description' => $this->description,
             'keywords' => $this->keywords,
-            'og_image' => $this->media(),
+            'og_image' => MediaResource::make($this->media),
             'twitter_card' => $this->twitter_card,
         ];
     }

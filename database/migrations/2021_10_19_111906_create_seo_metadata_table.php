@@ -17,7 +17,7 @@ class CreateSeoMetadataTable extends Migration
             $table->uuid('id')->primary();
             $table->boolean('global');
             $table->string('title')->nullable();
-            $table->string('description')->nullable();
+            $table->string('description', 1000)->nullable();
             $table->json('keywords')->nullable();
             $table->string('twitter_card')->nullable();
 

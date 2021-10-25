@@ -31,7 +31,7 @@ class SeoMetadata extends Model
 
     public function media(): HasOne
     {
-        return $this->hasOne(Media::class, 'og_image', 'id');
+        return $this->hasOne(Media::class, 'id', 'og_image');
     }
 
     public function getKeywordsAttribute($value)

@@ -18,7 +18,7 @@ interface SeoMetadataControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/Seo"
+     *         ref="#/components/schemas/SeoView"
      *       )
      *     )
      *   ),
@@ -33,7 +33,7 @@ interface SeoMetadataControllerSwagger
      *   tags={"SEO"},
      *   @OA\RequestBody(
      *     @OA\JsonContent(
-     *       ref="#/components/schemas/Seo",
+     *       ref="#/components/schemas/SeoStore",
      *     ),
      *   ),
      *   @OA\Response(
@@ -42,7 +42,7 @@ interface SeoMetadataControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/Seo",
+     *         ref="#/components/schemas/SeoView",
      *       )
      *     )
      *   ),
@@ -52,7 +52,7 @@ interface SeoMetadataControllerSwagger
      *     @OA\JsonContent(
      *       @OA\Property(
      *         property="data",
-     *         ref="#/components/schemas/Seo",
+     *         ref="#/components/schemas/SeoView",
      *       )
      *     )
      *   ),

@@ -8,7 +8,7 @@ interface SeoMetadataResourceSwagger
 {
     /**
      * @OA\Schema(
-     *   schema="Seo",
+     *   schema="SeoView",
      *   @OA\Property(
      *     property="title",
      *     type="string",

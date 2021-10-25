@@ -51,6 +51,7 @@ class SeoMetadataTest extends TestCase
             'title' => 'title',
             'description' => 'description',
             'keywords' => ['key', 'words'],
+            'twitter_card' => 'summary',
         ];
         $response = $this->actingAs($this->user)->json('PATCH', '/seo', $seo);
 
@@ -73,6 +74,7 @@ class SeoMetadataTest extends TestCase
             'title' => $seo->title,
             'description' => $seo->description,
             'global' => true,
+            'twitter_card' => $seo->twitter_card,
         ]);
     }
 
@@ -86,21 +88,6 @@ class SeoMetadataTest extends TestCase
             'keywords' => ['key', 'words'],
         ];
         $response = $this->actingAs($this->user)->json('PATCH', '/seo', $seo);
-
-//        dd($response->getData());
-
-//        $response
-//            ->assertCreated()
-//            ->assertJsonFragment([
-//                'title' => $seo['title'],
-//                'description' => $seo['description'],
-//            ])
-//            ->assertJsonMissing([
-//                'seo' => [
-//                    'title' => $seo['title'],
-//                    'description' => $seo['description'],
-//                ],
-//            ]);
 
         $response->assertJson(fn (AssertableJson $json) =>
             $json->has('meta', fn ($json) =>
