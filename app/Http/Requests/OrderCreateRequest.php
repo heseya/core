@@ -74,7 +74,7 @@ class OrderCreateRequest extends OrderItemsRequest
     public function rules(): array
     {
         return parent::rules() + [
-            'email' => ['required', 'email'],
+            'email' => ['required', 'email', 'max:255'],
             'comment' => ['nullable', 'string', 'max:1000'],
             'shipping_method_id' => ['required', 'uuid', 'exists:shipping_methods,id'],
 
@@ -95,7 +95,7 @@ class OrderCreateRequest extends OrderItemsRequest
             'invoice_address.vat' => ['nullable', 'string', 'max:15'],
 
             'discounts' => ['nullable', 'array'],
-            'discounts.*' => ['string', 'exists:discounts,code', new DiscountAvailable()],
+            'discounts.*' => ['string', 'max:64', 'exists:discounts,code', new DiscountAvailable()],
 
             'validation' => ['boolean'],
         ];
