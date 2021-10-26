@@ -16,7 +16,7 @@ class OrderCreatedListener
         try {
             $order->notify(new OrderCreated($order));
         } catch (Throwable) {
-            Log::error("Couldn't send order confirmation to the address: $order->email");
+            Log::error("Couldn't send order confirmation to the address: {$order->email}");
         }
     }
 }
