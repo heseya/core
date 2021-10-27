@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Dtos\AppInstallDto;
 use App\Enums\RoleType;
 use App\Enums\TokenType;
 use App\Exceptions\AppException;
@@ -25,14 +26,10 @@ class AppService implements AppServiceContract
     {
     }
 
-    public function install(
-        string $url,
-        array $permissions,
-        ?string $name,
-        ?string $licenceKey,
-    ): App {
+    public function install(AppInstallDto $dto): App
+    {
         $allPermissions = Permission::all()->map(fn ($perm) => $perm->name);
-        $permissions = Collection::make($permissions);
+        $permissions = Collection::make($dto->getAllowedPermissions());
 
         if ($permissions->diff($allPermissions)->isNotEmpty()) {
             throw new AuthException('Assigning invalid permissions');
@@ -40,12 +37,12 @@ class AppService implements AppServiceContract
 
         if (!Auth::user()->hasAllPermissions($permissions->toArray())) {
             throw new AuthException(
-                'Can\'t add an app with permissions you don\'t have',
+                "Can't add an app with permissions you don't have",
             );
         }
 
         try {
-            $response = Http::get($url);
+            $response = Http::get($dto->getUrl());
         } catch (Throwable) {
             throw new AppException('Failed to connect with application');
         }
@@ -57,14 +54,14 @@ class AppService implements AppServiceContract
         $this->validateAppRoot($response);
 
         $appConfig = $response->json();
-        $name = $name ?? $appConfig['name'];
+        $name = $dto->getName() ?? $appConfig['name'];
         $slug = Str::slug($name);
 
         $app = App::create([
-            'url' => $url,
+            'url' => $dto->getUrl(),
             'name' => $name,
             'slug' => $slug,
-            'licence_key' => $licenceKey,
+            'licence_key' => $dto->getLicenceKey(),
         ] + Collection::make($appConfig)->only([
             'microfrontend_url',
             'version',
@@ -89,7 +86,7 @@ class AppService implements AppServiceContract
             $app->delete();
 
             throw new AuthException(
-                'Can\'t add app without all required permissions',
+                "Can't add app without all required permissions",
             );
         }
 
@@ -97,7 +94,7 @@ class AppService implements AppServiceContract
             $app->delete();
 
             throw new AuthException(
-                'Can\'t add any permissions application doesn\'t want',
+                "Can't add any permissions application doesn't want",
             );
         }
 
@@ -118,14 +115,16 @@ class AppService implements AppServiceContract
             $uuid,
         );
 
-        $url .= Str::endsWith($url, '/') ? 'install' : '/install';
+        $url = Str::endsWith($dto->getUrl(), '/')
+            ? "{$dto->getUrl()}install"
+            : "{$dto->getUrl()}/install";
 
         try {
             $response = Http::post($url, [
                 'api_url' => Config::get('app.url'),
                 'api_name' => Config::get('app.name'),
                 'api_version' => Config::get('app.ver'),
-                'licence_key' => $licenceKey,
+                'licence_key' => $dto->getLicenceKey(),
                 'integration_token' => $integrationToken,
                 'refresh_token' => $refreshToken,
             ]);
@@ -154,7 +153,7 @@ class AppService implements AppServiceContract
         $internalPermissions = Collection::make($appConfig['internal_permissions']);
 
         $internalPermissions = $internalPermissions->map(fn ($permission) => Permission::create([
-            'name' => 'app.' . $app->slug . '.' . $permission['name'],
+            'name' => "app.{$app->slug}.{$permission['name']}",
             'description' => key_exists('description', $permission) ?
                 $permission['description'] : null,
         ]));
@@ -163,6 +162,7 @@ class AppService implements AppServiceContract
         $owner->givePermissionTo($internalPermissions);
 
         if ($internalPermissions->isNotEmpty()) {
+            // Create app owner role and assign it to the user
             $role = Role::create([
                 'name' => $app->name . ' owner',
             ]);
@@ -174,6 +174,18 @@ class AppService implements AppServiceContract
             ]);
 
             Auth::user()->assignRole($role);
+
+            // Grant unauthenticated user public app permissions
+            $publicPermissions = Collection::make($dto->getPublicAppPermissions())
+                ->map(fn ($permission) => "app.{$app->slug}.{$permission}");
+
+            /** @var Role $unauthenticated */
+            $unauthenticated = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+
+            $internalPermissions->each(
+                fn ($permission) => !$publicPermissions->contains($permission->name)
+                    ?: $unauthenticated->givePermissionTo($permission),
+            );
         }
 
         return $app;

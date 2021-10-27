@@ -55,8 +55,10 @@ class AppStoreRequest extends FormRequest
             'url' => ['required', 'url'],
             'name' => ['nullable', 'string'],
             'licence_key' => ['nullable', 'string'],
-            'allowed_permissions' => ['array'],
+            'allowed_permissions' => ['present', 'array'],
             'allowed_permissions.*' => ['string'],
+            'public_app_permissions' => ['present', 'array'],
+            'public_app_permissions.*' => ['string'],
         ];
     }
 }
