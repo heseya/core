@@ -239,7 +239,7 @@ class AppInstallTest extends TestCase
 
         $this->assertTrue($app->hasAllPermissions([
             'auth.login',
-            'auth.identity_profile',
+            'auth.check_identity',
             'products.show',
         ]));
 
@@ -330,7 +330,7 @@ class AppInstallTest extends TestCase
 
         $this->assertTrue($app->hasAllPermissions([
             'auth.login',
-            'auth.identity_profile',
+            'auth.check_identity',
             'products.show',
             'products.add',
         ]));

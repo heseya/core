@@ -2,14 +2,13 @@
 
 namespace App\Http\Middleware;
 
-use App\Enums\RoleType;
 use App\Enums\TokenType;
 use App\Models\App;
-use App\Models\Role;
-use App\Models\User;
+use App\Services\Contracts\AuthServiceContract;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
+use Illuminate\Support\Facades\App as AppFacade;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 
@@ -29,15 +28,11 @@ class Authenticate extends Middleware
                     throw new AuthenticationException();
                 }
             } else {
-                $user = User::make([
-                    'name' => 'Unauthenticated',
-                ]);
+                /** @var AuthServiceContract $authService */
+                $authService = AppFacade::make(AuthServiceContract::class);
 
-                $roles = Role::where('type', RoleType::UNAUTHENTICATED)->get();
-                $user->setRelation('roles', $roles);
-                $user->id = 'null';
-
-                Auth::claims(['typ' => TokenType::ACCESS])->login($user);
+                Auth::claims(['typ' => TokenType::ACCESS])
+                    ->login($authService->unauthenticatedUser());
             }
         }
 
