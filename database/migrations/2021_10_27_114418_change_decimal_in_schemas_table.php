@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class ChangeStepInSchemasTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -12,9 +12,9 @@ class ChangeStepInSchemasTable extends Migration
     public function up(): void
     {
         Schema::table('schemas', function (Blueprint $table) {
-            $table->unsignedDecimal('step', 12, 8)->change();
-            $table->decimal('min', 16, 8)->change();
-            $table->decimal('max', 16, 8)->change();
+            $table->unsignedFLoat('step', 12, 8)->change();
+            $table->float('min', 16, 8)->change();
+            $table->float('max', 16, 8)->change();
         });
     }
-}
+};
