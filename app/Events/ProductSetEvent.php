@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Http\Resources\ProductSetResource;
 use App\Models\ProductSet;
 
 abstract class ProductSetEvent extends WebHookEvent
@@ -21,7 +22,7 @@ abstract class ProductSetEvent extends WebHookEvent
 
     public function getDataContent(): array
     {
-        return $this->productSet->toArray();
+        return ProductSetResource::make($this->productSet)->resolve();
     }
 
     public function getDataType(): string

@@ -3,6 +3,9 @@
 namespace App\Notifications;
 
 use App\Channels\WebHookChannel;
+use App\Enums\IssuerType;
+use App\Http\Resources\AppIssuerResource;
+use App\Http\Resources\UserIssuerResource;
 use App\Models\Model;
 use Illuminate\Notifications\Notification;
 
@@ -24,7 +27,11 @@ class WebHookNotification extends Notification
 
     public function toWebHook($notifiable)
     {
-        $this->data['issuer'] = $notifiable->with_issuer ? $this->issuer->toArray() : null;
+        if ($notifiable->with_issuer) {
+            $this->data['issuer'] = $this->data['issuer_type'] === IssuerType::APP
+                ? AppIssuerResource::make($this->issuer)->resolve()
+                : UserIssuerResource::make($this->issuer)->resolve();
+        }
         return $this->data;
     }
 }

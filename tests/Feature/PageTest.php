@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Events\PageCreated;
 use App\Events\PageDeleted;
 use App\Events\PageUpdated;
+use App\Http\Resources\PageResource;
 use App\Listeners\WebHookEventListener;
 use App\Models\Page;
 use App\Models\WebHook;
@@ -223,7 +224,7 @@ class PageTest extends TestCase
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $page) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $page->getKey()
                 && $payload['data_type'] === 'Page'
                 && $payload['event'] === 'PageCreated';
@@ -354,7 +355,7 @@ class PageTest extends TestCase
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $page) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $page->getKey()
                 && $payload['data_type'] === 'Page'
                 && $payload['event'] === 'PageUpdated';
@@ -417,14 +418,14 @@ class PageTest extends TestCase
 
         $page = $this->page;
 
-        $event = new PageDeleted($page->toArray(), $page::class);
+        $event = new PageDeleted(PageResource::make($page)->resolve(), $page::class);
         $listener = new WebHookEventListener();
         $listener->handle($event);
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $page) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $page->getKey()
                 && $payload['data_type'] === 'Page'
                 && $payload['event'] === 'PageDeleted';

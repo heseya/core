@@ -7,7 +7,7 @@ return [
         // Descriptions
         EventType::ORDER_CREATED => 'Zdarzenie wyzwalane po utworzeniu nowych zamówień',
         EventType::ORDER_UPDATED => 'Zdarzenie wyzwalane po aktualizacji zamówienia',
-        EventType::ORDER_DELETED => 'Zdarzenie wyzwalane po usunięciu zamówienia',
+        EventType::ORDER_UPDATED_STATUS => 'Zdarzenie wyzwalane po aktualizacji statusu zamówienia',
         EventType::PRODUCT_CREATED => 'Zdarzenie wyzwalane po utworzeniu nowych produktów',
         EventType::PRODUCT_UPDATED => 'Zdarzenie wyzwalane po aktualizacji produktu',
         EventType::PRODUCT_DELETED => 'Zdarzenie wyzwalane po usunięciu produktu',

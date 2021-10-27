@@ -485,7 +485,7 @@ class ProductTest extends TestCase
         Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
                 && $payload['data_type'] === 'Product'
                 && $payload['event'] === 'ProductCreated';
@@ -567,7 +567,7 @@ class ProductTest extends TestCase
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
                 && $payload['data_type'] === 'Product'
                 && $payload['event'] === 'ProductCreated';
@@ -723,7 +723,7 @@ class ProductTest extends TestCase
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
                 && $payload['data_type'] === 'Product'
                 && $payload['event'] === 'ProductCreated';
@@ -923,7 +923,7 @@ class ProductTest extends TestCase
         Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
                 && $payload['data_type'] === 'Product'
                 && $payload['event'] === 'ProductUpdated';
@@ -983,7 +983,7 @@ class ProductTest extends TestCase
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
                 && $payload['data_type'] === 'Product'
                 && $payload['event'] === 'ProductUpdated';
@@ -1133,7 +1133,7 @@ class ProductTest extends TestCase
         Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
                 && $payload['data_type'] === 'Product'
                 && $payload['event'] === 'ProductDeleted';
@@ -1176,7 +1176,7 @@ class ProductTest extends TestCase
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $product->getKey()
                 && $payload['data_type'] === 'Product'
                 && $payload['event'] === 'ProductDeleted';

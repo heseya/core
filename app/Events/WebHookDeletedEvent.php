@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Enums\IssuerType;
 use Illuminate\Support\Str;
 
 abstract class WebHookDeletedEvent extends WebHookEvent
@@ -16,6 +17,7 @@ abstract class WebHookDeletedEvent extends WebHookEvent
             'data_type' => Str::remove('App\\Models\\', $data_type),
             'event' => Str::remove('App\\Events\\', $this::class),
             'triggered_at' => $this->triggered_at,
+            'issuer_type' => IssuerType::getValue(strtoupper($this->getModelClass($this->issuer))),
         ];
     }
 

@@ -6,7 +6,7 @@ return [
     'permissions' => [
         EventType::ORDER_CREATED => ['orders.show_details', 'orders.show'],
         EventType::ORDER_UPDATED => ['orders.show_details', 'orders.show'],
-        EventType::ORDER_DELETED => ['orders.show_details', 'orders.show'],
+        EventType::ORDER_UPDATED_STATUS => ['orders.show_details', 'orders.show'],
         EventType::PRODUCT_CREATED => ['products.show_details', 'products.show'],
         EventType::PRODUCT_UPDATED => ['products.show_details', 'products.show'],
         EventType::PRODUCT_DELETED => ['products.show_details', 'products.show'],

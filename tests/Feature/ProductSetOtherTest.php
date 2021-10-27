@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Events\ProductSetDeleted;
+use App\Http\Resources\ProductSetResource;
 use App\Listeners\WebHookEventListener;
 use App\Models\Product;
 use App\Models\ProductSet;
@@ -79,14 +80,14 @@ class ProductSetOtherTest extends TestCase
                 && $job->data[0] instanceof ProductSetDeleted;
         });
 
-        $event = new ProductSetDeleted($newSet->toArray(), $newSet::class);
+        $event = new ProductSetDeleted(ProductSetResource::make($newSet)->resolve(), $newSet::class);
         $listener = new WebHookEventListener();
         $listener->handle($event);
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $newSet) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $newSet->getKey()
                 && $payload['data_type'] === 'ProductSet'
                 && $payload['event'] === 'ProductSetDeleted';

@@ -268,7 +268,7 @@ class OrderCreateTest extends TestCase
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $order) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $order->getKey()
                 && $payload['data_type'] === 'Order'
                 && $payload['event'] === 'OrderCreated';
@@ -441,7 +441,7 @@ class OrderCreateTest extends TestCase
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $item) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $item->getKey()
                 && $payload['data_type'] === 'Item'
                 && $payload['event'] === 'ItemUpdatedQuantity';
