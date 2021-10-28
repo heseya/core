@@ -84,6 +84,11 @@ class ProductSet extends Model
         return $this->hasMany(self::class, 'parent_id');
     }
 
+    public function allChildren(): HasMany
+    {
+        return $this->children()->with('allChildren');
+    }
+
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'product_set_product');
