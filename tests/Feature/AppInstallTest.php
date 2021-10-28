@@ -86,33 +86,44 @@ class AppInstallTest extends TestCase
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
-    public function testInstallInvalidInfo(): void
+    public function invalidResponseProvider(): array
     {
-        $this->user->givePermissionTo([
-            'apps.install',
-            'products.show',
-        ]);
+        return [
+            'null' => [null],
+            'not an array' => ['not an array'],
+            'empty array' => [[]],
+            'flat array' => [['flat array']],
+        ];
+    }
+
+    /**
+     * @dataProvider invalidResponseProvider
+     */
+    public function testInstallInvalidInfo($invalidResponse): void
+    {
+        $this->user->givePermissionTo('apps.install');
 
         Http::fake([
-            $this->url => Http::response([]),
+            $this->url => Http::response($invalidResponse),
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/apps', [
             'url' => $this->url,
-            'allowed_permissions' => [
-                'products.show',
-            ],
+            'allowed_permissions' => [],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
-    public function testInstallInvalidInstallationResponse(): void
+    /**
+     * @dataProvider invalidResponseProvider
+     */
+    public function testInstallInvalidInstallationResponse($invalidResponse): void
     {
         $this->user->givePermissionTo([
             'apps.install',
-            'products.show',
         ]);
 
         Http::fake([
@@ -121,26 +132,16 @@ class AppInstallTest extends TestCase
                 'author' => 'Mr. Author',
                 'version' => '1.0.0',
                 'api_version' => '^1.4.0', // '^1.2.0' [TODO]
-                'description' => 'Cool description',
-                'microfrontend_url' => 'https://front.example.com',
-                'icon' => 'https://picsum.photos/200',
-                'licence_required' => false,
-                'required_permissions' => [
-                    'products.show',
-                ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ]],
+                'required_permissions' => [],
+                'internal_permissions' => [],
             ]),
-            $this->url . '/install' => Http::response([]),
+            $this->url . '/install' => Http::response($invalidResponse),
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/apps', [
             'url' => $this->url,
-            'allowed_permissions' => [
-                'products.show',
-            ],
+            'allowed_permissions' => [],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
