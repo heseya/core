@@ -3,12 +3,14 @@
 namespace Tests\Feature;
 
 use App\Events\OrderCreated;
+use App\Events\OrderStatusUpdated;
 use App\Models\Address;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Schema;
+use App\Models\Status;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 use Tests\Traits\CreateShippingMethod;
@@ -31,7 +33,7 @@ class OrderDepositTest extends TestCase
 
         $this->createShippingMethod();
 
-        Event::fake([OrderCreated::class]);
+        Event::fake([OrderCreated::class, OrderStatusUpdated::class]);
 
         $this->product = Product::factory()->create([
             'price' => 100,
@@ -80,7 +82,7 @@ class OrderDepositTest extends TestCase
             'quantity' => 2,
         ]);
 
-        $response = $this->postJson('/orders', $this->request);
+        $response = $this->json('POST', '/orders', $this->request);
 
         $response->assertCreated();
         $order = Order::find($response->getData()->data->id);
@@ -107,5 +109,56 @@ class OrderDepositTest extends TestCase
         ]);
 
         Event::assertDispatched(OrderCreated::class);
+    }
+
+    public function testDeleteOrder(): void
+    {
+        $this->item->deposits()->create([
+            'quantity' => 2,
+        ]);
+
+        $order = Order::factory()->create();
+        $orderProduct = $order->products()->create([
+            'product_id' => $this->product->getKey(),
+            'quantity' => 2,
+            'price' => 100,
+        ]);
+        $orderProduct->schemas()->create([
+            'order_product_id' => $orderProduct->getKey(),
+            'name' => 'Size',
+            'value' => 'XL',
+            'price' => 0,
+        ]);
+        $deposit = $orderProduct->deposits()->create([
+            'order_product_id' => $orderProduct->getKey(),
+            'item_id' => $this->item->getKey(),
+            'quantity' => -2,
+        ]);
+
+        $status = Status::factory()->create([
+            'cancel' => true,
+        ]);
+
+        $this->assertEquals(0, $this->item->quantity);
+
+        $this
+            ->actingAs($this->user)
+            ->json('POST', "/orders/id:{$order->getKey()}/status", [
+                'status_id' => $status->getKey(),
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+        $this->assertDatabaseMissing('deposits', [
+            'id' => $deposit->getKey(),
+            'quantity' => -2,
+        ]);
+
+        $this->assertEquals(2, $this->item->quantity);
+
+        Event::assertDispatched(OrderStatusUpdated::class);
     }
 }
