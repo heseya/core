@@ -33,10 +33,19 @@ use Illuminate\Foundation\Http\FormRequest;
  *     @OA\Property(
  *       property="allowed_permissions",
  *       type="array",
- *       description="Granted permission names",
+ *       description="Permissions granted to the app",
  *       @OA\Items(
  *         type="string",
  *         example="products.add",
+ *       ),
+ *     ),
+ *     @OA\Property(
+ *       property="public_app_permissions",
+ *       type="array",
+ *       description="App permissions granted to unauthenticated users",
+ *       @OA\Items(
+ *         type="string",
+ *         example="review.add",
  *       ),
  *     ),
  *   )
