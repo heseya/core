@@ -45,6 +45,7 @@ class SchemaTest extends TestCase
             'description' => 'test test',
             'hidden' => false,
             'required' => false,
+            'default' => 0,
             'options' => [
                 [
                     'name' => 'L',
@@ -68,6 +69,7 @@ class SchemaTest extends TestCase
             'description' => 'test test',
             'hidden' => 0,
             'required' => 0,
+            'default' => 0,
         ]);
 
         $this->assertDatabaseHas('options', [
