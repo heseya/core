@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Product;
 use App\Models\ProductSet;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class ProductSearchTest extends TestCase
@@ -173,18 +175,55 @@ class ProductSearchTest extends TestCase
     {
         $this->$user->givePermissionTo('products.show');
 
+        $this->getProductsByParentSet($this->$user, true, $product)
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $product->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByParentSetWithPrivateChildUnauthorized($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $this->getProductsByParentSet($this->$user, false)
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByParentSetWithPrivateChild($user): void
+    {
+        $this->$user->givePermissionTo([
+            'products.show',
+            'product_sets.show_hidden',
+        ]);
+
+        $this->getProductsByParentSet($this->$user, false, $product)
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $product->getKey()]);
+    }
+
+    private function getProductsByParentSet(
+        Authenticatable $user,
+        bool $isChildSetPublic,
+        ?Product &$productRef = null,
+    ): TestResponse {
         $parentSet = ProductSet::factory()->create([
             'public' => true,
-            'hide_on_index' => false,
         ]);
 
         $childSet = ProductSet::factory()->create([
             'parent_id' => $parentSet->getKey(),
-            'public' => true,
-            'hide_on_index' => false,
+            'public' => $isChildSetPublic,
         ]);
 
-        $product = Product::factory()->create([
+        $productRef = Product::factory()->create([
             'public' => true,
         ]);
 
@@ -193,14 +232,9 @@ class ProductSearchTest extends TestCase
             'public' => true,
         ]);
 
-        $childSet->products()->attach($product);
+        $childSet->products()->attach($productRef);
 
-        $response = $this->actingAs($this->$user)
+        return $this->actingAs($user)
             ->getJson('/products?sets[]=' . $parentSet->slug);
-
-        $response
-            ->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['id' => $product->getKey()]);
     }
 }

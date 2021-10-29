@@ -36,8 +36,10 @@ class ProductController extends Controller implements ProductControllerSwagger
             ->sort($request->input('sort', 'order'))
             ->with(['media', 'tags', 'schemas', 'sets']);
 
+        $canShowHiddenSets = Gate::allows('product_sets.show_hidden');
+
         if (Gate::denies('products.show_hidden')) {
-            if (Gate::denies('product_sets.show_hidden')) {
+            if (!$canShowHiddenSets) {
                 $query->public();
             } else {
                 $query->where('public', true);
@@ -50,8 +52,10 @@ class ProductController extends Controller implements ProductControllerSwagger
                 $request->input('sets'),
             )->with('allChildren')->get();
 
+            $relationScope = $canShowHiddenSets ? 'allChildren' : 'allChildrenPublic';
+
             $setsFlat = $this->productSetService
-                ->flattenSetsTree($setsFound, 'allChildren')
+                ->flattenSetsTree($setsFound, $relationScope)
                 ->map(fn (ProductSet $set) => $set->slug);
 
             $query->whereHas('sets', function (Builder $query) use ($setsFlat) {
