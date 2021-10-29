@@ -11,11 +11,11 @@ use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Services\Contracts\MediaServiceContract;
+use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
@@ -23,24 +23,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ProductController extends Controller implements ProductControllerSwagger
 {
-    private MediaServiceContract $mediaService;
-    private SchemaServiceContract $schemaService;
-
-    public function __construct(MediaServiceContract $mediaService, SchemaServiceContract $schemaService)
-    {
-        $this->mediaService = $mediaService;
-        $this->schemaService = $schemaService;
-    }
-
-    public function flattenSetsRecursively(Collection $sets)
-    {
-        $subsets = $sets->map(
-            fn ($set) => $this->flattenSetsRecursively($set->allChildren),
-        );
-
-        return $subsets->flatten()->concat($sets->map(
-            fn ($child) => $child->slug,
-        ));
+    public function __construct(
+        private MediaServiceContract $mediaService,
+        private SchemaServiceContract $schemaService,
+        private ProductSetServiceContract $productSetService,
+    ) {
     }
 
     public function index(ProductIndexRequest $request): JsonResource
@@ -63,7 +50,9 @@ class ProductController extends Controller implements ProductControllerSwagger
                 $request->input('sets'),
             )->with('allChildren')->get();
 
-            $setsFlat = $this->flattenSetsRecursively($setsFound);
+            $setsFlat = $this->productSetService
+                ->flattenSetsTree($setsFound, 'allChildren')
+                ->map(fn (ProductSet $set) => $set->slug);
 
             $query->whereHas('sets', function (Builder $query) use ($setsFlat) {
                 return $query->whereIn(
