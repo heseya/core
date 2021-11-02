@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\MediaType;
 use App\Models\Media;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -20,7 +21,7 @@ class MediaFactory extends Factory
     public function definition(): array
     {
         return [
-            'type' => Media::PHOTO,
+            'type' => MediaType::PHOTO,
             'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
         ];
     }

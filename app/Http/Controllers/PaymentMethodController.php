@@ -23,7 +23,7 @@ class PaymentMethodController extends Controller implements PaymentMethodControl
             $query = PaymentMethod::query();
         }
 
-        if (!Auth::check()) {
+        if (!Auth::user()->can('payment_methods.show_hidden')) {
             $query->where('public', true);
         }
 

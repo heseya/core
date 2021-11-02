@@ -11,6 +11,7 @@ use App\Models\Schema;
 use App\Services\Contracts\OptionServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Config;
 
 class SchemaController extends Controller implements SchemaControllerSwagger
 {
@@ -23,11 +24,10 @@ class SchemaController extends Controller implements SchemaControllerSwagger
 
     public function index(IndexSchemaRequest $request): JsonResource
     {
-        $schemas = Schema::search($request->validated())
-            ->sort($request->input('sort'));
+        $schemas = Schema::search($request->validated())->sort($request->input('sort'));
 
         return SchemaResource::collection(
-            $schemas->paginate(12),
+            $schemas->paginate(Config::get('pagination.per_page')),
         );
     }
 
@@ -84,7 +84,7 @@ class SchemaController extends Controller implements SchemaControllerSwagger
     {
         $schema->delete();
 
-        return response()->json(null, 204);
+        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function attach(Schema $schema, string $product): JsonResponse
@@ -93,7 +93,7 @@ class SchemaController extends Controller implements SchemaControllerSwagger
 
         $product->schemas()->attach($schema);
 
-        return response()->json(null, 204);
+        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function detach(Schema $schema, string $product): JsonResponse
@@ -102,6 +102,6 @@ class SchemaController extends Controller implements SchemaControllerSwagger
 
         $product->schemas()->detach($schema);
 
-        return response()->json(null, 204);
+        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

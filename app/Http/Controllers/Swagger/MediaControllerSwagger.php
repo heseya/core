@@ -20,7 +20,7 @@ interface MediaControllerSwagger
      *       @OA\Schema(
      *         @OA\Property(
      *           property="file",
-     *           description="File.",
+     *           description="File. Accepted extensions: jpeg, png, gif, bmp, svg, mp4, webm",
      *           type="binary",
      *         ),
      *       ),
@@ -47,7 +47,7 @@ interface MediaControllerSwagger
     /**
      * @OA\Delete(
      *   path="/media/id:{id}",
-     *   summary="delete media image",
+     *   summary="delete media",
      *   tags={"Media"},
      *   @OA\Parameter(
      *     name="id",

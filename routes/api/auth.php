@@ -1,0 +1,25 @@
+<?php
+
+use App\Http\Controllers\AuthController;
+use Illuminate\Support\Facades\Route;
+
+Route::prefix('auth')->group(function (): void {
+    Route::post('logout', [AuthController::class, 'logout'])
+        ->middleware(['auth:api', 'app.restrict']);
+//    Route::get('login-history', [AuthController::class, 'loginHistory'])
+//        ->middleware('can:auth.sessions.show');
+//    Route::get('kill-session/id:{id}', [AuthController::class, 'killActiveSession'])
+//        ->middleware('can:auth.sessions.revoke');
+//    Route::get('kill-all-sessions', [AuthController::class, 'killAllSessions'])
+//        ->middleware('can:auth.sessions.revoke');
+    Route::post('refresh', [AuthController::class, 'refresh'])
+        ->middleware('can:auth.login');
+    Route::get('profile', [AuthController::class, 'profile']);
+    Route::get('profile/{identity_token}', [AuthController::class, 'identityProfile'])
+        ->middleware('can:auth.identity_profile');
+});
+
+Route::post('login', [AuthController::class, 'login'])
+    ->middleware(['app.restrict', 'can:auth.login']);
+Route::patch('user/password', [AuthController::class, 'changePassword'])
+    ->middleware(['app.restrict', 'can:auth.password_change']);

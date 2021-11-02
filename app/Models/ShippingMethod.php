@@ -5,15 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @OA\Schema ()
  *
  * @mixin IdeHelperShippingMethod
  */
-class ShippingMethod extends Model
+class ShippingMethod extends Model implements AuditableContract
 {
-    use HasFactory;
+    use HasFactory, Auditable;
 
     /**
      * @OA\Property(
@@ -66,6 +68,11 @@ class ShippingMethod extends Model
         return $this->hasMany(Order::class);
     }
 
+    public function paymentMethodsPublic(): BelongsToMany
+    {
+        return $this->paymentMethods()->where('public', true);
+    }
+
     /**
      * @OA\Property(
      *   property="payment_methods",
@@ -76,11 +83,6 @@ class ShippingMethod extends Model
     public function paymentMethods(): BelongsToMany
     {
         return $this->belongsToMany(PaymentMethod::class, 'shipping_method_payment_method');
-    }
-
-    public function paymentMethodsPublic(): BelongsToMany
-    {
-        return $this->paymentMethods()->where('public', true);
     }
 
     /**
@@ -118,6 +120,16 @@ class ShippingMethod extends Model
      * )
      */
 
+    public function getPrice(float $orderTotal): float
+    {
+        $priceRange = $this->priceRanges()
+            ->where('start', '<=', $orderTotal)
+            ->orderBy('start', 'desc')
+            ->first();
+
+        return $priceRange ? $priceRange->prices()->first()->value : 0;
+    }
+
     /**
      * @OA\Property(
      *   property="price_ranges (response)",
@@ -128,15 +140,5 @@ class ShippingMethod extends Model
     public function priceRanges(): HasMany
     {
         return $this->hasMany(PriceRange::class, 'shipping_method_id');
-    }
-
-    public function getPrice(float $orderTotal): float
-    {
-        $priceRange = $this->priceRanges()
-            ->where('start', '<=', $orderTotal)
-            ->orderBy('start', 'desc')
-            ->first();
-
-        return $priceRange ? $priceRange->prices()->first()->value : 0;
     }
 }

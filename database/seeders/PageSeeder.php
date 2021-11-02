@@ -20,21 +20,21 @@ class PageSeeder extends Seeder
             'name' => 'Regulamin',
             'slug' => 'regulamin',
             'public' => true,
-            'content_html' => parsedown(file_get_contents(__DIR__ . '/../pages/statute.md')),
+            'content_html' => file_get_contents(__DIR__ . '/../pages/statute.html'),
         ]);
 
         Page::factory()->create([
             'name' => 'Polityka prywatności',
             'slug' => 'prywatnosc',
             'public' => true,
-            'content_html' => parsedown(file_get_contents(__DIR__ . '/../pages/privacy.md')),
+            'content_html' => file_get_contents(__DIR__ . '/../pages/privacy.html'),
         ]);
 
         Page::factory()->create([
             'name' => 'O nas',
             'slug' => 'o-nas',
             'public' => true,
-            'content_html' => parsedown(file_get_contents(__DIR__ . '/../pages/about.md')),
+            'content_html' => file_get_contents(__DIR__ . '/../pages/about.html'),
         ]);
     }
 }

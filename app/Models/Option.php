@@ -49,6 +49,7 @@ class Option extends Model
         'price',
         'disabled',
         'schema_id',
+        'order',
     ];
 
     protected $casts = [

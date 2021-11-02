@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -35,19 +36,18 @@ class ProductController extends Controller implements ProductControllerSwagger
     {
         $query = Product::search($request->validated())
             ->sort($request->input('sort', 'order'))
-            ->with([
-                'brand',
-                'category',
-                'tags',
-                'media',
-            ]);
+            ->with(['media', 'tags', 'schemas', 'sets']);
 
-        if (!Auth::check()) {
-            $query->public();
+        if (!Auth::user()->can('products.show_hidden')) {
+            if (!Auth::user()->can('product_sets.show_hidden')) {
+                $query->public();
+            } else {
+                $query->where('public', true);
+            }
         }
 
         if ($request->has('sets')) {
-            if (!Auth::check()) {
+            if (!Auth::user()->can('product_sets.show_hidden')) {
                 $setsFound = ProductSet::public()->whereIn(
                     'slug',
                     $request->input('sets'),
@@ -72,7 +72,7 @@ class ProductController extends Controller implements ProductControllerSwagger
             });
         }
 
-        $products = $query->paginate((int) $request->input('limit', 12));
+        $products = $query->paginate(Config::get('pagination.per_page'));
 
         if ($request->has('available')) {
             $products = $products->filter(function ($product) use ($request) {
@@ -80,15 +80,12 @@ class ProductController extends Controller implements ProductControllerSwagger
             });
         }
 
-        return ProductResource::collection(
-            $products,
-            $request->has('full'),
-        );
+        return ProductResource::collection($products)->full($request->has('full'));
     }
 
     public function show(ProductShowRequest $request, Product $product): JsonResource
     {
-        if (!Auth::check() && !$product->isPublic()) {
+        if (!Auth::user()->can('products.show_hidden') && !$product->isPublic()) {
             throw new NotFoundHttpException();
         }
 

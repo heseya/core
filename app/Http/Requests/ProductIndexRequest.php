@@ -16,7 +16,6 @@ class ProductIndexRequest extends FormRequest
             'sets.*' => ['string', 'exists:product_sets,slug'],
             'search' => ['nullable', 'string', 'max:255'],
             'sort' => ['nullable', 'string', 'max:255'],
-            'limit' => ['nullable', 'integer', 'min:1', 'max:500'],
             'available' => ['nullable'],
         ];
     }

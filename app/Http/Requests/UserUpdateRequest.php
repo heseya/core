@@ -19,6 +19,15 @@ use Illuminate\Validation\Rule;
  *       type="string",
  *       example="admin@example.com",
  *     ),
+ *     @OA\Property(
+ *       property="roles",
+ *       type="array",
+ *       description="Ids of assigned roles",
+ *       @OA\Items(
+ *         type="string",
+ *         example="026bc5f6-8373-4aeb-972e-e78d72a67121",
+ *       ),
+ *     ),
  *   )
  * )
  */
@@ -32,8 +41,12 @@ class UserUpdateRequest extends FormRequest
                 'nullable',
                 'email',
                 'max:255',
-                Rule::unique('users')->ignoreModel($this->route('user')),
+                Rule::unique('users')
+                    ->ignoreModel($this->route('user'))
+                    ->whereNull('deleted_at'),
             ],
+            'roles' => ['array'],
+            'roles.*' => ['uuid', 'exists:roles,id'],
         ];
     }
 }

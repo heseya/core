@@ -21,14 +21,14 @@ Entry to the container (or from the application)
 make bash
 ```
 
-If port is taken you can change DOCKER_PORT in .env to your liking  
+If port is taken you can change DOCKER_PORT in .env to your liking
 Easy start only works with default dirname `store-api` for now.
 
 ## Git hooks
 Project uses git pre-commit hook to automaticly generate IDE Helper docs and fix style issues
 
 >### Attention
->Hook scripts assume the project catalogue uses the default repository name: store-api.  
+>Hook scripts assume the project catalogue uses the default repository name: store-api.
 >The copied hooks will need to be modified with correct catalogue name.
 
 Enable pre-commit scripts by copying git hooks
@@ -51,11 +51,11 @@ php artisan insights
 ```
 
 Additional:
+- don't use laravel class aliases like `\DB`, `\Arr`, use full import instead (we deleted aliases, so it's won't work either),
 - all variables in this project should be `snake_case` and functions (relations too) `camelCase`,
 - variables containing links like `avatar_url` should always end with `_url`,
 - all models must have uuid4 formatted ID,
 - always get model id by getKey() method,
-- in tests use `getJson()`, `postJson()` etc.
 - in tests use `assertOk()`, `assertCreated()` etc.
 - `$x === null` > `is_null()`,
 - avoid magic methods,
@@ -150,9 +150,9 @@ php artisan key:generate
 php artisan migrate --seed
 ```
 
-After migration run passport install.
+After migration run jwt install.
 ```
-php artisan passport:install
+php artisan jwt:secret
 ```
 
 Seeder creates user `admin@example.com` with password `secret`.

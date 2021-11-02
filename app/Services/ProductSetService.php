@@ -5,9 +5,9 @@ namespace App\Services;
 use App\Dtos\ProductSetDto;
 use App\Models\ProductSet;
 use App\Services\Contracts\ProductSetServiceContract;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -17,7 +17,7 @@ class ProductSetService implements ProductSetServiceContract
     public function authorize(ProductSet $set): void
     {
         if (
-            !Auth::check() &&
+            !Auth::user()->can('product_sets.show_hidden') &&
             !ProductSet::public()->where('id', $set->getKey())->exists()
         ) {
             throw new NotFoundHttpException();
@@ -28,40 +28,12 @@ class ProductSetService implements ProductSetServiceContract
     {
         $query = ProductSet::search($attributes);
 
-        if (!Auth::check()) {
+        if (!Auth::user()->can('product_sets.show_hidden')) {
             $query->public();
         }
 
         if ($root) {
             $query->root();
-        }
-
-        return $query->get();
-    }
-
-    public function brands(array $attributes): Collection
-    {
-        $query = ProductSet::whereHas(
-            'parent',
-            fn (Builder $sub) => $sub->where('slug', 'brands'),
-        )->search($attributes);
-
-        if (!Auth::check()) {
-            $query->public();
-        }
-
-        return $query->get();
-    }
-
-    public function categories(array $attributes): Collection
-    {
-        $query = ProductSet::whereHas(
-            'parent',
-            fn (Builder $sub) => $sub->where('slug', 'categories'),
-        )->search($attributes);
-
-        if (!Auth::check()) {
-            $query->public();
         }
 
         return $query->get();
@@ -100,6 +72,37 @@ class ProductSetService implements ProductSetServiceContract
         }
 
         return $set;
+    }
+
+    public function updateChildren(
+        Collection $children,
+        string $parentId,
+        string $parentSlug,
+        bool $publicParent
+    ): void {
+        $children->each(
+            function ($child, $order) use ($parentId, $parentSlug, $publicParent) {
+                if ($child->slugOverride) {
+                    $childSlug = $child->slug;
+                } else {
+                    $childSlug = $parentSlug . '-' . $child->slugSuffix;
+                }
+
+                $this->updateChildren(
+                    $child->children,
+                    $child->getKey(),
+                    $childSlug,
+                    $publicParent && $child->public
+                );
+
+                $child->update([
+                    'parent_id' => $parentId,
+                    'order' => $order,
+                    'slug' => $childSlug,
+                    'public_parent' => $publicParent,
+                ]);
+            },
+        );
     }
 
     public function update(ProductSet $set, ProductSetDto $dto): ProductSet
@@ -183,45 +186,14 @@ class ProductSetService implements ProductSetServiceContract
         $set->delete();
     }
 
-    public function products(ProductSet $set, $limit)
+    public function products(ProductSet $set): mixed
     {
         $query = $set->products();
 
-        if (!Auth::check()) {
+        if (!Auth::user()->can('product_sets.show_hidden')) {
             $query->public();
         }
 
-        return $query->paginate($limit);
-    }
-
-    public function updateChildren(
-        Collection $children,
-        string $parentId,
-        string $parentSlug,
-        bool $publicParent
-    ): void {
-        $children->each(
-            function ($child, $order) use ($parentId, $parentSlug, $publicParent) {
-                if ($child->slugOverride) {
-                    $childSlug = $child->slug;
-                } else {
-                    $childSlug = $parentSlug . '-' . $child->slugSuffix;
-                }
-
-                $this->updateChildren(
-                    $child->children,
-                    $child->getKey(),
-                    $childSlug,
-                    $publicParent && $child->public
-                );
-
-                $child->update([
-                    'parent_id' => $parentId,
-                    'order' => $order,
-                    'slug' => $childSlug,
-                    'public_parent' => $publicParent,
-                ]);
-            },
-        );
+        return $query->paginate(Config::get('pagination.per_page'));
     }
 }

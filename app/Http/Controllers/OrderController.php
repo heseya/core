@@ -26,6 +26,7 @@ use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Config;
 use Throwable;
 
 class OrderController extends Controller implements OrderControllerSwagger
@@ -42,10 +43,11 @@ class OrderController extends Controller implements OrderControllerSwagger
     public function index(OrderIndexRequest $request): JsonResource
     {
         $query = Order::search($request->validated())
-            ->sort($request->input('sort'));
+            ->sort($request->input('sort'))
+            ->with(['products', 'discounts', 'payments']);
 
         return OrderResource::collection(
-            $query->paginate((int) $request->input('limit', 15)),
+            $query->paginate(Config::get('pagination.per_page')),
         );
     }
 

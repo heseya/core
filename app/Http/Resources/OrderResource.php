@@ -14,7 +14,7 @@ class OrderResource extends Resource
             'email' => $this->email,
             'currency' => $this->currency,
             'summary' => $this->summary,
-            'summary_payed' => $this->payed,
+            'summary_paid' => $this->paid_amount,
             'shipping_price' => $this->shipping_price,
             'payed' => $this->isPayed(),
             'comment' => $this->comment,

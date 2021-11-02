@@ -41,12 +41,30 @@ class ProductSetIndexTest extends TestCase
         ]);
     }
 
-    public function testIndex(): void
+    public function testIndexUnauthorized(): void
     {
         $response = $this->getJson('/product-sets');
+        $response->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSetsShow($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.show');
+
+        $this->index($user);
+    }
+
+    public function index($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.show');
+
+        $response = $this->actingAs($this->$user)->getJson('/product-sets');
         $response
             ->assertOk()
-            ->assertJsonCount(2, 'data') // Shoud show only public sets.
+            ->assertJsonCount(2, 'data') // Should show only public sets.
             ->assertJson(['data' => [
                 0 => [
                     'id' => $this->set->getKey(),
@@ -72,16 +90,40 @@ class ProductSetIndexTest extends TestCase
                     'parent_id' => $this->childSet->parent_id,
                     'children_ids' => [],
                 ],
-            ],
-            ]);
+            ]]);
     }
 
-    public function testIndexAuthorized(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexProductsAdd($user): void
     {
-        $response = $this->actingAs($this->user)->getJson('/product-sets');
+        $this->$user->givePermissionTo('products.add');
+
+        $this->index($user);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSetsProductsEdit($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $this->index($user);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexHidden($user): void
+    {
+        $this->$user->givePermissionTo(['product_sets.show', 'product_sets.show_hidden']);
+
+        $response = $this->actingAs($this->$user)->getJson('/product-sets');
         $response
             ->assertOk()
-            ->assertJsonCount(4, 'data') // Shoud show only public sets.
+            ->assertJsonCount(4, 'data') // Should show only public sets.
             ->assertJson(['data' => [
                 0 => [
                     'id' => $this->set->getKey(),
@@ -135,12 +177,17 @@ class ProductSetIndexTest extends TestCase
             ]);
     }
 
-    public function testIndexRoot(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexRoot($user): void
     {
-        $response = $this->getJson('/product-sets?root');
+        $this->$user->givePermissionTo('product_sets.show');
+
+        $response = $this->actingAs($this->$user)->getJson('/product-sets?root');
         $response
             ->assertOk()
-            ->assertJsonCount(1, 'data') // Shoud show only public sets.
+            ->assertJsonCount(1, 'data') // Should show only public sets.
             ->assertJson(['data' => [
                 [
                     'id' => $this->set->getKey(),
@@ -159,12 +206,17 @@ class ProductSetIndexTest extends TestCase
             ]);
     }
 
-    public function testIndexRootAuthorized(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexRootHidden($user): void
     {
-        $response = $this->actingAs($this->user)->getJson('/product-sets?root');
+        $this->$user->givePermissionTo(['product_sets.show', 'product_sets.show_hidden']);
+
+        $response = $this->actingAs($this->$user)->getJson('/product-sets?root');
         $response
             ->assertOk()
-            ->assertJsonCount(2, 'data') // Shoud show only public sets.
+            ->assertJsonCount(2, 'data') // Should show only public sets.
             ->assertJson(['data' => [
                 0 => [
                     'id' => $this->set->getKey(),
@@ -194,12 +246,17 @@ class ProductSetIndexTest extends TestCase
             ]);
     }
 
-    public function testIndexTree(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexTree($user): void
     {
-        $response = $this->getJson('/product-sets?tree');
+        $this->$user->givePermissionTo('product_sets.show');
+
+        $response = $this->actingAs($this->$user)->getJson('/product-sets?tree');
         $response
             ->assertOk()
-            ->assertJsonCount(1, 'data') // Shoud show only public sets.
+            ->assertJsonCount(1, 'data') // Should show only public sets.
             ->assertJson(['data' => [
                 [
                     'id' => $this->set->getKey(),
@@ -228,12 +285,17 @@ class ProductSetIndexTest extends TestCase
             ]);
     }
 
-    public function testIndexTreeAuthorized(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexTreeHidden($user): void
     {
-        $response = $this->actingAs($this->user)->getJson('/product-sets?tree');
+        $this->$user->givePermissionTo(['product_sets.show', 'product_sets.show_hidden']);
+
+        $response = $this->actingAs($this->$user)->getJson('/product-sets?tree');
         $response
             ->assertOk()
-            ->assertJsonCount(2, 'data') // Shoud show only public sets.
+            ->assertJsonCount(2, 'data') // Should show only public sets.
             ->assertJson(['data' => [
                 0 => [
                     'id' => $this->set->getKey(),
@@ -282,6 +344,6 @@ class ProductSetIndexTest extends TestCase
                     'children' => [],
                 ],
             ],
-            ]);
+        ]);
     }
 }
