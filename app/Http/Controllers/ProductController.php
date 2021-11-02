@@ -32,8 +32,7 @@ class ProductController extends Controller implements ProductControllerSwagger
         MediaServiceContract $mediaService,
         SchemaServiceContract $schemaService,
         SeoMetadataServiceContract $seoMetadataService
-    )
-    {
+    ) {
         $this->mediaService = $mediaService;
         $this->schemaService = $schemaService;
         $this->seoMetadataService = $seoMetadataService;
