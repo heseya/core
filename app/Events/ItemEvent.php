@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Http\Resources\ItemResource;
 use App\Models\Item;
 
 abstract class ItemEvent extends WebHookEvent
@@ -16,7 +17,7 @@ abstract class ItemEvent extends WebHookEvent
 
     public function getDataContent(): array
     {
-        return $this->item->toArray();
+        return ItemResource::make($this->item)->resolve();
     }
 
     public function getDataType(): string

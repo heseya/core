@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Http\Resources\PageResource;
 use App\Models\Page;
 
 abstract class PageEvent extends WebHookEvent
@@ -21,7 +22,7 @@ abstract class PageEvent extends WebHookEvent
 
     public function getDataContent(): array
     {
-        return $this->page->toArray();
+        return PageResource::make($this->page)->resolve();
     }
 
     public function getDataType(): string

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Events\PageCreated;
 use App\Events\PageDeleted;
 use App\Events\PageUpdated;
+use App\Http\Resources\PageResource;
 use App\Models\Page;
 use App\Services\Contracts\PageServiceContract;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -58,7 +59,7 @@ class PageService implements PageServiceContract
     public function delete(Page $page): void
     {
         if ($page->delete()) {
-            PageDeleted::dispatch($page->toArray(), $page::class);
+            PageDeleted::dispatch(PageResource::make($page)->resolve(), $page::class);
         }
     }
 

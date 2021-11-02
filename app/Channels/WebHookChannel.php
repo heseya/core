@@ -17,10 +17,11 @@ class WebHookChannel
 
         $secret = $notifiable->secret;
         if ($secret !== null) {
-            $webhook->useSecret($notifiable->secret)
-                ->withHeaders([
-                    'X-Heseya-Token' => $secret,
-                ]);
+            $webhook
+                ->signUsing(WebHookSigner::class)
+                ->useSecret($secret);
+        } else {
+            $webhook->doNotSign();
         }
 
         $webhook->dispatch();

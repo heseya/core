@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Http\Resources\OrderResource;
 use App\Models\Order;
 
 abstract class OrderEvent extends WebHookEvent
@@ -16,7 +17,7 @@ abstract class OrderEvent extends WebHookEvent
 
     public function getDataContent(): array
     {
-        return $this->order->toArray();
+        return OrderResource::make($this->order)->resolve();
     }
 
     public function getDataType(): string

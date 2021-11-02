@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Http\Resources\DiscountResource;
 use App\Models\Discount;
 
 abstract class DiscountEvent extends WebHookEvent
@@ -16,7 +17,7 @@ abstract class DiscountEvent extends WebHookEvent
 
     public function getDataContent(): array
     {
-        return $this->discount->toArray();
+        return DiscountResource::make($this->discount)->resolve();
     }
 
     public function getDataType(): string

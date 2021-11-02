@@ -279,7 +279,7 @@ class UserTest extends TestCase
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $user) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $user->getKey()
                 && $payload['data_type'] === 'User'
                 && $payload['event'] === 'UserCreated';
@@ -527,7 +527,7 @@ class UserTest extends TestCase
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $user) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $user->getKey()
                 && $payload['data_type'] === 'User'
                 && $payload['event'] === 'UserUpdated';
@@ -879,7 +879,7 @@ class UserTest extends TestCase
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $user) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $user->getKey()
                 && $payload['data_type'] === 'User'
                 && $payload['event'] === 'UserDeleted';

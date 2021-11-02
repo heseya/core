@@ -300,7 +300,7 @@ class OrderUpdateTest extends TestCase
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $order) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $order->getKey()
                 && $payload['data_type'] === 'Order'
                 && $payload['event'] === 'OrderUpdated';

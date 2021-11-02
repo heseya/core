@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Http\Resources\ProductResource;
 use App\Models\Product;
 
 abstract class ProductEvent extends WebHookEvent
@@ -21,7 +22,7 @@ abstract class ProductEvent extends WebHookEvent
 
     public function getDataContent(): array
     {
-        return $this->product->toArray();
+        return ProductResource::make($this->product)->resolve();
     }
 
     public function getDataType(): string

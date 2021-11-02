@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Http\Resources\UserResource;
 use App\Models\User;
 
 abstract class UserEvent extends WebHookEvent
@@ -16,7 +17,7 @@ abstract class UserEvent extends WebHookEvent
 
     public function getDataContent(): array
     {
-        return $this->user->toArray();
+        return UserResource::make($this->user)->resolve();
     }
 
     public function getDataType(): string

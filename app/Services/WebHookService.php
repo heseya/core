@@ -17,9 +17,9 @@ class WebHookService implements WebHookServiceContract
     public function create(array $request): WebHook
     {
         return WebHook::create([
-            'name' => $request['name'],
+            'name' => $request['name'] ?? null,
             'url' => $request['url'],
-            'secret' => $request['secret'],
+            'secret' => $request['secret'] ?? null,
             'events' => $request['events'],
             'with_issuer' => $request['with_issuer'],
             'with_hidden' => $request['with_hidden'],

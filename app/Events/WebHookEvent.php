@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Enums\IssuerType;
 use App\Models\Model;
 use Carbon\Carbon;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -30,6 +31,7 @@ abstract class WebHookEvent
             'data_type' => $this->getDataType(),
             'event' => Str::remove('App\\Events\\', $this::class),
             'triggered_at' => $this->triggered_at,
+            'issuer_type' => IssuerType::getValue(strtoupper($this->getModelClass($this->issuer))),
         ];
     }
 

@@ -165,7 +165,7 @@ class DiscountTest extends TestCase
         Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $discount) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $discount->getKey()
                 && $payload['data_type'] === 'Discount'
                 && $payload['event'] === 'DiscountCreated';
@@ -236,7 +236,7 @@ class DiscountTest extends TestCase
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $discount) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $discount->getKey()
                 && $payload['data_type'] === 'Discount'
                 && $payload['event'] === 'DiscountCreated';
@@ -352,7 +352,7 @@ class DiscountTest extends TestCase
         Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $discount) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $discount->getKey()
                 && $payload['data_type'] === 'Discount'
                 && $payload['event'] === 'DiscountUpdated';
@@ -401,7 +401,7 @@ class DiscountTest extends TestCase
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $discount) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $discount->getKey()
                 && $payload['data_type'] === 'Discount'
                 && $payload['event'] === 'DiscountUpdated';
@@ -479,7 +479,7 @@ class DiscountTest extends TestCase
         Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $discount) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $discount->getKey()
                 && $payload['data_type'] === 'Discount'
                 && $payload['event'] === 'DiscountDeleted';
@@ -521,7 +521,7 @@ class DiscountTest extends TestCase
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $discount) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $discount->getKey()
                 && $payload['data_type'] === 'Discount'
                 && $payload['event'] === 'DiscountDeleted';

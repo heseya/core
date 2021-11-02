@@ -154,7 +154,7 @@ class ProductSetCreateTest extends TestCase
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $set) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $set->getKey()
                 && $payload['data_type'] === 'ProductSet'
                 && $payload['event'] === 'ProductSetCreated';
@@ -250,7 +250,7 @@ class ProductSetCreateTest extends TestCase
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $set) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
-                && $job->headers['X-Heseya-Token'] === $webHook->secret
+                && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $set->getKey()
                 && $payload['data_type'] === 'ProductSet'
                 && $payload['event'] === 'ProductSetCreated';
