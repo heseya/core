@@ -228,7 +228,7 @@ class OrderController extends Controller implements OrderControllerSwagger
 
     public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResponse
     {
-        if ($order->status->cancel) {
+        if ($order->status && $order->status->cancel) {
             throw new OrderException(__('admin.error.order_change_status_canceled'));
         }
 

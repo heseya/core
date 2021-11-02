@@ -4,11 +4,10 @@ namespace Tests\Feature;
 
 use App\Events\OrderCreated;
 use App\Models\Address;
-use App\Models\ProductSet;
 use App\Models\Order;
-use App\Models\Price;
 use App\Models\PriceRange;
 use App\Models\Product;
+use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -132,7 +131,7 @@ class OrderCreateTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('orders', [
-            'id' => $order->id,
+            'id' => $order->getKey(),
             'email' => 'test@example.com',
             'shipping_price' => $this->shippingMethod->getPrice(
                 ($this->product->price + $schemaPrice) * $productQuantity,
