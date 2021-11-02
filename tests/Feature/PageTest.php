@@ -385,7 +385,7 @@ class PageTest extends TestCase
         $response = $this->actingAs($this->user)
             ->deleteJson('/pages/id:' . $this->page->getKey());
         $response->assertNoContent();
-        $this->assertDeleted($this->page);
+        $this->assertSoftDeleted($this->page);
 
         Event::assertDispatched(PageDeleted::class);
     }
@@ -409,7 +409,7 @@ class PageTest extends TestCase
         $response = $this->actingAs($this->user)
             ->deleteJson('/pages/id:' . $this->page->getKey());
         $response->assertNoContent();
-        $this->assertDeleted($this->page);
+        $this->assertSoftDeleted($this->page);
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
             return $job->class === WebHookEventListener::class
@@ -418,7 +418,7 @@ class PageTest extends TestCase
 
         $page = $this->page;
 
-        $event = new PageDeleted(PageResource::make($page)->resolve(), $page::class);
+        $event = new PageDeleted($page);
         $listener = new WebHookEventListener();
         $listener->handle($event);
 

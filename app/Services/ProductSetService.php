@@ -6,7 +6,6 @@ use App\Dtos\ProductSetDto;
 use App\Events\ProductSetCreated;
 use App\Events\ProductSetDeleted;
 use App\Events\ProductSetUpdated;
-use App\Http\Resources\ProductSetResource;
 use App\Models\ProductSet;
 use App\Services\Contracts\ProductSetServiceContract;
 use Illuminate\Database\Eloquent\Builder;
@@ -222,7 +221,7 @@ class ProductSetService implements ProductSetServiceContract
         }
 
         if ($set->delete()) {
-            ProductSetDeleted::dispatch(ProductSetResource::make($set)->resolve(), $set::class);
+            ProductSetDeleted::dispatch($set);
         }
     }
 

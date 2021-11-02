@@ -44,7 +44,7 @@ class ProductSetOtherTest extends TestCase
             '/product-sets/id:' . $newSet->getKey(),
         );
         $response->assertNoContent();
-        $this->assertDeleted($newSet);
+        $this->assertSoftDeleted($newSet);
 
         Event::assertDispatched(ProductSetDeleted::class);
     }
@@ -73,14 +73,14 @@ class ProductSetOtherTest extends TestCase
             '/product-sets/id:' . $newSet->getKey(),
         );
         $response->assertNoContent();
-        $this->assertDeleted($newSet);
+        $this->assertSoftDeleted($newSet);
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
             return $job->class === WebHookEventListener::class
                 && $job->data[0] instanceof ProductSetDeleted;
         });
 
-        $event = new ProductSetDeleted(ProductSetResource::make($newSet)->resolve(), $newSet::class);
+        $event = new ProductSetDeleted($newSet);
         $listener = new WebHookEventListener();
         $listener->handle($event);
 
@@ -112,11 +112,11 @@ class ProductSetOtherTest extends TestCase
             '/product-sets/id:' . $newSet->getKey(),
         );
         $response->assertNoContent();
-        $this->assertDeleted($newSet);
+        $this->assertSoftDeleted($newSet);
 
         $this->assertDatabaseHas('products', [
             $product->getKeyName() => $product->getKey(),
-            'brand_id' => null,
+            'brand_id' => $newSet->getKey(),
         ]);
 
         Event::assertDispatched(ProductSetDeleted::class);
@@ -140,11 +140,11 @@ class ProductSetOtherTest extends TestCase
             '/product-sets/id:' . $newSet->getKey(),
         );
         $response->assertNoContent();
-        $this->assertDeleted($newSet);
+        $this->assertSoftDeleted($newSet);
 
         $this->assertDatabaseHas('products', [
             $product->getKeyName() => $product->getKey(),
-            'category_id' => null,
+            'category_id' => $newSet->getKey(),
         ]);
 
         Event::assertDispatched(ProductSetDeleted::class);
@@ -174,22 +174,7 @@ class ProductSetOtherTest extends TestCase
             '/product-sets/id:' . $newSet->getKey(),
         );
         $response->assertNoContent();
-        $this->assertDeleted($newSet);
-
-        $this->assertDatabaseMissing('product_set_product', [
-            'product_id' => $product1->getKey(),
-            'product_set_id' => $newSet->getKey(),
-        ]);
-
-        $this->assertDatabaseMissing('product_set_product', [
-            'product_id' => $product2->getKey(),
-            'product_set_id' => $newSet->getKey(),
-        ]);
-
-        $this->assertDatabaseMissing('product_set_product', [
-            'product_id' => $product3->getKey(),
-            'product_set_id' => $newSet->getKey(),
-        ]);
+        $this->assertSoftDeleted($newSet);
 
         Event::assertDispatched(ProductSetDeleted::class);
     }
@@ -223,10 +208,10 @@ class ProductSetOtherTest extends TestCase
             '/product-sets/id:' . $newSet->getKey(),
         );
         $response->assertNoContent();
-        $this->assertDeleted($newSet);
-        $this->assertDeleted($subset1);
-        $this->assertDeleted($subset2);
-        $this->assertDeleted($subset3);
+        $this->assertSoftDeleted($newSet);
+        $this->assertSoftDeleted($subset1);
+        $this->assertSoftDeleted($subset2);
+        $this->assertSoftDeleted($subset3);
 
         Event::assertDispatched(ProductSetDeleted::class);
     }

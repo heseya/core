@@ -2,6 +2,6 @@
 
 namespace App\Events;
 
-class PageDeleted extends WebHookDeletedEvent
+class PageDeleted extends PageEvent
 {
 }
