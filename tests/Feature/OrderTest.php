@@ -92,7 +92,7 @@ class OrderTest extends TestCase
                 0 => $this->expected,
             ]]);
 
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(20);
     }
 
     /**
@@ -110,7 +110,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(20);
     }
 
     public function testViewUnauthorized(): void

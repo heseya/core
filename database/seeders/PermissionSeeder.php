@@ -178,6 +178,10 @@ class PermissionSeeder extends Seeder
         Permission::updateOrCreate(['name' => 'roles.edit'], ['display_name' => 'Możliwość edycji ról użytkowników']);
         Permission::updateOrCreate(['name' => 'roles.remove'], ['display_name' => 'Możliwość usuwania ról użytkowników']);
 
+        // SEO
+        Permission::updateOrCreate(['name' => 'seo.show'], ['display_name' => 'Dostęp do ustawień SEO sklepu']);
+        Permission::updateOrCreate(['name' => 'seo.edit'], ['display_name' => 'Możliwość edycji ustawień SEO sklepu']);
+
         $owner = Role::updateOrCreate(['name' => 'Owner'])
             ->givePermissionTo(Permission::all());
         $owner->type = RoleType::OWNER;
@@ -206,6 +210,7 @@ class PermissionSeeder extends Seeder
                 'products.show_details',
                 'settings.show',
                 'tags.show',
+                'seo.show',
             ]);
         $unauthenticated->type = RoleType::UNAUTHENTICATED;
         $unauthenticated->save();
