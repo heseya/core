@@ -54,6 +54,28 @@ class AppService implements AppServiceContract
         $this->validateAppRoot($response);
 
         $appConfig = $response->json();
+
+        $requiredPerm = Collection::make($appConfig['required_permissions']);
+        $optionalPerm = key_exists('optional_permissions', $appConfig) ?
+            $appConfig['optional_permissions'] : [];
+        $advertisedPerm = $requiredPerm->concat($optionalPerm)->unique();
+
+        if ($advertisedPerm->diff($allPermissions)->isNotEmpty()) {
+            throw new AuthException('App wants invalid permissions');
+        }
+
+        if ($permissions->intersect($requiredPerm)->count() < $requiredPerm->count()) {
+            throw new AuthException(
+                "Can't add app without all required permissions",
+            );
+        }
+
+        if ($permissions->intersect($advertisedPerm)->count() < $permissions->count()) {
+            throw new AuthException(
+                "Can't add any permissions application doesn't want",
+            );
+        }
+
         $name = $dto->getName() ?? $appConfig['name'];
         $slug = Str::slug($name);
 
@@ -70,33 +92,6 @@ class AppService implements AppServiceContract
             'icon',
             'author',
         ])->toArray());
-
-        $requiredPerm = Collection::make($appConfig['required_permissions']);
-        $optionalPerm = key_exists('optional_permissions', $appConfig) ?
-            $appConfig['optional_permissions'] : [];
-        $advertisedPerm = $requiredPerm->concat($optionalPerm)->unique();
-
-        if ($advertisedPerm->diff($allPermissions)->isNotEmpty()) {
-            $app->delete();
-
-            throw new AuthException('App wants invalid permissions');
-        }
-
-        if ($permissions->intersect($requiredPerm)->count() < $requiredPerm->count()) {
-            $app->delete();
-
-            throw new AuthException(
-                "Can't add app without all required permissions",
-            );
-        }
-
-        if ($permissions->intersect($advertisedPerm)->count() < $permissions->count()) {
-            $app->delete();
-
-            throw new AuthException(
-                "Can't add any permissions application doesn't want",
-            );
-        }
 
         $app->givePermissionTo(
             $permissions->concat(['auth.login', 'auth.identity_profile']),
@@ -148,43 +143,28 @@ class AppService implements AppServiceContract
             throw new AppException('App has invalid installation response');
         }
 
-        $uninstallToken = $response->json('uninstall_token');
+        $app->update([
+            'uninstall_token' => $response->json('uninstall_token'),
+        ]);
 
-        $internalPermissions = Collection::make($appConfig['internal_permissions']);
-
-        $internalPermissions = $internalPermissions->map(fn ($permission) => Permission::create([
-            'name' => "app.{$app->slug}.{$permission['name']}",
-            'description' => key_exists('description', $permission) ?
-                $permission['description'] : null,
-        ]));
+        $internalPermissions = Collection::make($appConfig['internal_permissions'])
+            ->map(fn ($permission) => Permission::create([
+                'name' => "app.{$app->slug}.{$permission['name']}",
+                'description' => key_exists('description', $permission)
+                    ? $permission['description']
+                    : null,
+            ]));
 
         $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
         $owner->givePermissionTo($internalPermissions);
 
         if ($internalPermissions->isNotEmpty()) {
-            // Create app owner role and assign it to the user
-            $role = Role::create([
-                'name' => $app->name . ' owner',
-            ]);
-            $role->syncPermissions($internalPermissions);
+            $this->createAppOwnerRole($app, $internalPermissions);
 
-            $app->update([
-                'role_id' => $role->getKey(),
-                'uninstall_token' => $uninstallToken,
-            ]);
-
-            Auth::user()->assignRole($role);
-
-            // Grant unauthenticated user public app permissions
-            $publicPermissions = Collection::make($dto->getPublicAppPermissions())
-                ->map(fn ($permission) => "app.{$app->slug}.{$permission}");
-
-            /** @var Role $unauthenticated */
-            $unauthenticated = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
-
-            $internalPermissions->each(
-                fn ($permission) => !$publicPermissions->contains($permission->name)
-                    ?: $unauthenticated->givePermissionTo($permission),
+            $this->makePermissionsPublic(
+                $app,
+                $internalPermissions,
+                Collection::make($dto->getPublicAppPermissions()),
             );
         }
 
@@ -243,5 +223,50 @@ class AppService implements AppServiceContract
         if ($validator->fails()) {
             throw new AppException('App responded with invalid info');
         }
+    }
+
+    /**
+     * Create app owner role and assign it to the current user
+     *
+     * @param App $app
+     * @param Collection $internalPermissions
+     */
+    private function createAppOwnerRole(App $app, Collection $internalPermissions): void
+    {
+        $role = Role::create([
+            'name' => $app->name . ' owner',
+        ]);
+        $role->syncPermissions($internalPermissions);
+
+        $app->update([
+            'role_id' => $role->getKey(),
+        ]);
+
+        Auth::user()->assignRole($role);
+    }
+
+    /**
+     * Grant unauthenticated users public app permissions
+     *
+     * @param App $app
+     * @param Collection $internalPermissions
+     * @param Collection $publicPermissions
+     */
+    private function makePermissionsPublic(
+        App $app,
+        Collection $internalPermissions,
+        Collection $publicPermissions
+    ): void {
+        $publicPermissions = $publicPermissions->map(
+            fn ($permission) => "app.{$app->slug}.{$permission}",
+        );
+
+        /** @var Role $unauthenticated */
+        $unauthenticated = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+
+        $internalPermissions->each(
+            fn ($permission) => !$publicPermissions->contains($permission->name)
+                ?: $unauthenticated->givePermissionTo($permission),
+        );
     }
 }
