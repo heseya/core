@@ -2,6 +2,6 @@
 
 namespace App\Events;
 
-class ProductSetDeleted extends WebHookDeletedEvent
+class ProductSetDeleted extends ProductSetEvent
 {
 }
