@@ -12,6 +12,7 @@ use App\Models\Product;
 use App\Models\ProductSet;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
+use App\Services\Contracts\SeoMetadataServiceContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -25,18 +26,24 @@ class ProductController extends Controller implements ProductControllerSwagger
 {
     private MediaServiceContract $mediaService;
     private SchemaServiceContract $schemaService;
+    private SeoMetadataServiceContract $seoMetadataService;
 
-    public function __construct(MediaServiceContract $mediaService, SchemaServiceContract $schemaService)
+    public function __construct(
+        MediaServiceContract $mediaService,
+        SchemaServiceContract $schemaService,
+        SeoMetadataServiceContract $seoMetadataService
+    )
     {
         $this->mediaService = $mediaService;
         $this->schemaService = $schemaService;
+        $this->seoMetadataService = $seoMetadataService;
     }
 
     public function index(ProductIndexRequest $request): JsonResource
     {
         $query = Product::search($request->validated())
             ->sort($request->input('sort', 'order'))
-            ->with(['media', 'tags', 'schemas', 'sets']);
+            ->with(['media', 'tags', 'schemas', 'sets', 'seo']);
 
         if (!Auth::user()->can('products.show_hidden')) {
             if (!Auth::user()->can('product_sets.show_hidden')) {
@@ -94,7 +101,8 @@ class ProductController extends Controller implements ProductControllerSwagger
 
     public function store(ProductCreateRequest $request): JsonResource
     {
-        $product = Product::create($request->validated());
+        $attributes = $request->validated();
+        $product = Product::create($attributes);
 
         $this->mediaService->sync($product, $request->input('media', []));
         $product->tags()->sync($request->input('tags', []));
@@ -106,13 +114,18 @@ class ProductController extends Controller implements ProductControllerSwagger
         if ($request->has('sets')) {
             $product->sets()->sync($request->input('sets'));
         }
+
+        $attributes['seo']['model_id'] = $product->getKey();
+        $attributes['seo']['model_type'] = $product::class;
+        $this->seoMetadataService->create($attributes['seo']);
 
         return ProductResource::make($product);
     }
 
     public function update(ProductUpdateRequest $request, Product $product): JsonResource
     {
-        $product->update($request->validated());
+        $attributes = $request->validated();
+        $product->update($attributes);
 
         $this->mediaService->sync($product, $request->input('media', []));
         $product->tags()->sync($request->input('tags', []));
@@ -123,6 +136,10 @@ class ProductController extends Controller implements ProductControllerSwagger
 
         if ($request->has('sets')) {
             $product->sets()->sync($request->input('sets'));
+        }
+
+        if ($request->has('seo')) {
+            $this->seoMetadataService->update($attributes['seo'], $product->seo);
         }
 
         return ProductResource::make($product);
@@ -131,6 +148,10 @@ class ProductController extends Controller implements ProductControllerSwagger
     public function destroy(Product $product): JsonResponse
     {
         $product->delete();
+
+        if ($product->seo !== null) {
+            $this->seoMetadataService->delete($product->seo);
+        }
 
         return Response::json(null, 204);
     }

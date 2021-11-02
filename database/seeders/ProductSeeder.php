@@ -9,6 +9,7 @@ use App\Models\Media;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
+use App\Models\SeoMetadata;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
 
@@ -48,6 +49,7 @@ class ProductSeeder extends Seeder
 
             $this->media($product);
             $this->sets($product, $sets);
+            $this->seo($product);
 
             if ($index >= 75) {
                 $this->brands($product, $brands);
@@ -100,5 +102,11 @@ class ProductSeeder extends Seeder
         $product->update([
             'brand_id' => $brands->random()->getKey(),
         ]);
+    }
+
+    private function seo(Product $product): void
+    {
+        $seo = SeoMetadata::factory()->create();
+        $product->seo()->save($seo);
     }
 }

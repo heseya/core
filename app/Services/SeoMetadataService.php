@@ -28,4 +28,22 @@ class SeoMetadataService implements SeoMetadataServiceContract
 
         return $seo;
     }
+
+    public function create(array $attributes): SeoMetadata
+    {
+        return SeoMetadata::create(
+            $attributes
+        );
+    }
+
+    public function update(array $attributes, SeoMetadata $seoMetadata): SeoMetadata
+    {
+        $seoMetadata->update($attributes);
+        return $seoMetadata;
+    }
+
+    public function delete(SeoMetadata $seoMetadata): void
+    {
+        $seoMetadata->delete();
+    }
 }
