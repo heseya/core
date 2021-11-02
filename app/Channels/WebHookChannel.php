@@ -19,7 +19,7 @@ class WebHookChannel
         if ($secret !== null) {
             $webhook
                 ->signUsing(WebHookSigner::class)
-                ->useSecret($notifiable->secret);
+                ->useSecret($secret);
         } else {
             $webhook->doNotSign();
         }
