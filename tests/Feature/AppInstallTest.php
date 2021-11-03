@@ -41,6 +41,7 @@ class AppInstallTest extends TestCase
             'allowed_permissions' => [
                 'products.show',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
@@ -80,6 +81,7 @@ class AppInstallTest extends TestCase
             'allowed_permissions' => [
                 'products.show',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
@@ -194,6 +196,7 @@ class AppInstallTest extends TestCase
             'allowed_permissions' => [
                 'products.show',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $name = 'App name';
@@ -302,6 +305,7 @@ class AppInstallTest extends TestCase
                 'products.show',
                 'products.add',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertCreated()
@@ -334,6 +338,98 @@ class AppInstallTest extends TestCase
             'auth.identity_profile',
             'products.show',
             'products.add',
+        ]));
+    }
+
+    public function testInstallWithPublicPermissions(): void
+    {
+        $this->user->givePermissionTo('apps.install');
+
+        $uninstallToken = Str::random(128);
+
+        Http::fake([
+            $this->url => Http::response([
+                'name' => 'App name',
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
+                'required_permissions' => [],
+                'internal_permissions' => [
+                    [
+                        'name' => 'recommended_public_1',
+                        'unauthenticated' => true,
+                    ],
+                    [
+                        'name' => 'recommended_public_2',
+                        'unauthenticated' => true,
+                    ],
+                    [
+                        'name' => 'recommended_private_1',
+                        'unauthenticated' => false,
+                    ],
+                    [
+                        'name' => 'recommended_private_2',
+                        'unauthenticated' => false,
+                    ],
+                ],
+            ]),
+            $this->url . '/install' => Http::response([
+                'uninstall_token' => $uninstallToken,
+            ]),
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/apps', [
+            'url' => $this->url,
+            'allowed_permissions' => [],
+            'public_app_permissions' => [
+                'recommended_public_1',
+                'recommended_private_1',
+                'invalid_permission',
+            ],
+        ]);
+
+        $name = 'App name';
+
+        $response->assertCreated()
+            ->assertJsonFragment([
+                'url' => $this->url,
+                'name' => $name,
+                'slug' => Str::slug($name),
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+            ]);
+
+        $this->assertDatabaseHas('apps', [
+            'url' => $this->url,
+            'name' => $name,
+            'slug' => Str::slug($name),
+            'author' => 'Mr. Author',
+            'version' => '1.0.0',
+            'api_version' => '^1.4.0',
+            'uninstall_token' => $uninstallToken,
+        ]);
+
+        $this->assertDatabaseHas('permissions', [
+            'name' => 'app.' . Str::slug($name) . '.recommended_public_1',
+        ]);
+
+        $this->assertDatabaseHas('permissions', [
+            'name' => 'app.' . Str::slug($name) . '.recommended_public_2',
+        ]);
+
+        $this->assertDatabaseHas('permissions', [
+            'name' => 'app.' . Str::slug($name) . '.recommended_private_1',
+        ]);
+
+        $this->assertDatabaseHas('permissions', [
+            'name' => 'app.' . Str::slug($name) . '.recommended_private_2',
+        ]);
+
+        /** @var Role $unauthenticated */
+        $unauthenticated = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $this->assertTrue($unauthenticated->hasAllPermissions([
+            'app.' . Str::slug($name) . '.recommended_public_1',
+            'app.' . Str::slug($name) . '.recommended_private_1',
         ]));
     }
 
@@ -371,6 +467,7 @@ class AppInstallTest extends TestCase
             'allowed_permissions' => [
                 'products.show',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $name = 'App name';
@@ -395,6 +492,7 @@ class AppInstallTest extends TestCase
             'allowed_permissions' => [
                 'products.show',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
@@ -412,6 +510,7 @@ class AppInstallTest extends TestCase
             'allowed_permissions' => [
                 'nonexistent.permission',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
@@ -450,6 +549,7 @@ class AppInstallTest extends TestCase
             'allowed_permissions' => [
                 'products.show',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
@@ -486,6 +586,7 @@ class AppInstallTest extends TestCase
         $response = $this->actingAs($this->user)->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
@@ -531,6 +632,7 @@ class AppInstallTest extends TestCase
                 'products.add',
                 'products.edit',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
@@ -557,6 +659,7 @@ class AppInstallTest extends TestCase
                 'products.add',
                 'products.edit',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
@@ -602,6 +705,7 @@ class AppInstallTest extends TestCase
                 'products.add',
                 'products.edit',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);

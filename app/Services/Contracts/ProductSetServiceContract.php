@@ -28,4 +28,6 @@ interface ProductSetServiceContract
     public function delete(ProductSet $set): void;
 
     public function products(ProductSet $set): mixed;
+
+    public function flattenSetsTree(Collection $sets, string $relation): Collection;
 }
