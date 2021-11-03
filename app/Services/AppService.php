@@ -51,7 +51,9 @@ class AppService implements AppServiceContract
             throw new AppException('Failed to connect with application');
         }
 
-        $this->validateAppRoot($response);
+        if (!$this->isAppRootValid($response)) {
+            throw new AppException('App responded with invalid info');
+        }
 
         $appConfig = $response->json();
 
@@ -133,11 +135,9 @@ class AppService implements AppServiceContract
             throw new AppException('Failed to install the application');
         }
 
-        $validator = Validator::make($response->json(), [
+        if (!$this->isResponseValid($response, [
             'uninstall_token' => ['required', 'string'],
-        ]);
-
-        if ($validator->fails()) {
+        ])) {
             $app->delete();
 
             throw new AppException('App has invalid installation response');
@@ -199,9 +199,9 @@ class AppService implements AppServiceContract
         return 'app.' . $app->slug . '.';
     }
 
-    protected function validateAppRoot($response)
+    protected function isAppRootValid($response)
     {
-        $validator = Validator::make($response->json(), [
+        return $this->isResponseValid($response, [
             'name' => ['required', 'string'],
             'author' => ['required', 'string'],
             'version' => ['required', 'string'],
@@ -219,10 +219,17 @@ class AppService implements AppServiceContract
             'internal_permissions.*.name' => ['required', 'string'],
             'internal_permissions.*.description' => ['nullable', 'string'],
         ]);
+    }
 
-        if ($validator->fails()) {
-            throw new AppException('App responded with invalid info');
+    protected function isResponseValid($response, $rules)
+    {
+        if ($response->json() === null) {
+            return false;
         }
+
+        $validator = Validator::make($response->json(), $rules);
+
+        return !$validator->fails();
     }
 
     /**
