@@ -11,25 +11,23 @@ use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Services\Contracts\MediaServiceContract;
+use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ProductController extends Controller implements ProductControllerSwagger
 {
-    private MediaServiceContract $mediaService;
-    private SchemaServiceContract $schemaService;
-
-    public function __construct(MediaServiceContract $mediaService, SchemaServiceContract $schemaService)
-    {
-        $this->mediaService = $mediaService;
-        $this->schemaService = $schemaService;
+    public function __construct(
+        private MediaServiceContract $mediaService,
+        private SchemaServiceContract $schemaService,
+        private ProductSetServiceContract $productSetService,
+    ) {
     }
 
     public function index(ProductIndexRequest $request): JsonResource
@@ -38,8 +36,10 @@ class ProductController extends Controller implements ProductControllerSwagger
             ->sort($request->input('sort', 'order'))
             ->with(['media', 'tags', 'schemas', 'sets']);
 
-        if (!Auth::user()->can('products.show_hidden')) {
-            if (!Auth::user()->can('product_sets.show_hidden')) {
+        $canShowHiddenSets = Gate::allows('product_sets.show_hidden');
+
+        if (Gate::denies('products.show_hidden')) {
+            if (!$canShowHiddenSets) {
                 $query->public();
             } else {
                 $query->where('public', true);
@@ -47,21 +47,21 @@ class ProductController extends Controller implements ProductControllerSwagger
         }
 
         if ($request->has('sets')) {
-            if (!Auth::user()->can('product_sets.show_hidden')) {
-                $setsFound = ProductSet::public()->whereIn(
-                    'slug',
-                    $request->input('sets'),
-                )->count();
+            $setsFound = ProductSet::whereIn(
+                'slug',
+                $request->input('sets'),
+            )->with('allChildren')->get();
 
-                if ($setsFound < count($request->input('sets'))) {
-                    throw new ModelNotFoundException('Can\'t find the given product set');
-                }
-            }
+            $relationScope = $canShowHiddenSets ? 'allChildren' : 'allChildrenPublic';
 
-            $query->whereHas('sets', function (Builder $query) use ($request) {
+            $setsFlat = $this->productSetService
+                ->flattenSetsTree($setsFound, $relationScope)
+                ->map(fn (ProductSet $set) => $set->slug);
+
+            $query->whereHas('sets', function (Builder $query) use ($setsFlat) {
                 return $query->whereIn(
                     'slug',
-                    $request->input('sets'),
+                    $setsFlat,
                 );
             });
         }
@@ -85,7 +85,7 @@ class ProductController extends Controller implements ProductControllerSwagger
 
     public function show(ProductShowRequest $request, Product $product): JsonResource
     {
-        if (!Auth::user()->can('products.show_hidden') && !$product->isPublic()) {
+        if (Gate::denies('products.show_hidden') && !$product->isPublic()) {
             throw new NotFoundHttpException();
         }
 
