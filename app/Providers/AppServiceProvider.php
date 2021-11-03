@@ -18,6 +18,7 @@ use App\Services\Contracts\OptionServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\Contracts\PageServiceContract;
 use App\Services\Contracts\PermissionServiceContract;
+use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
 use App\Services\Contracts\RoleServiceContract;
@@ -34,6 +35,7 @@ use App\Services\OptionService;
 use App\Services\OrderService;
 use App\Services\PageService;
 use App\Services\PermissionService;
+use App\Services\ProductService;
 use App\Services\ProductSetService;
 use App\Services\ReorderService;
 use App\Services\RoleService;
@@ -68,6 +70,7 @@ class AppServiceProvider extends ServiceProvider
         PermissionServiceContract::class => PermissionService::class,
         AuditServiceContract::class => AuditService::class,
         TokenServiceContract::class => TokenService::class,
+        ProductServiceContract::class => ProductService::class,
     ];
 
     /**

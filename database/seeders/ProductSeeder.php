@@ -9,8 +9,10 @@ use App\Models\Media;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
+use App\Services\Contracts\ProductServiceContract;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\App;
 
 class ProductSeeder extends Seeder
 {
@@ -21,6 +23,9 @@ class ProductSeeder extends Seeder
      */
     public function run()
     {
+        /** @var ProductServiceContract $productService */
+        $productService = App::make(ProductServiceContract::class);
+
         $products = Product::factory()->count(100)->create();
 
         $sets = ProductSet::all();
@@ -41,7 +46,7 @@ class ProductSeeder extends Seeder
             'parent_id' => $categories->getKey(),
         ])->count(4)->create();
 
-        $products->each(function ($product, $index) use ($sets, $brands, $categories) {
+        $products->each(function ($product, $index) use ($sets, $brands, $categories, $productService) {
             if (rand(0, 1)) {
                 $this->schemas($product);
             }
@@ -57,9 +62,9 @@ class ProductSeeder extends Seeder
                 $this->brands($product, $brands);
                 $this->categories($product, $categories);
             }
+
+            $productService->updateMinMaxPrices($product);
         });
-
-
     }
 
     private function schemas(Product $product): void

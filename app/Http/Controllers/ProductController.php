@@ -11,6 +11,7 @@ use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Services\Contracts\MediaServiceContract;
+use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use Illuminate\Database\Eloquent\Builder;
@@ -26,6 +27,7 @@ class ProductController extends Controller implements ProductControllerSwagger
     public function __construct(
         private MediaServiceContract $mediaService,
         private SchemaServiceContract $schemaService,
+        private ProductServiceContract $productService,
         private ProductSetServiceContract $productSetService,
     ) {
     }
@@ -96,36 +98,14 @@ class ProductController extends Controller implements ProductControllerSwagger
     {
         $product = Product::create($request->validated());
 
-        $this->mediaService->sync($product, $request->input('media', []));
-        $product->tags()->sync($request->input('tags', []));
-
-        if ($request->has('schemas')) {
-            $this->schemaService->sync($product, $request->input('schemas'));
-        }
-
-        if ($request->has('sets')) {
-            $product->sets()->sync($request->input('sets'));
-        }
-
-        return ProductResource::make($product);
+        return $this->productSetup($product, $request);
     }
 
     public function update(ProductUpdateRequest $request, Product $product): JsonResource
     {
         $product->update($request->validated());
 
-        $this->mediaService->sync($product, $request->input('media', []));
-        $product->tags()->sync($request->input('tags', []));
-
-        if ($request->has('schemas')) {
-            $this->schemaService->sync($product, $request->input('schemas'));
-        }
-
-        if ($request->has('sets')) {
-            $product->sets()->sync($request->input('sets'));
-        }
-
-        return ProductResource::make($product);
+        return $this->productSetup($product, $request);
     }
 
     public function destroy(Product $product): JsonResponse
@@ -133,5 +113,31 @@ class ProductController extends Controller implements ProductControllerSwagger
         $product->delete();
 
         return Response::json(null, 204);
+    }
+
+    /**
+     * @param Product $product
+     * @param ProductUpdateRequest $request
+     *
+     * @return ProductResource
+     */
+    public function productSetup(
+        Product $product,
+        ProductCreateRequest|ProductUpdateRequest $request,
+    ): ProductResource {
+        $this->mediaService->sync($product, $request->input('media', []));
+        $product->tags()->sync($request->input('tags', []));
+
+        if ($request->has('schemas')) {
+            $this->schemaService->sync($product, $request->input('schemas'));
+        }
+
+        $this->productService->updateMinMaxPrices($product);
+
+        if ($request->has('sets')) {
+            $product->sets()->sync($request->input('sets'));
+        }
+
+        return ProductResource::make($product);
     }
 }
