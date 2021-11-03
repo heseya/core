@@ -25,6 +25,8 @@ class ProductResource extends Resource implements ProductResourceSwagger
             'slug' => $this->slug,
             'name' => $this->name,
             'price' => $this->price,
+            'price_min' => $this->price_min,
+            'price_max' => $this->price_max,
             'public' => $this->public,
             'visible' => $this->isPublic(),
             'available' => $this->available,

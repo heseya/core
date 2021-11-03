@@ -27,6 +27,8 @@ class Product extends Model implements AuditableContract
         'description_html',
         'public',
         'quantity_step',
+        'price_min',
+        'price_max',
     ];
 
     protected $casts = [
