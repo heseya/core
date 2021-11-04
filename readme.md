@@ -161,3 +161,17 @@ When something not working with cache (like routing).
 ```
 php artisan optimize
 ```
+
+## Database Queue
+Set `QUEUE_CONNECTION=database` variable in `.env`
+
+Run migrations to create `jobs` table in database.
+```
+php artisan migrate
+```
+
+To process queued jobs start a queue worker.
+```
+php artisan queue:work
+```
+It will continue to run until it is manually stopped.
