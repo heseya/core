@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Traits\SeoMetadataRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -42,13 +43,15 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class PageStoreRequest extends FormRequest
 {
+    use SeoMetadataRules;
+
     public function rules(): array
     {
-        return [
+        return array_merge([
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255'],
             'public' => ['boolean'],
             'content_html' => ['required', 'string', 'min:1'],
-        ];
+        ], $this->seoRules());
     }
 }

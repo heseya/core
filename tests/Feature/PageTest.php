@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Page;
+use App\Models\SeoMetadata;
 use App\Services\Contracts\MarkdownServiceContract;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\DB;
@@ -200,6 +201,46 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateWithSeo($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        $html = '<h1>hello world</h1>';
+        $page = [
+            'name' => 'Test',
+            'slug' => 'test-test',
+            'public' => true,
+            'content_html' => $html,
+            'seo' => [
+                'title' => 'seo title',
+                'description' => 'seo description',
+            ]
+        ];
+
+        $response = $this->actingAs($this->$user)->json('POST', '/pages', $page);
+        $response->assertJson([
+            'data' => $page + [
+                    'content_md' => $this->markdownService->fromHtml($html),
+                ],
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('pages', [
+            'id' => $response->getData()->data->id,
+            'name' => 'Test',
+            'slug' => 'test-test',
+            'public' => true,
+            'content_html' => $html,
+        ]);
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => 'seo title',
+            'description' => 'seo description',
+            'model_id' => $response->getData()->data->id,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateByOrder($user): void
     {
         $this->$user->givePermissionTo('pages.add');
@@ -263,7 +304,57 @@ class PageTest extends TestCase
             ->assertOk()
             ->assertJson(['data' => $page + ['content_md' => $this->markdownService->fromHtml($html)]]);
 
-        $this->assertDatabaseHas('pages', $page + ['id' => $this->page->getKey()]);
+        $this->assertDatabaseHas('pages', [
+            'id' => $this->page->getKey(),
+            'name' => 'Test 2',
+            'slug' => 'test-2',
+            'public' => false,
+            'content_html' => $html,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithSeo($user): void
+    {
+        $this->$user->givePermissionTo('pages.edit');
+
+        $html = '<h1>hello world 2</h1>';
+        $page = [
+            'name' => 'Test 2',
+            'slug' => 'test-2',
+            'public' => false,
+            'content_html' => $html,
+            'seo' => [
+                'title' => 'seo title',
+                'description' => 'seo description',
+            ],
+        ];
+
+        $seo = SeoMetadata::factory()->create();
+        $this->page->seo()->save($seo);
+
+        $response = $this->actingAs($this->$user)->json('PATCH',
+            '/pages/id:' . $this->page->getKey(),
+            $page
+        );
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => $page + ['content_md' => $this->markdownService->fromHtml($html)]]);
+
+        $this->assertDatabaseHas('pages', [
+            'id' => $this->page->getKey(),
+            'name' => 'Test 2',
+            'slug' => 'test-2',
+            'public' => false,
+            'content_html' => $html,
+        ]);
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => 'seo title',
+            'description' => 'seo description',
+        ]);
     }
 
     public function testDeleteUnauthorized(): void
@@ -283,10 +374,14 @@ class PageTest extends TestCase
     {
         $this->$user->givePermissionTo('pages.remove');
 
+        $seo = SeoMetadata::factory()->create();
+        $this->page->seo()->save($seo);
+
         $response = $this->actingAs($this->$user)
             ->deleteJson('/pages/id:' . $this->page->getKey());
         $response->assertNoContent();
         $this->assertDeleted($this->page);
+        $this->assertSoftDeleted($seo);
     }
 
     /**

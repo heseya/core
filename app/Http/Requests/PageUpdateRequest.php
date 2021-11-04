@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Traits\SeoMetadataRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -38,9 +39,11 @@ use Illuminate\Validation\Rule;
  */
 class PageUpdateRequest extends FormRequest
 {
+    use SeoMetadataRules;
+
     public function rules(): array
     {
-        return [
+        return array_merge([
             'name' => ['string', 'max:255'],
             'slug' => [
                 'string',
@@ -49,6 +52,6 @@ class PageUpdateRequest extends FormRequest
             ],
             'public' => ['boolean'],
             'content_html' => ['string', 'min:1'],
-        ];
+        ], $this->seoRules());
     }
 }

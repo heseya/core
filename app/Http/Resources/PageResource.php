@@ -25,6 +25,7 @@ class PageResource extends Resource implements PageResourceSwagger
             'name' => $this->name,
             'public' => $this->public,
             'order' => $this->order,
+            'seo' => SeoMetadataResource::make($this->seo),
         ];
     }
 
