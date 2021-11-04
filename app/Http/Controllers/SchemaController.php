@@ -6,7 +6,6 @@ use App\Http\Controllers\Swagger\SchemaControllerSwagger;
 use App\Http\Requests\IndexSchemaRequest;
 use App\Http\Requests\SchemaStoreRequest;
 use App\Http\Resources\SchemaResource;
-use App\Models\Product;
 use App\Models\Schema;
 use App\Services\Contracts\OptionServiceContract;
 use Illuminate\Http\JsonResponse;
@@ -83,24 +82,6 @@ class SchemaController extends Controller implements SchemaControllerSwagger
     public function destroy(Schema $schema): JsonResponse
     {
         $schema->delete();
-
-        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
-    }
-
-    public function attach(Schema $schema, string $product): JsonResponse
-    {
-        $product = Product::findOrFail($product);
-
-        $product->schemas()->attach($schema);
-
-        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
-    }
-
-    public function detach(Schema $schema, string $product): JsonResponse
-    {
-        $product = Product::findOrFail($product);
-
-        $product->schemas()->detach($schema);
 
         return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
     }
