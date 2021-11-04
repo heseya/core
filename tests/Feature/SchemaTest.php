@@ -229,7 +229,7 @@ class SchemaTest extends TestCase
             'description' => 'test test',
             'hidden' => 0,
             'required' => 0,
-            'default' => 0,
+            'default' => null,
         ]);
 
         $this->assertDatabaseHas('options', [
@@ -420,6 +420,7 @@ class SchemaTest extends TestCase
             'description' => 'test test',
             'hidden' => false,
             'required' => false,
+            'default' => 0,
             'options' => [
                 [
                     'id' => $option->getKey(),
@@ -438,6 +439,7 @@ class SchemaTest extends TestCase
         $this->assertDatabaseHas('schemas', [
             'name' => 'Test Updated',
             'price' => 200,
+            'default' => 0,
         ]);
 
         $this->assertDatabaseHas('options', [
