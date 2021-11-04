@@ -6,20 +6,19 @@ use App\Http\Controllers\Swagger\SchemaControllerSwagger;
 use App\Http\Requests\IndexSchemaRequest;
 use App\Http\Requests\SchemaStoreRequest;
 use App\Http\Resources\SchemaResource;
-use App\Models\Product;
 use App\Models\Schema;
 use App\Services\Contracts\OptionServiceContract;
+use App\Services\Contracts\ProductServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
 
 class SchemaController extends Controller implements SchemaControllerSwagger
 {
-    protected OptionServiceContract $optionService;
-
-    public function __construct(OptionServiceContract $optionService)
-    {
-        $this->optionService = $optionService;
+    public function __construct(
+        protected OptionServiceContract $optionService,
+        protected ProductServiceContract $productService,
+    ) {
     }
 
     public function index(IndexSchemaRequest $request): JsonResource
@@ -77,30 +76,21 @@ class SchemaController extends Controller implements SchemaControllerSwagger
             }
         }
 
+        $schema->products->each(
+            fn (Product $product) => $this->productService->updateMinMaxPrices($product),
+        );
+
         return SchemaResource::make($schema);
     }
 
     public function destroy(Schema $schema): JsonResponse
     {
+        $products = $schema->products;
         $schema->delete();
 
-        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
-    }
-
-    public function attach(Schema $schema, string $product): JsonResponse
-    {
-        $product = Product::findOrFail($product);
-
-        $product->schemas()->attach($schema);
-
-        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
-    }
-
-    public function detach(Schema $schema, string $product): JsonResponse
-    {
-        $product = Product::findOrFail($product);
-
-        $product->schemas()->detach($schema);
+        $products->each(
+            fn (Product $product) => $this->productService->updateMinMaxPrices($product),
+        );
 
         return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
     }

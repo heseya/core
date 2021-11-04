@@ -29,8 +29,20 @@ interface ProductResourceSwagger
      *   @OA\Property(
      *     property="price",
      *     type="numeric",
-     *     description="Base price of the product",
+     *     description="Base price of the product excluding schemas",
      *     example=10.99,
+     *   ),
+     *   @OA\Property(
+     *     property="price_min",
+     *     type="numeric",
+     *     description="Minimum availble product price acounting for schemas",
+     *     example=12.99,
+     *   ),
+     *   @OA\Property(
+     *     property="price_max",
+     *     type="numeric",
+     *     description="Maximum availble product price acounting for schemas",
+     *     example=20.99,
      *   ),
      *   @OA\Property(
      *     property="public",
