@@ -4,6 +4,8 @@ namespace App\Listeners;
 
 use App\Events\OrderStatusUpdated as OrderStatusUpdatedEvent;
 use App\Notifications\OrderStatusUpdated;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class OrderStatusUpdatedListener
 {
@@ -11,6 +13,10 @@ class OrderStatusUpdatedListener
     {
         $order = $event->getOrder();
 
-        $order->notify(new OrderStatusUpdated($order));
+        try {
+            $order->notify(new OrderStatusUpdated($order));
+        } catch (Throwable) {
+            Log::error("Couldn't send order update to the address: {$order->email}");
+        }
     }
 }

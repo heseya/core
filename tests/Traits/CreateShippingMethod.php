@@ -6,17 +6,19 @@ use App\Models\ShippingMethod;
 
 trait CreateShippingMethod
 {
+    protected ShippingMethod $shippingMethod;
+
     public function createShippingMethod(float $price = 0, array $payload = []): ShippingMethod
     {
-        $shippingMethod = ShippingMethod::factory()->create($payload);
-        $priceRange = $shippingMethod->priceRanges()->create([
-            'shipping_method_id' => $shippingMethod->getKey(),
+        $this->shippingMethod = ShippingMethod::factory()->create($payload);
+        $priceRange = $this->shippingMethod->priceRanges()->create([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
             'start' => 0,
         ]);
         $priceRange->prices()->create([
             'value' => $price,
         ]);
 
-        return $shippingMethod;
+        return $this->shippingMethod;
     }
 }

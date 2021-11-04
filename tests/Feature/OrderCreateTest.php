@@ -165,7 +165,7 @@ class OrderCreateTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('orders', [
-            'id' => $order->id,
+            'id' => $order->getKey(),
             'email' => 'test@example.com',
             'shipping_price' => $this->shippingMethod->getPrice(
                 ($this->product->price + $schemaPrice) * $productQuantity,

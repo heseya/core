@@ -20,7 +20,7 @@ class SchemaStoreRequest extends FormRequest
             'min' => ['nullable', 'numeric', 'min:-100000', 'max:100000'],
             'max' => ['nullable', 'numeric', 'min:-100000', 'max:100000'],
             'step' => ['nullable', 'numeric', 'min:0', 'max:100000'],
-            'default' => ['nullable', 'string', 'max:255'],
+            'default' => ['nullable'],
             'pattern' => ['nullable', 'string', 'max:255'],
             'validation' => ['nullable', 'string', 'max:255'],
 
