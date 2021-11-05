@@ -50,15 +50,18 @@ class UserTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testIndex(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
     {
-        $this->user->givePermissionTo('users.show');
+        $this->$user->givePermissionTo('users.show');
 
         $otherUser = User::factory()->create();
         $otherUser->created_at = Carbon::now()->addHour();
         $otherUser->save();
 
-        $response = $this->actingAs($this->user)->getJson('/users');
+        $response = $this->actingAs($this->$user)->getJson('/users');
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -74,15 +77,18 @@ class UserTest extends TestCase
             ]]);
     }
 
-    public function testIndexSorted(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSorted($user): void
     {
-        $this->user->givePermissionTo('users.show');
+        $this->$user->givePermissionTo('users.show');
 
         $otherUser = User::factory()->create();
         $otherUser->created_at = Carbon::now()->addHour();
         $otherUser->save();
 
-        $response = $this->actingAs($this->user)->getJson('/users?sort=created_at:desc');
+        $response = $this->actingAs($this->$user)->getJson('/users?sort=created_at:desc');
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -104,8 +110,9 @@ class UserTest extends TestCase
 
         $user = User::factory()->create();
 
-        $response = $this->actingAs($this->user)->getJson('/users?name=' . $user->name);
-        $response
+        $this
+            ->actingAs($this->user)
+            ->getJson('/users?name=' . $user->name)
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0', [
@@ -123,8 +130,9 @@ class UserTest extends TestCase
 
         $user = User::factory()->create();
 
-        $response = $this->actingAs($this->user)->getJson('/users?email=' . $user->email);
-        $response
+        $this
+            ->actingAs($this->user)
+            ->getJson('/users?email=' . $user->email)
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0', [
@@ -180,11 +188,14 @@ class UserTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testShow(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShow($user): void
     {
-        $this->user->givePermissionTo('users.show_details');
+        $this->$user->givePermissionTo('users.show_details');
 
-        $response = $this->actingAs($this->user)->getJson('/users/id:' . $this->user->getKey());
+        $response = $this->actingAs($this->$user)->getJson('/users/id:' . $this->user->getKey());
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected + ['permissions' => []]]);
@@ -200,9 +211,12 @@ class UserTest extends TestCase
         Event::assertNotDispatched(UserCreated::class);
     }
 
-    public function testCreate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreate($user): void
     {
-        $this->user->givePermissionTo('users.add');
+        $this->$user->givePermissionTo('users.add');
 
         Event::fake([UserCreated::class]);
 
@@ -210,7 +224,7 @@ class UserTest extends TestCase
             'password' => $this->validPassword,
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/users', $data);
+        $response = $this->actingAs($this->$user)->postJson('/users', $data);
         $response
             ->assertCreated()
             ->assertJsonPath('data.email', $data['email'])
@@ -286,24 +300,30 @@ class UserTest extends TestCase
         });
     }
 
-    public function testCreateEmailTaken(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateEmailTaken($user): void
     {
-        $this->user->givePermissionTo('users.add');
+        $this->$user->givePermissionTo('users.add');
 
         Event::fake([UserCreated::class]);
 
         $data = [
             'name' => User::factory()->raw()['name'],
-            'email' => $this->user->email,
+            'email' => $this->$user->email,
             'password' => $this->validPassword,
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/users', $data);
+        $response = $this->actingAs($this->$user)->postJson('/users', $data);
         $response->assertStatus(422);
 
         Event::assertNotDispatched(UserCreated::class);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateEmailTakenByDeletedUser(): void
     {
         $this->user->givePermissionTo('users.add');
@@ -331,6 +351,9 @@ class UserTest extends TestCase
         Event::assertDispatched(UserCreated::class);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateRolesMissingPermissions(): void
     {
         $this->user->givePermissionTo('users.add');
@@ -367,6 +390,9 @@ class UserTest extends TestCase
         Event::assertNotDispatched(UserUpdated::class);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateRoles(): void
     {
         $this->user->givePermissionTo('users.add');
@@ -448,6 +474,9 @@ class UserTest extends TestCase
         Event::assertNotDispatched(UserUpdated::class);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdate(): void
     {
         $this->user->givePermissionTo('users.edit');
@@ -534,6 +563,9 @@ class UserTest extends TestCase
         });
     }
 
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateAddRolesMissingPermissions(): void
     {
         $this->user->givePermissionTo('users.edit');
@@ -578,6 +610,9 @@ class UserTest extends TestCase
         Event::assertNotDispatched(UserUpdated::class);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateAddRoles(): void
     {
         $this->user->givePermissionTo('users.edit');
@@ -731,13 +766,16 @@ class UserTest extends TestCase
         Event::assertDispatched(UserUpdated::class);
     }
 
-    public function testUpdateSameEmail(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSameEmail($user): void
     {
-        $this->user->givePermissionTo('users.edit');
+        $this->$user->givePermissionTo('users.edit');
 
         Event::fake([UserUpdated::class]);
 
-        $response = $this->actingAs($this->user)->patchJson('/users/id:' . $this->user->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/users/id:' . $this->user->getKey(), [
             'email' => $this->user->email,
         ]);
         $response
@@ -755,13 +793,16 @@ class UserTest extends TestCase
         Event::assertDispatched(UserUpdated::class);
     }
 
-    public function testUpdateSameName(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSameName($user): void
     {
-        $this->user->givePermissionTo('users.edit');
+        $this->$user->givePermissionTo('users.edit');
 
         Event::fake([UserUpdated::class]);
 
-        $response = $this->actingAs($this->user)->patchJson('/users/id:' . $this->user->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/users/id:' . $this->user->getKey(), [
             'name' => $this->user->name,
         ]);
         $response
@@ -779,15 +820,18 @@ class UserTest extends TestCase
         Event::assertDispatched(UserUpdated::class);
     }
 
-    public function testUpdateEmailTaken(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateEmailTaken($user): void
     {
-        $this->user->givePermissionTo('users.edit');
+        $this->$user->givePermissionTo('users.edit');
 
         Event::fake([UserUpdated::class]);
 
         $other = User::factory()->create();
 
-        $response = $this->actingAs($this->user)->patchJson('/users/id:' . $this->user->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/users/id:' . $this->user->getKey(), [
             'email' => $other->email,
         ]);
         $response->assertStatus(422);
@@ -800,16 +844,19 @@ class UserTest extends TestCase
         Event::assertNotDispatched(UserUpdated::class);
     }
 
-    public function testUpdateEmailTakenByDeletedUser(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateEmailTakenByDeletedUser($user): void
     {
-        $this->user->givePermissionTo('users.edit');
+        $this->$user->givePermissionTo('users.edit');
 
         Event::fake([UserUpdated::class]);
 
         $other = User::factory()->create();
         $other->delete();
 
-        $response = $this->actingAs($this->user)->patchJson('/users/id:' . $this->user->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/users/id:' . $this->user->getKey(), [
             'email' => $other->email,
         ]);
         $response->assertOk();
@@ -832,13 +879,16 @@ class UserTest extends TestCase
         Event::assertNotDispatched(UserDeleted::class);
     }
 
-    public function testDelete(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDelete($user): void
     {
-        $this->user->givePermissionTo('users.remove');
+        $this->$user->givePermissionTo('users.remove');
 
         Event::fake([UserDeleted::class]);
 
-        $response = $this->actingAs($this->user)->deleteJson('/users/id:' . $this->user->getKey());
+        $response = $this->actingAs($this->$user)->deleteJson('/users/id:' . $this->user->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($this->user);
 
@@ -886,16 +936,19 @@ class UserTest extends TestCase
         });
     }
 
-    public function testDeleteOwnerUnauthorized(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteOwnerUnauthorized($user): void
     {
-        $this->user->givePermissionTo('users.remove');
+        $this->$user->givePermissionTo('users.remove');
 
         Event::fake([UserDeleted::class]);
 
         $owner = User::factory()->create();
         $owner->assignRole($this->owner);
 
-        $response = $this->actingAs($this->user)->deleteJson('/users/id:' . $owner->getKey());
+        $response = $this->actingAs($this->$user)->deleteJson('/users/id:' . $owner->getKey());
         $response->assertStatus(422);
 
         Event::assertNotDispatched(UserDeleted::class);

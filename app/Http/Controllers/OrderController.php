@@ -44,7 +44,8 @@ class OrderController extends Controller implements OrderControllerSwagger
     public function index(OrderIndexRequest $request): JsonResource
     {
         $query = Order::search($request->validated())
-            ->sort($request->input('sort'));
+            ->sort($request->input('sort'))
+            ->with(['products', 'discounts', 'payments']);
 
         return OrderResource::collection(
             $query->paginate(Config::get('pagination.per_page')),
@@ -231,7 +232,7 @@ class OrderController extends Controller implements OrderControllerSwagger
 
     public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResponse
     {
-        if ($order->status->cancel) {
+        if ($order->status && $order->status->cancel) {
             throw new OrderException(__('admin.error.order_change_status_canceled'));
         }
 

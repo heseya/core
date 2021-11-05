@@ -24,7 +24,7 @@ class OptionAvailable implements Rule
      */
     public function passes($attribute, $value): bool
     {
-        $option = $this->schema->options()->find($value);
+        $option = $this->schema->options->find($value);
 
         if ($option === null) {
             return false;

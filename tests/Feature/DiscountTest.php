@@ -32,14 +32,38 @@ class DiscountTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testIndex(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
     {
-        $this->user->givePermissionTo('discounts.show');
+        $this->$user->givePermissionTo('discounts.show');
 
-        $response = $this->actingAs($this->user)->getJson('/discounts');
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/discounts')
             ->assertOk()
             ->assertJsonCount(10, 'data');
+
+        $this->assertQueryCountLessThan(15);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexPerformance($user): void
+    {
+        $this->$user->givePermissionTo('discounts.show');
+
+        Discount::factory()->count(490)->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/discounts?limit=500')
+            ->assertOk()
+            ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(15);
     }
 
     public function testShowUnauthorized(): void
@@ -50,12 +74,15 @@ class DiscountTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testShow(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShow($user): void
     {
-        $this->user->givePermissionTo('discounts.show_details');
+        $this->$user->givePermissionTo('discounts.show_details');
         $discount = Discount::factory()->create();
 
-        $response = $this->actingAs($this->user)->getJson('/discounts/' . $discount->code);
+        $response = $this->actingAs($this->$user)->getJson('/discounts/' . $discount->code);
         $response
             ->assertOk()
             ->assertJsonFragment(['id' => $discount->getKey()]);
@@ -71,13 +98,16 @@ class DiscountTest extends TestCase
         Event::assertNotDispatched(DiscountCreated::class);
     }
 
-    public function testCreate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreate($user): void
     {
-        $this->user->givePermissionTo('discounts.add');
+        $this->$user->givePermissionTo('discounts.add');
 
         Queue::fake();
 
-        $response = $this->actingAs($this->user)->json('POST', '/discounts', [
+        $response = $this->actingAs($this->$user)->json('POST', '/discounts', [
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',
             'discount' => 10,
@@ -125,23 +155,26 @@ class DiscountTest extends TestCase
         Queue::assertNotPushed(CallWebhookJob::class);
     }
 
-    public function testCreateWithWebHookQueue(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithWebHookQueue($user): void
     {
-        $this->user->givePermissionTo('discounts.add');
+        $this->$user->givePermissionTo('discounts.add');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'DiscountCreated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
 
         Queue::fake();
 
-        $response = $this->actingAs($this->user)->json('POST', '/discounts', [
+        $response = $this->actingAs($this->$user)->json('POST', '/discounts', [
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',
             'discount' => 10,
@@ -172,23 +205,26 @@ class DiscountTest extends TestCase
         });
     }
 
-    public function testCreateWithWebHookDispatched(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithWebHookDispatched($user): void
     {
-        $this->user->givePermissionTo('discounts.add', 'users.show', 'apps.show');
+        $this->$user->givePermissionTo('discounts.add', 'users.show', 'apps.show');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'DiscountCreated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => true,
             'with_hidden' => false,
         ]);
 
         Bus::fake();
 
-        $response = $this->actingAs($this->user)->json('POST', '/discounts', [
+        $response = $this->actingAs($this->$user)->json('POST', '/discounts', [
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',
             'discount' => 10,
@@ -255,14 +291,17 @@ class DiscountTest extends TestCase
         Event::assertNotDispatched(DiscountUpdated::class);
     }
 
-    public function testUpdate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdate($user): void
     {
-        $this->user->givePermissionTo('discounts.edit');
+        $this->$user->givePermissionTo('discounts.edit');
         $discount = Discount::factory()->create();
 
         Queue::fake();
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->json('PATCH', '/discounts/id:' . $discount->getKey(), [
                 'description' => 'Weekend Sale',
                 'code' => 'WEEKEND',
@@ -310,24 +349,27 @@ class DiscountTest extends TestCase
         Queue::assertNotPushed(CallWebhookJob::class);
     }
 
-    public function testUpdateWithWebHookQueue(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithWebHookQueue($user): void
     {
-        $this->user->givePermissionTo('discounts.edit');
+        $this->$user->givePermissionTo('discounts.edit');
         $discount = Discount::factory()->create();
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'DiscountUpdated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
 
         Queue::fake();
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->json('PATCH', '/discounts/id:' . $discount->getKey(), [
                 'description' => 'Weekend Sale',
                 'code' => 'WEEKEND',
@@ -359,24 +401,27 @@ class DiscountTest extends TestCase
         });
     }
 
-    public function testUpdateWithWebHookDispatched(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithWebHookDispatched($user): void
     {
-        $this->user->givePermissionTo('discounts.edit');
+        $this->$user->givePermissionTo('discounts.edit');
         $discount = Discount::factory()->create();
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'DiscountUpdated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
 
         Bus::fake();
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->json('PATCH', '/discounts/id:' . $discount->getKey(), [
                 'description' => 'Weekend Sale',
                 'code' => 'WEEKEND',
@@ -420,14 +465,17 @@ class DiscountTest extends TestCase
         Event::assertNotDispatched(DiscountDeleted::class);
     }
 
-    public function testDelete(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDelete($user): void
     {
-        $this->user->givePermissionTo('discounts.remove');
+        $this->$user->givePermissionTo('discounts.remove');
         $discount = Discount::factory()->create();
 
         Queue::fake();
 
-        $response = $this->actingAs($this->user)->deleteJson('/discounts/id:' . $discount->getKey());
+        $response = $this->actingAs($this->$user)->deleteJson('/discounts/id:' . $discount->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($discount);
 
@@ -486,24 +534,27 @@ class DiscountTest extends TestCase
         });
     }
 
-    public function testDeleteWithWebHookDispatched(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWithWebHookDispatched($user): void
     {
-        $this->user->givePermissionTo('discounts.remove');
+        $this->$user->givePermissionTo('discounts.remove');
         $discount = Discount::factory()->create();
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'DiscountDeleted'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
 
         Bus::fake();
 
-        $response = $this->actingAs($this->user)->deleteJson('/discounts/id:' . $discount->getKey());
+        $response = $this->actingAs($this->$user)->deleteJson('/discounts/id:' . $discount->getKey());
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
             return $job->class === WebHookEventListener::class
@@ -528,13 +579,14 @@ class DiscountTest extends TestCase
         });
     }
 
-    public function testCreateCheckDatetime(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateCheckDatetime($user): void
     {
-        Event::fake([DiscountCreated::class]);
+        $this->$user->givePermissionTo('discounts.add');
 
-        $this->user->givePermissionTo('discounts.add');
-
-        $response = $this->actingAs($this->user)->json('POST', '/discounts', [
+        $response = $this->actingAs($this->$user)->json('POST', '/discounts', [
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',
             'discount' => 10,

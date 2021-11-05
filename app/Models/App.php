@@ -9,6 +9,7 @@ use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\Access\Authorizable;
+use Spatie\Permission\Contracts\Permission;
 use Spatie\Permission\Traits\HasPermissions;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
@@ -56,5 +57,15 @@ class App extends Model implements
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function hasRole($roles, ?string $guard = null): bool
+    {
+        return false;
+    }
+
+    protected function hasPermissionViaRole(Permission $permission): bool
+    {
+        return false;
     }
 }

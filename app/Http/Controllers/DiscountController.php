@@ -20,7 +20,9 @@ class DiscountController extends Controller implements DiscountControllerSwagger
 {
     public function index(DiscountIndexRequest $request): JsonResource
     {
-        $query = Discount::search($request->validated())->orderBy('updated_at', 'DESC');
+        $query = Discount::search($request->validated())
+            ->orderBy('updated_at', 'DESC')
+            ->with('orders');
 
         return DiscountResource::collection(
             $query->paginate(Config::get('pagination.per_page')),

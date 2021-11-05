@@ -7,6 +7,7 @@ use App\Traits\HasWebHooks;
 use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
+use Heseya\Sortable\Sortable;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -23,8 +24,6 @@ use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 /**
- * @OA\Schema ()
- *
  * @mixin IdeHelperUser
  */
 class User extends Model implements
@@ -46,27 +45,6 @@ class User extends Model implements
         Sortable,
         Auditable,
         HasWebHooks;
-
-    /**
-     * @OA\Property(
-     *   property="id",
-     *   type="string",
-     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
-     * )
-     *
-     * @OA\Property(
-     *   property="name",
-     *   type="string",
-     *   description="User first and last name.",
-     *   example="Johny Mielony",
-     * )
-     *
-     * @OA\Property(
-     *   property="email",
-     *   type="string",
-     *   example="info@hesyea.com",
-     * )
-     */
 
     protected $fillable = [
         'name',
@@ -99,19 +77,13 @@ class User extends Model implements
 
     /**
      * Url to avatar.
-     *
-     * @OA\Property(
-     *   property="avatar",
-     *   type="string",
-     *   example="//www.gravatar.com/avatar/example.jpg",
-     * )
      */
     public function getAvatarAttribute(): string
     {
         return '//www.gravatar.com/avatar/' . md5(strtolower(trim($this->email))) . '?d=mp&s=50x50';
     }
 
-    public function getJWTIdentifier(): string
+    public function getJWTIdentifier(): ?string
     {
         return $this->getKey();
     }

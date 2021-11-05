@@ -38,9 +38,12 @@ class ProductSetUpdateTest extends TestCase
         Event::assertNotDispatched(ProductSetUpdated::class);
     }
 
-    public function testUpdate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdate($user): void
     {
-        $this->user->givePermissionTo('product_sets.edit');
+        $this->$user->givePermissionTo('product_sets.edit');
 
         Event::fake([ProductSetUpdated::class]);
 
@@ -59,7 +62,7 @@ class ProductSetUpdateTest extends TestCase
             'parent_id' => null,
         ];
 
-        $response = $this->actingAs($this->user)->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/product-sets/id:' . $newSet->getKey(),
             $set + $parentId + [
                 'children_ids' => [],
@@ -160,9 +163,12 @@ class ProductSetUpdateTest extends TestCase
         });
     }
 
-    public function testUpdateParentSlug(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateParentSlug($user): void
     {
-        $this->user->givePermissionTo('product_sets.edit');
+        $this->$user->givePermissionTo('product_sets.edit');
 
         Event::fake([ProductSetUpdated::class]);
 
@@ -192,7 +198,7 @@ class ProductSetUpdateTest extends TestCase
             'public_parent' => false,
         ]);
 
-        $response = $this->actingAs($this->user)->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/product-sets/id:' . $parent->getKey(),
             [
                 'name' => 'New',
@@ -237,9 +243,12 @@ class ProductSetUpdateTest extends TestCase
         Event::assertDispatched(ProductSetUpdated::class);
     }
 
-    public function testUpdateParentSlugTree(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateParentSlugTree($user): void
     {
-        $this->user->givePermissionTo('product_sets.edit');
+        $this->$user->givePermissionTo('product_sets.edit');
 
         Event::fake([ProductSetUpdated::class]);
 
@@ -269,7 +278,7 @@ class ProductSetUpdateTest extends TestCase
             'public_parent' => false,
         ]);
 
-        $response = $this->actingAs($this->user)->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/product-sets/id:' . $parent->getKey() . '?tree',
             [
                 'name' => 'New',

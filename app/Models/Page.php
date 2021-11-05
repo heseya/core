@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Traits\Sortable;
+use Heseya\Sortable\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;

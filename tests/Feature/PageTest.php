@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Laravel\Passport\Passport;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
@@ -66,24 +65,51 @@ class PageTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testIndex(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
     {
-        $this->user->givePermissionTo('pages.show');
+        $this->$user->givePermissionTo('pages.show');
 
-        $response = $this->actingAs($this->user)->getJson('/pages');
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/pages')
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
+
+        $this->assertQueryCountLessThan(10);
     }
 
-    public function testIndexHidden(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexPerformance($user): void
     {
-        $this->user->givePermissionTo(['pages.show', 'pages.show_hidden']);
+        $this->$user->givePermissionTo('pages.show');
 
-        $response = $this->actingAs($this->user)->getJson('/pages');
+        Page::factory()->count(499)->create(['public' => true]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/pages?limit=500')
+            ->assertOk()
+            ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(10);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexHidden($user): void
+    {
+        $this->$user->givePermissionTo(['pages.show', 'pages.show_hidden']);
+
+        $response = $this->actingAs($this->$user)->getJson('/pages');
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data');
@@ -98,45 +124,54 @@ class PageTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testView(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testView($user): void
     {
-        $this->user->givePermissionTo('pages.show_details');
+        $this->$user->givePermissionTo('pages.show_details');
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->getJson('/pages/' . $this->page->slug);
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected_view]);
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->getJson('/pages/id:' . $this->page->getKey());
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected_view]);
     }
 
-    public function testViewHiddenUnauthorized(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewHiddenUnauthorized($user): void
     {
-        $this->user->givePermissionTo('pages.show_details');
+        $this->$user->givePermissionTo('pages.show_details');
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->getJson('/pages/' . $this->page_hidden->slug);
         $response->assertNotFound();
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->getJson('/pages/id:' . $this->page_hidden->getKey());
         $response->assertNotFound();
     }
 
-    public function testViewHidden(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewHidden($user): void
     {
-        $this->user->givePermissionTo(['pages.show_details', 'pages.show_hidden']);
+        $this->$user->givePermissionTo(['pages.show_details', 'pages.show_hidden']);
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->getJson('/pages/' . $this->page_hidden->slug);
         $response->assertOk();
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->getJson('/pages/id:' . $this->page_hidden->getKey());
         $response->assertOk();
     }
@@ -151,9 +186,12 @@ class PageTest extends TestCase
         Event::assertNotDispatched(PageCreated::class);
     }
 
-    public function testCreate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreate($user): void
     {
-        $this->user->givePermissionTo('pages.add');
+        $this->$user->givePermissionTo('pages.add');
 
         Event::fake([PageCreated::class]);
 
@@ -165,7 +203,7 @@ class PageTest extends TestCase
             'content_html' => $html,
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/pages', $page);
+        $response = $this->actingAs($this->$user)->postJson('/pages', $page);
         $response->assertJson([
             'data' => $page + [
                 'content_md' => $this->markdownService->fromHtml($html),
@@ -231,9 +269,12 @@ class PageTest extends TestCase
         });
     }
 
-    public function testCreateByOrder(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateByOrder($user): void
     {
-        $this->user->givePermissionTo('pages.add');
+        $this->$user->givePermissionTo('pages.add');
 
         Event::fake([PageCreated::class]);
 
@@ -246,7 +287,7 @@ class PageTest extends TestCase
                 'content_html' => '<p>' . $this->faker->sentence(rand(10, 30)) . '</p>',
             ];
 
-            $response = $this->actingAs($this->user)->postJson('/pages', $page);
+            $response = $this->actingAs($this->$user)->postJson('/pages', $page);
             $response->assertCreated();
 
             $uuids[] = $response->getData()->data->id;
@@ -278,9 +319,12 @@ class PageTest extends TestCase
         Event::assertNotDispatched(PageUpdated::class);
     }
 
-    public function testUpdate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdate($user): void
     {
-        $this->user->givePermissionTo('pages.edit');
+        $this->$user->givePermissionTo('pages.edit');
 
         Event::fake(PageUpdated::class);
 
@@ -292,7 +336,7 @@ class PageTest extends TestCase
             'content_html' => $html,
         ];
 
-        $response = $this->actingAs($this->user)->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/pages/id:' . $this->page->getKey(),
             $page,
         );
@@ -376,13 +420,16 @@ class PageTest extends TestCase
         Event::assertNotDispatched(PageDeleted::class);
     }
 
-    public function testDelete(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDelete($user): void
     {
-        $this->user->givePermissionTo('pages.remove');
+        $this->$user->givePermissionTo('pages.remove');
 
         Event::fake([PageDeleted::class]);
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->deleteJson('/pages/id:' . $this->page->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($this->page);
@@ -432,26 +479,32 @@ class PageTest extends TestCase
         });
     }
 
-    public function testReorderUnauthorized(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testReorderUnauthorized($user): void
     {
         DB::table('pages')->delete();
         $page = Page::factory()->count(10)->create();
 
-        $this->actingAs($this->user)->postJson('/pages/reorder', [
+        $this->actingAs($this->$user)->postJson('/pages/reorder', [
             'pages' => $page->pluck('id')->toArray(),
         ])->assertForbidden();
     }
 
-    public function testReorder(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testReorder($user): void
     {
-        $this->user->givePermissionTo('pages.edit');
+        $this->$user->givePermissionTo('pages.edit');
 
         DB::table('pages')->delete();
         $page = Page::factory()->count(10)->create();
 
         $ids = $page->pluck('id');
 
-        $this->actingAs($this->user)->postJson('/pages/reorder', [
+        $this->actingAs($this->$user)->postJson('/pages/reorder', [
             'pages' => $ids->toArray(),
         ])->assertNoContent();
 

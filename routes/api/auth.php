@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function (): void {
     Route::post('logout', [AuthController::class, 'logout'])
-        ->middleware('auth:api');
+        ->middleware(['auth:api', 'app.restrict']);
 //    Route::get('login-history', [AuthController::class, 'loginHistory'])
 //        ->middleware('can:auth.sessions.show');
 //    Route::get('kill-session/id:{id}', [AuthController::class, 'killActiveSession'])
@@ -20,6 +20,6 @@ Route::prefix('auth')->group(function (): void {
 });
 
 Route::post('login', [AuthController::class, 'login'])
-    ->middleware('can:auth.login');
+    ->middleware(['app.restrict', 'can:auth.login']);
 Route::patch('user/password', [AuthController::class, 'changePassword'])
-    ->middleware('can:auth.password_change');
+    ->middleware(['app.restrict', 'can:auth.password_change']);

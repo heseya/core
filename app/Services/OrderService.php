@@ -48,12 +48,14 @@ class OrderService implements OrderServiceContract
         try {
             $deliveryAddress = $this->modifyAddress(
                 $order->delivery_address_id,
-                $dto->getDeliveryAddress()
+                $dto->getDeliveryAddress(),
             );
             $invoiceAddress = $this->modifyAddress(
                 $order->invoice_address_id,
-                $dto->getInvoiceAddress()
+                $dto->getInvoiceAddress(),
             );
+
+            $order->forceAudit('delivery_address_id', 'invoice_address_id');
 
             $order->update([
                 'email' => $dto->getEmail() ?? $order->email,
@@ -75,8 +77,8 @@ class OrderService implements OrderServiceContract
             DB::rollBack();
 
             throw new OrderException(
-                'Error editing the order for id: ' . $order->id,
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
+                'Error while editing order',
+                JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
             );
         }
     }

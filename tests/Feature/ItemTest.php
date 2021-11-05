@@ -12,7 +12,6 @@ use App\Models\WebHook;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
-use Laravel\Passport\Passport;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
@@ -29,7 +28,7 @@ class ItemTest extends TestCase
         $this->item = Item::factory()->create();
 
         Deposit::factory()->create([
-            'item_id' => $this->item->id,
+            'item_id' => $this->item->getKey(),
         ]);
 
         /**
@@ -49,17 +48,41 @@ class ItemTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testIndex(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
     {
-        $this->user->givePermissionTo('items.show');
+        $this->$user->givePermissionTo('items.show');
 
-        $response = $this->actingAs($this->user)->getJson('/items');
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/items')
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
+
+        $this->assertQueryCountLessThan(10);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexPerformance($user): void
+    {
+        $this->$user->givePermissionTo('items.show');
+
+        Item::factory()->count(499)->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/items?limit=500')
+            ->assertOk()
+            ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(10);
     }
 
     public function testViewUnauthorized(): void
@@ -68,15 +91,20 @@ class ItemTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testView(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testView($user): void
     {
-        $this->user->givePermissionTo('items.show_details');
+        $this->$user->givePermissionTo('items.show_details');
 
-        $response = $this->actingAs($this->user)
-            ->getJson('/items/id:' . $this->item->getKey());
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/items/id:' . $this->item->getKey())
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
+
+        $this->assertQueryCountLessThan(10);
     }
 
     public function testCreateUnauthorized(): void
@@ -89,9 +117,12 @@ class ItemTest extends TestCase
         Event::assertNotDispatched(ItemCreated::class);
     }
 
-    public function testCreate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreate($user): void
     {
-        $this->user->givePermissionTo('items.add');
+        $this->$user->givePermissionTo('items.add');
 
         Event::fake(ItemCreated::class);
 
@@ -100,7 +131,7 @@ class ItemTest extends TestCase
             'sku' => 'TES/T1',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/items', $item);
+        $response = $this->actingAs($this->$user)->postJson('/items', $item);
         $response
             ->assertCreated()
             ->assertJson(['data' => $item]);
@@ -110,16 +141,19 @@ class ItemTest extends TestCase
         Event::assertDispatched(ItemCreated::class);
     }
 
-    public function testCreateWithWebHook(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithWebHook($user): void
     {
-        $this->user->givePermissionTo('items.add');
+        $this->$user->givePermissionTo('items.add');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ItemCreated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => true,
             'with_hidden' => false,
         ]);
@@ -131,7 +165,7 @@ class ItemTest extends TestCase
             'sku' => 'TES/T1',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/items', $item);
+        $response = $this->actingAs($this->$user)->postJson('/items', $item);
         $response
             ->assertCreated()
             ->assertJson(['data' => $item]);
@@ -169,9 +203,12 @@ class ItemTest extends TestCase
         Event::assertNotDispatched(ItemUpdated::class);
     }
 
-    public function testUpdate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdate($user): void
     {
-        $this->user->givePermissionTo('items.edit');
+        $this->$user->givePermissionTo('items.edit');
 
         Event::fake(ItemUpdated::class);
 
@@ -180,7 +217,7 @@ class ItemTest extends TestCase
             'sku' => 'TES/T2',
         ];
 
-        $response = $this->actingAs($this->user)->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/items/id:' . $this->item->getKey(),
             $item,
         );
@@ -193,16 +230,19 @@ class ItemTest extends TestCase
         Event::assertDispatched(ItemUpdated::class);
     }
 
-    public function testUpdateWithWebHook(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithWebHook($user): void
     {
-        $this->user->givePermissionTo('items.edit');
+        $this->$user->givePermissionTo('items.edit');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ItemUpdated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => true,
             'with_hidden' => false,
         ]);
@@ -214,7 +254,7 @@ class ItemTest extends TestCase
             'sku' => 'TES/T2',
         ];
 
-        $response = $this->actingAs($this->user)->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/items/id:' . $this->item->getKey(),
             $item,
         );
@@ -249,44 +289,55 @@ class ItemTest extends TestCase
     {
         Event::fake(ItemDeleted::class);
 
-        $response = $this->deleteJson('/items/id:' . $this->item->getKey());
-        $response->assertForbidden();
-        $this->assertDatabaseHas('items', $this->item->toArray());
+        $response = $this->deleteJson('/items/id:' . $this->item->getKey())
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('items', [
+            'id' => $this->item->getKey(),
+            'sku' => $this->item->sku,
+            'name' => $this->item->name,
+        ]);
 
         Event::assertNotDispatched(ItemDeleted::class);
     }
 
-    public function testDelete(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDelete($user): void
     {
-        $this->user->givePermissionTo('items.remove');
+        $this->$user->givePermissionTo('items.remove');
 
-        Event::fake(ItemDeleted::class);
+        $this
+            ->actingAs($this->$user)
+            ->deleteJson('/items/id:' . $this->item->getKey())
+            ->assertNoContent();
 
-        $response = $this->actingAs($this->user)
-            ->deleteJson('/items/id:' . $this->item->getKey());
-        $response->assertNoContent();
         $this->assertSoftDeleted($this->item);
 
         Event::assertDispatched(ItemDeleted::class);
     }
 
-    public function testDeleteWithWebHook(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWithWebHook($user): void
     {
-        $this->user->givePermissionTo('items.remove');
+        $this->$user->givePermissionTo('items.remove');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ItemDeleted'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => true,
             'with_hidden' => false,
         ]);
 
         Bus::fake();
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->deleteJson('/items/id:' . $this->item->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($this->item);
