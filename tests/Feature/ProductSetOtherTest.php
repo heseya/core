@@ -39,60 +39,6 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteAsBrand($user): void
-    {
-        $this->$user->givePermissionTo('product_sets.remove');
-
-        $newSet = ProductSet::factory()->create([
-            'public' => true,
-        ]);
-
-        $product = Product::factory()->create([
-           'brand_id' => $newSet->getKey(),
-        ]);
-
-        $response = $this->actingAs($this->$user)->deleteJson(
-            '/product-sets/id:' . $newSet->getKey(),
-        );
-        $response->assertNoContent();
-        $this->assertDeleted($newSet);
-
-        $this->assertDatabaseHas('products', [
-            $product->getKeyName() => $product->getKey(),
-            'brand_id' => null,
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testDeleteAsCategory($user): void
-    {
-        $this->$user->givePermissionTo('product_sets.remove');
-
-        $newSet = ProductSet::factory()->create([
-            'public' => true,
-        ]);
-
-        $product = Product::factory()->create([
-            'category_id' => $newSet->getKey(),
-        ]);
-
-        $response = $this->actingAs($this->$user)->deleteJson(
-            '/product-sets/id:' . $newSet->getKey(),
-        );
-        $response->assertNoContent();
-        $this->assertDeleted($newSet);
-
-        $this->assertDatabaseHas('products', [
-            $product->getKeyName() => $product->getKey(),
-            'category_id' => null,
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testDeleteWithProducts($user): void
     {
         $this->$user->givePermissionTo('product_sets.remove');
