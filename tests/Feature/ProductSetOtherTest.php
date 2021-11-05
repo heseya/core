@@ -103,68 +103,6 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteAsBrand($user): void
-    {
-        $this->$user->givePermissionTo('product_sets.remove');
-
-        Event::fake([ProductSetDeleted::class]);
-
-        $newSet = ProductSet::factory()->create([
-            'public' => true,
-        ]);
-
-        $product = Product::factory()->create([
-           'brand_id' => $newSet->getKey(),
-        ]);
-
-        $response = $this->actingAs($this->$user)->deleteJson(
-            '/product-sets/id:' . $newSet->getKey(),
-        );
-        $response->assertNoContent();
-        $this->assertSoftDeleted($newSet);
-
-        $this->assertDatabaseHas('products', [
-            $product->getKeyName() => $product->getKey(),
-            'brand_id' => $newSet->getKey(),
-        ]);
-
-        Event::assertDispatched(ProductSetDeleted::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testDeleteAsCategory($user): void
-    {
-        $this->$user->givePermissionTo('product_sets.remove');
-
-        Event::fake([ProductSetDeleted::class]);
-
-        $newSet = ProductSet::factory()->create([
-            'public' => true,
-        ]);
-
-        $product = Product::factory()->create([
-            'category_id' => $newSet->getKey(),
-        ]);
-
-        $response = $this->actingAs($this->$user)->deleteJson(
-            '/product-sets/id:' . $newSet->getKey(),
-        );
-        $response->assertNoContent();
-        $this->assertSoftDeleted($newSet);
-
-        $this->assertDatabaseHas('products', [
-            $product->getKeyName() => $product->getKey(),
-            'category_id' => $newSet->getKey(),
-        ]);
-
-        Event::assertDispatched(ProductSetDeleted::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testDeleteWithProducts($user): void
     {
         $this->$user->givePermissionTo('product_sets.remove');

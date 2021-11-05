@@ -95,15 +95,11 @@ class ProductSeeder extends Seeder
 
     private function categories(Product $product, Collection $categories): void
     {
-        $product->update([
-            'category_id' => $categories->random()->getKey(),
-        ]);
+        $product->sets()->syncWithoutDetaching($categories->random());
     }
 
     private function brands(Product $product, Collection $brands): void
     {
-        $product->update([
-            'brand_id' => $brands->random()->getKey(),
-        ]);
+        $product->sets()->syncWithoutDetaching($brands->random());
     }
 }
