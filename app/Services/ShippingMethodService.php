@@ -10,7 +10,6 @@ use App\Services\Contracts\ShippingMethodServiceContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class ShippingMethodService implements ShippingMethodServiceContract
 {
