@@ -512,7 +512,7 @@ class DiscountTest extends TestCase
 
         Queue::fake();
 
-        $response = $this->actingAs($this->user)->deleteJson('/discounts/id:' . $discount->getKey());
+        $response = $this->actingAs($this->$user)->deleteJson('/discounts/id:' . $discount->getKey());
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
             return $job->class === WebHookEventListener::class
