@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Product;
 use App\Models\ProductSet;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class ProductSearchTest extends TestCase
@@ -53,10 +55,6 @@ class ProductSearchTest extends TestCase
 
         $set->products()->attach($product);
 
-        Product::factory()->create([
-            'public' => true,
-        ]);
-
         $response = $this->actingAs($this->$user)
             ->getJson('/products?sets[]=' . $set->slug);
 
@@ -97,10 +95,6 @@ class ProductSearchTest extends TestCase
         $set->products()->attach($product);
         $set2->products()->attach($product2);
 
-        Product::factory()->create([
-            'public' => true,
-        ]);
-
         $response = $this->actingAs($this->$user)
             ->getJson('/products?sets[]=' . $set->slug . '&sets[]=' . $set2->slug);
         $response
@@ -132,14 +126,10 @@ class ProductSearchTest extends TestCase
 
         $set->products()->attach($product);
 
-        Product::factory()->create([
-            'public' => true,
-        ]);
-
         $response = $this->actingAs($this->$user)
             ->getJson('/products?sets[]=' . $set->slug);
 
-        $response->assertNotFound();
+        $response->assertUnprocessable();
     }
 
     /**
@@ -169,10 +159,6 @@ class ProductSearchTest extends TestCase
 
         $set->products()->attach($product);
 
-        Product::factory()->create([
-            'public' => true,
-        ]);
-
         $response = $this->actingAs($this->$user)
             ->getJson('/products?sets[]=' . $set->slug);
 
@@ -180,5 +166,75 @@ class ProductSearchTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $product->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByParentSet($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $this->getProductsByParentSet($this->$user, true, $product)
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $product->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByParentSetWithPrivateChildUnauthorized($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $this->getProductsByParentSet($this->$user, false)
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByParentSetWithPrivateChild($user): void
+    {
+        $this->$user->givePermissionTo([
+            'products.show',
+            'product_sets.show_hidden',
+        ]);
+
+        $this->getProductsByParentSet($this->$user, false, $product)
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $product->getKey()]);
+    }
+
+    private function getProductsByParentSet(
+        Authenticatable $user,
+        bool $isChildSetPublic,
+        ?Product &$productRef = null,
+    ): TestResponse {
+        $parentSet = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $childSet = ProductSet::factory()->create([
+            'parent_id' => $parentSet->getKey(),
+            'public' => $isChildSetPublic,
+        ]);
+
+        $productRef = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        // Product not in set
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $childSet->products()->attach($productRef);
+
+        return $this->actingAs($user)
+            ->getJson('/products?sets[]=' . $parentSet->slug);
     }
 }

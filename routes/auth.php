@@ -15,8 +15,10 @@ Route::prefix('auth')->group(function (): void {
 //        ->middleware('can:auth.sessions.revoke');
     Route::post('refresh', [AuthController::class, 'refresh'])
         ->middleware('can:auth.login');
-    Route::get('profile/{identity_token}', [AuthController::class, 'identityProfile'])
-        ->middleware('can:auth.identity_profile');
+    Route::get('check', [AuthController::class, 'checkIdentity'])
+        ->middleware('can:auth.check_identity');
+    Route::get('check/{identity_token}', [AuthController::class, 'checkIdentity'])
+        ->middleware('can:auth.check_identity');
 });
 
 Route::post('login', [AuthController::class, 'login'])

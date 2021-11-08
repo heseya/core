@@ -21,6 +21,6 @@ class AuditService implements AuditServiceContract
             throw new StoreException('Model not auditable');
         }
 
-        return $model->audits()->with('user')->get();
+        return $model->audits()->with('user')->orderBy('created_at', 'DESC')->get();
     }
 }

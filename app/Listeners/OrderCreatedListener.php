@@ -4,6 +4,8 @@ namespace App\Listeners;
 
 use App\Events\OrderCreated as OrderCreatedEvent;
 use App\Notifications\OrderCreated;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class OrderCreatedListener
 {
@@ -11,6 +13,10 @@ class OrderCreatedListener
     {
         $order = $event->getOrder();
 
-        $order->notify(new OrderCreated($order));
+        try {
+            $order->notify(new OrderCreated($order));
+        } catch (Throwable) {
+            Log::error("Couldn't send order confirmation to the address: {$order->email}");
+        }
     }
 }

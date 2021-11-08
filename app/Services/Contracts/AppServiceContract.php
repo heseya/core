@@ -2,16 +2,12 @@
 
 namespace App\Services\Contracts;
 
+use App\Dtos\AppInstallDto;
 use App\Models\App;
 
 interface AppServiceContract
 {
-    public function install(
-        string $url,
-        array $permissions,
-        ?string $name,
-        ?string $licenceKey,
-    ): App;
+    public function install(AppInstallDto $dto): App;
 
     public function uninstall(App $app, bool $force = false): void;
 
