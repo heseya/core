@@ -163,14 +163,11 @@ class ShippingMethodTest extends TestCase
         $response->assertStatus(422);
     }
 
-    public function testCreateUnauthorized(): void
+    public function testCreate(): void
     {
         $response = $this->postJson('/shipping-methods');
         $response->assertUnauthorized();
-    }
 
-    public function testCreate(): void
-    {
         ShippingMethod::query()->delete();
 
         $shipping_method = [
@@ -178,21 +175,18 @@ class ShippingMethodTest extends TestCase
             'public' => true,
         ];
 
-        $response = $this
-            ->actingAs($this->user)
-            ->postJson('/shipping-methods', $shipping_method + [
-                'price_ranges' => [
-                    [
-                        'start' => 0,
-                        'value' => 10.37,
-                    ],
-                    [
-                        'start' => 200,
-                        'value' => 0,
-                    ],
+        $response = $this->actingAs($this->user)->postJson('/shipping-methods', $shipping_method + [
+            'price_ranges' => [
+                [
+                    'start' => 0,
+                    'value' => 10.37,
                 ],
-            ]);
-
+                [
+                    'start' => 200,
+                    'value' => 0,
+                ],
+            ],
+        ]);
         $response
             ->assertCreated()
             ->assertJson(['data' => $shipping_method])
