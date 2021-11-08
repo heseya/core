@@ -51,10 +51,8 @@ class ShippingMethodService implements ShippingMethodServiceContract
     public function store(ShippingMethodStoreRequest $request): ShippingMethod
     {
         $attributes = $request->validated();
-        $shippingMethodNextOrder = ShippingMethod::select(DB::raw('MAX(`order`) + 1 as next_order'))->first();
-        if ($shippingMethodNextOrder !== null) {
-            $attributes = array_merge($attributes, ['order' => $shippingMethodNextOrder->next_order]);
-        }
+        $shippingMethodOrderLast = ShippingMethod::orderBy('order', 'desc')->first()->order ?? 0;
+        $attributes = $attributes + ['order' => $shippingMethodOrderLast + 1];
 
         $shippingMethod = ShippingMethod::create($attributes);
         $shippingMethod->paymentMethods()->sync($request->input('payment_methods', []));
