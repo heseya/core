@@ -102,7 +102,7 @@ class ProductController extends Controller implements ProductControllerSwagger
         $product = Product::create($request->validated());
 
         $this->productSetup($product, $request);
-        
+
         ProductCreated::dispatch($product);
 
         return ProductResource::make($product);
@@ -137,7 +137,7 @@ class ProductController extends Controller implements ProductControllerSwagger
     public function productSetup(
         Product $product,
         ProductCreateRequest|ProductUpdateRequest $request,
-    ): ProductResource {
+    ) {
         $this->mediaService->sync($product, $request->input('media', []));
         $product->tags()->sync($request->input('tags', []));
 

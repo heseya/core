@@ -406,8 +406,6 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
             'description_html' => '<h1>Description</h1>',
             'public' => true,
         ]);
@@ -421,18 +419,6 @@ class ProductTest extends TestCase
                 'public' => true,
                 'description_md' => $this->markdownService->fromHtml('<h1>Description</h1>'),
                 'description_html' => '<h1>Description</h1>',
-                'brand' => [
-                    'id' => $this->product->brand->getKey(),
-                    'name' => $this->product->brand->name,
-                    'slug' => $this->product->brand->slug,
-                    'public' => (bool) $this->product->brand->public,
-                ],
-                'category' => [
-                    'id' => $this->product->category->getKey(),
-                    'name' => $this->product->category->name,
-                    'slug' => $this->product->category->slug,
-                    'public' => (bool) $this->product->category->public,
-                ],
                 'cover' => null,
                 'gallery' => [],
             ]]);
@@ -443,8 +429,6 @@ class ProductTest extends TestCase
             'price' => 100,
             'public' => true,
             'description_html' => '<h1>Description</h1>',
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
         ]);
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
@@ -488,8 +472,6 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
             'description_html' => '<h1>Description</h1>',
             'public' => true,
         ]);
@@ -503,18 +485,6 @@ class ProductTest extends TestCase
                 'public' => true,
                 'description_md' => $this->markdownService->fromHtml('<h1>Description</h1>'),
                 'description_html' => '<h1>Description</h1>',
-                'brand' => [
-                    'id' => $this->product->brand->getKey(),
-                    'name' => $this->product->brand->name,
-                    'slug' => $this->product->brand->slug,
-                    'public' => (bool) $this->product->brand->public,
-                ],
-                'category' => [
-                    'id' => $this->product->category->getKey(),
-                    'name' => $this->product->category->name,
-                    'slug' => $this->product->category->slug,
-                    'public' => (bool) $this->product->category->public,
-                ],
                 'cover' => null,
                 'gallery' => [],
             ]]);
@@ -525,8 +495,6 @@ class ProductTest extends TestCase
             'price' => 100,
             'public' => true,
             'description_html' => '<h1>Description</h1>',
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
         ]);
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
@@ -570,8 +538,6 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
             'description_html' => '<h1>Description</h1>',
             'public' => false,
         ]);
@@ -585,18 +551,6 @@ class ProductTest extends TestCase
                 'public' => false,
                 'description_md' => $this->markdownService->fromHtml('<h1>Description</h1>'),
                 'description_html' => '<h1>Description</h1>',
-                'brand' => [
-                    'id' => $this->product->brand->getKey(),
-                    'name' => $this->product->brand->name,
-                    'slug' => $this->product->brand->slug,
-                    'public' => (bool) $this->product->brand->public,
-                ],
-                'category' => [
-                    'id' => $this->product->category->getKey(),
-                    'name' => $this->product->category->name,
-                    'slug' => $this->product->category->slug,
-                    'public' => (bool) $this->product->category->public,
-                ],
                 'cover' => null,
                 'gallery' => [],
             ]]);
@@ -607,8 +561,6 @@ class ProductTest extends TestCase
             'price' => 100,
             'public' => false,
             'description_html' => '<h1>Description</h1>',
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
         ]);
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
@@ -645,8 +597,6 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
             'description_html' => '<h1>Description</h1>',
             'public' => false,
         ]);
@@ -660,18 +610,6 @@ class ProductTest extends TestCase
                 'public' => false,
                 'description_md' => $this->markdownService->fromHtml('<h1>Description</h1>'),
                 'description_html' => '<h1>Description</h1>',
-                'brand' => [
-                    'id' => $this->product->brand->getKey(),
-                    'name' => $this->product->brand->name,
-                    'slug' => $this->product->brand->slug,
-                    'public' => (bool) $this->product->brand->public,
-                ],
-                'category' => [
-                    'id' => $this->product->category->getKey(),
-                    'name' => $this->product->category->name,
-                    'slug' => $this->product->category->slug,
-                    'public' => (bool) $this->product->category->public,
-                ],
                 'cover' => null,
                 'gallery' => [],
             ]]);
@@ -682,8 +620,6 @@ class ProductTest extends TestCase
             'price' => 100,
             'public' => false,
             'description_html' => '<h1>Description</h1>',
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
         ]);
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
@@ -748,6 +684,8 @@ class ProductTest extends TestCase
     public function testCreateWithSchemas($user): void
     {
         $this->$user->givePermissionTo('products.add');
+
+        Event::fake([ProductCreated::class]);
 
         $schema = Schema::factory()->create();
 
@@ -936,8 +874,6 @@ class ProductTest extends TestCase
             'name' => 'Updated',
             'slug' => 'updated',
             'price' => 150,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
             'description_html' => '<h1>New description</h1>',
             'public' => false,
         ]);
@@ -949,8 +885,6 @@ class ProductTest extends TestCase
             'name' => 'Updated',
             'slug' => 'updated',
             'price' => 150,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
             'description_html' => '<h1>New description</h1>',
             'public' => false,
         ]);
@@ -996,8 +930,6 @@ class ProductTest extends TestCase
             'name' => 'Updated',
             'slug' => 'updated',
             'price' => 150,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
             'description_html' => '<h1>New description</h1>',
             'public' => false,
         ]);
@@ -1009,8 +941,6 @@ class ProductTest extends TestCase
             'name' => 'Updated',
             'slug' => 'updated',
             'price' => 150,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
             'description_html' => '<h1>New description</h1>',
             'public' => false,
         ]);

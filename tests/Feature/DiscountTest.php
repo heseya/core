@@ -586,6 +586,8 @@ class DiscountTest extends TestCase
     {
         $this->$user->givePermissionTo('discounts.add');
 
+        Event::fake([DiscountCreated::class]);
+
         $response = $this->actingAs($this->$user)->json('POST', '/discounts', [
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',

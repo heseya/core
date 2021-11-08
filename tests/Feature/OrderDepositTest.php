@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Events\OrderCreated;
 use App\Events\OrderStatusUpdated;
+use App\Events\OrderUpdatedStatus;
 use App\Models\Address;
 use App\Models\Item;
 use App\Models\Option;
@@ -33,7 +34,7 @@ class OrderDepositTest extends TestCase
 
         $this->createShippingMethod();
 
-        Event::fake([OrderCreated::class, OrderStatusUpdated::class]);
+        Event::fake([OrderCreated::class, OrderUpdatedStatus::class]);
 
         $this->product = Product::factory()->create([
             'price' => 100,
@@ -178,6 +179,6 @@ class OrderDepositTest extends TestCase
         $this->item->refresh();
         $this->assertEquals(2, $this->item->quantity);
 
-        Event::assertDispatched(OrderStatusUpdated::class);
+        Event::assertDispatched(OrderUpdatedStatus::class);
     }
 }

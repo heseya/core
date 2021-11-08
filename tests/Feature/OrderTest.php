@@ -248,7 +248,7 @@ class OrderTest extends TestCase
             'status_id' => $status->getKey(),
         ]);
 
-        Event::assertDispatched(OrderStatusUpdated::class);
+        Event::assertDispatched(OrderUpdatedStatus::class);
     }
 
     public function testUpdateOrderStatusCancel(): void

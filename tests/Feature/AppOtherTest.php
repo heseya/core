@@ -223,7 +223,7 @@ class AppOtherTest extends TestCase
             ->json('DELETE', '/apps/id:' . $app->getKey());
 
         $response->assertNoContent();
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
         $this->assertDeleted($app);
         $this->assertSoftDeleted($webhook);
     }

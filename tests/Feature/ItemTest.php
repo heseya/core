@@ -308,6 +308,8 @@ class ItemTest extends TestCase
     {
         $this->$user->givePermissionTo('items.remove');
 
+        Event::fake(ItemDeleted::class);
+
         $this
             ->actingAs($this->$user)
             ->deleteJson('/items/id:' . $this->item->getKey())

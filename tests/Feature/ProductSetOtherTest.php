@@ -43,7 +43,7 @@ class ProductSetOtherTest extends TestCase
             'public' => true,
         ]);
 
-        $response = $this->actingAs($this->user)->deleteJson(
+        $response = $this->actingAs($this->$user)->deleteJson(
             '/product-sets/id:' . $newSet->getKey(),
         );
         $response->assertNoContent();
