@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\SeoMetadataDto;
 use App\Http\Controllers\Swagger\SeoMetadataControllerSwagger;
 use App\Http\Requests\SeoMetadataRequest;
 use App\Http\Resources\SeoMetadataResource;
@@ -26,7 +27,7 @@ class SeoMetadataController extends Controller implements SeoMetadataControllerS
 
     public function createOrUpdate(SeoMetadataRequest $request): JsonResource
     {
-        $seo = $this->seoMetadataService->createOrUpdate($request->validated());
-        return SeoMetadataResource::make($seo);
+        $seo = SeoMetadataDto::fromFormRequest($request);
+        return SeoMetadataResource::make($this->seoMetadataService->createOrUpdate($seo));
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\SeoMetadataDto;
 use App\Http\Controllers\Swagger\ProductControllerSwagger;
 use App\Http\Requests\ProductCreateRequest;
 use App\Http\Requests\ProductIndexRequest;
@@ -24,18 +25,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ProductController extends Controller implements ProductControllerSwagger
 {
-    private MediaServiceContract $mediaService;
-    private SchemaServiceContract $schemaService;
-    private SeoMetadataServiceContract $seoMetadataService;
-
     public function __construct(
-        MediaServiceContract $mediaService,
-        SchemaServiceContract $schemaService,
-        SeoMetadataServiceContract $seoMetadataService
+        private MediaServiceContract $mediaService,
+        private SchemaServiceContract $schemaService,
+        private SeoMetadataServiceContract $seoMetadataService
     ) {
-        $this->mediaService = $mediaService;
-        $this->schemaService = $schemaService;
-        $this->seoMetadataService = $seoMetadataService;
     }
 
     public function index(ProductIndexRequest $request): JsonResource
@@ -100,8 +94,7 @@ class ProductController extends Controller implements ProductControllerSwagger
 
     public function store(ProductCreateRequest $request): JsonResource
     {
-        $attributes = $request->validated();
-        $product = Product::create($attributes);
+        $product = Product::create($request->validated());
 
         $this->mediaService->sync($product, $request->input('media', []));
         $product->tags()->sync($request->input('tags', []));
@@ -114,9 +107,8 @@ class ProductController extends Controller implements ProductControllerSwagger
             $product->sets()->sync($request->input('sets'));
         }
 
-        $attributes['seo']['model_id'] = $product->getKey();
-        $attributes['seo']['model_type'] = $product::class;
-        $this->seoMetadataService->create($attributes['seo']);
+        $seo_dto = SeoMetadataDto::fromFormRequest($request);
+        $product->seo()->save($this->seoMetadataService->create($seo_dto));
 
         return ProductResource::make($product);
     }
@@ -138,7 +130,8 @@ class ProductController extends Controller implements ProductControllerSwagger
         }
 
         if ($request->has('seo')) {
-            $this->seoMetadataService->update($attributes['seo'], $product->seo);
+            $seo_dto = SeoMetadataDto::fromFormRequest($request);
+            $this->seoMetadataService->update($seo_dto, $product->seo);
         }
 
         return ProductResource::make($product);

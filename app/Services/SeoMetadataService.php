@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Dtos\SeoMetadataDto;
 use App\Models\SeoMetadata;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use Illuminate\Support\Facades\Cache;
@@ -13,15 +14,15 @@ class SeoMetadataService implements SeoMetadataServiceContract
         return SeoMetadata::where('global', '=', true)->firstOrFail();
     }
 
-    public function createOrUpdate(array $attributes): SeoMetadata
+    public function createOrUpdate(SeoMetadataDto $dto): SeoMetadata
     {
         $seo = SeoMetadata::firstOrCreate(
             ['global' => true],
-            $attributes
+            $dto->toArray()
         );
 
         if (!$seo->wasRecentlyCreated) {
-            $seo->update($attributes);
+            $seo->update($dto->toArray());
         }
 
         Cache::put('seo.global', $seo);
@@ -29,16 +30,16 @@ class SeoMetadataService implements SeoMetadataServiceContract
         return $seo;
     }
 
-    public function create(array $attributes): SeoMetadata
+    public function create(SeoMetadataDto $dto): SeoMetadata
     {
         return SeoMetadata::create(
-            $attributes
+            $dto->toArray()
         );
     }
 
-    public function update(array $attributes, SeoMetadata $seoMetadata): SeoMetadata
+    public function update(SeoMetadataDto $dto, SeoMetadata $seoMetadata): SeoMetadata
     {
-        $seoMetadata->update($attributes);
+        $seoMetadata->update($dto->toArray());
         return $seoMetadata;
     }
 

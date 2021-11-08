@@ -519,7 +519,10 @@ class ProductTest extends TestCase
            'title' => 'seo title',
            'description' => 'seo description',
            'model_id' => $response->getData()->data->id,
+           'model_type' => Product::class,
         ]);
+
+        $this->assertDatabaseCount('seo_metadata', 1);
     }
 
     public function testUpdateUnauthorized(): void
