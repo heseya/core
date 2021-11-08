@@ -215,16 +215,19 @@ class PageTest extends TestCase
         Event::assertDispatched(PageCreated::class);
     }
 
-    public function testCreateWithWebHook(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithWebHook($user): void
     {
-        $this->user->givePermissionTo('pages.add');
+        $this->$user->givePermissionTo('pages.add');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'PageCreated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => true,
             'with_hidden' => false,
         ]);
@@ -239,7 +242,7 @@ class PageTest extends TestCase
             'content_html' => $html,
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/pages', $page);
+        $response = $this->actingAs($this->$user)->postJson('/pages', $page);
         $response->assertJson([
             'data' => $page + [
                     'content_md' => $this->markdownService->fromHtml($html),
@@ -350,16 +353,19 @@ class PageTest extends TestCase
         Event::assertDispatched(PageUpdated::class);
     }
 
-    public function testUpdateWithWebHook(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithWebHook($user): void
     {
-        $this->user->givePermissionTo('pages.edit');
+        $this->$user->givePermissionTo('pages.edit');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'PageUpdated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => true,
             'with_hidden' => true,
         ]);
@@ -374,7 +380,7 @@ class PageTest extends TestCase
             'content_html' => $html,
         ];
 
-        $response = $this->actingAs($this->user)->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/pages/id:' . $this->page->getKey(),
             $page,
         );
@@ -437,23 +443,26 @@ class PageTest extends TestCase
         Event::assertDispatched(PageDeleted::class);
     }
 
-    public function testDeleteWithWebHook(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWithWebHook($user): void
     {
-        $this->user->givePermissionTo('pages.remove');
+        $this->$user->givePermissionTo('pages.remove');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'PageDeleted'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => true,
             'with_hidden' => true,
         ]);
 
         Bus::fake();
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->deleteJson('/pages/id:' . $this->page->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($this->page);

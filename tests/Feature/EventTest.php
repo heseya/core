@@ -14,16 +14,19 @@ class EventTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testIndex(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
     {
-        $this->user->givePermissionTo('events.show');
+        $this->$user->givePermissionTo('events.show');
 
         $event = EventType::getRandomInstance();
 
         $hidden_permissions = array_key_exists($event->value, Config::get('events.permissions_hidden'))
             ? Config::get('events.permissions_hidden')[$event->value] : [];
 
-        $response = $this->actingAs($this->user)->json('GET', '/webhooks/events');
+        $response = $this->actingAs($this->$user)->json('GET', '/webhooks/events');
         $response
             ->assertOk()
             ->assertJsonStructure(['data' => [

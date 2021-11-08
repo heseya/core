@@ -285,7 +285,7 @@ class ProductSetIndexTest extends TestCase
                     ],
                 ],
             ],
-            ]);
+        ]);
     }
 
     /**

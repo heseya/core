@@ -136,16 +136,19 @@ class OrderUpdateTest extends TestCase
         Queue::assertNotPushed(CallWebhookJob::class);
     }
 
-    public function testFullUpdateOrderWithWebHookQueue(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testFullUpdateOrderWithWebHookQueue($user): void
     {
-        $this->user->givePermissionTo('orders.edit');
+        $this->$user->givePermissionTo('orders.edit');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'OrderUpdated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
@@ -156,7 +159,7 @@ class OrderUpdateTest extends TestCase
         $comment = $this->faker->text(200);
         $address = Address::factory()->create();
 
-        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'email' => $email,
             'comment' => $comment,
             'delivery_address' => $address->toArray(),
@@ -220,16 +223,19 @@ class OrderUpdateTest extends TestCase
         Queue::assertPushed(CallWebhookJob::class);
     }
 
-    public function testFullUpdateOrderWithWebHookDispatched(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testFullUpdateOrderWithWebHookDispatched($user): void
     {
-        $this->user->givePermissionTo('orders.edit');
+        $this->$user->givePermissionTo('orders.edit');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'OrderUpdated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
@@ -240,7 +246,7 @@ class OrderUpdateTest extends TestCase
         $comment = $this->faker->text(200);
         $address = Address::factory()->create();
 
-        $response = $this->actingAs($this->user)->patchJson('/orders/id:' . $this->order->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'email' => $email,
             'comment' => $comment,
             'delivery_address' => $address->toArray(),

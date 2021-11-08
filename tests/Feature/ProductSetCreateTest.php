@@ -104,16 +104,19 @@ class ProductSetCreateTest extends TestCase
         Event::assertDispatched(ProductSetCreated::class);
     }
 
-    public function testCreateMinimalWithWebHook(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateMinimalWithWebHook($user): void
     {
-        $this->user->givePermissionTo('product_sets.add');
+        $this->$user->givePermissionTo('product_sets.add');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ProductSetCreated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => true,
             'with_hidden' => false,
         ]);
@@ -130,7 +133,7 @@ class ProductSetCreateTest extends TestCase
             'slug' => 'test',
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/product-sets', $set + [
+        $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
                 'slug_suffix' => 'test',
                 'slug_override' => false,
             ]);
@@ -204,16 +207,19 @@ class ProductSetCreateTest extends TestCase
         Event::assertDispatched(ProductSetCreated::class);
     }
 
-    public function testCreateFullWithWebHook(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateFullWithWebHook($user): void
     {
-        $this->user->givePermissionTo('product_sets.add');
+        $this->$user->givePermissionTo('product_sets.add');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ProductSetCreated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => true,
             'with_hidden' => true,
         ]);
@@ -226,7 +232,7 @@ class ProductSetCreateTest extends TestCase
             'hide_on_index' => true,
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/product-sets', $set + [
+        $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
                 'slug_suffix' => 'test',
                 'slug_override' => false,
             ]);

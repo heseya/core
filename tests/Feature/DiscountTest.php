@@ -492,17 +492,20 @@ class DiscountTest extends TestCase
         Queue::assertNotPushed(CallWebhookJob::class);
     }
 
-    public function testDeleteWithWebHookQueue(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWithWebHookQueue($user): void
     {
-        $this->user->givePermissionTo('discounts.remove');
+        $this->$user->givePermissionTo('discounts.remove');
         $discount = Discount::factory()->create();
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'DiscountDeleted'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);

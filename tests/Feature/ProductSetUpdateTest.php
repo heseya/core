@@ -88,16 +88,19 @@ class ProductSetUpdateTest extends TestCase
         Event::assertDispatched(ProductSetUpdated::class);
     }
 
-    public function testUpdateWithWebHook(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithWebHook($user): void
     {
-        $this->user->givePermissionTo('product_sets.edit');
+        $this->$user->givePermissionTo('product_sets.edit');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ProductSetUpdated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => true,
             'with_hidden' => true,
         ]);
@@ -119,7 +122,7 @@ class ProductSetUpdateTest extends TestCase
             'parent_id' => null,
         ];
 
-        $response = $this->actingAs($this->user)->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/product-sets/id:' . $newSet->getKey(),
             $set + $parentId + [
                 'children_ids' => [],

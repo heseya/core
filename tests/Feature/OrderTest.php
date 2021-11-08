@@ -251,16 +251,19 @@ class OrderTest extends TestCase
         Event::assertDispatched(OrderUpdatedStatus::class);
     }
 
-    public function testUpdateOrderStatusCancel(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderStatusCancel($user): void
     {
-        $this->user->givePermissionTo('orders.edit.status');
+        $this->$user->givePermissionTo('orders.edit.status');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ItemUpdatedQuantity'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
@@ -280,7 +283,7 @@ class OrderTest extends TestCase
             'cancel' => true,
         ]);
 
-        $response = $this->actingAs($this->user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+        $response = $this->actingAs($this->$user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
             'status_id' => $status->getKey(),
         ]);
 
@@ -311,16 +314,19 @@ class OrderTest extends TestCase
         });
     }
 
-    public function testUpdateOrderStatusWithWebHookQueue(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderStatusWithWebHookQueue($user): void
     {
-        $this->user->givePermissionTo('orders.edit.status');
+        $this->$user->givePermissionTo('orders.edit.status');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'OrderUpdatedStatus'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
@@ -329,7 +335,7 @@ class OrderTest extends TestCase
 
         $status = Status::factory()->create();
 
-        $response = $this->actingAs($this->user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+        $response = $this->actingAs($this->$user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
             'status_id' => $status->getKey(),
         ]);
 
@@ -358,16 +364,19 @@ class OrderTest extends TestCase
         });
     }
 
-    public function testUpdateOrderStatusWithWebHookDispatched(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderStatusWithWebHookDispatched($user): void
     {
-        $this->user->givePermissionTo('orders.edit.status');
+        $this->$user->givePermissionTo('orders.edit.status');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'OrderUpdatedStatus'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
@@ -376,7 +385,7 @@ class OrderTest extends TestCase
 
         $status = Status::factory()->create();
 
-        $response = $this->actingAs($this->user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+        $response = $this->actingAs($this->$user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
             'status_id' => $status->getKey(),
         ]);
 

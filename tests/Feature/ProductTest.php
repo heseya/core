@@ -386,23 +386,26 @@ class ProductTest extends TestCase
         Queue::assertNotPushed(CallWebhookJob::class);
     }
 
-    public function testCreateWithWebHookQueue(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithWebHookQueue($user): void
     {
-        $this->user->givePermissionTo('products.add');
+        $this->$user->givePermissionTo('products.add');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ProductCreated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
 
         Queue::fake();
 
-        $response = $this->actingAs($this->user)->postJson('/products', [
+        $response = $this->actingAs($this->$user)->postJson('/products', [
             'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
@@ -452,23 +455,26 @@ class ProductTest extends TestCase
         });
     }
 
-    public function testCreateWithWebHookDispatched(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithWebHookDispatched($user): void
     {
-        $this->user->givePermissionTo('products.add');
+        $this->$user->givePermissionTo('products.add');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ProductCreated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
 
         Bus::fake();
 
-        $response = $this->actingAs($this->user)->postJson('/products', [
+        $response = $this->actingAs($this->$user)->postJson('/products', [
             'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
@@ -518,23 +524,26 @@ class ProductTest extends TestCase
         });
     }
 
-    public function testCreateHiddenWithWebHookWithoutHidden(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateHiddenWithWebHookWithoutHidden($user): void
     {
-        $this->user->givePermissionTo('products.add');
+        $this->$user->givePermissionTo('products.add');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ProductCreated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
 
         Queue::fake();
 
-        $response = $this->actingAs($this->user)->postJson('/products', [
+        $response = $this->actingAs($this->$user)->postJson('/products', [
             'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
@@ -577,23 +586,26 @@ class ProductTest extends TestCase
         Queue::assertNotPushed(CallWebhookJob::class);
     }
 
-    public function testCreateHiddenWithWebHook(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateHiddenWithWebHook($user): void
     {
-        $this->user->givePermissionTo('products.add');
+        $this->$user->givePermissionTo('products.add');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ProductCreated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => true,
         ]);
 
         Bus::fake();
 
-        $response = $this->actingAs($this->user)->postJson('/products', [
+        $response = $this->actingAs($this->$user)->postJson('/products', [
             'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
@@ -642,12 +654,15 @@ class ProductTest extends TestCase
         });
     }
 
-    public function testCreateWithZeroPrice(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithZeroPrice($user): void
     {
-        $this->user->givePermissionTo('products.add');
+        $this->$user->givePermissionTo('products.add');
 
         $this
-            ->actingAs($this->user)
+            ->actingAs($this->$user)
             ->postJson('/products', [
                 'name' => 'Test',
                 'slug' => 'test',
@@ -663,12 +678,15 @@ class ProductTest extends TestCase
         ]);
     }
 
-    public function testCreateWithNegativePrice(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithNegativePrice($user): void
     {
-        $this->user->givePermissionTo('products.add');
+        $this->$user->givePermissionTo('products.add');
 
         $this
-            ->actingAs($this->user)
+            ->actingAs($this->$user)
             ->postJson('/products', [
                 'name' => 'Test',
                 'slug' => 'test',
@@ -854,23 +872,26 @@ class ProductTest extends TestCase
         Queue::assertNotPushed(CallWebhookJob::class);
     }
 
-    public function testUpdateWithWebHookQueue(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithWebHookQueue($user): void
     {
-        $this->user->givePermissionTo('products.edit');
+        $this->$user->givePermissionTo('products.edit');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ProductUpdated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => true,
         ]);
 
         Queue::fake();
 
-        $response = $this->actingAs($this->user)->patchJson('/products/id:' . $this->product->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'Updated',
             'slug' => 'updated',
             'price' => 150,
@@ -910,23 +931,26 @@ class ProductTest extends TestCase
         });
     }
 
-    public function testUpdateWithWebHookDispatched(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithWebHookDispatched($user): void
     {
-        $this->user->givePermissionTo('products.edit');
+        $this->$user->givePermissionTo('products.edit');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ProductUpdated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => true,
         ]);
 
         Bus::fake();
 
-        $response = $this->actingAs($this->user)->patchJson('/products/id:' . $this->product->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'Updated',
             'slug' => 'updated',
             'price' => 150,
@@ -1201,23 +1225,26 @@ class ProductTest extends TestCase
         Queue::assertNotPushed(CallWebhookJob::class);
     }
 
-    public function testDeleteWithWebHookQueue(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWithWebHookQueue($user): void
     {
-        $this->user->givePermissionTo('products.remove');
+        $this->$user->givePermissionTo('products.remove');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ProductDeleted'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
 
         Queue::fake();
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->deleteJson('/products/id:' . $this->product->getKey());
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
@@ -1244,23 +1271,26 @@ class ProductTest extends TestCase
         });
     }
 
-    public function testDeleteWithWebHookDispatched(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWithWebHookDispatched($user): void
     {
-        $this->user->givePermissionTo('products.remove');
+        $this->$user->givePermissionTo('products.remove');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ProductDeleted'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
 
         Bus::fake();
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->deleteJson('/products/id:' . $this->product->getKey());
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
