@@ -31,9 +31,8 @@ class Media extends Model
      *
      * @OA\Property(
      *   property="type",
-     *   type="number",
-     *   example="1",
-     *   description="0 - Other, 1 - Photo, 2 - Video",
+     *   type="string",
+     *   example="photo",
      * )
      *
      * @OA\Property(
