@@ -51,7 +51,7 @@ class ProductController extends Controller implements ProductControllerSwagger
         if ($request->has('sets')) {
             $setsFound = ProductSet::whereIn(
                 'slug',
-                $request->input('sets'),
+                $request->input('sets', []) ?? [],
             )->with('allChildren')->get();
 
             $relationScope = $canShowHiddenSets ? 'allChildren' : 'allChildrenPublic';
