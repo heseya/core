@@ -756,4 +756,18 @@ class ProductTest extends TestCase
         $response->assertNoContent();
         $this->assertSoftDeleted($this->product);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSetsDefaultAsArray($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $response = $this->actingAs($this->$user)->json('GET', '/products?full=1&sets=');
+        $response
+            ->assertOk()
+            ->assertJsonCount(0, 'data')
+            ->assertJson(['data' => []]);
+    }
 }
