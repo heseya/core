@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\SearchTypes\ProductSearch;
+use App\Traits\HasSeoMetadata;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Heseya\Sortable\Sortable;
@@ -18,7 +19,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Product extends Model implements AuditableContract
 {
-    use HasFactory, SoftDeletes, Searchable, Sortable, Auditable;
+    use HasFactory, SoftDeletes, Searchable, Sortable, Auditable, HasSeoMetadata;
 
     protected $fillable = [
         'name',

@@ -35,7 +35,7 @@ class Resource extends JsonResource
                 'symbol' => App::currentLocale(),
             ],
         ];
-        if ($request->user()->hasPermissionTo('seo.show')) {
+        if ($request->user() !== null && $request->user()->hasPermissionTo('seo.show')) {
             $meta['seo'] = SeoMetadataResource::make(Cache::get('seo.global'));
         }
         return [

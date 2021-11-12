@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Traits\SeoMetadataRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -66,14 +67,21 @@ use Illuminate\Foundation\Http\FormRequest;
  *         example="0006c3a0-21af-4485-b7fe-9c42233cf03a",
  *       ),
  *     ),
+ *     @OA\Property(
+ *       property="seo",
+ *       type="object",
+ *       ref="#/components/schemas/SeoStore",
+ *     ),
  *   ),
  * )
  */
 class ProductCreateRequest extends FormRequest
 {
+    use SeoMetadataRules;
+
     public function rules(): array
     {
-        return [
+        return array_merge([
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'unique:products', 'alpha_dash'],
             'price' => ['required', 'numeric', 'min:0'],
@@ -92,6 +100,6 @@ class ProductCreateRequest extends FormRequest
 
             'sets' => ['nullable', 'array'],
             'sets.*' => ['uuid', 'exists:product_sets,id'],
-        ];
+        ], $this->seoRules());
     }
 }

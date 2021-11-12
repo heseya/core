@@ -9,6 +9,7 @@ use App\Models\Media;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
+use App\Models\SeoMetadata;
 use App\Services\Contracts\ProductServiceContract;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
@@ -53,6 +54,7 @@ class ProductSeeder extends Seeder
 
             $this->media($product);
             $this->sets($product, $sets);
+            $this->seo($product);
 
             if ($index >= 75) {
                 $this->brands($product, $brands);
@@ -101,5 +103,11 @@ class ProductSeeder extends Seeder
     private function brands(Product $product, Collection $brands): void
     {
         $product->sets()->syncWithoutDetaching($brands->random());
+    }
+
+    private function seo(Product $product): void
+    {
+        $seo = SeoMetadata::factory()->create();
+        $product->seo()->save($seo);
     }
 }
