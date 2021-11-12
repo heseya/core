@@ -86,13 +86,13 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonStructure(['data' => [
-                0 => $this->expected_structure,
+                0 => $this->expected_structure + ['shipping_method'],
             ]])
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
 
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(20);
     }
 
     /**
@@ -110,7 +110,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(20);
     }
 
     public function testViewUnauthorized(): void
@@ -130,7 +130,8 @@ class OrderTest extends TestCase
             ->getJson('/orders/id:' . $this->order->getKey());
         $response
             ->assertOk()
-            ->assertJsonFragment(['code' => $this->order->code]);
+            ->assertJsonFragment(['code' => $this->order->code])
+            ->assertJsonStructure(['data' => $this->expected_structure + ['shipping_method']]);
     }
 
     public function testViewSummaryUnauthorized(): void
