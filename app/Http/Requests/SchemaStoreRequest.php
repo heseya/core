@@ -4,7 +4,6 @@ namespace App\Http\Requests;
 
 use App\Models\Schema;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class SchemaStoreRequest extends FormRequest
@@ -35,14 +34,14 @@ class SchemaStoreRequest extends FormRequest
         ];
     }
 
-    public function withValidator($validator)
+    public function withValidator($validator): void
     {
         $validator->sometimes('required', 'different:hidden', function ($input) {
             return $input->hidden;
         });
     }
 
-    public function messages()
+    public function messages(): array
     {
         return [
             'required.different' => 'The schema cannot be required if hidden',
