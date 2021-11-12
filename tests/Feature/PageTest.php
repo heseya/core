@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Page;
-use App\Services\Contracts\MarkdownServiceContract;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -22,8 +21,6 @@ class PageTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-
-        $this->markdownService = app(MarkdownServiceContract::class);
 
         $this->page = Page::factory()->create([
             'public' => true,
@@ -45,7 +42,6 @@ class PageTest extends TestCase
 
         $this->expected_view = array_merge($this->expected, [
             'content_html' => $this->page->content_html,
-            'content_md' => $this->markdownService->fromHtml($this->page->content_html),
         ]);
     }
 
@@ -189,9 +185,7 @@ class PageTest extends TestCase
 
         $response = $this->actingAs($this->$user)->postJson('/pages', $page);
         $response->assertJson([
-            'data' => $page + [
-                'content_md' => $this->markdownService->fromHtml($html),
-            ],
+            'data' => $page,
         ])->assertCreated();
 
         $this->assertDatabaseHas('pages', $page);
@@ -261,7 +255,7 @@ class PageTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJson(['data' => $page + ['content_md' => $this->markdownService->fromHtml($html)]]);
+            ->assertJson(['data' => $page]);
 
         $this->assertDatabaseHas('pages', $page + ['id' => $this->page->getKey()]);
     }
