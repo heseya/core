@@ -75,6 +75,7 @@ class Order extends Model implements AuditableContract
         'delivery_address_id',
         'invoice_address_id',
         'created_at',
+        'user_id',
     ];
 
     protected $auditInclude = [
@@ -274,5 +275,16 @@ class Order extends Model implements AuditableContract
         } while (Order::where('code', $code)->exists());
 
         return $code;
+    }
+
+    /**
+     * @OA\Property(
+     *   property="user",
+     *   ref="#/components/schemas/User",
+     * )
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }
