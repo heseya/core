@@ -135,6 +135,12 @@ interface ProductResourceSwagger
      *       ref="#/components/schemas/ProductSet",
      *     ),
      *   ),
+     *   @OA\Property(
+     *     property="seo",
+     *     type="object",
+     *     description="SEO metadata",
+     *     ref="#/components/schemas/SeoView",
+     *   ),
      * )
      */
     public function view(Request $request): array;

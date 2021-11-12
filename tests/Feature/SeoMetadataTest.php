@@ -55,7 +55,7 @@ class SeoMetadataTest extends TestCase
         ];
         $response = $this->actingAs($this->user)->json('PATCH', '/seo', $seo);
 
-        $response->assertJson(fn (AssertableJson $json) =>
+        $response->assertCreated()->assertJson(fn (AssertableJson $json) =>
             $json->has('meta', fn ($json) =>
                     $json->missing('seo')
                         ->etc())
@@ -89,7 +89,7 @@ class SeoMetadataTest extends TestCase
         ];
         $response = $this->actingAs($this->user)->json('PATCH', '/seo', $seo);
 
-        $response->assertJson(fn (AssertableJson $json) =>
+        $response->assertCreated()->assertJson(fn (AssertableJson $json) =>
             $json->has('meta', fn ($json) =>
                     $json->has('seo')
                         ->etc())

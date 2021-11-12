@@ -31,6 +31,7 @@ class ProductResource extends Resource implements ProductResourceSwagger
             'quantity_step' => $this->quantity_step,
             'cover' => MediaResource::make($this->media->first()),
             'tags' => TagResource::collection($this->tags),
+            'seo' => SeoMetadataResource::make($this->seo),
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\SeoMetadataDto;
 use App\Http\Controllers\Swagger\ProductControllerSwagger;
 use App\Http\Requests\ProductCreateRequest;
 use App\Http\Requests\ProductIndexRequest;
@@ -12,6 +13,7 @@ use App\Models\Product;
 use App\Models\ProductSet;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
+use App\Services\Contracts\SeoMetadataServiceContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -23,20 +25,18 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ProductController extends Controller implements ProductControllerSwagger
 {
-    private MediaServiceContract $mediaService;
-    private SchemaServiceContract $schemaService;
-
-    public function __construct(MediaServiceContract $mediaService, SchemaServiceContract $schemaService)
-    {
-        $this->mediaService = $mediaService;
-        $this->schemaService = $schemaService;
+    public function __construct(
+        private MediaServiceContract $mediaService,
+        private SchemaServiceContract $schemaService,
+        private SeoMetadataServiceContract $seoMetadataService
+    ) {
     }
 
     public function index(ProductIndexRequest $request): JsonResource
     {
         $query = Product::search($request->validated())
             ->sort($request->input('sort', 'order'))
-            ->with(['media', 'tags', 'schemas', 'sets']);
+            ->with(['media', 'tags', 'schemas', 'sets', 'seo']);
 
         if (!Auth::user()->can('products.show_hidden')) {
             if (!Auth::user()->can('product_sets.show_hidden')) {
@@ -107,12 +107,16 @@ class ProductController extends Controller implements ProductControllerSwagger
             $product->sets()->sync($request->input('sets'));
         }
 
+        $seo_dto = SeoMetadataDto::fromFormRequest($request);
+        $product->seo()->save($this->seoMetadataService->create($seo_dto));
+
         return ProductResource::make($product);
     }
 
     public function update(ProductUpdateRequest $request, Product $product): JsonResource
     {
-        $product->update($request->validated());
+        $attributes = $request->validated();
+        $product->update($attributes);
 
         $this->mediaService->sync($product, $request->input('media', []));
         $product->tags()->sync($request->input('tags', []));
@@ -125,12 +129,21 @@ class ProductController extends Controller implements ProductControllerSwagger
             $product->sets()->sync($request->input('sets'));
         }
 
+        if ($request->has('seo')) {
+            $seo_dto = SeoMetadataDto::fromFormRequest($request);
+            $this->seoMetadataService->update($seo_dto, $product->seo);
+        }
+
         return ProductResource::make($product);
     }
 
     public function destroy(Product $product): JsonResponse
     {
         $product->delete();
+
+        if ($product->seo !== null) {
+            $this->seoMetadataService->delete($product->seo);
+        }
 
         return Response::json(null, 204);
     }

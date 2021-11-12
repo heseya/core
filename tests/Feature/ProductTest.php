@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Schema;
+use App\Models\SeoMetadata;
 use App\Services\Contracts\MarkdownServiceContract;
 use Tests\TestCase;
 
@@ -142,7 +143,7 @@ class ProductTest extends TestCase
                 0 => $this->expected_short,
             ]]);
 
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(20);
     }
 
     /**
@@ -176,7 +177,7 @@ class ProductTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(20);
     }
 
     /**
@@ -470,6 +471,60 @@ class ProductTest extends TestCase
         ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithSeo($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $response = $this->actingAs($this->$user)->json('POST', '/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'description_html' => '<h1>Description</h1>',
+            'public' => true,
+            'seo' => [
+                'title' => 'seo title',
+                'description' => 'seo description',
+            ]
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'slug' => 'test',
+                'name' => 'Test',
+                'price' => 100,
+                'public' => true,
+                'description_md' => $this->markdownService->fromHtml('<h1>Description</h1>'),
+                'description_html' => '<h1>Description</h1>',
+                'cover' => null,
+                'gallery' => [],
+                'seo' => [
+                    'title' => 'seo title',
+                    'description' => 'seo description',
+                ]
+            ]]);
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'public' => true,
+            'description_html' => '<h1>Description</h1>',
+        ]);
+
+        $this->assertDatabaseHas('seo_metadata', [
+           'title' => 'seo title',
+           'description' => 'seo description',
+           'model_id' => $response->getData()->data->id,
+           'model_type' => Product::class,
+        ]);
+
+        $this->assertDatabaseCount('seo_metadata', 1);
+    }
+
     public function testUpdateUnauthorized(): void
     {
         $this->patchJson('/products/id:' . $this->product->getKey())
@@ -576,6 +631,54 @@ class ProductTest extends TestCase
         ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithSeo($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $product = Product::factory([
+            'name' => 'Created',
+            'slug' => 'created',
+            'price' => 100,
+            'description_html' => '<h1>Description</h1>',
+            'public' => false,
+            'order' => 1,
+        ])->create();
+
+        $seo = SeoMetadata::factory()->create();
+        $product->seo()->save($seo);
+
+        $response = $this->actingAs($this->$user)->json('PATCH', '/products/id:' . $product->getKey(), [
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150,
+            'description_html' => '<h1>New description</h1>',
+            'public' => false,
+            'seo' => [
+                'title' => 'seo title',
+                'description' => 'seo description',
+            ],
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150,
+            'description_html' => '<h1>New description</h1>',
+            'public' => false,
+        ]);
+
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => 'seo title',
+            'description' => 'seo description',
+        ]);
+    }
+
     public function testDeleteUnauthorized(): void
     {
         $this->deleteJson('/products/id:' . $this->product->getKey())
@@ -589,9 +692,22 @@ class ProductTest extends TestCase
     {
         $this->$user->givePermissionTo('products.remove');
 
+        $product = Product::factory([
+            'name' => 'Created',
+            'slug' => 'created',
+            'price' => 100,
+            'description_html' => '<h1>Description</h1>',
+            'public' => false,
+            'order' => 1,
+        ])->create();
+
+        $seo = SeoMetadata::factory()->create();
+        $product->seo()->save($seo);
+
         $response = $this->actingAs($this->$user)
-            ->deleteJson('/products/id:' . $this->product->getKey());
+            ->deleteJson('/products/id:' . $product->getKey());
         $response->assertNoContent();
-        $this->assertSoftDeleted($this->product);
+        $this->assertSoftDeleted($product);
+        $this->assertSoftDeleted($seo);
     }
 }

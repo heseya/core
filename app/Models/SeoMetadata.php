@@ -5,10 +5,12 @@ namespace App\Models;
 use App\Enums\TwitterCardType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SeoMetadata extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'global',
@@ -17,12 +19,16 @@ class SeoMetadata extends Model
         'keywords',
         'og_image',
         'twitter_card',
+        'model_id',
+        'model_type',
     ];
 
     protected $casts = [
         'global' => 'bool',
         'keywords' => 'array',
         'twitter_card' => TwitterCardType::class,
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     protected $attributes = [
@@ -42,5 +48,10 @@ class SeoMetadata extends Model
     public function setKeywordsAttribute($value)
     {
         $this->attributes['keywords'] = json_encode($value);
+    }
+
+    public function modelSeo(): MorphTo
+    {
+        return $this->morphTo('seo', 'model_type', 'model_id', 'id');
     }
 }
