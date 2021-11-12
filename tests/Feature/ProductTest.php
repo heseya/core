@@ -6,7 +6,6 @@ use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Models\SeoMetadata;
-use App\Services\Contracts\MarkdownServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
@@ -497,7 +496,6 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
-                'description_md' => $this->markdownService->fromHtml('<h1>Description</h1>'),
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],

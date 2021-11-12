@@ -136,14 +136,12 @@ class ProductController extends Controller implements ProductControllerSwagger
 
     /**
      * @param Product $product
-     * @param ProductUpdateRequest $request
-     *
-     * @return ProductResource
+     * @param ProductCreateRequest|ProductUpdateRequest $request
      */
     public function productSetup(
         Product $product,
         ProductCreateRequest|ProductUpdateRequest $request,
-    ): ProductResource {
+    ) {
         $this->mediaService->sync($product, $request->input('media', []));
         $product->tags()->sync($request->input('tags', []));
 
