@@ -40,14 +40,9 @@ class OrderCreateTest extends TestCase
 
         $this->shippingMethod->priceRanges()->saveMany([$lowRange, $highRange]);
 
-
-        $this->category = ProductSet::factory()->create(['public' => true]);
-        $this->brand = ProductSet::factory()->create(['public' => true]);
         $this->address = Address::factory()->make();
 
         $this->product = Product::factory()->create([
-            'category_id' => $this->category->getKey(),
-            'brand_id' => $this->brand->getKey(),
             'public' => true,
         ]);
     }
@@ -165,7 +160,7 @@ class OrderCreateTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('orders', [
-            'id' => $order->id,
+            'id' => $order->getKey(),
             'email' => 'test@example.com',
             'shipping_price' => $this->shippingMethod->getPrice(
                 ($this->product->price + $schemaPrice) * $productQuantity,

@@ -196,4 +196,13 @@ class ProductSetService implements ProductSetServiceContract
 
         return $query->paginate(Config::get('pagination.per_page'));
     }
+
+    public function flattenSetsTree(Collection $sets, string $relation): Collection
+    {
+        $subsets = $sets->map(
+            fn ($set) => $this->flattenSetsTree($set->$relation, $relation),
+        );
+
+        return $subsets->flatten()->concat($sets);
+    }
 }

@@ -29,8 +29,20 @@ interface ProductResourceSwagger
      *   @OA\Property(
      *     property="price",
      *     type="numeric",
-     *     description="Base price of the product",
+     *     description="Base price of the product excluding schemas",
      *     example=10.99,
+     *   ),
+     *   @OA\Property(
+     *     property="price_min",
+     *     type="numeric",
+     *     description="Minimum availble product price acounting for schemas",
+     *     example=12.99,
+     *   ),
+     *   @OA\Property(
+     *     property="price_max",
+     *     type="numeric",
+     *     description="Maximum availble product price acounting for schemas",
+     *     example=20.99,
      *   ),
      *   @OA\Property(
      *     property="public",
@@ -95,12 +107,6 @@ interface ProductResourceSwagger
      *     type="string",
      *     description="HTML formated text to be displayed as a product description",
      *     example="<h1>Lorem ipsum dolor sit amet</h1>",
-     *   ),
-     *   @OA\Property(
-     *     property="description_md",
-     *     type="string",
-     *     example="# Lorem ipsum dolor sit amet",
-     *     description="MD formated content for compatibility reasons",
      *   ),
      *   @OA\Property(
      *     property="meta_description",

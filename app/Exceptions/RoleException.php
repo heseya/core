@@ -2,10 +2,9 @@
 
 namespace App\Exceptions;
 
-use Exception;
 use Throwable;
 
-class RoleException extends Exception
+class RoleException extends StoreException
 {
     public function __construct(
         string $message = '',
