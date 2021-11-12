@@ -16,7 +16,8 @@ class OrderTest extends TestCase
     private Order $order;
 
     private array $expected;
-    private array $expected_structure;
+    private array $expected_summary_structure;
+    private array $expected_full_structure;
 
     public function setUp(): void
     {
@@ -59,11 +60,19 @@ class OrderTest extends TestCase
             'payed' => $this->order->isPayed(),
         ];
 
-        $this->expected_structure = [
+        $this->expected_summary_structure = [
             'code',
             'status',
             'payed',
             'created_at',
+        ];
+
+        $this->expected_full_structure = [
+            'code',
+            'status',
+            'payed',
+            'created_at',
+            'shipping_method',
         ];
     }
 
@@ -86,13 +95,13 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonStructure(['data' => [
-                0 => $this->expected_structure,
+                0 => $this->expected_full_structure,
             ]])
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
 
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(20);
     }
 
     /**
@@ -110,7 +119,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(20);
     }
 
     public function testViewUnauthorized(): void
@@ -130,7 +139,8 @@ class OrderTest extends TestCase
             ->getJson('/orders/id:' . $this->order->getKey());
         $response
             ->assertOk()
-            ->assertJsonFragment(['code' => $this->order->code]);
+            ->assertJsonFragment(['code' => $this->order->code])
+            ->assertJsonStructure(['data' => $this->expected_full_structure]);
     }
 
     public function testViewSummaryUnauthorized(): void
@@ -150,7 +160,7 @@ class OrderTest extends TestCase
             ->getJson('/orders/' . $this->order->code);
         $response
             ->assertOk()
-            ->assertJsonStructure(['data' => $this->expected_structure])
+            ->assertJsonStructure(['data' => $this->expected_summary_structure])
             ->assertJson(['data' => $this->expected]);
     }
 
