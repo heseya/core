@@ -11,7 +11,6 @@ use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\AuditServiceContract;
 use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
-use App\Services\Contracts\MarkdownServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OptionServiceContract;
@@ -29,7 +28,6 @@ use App\Services\Contracts\ShippingMethodServiceContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UserServiceContract;
 use App\Services\DiscountService;
-use App\Services\MarkdownService;
 use App\Services\MediaService;
 use App\Services\NameService;
 use App\Services\OptionService;
@@ -63,7 +61,6 @@ class AppServiceProvider extends ServiceProvider
         OrderServiceContract::class => OrderService::class,
         SchemaServiceContract::class => SchemaService::class,
         SettingsServiceContract::class => SettingsService::class,
-        MarkdownServiceContract::class => MarkdownService::class,
         PageServiceContract::class => PageService::class,
         ShippingMethodServiceContract::class => ShippingMethodService::class,
         ProductSetServiceContract::class => ProductSetService::class,

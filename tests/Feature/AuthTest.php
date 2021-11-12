@@ -142,7 +142,9 @@ class AuthTest extends TestCase
                     'author',
                     'permissions',
                 ],
-            ]]);
+            ]])->assertJsonFragment([
+                'identity_token' => null,
+            ]);
     }
 
     /**

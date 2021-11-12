@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Schema;
-use App\Services\Contracts\MarkdownServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
@@ -18,7 +17,6 @@ class ProductTest extends TestCase
     private array $expected;
     private array $expected_short;
 
-    private MarkdownServiceContract $markdownService;
     private ProductServiceContract $productService;
 
     public function setUp(): void
@@ -26,7 +24,6 @@ class ProductTest extends TestCase
         parent::setUp();
 
         $this->productService = App::make(ProductServiceContract::class);
-        $this->markdownService = App::make(MarkdownServiceContract::class);
 
         $this->product = Product::factory()->create([
             'public' => true,
@@ -90,7 +87,6 @@ class ProductTest extends TestCase
          * Expected full response
          */
         $this->expected = array_merge($this->expected_short, [
-            'description_md' => $this->markdownService->fromHtml($this->product->description_html),
             'description_html' => $this->product->description_html,
             'meta_description' => strip_tags($this->product->description_html),
             'gallery' => [],
@@ -344,7 +340,6 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
-                'description_md' => $this->markdownService->fromHtml('<h1>Description</h1>'),
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -755,5 +750,19 @@ class ProductTest extends TestCase
             ->deleteJson('/products/id:' . $this->product->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($this->product);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSetsDefaultAsArray($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $response = $this->actingAs($this->$user)->json('GET', '/products?full=1&sets=');
+        $response
+            ->assertOk()
+            ->assertJsonCount(0, 'data')
+            ->assertJson(['data' => []]);
     }
 }
