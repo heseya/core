@@ -49,7 +49,7 @@ class PayNow implements PaymentMethod
 
         if ($request->input('status') === 'CONFIRMED') {
             $payment->update([
-                'payed' => true,
+                'paid' => true,
             ]);
         }
 
