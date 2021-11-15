@@ -13,7 +13,7 @@ class RenamePayedToPaid extends Migration
      */
     public function up()
     {
-        Schema::create('payments', function (Blueprint $table) {
+        Schema::table('payments', function (Blueprint $table) {
             $table->renameColumn('payed', 'paid');
         });
     }
@@ -25,7 +25,7 @@ class RenamePayedToPaid extends Migration
      */
     public function down()
     {
-        Schema::create('payments', function (Blueprint $table) {
+        Schema::table('payments', function (Blueprint $table) {
             $table->renameColumn('paid', 'payed');
         });
     }
