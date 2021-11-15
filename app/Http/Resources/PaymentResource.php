@@ -11,7 +11,7 @@ class PaymentResource extends Resource
         return [
             'id' => $this->getKey(),
             'method' => $this->method,
-            'payed' => $this->payed,
+            'paid' => $this->payed,
             'amount' => $this->amount,
             'redirect_url' => $this->redirect_url,
             'continue_url' => $this->continue_url,

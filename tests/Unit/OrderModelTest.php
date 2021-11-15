@@ -17,6 +17,6 @@ class OrderModelTest extends TestCase
             'payed' => true,
         ]));
 
-        $this->assertTrue($order->isPayed());
+        $this->assertTrue($order->isPaid());
     }
 }

@@ -34,7 +34,7 @@ class Payment extends Model
      * )
      *
      * @OA\Property(
-     *   property="payed",
+     *   property="paid",
      *   type="boolean",
      * )
      *

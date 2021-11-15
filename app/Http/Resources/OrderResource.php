@@ -16,7 +16,7 @@ class OrderResource extends Resource
             'summary' => $this->summary,
             'summary_paid' => $this->paid_amount,
             'shipping_price' => $this->shipping_price,
-            'payed' => $this->isPayed(),
+            'paid' => $this->isPaid(),
             'comment' => $this->comment,
             'created_at' => $this->created_at,
             'status' => $this->status ? StatusResource::make($this->status) : null,
