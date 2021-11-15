@@ -33,4 +33,18 @@ class SchemaStoreRequest extends FormRequest
             'options.*.items.*' => ['uuid', 'exists:items,id'],
         ];
     }
+
+    public function withValidator($validator): void
+    {
+        $validator->sometimes('required', 'different:hidden', function ($input) {
+            return $input->hidden;
+        });
+    }
+
+    public function messages(): array
+    {
+        return [
+            'required.different' => 'The schema cannot be required if hidden',
+        ];
+    }
 }
