@@ -13,7 +13,7 @@ class CreateAuditsTable extends Migration
      */
     public function up()
     {
-        Schema::create('audits', function (Blueprint $table) {
+        Schema::connection('mysql_audits')->create('audits', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('user_type')->nullable();
             $table->uuid('user_id')->nullable();

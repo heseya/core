@@ -19,7 +19,7 @@ use Tests\Traits\JsonQueryCounter;
 
 abstract class TestCase extends BaseTestCase
 {
-    use CreatesApplication, RefreshDatabase, JsonQueryCounter;
+    use CreatesApplication, JsonQueryCounter;
 
     public User $user;
     public Application $application;
@@ -31,6 +31,9 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
         ini_set('memory_limit', '1024M');
+
+        $this->artisan('db:wipe', ['--database' => 'mysql_audits']);
+        $this->artisan('migrate:fresh');
 
         $this->tokenService = App::make(TokenServiceContract::class);
 

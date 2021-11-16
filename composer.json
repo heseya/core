@@ -98,6 +98,10 @@
         ],
         "test": [
             "@php artisan test --env=.env --parallel"
+        ],
+        "migrate:fresh": [
+            "@php artisan db:wipe --database mysql_audits",
+            "@php artisan migrate:fresh"
         ]
     },
     "repositories": [
