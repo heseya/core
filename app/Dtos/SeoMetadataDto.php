@@ -27,7 +27,7 @@ class SeoMetadataDto extends Dto
             description: $request->input($seo . 'description', new Missing()),
             keywords: $request->input($seo . 'keywords', new Missing()),
             twitter_card: $request->input($seo . 'twitter_card', new Missing()),
-            og_image: $request->input($seo . 'og_image', new Missing()),
+            og_image: $request->input($seo . 'og_image_id', new Missing()),
             model_id: $request->input($seo . 'model_id', new Missing()),
             model_type: $request->input($seo . 'model_type', new Missing()),
         );
