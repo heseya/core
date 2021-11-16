@@ -40,7 +40,7 @@ class PermissionSeeder extends Seeder
         // Auth
         Permission::updateOrCreate(['name' => 'auth.login'], ['display_name' => 'Możliwość logowania użytkownika']);
         Permission::updateOrCreate(['name' => 'auth.register'], ['display_name' => 'Możliwość rejestracji użytkownika']);
-        Permission::updateOrCreate(['name' => 'auth.identity_profile'], [
+        Permission::updateOrCreate(['name' => 'auth.check_identity'], [
             'display_name' => 'Możliwość identyfikacji użytkownika',
             'description' => 'Uprawnienie dedykowane aplikacjom, umożliwia im weryfikowanie użytkowników',
         ]);

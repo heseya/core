@@ -9,12 +9,11 @@ use App\Models\Product;
 use App\Models\ShippingMethod;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
-use Tests\Traits\CreateProduct;
 use Tests\Traits\CreateShippingMethod;
 
 class DiscountOrderTest extends TestCase
 {
-    use CreateProduct, CreateShippingMethod;
+    use CreateShippingMethod;
 
     protected Product $product;
     protected ShippingMethod $shippingMethod;
@@ -28,7 +27,8 @@ class DiscountOrderTest extends TestCase
 
         Notification::fake();
 
-        $this->product = $this->createProduct([
+        $this->product = Product::factory()->create([
+            'public' => true,
             'price' => 100,
         ]);
 

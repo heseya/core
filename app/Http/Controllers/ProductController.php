@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\SeoMetadataDto;
 use App\Http\Controllers\Swagger\ProductControllerSwagger;
 use App\Http\Requests\ProductCreateRequest;
 use App\Http\Requests\ProductIndexRequest;
@@ -11,31 +12,27 @@ use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Services\Contracts\MediaServiceContract;
+use App\Services\Contracts\ProductServiceContract;
+use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ProductController extends Controller implements ProductControllerSwagger
 {
-    private MediaServiceContract $mediaService;
-    private SchemaServiceContract $schemaService;
-    private SeoMetadataServiceContract $seoMetadataService;
-
     public function __construct(
-        MediaServiceContract $mediaService,
-        SchemaServiceContract $schemaService,
-        SeoMetadataServiceContract $seoMetadataService
+        private MediaServiceContract $mediaService,
+        private SchemaServiceContract $schemaService,
+        private ProductServiceContract $productService,
+        private ProductSetServiceContract $productSetService,
+        private SeoMetadataServiceContract $seoMetadataService
     ) {
-        $this->mediaService = $mediaService;
-        $this->schemaService = $schemaService;
-        $this->seoMetadataService = $seoMetadataService;
     }
 
     public function index(ProductIndexRequest $request): JsonResource
@@ -44,8 +41,10 @@ class ProductController extends Controller implements ProductControllerSwagger
             ->sort($request->input('sort', 'order'))
             ->with(['media', 'tags', 'schemas', 'sets', 'seo']);
 
-        if (!Auth::user()->can('products.show_hidden')) {
-            if (!Auth::user()->can('product_sets.show_hidden')) {
+        $canShowHiddenSets = Gate::allows('product_sets.show_hidden');
+
+        if (Gate::denies('products.show_hidden')) {
+            if (!$canShowHiddenSets) {
                 $query->public();
             } else {
                 $query->where('public', true);
@@ -53,21 +52,21 @@ class ProductController extends Controller implements ProductControllerSwagger
         }
 
         if ($request->has('sets')) {
-            if (!Auth::user()->can('product_sets.show_hidden')) {
-                $setsFound = ProductSet::public()->whereIn(
-                    'slug',
-                    $request->input('sets'),
-                )->count();
+            $setsFound = ProductSet::whereIn(
+                'slug',
+                $request->input('sets') ?? [],
+            )->with('allChildren')->get();
 
-                if ($setsFound < count($request->input('sets'))) {
-                    throw new ModelNotFoundException('Can\'t find the given product set');
-                }
-            }
+            $relationScope = $canShowHiddenSets ? 'allChildren' : 'allChildrenPublic';
 
-            $query->whereHas('sets', function (Builder $query) use ($request) {
+            $setsFlat = $this->productSetService
+                ->flattenSetsTree($setsFound, $relationScope)
+                ->map(fn (ProductSet $set) => $set->slug);
+
+            $query->whereHas('sets', function (Builder $query) use ($setsFlat) {
                 return $query->whereIn(
                     'slug',
-                    $request->input('sets'),
+                    $setsFlat,
                 );
             });
         }
@@ -91,7 +90,7 @@ class ProductController extends Controller implements ProductControllerSwagger
 
     public function show(ProductShowRequest $request, Product $product): JsonResource
     {
-        if (!Auth::user()->can('products.show_hidden') && !$product->isPublic()) {
+        if (Gate::denies('products.show_hidden') && !$product->isPublic()) {
             throw new NotFoundHttpException();
         }
 
@@ -100,45 +99,25 @@ class ProductController extends Controller implements ProductControllerSwagger
 
     public function store(ProductCreateRequest $request): JsonResource
     {
-        $attributes = $request->validated();
-        $product = Product::create($attributes);
+        $product = Product::create($request->validated());
 
-        $this->mediaService->sync($product, $request->input('media', []));
-        $product->tags()->sync($request->input('tags', []));
+        $this->productSetup($product, $request);
 
-        if ($request->has('schemas')) {
-            $this->schemaService->sync($product, $request->input('schemas'));
-        }
-
-        if ($request->has('sets')) {
-            $product->sets()->sync($request->input('sets'));
-        }
-
-        $attributes['seo']['model_id'] = $product->getKey();
-        $attributes['seo']['model_type'] = $product::class;
-        $this->seoMetadataService->create($attributes['seo']);
+        $seo_dto = SeoMetadataDto::fromFormRequest($request);
+        $product->seo()->save($this->seoMetadataService->create($seo_dto));
 
         return ProductResource::make($product);
     }
 
     public function update(ProductUpdateRequest $request, Product $product): JsonResource
     {
-        $attributes = $request->validated();
-        $product->update($attributes);
+        $product->update($request->validated());
 
-        $this->mediaService->sync($product, $request->input('media', []));
-        $product->tags()->sync($request->input('tags', []));
-
-        if ($request->has('schemas')) {
-            $this->schemaService->sync($product, $request->input('schemas'));
-        }
-
-        if ($request->has('sets')) {
-            $product->sets()->sync($request->input('sets'));
-        }
+        $this->productSetup($product, $request);
 
         if ($request->has('seo')) {
-            $this->seoMetadataService->update($attributes['seo'], $product->seo);
+            $seo_dto = SeoMetadataDto::fromFormRequest($request);
+            $this->seoMetadataService->update($seo_dto, $product->seo);
         }
 
         return ProductResource::make($product);
@@ -153,5 +132,27 @@ class ProductController extends Controller implements ProductControllerSwagger
         }
 
         return Response::json(null, 204);
+    }
+
+    /**
+     * @param Product $product
+     * @param ProductCreateRequest|ProductUpdateRequest $request
+     */
+    public function productSetup(
+        Product $product,
+        ProductCreateRequest|ProductUpdateRequest $request,
+    ) {
+        $this->mediaService->sync($product, $request->input('media', []));
+        $product->tags()->sync($request->input('tags', []));
+
+        if ($request->has('schemas')) {
+            $this->schemaService->sync($product, $request->input('schemas'));
+        }
+
+        $this->productService->updateMinMaxPrices($product);
+
+        if ($request->has('sets')) {
+            $product->sets()->sync($request->input('sets'));
+        }
     }
 }

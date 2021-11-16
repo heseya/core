@@ -14,8 +14,4 @@ Route::prefix('schemas')->group(function (): void {
         ->middleware('permission:products.add|products.edit');
     Route::delete('id:{schema:id}', [SchemaController::class, 'destroy'])
         ->middleware('can:schemas.remove');
-    Route::post('id:{schema:id}/attach/id:{product:id}', [SchemaController::class, 'attach'])
-        ->middleware('can:products.edit');
-    Route::post('id:{schema:id}/detach/id:{product:id}', [SchemaController::class, 'detach'])
-        ->middleware('can:products.edit');
 });

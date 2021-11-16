@@ -6,7 +6,8 @@ use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Models\SeoMetadata;
-use App\Services\Contracts\MarkdownServiceContract;
+use App\Services\Contracts\ProductServiceContract;
+use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
 class ProductTest extends TestCase
@@ -17,13 +18,13 @@ class ProductTest extends TestCase
     private array $expected;
     private array $expected_short;
 
-    private MarkdownServiceContract $markdownService;
+    private ProductServiceContract $productService;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->markdownService = app(MarkdownServiceContract::class);
+        $this->productService = App::make(ProductServiceContract::class);
 
         $this->product = Product::factory()->create([
             'public' => true,
@@ -87,7 +88,6 @@ class ProductTest extends TestCase
          * Expected full response
          */
         $this->expected = array_merge($this->expected_short, [
-            'description_md' => $this->markdownService->fromHtml($this->product->description_html),
             'description_html' => $this->product->description_html,
             'meta_description' => strip_tags($this->product->description_html),
             'gallery' => [],
@@ -341,7 +341,6 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
-                'description_md' => $this->markdownService->fromHtml('<h1>Description</h1>'),
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -497,7 +496,6 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
-                'description_md' => $this->markdownService->fromHtml('<h1>Description</h1>'),
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -519,6 +517,48 @@ class ProductTest extends TestCase
            'title' => 'seo title',
            'description' => 'seo description',
            'model_id' => $response->getData()->data->id,
+           'model_type' => Product::class,
+        ]);
+
+        $this->assertDatabaseCount('seo_metadata', 1);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateMinMaxPrice($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $schemaPrice = 50;
+        $schema = Schema::factory()->create([
+            'type' => 0,
+            'required' => false,
+            'price' => $schemaPrice,
+        ]);
+
+        $productPrice = 150;
+        $response = $this->actingAs($this->$user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => $productPrice,
+            'public' => false,
+            'sets' => [],
+            'schemas' => [
+                $schema->getKey(),
+            ],
+        ]);
+
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => $productPrice,
+            'price_min' => $productPrice,
+            'price_max' => $productPrice + $schemaPrice,
+            'public' => false,
+            'description_html' => null,
         ]);
     }
 
@@ -676,6 +716,125 @@ class ProductTest extends TestCase
         ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateMinMaxPrice($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $productPrice = 150;
+        $product = Product::factory()->create([
+            'price' => $productPrice,
+        ]);
+
+        $schemaPrice = 50;
+        $schema = Schema::factory()->create([
+            'type' => 0,
+            'required' => false,
+            'price' => $schemaPrice,
+        ]);
+
+        $product->schemas()->attach($schema->getKey());
+        $this->productService->updateMinMaxPrices($product);
+
+        $productNewPrice = 250;
+        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $product->getKey(), [
+            'name' => $product->name,
+            'slug' => $product->slug,
+            'price' => $product->price,
+            'public' => $product->public,
+            'price' => $productNewPrice,
+            'sets' => [],
+            'schemas' => [
+                $schema->getKey(),
+            ],
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            $product->getKeyName() => $product->getKey(),
+            'price' => $productNewPrice,
+            'price_min' => $productNewPrice,
+            'price_max' => $productNewPrice + $schemaPrice,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSchemaMinMaxPrice($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $productPrice = 150;
+        $product = Product::factory()->create([
+            'price' => $productPrice,
+        ]);
+
+        $schemaPrice = 50;
+        $schema = Schema::factory()->create([
+            'type' => 0,
+            'required' => true,
+            'price' => $schemaPrice,
+        ]);
+
+        $product->schemas()->attach($schema->getKey());
+        $this->productService->updateMinMaxPrices($product);
+
+        $schemaNewPrice = 75;
+        $response = $this->actingAs($this->$user)->patchJson('/schemas/id:' . $schema->getKey() , [
+            'name' => 'Test Updated',
+            'price' => $schemaNewPrice,
+            'type' => 'string',
+            'required' => false,
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            $product->getKeyName() => $product->getKey(),
+            'price' => $productPrice,
+            'price_min' => $productPrice,
+            'price_max' => $productPrice + $schemaNewPrice,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteSchemaMinMaxPrice($user): void
+    {
+        $this->$user->givePermissionTo('schemas.remove');
+
+        $productPrice = 150;
+        $product = Product::factory()->create([
+            'price' => $productPrice,
+        ]);
+
+        $schemaPrice = 50;
+        $schema = Schema::factory()->create([
+            'type' => 0,
+            'required' => true,
+            'price' => $schemaPrice,
+        ]);
+
+        $product->schemas()->attach($schema->getKey());
+        $this->productService->updateMinMaxPrices($product);
+
+        $response = $this->actingAs($this->$user)->deleteJson('/schemas/id:' . $schema->getKey());
+
+        $response->assertNoContent();
+
+        $this->assertDatabaseHas('products', [
+            $product->getKeyName() => $product->getKey(),
+            'price' => $productPrice,
+            'price_min' => $productPrice,
+            'price_max' => $productPrice,
+        ]);
+    }
+
     public function testDeleteUnauthorized(): void
     {
         $this->deleteJson('/products/id:' . $this->product->getKey())
@@ -706,5 +865,19 @@ class ProductTest extends TestCase
         $response->assertNoContent();
         $this->assertSoftDeleted($product);
         $this->assertSoftDeleted($seo);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSetsDefaultAsArray($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $response = $this->actingAs($this->$user)->json('GET', '/products?full=1&sets=');
+        $response
+            ->assertOk()
+            ->assertJsonCount(0, 'data')
+            ->assertJson(['data' => []]);
     }
 }

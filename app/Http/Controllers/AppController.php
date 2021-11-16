@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\AppInstallDto;
 use App\Http\Controllers\Swagger\AppControllerSwagger;
 use App\Http\Requests\AppDeleteRequest;
 use App\Http\Requests\AppStoreRequest;
@@ -32,10 +33,7 @@ class AppController extends Controller implements AppControllerSwagger
     public function store(AppStoreRequest $request): JsonResource
     {
         $app = $this->appService->install(
-            $request->input('url'),
-            $request->input('allowed_permissions'),
-            $request->input('name'),
-            $request->input('licence_key'),
+            AppInstallDto::fromAppStoreRequest($request),
         );
 
         return AppResource::make($app);

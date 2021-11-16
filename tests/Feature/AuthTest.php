@@ -142,7 +142,9 @@ class AuthTest extends TestCase
                     'author',
                     'permissions',
                 ],
-            ]]);
+            ]])->assertJsonFragment([
+                'identity_token' => null,
+            ]);
     }
 
     /**
@@ -466,6 +468,17 @@ class AuthTest extends TestCase
 //            ->get();
 //    }
 
+    public function testProfileUnauthenticated(): void
+    {
+        $this->getJson('/auth/profile')
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => null,
+                'name' => 'Unauthenticated',
+                'email' => null,
+            ]);
+    }
+
     public function testProfile(): void
     {
         $user = User::factory()->create();
@@ -525,7 +538,7 @@ class AuthTest extends TestCase
             ]]);
     }
 
-    public function testIdentityProfileUnauthorized(): void
+    public function testCheckIdentityUnauthorized(): void
     {
         $user = User::factory()->create();
 
@@ -534,13 +547,13 @@ class AuthTest extends TestCase
             new TokenType(TokenType::IDENTITY),
         );
 
-        $this->actingAs($user)->getJson("/auth/profile/$token")
+        $this->actingAs($user)->getJson("/auth/check/$token")
             ->assertForbidden();
     }
 
-    public function testIdentityProfileInvalidToken(): void
+    public function testCheckIdentityInvalidToken(): void
     {
-        $this->user->givePermissionTo('auth.identity_profile');
+        $this->user->givePermissionTo('auth.check_identity');
 
         $user = User::factory()->create();
 
@@ -549,13 +562,25 @@ class AuthTest extends TestCase
                 new TokenType(TokenType::IDENTITY),
             ) . 'invalid_hash';
 
-        $this->actingAs($this->user)->getJson("/auth/profile/$token")
+        $this->actingAs($this->user)->getJson("/auth/check/$token")
             ->assertStatus(422);
     }
 
-    public function testIdentityProfile(): void
+    public function testCheckIdentityNoToken(): void
     {
-        $this->user->givePermissionTo('auth.identity_profile');
+        $this->user->givePermissionTo('auth.check_identity');
+
+        $this->actingAs($this->user)->getJson("/auth/check")
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => null,
+                'name' => 'Unauthenticated',
+            ]);
+    }
+
+    public function testCheckIdentity(): void
+    {
+        $this->user->givePermissionTo('auth.check_identity');
 
         $user = User::factory()->create();
         $role1 = Role::create(['name' => 'Role 1']);
@@ -571,7 +596,7 @@ class AuthTest extends TestCase
             new TokenType(TokenType::IDENTITY),
         );
 
-        $this->actingAs($this->user)->getJson("/auth/profile/$token")
+        $this->actingAs($this->user)->getJson("/auth/check/$token")
             ->assertOk()
             ->assertJson(['data' => [
                 'id' => $user->getKey(),
@@ -584,13 +609,13 @@ class AuthTest extends TestCase
             ]]);
     }
 
-    public function testIdentityProfileAppMapping(): void
+    public function testCheckIdentityAppMapping(): void
     {
         $app = App::factory()->create([
            'slug' => 'app_slug',
         ]);
 
-        $app->givePermissionTo('auth.identity_profile');
+        $app->givePermissionTo('auth.check_identity');
 
         $user = User::factory()->create();
         $role1 = Role::create(['name' => 'Role 1']);
@@ -607,7 +632,7 @@ class AuthTest extends TestCase
             new TokenType(TokenType::IDENTITY),
         );
 
-        $this->actingAs($app)->getJson("/auth/profile/$token")
+        $this->actingAs($app)->getJson("/auth/check/$token")
             ->assertOk()
             ->assertJson(['data' => [
                 'id' => $user->getKey(),

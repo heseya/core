@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Product;
+use App\Models\SeoMetadata;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -17,17 +18,13 @@ class InsertProductsSeoMetadata extends Migration
     public function up()
     {
         if (Schema::hasTable('products') && Schema::hasTable('seo_metadata')) {
-            $products = DB::select('select products.id, products.deleted_at from products left join seo_metadata on products.id = seo_metadata.model_id where seo_metadata.model_id is null');
-            foreach ($products as $product) {
-                DB::table('seo_metadata')->insert([
-                    'id' => Str::uuid(),
+            Product::whereDoesntHave('seo')->chunk(100, fn ($products) => $products->each(
+                fn (Product $product) => SeoMetadata::create([
                     'global' => false,
                     'model_id' => $product->id,
                     'model_type' => Product::class,
-                    'deleted_at' => $product->deleted_at !== null ? $product->deleted_at : null,
-                    'created_at' => Carbon::now(),
-                ]);
-            }
+                ]))
+            );
         }
     }
 
