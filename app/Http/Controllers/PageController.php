@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\PageDto;
 use App\Http\Controllers\Swagger\PageControllerSwagger;
 use App\Http\Requests\PageReorderRequest;
 use App\Http\Requests\PageStoreRequest;
@@ -38,14 +39,16 @@ class PageController extends Controller implements PageControllerSwagger
 
     public function store(PageStoreRequest $request): JsonResource
     {
-        $page = $this->pageService->create($request->validated());
+        $dto = PageDto::fromFormRequest($request);
+        $page = $this->pageService->create($dto);
 
         return PageResource::make($page);
     }
 
     public function update(Page $page, PageUpdateRequest $request): JsonResource
     {
-        $page = $this->pageService->update($page, $request->validated());
+        $dto = PageDto::fromFormRequest($request);
+        $page = $this->pageService->update($page, $dto);
 
         return PageResource::make($page);
     }

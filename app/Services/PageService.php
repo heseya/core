@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Dtos\PageDto;
 use App\Models\Page;
 use App\Services\Contracts\PageServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
@@ -37,8 +38,9 @@ class PageService implements PageServiceContract
         return $query->sort('order')->paginate(Config::get('pagination.per_page'));
     }
 
-    public function create(array $attributes): Page
+    public function create(PageDto $dto): Page
     {
+        $attributes = $dto->toArray();
         $pageCurrentOrder = Page::orderByDesc('order')->value('order');
         if ($pageCurrentOrder !== null) {
             $attributes = array_merge($attributes, ['order' => $pageCurrentOrder + 1]);
@@ -46,19 +48,18 @@ class PageService implements PageServiceContract
 
         $page = Page::create($attributes);
 
-        $attributes['seo']['model_id'] = $page->getKey();
-        $attributes['seo']['model_type'] = $page::class;
-        $this->seoMetadataService->create($attributes['seo']);
+        $page->seo()->save($this->seoMetadataService->create($dto->getSeo()));
 
         return $page;
     }
 
-    public function update(Page $page, array $attributes): Page
+    public function update(Page $page, PageDto $dto): Page
     {
-        $page->update($attributes);
+        $page->update($dto->toArray());
 
-        if (array_key_exists('seo', $attributes)) {
-            $this->seoMetadataService->update($attributes['seo'], $page->seo);
+        $seo = $page->seo;
+        if ($seo !== null) {
+            $this->seoMetadataService->update($dto->getSeo(), $seo);
         }
 
         return $page;

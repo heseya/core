@@ -3,9 +3,8 @@
 namespace App\Dtos;
 
 use App\Enums\TwitterCardType;
-use App\Http\Requests\ProductCreateRequest;
-use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Requests\SeoMetadataRequest;
+use App\Http\Requests\SeoMetadataRulesRequest;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
 
@@ -19,7 +18,7 @@ class SeoMetadataDto extends Dto
     private string|null|Missing $model_id;
     private string|null|Missing $model_type;
 
-    public static function fromFormRequest(ProductCreateRequest|ProductUpdateRequest|SeoMetadataRequest $request): self
+    public static function fromFormRequest(SeoMetadataRulesRequest|SeoMetadataRequest $request): self
     {
         $seo = $request->has('seo') ? 'seo.' : '';
         return new self(
@@ -27,7 +26,7 @@ class SeoMetadataDto extends Dto
             description: $request->input($seo . 'description', new Missing()),
             keywords: $request->input($seo . 'keywords', new Missing()),
             twitter_card: $request->input($seo . 'twitter_card', new Missing()),
-            og_image: $request->input($seo . 'og_image', new Missing()),
+            og_image: $request->input($seo . 'og_image_id', new Missing()),
             model_id: $request->input($seo . 'model_id', new Missing()),
             model_type: $request->input($seo . 'model_type', new Missing()),
         );

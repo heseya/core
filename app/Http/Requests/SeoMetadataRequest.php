@@ -33,7 +33,7 @@ class SeoMetadataRequest extends FormRequest
      *     ),
      *   ),
      *   @OA\Property(
-     *     property="og_image",
+     *     property="og_image_id",
      *     type="string",
      *     example="0006c3a0-21af-4485-b7fe-9c42233cf03a",
      *   ),
@@ -51,7 +51,7 @@ class SeoMetadataRequest extends FormRequest
             'title' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
             'keywords' => ['nullable', 'array'],
-            'og_image' => ['nullable', 'uuid', 'exists:media,id'],
+            'og_image_id' => ['nullable', 'uuid', 'exists:media,id'],
             'twitter_card' => ['nullable', new EnumValue(TwitterCardType::class, false)],
         ];
     }
