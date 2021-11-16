@@ -88,6 +88,7 @@ class ProductTest extends TestCase
          */
         $this->expected = array_merge($this->expected_short, [
             'description_html' => $this->product->description_html,
+            'description_short' => $this->product->description_short,
             'meta_description' => strip_tags($this->product->description_html),
             'gallery' => [],
             'schemas' => [[
@@ -330,6 +331,7 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'price' => 100.00,
             'description_html' => '<h1>Description</h1>',
+            'description_short' => 'So called short description...',
             'public' => true,
         ]);
 
@@ -341,6 +343,7 @@ class ProductTest extends TestCase
                 'price' => 100,
                 'public' => true,
                 'description_html' => '<h1>Description</h1>',
+                'description_short' => 'So called short description...',
                 'cover' => null,
                 'gallery' => [],
             ]]);
@@ -351,6 +354,7 @@ class ProductTest extends TestCase
             'price' => 100,
             'public' => true,
             'description_html' => '<h1>Description</h1>',
+            'description_short' => 'So called short description...',
         ]);
     }
 
@@ -526,6 +530,7 @@ class ProductTest extends TestCase
             'slug' => 'updated',
             'price' => 150,
             'description_html' => '<h1>New description</h1>',
+            'description_short' => 'New so called short description',
             'public' => false,
         ]);
 
@@ -537,6 +542,7 @@ class ProductTest extends TestCase
             'slug' => 'updated',
             'price' => 150,
             'description_html' => '<h1>New description</h1>',
+            'description_short' => 'New so called short description',
             'public' => false,
         ]);
     }
