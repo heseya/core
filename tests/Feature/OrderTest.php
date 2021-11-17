@@ -57,20 +57,20 @@ class OrderTest extends TestCase
                 'color' => $status->color,
                 'description' => $status->description,
             ],
-            'payed' => $this->order->isPayed(),
+            'paid' => $this->order->isPaid(),
         ];
 
         $this->expected_summary_structure = [
             'code',
             'status',
-            'payed',
+            'paid',
             'created_at',
         ];
 
         $this->expected_full_structure = [
             'code',
             'status',
-            'payed',
+            'paid',
             'created_at',
             'shipping_method',
         ];
@@ -183,7 +183,7 @@ class OrderTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonFragment([
-                'payed' => true,
+                'paid' => true,
                 'summary_paid' => $summaryPaid
             ]);
     }
@@ -204,7 +204,7 @@ class OrderTest extends TestCase
             ->getJson('/orders/' . $this->order->code);
         $response
             ->assertOk()
-            ->assertJsonFragment(['payed' => true]);
+            ->assertJsonFragment(['paid' => true]);
     }
 
     public function testUpdateOrderStatusUnauthorized(): void
@@ -266,7 +266,7 @@ class OrderTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonFragment([
-                'payed' => false,
+                'paid' => false,
                 'summary_paid' => $summaryPaid,
             ]);
     }
@@ -287,6 +287,6 @@ class OrderTest extends TestCase
             ->getJson('/orders/' . $this->order->code);
         $response
             ->assertOk()
-            ->assertJsonFragment(['payed' => false]);
+            ->assertJsonFragment(['paid' => false]);
     }
 }

@@ -88,7 +88,7 @@ class PaymentTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'payu',
-                'payed' => false,
+                'paid' => false,
                 'amount' => $this->order->summary,
                 'redirect_url' => 'payment_url',
                 'continue_url' => 'continue_url',
@@ -178,7 +178,7 @@ class PaymentTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'offline',
-                'payed' => true,
+                'paid' => true,
                 'amount' => $this->order->summary,
                 'redirect_url' => null,
                 'continue_url' => null,
@@ -192,7 +192,7 @@ class PaymentTest extends TestCase
         ]);
 
         $this->order->refresh();
-        $this->assertTrue($this->order->isPayed());
+        $this->assertTrue($this->order->isPaid());
     }
 
     /**
@@ -218,7 +218,7 @@ class PaymentTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'offline',
-                'payed' => true,
+                'paid' => true,
                 'amount' => $amount,
                 'redirect_url' => null,
                 'continue_url' => null,
@@ -232,7 +232,7 @@ class PaymentTest extends TestCase
         ]);
 
         $this->order->refresh();
-        $this->assertTrue($this->order->isPayed());
+        $this->assertTrue($this->order->isPaid());
     }
 
 //    public function testPayPalNotification(): void

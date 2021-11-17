@@ -13,7 +13,7 @@ class OrderPublicResource extends Resource implements OrderPublicResourceSwagger
             'id' => $this->getKey(),
             'code' => $this->code,
             'status' => StatusResource::make($this->status),
-            'payed' => $this->isPayed(),
+            'paid' => $this->isPaid(),
             'payable' => $this->payable,
             'summary' => $this->summary,
             'shipping_method_id' => $this->shipping_method_id,

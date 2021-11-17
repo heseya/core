@@ -173,18 +173,18 @@ class Order extends Model implements AuditableContract
      */
     public function getPayableAttribute(): bool
     {
-        return !$this->isPayed() &&
+        return !$this->isPaid() &&
             !$this->status->cancel &&
             $this->shippingMethod->paymentMethods()->count() > 0;
     }
 
     /**
      * @OA\Property(
-     *   property="payed",
+     *   property="paid",
      *   type="boolean",
      * )
      */
-    public function isPayed(): bool
+    public function isPaid(): bool
     {
         return $this->paid_amount >= $this->summary;
     }
