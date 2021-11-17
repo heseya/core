@@ -274,7 +274,7 @@ interface AuthControllerSwagger
      *       @OA\Property(
      *         property="data",
      *         oneOf={
-     *           @OA\Schema(ref="#/components/schemas/User"),
+     *           @OA\Schema(ref="#/components/schemas/UserView"),
      *           @OA\Schema(ref="#/components/schemas/AppView"),
      *         }
      *       )
@@ -289,7 +289,25 @@ interface AuthControllerSwagger
 
     /**
      * @OA\Get(
-     *   path="/auth/profile/{identity_token}",
+     *   path="/auth/check",
+     *   summary="get profile resource of unauthenticated user",
+     *   tags={"Auth"},
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/ProfileView",
+     *       )
+     *     )
+     *   ),
+     * )
+     */
+
+    /**
+     * @OA\Get(
+     *   path="/auth/check/{identity_token}",
      *   summary="get profile resource from identity token",
      *   tags={"Auth"},
      *   @OA\Response(
@@ -304,5 +322,5 @@ interface AuthControllerSwagger
      *   ),
      * )
      */
-    public function identityProfile(string $identityToken, Request $request): JsonResource;
+    public function checkIdentity(Request $request, ?string $identityToken): JsonResource;
 }

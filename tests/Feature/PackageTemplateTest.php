@@ -37,11 +37,14 @@ class PackageTemplateTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testIndex(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
     {
-        $this->user->givePermissionTo('packages.show');
+        $this->$user->givePermissionTo('packages.show');
 
-        $response = $this->actingAs($this->user)->getJson('/package-templates');
+        $response = $this->actingAs($this->$user)->getJson('/package-templates');
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -55,9 +58,12 @@ class PackageTemplateTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testCreate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreate($user): void
     {
-        $this->user->givePermissionTo('packages.add');
+        $this->$user->givePermissionTo('packages.add');
 
         $package = [
             'name' => 'Small package',
@@ -67,7 +73,7 @@ class PackageTemplateTest extends TestCase
             'depth' => 2,
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/package-templates', $package);
+        $response = $this->actingAs($this->$user)->postJson('/package-templates', $package);
         $response
             ->assertCreated()
             ->assertJson(['data' => $package]);
@@ -81,9 +87,12 @@ class PackageTemplateTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testUpdate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdate($user): void
     {
-        $this->user->givePermissionTo('packages.edit');
+        $this->$user->givePermissionTo('packages.edit');
 
         $package = [
             'name' => 'PackageTemplate big',
@@ -93,7 +102,7 @@ class PackageTemplateTest extends TestCase
             'depth' => 20,
         ];
 
-        $response = $this->actingAs($this->user)->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/package-templates/id:' . $this->package->getKey(),
             $package,
         );
@@ -114,11 +123,14 @@ class PackageTemplateTest extends TestCase
         $this->assertDatabaseHas('package_templates', $this->package->toArray());
     }
 
-    public function testDelete(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDelete($user): void
     {
-        $this->user->givePermissionTo('packages.remove');
+        $this->$user->givePermissionTo('packages.remove');
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->deleteJson('/package-templates/id:' . $this->package->getKey());
         $response->assertNoContent();
         $this->assertDeleted($this->package);

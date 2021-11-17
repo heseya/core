@@ -12,10 +12,6 @@ interface ProductSetServiceContract
 
     public function searchAll(array $attributes, bool $root): Collection;
 
-    public function brands(array $attributes): Collection;
-
-    public function categories(array $attributes): Collection;
-
     public function create(ProductSetDto $dto): ProductSet;
 
     public function update(ProductSet $set, ProductSetDto $dto): ProductSet;
@@ -32,4 +28,6 @@ interface ProductSetServiceContract
     public function delete(ProductSet $set): void;
 
     public function products(ProductSet $set): mixed;
+
+    public function flattenSetsTree(Collection $sets, string $relation): Collection;
 }

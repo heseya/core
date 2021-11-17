@@ -53,6 +53,8 @@ class UserService implements UserServiceContract
 
     public function update(User $user, ?string $name, ?string $email, ?array $roles): User
     {
+        $authenticable = Auth::user();
+
         if ($roles !== null) {
             $roleModels = Role::findMany($roles);
 
@@ -63,7 +65,7 @@ class UserService implements UserServiceContract
                 fn ($role) => $role->getPermissionNames(),
             )->unique();
 
-            if (!Auth::user()->hasAllPermissions($permissions)) {
+            if (!$authenticable->hasAllPermissions($permissions)) {
                 throw new AuthException(
                     'Can\'t give a role with permissions you don\'t have to the user',
                 );
@@ -73,7 +75,7 @@ class UserService implements UserServiceContract
                 fn ($role) => $role->getPermissionNames(),
             )->unique();
 
-            if (!Auth::user()->hasAllPermissions($permissions)) {
+            if (!$authenticable->hasAllPermissions($permissions)) {
                 throw new AuthException(
                     'Can\'t remove a role with permissions you don\'t have from the user',
                 );
@@ -81,12 +83,12 @@ class UserService implements UserServiceContract
 
             $owner = Role::where('type', RoleType::OWNER)->first();
 
-            if ($newRoles->contains($owner) && !Auth::user()->hasRole($owner)) {
+            if ($newRoles->contains($owner) && !$authenticable->hasRole($owner)) {
                 throw new AuthException('Only owner can grant the owner role');
             }
 
             if ($removedRoles->contains($owner)) {
-                if (!Auth::user()->hasRole($owner)) {
+                if (!$authenticable->hasRole($owner)) {
                     throw new AuthException('Only owner can remove the owner role');
                 }
 
@@ -115,10 +117,12 @@ class UserService implements UserServiceContract
 
     public function destroy(User $user): void
     {
+        $authenticable = Auth::user();
+
         $owner = Role::where('type', RoleType::OWNER)->first();
 
         if ($user->hasRole($owner)) {
-            if (!Auth::user()->hasRole($owner)) {
+            if (!$authenticable->hasRole($owner)) {
                 throw new AuthException(
                     'You need to be an Owner to delete the Owner.',
                 );

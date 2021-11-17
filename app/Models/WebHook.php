@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
+use Heseya\Sortable\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -13,6 +13,9 @@ use Illuminate\Notifications\Notifiable;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
+/**
+ * @mixin IdeHelperWebHook
+ */
 class WebHook extends Model implements AuditableContract
 {
     use HasFactory, SoftDeletes, Searchable, Sortable, Auditable, Notifiable;

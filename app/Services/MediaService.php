@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Enums\MediaType;
-use App\Exceptions\MediaException;
+use App\Exceptions\AppAccessException;
 use App\Models\Media;
 use App\Models\Product;
 use App\Services\Contracts\MediaServiceContract;
@@ -28,13 +28,12 @@ class MediaService implements MediaServiceContract
 
     public function store(UploadedFile $file): Media
     {
-        $response = Http::attach('file', $file
-            ->getContent(), 'file')
+        $response = Http::attach('file', $file->getContent(), 'file')
             ->withHeaders(['x-api-key' => config('silverbox.key')])
             ->post(config('silverbox.host') . '/' . config('silverbox.client'));
 
         if ($response->failed()) {
-            throw new MediaException('CDN responded with an error');
+            throw new AppAccessException('CDN responded with an error');
         }
 
         return Media::create([
@@ -54,14 +53,10 @@ class MediaService implements MediaServiceContract
 
     private function getMediaType(string $extension): int
     {
-        $imageExtensions = ['jpeg', 'png', 'gif', 'bmp', 'svg'];
-        $videoExtensions = ['mp4', 'webm'];
-        if (in_array($extension, $imageExtensions)) {
-            return MediaType::PHOTO;
-        }
-        if (in_array($extension, $videoExtensions)) {
-            return MediaType::VIDEO;
-        }
-        return MediaType::OTHER;
+        return match ($extension) {
+            'jpeg', 'jpg', 'png', 'gif', 'bmp', 'svg' => MediaType::PHOTO,
+            'mp4', 'webm' => MediaType::VIDEO,
+            default => MediaType::OTHER,
+        };
     }
 }

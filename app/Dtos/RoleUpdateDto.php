@@ -2,58 +2,36 @@
 
 namespace App\Dtos;
 
-use App\Dtos\Contracts\DtoContract;
-use App\Dtos\Contracts\InstantiateFromRequest;
-use Illuminate\Http\Request;
+use App\Http\Requests\RoleUpdateRequest;
+use Heseya\Dto\Dto;
+use Heseya\Dto\Missing;
 
-class RoleUpdateDto implements DtoContract, InstantiateFromRequest
+class RoleUpdateDto extends Dto
 {
-    public function __construct(
-        private ?string $name,
-        private ?string $description,
-        private ?array $permissions,
-    ) {
-    }
+    private string|Missing $name;
+    private string|null|Missing $description;
+    private array|Missing $permissions;
 
-    public function toArray(): array
-    {
-        $data = [];
-
-        if ($this->getName() !== null) {
-            $data['name'] = $this->getName();
-        }
-
-        if ($this->getDescription() !== null) {
-            $data['description'] = $this->getDescription();
-        }
-
-        if ($this->getPermissions() !== null) {
-            $data['permissions'] = $this->getPermissions();
-        }
-
-        return $data;
-    }
-
-    public static function instantiateFromRequest(Request $request): self
+    public static function fromRoleUpdateRequest(RoleUpdateRequest $request): self
     {
         return new self(
-            $request->input('name', null),
-            $request->input('description', null),
-            $request->input('permissions', null),
+            name: $request->input('name', new Missing()),
+            description: $request->input('description', new Missing()),
+            permissions: $request->input('permissions', new Missing()),
         );
     }
 
-    public function getName(): ?string
+    public function getName(): Missing|string
     {
         return $this->name;
     }
 
-    public function getDescription(): ?string
+    public function getDescription(): Missing|string|null
     {
         return $this->description;
     }
 
-    public function getPermissions(): ?array
+    public function getPermissions(): Missing|array
     {
         return $this->permissions;
     }

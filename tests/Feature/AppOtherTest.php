@@ -9,7 +9,6 @@ use App\Models\WebHook;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class AppOtherTest extends TestCase
@@ -29,7 +28,7 @@ class AppOtherTest extends TestCase
     {
         $this->user->givePermissionTo('apps.show');
 
-        App::factory()->count(10)->create();
+        App::factory()->count(9)->create(); // +1 from TestCase
 
         $response = $this->actingAs($this->user)->getJson('/apps');
 
@@ -94,7 +93,7 @@ class AppOtherTest extends TestCase
             ->deleteJson('/apps/id:' . $app->getKey());
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 1);
+        $this->assertDatabaseCount('apps', 2);  // +1 from TestCase
     }
 
     public function testUninstallNotFoundForce(): void
@@ -111,7 +110,7 @@ class AppOtherTest extends TestCase
             ->deleteJson('/apps/id:' . $app->getKey() . '?force');
 
         $response->assertNoContent();
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
         $this->assertDeleted($app);
     }
 
@@ -129,7 +128,7 @@ class AppOtherTest extends TestCase
             ->deleteJson('/apps/id:' . $app->getKey() . '?force=0');
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 1);
+        $this->assertDatabaseCount('apps', 2); // +1 from TestCase
     }
 
     public function testUninstallConnectionRefusedForce(): void
@@ -146,7 +145,7 @@ class AppOtherTest extends TestCase
             ->deleteJson('/apps/id:' . $app->getKey() . '?force=1');
 
         $response->assertNoContent();
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
         $this->assertDeleted($app);
     }
 
@@ -164,7 +163,7 @@ class AppOtherTest extends TestCase
             ->deleteJson('/apps/id:' . $app->getKey());
 
         $response->assertNoContent();
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
         $this->assertDeleted($app);
     }
 
@@ -192,7 +191,7 @@ class AppOtherTest extends TestCase
             ->deleteJson('/apps/id:' . $app->getKey());
 
         $response->assertNoContent();
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
 
         $this->assertDeleted($app);
         $this->assertDeleted($role);
@@ -224,7 +223,7 @@ class AppOtherTest extends TestCase
             ->json('DELETE', '/apps/id:' . $app->getKey());
 
         $response->assertNoContent();
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
         $this->assertDeleted($app);
         $this->assertSoftDeleted($webhook);
     }

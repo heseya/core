@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Enums\RoleType;
 use App\Enums\TokenType;
 use App\Exceptions\AuthException;
 use App\Models\App;
+use App\Models\Role;
 use App\Models\Token;
 use App\Models\User;
 use App\Notifications\ResetPassword;
@@ -159,6 +161,19 @@ class AuthService implements AuthServiceContract
         if (!($user instanceof User) || !$isIdentityToken) {
             throw new AuthException('Invalid identity token');
         }
+
+        return $user;
+    }
+
+    public function unauthenticatedUser(): User
+    {
+        $user = User::make([
+            'name' => 'Unauthenticated',
+        ]);
+
+        $roles = Role::where('type', RoleType::UNAUTHENTICATED)->get();
+        $user->setRelation('roles', $roles);
+        $user->id = null;
 
         return $user;
     }

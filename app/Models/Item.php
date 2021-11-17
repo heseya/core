@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use App\SearchTypes\ItemSearch;
-use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
+use Heseya\Sortable\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -72,7 +72,7 @@ class Item extends Model implements AuditableContract
 
     public function getQuantityAttribute(): float
     {
-        return $this->deposits()->sum('quantity');
+        return $this->deposits->sum('quantity');
     }
 
     public function deposits(): HasMany

@@ -22,6 +22,8 @@ interface AuthServiceContract
 
     public function userByIdentity(string $identityToken): User;
 
+    public function unauthenticatedUser(): User;
+
     public function isUserAuthenticated(): bool;
 
     public function isAppAuthenticated(): bool;

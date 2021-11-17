@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Audits\Redactors\AddressRedactor;
+use App\Audits\Redactors\ShippingMethodRedactor;
+use App\Audits\Redactors\StatusRedactor;
 use App\SearchTypes\OrderSearch;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
-use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
+use Heseya\Sortable\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -87,6 +90,13 @@ class Order extends Model implements AuditableContract
         'invoice_address_id',
     ];
 
+    protected $attributeModifiers = [
+        'status_id' => StatusRedactor::class,
+        'shipping_method_id' => ShippingMethodRedactor::class,
+        'delivery_address_id' => AddressRedactor::class,
+        'invoice_address_id' => AddressRedactor::class,
+    ];
+
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -134,7 +144,7 @@ class Order extends Model implements AuditableContract
      */
     public function getPaidAmountAttribute(): float
     {
-        return $this->payments()
+        return $this->payments
             ->where('payed', true)
             ->sum('amount');
     }

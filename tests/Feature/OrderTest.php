@@ -81,37 +81,50 @@ class OrderTest extends TestCase
         ];
     }
 
-    public function testOverpaid(): void
-    {
-        $this->order->payments()->save(Payment::factory()->make([
-            'amount' => $this->order->summary * 2,
-            'payed' => true,
-        ]));
-
-        $this->assertTrue(
-            Order::findOrFail($this->order->getKey())->isPayed(),
-        );
-    }
-
     public function testIndexUnauthorized(): void
     {
         $response = $this->getJson('/orders');
         $response->assertForbidden();
     }
 
-    public function testIndex(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
     {
-        $this->user->givePermissionTo('orders.show');
+        $this->$user->givePermissionTo('orders.show');
 
-        $response = $this->actingAs($this->user)->getJson('/orders');
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders')
             ->assertOk()
+            ->assertJsonCount(1, 'data')
             ->assertJsonStructure(['data' => [
                 0 => $this->expected_structure,
             ]])
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
+
+        $this->assertQueryCountLessThan(15);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexPerformance($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        Order::factory()->count(499)->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders?limit=500')
+            ->assertOk()
+            ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(15);
     }
 
     public function testViewUnauthorized(): void
@@ -120,11 +133,14 @@ class OrderTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testView(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testView($user): void
     {
-        $this->user->givePermissionTo('orders.show_details');
+        $this->$user->givePermissionTo('orders.show_details');
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->getJson('/orders/id:' . $this->order->getKey());
         $response
             ->assertOk()
@@ -137,11 +153,14 @@ class OrderTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testViewSummary(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewSummary($user): void
     {
-        $this->user->givePermissionTo('orders.show_summary');
+        $this->$user->givePermissionTo('orders.show_summary');
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->getJson('/orders/' . $this->order->code);
         $response
             ->assertOk()
@@ -149,9 +168,12 @@ class OrderTest extends TestCase
             ->assertJson(['data' => $this->expected]);
     }
 
-    public function testViewOverpaid(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewOverpaid($user): void
     {
-        $this->user->givePermissionTo('orders.show_details');
+        $this->$user->givePermissionTo('orders.show_details');
 
         $summaryPaid = $this->order->summary * 2;
 
@@ -160,7 +182,7 @@ class OrderTest extends TestCase
             'payed' => true,
         ]));
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->getJson('/orders/id:' . $this->order->getKey());
         $response
             ->assertOk()
@@ -170,16 +192,19 @@ class OrderTest extends TestCase
             ]);
     }
 
-    public function testViewOverpaidSummary(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewOverpaidSummary($user): void
     {
-        $this->user->givePermissionTo('orders.show_summary');
+        $this->$user->givePermissionTo('orders.show_summary');
 
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $this->order->summary * 2,
             'payed' => true,
         ]));
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->getJson('/orders/' . $this->order->code);
         $response
             ->assertOk()
@@ -200,19 +225,24 @@ class OrderTest extends TestCase
         Event::assertNotDispatched(OrderUpdatedStatus::class);
     }
 
-    public function testUpdateOrderStatus(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderStatus($user): void
     {
-        $this->user->givePermissionTo('orders.edit.status');
+        $this->$user->givePermissionTo('orders.edit.status');
 
         Event::fake([OrderUpdatedStatus::class]);
 
         $status = Status::factory()->create();
 
-        $response = $this->actingAs($this->user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
-            'status_id' => $status->getKey(),
-        ]);
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+                'status_id' => $status->getKey(),
+            ])
+            ->assertOk();
 
-        $response->assertOk();
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
             'status_id' => $status->getKey(),
@@ -221,16 +251,19 @@ class OrderTest extends TestCase
         Event::assertDispatched(OrderUpdatedStatus::class);
     }
 
-    public function testUpdateOrderStatusCancel(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderStatusCancel($user): void
     {
-        $this->user->givePermissionTo('orders.edit.status');
+        $this->$user->givePermissionTo('orders.edit.status');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'ItemUpdatedQuantity'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
@@ -250,7 +283,7 @@ class OrderTest extends TestCase
             'cancel' => true,
         ]);
 
-        $response = $this->actingAs($this->user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+        $response = $this->actingAs($this->$user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
             'status_id' => $status->getKey(),
         ]);
 
@@ -281,16 +314,19 @@ class OrderTest extends TestCase
         });
     }
 
-    public function testUpdateOrderStatusWithWebHookQueue(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderStatusWithWebHookQueue($user): void
     {
-        $this->user->givePermissionTo('orders.edit.status');
+        $this->$user->givePermissionTo('orders.edit.status');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'OrderUpdatedStatus'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
@@ -299,7 +335,7 @@ class OrderTest extends TestCase
 
         $status = Status::factory()->create();
 
-        $response = $this->actingAs($this->user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+        $response = $this->actingAs($this->$user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
             'status_id' => $status->getKey(),
         ]);
 
@@ -328,16 +364,19 @@ class OrderTest extends TestCase
         });
     }
 
-    public function testUpdateOrderStatusWithWebHookDispatched(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderStatusWithWebHookDispatched($user): void
     {
-        $this->user->givePermissionTo('orders.edit.status');
+        $this->$user->givePermissionTo('orders.edit.status');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'OrderUpdatedStatus'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => false,
             'with_hidden' => false,
         ]);
@@ -346,7 +385,7 @@ class OrderTest extends TestCase
 
         $status = Status::factory()->create();
 
-        $response = $this->actingAs($this->user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+        $response = $this->actingAs($this->$user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
             'status_id' => $status->getKey(),
         ]);
 
@@ -376,9 +415,12 @@ class OrderTest extends TestCase
         });
     }
 
-    public function testViewUnderpaid(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewUnderpaid($user): void
     {
-        $this->user->givePermissionTo('orders.show_details');
+        $this->$user->givePermissionTo('orders.show_details');
 
         $summaryPaid = $this->order->summary / 2;
 
@@ -387,7 +429,7 @@ class OrderTest extends TestCase
             'payed' => true,
         ]));
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->getJson('/orders/id:' . $this->order->getKey());
         $response
             ->assertOk()
@@ -397,16 +439,19 @@ class OrderTest extends TestCase
             ]);
     }
 
-    public function testViewUnderpaidSummary(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewUnderpaidSummary($user): void
     {
-        $this->user->givePermissionTo('orders.show_summary');
+        $this->$user->givePermissionTo('orders.show_summary');
 
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $this->order->summary / 2,
             'payed' => true,
         ]));
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->getJson('/orders/' . $this->order->code);
         $response
             ->assertOk()

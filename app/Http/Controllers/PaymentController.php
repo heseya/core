@@ -58,7 +58,7 @@ class PaymentController extends Controller implements PaymentControllerSwagger
     {
         $payment = $order->payments()->create([
             'method' => 'offline',
-            'amount' => $order->summary - $order->payed,
+            'amount' => $order->summary - $order->paid_amount,
             'payed' => true,
         ]);
 

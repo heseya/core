@@ -17,6 +17,7 @@
         "heseya/laravel-searchable": "^1.0",
         "heseya/pagination": "*",
         "heseya/resource": "*",
+        "heseya/sortable": "*",
         "jenssegers/agent": "^2.6",
         "laravel/framework": "^8.44",
         "league/html-to-markdown": "^5.0",
@@ -24,7 +25,6 @@
         "omnipay/common": "^3",
         "omnipay/paypal": "^3.0",
         "owen-it/laravel-auditing": "^12.0",
-        "parsedown/laravel": "^1.2",
         "php-http/curl-client": "^2.2",
         "propaganistas/laravel-phone": "^4.3",
         "sentry/sentry-laravel": "^2.6",
@@ -37,13 +37,14 @@
         "brianium/paratest": "^6.3",
         "facade/ignition": "^2.9",
         "fakerphp/faker": "^v1.15",
-        "mbezhanov/faker-provider-collection": "^2.0",
         "heseya/insights": "*",
+        "laravel/tinker": "^2.6",
+        "mattiasgeniar/phpunit-query-count-assertions": "^1.1",
+        "mbezhanov/faker-provider-collection": "^2.0",
         "mockery/mockery": "^1.4",
         "nunomaduro/collision": "^5.3",
         "nunomaduro/phpinsights": "^2.0",
-        "phpunit/phpunit": "^9.5",
-        "laravel/tinker": "^2.6"
+        "phpunit/phpunit": "^9.5"
     },
     "config": {
         "optimize-autoloader": true,
@@ -95,6 +96,9 @@
         ],
         "pre-commit": [
             "@composer style"
+        ],
+        "test": [
+            "@php artisan test --env=.env --parallel"
         ]
     },
     "repositories": [
@@ -103,12 +107,12 @@
             "url": "./heseya/insights"
         },
         {
-          "type": "path",
-          "url": "./heseya/demo"
+            "type": "path",
+            "url": "./heseya/demo"
         },
         {
-          "type": "path",
-          "url": "./heseya/resource"
+            "type": "path",
+            "url": "./heseya/resource"
         },
         {
             "type": "path",
@@ -117,6 +121,10 @@
         {
             "type": "path",
             "url": "./heseya/dto"
+        },
+        {
+            "type": "path",
+            "url": "./heseya/sortable"
         }
     ]
 }

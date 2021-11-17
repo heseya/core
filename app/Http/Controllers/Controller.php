@@ -26,7 +26,6 @@ abstract class Controller extends BaseController
      *   securityScheme="oauth",
      *   @OA\Flow(
      *     flow="implicit",
-     *     authorizationUrl="https://dev.***REMOVED***/login",
      *     scopes={}
      *   )
      * )

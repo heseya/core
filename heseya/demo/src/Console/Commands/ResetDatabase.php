@@ -2,6 +2,7 @@
 
 namespace Heseya\Demo\Console\Commands;
 
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -27,10 +28,18 @@ class ResetDatabase extends Command
      */
     public function handle(): void
     {
+        try {
+            $sql = file_get_contents($this->option('file') ?? storage_path('demo.sql'));
+        } catch (Exception $exception) {
+            $this->error($exception->getMessage());
+
+            return;
+        }
+
         Artisan::call('db:wipe --force');
         $this->info('Database wiped');
 
-        DB::unprepared(file_get_contents($this->option('file') ?? storage_path('demo.sql')));
+        DB::unprepared($sql);
         $this->info('Backup uploaded');
 
         Artisan::call('migrate --force');

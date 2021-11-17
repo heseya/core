@@ -41,10 +41,11 @@ class AppInstallTest extends TestCase
             'allowed_permissions' => [
                 'products.show',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
     public function testInstallFailed(): void
@@ -80,39 +81,51 @@ class AppInstallTest extends TestCase
             'allowed_permissions' => [
                 'products.show',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
-    public function testInstallInvalidInfo(): void
+    public function invalidResponseProvider(): array
     {
-        $this->user->givePermissionTo([
-            'apps.install',
-            'products.show',
-        ]);
+        return [
+            'null' => [null],
+            'not an array' => ['not an array'],
+            'empty array' => [[]],
+            'flat array' => [['flat array']],
+        ];
+    }
+
+    /**
+     * @dataProvider invalidResponseProvider
+     */
+    public function testInstallInvalidInfo($invalidResponse): void
+    {
+        $this->user->givePermissionTo('apps.install');
 
         Http::fake([
-            $this->url => Http::response([]),
+            $this->url => Http::response($invalidResponse),
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/apps', [
             'url' => $this->url,
-            'allowed_permissions' => [
-                'products.show',
-            ],
+            'allowed_permissions' => [],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
-    public function testInstallInvalidInstallationResponse(): void
+    /**
+     * @dataProvider invalidResponseProvider
+     */
+    public function testInstallInvalidInstallationResponse($invalidResponse): void
     {
         $this->user->givePermissionTo([
             'apps.install',
-            'products.show',
         ]);
 
         Http::fake([
@@ -121,30 +134,20 @@ class AppInstallTest extends TestCase
                 'author' => 'Mr. Author',
                 'version' => '1.0.0',
                 'api_version' => '^1.4.0', // '^1.2.0' [TODO]
-                'description' => 'Cool description',
-                'microfrontend_url' => 'https://front.example.com',
-                'icon' => 'https://picsum.photos/200',
-                'licence_required' => false,
-                'required_permissions' => [
-                    'products.show',
-                ],
-                'internal_permissions' => [[
-                    'name' => 'product_layout',
-                    'description' => 'Setup layouts of products page',
-                ]],
+                'required_permissions' => [],
+                'internal_permissions' => [],
             ]),
-            $this->url . '/install' => Http::response([]),
+            $this->url . '/install' => Http::response($invalidResponse),
         ]);
 
         $response = $this->actingAs($this->user)->postJson('/apps', [
             'url' => $this->url,
-            'allowed_permissions' => [
-                'products.show',
-            ],
+            'allowed_permissions' => [],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
     public function testInstall(): void
@@ -193,6 +196,7 @@ class AppInstallTest extends TestCase
             'allowed_permissions' => [
                 'products.show',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $name = 'App name';
@@ -239,7 +243,7 @@ class AppInstallTest extends TestCase
 
         $this->assertTrue($app->hasAllPermissions([
             'auth.login',
-            'auth.identity_profile',
+            'auth.check_identity',
             'products.show',
         ]));
 
@@ -301,6 +305,7 @@ class AppInstallTest extends TestCase
                 'products.show',
                 'products.add',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertCreated()
@@ -330,10 +335,150 @@ class AppInstallTest extends TestCase
 
         $this->assertTrue($app->hasAllPermissions([
             'auth.login',
-            'auth.identity_profile',
+            'auth.check_identity',
             'products.show',
             'products.add',
         ]));
+    }
+
+    public function testInstallWithPublicPermissions(): void
+    {
+        $this->user->givePermissionTo('apps.install');
+
+        $uninstallToken = Str::random(128);
+
+        Http::fake([
+            $this->url => Http::response([
+                'name' => 'App name',
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
+                'required_permissions' => [],
+                'internal_permissions' => [
+                    [
+                        'name' => 'recommended_public_1',
+                        'unauthenticated' => true,
+                    ],
+                    [
+                        'name' => 'recommended_public_2',
+                        'unauthenticated' => true,
+                    ],
+                    [
+                        'name' => 'recommended_private_1',
+                        'unauthenticated' => false,
+                    ],
+                    [
+                        'name' => 'recommended_private_2',
+                        'unauthenticated' => false,
+                    ],
+                ],
+            ]),
+            $this->url . '/install' => Http::response([
+                'uninstall_token' => $uninstallToken,
+            ]),
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/apps', [
+            'url' => $this->url,
+            'allowed_permissions' => [],
+            'public_app_permissions' => [
+                'recommended_public_1',
+                'recommended_private_1',
+                'invalid_permission',
+            ],
+        ]);
+
+        $name = 'App name';
+
+        $response->assertCreated()
+            ->assertJsonFragment([
+                'url' => $this->url,
+                'name' => $name,
+                'slug' => Str::slug($name),
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+            ]);
+
+        $this->assertDatabaseHas('apps', [
+            'url' => $this->url,
+            'name' => $name,
+            'slug' => Str::slug($name),
+            'author' => 'Mr. Author',
+            'version' => '1.0.0',
+            'api_version' => '^1.4.0',
+            'uninstall_token' => $uninstallToken,
+        ]);
+
+        $this->assertDatabaseHas('permissions', [
+            'name' => 'app.' . Str::slug($name) . '.recommended_public_1',
+        ]);
+
+        $this->assertDatabaseHas('permissions', [
+            'name' => 'app.' . Str::slug($name) . '.recommended_public_2',
+        ]);
+
+        $this->assertDatabaseHas('permissions', [
+            'name' => 'app.' . Str::slug($name) . '.recommended_private_1',
+        ]);
+
+        $this->assertDatabaseHas('permissions', [
+            'name' => 'app.' . Str::slug($name) . '.recommended_private_2',
+        ]);
+
+        /** @var Role $unauthenticated */
+        $unauthenticated = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $this->assertTrue($unauthenticated->hasAllPermissions([
+            'app.' . Str::slug($name) . '.recommended_public_1',
+            'app.' . Str::slug($name) . '.recommended_private_1',
+        ]));
+    }
+
+    public function testInstallNoInternalPermissions(): void
+    {
+        $this->user->givePermissionTo([
+            'apps.install',
+            'products.show',
+        ]);
+
+        $uninstallToken = Str::random(128);
+
+        Http::fake([
+            $this->url => Http::response([
+                'name' => 'App name',
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
+                'description' => 'Cool description',
+                'microfrontend_url' => 'https://front.example.com',
+                'icon' => 'https://picsum.photos/200',
+                'licence_required' => false,
+                'required_permissions' => [
+                    'products.show',
+                ],
+                'internal_permissions' => [],
+            ]),
+            $this->url . '/install' => Http::response([
+                'uninstall_token' => $uninstallToken,
+            ]),
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/apps', [
+            'url' => $this->url,
+            'allowed_permissions' => [
+                'products.show',
+            ],
+            'public_app_permissions' => [],
+        ]);
+
+        $name = 'App name';
+        $response->assertCreated();
+
+        $app = App::where('name', $name)->firstOrFail();
+        $this->assertNull($app->role);
+
+        $this->assertDatabaseMissing('roles', [
+            'name' => $name . ' owner',
+        ]);
     }
 
     public function testInstallAssignUnownedPermissions(): void
@@ -347,10 +492,11 @@ class AppInstallTest extends TestCase
             'allowed_permissions' => [
                 'products.show',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
     public function testInstallAssignInvalidPermissions(): void
@@ -364,10 +510,11 @@ class AppInstallTest extends TestCase
             'allowed_permissions' => [
                 'nonexistent.permission',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
     public function testInstallAppWantsInvalidPermissions(): void
@@ -402,10 +549,11 @@ class AppInstallTest extends TestCase
             'allowed_permissions' => [
                 'products.show',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
     public function testInstallNotAssigningRequiredPermissions(): void
@@ -438,10 +586,11 @@ class AppInstallTest extends TestCase
         $response = $this->actingAs($this->user)->postJson('/apps', [
             'url' => $this->url,
             'allowed_permissions' => [],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
     public function testInstallExtraPermissions(): void
@@ -483,10 +632,11 @@ class AppInstallTest extends TestCase
                 'products.add',
                 'products.edit',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
     public function testInstallConnectionRefusedRoot(): void
@@ -509,10 +659,11 @@ class AppInstallTest extends TestCase
                 'products.add',
                 'products.edit',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 
     public function testInstallConnectionRefusedInstall(): void
@@ -554,9 +705,10 @@ class AppInstallTest extends TestCase
                 'products.add',
                 'products.edit',
             ],
+            'public_app_permissions' => [],
         ]);
 
         $response->assertStatus(422);
-        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
     }
 }

@@ -83,11 +83,14 @@ class ShippingMethodTest extends TestCase
         $this->getJson('/shipping-methods')->assertForbidden();
     }
 
-    public function testIndex(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
     {
-        $this->user->givePermissionTo('shipping_methods.show');
+        $this->$user->givePermissionTo('shipping_methods.show');
 
-        $response = $this->actingAs($this->user)->getJson('/shipping-methods');
+        $response = $this->actingAs($this->$user)->getJson('/shipping-methods');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public shipping methods.
@@ -96,11 +99,14 @@ class ShippingMethodTest extends TestCase
             ]]);
     }
 
-    public function testIndexHidden(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexHidden($user): void
     {
-        $this->user->givePermissionTo(['shipping_methods.show', 'shipping_methods.show_hidden']);
+        $this->$user->givePermissionTo(['shipping_methods.show', 'shipping_methods.show_hidden']);
 
-        $response = $this->actingAs($this->user)->getJson('/shipping-methods');
+        $response = $this->actingAs($this->$user)->getJson('/shipping-methods');
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data') // Should show only public shipping methods.
@@ -112,9 +118,12 @@ class ShippingMethodTest extends TestCase
             ]);
     }
 
-    public function testIndexWithPaymentMethods(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexWithPaymentMethods($user): void
     {
-        $this->user->givePermissionTo('shipping_methods.show');
+        $this->$user->givePermissionTo('shipping_methods.show');
 
         $paymentMethod = PaymentMethod::factory()->create([
             'public' => true,
@@ -129,7 +138,7 @@ class ShippingMethodTest extends TestCase
             $paymentMethodHidden->getKey(),
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/shipping-methods');
+        $response = $this->actingAs($this->$user)->getJson('/shipping-methods');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public shipping methods.
@@ -140,9 +149,12 @@ class ShippingMethodTest extends TestCase
             ->assertJsonFragment(['id' => $paymentMethod->getKey()]);
     }
 
-    public function testIndexWithPaymentMethodsShowHidden(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexWithPaymentMethodsShowHidden($user): void
     {
-        $this->user->givePermissionTo(['shipping_methods.show', 'payment_methods.show_hidden']);
+        $this->$user->givePermissionTo(['shipping_methods.show', 'payment_methods.show_hidden']);
 
         $paymentMethod = PaymentMethod::factory()->create([
             'public' => true,
@@ -157,7 +169,7 @@ class ShippingMethodTest extends TestCase
             $paymentMethodHidden->getKey(),
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/shipping-methods');
+        $response = $this->actingAs($this->$user)->getJson('/shipping-methods');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public shipping methods.
@@ -169,9 +181,12 @@ class ShippingMethodTest extends TestCase
             ->assertJsonFragment(['id' => $paymentMethodHidden->getKey()]);
     }
 
-    public function testIndexWithPaymentMethodsEdit(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexWithPaymentMethodsEdit($user): void
     {
-        $this->user->givePermissionTo(['shipping_methods.show', 'shipping_methods.edit']);
+        $this->$user->givePermissionTo(['shipping_methods.show', 'shipping_methods.edit']);
 
         $paymentMethod = PaymentMethod::factory()->create([
             'public' => true,
@@ -186,7 +201,7 @@ class ShippingMethodTest extends TestCase
             $paymentMethodHidden->getKey(),
         ]);
 
-        $response = $this->actingAs($this->user)->getJson('/shipping-methods');
+        $response = $this->actingAs($this->$user)->getJson('/shipping-methods');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public shipping methods.
@@ -198,9 +213,12 @@ class ShippingMethodTest extends TestCase
             ->assertJsonFragment(['id' => $paymentMethodHidden->getKey()]);
     }
 
-    public function testIndexByCountry(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexByCountry($user): void
     {
-        $this->user->givePermissionTo('shipping_methods.show');
+        $this->$user->givePermissionTo('shipping_methods.show');
 
         // All countries without Germany
         $shippingMethod = ShippingMethod::factory()->create([
@@ -216,7 +234,7 @@ class ShippingMethodTest extends TestCase
         ]);
         $shippingMethod2->countries()->sync(['DE']);
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->json('GET', '/shipping-methods', ['country' => 'DE']);
         $response
             ->assertOk()
@@ -227,17 +245,19 @@ class ShippingMethodTest extends TestCase
 
     /**
      * Price range testing with no initial 'start' value of zero
+     *
+     * @dataProvider authProvider
      */
-    public function testCreateByPriceRanges(): void
+    public function testCreateByPriceRanges($user): void
     {
-        $this->user->givePermissionTo('shipping_methods.add');
+        $this->$user->givePermissionTo('shipping_methods.add');
 
         $shipping_method = [
             'name' => 'Test 4',
             'public' => false,
         ];
 
-        $response = $this->actingAs($this->user)->postJson(
+        $response = $this->actingAs($this->$user)->postJson(
             '/shipping-methods', $shipping_method + [
                'price_ranges' => $this->priceRangesWithNoInitialStart,
            ],
@@ -248,17 +268,19 @@ class ShippingMethodTest extends TestCase
 
     /**
      * Price range testing with duplicate "start" values
+     *
+     * @dataProvider authProvider
      */
-    public function testCreateByDuplicatePriceRanges(): void
+    public function testCreateByDuplicatePriceRanges($user): void
     {
-        $this->user->givePermissionTo('shipping_methods.add');
+        $this->$user->givePermissionTo('shipping_methods.add');
 
         $shipping_method = [
             'name' => 'Test 5',
             'public' => false,
         ];
 
-        $response = $this->actingAs($this->user)->postJson(
+        $response = $this->actingAs($this->$user)->postJson(
             '/shipping-methods', $shipping_method + [
                'price_ranges' => [
                    [
@@ -286,16 +308,19 @@ class ShippingMethodTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testCreate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreate($user): void
     {
-        $this->user->givePermissionTo('shipping_methods.add');
+        $this->$user->givePermissionTo('shipping_methods.add');
 
         $shipping_method = [
             'name' => 'Test',
             'public' => true,
         ];
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->postJson('/shipping-methods', $shipping_method + [
                 'price_ranges' => [
                     [
@@ -323,17 +348,19 @@ class ShippingMethodTest extends TestCase
 
     /**
      * Price range testing with no initial 'start' value of zero
+     *
+     * @dataProvider authProvider
      */
-    public function testUpdateByPriceRanges(): void
+    public function testUpdateByPriceRanges($user): void
     {
-        $this->user->givePermissionTo('shipping_methods.edit');
+        $this->$user->givePermissionTo('shipping_methods.edit');
 
         $shipping_method = [
             'name' => 'Test 6',
             'public' => false,
         ];
 
-        $response = $this->actingAs($this->user)->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/shipping-methods/id:' . $this->shipping_method->getKey(),
             $shipping_method + [
                 'price_ranges' => $this->priceRangesWithNoInitialStart,
@@ -345,17 +372,19 @@ class ShippingMethodTest extends TestCase
 
     /**
      * Price range testing with duplicate "start" values
+     *
+     * @dataProvider authProvider
      */
-    public function testUpdateByDuplicatePriceRanges(): void
+    public function testUpdateByDuplicatePriceRanges($user): void
     {
-        $this->user->givePermissionTo('shipping_methods.edit');
+        $this->$user->givePermissionTo('shipping_methods.edit');
 
         $shipping_method = [
             'name' => 'Test 7',
             'public' => false,
         ];
 
-        $response = $this->actingAs($this->user)->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/shipping-methods/id:' . $this->shipping_method->getKey(),
             $shipping_method + [
                 'price_ranges' => [
@@ -384,16 +413,19 @@ class ShippingMethodTest extends TestCase
             ->assertForbidden();
     }
 
-    public function testUpdate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdate($user): void
     {
-        $this->user->givePermissionTo('shipping_methods.edit');
+        $this->$user->givePermissionTo('shipping_methods.edit');
 
         $shipping_method = [
             'name' => 'Test 2',
             'public' => false,
         ];
 
-        $response = $this->actingAs($this->user)->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/shipping-methods/id:' . $this->shipping_method->getKey(),
             $shipping_method + [
                 'price_ranges' => [
@@ -431,19 +463,25 @@ class ShippingMethodTest extends TestCase
         $this->assertDatabaseHas('shipping_methods', $this->shipping_method->toArray());
     }
 
-    public function testDelete(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDelete($user): void
     {
-        $this->user->givePermissionTo('shipping_methods.remove');
+        $this->$user->givePermissionTo('shipping_methods.remove');
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->deleteJson('/shipping-methods/id:' . $this->shipping_method->getKey());
         $response->assertNoContent();
         $this->assertDeleted($this->shipping_method);
     }
 
-    public function testDeleteWithRelations(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWithRelations($user): void
     {
-        $this->user->givePermissionTo('shipping_methods.remove');
+        $this->$user->givePermissionTo('shipping_methods.remove');
 
         $this->shipping_method = ShippingMethod::factory()->create();
 
@@ -451,7 +489,7 @@ class ShippingMethodTest extends TestCase
             'shipping_method_id' => $this->shipping_method->getKey(),
         ]);
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->deleteJson('/shipping-methods/id:' . $this->shipping_method->getKey());
         $response->assertStatus(400);
         $this->assertDatabaseHas('shipping_methods', $this->shipping_method->toArray());

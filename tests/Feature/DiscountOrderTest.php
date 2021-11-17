@@ -7,15 +7,13 @@ use App\Models\Discount;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ShippingMethod;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
-use Tests\Traits\CreateProduct;
 use Tests\Traits\CreateShippingMethod;
 
 class DiscountOrderTest extends TestCase
 {
-    use CreateProduct, CreateShippingMethod, WithFaker;
+    use CreateShippingMethod;
 
     protected Product $product;
     protected ShippingMethod $shippingMethod;
@@ -29,7 +27,8 @@ class DiscountOrderTest extends TestCase
 
         Notification::fake();
 
-        $this->product = $this->createProduct([
+        $this->product = Product::factory()->create([
+            'public' => true,
             'price' => 100,
         ]);
 
@@ -50,17 +49,20 @@ class DiscountOrderTest extends TestCase
         ];
     }
 
-    public function testOrderCreate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOrderCreate($user): void
     {
-        $this->user->givePermissionTo('orders.add');
+        $this->$user->givePermissionTo('orders.add');
 
         $discount = Discount::factory()->create([
             'type' => DiscountType::PERCENTAGE,
             'discount' => 15,
         ]);
 
-        $response = $this->actingAs($this->user)->postJson('/orders', [
-            'email' => $this->faker->freeEmail,
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address,
             'items' => $this->items,
@@ -81,17 +83,20 @@ class DiscountOrderTest extends TestCase
         ]);
     }
 
-    public function testOrderCreateAmountDiscount(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOrderCreateAmountDiscount($user): void
     {
-        $this->user->givePermissionTo('orders.add');
+        $this->$user->givePermissionTo('orders.add');
 
         $discount = Discount::factory()->create([
             'type' => DiscountType::AMOUNT,
             'discount' => 50,
         ]);
 
-        $response = $this->actingAs($this->user)->postJson('/orders', [
-            'email' => $this->faker->freeEmail,
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address,
             'items' => $this->items,
@@ -105,17 +110,20 @@ class DiscountOrderTest extends TestCase
             ->assertJsonFragment(['summary' => 60]); // 100 - 50 + 10 (delivery)
     }
 
-    public function testOrderCreateChangeDiscount(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOrderCreateChangeDiscount($user): void
     {
-        $this->user->givePermissionTo('orders.add');
+        $this->$user->givePermissionTo('orders.add');
 
         $discount = Discount::factory()->create([
             'type' => DiscountType::PERCENTAGE,
             'discount' => 10,
         ]);
 
-        $response = $this->actingAs($this->user)->postJson('/orders', [
-            'email' => $this->faker->freeEmail,
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address,
             'items' => $this->items,

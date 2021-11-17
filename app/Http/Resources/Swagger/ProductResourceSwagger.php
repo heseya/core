@@ -29,8 +29,20 @@ interface ProductResourceSwagger
      *   @OA\Property(
      *     property="price",
      *     type="numeric",
-     *     description="Base price of the product",
+     *     description="Base price of the product excluding schemas",
      *     example=10.99,
+     *   ),
+     *   @OA\Property(
+     *     property="price_min",
+     *     type="numeric",
+     *     description="Minimum availble product price acounting for schemas",
+     *     example=12.99,
+     *   ),
+     *   @OA\Property(
+     *     property="price_max",
+     *     type="numeric",
+     *     description="Maximum availble product price acounting for schemas",
+     *     example=20.99,
      *   ),
      *   @OA\Property(
      *     property="public",
@@ -55,16 +67,6 @@ interface ProductResourceSwagger
      *     type="numeric",
      *     description="In what increments can you increase the product quantity",
      *     example=0.05,
-     *   ),
-     *   @OA\Property(
-     *     property="brand",
-     *     type="object",
-     *     ref="#/components/schemas/ProductSet",
-     *   ),
-     *   @OA\Property(
-     *     property="category",
-     *     type="object",
-     *     ref="#/components/schemas/ProductSet",
      *   ),
      *   @OA\Property(
      *     property="cover",

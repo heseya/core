@@ -17,7 +17,6 @@ use App\Services\Contracts\AuthServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 
 class AuthController extends Controller implements AuthControllerSwagger
@@ -127,7 +126,8 @@ class AuthController extends Controller implements AuthControllerSwagger
     {
         $authenticable = $request->user();
 
-        $resource = $authenticable instanceof App ? AppResource::make($authenticable)
+        $resource = $authenticable instanceof App
+            ? AppResource::make($authenticable)
             : UserResource::make($authenticable);
 
         return $resource
@@ -135,12 +135,15 @@ class AuthController extends Controller implements AuthControllerSwagger
             ->setStatusCode(200);
     }
 
-    public function identityProfile(string $identityToken, Request $request): JsonResource
+    public function checkIdentity(Request $request, ?string $identityToken = null): JsonResource
     {
-        $user = $this->authService->userByIdentity($identityToken);
+        $user = $identityToken === null
+            ? $this->authService->unauthenticatedUser()
+            : $this->authService->userByIdentity($identityToken);
 
-        $prefix = $this->authService->isAppAuthenticated() ?
-            $this->appService->appPermissionPrefix(Auth::user()) : null;
+        $prefix = $this->authService->isAppAuthenticated()
+            ? $this->appService->appPermissionPrefix($request->user())
+            : null;
 
         return ProfileResource::make($user)->stripedPermissionPrefix($prefix);
     }

@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Enums\MediaType;
 use App\Models\Media;
-use App\Models\Page;
 use App\Models\Product;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
@@ -30,19 +29,23 @@ class MediaTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testUpload(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpload($user): void
     {
-        $this->user->givePermissionTo('pages.add');
+        $this->$user->givePermissionTo('pages.add');
 
         Http::fake(['*' => Http::response([0 => ['path' => 'image.jpeg']])]);
 
         $file = UploadedFile::fake()->image('image.jpeg');
-        $response = $this->actingAs($this->user)->postJson('/media', [
+        $response = $this->actingAs($this->$user)->postJson('/media', [
             'file' => $file,
         ]);
 
         $response
             ->assertCreated()
+            ->assertJsonFragment(['type' => MediaType::PHOTO])
             ->assertJsonStructure(['data' => [
                 'id',
                 'type',
@@ -50,42 +53,54 @@ class MediaTest extends TestCase
             ]]);
     }
 
-    public function testUploadPagesAdd(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUploadPagesAdd($user): void
     {
-        $this->user->givePermissionTo('pages.add');
+        $this->$user->givePermissionTo('pages.add');
 
         Http::fake(['*' => Http::response([0 => ['path' => 'image.jpeg']])]);
-        $this->actingAs($this->user)->postJson('/media', [
+        $this->actingAs($this->$user)->postJson('/media', [
             'file' => UploadedFile::fake()->image('image.jpeg'),
         ])->assertCreated();
     }
 
-    public function testUploadPagesEdit(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUploadPagesEdit($user): void
     {
-        $this->user->givePermissionTo('pages.edit');
+        $this->$user->givePermissionTo('pages.edit');
 
         Http::fake(['*' => Http::response([0 => ['path' => 'image.jpeg']])]);
-        $this->actingAs($this->user)->postJson('/media', [
+        $this->actingAs($this->$user)->postJson('/media', [
             'file' => UploadedFile::fake()->image('image.jpeg'),
         ])->assertCreated();
     }
 
-    public function testUploadProductsAdd(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUploadProductsAdd($user): void
     {
-        $this->user->givePermissionTo('products.add');
+        $this->$user->givePermissionTo('products.add');
 
         Http::fake(['*' => Http::response([0 => ['path' => 'image.jpeg']])]);
-        $this->actingAs($this->user)->postJson('/media', [
+        $this->actingAs($this->$user)->postJson('/media', [
             'file' => UploadedFile::fake()->image('image.jpeg'),
         ])->assertCreated();
     }
 
-    public function testUploadProductsEdit(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUploadProductsEdit($user): void
     {
-        $this->user->givePermissionTo('products.edit');
+        $this->$user->givePermissionTo('products.edit');
 
         Http::fake(['*' => Http::response([0 => ['path' => 'image.jpeg']])]);
-        $this->actingAs($this->user)->postJson('/media', [
+        $this->actingAs($this->$user)->postJson('/media', [
             'file' => UploadedFile::fake()->image('image.jpeg'),
         ])->assertCreated();
     }
@@ -96,36 +111,48 @@ class MediaTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testDeletePagesAdd(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeletePagesAdd($user): void
     {
-        $this->user->givePermissionTo('pages.add');
+        $this->$user->givePermissionTo('pages.add');
 
-        $response = $this->actingAs($this->user)->deleteJson('/media/id:' . $this->media->getKey());
+        $response = $this->actingAs($this->$user)->deleteJson('/media/id:' . $this->media->getKey());
         $response->assertNoContent();
         $this->assertDatabaseMissing('media', ['id' => $this->media->getKey()]);
     }
 
-    public function testDeletePagesEdit(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeletePagesEdit($user): void
     {
-        $this->user->givePermissionTo('pages.edit');
+        $this->$user->givePermissionTo('pages.edit');
 
-        $response = $this->actingAs($this->user)->deleteJson('/media/id:' . $this->media->getKey());
+        $response = $this->actingAs($this->$user)->deleteJson('/media/id:' . $this->media->getKey());
         $response->assertNoContent();
         $this->assertDatabaseMissing('media', ['id' => $this->media->getKey()]);
     }
 
-    public function testDeleteProductsAdd(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteProductsAdd($user): void
     {
-        $this->user->givePermissionTo('products.add');
+        $this->$user->givePermissionTo('products.add');
 
-        $response = $this->actingAs($this->user)->deleteJson('/media/id:' . $this->media->getKey());
+        $response = $this->actingAs($this->$user)->deleteJson('/media/id:' . $this->media->getKey());
         $response->assertNoContent();
         $this->assertDatabaseMissing('media', ['id' => $this->media->getKey()]);
     }
 
-    public function testDeleteFromProductUnauthorized(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteFromProductUnauthorized($user): void
     {
-        $this->user->givePermissionTo('products.add');
+        $this->$user->givePermissionTo('products.add');
 
         $product = Product::factory()->create();
         $media = Media::factory()->create([
@@ -133,13 +160,16 @@ class MediaTest extends TestCase
         ]);
         $product->media()->sync($media);
 
-        $this->actingAs($this->user)->deleteJson('/media/id:' . $media->getKey())
+        $this->actingAs($this->$user)->deleteJson('/media/id:' . $media->getKey())
             ->assertForbidden();
     }
 
-    public function testDeleteFromProduct(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteFromProduct($user): void
     {
-        $this->user->givePermissionTo('products.edit');
+        $this->$user->givePermissionTo('products.edit');
 
         $product = Product::factory()->create();
         $media = Media::factory()->create([
@@ -147,24 +177,28 @@ class MediaTest extends TestCase
         ]);
         $product->media()->sync($media);
 
-        $this->actingAs($this->user)->deleteJson('/media/id:' . $media->getKey())
+        $this->actingAs($this->$user)->deleteJson('/media/id:' . $media->getKey())
             ->assertNoContent();
         $this->assertDatabaseMissing('media', ['id' => $media->getKey()]);
     }
 
-    public function testUploadVideo(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUploadVideo($user): void
     {
-        $this->user->givePermissionTo('pages.add');
+        $this->$user->givePermissionTo('pages.add');
 
         Http::fake(['*' => Http::response([0 => ['path' => 'video.mp4']])]);
 
         $file = UploadedFile::fake()->image('video.mp4');
-        $response = $this->actingAs($this->user)->postJson('/media', [
+        $response = $this->actingAs($this->$user)->postJson('/media', [
             'file' => $file,
         ]);
 
         $response
             ->assertCreated()
+            ->assertJsonFragment(['type' => MediaType::VIDEO])
             ->assertJsonStructure(['data' => [
                 'id',
                 'type',
@@ -172,42 +206,54 @@ class MediaTest extends TestCase
             ]]);
     }
 
-    public function testUploadVideoPagesAdd(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUploadVideoPagesAdd($user): void
     {
-        $this->user->givePermissionTo('pages.add');
+        $this->$user->givePermissionTo('pages.add');
 
         Http::fake(['*' => Http::response([0 => ['path' => 'video.mp4']])]);
-        $this->actingAs($this->user)->postJson('/media', [
+        $this->actingAs($this->$user)->postJson('/media', [
             'file' => UploadedFile::fake()->image('video.mp4'),
         ])->assertCreated();
     }
 
-    public function testUploadVideoPagesEdit(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUploadVideoPagesEdit($user): void
     {
-        $this->user->givePermissionTo('pages.edit');
+        $this->$user->givePermissionTo('pages.edit');
 
         Http::fake(['*' => Http::response([0 => ['path' => 'video.mp4']])]);
-        $this->actingAs($this->user)->postJson('/media', [
+        $this->actingAs($this->$user)->postJson('/media', [
             'file' => UploadedFile::fake()->image('video.mp4'),
         ])->assertCreated();
     }
 
-    public function testUploadVideoProductsAdd(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUploadVideoProductsAdd($user): void
     {
-        $this->user->givePermissionTo('products.add');
+        $this->$user->givePermissionTo('products.add');
 
         Http::fake(['*' => Http::response([0 => ['path' => 'video.mp4']])]);
-        $this->actingAs($this->user)->postJson('/media', [
+        $this->actingAs($this->$user)->postJson('/media', [
             'file' => UploadedFile::fake()->image('video.mp4'),
         ])->assertCreated();
     }
 
-    public function testUploadVideoProductsEdit(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUploadVideoProductsEdit($user): void
     {
-        $this->user->givePermissionTo('products.edit');
+        $this->$user->givePermissionTo('products.edit');
 
         Http::fake(['*' => Http::response([0 => ['path' => 'video.mp4']])]);
-        $this->actingAs($this->user)->postJson('/media', [
+        $this->actingAs($this->$user)->postJson('/media', [
             'file' => UploadedFile::fake()->image('video.mp4'),
         ])->assertCreated();
     }

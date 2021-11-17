@@ -14,11 +14,6 @@ class MarkdownService implements MarkdownServiceContract
         $this->htmlConverter = new HtmlConverter(['strip_tags' => true]);
     }
 
-    public function toHtml(string $markdown): string
-    {
-        return parsedown($markdown);
-    }
-
     public function fromHtml(string $html): string
     {
         return $this->htmlConverter->convert($html);

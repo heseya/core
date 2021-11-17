@@ -108,7 +108,7 @@ class Discount extends Model implements AuditableContract
 
     public function getUsesAttribute(): int
     {
-        return $this->orders()->count();
+        return $this->orders->count();
     }
 
     public function orders(): BelongsToMany
