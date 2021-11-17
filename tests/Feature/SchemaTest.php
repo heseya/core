@@ -607,4 +607,80 @@ class SchemaTest extends TestCase
             $colors->getKey() => $red->getKey(),
         ]));
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithOptionPriceAndDisabledNull($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+        $schema = Schema::factory()->create();
+
+        $item = Item::factory()->create();
+        $item2 = Item::factory()->create();
+
+        $option = Option::factory()->create([
+            'name' => 'L',
+            'price' => 0,
+            'disabled' => false,
+            'schema_id' => $schema->getKey(),
+        ]);
+        $option->items()->sync([
+            $item->getKey(),
+            $item2->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->$user)->json('PATCH', '/schemas/id:' . $schema->getKey() , [
+            'name' => 'Test Updated',
+            'price' => 200,
+            'type' => 'select',
+            'description' => 'test test',
+            'hidden' => false,
+            'required' => false,
+            'default' => 0,
+            'options' => [
+                [
+                    'id' => $option->getKey(),
+                    'name' => 'L',
+                    'price' => null,
+                    'disabled' => null,
+                    'items' => [
+                        $item->getKey(),
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithOptionPriceAndDisabledNull($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+        $item = Item::factory()->create();
+
+        $response = $this->actingAs($this->$user)->postJson('/schemas', [
+            'name' => 'Test',
+            'type' => 'select',
+            'price' => 120,
+            'description' => 'test test',
+            'hidden' => false,
+            'required' => false,
+            'options' => [
+                [
+                    'name' => 'L',
+                    'price' => null,
+                    'disabled' => null,
+                    'items' => [
+                        $item->getKey(),
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(422);
+    }
 }
