@@ -175,7 +175,7 @@ class OrderTest extends TestCase
 
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $summaryPaid,
-            'payed' => true,
+            'paid' => true,
         ]));
 
         $response = $this->actingAs($this->$user)
@@ -197,7 +197,7 @@ class OrderTest extends TestCase
 
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $this->order->summary * 2,
-            'payed' => true,
+            'paid' => true,
         ]));
 
         $response = $this->actingAs($this->$user)
@@ -258,7 +258,7 @@ class OrderTest extends TestCase
 
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $summaryPaid,
-            'payed' => true,
+            'paid' => true,
         ]));
 
         $response = $this->actingAs($this->$user)
@@ -280,7 +280,7 @@ class OrderTest extends TestCase
 
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $this->order->summary / 2,
-            'payed' => true,
+            'paid' => true,
         ]));
 
         $response = $this->actingAs($this->$user)

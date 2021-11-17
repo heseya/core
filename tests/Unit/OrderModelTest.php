@@ -14,7 +14,7 @@ class OrderModelTest extends TestCase
 
         $order->payments()->save(Payment::factory()->make([
             'amount' => $order->summary * 2,
-            'payed' => true,
+            'paid' => true,
         ]));
 
         $this->assertTrue($order->isPaid());

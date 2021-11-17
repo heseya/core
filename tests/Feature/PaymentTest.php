@@ -98,7 +98,7 @@ class PaymentTest extends TestCase
     public function testPayuNotificationUnauthorized(): void
     {
         $payment = Payment::factory()->make([
-            'payed' => false,
+            'paid' => false,
         ]);
 
         $this->order->payments()->save($payment);
@@ -126,7 +126,7 @@ class PaymentTest extends TestCase
         $this->$user->givePermissionTo('payments.edit');
 
         $payment = Payment::factory()->make([
-            'payed' => false,
+            'paid' => false,
         ]);
 
         $this->order->payments()->save($payment);
@@ -147,7 +147,7 @@ class PaymentTest extends TestCase
         $response->assertOk();
         $this->assertDatabaseHas('payments', [
             'id' => $payment->getKey(),
-            'payed' => true,
+            'paid' => true,
         ]);
     }
 
@@ -187,7 +187,7 @@ class PaymentTest extends TestCase
         $this->assertDatabaseHas('payments', [
             'order_id' => $this->order->getKey(),
             'method' => 'offline',
-            'payed' => true,
+            'paid' => true,
             'amount' => $this->order->summary,
         ]);
 
@@ -207,7 +207,7 @@ class PaymentTest extends TestCase
         $this->order->payments()->create([
             'method' => 'payu',
             'amount' => 1,
-            'payed' => true,
+            'paid' => true,
         ]);
 
         $code = $this->order->code;
@@ -227,7 +227,7 @@ class PaymentTest extends TestCase
         $this->assertDatabaseHas('payments', [
             'order_id' => $this->order->getKey(),
             'method' => 'offline',
-            'payed' => true,
+            'paid' => true,
             'amount' => $amount,
         ]);
 
@@ -240,7 +240,7 @@ class PaymentTest extends TestCase
 //        Http::fake();
 //
 //        $payment = Payment::factory()->make([
-//            'payed' => false,
+//            'paid' => false,
 //        ]);
 //
 //        $this->order->payments()->save($payment);
@@ -254,7 +254,7 @@ class PaymentTest extends TestCase
 //        $response->assertOk();
 //        $this->assertDatabaseHas('payments', [
 //            'id' => $payment->getKey(),
-//            'payed' => true,
+//            'paid' => true,
 //        ]);
 //    }
 }

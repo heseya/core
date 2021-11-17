@@ -206,7 +206,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             $order->payments()->create([
                 'method' => $payment['name'],
                 'amount' => $payment['amount'],
-                'payed' => $payment['payed'],
+                'paid' => $payment['paid'],
                 'created_at' => $request->input('created_at'),
             ]);
         }

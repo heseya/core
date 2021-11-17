@@ -146,7 +146,7 @@ class Order extends Model implements AuditableContract
     public function getPaidAmountAttribute(): float
     {
         return $this->payments
-            ->where('payed', true)
+            ->where('paid', true)
             ->sum('amount');
     }
 
@@ -161,7 +161,7 @@ class Order extends Model implements AuditableContract
     {
         return $this
             ->hasMany(Payment::class)
-            ->orderBy('payed', 'DESC')
+            ->orderBy('paid', 'DESC')
             ->orderBy('updated_at', 'DESC');
     }
 
