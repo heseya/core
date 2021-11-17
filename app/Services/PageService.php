@@ -13,11 +13,9 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PageService implements PageServiceContract
 {
-    protected SeoMetadataServiceContract $seoMetadataService;
-
-    public function __construct(SeoMetadataServiceContract $seoMetadataService)
-    {
-        $this->seoMetadataService = $seoMetadataService;
+    public function __construct(
+        protected SeoMetadataServiceContract $seoMetadataService,
+    ) {
     }
 
     public function authorize(Page $page): void
