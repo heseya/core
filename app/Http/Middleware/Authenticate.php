@@ -2,33 +2,45 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\TokenType;
 use App\Models\App;
+use App\Services\Contracts\AuthServiceContract;
 use Closure;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\App as AppFacade;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 
 class Authenticate extends Middleware
 {
     /**
+     * @throws AuthenticationException
      */
     public function handle($request, Closure $next, ...$guards): mixed
     {
-        if (
-            $request->hasHeader('x-app-id') &&
-            $request->hasHeader('x-app-key') &&
-            $this->authenticateApp($request->header('x-app-id'), $request->header('x-app-key'))
-        ) {
-            return $next($request);
+        if (!Auth::check()) {
+            if ($request->hasHeader('Authorization')) {
+                Config::set('auth.providers.users.model', App::class);
+                Auth::forgetGuards();
+
+                if (!Auth::check()) {
+                    throw new AuthenticationException();
+                }
+            } else {
+                /** @var AuthServiceContract $authService */
+                $authService = AppFacade::make(AuthServiceContract::class);
+
+                Auth::claims(['typ' => TokenType::ACCESS])
+                    ->login($authService->unauthenticatedUser());
+            }
         }
 
-        return parent::handle($request, $next, ...$guards);
-    }
+        if (Auth::getClaim('typ') !== TokenType::ACCESS) {
+            throw new AuthenticationException();
+        }
 
-    protected function authenticateApp(string $id, string $key): bool
-    {
-        $app = App::findOrFail($id);
-
-        return $app && Hash::check($key, $app->key);
+        return $next($request);
     }
 
     /**

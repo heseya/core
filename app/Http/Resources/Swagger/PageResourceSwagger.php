@@ -49,12 +49,6 @@ interface PageResourceSwagger
      *     example="<h1>Lorem ipsum dolor sit amet</h1>",
      *   ),
      *   @OA\Property(
-     *     property="content_md",
-     *     type="string",
-     *     example="# Lorem ipsum dolor sit amet",
-     *     description="MD formated content for compatibility reasons",
-     *   ),
-     *   @OA\Property(
      *     property="meta_description",
      *     type="string",
      *     example="Lorem ipsum dolor sit amet",

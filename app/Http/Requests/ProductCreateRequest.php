@@ -27,16 +27,6 @@ use Illuminate\Foundation\Http\FormRequest;
  *       type="number",
  *     ),
  *     @OA\Property(
- *       property="brand_id",
- *       type="string",
- *       example="0006c3a0-21af-4485-b7fe-9c42233cf03a",
- *     ),
- *     @OA\Property(
- *       property="category_id",
- *       type="string",
- *       example="0006c3a0-21af-4485-b7fe-9c42233cf03a",
- *     ),
- *     @OA\Property(
  *       property="description_html",
  *       type="string",
  *     ),
@@ -86,9 +76,7 @@ class ProductCreateRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'unique:products', 'alpha_dash'],
-            'price' => ['required', 'numeric'],
-            'brand_id' => ['nullable', 'uuid', 'exists:product_sets,id'],
-            'category_id' => ['nullable', 'uuid', 'exists:product_sets,id'],
+            'price' => ['required', 'numeric', 'min:0'],
             'description_html' => ['nullable', 'string'],
             'public' => ['required', 'boolean'],
             'quantity_step' => ['numeric'],

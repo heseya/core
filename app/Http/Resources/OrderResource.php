@@ -14,13 +14,14 @@ class OrderResource extends Resource
             'email' => $this->email,
             'currency' => $this->currency,
             'summary' => $this->summary,
-            'summary_payed' => $this->payed,
+            'summary_paid' => $this->paid_amount,
             'shipping_price' => $this->shipping_price,
             'payed' => $this->isPayed(),
             'comment' => $this->comment,
             'created_at' => $this->created_at,
             'status' => $this->status ? StatusResource::make($this->status) : null,
             'delivery_address' => $this->deliveryAddress ? AddressResource::make($this->deliveryAddress) : null,
+            'shipping_method' => $this->shippingMethod ? ShippingMethodResource::make($this->shippingMethod) : null,
         ];
     }
 

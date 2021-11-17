@@ -31,14 +31,20 @@ class PackageTemplateTest extends TestCase
         ];
     }
 
-    public function testIndex(): void
+    public function testIndexUnauthorized(): void
     {
         $response = $this->postJson('/package-templates');
-        $response->assertUnauthorized();
+        $response->assertForbidden();
+    }
 
-        Passport::actingAs($this->user);
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
+    {
+        $this->$user->givePermissionTo('packages.show');
 
-        $response = $this->getJson('/package-templates');
+        $response = $this->actingAs($this->$user)->getJson('/package-templates');
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -46,12 +52,18 @@ class PackageTemplateTest extends TestCase
             ]]);
     }
 
-    public function testCreate(): void
+    public function testCreateUnauthorized(): void
     {
         $response = $this->postJson('/package-templates');
-        $response->assertUnauthorized();
+        $response->assertForbidden();
+    }
 
-        Passport::actingAs($this->user);
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreate($user): void
+    {
+        $this->$user->givePermissionTo('packages.add');
 
         $package = [
             'name' => 'Small package',
@@ -61,7 +73,7 @@ class PackageTemplateTest extends TestCase
             'depth' => 2,
         ];
 
-        $response = $this->postJson('/package-templates', $package);
+        $response = $this->actingAs($this->$user)->postJson('/package-templates', $package);
         $response
             ->assertCreated()
             ->assertJson(['data' => $package]);
@@ -69,12 +81,18 @@ class PackageTemplateTest extends TestCase
         $this->assertDatabaseHas('package_templates', $package);
     }
 
-    public function testUpdate(): void
+    public function testUpdateUnauthorized(): void
     {
         $response = $this->patchJson('/package-templates/id:' . $this->package->getKey());
-        $response->assertUnauthorized();
+        $response->assertForbidden();
+    }
 
-        Passport::actingAs($this->user);
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdate($user): void
+    {
+        $this->$user->givePermissionTo('packages.edit');
 
         $package = [
             'name' => 'PackageTemplate big',
@@ -84,7 +102,7 @@ class PackageTemplateTest extends TestCase
             'depth' => 20,
         ];
 
-        $response = $this->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/package-templates/id:' . $this->package->getKey(),
             $package,
         );
@@ -93,18 +111,27 @@ class PackageTemplateTest extends TestCase
             ->assertOk()
             ->assertJson(['data' => $package]);
 
-        $this->assertDatabaseHas('package_templates', $package + ['id' => $this->package->getKey()]);
+        $this->assertDatabaseHas('package_templates', $package + [
+            'id' => $this->package->getKey(),
+        ]);
     }
 
-    public function testDelete(): void
+    public function testDeleteUnauthorized(): void
     {
         $response = $this->deleteJson('/package-templates/id:' . $this->package->getKey());
-        $response->assertUnauthorized();
+        $response->assertForbidden();
         $this->assertDatabaseHas('package_templates', $this->package->toArray());
+    }
 
-        Passport::actingAs($this->user);
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDelete($user): void
+    {
+        $this->$user->givePermissionTo('packages.remove');
 
-        $response = $this->deleteJson('/package-templates/id:' . $this->package->getKey());
+        $response = $this->actingAs($this->$user)
+            ->deleteJson('/package-templates/id:' . $this->package->getKey());
         $response->assertNoContent();
         $this->assertDeleted($this->package);
     }

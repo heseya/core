@@ -174,14 +174,6 @@ interface PageControllerSwagger
      *   path="/pages/reorder",
      *   summary="change pages order",
      *   tags={"Pages"},
-     *   @OA\Parameter(
-     *     name="order",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(
-     *       type="string",
-     *     ),
-     *   ),
      *   @OA\RequestBody(
      *     ref="#/components/requestBodies/PageReorder",
      *   ),

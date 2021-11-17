@@ -22,10 +22,13 @@ use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use App\Models\User;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Throwable;
 
 class OrderController extends Controller implements OrderControllerSwagger
@@ -42,10 +45,11 @@ class OrderController extends Controller implements OrderControllerSwagger
     public function index(OrderIndexRequest $request): JsonResource
     {
         $query = Order::search($request->validated())
-            ->sort($request->input('sort'));
+            ->sort($request->input('sort'))
+            ->with(['products', 'discounts', 'payments']);
 
         return OrderResource::collection(
-            $query->paginate((int) $request->input('limit', 15)),
+            $query->paginate(Config::get('pagination.per_page')),
         );
     }
 
@@ -80,6 +84,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             'status_id' => Status::select('id')->orderBy('order')->first()->getKey(),
             'delivery_address_id' => $deliveryAddress->getKey(),
             'invoice_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
+            'user_id' => Auth::user() instanceof User ? Auth::user()->getKey() : null,
         ]);
 
         try {

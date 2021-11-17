@@ -8,6 +8,7 @@ use App\Http\Resources\TagResource;
 use App\Models\Tag;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 
 class TagController extends Controller
@@ -17,7 +18,7 @@ class TagController extends Controller
         $tags = Tag::search($request->validated())
             ->withCount('products')
             ->orderBy('products_count', 'DESC')
-            ->paginate((int) $request->input('limit', 12));
+            ->paginate(Config::get('pagination.per_page'));
 
         return TagResource::collection($tags);
     }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\MediaType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -13,10 +14,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Media extends Model
 {
     use HasFactory;
-
-    public const OTHER = 0;
-    public const PHOTO = 1;
-    public const VIDEO = 2;
 
     /**
      * The table associated with the model.
@@ -53,6 +50,7 @@ class Media extends Model
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'type' => MediaType::class,
     ];
 
     public function products(): BelongsToMany

@@ -2,41 +2,30 @@
 
 namespace Tests\Feature;
 
-use App\Models\ProductSet;
 use App\Models\Product;
+use App\Models\ProductSet;
 use App\Models\Schema;
-use App\Services\Contracts\MarkdownServiceContract;
+use App\Services\Contracts\ProductServiceContract;
+use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
 class ProductTest extends TestCase
 {
     private Product $product;
-
-    private array $hidden_products;
+    private Product $hidden_product;
 
     private array $expected;
     private array $expected_short;
 
-    private MarkdownServiceContract $markdownService;
+    private ProductServiceContract $productService;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->markdownService = app(MarkdownServiceContract::class);
-
-        $brand = ProductSet::factory()->create([
-            'public' => true,
-            'hide_on_index' => false,
-        ]);
-        $category = ProductSet::factory()->create([
-            'public' => true,
-            'hide_on_index' => false,
-        ]);
+        $this->productService = App::make(ProductServiceContract::class);
 
         $this->product = Product::factory()->create([
-            'brand_id' => $brand->getKey(),
-            'category_id' => $category->getKey(),
             'public' => true,
             'order' => 1,
         ]);
@@ -76,62 +65,9 @@ class ProductTest extends TestCase
             'quantity' => 10,
         ]);
 
-        // Hidden
-        $brand_hidden = ProductSet::factory()->create(['public' => false]);
-        $category_hidden = ProductSet::factory()->create(['public' => false]);
-
-        $this->hidden_products = [
-            Product::factory()->create([
-                'brand_id' => $brand->getKey(),
-                'category_id' => $category->getKey(),
-                'public' => false,
-            ]),
-            Product::factory()->create([
-                'brand_id' => $brand_hidden->getKey(),
-                'category_id' => $category->getKey(),
-                'public' => true,
-            ]),
-            Product::factory()->create([
-                'brand_id' => $brand->getKey(),
-                'category_id' => $category_hidden->getKey(),
-                'public' => true,
-            ]),
-            Product::factory()->create([
-                'brand_id' => $brand_hidden->getKey(),
-                'category_id' => $category_hidden->getKey(),
-                'public' => true,
-            ]),
-            Product::factory()->create([
-                'brand_id' => $brand_hidden->getKey(),
-                'category_id' => $category->getKey(),
-                'public' => false,
-            ]),
-            Product::factory()->create([
-                'brand_id' => $brand->getKey(),
-                'category_id' => $category_hidden->getKey(),
-                'public' => false,
-            ]),
-            Product::factory()->create([
-                'brand_id' => $brand_hidden->getKey(),
-                'category_id' => $category_hidden->getKey(),
-                'public' => false,
-            ]),
-            Product::factory()->create([
-                'brand_id' => null,
-                'category_id' => $category->getKey(),
-                'public' => false,
-            ]),
-            Product::factory()->create([
-                'brand_id' => $brand->getKey(),
-                'category_id' => null,
-                'public' => false,
-            ]),
-            Product::factory()->create([
-                'brand_id' => null,
-                'category_id' => null,
-                'public' => false,
-            ]),
-        ];
+        $this->hidden_product = Product::factory()->create([
+            'public' => false,
+        ]);
 
         /**
          * Expected short response
@@ -144,18 +80,6 @@ class ProductTest extends TestCase
             'visible' => $this->product->isPublic(),
             'public' => (bool) $this->product->public,
             'available' => true,
-            'brand' => [
-                'id' => $this->product->brand->getKey(),
-                'name' => $this->product->brand->name,
-                'slug' => $this->product->brand->slug,
-                'public' => (bool) $this->product->brand->public,
-            ],
-            'category' => [
-                'id' => $this->product->category->getKey(),
-                'name' => $this->product->category->name,
-                'slug' => $this->product->category->slug,
-                'public' => (bool) $this->product->category->public,
-            ],
             'cover' => null,
         ];
 
@@ -163,7 +87,6 @@ class ProductTest extends TestCase
          * Expected full response
          */
         $this->expected = array_merge($this->expected_short, [
-            'description_md' => $this->markdownService->fromHtml($this->product->description_html),
             'description_html' => $this->product->description_html,
             'meta_description' => strip_tags($this->product->description_html),
             'gallery' => [],
@@ -199,35 +122,120 @@ class ProductTest extends TestCase
         ]);
     }
 
-    public function testIndex(): void
+    public function testIndexUnauthorized(): void
     {
-        $response = $this->getJson('/products');
+        $this->getJson('/products')->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $response = $this->actingAs($this->$user)->getJson('/products?limit=100');
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public products.
             ->assertJson(['data' => [
                 0 => $this->expected_short,
             ]]);
+
+        $this->assertQueryCountLessThan(15);
     }
 
-    public function testIndexAdmin(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexHidden($user): void
     {
-        $response = $this->actingAs($this->user)->getJson('/products');
+        $this->$user->givePermissionTo(['products.show', 'products.show_hidden']);
+
+        $response = $this->actingAs($this->$user)->getJson('/products');
         $response
             ->assertOk()
-            ->assertJsonCount(count($this->hidden_products) + 1, 'data'); // Should show all products.
+            ->assertJsonCount(2, 'data'); // Should show all products.
     }
 
-    public function testShow(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexPerformance($user): void
     {
-        $response = $this->getJson('/products/' . $this->product->slug);
+        $this->$user->givePermissionTo('products.show');
+
+        Product::factory()->count(499)->create([
+            'public' => true,
+            'order' => 1,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/products?limit=500')
+            ->assertOk()
+            ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(15);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexFullPerformance($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        Product::factory()->count(499)->create([
+            'public' => true,
+            'order' => 1,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/products?limit=500&full')
+            ->assertOk()
+            ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(20);
+    }
+
+    public function testShowUnauthorized(): void
+    {
+        $this->getJson('/products/' . $this->product->slug)
+            ->assertForbidden();
+
+        $this->getJson('/products/id:' . $this->product->getKey())
+            ->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShow($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/' . $this->product->slug);
+        $response
+            ->assertOk()
+            ->assertJson(['data' => $this->expected]);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $this->product->getKey());
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
     }
 
-    public function testShowSets(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowSets($user): void
     {
+        $this->$user->givePermissionTo('products.show_details');
+
         $product = Product::factory()->create([
             'public' => true,
         ]);
@@ -241,7 +249,8 @@ class ProductTest extends TestCase
 
         $product->sets()->sync([$set1->getKey(), $set2->getKey()]);
 
-        $response = $this->getJson('/products/' . $product->slug);
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/' . $product->slug);
         $response
             ->assertOk()
             ->assertJsonFragment(['sets' => [
@@ -272,45 +281,54 @@ class ProductTest extends TestCase
             ]]);
     }
 
-    public function testShowAdminUnauthorized(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowHiddenUnauthorized($user): void
     {
-        $response = $this->getJson('/products/id:' . $this->product->getKey());
-        $response->assertUnauthorized();
+        $this->$user->givePermissionTo('products.show_details');
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/' . $this->hidden_product->slug);
+        $response->assertNotFound();
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $this->hidden_product->getKey());
+        $response->assertNotFound();
     }
 
-    public function testShowAdmin(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowHidden($user): void
     {
-        $response = $this->actingAs($this->user)->getJson('/products/id:' . $this->product->getKey());
-        $response
-            ->assertOk()
-            ->assertJson(['data' => $this->expected]);
+        $this->$user->givePermissionTo(['products.show_details', 'products.show_hidden']);
 
-        $response = $this->getJson('/products/id:' . $this->hidden_products[0]->getKey());
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/' . $this->hidden_product->slug);
         $response->assertOk();
-    }
 
-    public function testShowHidden(): void
-    {
-        foreach ($this->hidden_products as $product) {
-            $response = $this->getJson('/products/' . $product->slug);
-            $response->assertNotFound();
-        }
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $this->hidden_product->getKey());
+        $response->assertOk();
     }
 
     public function testCreateUnauthorized(): void
     {
-        $response = $this->postJson('/products');
-        $response->assertUnauthorized();
+        $this->postJson('/products')->assertForbidden();
     }
 
-    public function testCreate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreate($user): void
     {
-        $response = $this->actingAs($this->user)->postJson('/products', [
+        $this->$user->givePermissionTo('products.add');
+
+        $response = $this->actingAs($this->$user)->postJson('/products', [
             'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
             'description_html' => '<h1>Description</h1>',
             'public' => true,
         ]);
@@ -322,20 +340,7 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
-                'description_md' => $this->markdownService->fromHtml('<h1>Description</h1>'),
                 'description_html' => '<h1>Description</h1>',
-                'brand' => [
-                    'id' => $this->product->brand->getKey(),
-                    'name' => $this->product->brand->name,
-                    'slug' => $this->product->brand->slug,
-                    'public' => (bool) $this->product->brand->public,
-                ],
-                'category' => [
-                    'id' => $this->product->category->getKey(),
-                    'name' => $this->product->category->name,
-                    'slug' => $this->product->category->slug,
-                    'public' => (bool) $this->product->category->public,
-                ],
                 'cover' => null,
                 'gallery' => [],
             ]]);
@@ -346,21 +351,58 @@ class ProductTest extends TestCase
             'price' => 100,
             'public' => true,
             'description_html' => '<h1>Description</h1>',
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
         ]);
     }
 
-    public function testCreateWithSchemas(): void
+    public function testCreateWithZeroPrice(): void
     {
+        $this->user->givePermissionTo('products.add');
+
+        $this
+            ->actingAs($this->user)
+            ->postJson('/products', [
+                'name' => 'Test',
+                'slug' => 'test',
+                'price' => 0,
+                'public' => true,
+            ])
+            ->assertCreated();
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 0,
+        ]);
+    }
+
+    public function testCreateWithNegativePrice(): void
+    {
+        $this->user->givePermissionTo('products.add');
+
+        $this
+            ->actingAs($this->user)
+            ->postJson('/products', [
+                'name' => 'Test',
+                'slug' => 'test',
+                'price' => -100,
+                'public' => true,
+            ])
+            ->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithSchemas($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
         $schema = Schema::factory()->create();
 
-        $response = $this->actingAs($this->user)->postJson('/products', [
+        $response = $this->actingAs($this->$user)->postJson('/products', [
             'name' => 'Test',
             'slug' => 'test',
             'price' => 150,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
             'public' => false,
             'schemas' => [
                 $schema->getKey(),
@@ -376,8 +418,6 @@ class ProductTest extends TestCase
             'price' => 150,
             'public' => false,
             'description_html' => null,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
         ]);
 
         $this->assertDatabaseHas('product_schemas', [
@@ -386,17 +426,20 @@ class ProductTest extends TestCase
         ]);
     }
 
-    public function testCreateWithSets(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithSets($user): void
     {
+        $this->$user->givePermissionTo('products.add');
+
         $set1 = ProductSet::factory()->create();
         $set2 = ProductSet::factory()->create();
 
-        $response = $this->actingAs($this->user)->postJson('/products', [
+        $response = $this->actingAs($this->$user)->postJson('/products', [
             'name' => 'Test',
             'slug' => 'test',
             'price' => 150,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
             'public' => false,
             'sets' => [
                 $set1->getKey(),
@@ -413,8 +456,6 @@ class ProductTest extends TestCase
             'price' => 150,
             'public' => false,
             'description_html' => null,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
         ]);
 
         $this->assertDatabaseHas('product_set_product', [
@@ -428,20 +469,62 @@ class ProductTest extends TestCase
         ]);
     }
 
-    public function testUpdateUnauthorized(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateMinMaxPrice($user): void
     {
-        $response = $this->patchJson('/products/id:' . $this->product->getKey());
-        $response->assertUnauthorized();
+        $this->$user->givePermissionTo('products.add');
+
+        $schemaPrice = 50;
+        $schema = Schema::factory()->create([
+            'type' => 0,
+            'required' => false,
+            'price' => $schemaPrice,
+        ]);
+
+        $productPrice = 150;
+        $response = $this->actingAs($this->$user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => $productPrice,
+            'public' => false,
+            'sets' => [],
+            'schemas' => [
+                $schema->getKey(),
+            ],
+        ]);
+
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => $productPrice,
+            'price_min' => $productPrice,
+            'price_max' => $productPrice + $schemaPrice,
+            'public' => false,
+            'description_html' => null,
+        ]);
     }
 
-    public function testUpdate(): void
+    public function testUpdateUnauthorized(): void
     {
-        $response = $this->actingAs($this->user)->patchJson('/products/id:' . $this->product->getKey(), [
+        $this->patchJson('/products/id:' . $this->product->getKey())
+            ->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdate($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'Updated',
             'slug' => 'updated',
             'price' => 150,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
             'description_html' => '<h1>New description</h1>',
             'public' => false,
         ]);
@@ -453,15 +536,18 @@ class ProductTest extends TestCase
             'name' => 'Updated',
             'slug' => 'updated',
             'price' => 150,
-            'brand_id' => $this->product->brand->getKey(),
-            'category_id' => $this->product->category->getKey(),
             'description_html' => '<h1>New description</h1>',
             'public' => false,
         ]);
     }
 
-    public function testUpdateChangeSets(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateChangeSets($user): void
     {
+        $this->$user->givePermissionTo('products.edit');
+
         $product = Product::factory()->create();
 
         $set1 = ProductSet::factory()->create();
@@ -470,7 +556,7 @@ class ProductTest extends TestCase
 
         $product->sets()->sync([$set1->getKey(), $set2->getKey()]);
 
-        $response = $this->actingAs($this->user)->patchJson('/products/id:' . $product->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $product->getKey(), [
             'name' => $product->name,
             'slug' => $product->slug,
             'price' => $product->price,
@@ -499,8 +585,13 @@ class ProductTest extends TestCase
         ]);
     }
 
-    public function testUpdateDeleteSets(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateDeleteSets($user): void
     {
+        $this->$user->givePermissionTo('products.edit');
+
         $product = Product::factory()->create();
 
         $set1 = ProductSet::factory()->create();
@@ -508,7 +599,7 @@ class ProductTest extends TestCase
 
         $product->sets()->sync([$set1->getKey(), $set2->getKey()]);
 
-        $response = $this->actingAs($this->user)->patchJson('/products/id:' . $product->getKey(), [
+        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $product->getKey(), [
             'name' => $product->name,
             'slug' => $product->slug,
             'price' => $product->price,
@@ -523,16 +614,155 @@ class ProductTest extends TestCase
         ]);
     }
 
-    public function testDeleteUnauthorized(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateMinMaxPrice($user): void
     {
-        $response = $this->deleteJson('/products/id:' . $this->product->getKey());
-        $response->assertUnauthorized();
+        $this->$user->givePermissionTo('products.edit');
+
+        $productPrice = 150;
+        $product = Product::factory()->create([
+            'price' => $productPrice,
+        ]);
+
+        $schemaPrice = 50;
+        $schema = Schema::factory()->create([
+            'type' => 0,
+            'required' => false,
+            'price' => $schemaPrice,
+        ]);
+
+        $product->schemas()->attach($schema->getKey());
+        $this->productService->updateMinMaxPrices($product);
+
+        $productNewPrice = 250;
+        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $product->getKey(), [
+            'name' => $product->name,
+            'slug' => $product->slug,
+            'price' => $product->price,
+            'public' => $product->public,
+            'price' => $productNewPrice,
+            'sets' => [],
+            'schemas' => [
+                $schema->getKey(),
+            ],
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            $product->getKeyName() => $product->getKey(),
+            'price' => $productNewPrice,
+            'price_min' => $productNewPrice,
+            'price_max' => $productNewPrice + $schemaPrice,
+        ]);
     }
 
-    public function testDelete(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSchemaMinMaxPrice($user): void
     {
-        $response = $this->actingAs($this->user)->deleteJson('/products/id:' . $this->product->getKey());
+        $this->$user->givePermissionTo('products.edit');
+
+        $productPrice = 150;
+        $product = Product::factory()->create([
+            'price' => $productPrice,
+        ]);
+
+        $schemaPrice = 50;
+        $schema = Schema::factory()->create([
+            'type' => 0,
+            'required' => true,
+            'price' => $schemaPrice,
+        ]);
+
+        $product->schemas()->attach($schema->getKey());
+        $this->productService->updateMinMaxPrices($product);
+
+        $schemaNewPrice = 75;
+        $response = $this->actingAs($this->$user)->patchJson('/schemas/id:' . $schema->getKey() , [
+            'name' => 'Test Updated',
+            'price' => $schemaNewPrice,
+            'type' => 'string',
+            'required' => false,
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            $product->getKeyName() => $product->getKey(),
+            'price' => $productPrice,
+            'price_min' => $productPrice,
+            'price_max' => $productPrice + $schemaNewPrice,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteSchemaMinMaxPrice($user): void
+    {
+        $this->$user->givePermissionTo('schemas.remove');
+
+        $productPrice = 150;
+        $product = Product::factory()->create([
+            'price' => $productPrice,
+        ]);
+
+        $schemaPrice = 50;
+        $schema = Schema::factory()->create([
+            'type' => 0,
+            'required' => true,
+            'price' => $schemaPrice,
+        ]);
+
+        $product->schemas()->attach($schema->getKey());
+        $this->productService->updateMinMaxPrices($product);
+
+        $response = $this->actingAs($this->$user)->deleteJson('/schemas/id:' . $schema->getKey());
+
+        $response->assertNoContent();
+
+        $this->assertDatabaseHas('products', [
+            $product->getKeyName() => $product->getKey(),
+            'price' => $productPrice,
+            'price_min' => $productPrice,
+            'price_max' => $productPrice,
+        ]);
+    }
+
+    public function testDeleteUnauthorized(): void
+    {
+        $this->deleteJson('/products/id:' . $this->product->getKey())
+            ->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDelete($user): void
+    {
+        $this->$user->givePermissionTo('products.remove');
+
+        $response = $this->actingAs($this->$user)
+            ->deleteJson('/products/id:' . $this->product->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($this->product);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSetsDefaultAsArray($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $response = $this->actingAs($this->$user)->json('GET', '/products?full=1&sets=');
+        $response
+            ->assertOk()
+            ->assertJsonCount(0, 'data')
+            ->assertJson(['data' => []]);
     }
 }

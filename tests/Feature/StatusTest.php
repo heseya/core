@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Status;
-use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class StatusTest extends TestCase
@@ -33,26 +32,38 @@ class StatusTest extends TestCase
         ];
     }
 
-    public function testIndex(): void
+    public function testIndexUnauthorized(): void
     {
         $response = $this->getJson('/statuses');
-        $response->assertUnauthorized();
+        $response->assertForbidden();
+    }
 
-        Passport::actingAs($this->user);
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
+    {
+        $this->$user->givePermissionTo('statuses.show');
 
-        $response = $this->getJson('/statuses');
+        $response = $this->actingAs($this->$user)->getJson('/statuses');
         $response
             ->assertOk()
             ->assertJsonCount(4, 'data') // domyślne statusy z migracji + ten utworzony teraz
             ->assertJsonFragment([$this->expected]);
     }
 
-    public function testCreate(): void
+    public function testCreateUnauthorized(): void
     {
         $response = $this->postJson('/statuses');
-        $response->assertUnauthorized();
+        $response->assertForbidden();
+    }
 
-        Passport::actingAs($this->user);
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreate($user): void
+    {
+        $this->$user->givePermissionTo('statuses.add');
 
         $status = [
             'name' => 'Test Status',
@@ -60,7 +71,7 @@ class StatusTest extends TestCase
             'description' => 'To jest status testowy.',
         ];
 
-        $response = $this->postJson('/statuses', $status);
+        $response = $this->actingAs($this->$user)->postJson('/statuses', $status);
         $response
             ->assertCreated()
             ->assertJson(['data' => $status]);
@@ -68,12 +79,18 @@ class StatusTest extends TestCase
         $this->assertDatabaseHas('statuses', $status);
     }
 
-    public function testUpdate(): void
+    public function testUpdateUnauthorized(): void
     {
         $response = $this->patchJson('/statuses/id:' . $this->status_model->getKey());
-        $response->assertUnauthorized();
+        $response->assertForbidden();
+    }
 
-        Passport::actingAs($this->user);
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdate($user): void
+    {
+        $this->$user->givePermissionTo('statuses.edit');
 
         $status = [
             'name' => 'Test Status 2',
@@ -81,7 +98,7 @@ class StatusTest extends TestCase
             'description' => 'Testowy opis testowego statusu 2.',
         ];
 
-        $response = $this->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/statuses/id:' . $this->status_model->getKey(),
             $status,
         );
@@ -92,16 +109,79 @@ class StatusTest extends TestCase
         $this->assertDatabaseHas('statuses', $status + ['id' => $this->status_model->getKey()]);
     }
 
-    public function testDelete(): void
+    public function testDeleteUnauthorized(): void
     {
-        $response = $this->deleteJson('/statuses/id:' . $this->status_model->getKey());
-        $response->assertUnauthorized();
+        $this->deleteJson('/statuses/id:' . $this->status_model->getKey())
+            ->assertForbidden();
+
         $this->assertDatabaseHas('statuses', ['id' => $this->status_model->getKey()]);
+    }
 
-        Passport::actingAs($this->user);
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDelete($user): void
+    {
+        $this->$user->givePermissionTo('statuses.remove');
 
-        $response = $this->deleteJson('/statuses/id:' . $this->status_model->getKey());
-        $response->assertNoContent();
+        $this->actingAs($this->$user)
+            ->deleteJson('/statuses/id:' . $this->status_model->getKey())
+            ->assertNoContent();
+
         $this->assertDeleted($this->status_model);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testReorderUnauthorized($user): void
+    {
+        $status1 = Status::factory()->create();
+        $status2 = Status::factory()->create();
+        $status3 = Status::factory()->create();
+
+        $this->actingAs($this->$user)->json('POST', '/statuses/reorder', [
+            'statuses' => [
+                $status2->getKey(),
+                $status3->getKey(),
+                $status1->getKey(),
+            ]
+        ])->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testReorder($user): void
+    {
+        $this->$user->givePermissionTo('statuses.edit');
+
+        $status1 = Status::factory()->create();
+        $status2 = Status::factory()->create();
+        $status3 = Status::factory()->create();
+
+        $response = $this->actingAs($this->$user)->json('POST', '/statuses/reorder', [
+           'statuses' => [
+               $status2->getKey(),
+               $status3->getKey(),
+               $status1->getKey(),
+           ]
+        ]);
+        $response->assertNoContent();
+
+        $this->assertDatabaseHas('statuses', [
+            'id' => $status2->getKey(),
+            'order' => 0,
+        ]);
+
+        $this->assertDatabaseHas('statuses', [
+            'id' => $status3->getKey(),
+            'order' => 1,
+        ]);
+
+        $this->assertDatabaseHas('statuses', [
+            'id' => $status1->getKey(),
+            'order' => 2,
+        ]);
     }
 }

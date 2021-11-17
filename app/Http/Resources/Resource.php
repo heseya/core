@@ -2,18 +2,25 @@
 
 namespace App\Http\Resources;
 
+use Heseya\Resource\JsonResource;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\App;
 
 class Resource extends JsonResource
 {
+    public static function collection($resource)
+    {
+        return tap(new ResourceCollection($resource, static::class), function ($collection) {
+            if (property_exists(static::class, 'preserveKeys')) {
+                $collection->preserveKeys = (new static([]))->preserveKeys === true;
+            }
+        });
+    }
+
     /**
      * Get any additional data that should be returned with the resource array.
      *
      * @param Request $request
-     *
-     * @return array
      */
     public function with($request): array
     {
@@ -29,54 +36,5 @@ class Resource extends JsonResource
                 ],
             ],
         ];
-    }
-
-    public function base(Request $request): array
-    {
-        return [];
-    }
-
-    public function view(Request $request): array
-    {
-        return [];
-    }
-
-    public function index(Request $request): array
-    {
-        return [];
-    }
-
-    /**
-     * Transform the resource into an array.
-     *
-     * @param Request $request
-     * @param bool $index
-     *
-     * @return array
-     */
-    public function toArray($request, bool $index = false): array
-    {
-        if ($index) {
-            return array_merge(
-                $this->base($request),
-                $this->index($request),
-            );
-        }
-
-        return array_merge(
-            $this->base($request),
-            $this->view($request),
-        );
-    }
-
-    /**
-     * Create new resource collection.
-     *
-     * @param mixed $resource
-     * @param bool $full
-     */
-    public static function collection($resource, bool $full = false): Collection
-    {
-        return new Collection($resource, static::class, $full);
     }
 }

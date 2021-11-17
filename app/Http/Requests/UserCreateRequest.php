@@ -25,6 +25,15 @@ use Illuminate\Validation\Rules\Password;
  *       type="string",
  *       example="123@@#abYZ",
  *     ),
+ *     @OA\Property(
+ *       property="roles",
+ *       type="array",
+ *       description="Ids of assigned roles",
+ *       @OA\Items(
+ *         type="string",
+ *         example="026bc5f6-8373-4aeb-972e-e78d72a67121",
+ *       ),
+ *     ),
  *   )
  * )
  */
@@ -34,8 +43,15 @@ class UserCreateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->where('email', $this->email)],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users')->whereNull('deleted_at'),
+            ],
             'password' => ['required', 'string', 'max:255', Password::defaults()],
+            'roles' => ['array'],
+            'roles.*' => ['uuid', 'exists:roles,id'],
         ];
     }
 }

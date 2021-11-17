@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\ShippingMethodDto;
 use App\Http\Controllers\Swagger\ShippingMethodControllerSwagger;
 use App\Http\Requests\ShippingMethodIndexRequest;
 use App\Http\Requests\ShippingMethodReorderRequest;
@@ -27,7 +28,7 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
     {
         $shippingMethods = $this->shippingMethodServiceContract->index(
             $request->input('country'),
-            $request->input('cart_value', 0)
+            $request->input('cart_value', 0),
         );
 
         return ShippingMethodResource::collection($shippingMethods);
@@ -35,14 +36,19 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
 
     public function store(ShippingMethodStoreRequest $request): JsonResource
     {
-        $shippingMethod = $this->shippingMethodServiceContract->store($request);
+        $shippingMethod = $this->shippingMethodServiceContract->store(
+            ShippingMethodDto::instantiateFromRequest($request),
+        );
 
         return ShippingMethodResource::make($shippingMethod);
     }
 
     public function update(ShippingMethodUpdateRequest $request, ShippingMethod $shippingMethod): JsonResource
     {
-        $shippingMethod = $this->shippingMethodServiceContract->update($request, $shippingMethod);
+        $shippingMethod = $this->shippingMethodServiceContract->update(
+            $shippingMethod,
+            ShippingMethodDto::instantiateFromRequest($request),
+        );
 
         return ShippingMethodResource::make($shippingMethod);
     }

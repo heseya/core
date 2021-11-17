@@ -3,14 +3,14 @@
 namespace App\Services\Contracts;
 
 use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
-use Laravel\Passport\PersonalAccessTokenResult;
 
 interface AuthServiceContract
 {
-    public function login(string $email, string $password, ?string $ip, ?string $userAgent): PersonalAccessTokenResult;
+    public function login(string $email, string $password, ?string $ip, ?string $userAgent): array;
 
-    public function logout(User $user): void;
+    public function refresh(string $refreshToken, ?string $ip, ?string $userAgent): array;
+
+//    public function logout(User $user): void;
 
     public function resetPassword(string $email): void;
 
@@ -20,9 +20,17 @@ interface AuthServiceContract
 
     public function changePassword(User $user, string $password, string $newPassword): void;
 
-    public function loginHistory(User $user): Builder;
+    public function userByIdentity(string $identityToken): User;
 
-    public function killActiveSession(User $user, string $oauthAccessTokensId);
+    public function unauthenticatedUser(): User;
 
-    public function killAllSessions(User $user);
+    public function isUserAuthenticated(): bool;
+
+    public function isAppAuthenticated(): bool;
+
+//    public function loginHistory(User $user): Builder;
+//
+//    public function killActiveSession(User $user, string $oauthAccessTokensId);
+//
+//    public function killAllSessions(User $user);
 }

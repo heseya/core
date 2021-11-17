@@ -6,26 +6,27 @@ use App\Models\Page;
 use App\Services\Contracts\PageServiceContract;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PageService implements PageServiceContract
 {
     public function authorize(Page $page): void
     {
-        if (!Auth::check() && $page->public !== true) {
+        if (!Auth::user()->can('pages.show_hidden') && $page->public !== true) {
             throw new NotFoundHttpException();
         }
     }
 
-    public function getPaginated(int $itemsPerPage = 14): LengthAwarePaginator
+    public function getPaginated(): LengthAwarePaginator
     {
         $query = Page::query();
 
-        if (!Auth::check()) {
+        if (!Auth::user()->can('pages.show_hidden')) {
             $query->where('public', true);
         }
 
-        return $query->sort('order')->paginate($itemsPerPage);
+        return $query->sort('order')->paginate(Config::get('pagination.per_page'));
     }
 
     public function create(array $attributes): Page

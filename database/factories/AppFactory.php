@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\App;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 
 class AppFactory extends Factory
@@ -22,10 +23,15 @@ class AppFactory extends Factory
      */
     public function definition()
     {
+        $name = $this->faker->name;
+
         return [
-            'name' => $this->faker->name,
             'url' => $this->faker->url,
-            'key' => Str::random(64),
+            'microfrontend_url' => $this->faker->url,
+            'name' => $name,
+            'slug' => Str::slug($name),
+            'version' => rand(0, 9) . '.' . rand(0, 9) . '.' . rand(0, 9),
+            'api_version' => '^' . Config::get('api.version'),
         ];
     }
 }

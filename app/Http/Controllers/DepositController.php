@@ -8,20 +8,21 @@ use App\Http\Resources\DepositResource;
 use App\Models\Deposit;
 use App\Models\Item;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Config;
 
 class DepositController extends Controller implements DepositControllerSwagger
 {
     public function index(): JsonResource
     {
         return DepositResource::collection(
-            Deposit::paginate(12),
+            Deposit::paginate(Config::get('pagination.per_page')),
         );
     }
 
     public function show(Item $item): JsonResource
     {
         return DepositResource::collection(
-            $item->deposits()->paginate(12),
+            $item->deposits()->paginate(Config::get('pagination.per_page')),
         );
     }
 

@@ -22,6 +22,8 @@ class DiscountResource extends Resource
             'uses' => $this->uses,
             'max_uses' => $this->max_uses,
             'available' => $this->available,
+            'starts_at' => $this->starts_at,
+            'expires_at' => $this->expires_at,
         ];
     }
 }

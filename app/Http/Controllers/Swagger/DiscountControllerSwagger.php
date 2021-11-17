@@ -6,6 +6,7 @@ use App\Http\Requests\DiscountCreateRequest;
 use App\Http\Requests\DiscountIndexRequest;
 use App\Http\Requests\DiscountUpdateRequest;
 use App\Models\Discount;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 interface DiscountControllerSwagger
@@ -146,4 +147,29 @@ interface DiscountControllerSwagger
      * )
      */
     public function update(Discount $discount, DiscountUpdateRequest $request): JsonResource;
+
+    /**
+     * @OA\Delete(
+     *   path="/discounts/id:{id}",
+     *   summary="delete discount",
+     *   tags={"Discounts"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *       example="5b320ba6-d5ee-4870-bed2-1a101704c2c4",
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=204,
+     *     description="Success",
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function destroy(Discount $discount): JsonResponse;
 }
