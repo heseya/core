@@ -98,11 +98,6 @@ class Order extends Model implements AuditableContract
         'invoice_address_id' => AddressRedactor::class,
     ];
 
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
-
     protected array $searchable = [
         'search' => OrderSearch::class,
         'status_id',
