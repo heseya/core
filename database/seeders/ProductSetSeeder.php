@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\ProductSet;
+use App\Models\SeoMetadata;
 use Illuminate\Database\Seeder;
 
 class ProductSetSeeder extends Seeder
@@ -16,19 +17,30 @@ class ProductSetSeeder extends Seeder
     {
         ProductSet::factory()->count(20)->create()->each(function ($set) {
             $rand = rand(0, 4);
+            $this->seo($set);
             if ($rand === 0) {
-                ProductSet::factory([
+                $sets = ProductSet::factory([
                     'parent_id' => $set->getKey(),
                 ])->count(rand(1, 2))->create();
+                $sets->each(function ($newSet) {
+                   $this->seo($newSet);
+                });
             } else if ($rand === 1) {
                 $raw = ProductSet::factory()->raw();
 
-                ProductSet::factory([
+                $newSet = ProductSet::factory([
                     'parent_id' => $set->getKey(),
                     'name' => $raw['name'],
-                    'slug' =>  $set->slug . '-' . $raw['slug'],
+                    'slug' => $set->slug . '-' . $raw['slug'],
                 ])->create();
+                $this->seo($newSet);
             }
         });
+    }
+
+    private function seo(ProductSet $set)
+    {
+        $seo = SeoMetadata::factory()->create();
+        $set->seo()->save($seo);
     }
 }

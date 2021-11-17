@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Product;
 use App\Models\ProductSet;
+use App\Models\SeoMetadata;
 use Tests\TestCase;
 
 class ProductSetOtherTest extends TestCase
@@ -113,6 +114,27 @@ class ProductSetOtherTest extends TestCase
         $this->assertDeleted($subset1);
         $this->assertDeleted($subset2);
         $this->assertDeleted($subset3);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWithSeo($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.remove');
+
+        $newSet = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+        $seo = SeoMetadata::factory()->create();
+        $newSet->seo()->save($seo);
+
+        $response = $this->actingAs($this->$user)->deleteJson(
+            '/product-sets/id:' . $newSet->getKey(),
+        );
+        $response->assertNoContent();
+        $this->assertDeleted($newSet);
+        $this->assertSoftDeleted($seo);
     }
 
     /**

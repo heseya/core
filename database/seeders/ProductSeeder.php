@@ -31,21 +31,31 @@ class ProductSeeder extends Seeder
 
         $sets = ProductSet::all();
 
-        $brands = ProductSet::factory([
+        $brand = ProductSet::factory([
             'name' => 'Brands',
             'slug' => 'brands',
         ])->create();
+        $this->seo($brand);
         $brands = ProductSet::factory([
-            'parent_id' => $brands->getKey(),
+            'parent_id' => $brand->getKey(),
         ])->count(4)->create();
 
-        $categories = ProductSet::factory([
+        $brands->each(function ($set) {
+            $this->seo($set);
+        });
+
+        $category = ProductSet::factory([
             'name' => 'Categories',
             'slug' => 'categories',
         ])->create();
+        $this->seo($category);
         $categories = ProductSet::factory([
-            'parent_id' => $categories->getKey(),
+            'parent_id' => $category->getKey(),
         ])->count(4)->create();
+
+        $categories->each(function ($set) {
+            $this->seo($set);
+        });
 
         $products->each(function ($product, $index) use ($sets, $brands, $categories, $productService) {
             if (rand(0, 1)) {
@@ -105,7 +115,7 @@ class ProductSeeder extends Seeder
         $product->sets()->syncWithoutDetaching($brands->random());
     }
 
-    private function seo(Product $product): void
+    private function seo(Product|ProductSet $product): void
     {
         $seo = SeoMetadata::factory()->create();
         $product->seo()->save($seo);

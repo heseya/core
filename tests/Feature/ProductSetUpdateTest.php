@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\ProductSet;
+use App\Models\SeoMetadata;
 use Tests\TestCase;
 
 class ProductSetUpdateTest extends TestCase
@@ -231,6 +232,67 @@ class ProductSetUpdateTest extends TestCase
                     ],
                 ],
             ],
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithSeo($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.edit');
+
+        $newSet = ProductSet::factory()->create([
+            'public' => false,
+            'order' => 40,
+        ]);
+
+        $set = [
+            'name' => 'Test Edit',
+            'public' => true,
+            'hide_on_index' => true,
+        ];
+
+        $seo = SeoMetadata::factory()->create();
+        $newSet->seo()->save($seo);
+
+        $parentId = [
+            'parent_id' => null,
+        ];
+
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/product-sets/id:' . $newSet->getKey(),
+            $set + $parentId + [
+                'children_ids' => [],
+                'slug_suffix' => 'test-edit',
+                'slug_override' => false,
+                'seo' => [
+                    'title' => 'seo title',
+                    'description' => 'seo description',
+                ],
+            ],
+        );
+        $response
+            ->assertOk()
+            ->assertJson(['data' => $set + [
+                    'parent' => null,
+                    'children_ids' => [],
+                    'slug' => 'test-edit',
+                    'slug_suffix' => 'test-edit',
+                    'slug_override' => false,
+                    'seo' => [
+                        'title' => 'seo title',
+                        'description' => 'seo description',
+                    ],
+                ],
+            ]);
+
+        $this->assertDatabaseHas('product_sets', $set + $parentId + [
+                'slug' => 'test-edit',
+            ]);
+        $this->assertDatabaseHas('seo_metadata', [
+           'title' => 'seo title',
+           'description' => 'seo description',
         ]);
     }
 }
