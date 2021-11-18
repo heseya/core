@@ -213,7 +213,12 @@ class AppOtherTest extends TestCase
             'creator_id' => $app->getKey(),
         ])->create();
 
-        $app->webhooks()->save($webhook);
+        $this->assertDatabaseHas('web_hooks', [
+            'creator_id' => $app->getKey(),
+            'model_type' => App::class,
+        ]);
+
+        $this->assertTrue($app->webhooks->isNotEmpty());
 
         Http::fake([
             $this->url . '/uninstall' => Http::response(status: 204),
