@@ -520,7 +520,7 @@ class ProductTest extends TestCase
            'model_type' => Product::class,
         ]);
 
-        $this->assertDatabaseCount('seo_metadata', 1);
+        $this->assertDatabaseCount('seo_metadata', 2);
     }
 
     /**

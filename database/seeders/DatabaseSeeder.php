@@ -24,7 +24,6 @@ class DatabaseSeeder extends Seeder
             ->call(UserSeeder::class)
             ->call(PackageTemplateSeeder::class)
             ->call(AuthSeeder::class)
-            ->call(DiscountSeeder::class)
-            ->call(SeoMetadataSeeder::class);
+            ->call(DiscountSeeder::class);
     }
 }

@@ -21,9 +21,15 @@ class SeoMetadataTest extends TestCase
     {
         $this->user->givePermissionTo('seo.show');
 
-        $seo = SeoMetadata::factory()->create([
-            'global' => true
-        ]);
+        $seo = [
+            'title' => 'title',
+            'description' => 'description',
+            'keywords' => ['key', 'words'],
+            'twitter_card' => 'summary',
+        ];
+        $response = $this->actingAs($this->user)->json('PATCH', '/seo', $seo);
+
+        $seo = SeoMetadata::where('global', 1)->first();
 
         $response = $this->actingAs($this->user)->json('GET', '/seo');
 
@@ -46,6 +52,8 @@ class SeoMetadataTest extends TestCase
     public function testCreateWithoutGlobalShow(): void
     {
         $this->user->givePermissionTo('seo.edit');
+
+        SeoMetadata::where('global', 1)->delete();
 
         $seo = [
             'title' => 'title',
@@ -82,6 +90,8 @@ class SeoMetadataTest extends TestCase
     {
         $this->user->givePermissionTo(['seo.edit', 'seo.show']);
 
+        SeoMetadata::where('global', 1)->delete();
+
         $seo = [
             'title' => 'title',
             'description' => 'description',
@@ -100,7 +110,6 @@ class SeoMetadataTest extends TestCase
                 ->etc()
         );
 
-
         $seo = SeoMetadata::where('global', '=', true)->first();
 
         $this->assertEquals(['key', 'words'], $seo->keywords);
@@ -115,10 +124,6 @@ class SeoMetadataTest extends TestCase
     public function testUpdateGlobal(): void
     {
         $this->user->givePermissionTo('seo.edit');
-
-        $seo1 = SeoMetadata::factory()->create([
-            'global' => true,
-        ]);
 
         $seo2 = [
             'title' => 'title',
