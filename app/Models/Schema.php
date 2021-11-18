@@ -131,8 +131,6 @@ class Schema extends Model
         'hidden' => 'bool',
         'required' => 'bool',
         'available' => 'bool',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     protected $searchable = [
