@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-
 /**
  * @OA\RequestBody(
  *   request="PageStore",
@@ -37,18 +35,23 @@ use Illuminate\Foundation\Http\FormRequest;
  *       description="HTML formated text to be displayed as a main content under the page header",
  *       example="<h1>Lorem ipsum dolor sit amet</h1>",
  *     ),
+ *     @OA\Property(
+ *       property="seo",
+ *       type="object",
+ *       ref="#/components/schemas/SeoStore",
+ *     ),
  *   )
  * )
  */
-class PageStoreRequest extends FormRequest
+class PageStoreRequest extends SeoMetadataRulesRequest
 {
     public function rules(): array
     {
-        return [
+        return $this->rulesWithSeo([
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255'],
             'public' => ['boolean'],
             'content_html' => ['required', 'string', 'min:1'],
-        ];
+        ]);
     }
 }
