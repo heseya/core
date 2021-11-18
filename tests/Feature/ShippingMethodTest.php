@@ -315,6 +315,8 @@ class ShippingMethodTest extends TestCase
     {
         $this->$user->givePermissionTo('shipping_methods.add');
 
+        ShippingMethod::query()->delete();
+
         $shipping_method = [
             'name' => 'Test',
             'public' => true,
