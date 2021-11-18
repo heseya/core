@@ -17,15 +17,24 @@ class SeoMetadataTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testShow(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShow($user): void
     {
-        $this->user->givePermissionTo('seo.show');
+        $this->$user->givePermissionTo(['seo.show', 'seo.edit']);
 
-        $seo = SeoMetadata::factory()->create([
-            'global' => true
-        ]);
+        $seo = [
+            'title' => 'title',
+            'description' => 'description',
+            'keywords' => ['key', 'words'],
+            'twitter_card' => 'summary',
+        ];
+        $response = $this->actingAs($this->$user)->json('PATCH', '/seo', $seo);
 
-        $response = $this->actingAs($this->user)->json('GET', '/seo');
+        $seo = SeoMetadata::where('global', 1)->first();
+
+        $response = $this->actingAs($this->$user)->json('GET', '/seo');
 
         $response->assertOk()->assertJsonFragment([
             'title' => $seo->title,
@@ -43,9 +52,14 @@ class SeoMetadataTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testCreateWithoutGlobalShow(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithoutGlobalShow($user): void
     {
-        $this->user->givePermissionTo('seo.edit');
+        $this->$user->givePermissionTo('seo.edit');
+
+        SeoMetadata::where('global', 1)->delete();
 
         $seo = [
             'title' => 'title',
@@ -53,7 +67,7 @@ class SeoMetadataTest extends TestCase
             'keywords' => ['key', 'words'],
             'twitter_card' => 'summary',
         ];
-        $response = $this->actingAs($this->user)->json('PATCH', '/seo', $seo);
+        $response = $this->actingAs($this->$user)->json('PATCH', '/seo', $seo);
 
         $response->assertCreated()->assertJson(fn (AssertableJson $json) =>
             $json->has('meta', fn ($json) =>
@@ -78,16 +92,21 @@ class SeoMetadataTest extends TestCase
         ]);
     }
 
-    public function testCreateWithGlobalShow(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithGlobalShow($user): void
     {
-        $this->user->givePermissionTo(['seo.edit', 'seo.show']);
+        $this->$user->givePermissionTo(['seo.edit', 'seo.show']);
+
+        SeoMetadata::where('global', 1)->delete();
 
         $seo = [
             'title' => 'title',
             'description' => 'description',
             'keywords' => ['key', 'words'],
         ];
-        $response = $this->actingAs($this->user)->json('PATCH', '/seo', $seo);
+        $response = $this->actingAs($this->$user)->json('PATCH', '/seo', $seo);
 
         $response->assertCreated()->assertJson(fn (AssertableJson $json) =>
             $json->has('meta', fn ($json) =>
@@ -100,7 +119,6 @@ class SeoMetadataTest extends TestCase
                 ->etc()
         );
 
-
         $seo = SeoMetadata::where('global', '=', true)->first();
 
         $this->assertEquals(['key', 'words'], $seo->keywords);
@@ -112,20 +130,19 @@ class SeoMetadataTest extends TestCase
         ]);
     }
 
-    public function testUpdateGlobal(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateGlobal($user): void
     {
-        $this->user->givePermissionTo('seo.edit');
-
-        $seo1 = SeoMetadata::factory()->create([
-            'global' => true,
-        ]);
+        $this->$user->givePermissionTo('seo.edit');
 
         $seo2 = [
             'title' => 'title',
             'description' => 'description',
             'keywords' => ['key', 'words'],
         ];
-        $response = $this->actingAs($this->user)->json('PATCH', '/seo', $seo2);
+        $response = $this->actingAs($this->$user)->json('PATCH', '/seo', $seo2);
 
         $response->assertOk()
             ->assertJsonFragment([
