@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\MediaType;
+use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Schema;
@@ -477,6 +479,11 @@ class ProductTest extends TestCase
     {
         $this->$user->givePermissionTo('products.add');
 
+        $media = Media::factory()->create([
+            'type' => MediaType::PHOTO,
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ]);
+
         $response = $this->actingAs($this->$user)->json('POST', '/products', [
             'name' => 'Test',
             'slug' => 'test',
@@ -486,6 +493,7 @@ class ProductTest extends TestCase
             'seo' => [
                 'title' => 'seo title',
                 'description' => 'seo description',
+                'og_image_id' => $media->getKey(),
             ]
         ]);
 
@@ -502,6 +510,9 @@ class ProductTest extends TestCase
                 'seo' => [
                     'title' => 'seo title',
                     'description' => 'seo description',
+                    'og_image' => [
+                        'id' => $media->getKey(),
+                    ]
                 ]
             ]]);
 
