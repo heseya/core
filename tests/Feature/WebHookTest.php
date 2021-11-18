@@ -116,7 +116,11 @@ class WebHookTest extends TestCase
             'secret' => $webHook->secret,
             'with_issuer' => $webHook->with_issuer,
             'with_hidden' => $webHook->with_hidden,
+            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->$user::class,
         ]);
+
+        $this->assertTrue($this->$user->webhooks->isNotEmpty());
     }
 
     /**
