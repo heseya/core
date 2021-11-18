@@ -26,8 +26,8 @@ class SchemaStoreRequest extends FormRequest
 
             'options' => ['nullable', 'array'],
             'options.*.name' => ['required', 'string', 'max:255'],
-            'options.*.price' => ['required', 'numeric'],
-            'options.*.disabled' => ['required', 'boolean'],
+            'options.*.price' => ['sometimes', 'required', 'numeric'],
+            'options.*.disabled' => ['sometimes', 'required', 'boolean'],
 
             'options.*.items' => ['nullable', 'array'],
             'options.*.items.*' => ['uuid', 'exists:items,id'],
