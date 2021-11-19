@@ -39,8 +39,6 @@ class PriceRange extends Model
      */
     protected $casts = [
         'start' => 'float',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     /**

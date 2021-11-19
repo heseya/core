@@ -55,12 +55,6 @@ class User extends Model implements
         'remember_token',
     ];
 
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
-
     protected array $searchable = [
         'name' => Like::class,
         'email' => Like::class,

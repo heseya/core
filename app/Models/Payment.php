@@ -69,8 +69,6 @@ class Payment extends Model
     protected $casts = [
         'paid' => 'boolean',
         'amount' => 'float',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     public function order(): BelongsTo

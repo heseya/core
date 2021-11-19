@@ -56,8 +56,6 @@ class Status extends Model implements AuditableContract
 
     protected $casts = [
         'cancel' => 'boolean',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     public function orders(): HasMany
