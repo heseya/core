@@ -22,9 +22,7 @@ class ProductSetSeeder extends Seeder
                 $sets = ProductSet::factory([
                     'parent_id' => $set->getKey(),
                 ])->count(rand(1, 2))->create();
-                $sets->each(function ($newSet) {
-                   $this->seo($newSet);
-                });
+                $sets->each(fn ($newSet) => $this->seo($newSet));
             } else if ($rand === 1) {
                 $raw = ProductSet::factory()->raw();
 
