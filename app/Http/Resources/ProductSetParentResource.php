@@ -26,6 +26,7 @@ class ProductSetParentResource extends Resource implements ProductSetResourceSwa
             'children_ids' => $children->map(
                 fn ($child) => $child->getKey(),
             )->toArray(),
+            'seo' => SeoMetadataResource::make($this->seo),
         ];
     }
 }

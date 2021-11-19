@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Dtos\ProductSetDto;
 use App\Models\ProductSet;
 use App\Services\Contracts\ProductSetServiceContract;
+use App\Services\Contracts\SeoMetadataServiceContract;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -14,6 +15,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ProductSetService implements ProductSetServiceContract
 {
+    public function __construct(
+        protected SeoMetadataServiceContract $seoMetadataService,
+    ) {
+    }
+
     public function authorize(ProductSet $set): void
     {
         if (
@@ -66,10 +72,13 @@ class ProductSetService implements ProductSetServiceContract
             'public_parent' => $publicParent,
         ]);
 
-        if ($dto->getChildrenIds()->isNotEmpty()) {
-            $children = $dto->getChildrenIds()->map(fn ($id) => ProductSet::findOrFail($id));
+        $children = collect($dto->getChildrenIds());
+        if ($children->isNotEmpty()) {
+            $children = $children->map(fn ($id) => ProductSet::findOrFail($id));
             $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->isPublic());
         }
+
+        $set->seo()->save($this->seoMetadataService->create($dto->getSeo()));
 
         return $set;
     }
@@ -139,7 +148,7 @@ class ProductSetService implements ProductSetServiceContract
             'slug' => Rule::unique('product_sets', 'slug')->ignoreModel($set),
         ])->validate();
 
-        $children = $dto->getChildrenIds()->map(fn ($id) => ProductSet::findOrFail($id));
+        $children = collect($dto->getChildrenIds())->map(fn ($id) => ProductSet::findOrFail($id));
         $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->isPublic());
 
         $rootOrder = ProductSet::reversed()->first()->order + 1;
@@ -155,6 +164,11 @@ class ProductSetService implements ProductSetServiceContract
             'slug' => $slug,
             'public_parent' => $publicParent,
         ]);
+
+        $seo = $set->seo;
+        if ($seo !== null) {
+            $this->seoMetadataService->update($dto->getSeo(), $seo);
+        }
         return $set;
     }
 
@@ -184,6 +198,10 @@ class ProductSetService implements ProductSetServiceContract
         }
 
         $set->delete();
+
+        if ($set->seo !== null) {
+            $this->seoMetadataService->delete($set->seo);
+        }
     }
 
     public function products(ProductSet $set): mixed

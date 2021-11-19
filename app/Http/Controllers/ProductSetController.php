@@ -60,7 +60,7 @@ class ProductSetController extends Controller implements ProductSetControllerSwa
 
     public function store(ProductSetStoreRequest $request): JsonResource
     {
-        $dto = ProductSetDto::instantiateFromRequest($request);
+        $dto = ProductSetDto::fromFormRequest($request);
         $productSet = $this->productSetService->create($dto);
 
         if ($request->has('tree') && $request->input('tree', true) !== false) {
@@ -72,7 +72,7 @@ class ProductSetController extends Controller implements ProductSetControllerSwa
 
     public function update(ProductSet $productSet, ProductSetUpdateRequest $request): JsonResource
     {
-        $dto = ProductSetDto::instantiateFromRequest($request);
+        $dto = ProductSetDto::fromFormRequest($request);
         $productSet = $this->productSetService->update($productSet, $dto);
 
         if ($request->has('tree') && $request->input('tree', true) !== false) {

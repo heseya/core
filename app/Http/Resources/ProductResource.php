@@ -23,7 +23,6 @@ class ProductResource extends Resource implements ProductResourceSwagger
             'quantity_step' => $this->quantity_step,
             'cover' => MediaResource::make($this->media->first()),
             'tags' => TagResource::collection($this->tags),
-            'seo' => SeoMetadataResource::make($this->seo),
         ];
     }
 
@@ -39,6 +38,7 @@ class ProductResource extends Resource implements ProductResourceSwagger
             'gallery' => MediaResource::collection($this->media),
             'schemas' => SchemaResource::collection($this->schemas),
             'sets' => ProductSetResource::collection($sets),
+            'seo' => SeoMetadataResource::make($this->seo),
         ];
     }
 }

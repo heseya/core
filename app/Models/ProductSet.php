@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\SearchTypes\ProductSetSearch;
+use App\Traits\HasSeoMetadata;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,7 +18,7 @@ use Illuminate\Support\Str;
  */
 class ProductSet extends Model
 {
-    use Searchable, HasFactory;
+    use Searchable, HasFactory, HasSeoMetadata;
 
     protected $fillable = [
         'name',
