@@ -34,7 +34,6 @@ abstract class TestCase extends BaseTestCase
 
         $this->tokenService = App::make(TokenServiceContract::class);
 
-        $this->seed(PermissionSeeder::class);
         Role::where('type', RoleType::UNAUTHENTICATED)
             ->firstOrFail()
             ->syncPermissions([]);

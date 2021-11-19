@@ -20,7 +20,6 @@ class DatabaseSeeder extends Seeder
             ->call(ShippingMethodSeeder::class)
             ->call(OrderSeeder::class)
             ->call(PageSeeder::class)
-            ->call(PermissionSeeder::class)
             ->call(UserSeeder::class)
             ->call(PackageTemplateSeeder::class)
             ->call(AuthSeeder::class)
