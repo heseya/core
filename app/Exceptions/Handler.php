@@ -11,6 +11,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 
 final class Handler extends ExceptionHandler
 {
@@ -58,6 +59,10 @@ final class Handler extends ExceptionHandler
         ],
         RoleException::class => [
             'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+        ],
+        TokenExpiredException::class => [
+            'message' => 'Unauthorized',
+            'code' => Response::HTTP_UNAUTHORIZED,
         ],
     ];
 
