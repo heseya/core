@@ -18,6 +18,7 @@ class OrderTest extends TestCase
     private array $expected;
     private array $expected_summary_structure;
     private array $expected_full_structure;
+    private array $expected_full_view_structure;
 
     public function setUp(): void
     {
@@ -74,6 +75,8 @@ class OrderTest extends TestCase
             'created_at',
             'shipping_method',
         ];
+
+        $this->expected_full_view_structure = $this->expected_full_structure + ['user'];
     }
 
     public function testIndexUnauthorized(): void
@@ -140,7 +143,7 @@ class OrderTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonFragment(['code' => $this->order->code])
-            ->assertJsonStructure(['data' => $this->expected_full_structure]);
+            ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
     }
 
     public function testViewSummaryUnauthorized(): void

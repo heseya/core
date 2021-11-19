@@ -272,12 +272,6 @@ class Order extends Model implements AuditableContract
         return $code;
     }
 
-    /**
-     * @OA\Property(
-     *   property="user",
-     *   ref="#/components/schemas/User",
-     * )
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
