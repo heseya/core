@@ -288,7 +288,7 @@ class AuthTest extends TestCase
             'password' => Hash::make('test'),
         ]);
 
-        $response = $this->actingAs($user)->patchJson('/user/password', [
+        $response = $this->actingAs($user)->patchJson('/users/password', [
             'password' => 'test',
             'password_new' => 'Test1@3456',
         ]);
@@ -304,7 +304,7 @@ class AuthTest extends TestCase
 
         $user->givePermissionTo('auth.password_change');
 
-        $response = $this->actingAs($user)->patchJson('/user/password', [
+        $response = $this->actingAs($user)->patchJson('/users/password', [
             'password' => 'test',
             'password_new' => 'Test1@3456',
         ]);
