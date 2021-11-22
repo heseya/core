@@ -32,6 +32,16 @@ class Product extends Model implements AuditableContract
         'price_max',
     ];
 
+    protected $auditInclude = [
+        'name',
+        'slug',
+        'price',
+        'description_html',
+        'description_short',
+        'public',
+        'quantity_step',
+    ];
+
     protected $casts = [
         'price' => 'float',
         'public' => 'bool',
