@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\SchemaType;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Schema;
@@ -154,7 +155,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->postJson('/schemas', [
             'name' => 'Test',
-            'type' => 'select',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
             'price' => 120,
             'description' => 'test test',
             'hidden' => false,
@@ -191,7 +192,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->postJson('/schemas', [
             'name' => 'Test',
-            'type' => 'select',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
             'price' => 120,
             'description' => 'test test',
             'hidden' => false,
@@ -224,7 +225,7 @@ class SchemaTest extends TestCase
 
         $this->assertDatabaseHas('schemas', [
             'name' => 'Test',
-            'type' => array_***REMOVED***(Schema::TYPES)['select'],
+            'type' => SchemaType::SELECT,
             'price' => 120,
             'description' => 'test test',
             'hidden' => 0,
@@ -282,7 +283,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->postJson('/schemas', [
             'name' => 'Multiplier',
-            'type' => 'multiply_schema',
+            'type' => SchemaType::getKey(SchemaType::MULTIPLY_SCHEMA),
             'min' => 1,
             'max' => 10,
             'step' => 0.1,
@@ -310,7 +311,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->postJson('/schemas', [
             'name' => 'Multiplier',
-            'type' => 'multiply_schema',
+            'type' => SchemaType::getKey(SchemaType::MULTIPLY_SCHEMA),
             'min' => 1,
             'max' => 10,
             'step' => 0.1,
@@ -347,7 +348,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->postJson('/schemas', [
             'name' => 'Test',
-            'type' => 'select',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
             'price' => 120,
             'description' => 'test test',
             'hidden' => true,
@@ -377,7 +378,7 @@ class SchemaTest extends TestCase
             ->patchJson('/schemas/id:' . $schema->getKey() , [
                 'name' => 'Test Updated',
                 'price' => 200,
-                'type' => 'select',
+                'type' => SchemaType::getKey(SchemaType::SELECT),
                 'description' => 'test test',
                 'hidden' => false,
                 'required' => false,
@@ -435,7 +436,7 @@ class SchemaTest extends TestCase
         $response = $this->actingAs($this->$user)->patchJson('/schemas/id:' . $schema->getKey() , [
             'name' => 'Test Updated',
             'price' => 200,
-            'type' => 'select',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
             'description' => 'test test',
             'hidden' => false,
             'required' => false,
@@ -528,7 +529,7 @@ class SchemaTest extends TestCase
         $colors = Schema::create([
             'name' => 'Color',
             'price' => 0,
-            'type' => 'select',
+            'type' => SchemaType::SELECT,
         ]);
 
         $red = $colors->options()->create([
@@ -560,7 +561,7 @@ class SchemaTest extends TestCase
 
         $multiplier = Schema::create([
             'name' => 'Price Multiplier',
-            'type' => 'multiply',
+            'type' => SchemaType::MULTIPLY,
             'price' => 10,
             'min' => 1,
             'max' => 10,
@@ -578,7 +579,7 @@ class SchemaTest extends TestCase
         $colors = Schema::create([
             'name' => 'Color',
             'price' => 0,
-            'type' => 'select',
+            'type' => SchemaType::SELECT,
         ]);
 
         $red = $colors->options()->create([
@@ -588,7 +589,7 @@ class SchemaTest extends TestCase
 
         $multiplier = Schema::create([
             'name' => 'Multiplier',
-            'type' => 'multiply_schema',
+            'type' => SchemaType::MULTIPLY_SCHEMA,
             'min' => 1,
             'max' => 10,
             'step' => 0.1,
@@ -633,7 +634,7 @@ class SchemaTest extends TestCase
         $response = $this->actingAs($this->$user)->json('PATCH', '/schemas/id:' . $schema->getKey() , [
             'name' => 'Test Updated',
             'price' => 200,
-            'type' => 'select',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
             'description' => 'test test',
             'hidden' => false,
             'required' => false,
@@ -664,7 +665,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->postJson('/schemas', [
             'name' => 'Test',
-            'type' => 'select',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
             'price' => 120,
             'description' => 'test test',
             'hidden' => false,

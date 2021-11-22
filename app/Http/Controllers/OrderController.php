@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\OrderUpdateDto;
+use App\Enums\SchemaType;
 use App\Events\OrderCreated;
 use App\Events\OrderStatusUpdated;
 use App\Exceptions\OrderException;
@@ -109,7 +110,7 @@ class OrderController extends Controller implements OrderControllerSwagger
                     $value = $schemas[$schema->getKey()] ?? null;
                     $price = $schema->getPrice($value, $schemas);
 
-                    if ($schema->type === 4) {
+                    if ($schema->type->is(SchemaType::SELECT)) {
                         $option = $schema->options()->findOrFail($value);
                         $value = $option->name;
 
