@@ -6,9 +6,19 @@ use Tests\TestCase;
 
 class SeoMetadataTest extends TestCase
 {
+    private array $expected_structure;
+
     public function setUp(): void
     {
         parent::setUp();
+
+        $this->expected_structure = [
+            'title',
+            'description',
+            'keywords',
+            'og_image',
+            'twitter_card',
+        ];
     }
 
     public function testShowUnauthorized(): void
@@ -22,24 +32,25 @@ class SeoMetadataTest extends TestCase
      */
     public function testShow($user): void
     {
-        $this->$user->givePermissionTo(['seo.show', 'seo.edit']);
-
-        $seo = [
-            'title' => 'title',
-            'description' => 'description',
-            'keywords' => ['key', 'words'],
-            'twitter_card' => 'summary',
-        ];
-        $response = $this->actingAs($this->$user)->json('PATCH', '/seo', $seo);
+        $this->$user->givePermissionTo('seo.show');
 
         $seo = SeoMetadata::where('global', 1)->first();
 
         $response = $this->actingAs($this->$user)->json('GET', '/seo');
 
-        $response->assertOk()->assertJsonFragment([
-            'title' => $seo->title,
-            'description' => $seo->description,
-        ]);
+        $response->assertOk()
+            ->assertJson(fn (AssertableJson $json) =>
+                $json->has('meta', fn ($json) =>
+                    $json->has('seo')
+                        ->etc())
+                    ->has('data', fn ($json) =>
+                    $json->where('title', $seo->title)
+                        ->where('description', $seo->description)
+                        ->etc())
+                    ->etc())
+            ->assertJsonStructure([
+                'data' => $this->expected_structure
+            ]);
     }
 
     public function testCreateUnauthorized(): void
@@ -78,7 +89,9 @@ class SeoMetadataTest extends TestCase
                         ->where('description', $seo['description'])
                         ->etc())
                 ->etc()
-        );
+        )->assertJsonStructure([
+            'data' => $this->expected_structure,
+        ]);
 
         $seo = SeoMetadata::where('global', '=', true)->first();
 
@@ -117,7 +130,9 @@ class SeoMetadataTest extends TestCase
                         ->where('description', $seo['description'])
                         ->etc())
                 ->etc()
-        );
+        )->assertJsonStructure([
+            'data' => $this->expected_structure,
+        ]);
 
         $seo = SeoMetadata::where('global', '=', true)->first();
 
@@ -148,6 +163,9 @@ class SeoMetadataTest extends TestCase
             ->assertJsonFragment([
                 'title' => $seo2['title'],
                 'description' => $seo2['description'],
+            ])
+            ->assertJsonStructure([
+                'data' => $this->expected_structure,
             ]);
 
         $seo2 = SeoMetadata::where('global', '=', true)->first();

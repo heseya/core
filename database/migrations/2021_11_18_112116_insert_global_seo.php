@@ -13,7 +13,7 @@ class InsertGlobalSeo extends Migration
      */
     public function up()
     {
-        $seo = SeoMetadata::firstOrCreate([
+        $seo = SeoMetadata::create([
             'global' => true,
         ]);
         Cache::put('seo.global', $seo);
