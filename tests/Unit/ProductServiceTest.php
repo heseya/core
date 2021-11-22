@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Enums\SchemaType;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Services\Contracts\ProductServiceContract;
@@ -45,15 +46,15 @@ class ProductServiceTest extends TestCase
         return [
             'optional schema' => array_merge(
                 $base,
-                [0, false, [$price, $price + $schemaPrice]]
+                [SchemaType::STRING, false, [$price, $price + $schemaPrice]]
             ),
             'boolean schema' => array_merge(
                 $base,
-                [2, true, [$price, $price + $schemaPrice]],
+                [SchemaType::BOOLEAN, true, [$price, $price + $schemaPrice]],
             ),
             'required schema' => array_merge(
                 $base,
-                [0, true, [$price + $schemaPrice, $price + $schemaPrice]],
+                [SchemaType::STRING, true, [$price + $schemaPrice, $price + $schemaPrice]],
             ),
         ];
     }
@@ -134,7 +135,7 @@ class ProductServiceTest extends TestCase
         /** @var Schema $schema */
         $schema = $product->schemas()->create([
             'name' => 'Test',
-            'type' => 4,
+            'type' => SchemaType::SELECT,
             'price' => $schemaPrice,
             'required' => $required,
         ]);
@@ -200,7 +201,7 @@ class ProductServiceTest extends TestCase
 
         $product->schemas()->create([
             'name' => 'Test',
-            'type' => 6,
+            'type' => SchemaType::MULTIPLY,
             'price' => $schemaPrice,
             'min' => $schemaMin,
             'max' => $schemaMax,
@@ -259,7 +260,7 @@ class ProductServiceTest extends TestCase
         /** @var Schema $baseSchema */
         $baseSchema = $product->schemas()->create([
             'name' => 'Test',
-            'type' => 0,
+            'type' => SchemaType::STRING,
             'price' => $schemaBasePrice,
             'required' => true,
         ]);;
@@ -267,7 +268,7 @@ class ProductServiceTest extends TestCase
         /** @var Schema $multiplySchema */
         $multiplySchema = $product->schemas()->create([
             'name' => 'Test2',
-            'type' => 7,
+            'type' => SchemaType::MULTIPLY_SCHEMA,
             'min' => $schemaMin,
             'max' => $schemaMax,
             'required' => $required,
@@ -292,7 +293,7 @@ class ProductServiceTest extends TestCase
         $schema1Price = 5;
         $product->schemas()->create([
             'name' => 'Test',
-            'type' => 0,
+            'type' => SchemaType::STRING,
             'price' => $schema1Price,
             'required' => true,
         ]);
@@ -300,7 +301,7 @@ class ProductServiceTest extends TestCase
         $schema2Price = 7;
         $product->schemas()->create([
             'name' => 'Test2',
-            'type' => 1,
+            'type' => SchemaType::NUMERIC,
             'price' => $schema2Price,
             'required' => false,
         ]);
@@ -308,7 +309,7 @@ class ProductServiceTest extends TestCase
         $schema3Price = 10;
         $product->schemas()->create([
             'name' => 'Test3',
-            'type' => 2,
+            'type' => SchemaType::BOOLEAN,
             'price' => $schema3Price,
             'required' => false,
         ]);
