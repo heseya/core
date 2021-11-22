@@ -7,6 +7,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Requests\PasswordResetRequest;
 use App\Http\Requests\PasswordResetSaveRequest;
+use App\Http\Requests\TokenRefreshRequest;
 use App\Http\Resources\AppResource;
 use App\Http\Resources\AuthResource;
 use App\Http\Resources\ProfileResource;
@@ -39,7 +40,7 @@ class AuthController extends Controller implements AuthControllerSwagger
         return AuthResource::make($tokens);
     }
 
-    public function refresh(Request $request): JsonResource
+    public function refresh(TokenRefreshRequest $request): JsonResource
     {
         $tokens = $this->authService->refresh(
             $request->input('refresh_token'),
