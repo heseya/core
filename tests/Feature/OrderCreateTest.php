@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\DiscountType;
+use App\Enums\SchemaType;
 use App\Events\OrderCreated;
 use App\Models\Address;
 use App\Models\Discount;
@@ -245,6 +246,44 @@ class OrderCreateTest extends TestCase
         ]);
 
         Event::assertDispatched(OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderNonRequiredSchemaEmpty($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $schema = Schema::factory()->create([
+            'type' => SchemaType::getKey(SchemaType::STRING),
+            'price' => 10,
+            'required' => false, // Important!
+        ]);
+
+        $this->product->schemas()->sync([$schema->getKey()]);
+        $this->product->update([
+            'price' => 100,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => 'test@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [
+                        $schema->getKey() => '',
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertCreated();
     }
 
     /**

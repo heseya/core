@@ -102,12 +102,14 @@ class OrderController extends Controller implements OrderControllerSwagger
                 $order->products()->save($orderProduct);
 
                 foreach ($product->schemas as $schema) {
-                    $schema->validate(
-                        $schemas[$schema->getKey()] ?? null,
-                        $item['quantity'],
-                    );
-
                     $value = $schemas[$schema->getKey()] ?? null;
+
+                    $schema->validate($value, $item['quantity']);
+
+                    if ($value === null) {
+                        continue;
+                    }
+
                     $price = $schema->getPrice($value, $schemas);
 
                     if ($schema->type->is(SchemaType::SELECT)) {
