@@ -16,7 +16,7 @@ class OrderResource extends Resource
             'summary' => $this->summary,
             'summary_paid' => $this->paid_amount,
             'shipping_price' => $this->shipping_price,
-            'payed' => $this->isPayed(),
+            'paid' => $this->isPaid(),
             'comment' => $this->comment,
             'created_at' => $this->created_at,
             'status' => $this->status ? StatusResource::make($this->status) : null,
@@ -25,6 +25,18 @@ class OrderResource extends Resource
         ];
     }
 
+    /**
+     * @OA\Schema(
+     *   schema="OrderView",
+     *   allOf={
+     *     @OA\Schema(ref="#/components/schemas/Order"),
+     *   },
+     *   @OA\Property(
+     *      property="user",
+     *      ref="#/components/schemas/User",
+     *   )
+     * )
+     */
     public function view(Request $request): array
     {
         return [
@@ -35,6 +47,7 @@ class OrderResource extends Resource
             'shipping_number' => $this->shipping_number,
             'payable' => $this->payable,
             'discounts' => DiscountResource::collection($this->discounts),
+            'user' => UserResource::make($this->user)->baseOnly(),
         ];
     }
 }

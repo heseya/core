@@ -25,10 +25,21 @@ class Product extends Model implements AuditableContract
         'slug',
         'price',
         'description_html',
+        'description_short',
         'public',
         'quantity_step',
         'price_min',
         'price_max',
+    ];
+
+    protected $auditInclude = [
+        'name',
+        'slug',
+        'price',
+        'description_html',
+        'description_short',
+        'public',
+        'quantity_step',
     ];
 
     protected $casts = [
@@ -36,8 +47,6 @@ class Product extends Model implements AuditableContract
         'public' => 'bool',
         'available' => 'bool',
         'quantity_step' => 'float',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     protected array $searchable = [

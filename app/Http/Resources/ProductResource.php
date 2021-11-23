@@ -34,6 +34,7 @@ class ProductResource extends Resource implements ProductResourceSwagger
             'user_id' => $this->user_id,
             'original_id' => $this->original_id,
             'description_html' => $this->description_html,
+            'description_short' => $this->description_short,
             'meta_description' => str_replace("\n", ' ', trim(strip_tags($this->description_html))),
             'gallery' => MediaResource::collection($this->media),
             'schemas' => SchemaResource::collection($this->schemas),

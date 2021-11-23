@@ -6,6 +6,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Requests\PasswordResetRequest;
 use App\Http\Requests\PasswordResetSaveRequest;
+use App\Http\Requests\TokenRefreshRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -199,7 +200,7 @@ interface AuthControllerSwagger
      *   )
      * )
      */
-    public function refresh(Request $request): JsonResource;
+    public function refresh(TokenRefreshRequest $request): JsonResource;
 
     /**
      * @OA\Get(

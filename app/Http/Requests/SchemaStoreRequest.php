@@ -2,16 +2,16 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Schema;
+use App\Enums\SchemaType;
+use BenSampo\Enum\Rules\EnumKey;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class SchemaStoreRequest extends FormRequest
 {
     public function rules(): array
     {
         return [
-            'type' => ['required', 'string', Rule::in(array_values(Schema::TYPES))],
+            'type' => ['required', 'string', new EnumKey(SchemaType::class)],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:255'],
             'price' => ['nullable', 'numeric'],
@@ -26,8 +26,8 @@ class SchemaStoreRequest extends FormRequest
 
             'options' => ['nullable', 'array'],
             'options.*.name' => ['required', 'string', 'max:255'],
-            'options.*.price' => ['nullable', 'numeric'],
-            'options.*.disabled' => ['nullable', 'boolean'],
+            'options.*.price' => ['sometimes', 'required', 'numeric'],
+            'options.*.disabled' => ['sometimes', 'required', 'boolean'],
 
             'options.*.items' => ['nullable', 'array'],
             'options.*.items.*' => ['uuid', 'exists:items,id'],

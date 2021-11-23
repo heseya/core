@@ -45,11 +45,6 @@ class OrderProduct extends Model
         'product_id',
     ];
 
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
-
     public function getPriceAttribute($value): float
     {
         return $value + $this->schemas()->sum('price');
