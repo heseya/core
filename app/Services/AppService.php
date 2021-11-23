@@ -170,6 +170,34 @@ class AppService implements AppServiceContract
         return $app;
     }
 
+    public function uninstall(App $app, bool $force = false): void
+    {
+        $url = $app->url . (Str::endsWith($app->url, '/') ? 'uninstall' : '/uninstall');
+
+        try {
+            $response = Http::post($url, [
+                'uninstall_token' => $app->uninstall_token,
+            ]);
+        } catch (Throwable) {
+            if (!$force) {
+                throw new AppException('Failed to connect with application');
+            }
+        }
+
+        if (!$force && $response->failed()) {
+            throw new AppException('Failed to uninstall the application');
+        }
+
+        Permission::where('name', 'like', 'app.' . $app->slug . '%')->delete();
+        $app->role()->delete();
+        $app->delete();
+    }
+
+    public function appPermissionPrefix(App $app): string
+    {
+        return 'app.' . $app->slug . '.';
+    }
+
     protected function isAppRootValid($response)
     {
         return $this->isResponseValid($response, [
@@ -246,33 +274,5 @@ class AppService implements AppServiceContract
             fn ($permission) => !$publicPermissions->contains($permission->name)
                 ?: $unauthenticated->givePermissionTo($permission),
         );
-    }
-
-    public function uninstall(App $app, bool $force = false): void
-    {
-        $url = $app->url . (Str::endsWith($app->url, '/') ? 'uninstall' : '/uninstall');
-
-        try {
-            $response = Http::post($url, [
-                'uninstall_token' => $app->uninstall_token,
-            ]);
-        } catch (Throwable) {
-            if (!$force) {
-                throw new AppException('Failed to connect with application');
-            }
-        }
-
-        if (!$force && $response->failed()) {
-            throw new AppException('Failed to uninstall the application');
-        }
-
-        Permission::where('name', 'like', 'app.' . $app->slug . '%')->delete();
-        $app->role()->delete();
-        $app->delete();
-    }
-
-    public function appPermissionPrefix(App $app): string
-    {
-        return 'app.' . $app->slug . '.';
     }
 }
