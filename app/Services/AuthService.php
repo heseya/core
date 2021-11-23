@@ -2,51 +2,108 @@
 
 namespace App\Services;
 
+use App\Enums\RoleType;
+use App\Enums\TokenType;
 use App\Exceptions\AuthException;
+use App\Models\App;
+use App\Models\Role;
+use App\Models\Token;
 use App\Models\User;
 use App\Notifications\ResetPassword;
 use App\Services\Contracts\AuthServiceContract;
-use Carbon\Carbon;
-use Illuminate\Auth\AuthenticationException;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\Contracts\TokenServiceContract;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Laravel\Passport\Passport;
-use Laravel\Passport\PersonalAccessTokenResult;
+use Illuminate\Support\Str;
 
 class AuthService implements AuthServiceContract
 {
-    public function login(string $email, string $password, ?string $ip, ?string $userAgent): PersonalAccessTokenResult
+    public function __construct(protected TokenServiceContract $tokenService)
     {
-        if (!Auth::guard('web')->attempt([
-            'email' => $email,
-            'password' => $password,
-        ])) {
-            throw new AuthenticationException('Invalid credentials');
-        }
-
-        $user = Auth::guard('web')->user();
-        $token = $user->createToken('Admin');
-
-        $token->token->update([
-            'ip' => $ip,
-            'user_agent' => $userAgent,
-        ]);
-
-        return $token;
     }
 
-    public function logout(User $user): void
+    public function login(string $email, string $password, ?string $ip, ?string $userAgent): array
     {
-        $token = $user->token();
+        $uuid = Str::uuid()->toString();
 
-        if ($token) {
-            $token->update([
-                'revoked' => true,
-                'expires_at' => Carbon::now(),
-            ]);
+        $token = Auth::claims([
+            'iss' => Config::get('app.url'),
+            'typ' => TokenType::ACCESS,
+            'jti' => $uuid,
+        ])->attempt([
+            'email' => $email,
+            'password' => $password,
+        ]);
+
+        if ($token === false) {
+            throw new AuthException('Invalid credentials');
         }
+
+        $identityToken = $this->tokenService->createToken(
+            Auth::user(),
+            new TokenType(TokenType::IDENTITY),
+            $uuid,
+        );
+        $refreshToken = $this->tokenService->createToken(
+            Auth::user(),
+            new TokenType(TokenType::REFRESH),
+            $uuid,
+        );
+
+        return [
+            'token' => $token,
+            'identity_token' => $identityToken,
+            'refresh_token' => $refreshToken,
+        ];
+    }
+
+    public function refresh(string $refreshToken, ?string $ip, ?string $userAgent): array
+    {
+        if (!$this->tokenService->validate($refreshToken)) {
+            throw new AuthException('Invalid token');
+        }
+
+        $payload = $this->tokenService->payload($refreshToken);
+
+        if (
+            $payload->get('typ') !== TokenType::REFRESH ||
+            Token::where('id', $payload->get('jti'))->where('invalidated', true)->exists()
+        ) {
+            throw new AuthException('Invalid token');
+        }
+
+        $uuid = Str::uuid()->toString();
+        $user = $this->tokenService->getUser($refreshToken);
+        $this->tokenService->invalidateToken($refreshToken);
+
+        $token = $this->tokenService->createToken(
+            $user,
+            new TokenType(TokenType::ACCESS),
+            $uuid,
+        );
+        $identityToken = $user instanceof App ? null : $this->tokenService->createToken(
+            $user,
+            new TokenType(TokenType::IDENTITY),
+            $uuid,
+        );
+        $refreshToken = $this->tokenService->createToken(
+            $user,
+            new TokenType(TokenType::REFRESH),
+            $uuid,
+        );
+
+        return [
+            'token' => $token,
+            'identity_token' => $identityToken,
+            'refresh_token' => $refreshToken,
+        ];
+    }
+
+    public function logout(): void
+    {
+        $this->tokenService->invalidateToken(Auth::getToken());
     }
 
     public function resetPassword(string $email): void
@@ -90,49 +147,90 @@ class AuthService implements AuthServiceContract
         ]);
     }
 
-    public function loginHistory(User $user): Builder
+    /**
+     * @throws AuthException
+     */
+    public function userByIdentity(string $identityToken): User
     {
-        return Passport::token()
-            ->where('user_id', $user->getKey())
-            ->orderBy('created_at', 'DESC');
+        $user = $this->tokenService->getUser($identityToken);
+        $isIdentityToken = $this->tokenService->isTokenType(
+            $identityToken,
+            new TokenType(TokenType::IDENTITY),
+        );
+
+        if (!($user instanceof User) || !$isIdentityToken) {
+            throw new AuthException('Invalid identity token');
+        }
+
+        return $user;
     }
 
-    public function killActiveSession(User $user, string $oauthAccessTokensId)
+    public function unauthenticatedUser(): User
     {
-        $token = Passport::token()->where('id', $oauthAccessTokensId)->first();
-        if (!$token) {
-            throw new AuthException('User token does not exist');
-        }
+        $user = User::make([
+            'name' => 'Unauthenticated',
+        ]);
 
-        if ($user->token() && $user->token()->getKey() === $token->id) {
-            throw new AuthException('Can\'t delete your current session');
-        }
+        $roles = Role::where('type', RoleType::UNAUTHENTICATED)->get();
+        $user->setRelation('roles', $roles);
+        $user->id = null;
 
-        $token->revoke();
-
-        return $this->loginHistory($user);
+        return $user;
     }
 
-    public function killAllSessions(User $user)
+    public function isUserAuthenticated(): bool
     {
-        if (!$user->token()) {
-            throw new AuthException('User token does not exist');
-        }
-
-        $currentToken = $user->token()->getKey();
-        foreach ($user->tokens()->get() as $token) {
-            if ($currentToken === $token->getKey()) {
-                continue;
-            }
-
-            $token->revoke();
-        }
-
-        return Passport::token()
-            ->where('user_id', $user->getKey())
-            ->where('revoked', false)
-            ->get();
+        return Auth::user() instanceof User;
     }
+
+    public function isAppAuthenticated(): bool
+    {
+        return Auth::user() instanceof App;
+    }
+
+//    public function loginHistory(User $user): Builder
+//    {
+//        return Passport::token()
+//            ->where('user_id', $user->getKey())
+//            ->orderBy('created_at', 'DESC');
+//    }
+//
+//    public function killActiveSession(User $user, string $oauthAccessTokensId)
+//    {
+//        $token = Passport::token()->where('id', $oauthAccessTokensId)->first();
+//        if (!$token) {
+//            throw new AuthException('User token does not exist');
+//        }
+//
+//        if ($user->token() && $user->token()->getKey() === $token->id) {
+//            throw new AuthException('Can\'t delete your current session');
+//        }
+//
+//        $token->revoke();
+//
+//        return $this->loginHistory($user);
+//    }
+//
+//    public function killAllSessions(User $user)
+//    {
+//        if (!$user->token()) {
+//            throw new AuthException('User token does not exist');
+//        }
+//
+//        $currentToken = $user->token()->getKey();
+//        foreach ($user->tokens()->get() as $token) {
+//            if ($currentToken === $token->getKey()) {
+//                continue;
+//            }
+//
+//            $token->revoke();
+//        }
+//
+//        return Passport::token()
+//            ->where('user_id', $user->getKey())
+//            ->where('revoked', false)
+//            ->get();
+//    }
 
     private function getUserByEmail(string $email): User
     {

@@ -7,8 +7,8 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
-use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class PaymentTest extends TestCase
@@ -37,7 +37,7 @@ class PaymentTest extends TestCase
         ]);
     }
 
-    public function testPayuUrl(): void
+    public function testPayuUrlUnauthorized(): void
     {
         Http::fakeSequence()
             ->push([
@@ -56,61 +56,130 @@ class PaymentTest extends TestCase
             'continue_url' => 'continue_url',
         ]);
 
+        $response->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testPayuUrl($user): void
+    {
+        $this->$user->givePermissionTo('payments.add');
+
+        Http::fakeSequence()
+            ->push([
+                'access_token' => 'random_access_token',
+            ])
+            ->push([
+                'status' => [
+                    'statusCode' => 'SUCCESS',
+                ],
+                'redirectUri' => 'payment_url',
+                'orderId' => 'payu_id',
+            ]);
+
+        $code = $this->order->code;
+        $response = $this->actingAs($this->$user)
+            ->postJson("/orders/$code/pay/payu", [
+                'continue_url' => 'continue_url',
+            ]);
+
         $response
             ->assertCreated()
             ->assertJsonFragment([
-                'external_id' => 'payu_id',
                 'method' => 'payu',
-                'payed' => false,
+                'paid' => false,
                 'amount' => $this->order->summary,
                 'redirect_url' => 'payment_url',
                 'continue_url' => 'continue_url',
             ]);
     }
 
-    public function testPayuNotification(): void
+    public function testPayuNotificationUnauthorized(): void
     {
         $payment = Payment::factory()->make([
-            'payed' => false,
+            'paid' => false,
         ]);
 
         $this->order->payments()->save($payment);
 
-        $response = $this->postJson('payments/payu', [
+        $body = [
             'order' => [
                 'status' => 'COMPLETED',
                 'extOrderId' => $payment->getKey(),
             ],
+        ];
+        $signature = md5(json_encode($body) . Config::get('payu.second_key'));
+
+        $response = $this->postJson('/payments/payu', $body, [
+            'OpenPayu-Signature' => "signature=$signature;algorithm=MD5"
         ]);
+
+        $response->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testPayuNotification($user): void
+    {
+        $this->$user->givePermissionTo('payments.edit');
+
+        $payment = Payment::factory()->make([
+            'paid' => false,
+        ]);
+
+        $this->order->payments()->save($payment);
+
+        $body = [
+            'order' => [
+                'status' => 'COMPLETED',
+                'extOrderId' => $payment->getKey(),
+            ],
+        ];
+        $signature = md5(json_encode($body) . Config::get('payu.second_key'));
+
+        $response = $this->actingAs($this->$user)
+            ->postJson('/payments/payu', $body, [
+                'OpenPayu-Signature' => "signature=$signature;algorithm=MD5"
+            ]);
 
         $response->assertOk();
         $this->assertDatabaseHas('payments', [
             'id' => $payment->getKey(),
-            'payed' => true,
+            'paid' => true,
         ]);
     }
 
-    public function testOfflinePaymentUnauthorized(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOfflinePaymentUnauthorized($user): void
     {
         $code = $this->order->code;
-        $response = $this->postJson("/orders/$code/pay/offline");
+        $response = $this->actingAs($this->$user)
+            ->postJson("/orders/$code/pay/offline");
 
-        $response->assertUnauthorized();
+        $response->assertForbidden();
     }
 
-    public function testOfflinePayment(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOfflinePayment($user): void
     {
+        $this->$user->givePermissionTo('payments.offline');
+
         $code = $this->order->code;
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->postJson("/orders/$code/pay/offline");
 
         $response
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'offline',
-                'payed' => true,
+                'paid' => true,
                 'amount' => $this->order->summary,
-                'external_id' => null,
                 'redirect_url' => null,
                 'continue_url' => null,
             ]);
@@ -118,12 +187,52 @@ class PaymentTest extends TestCase
         $this->assertDatabaseHas('payments', [
             'order_id' => $this->order->getKey(),
             'method' => 'offline',
-            'payed' => true,
+            'paid' => true,
             'amount' => $this->order->summary,
         ]);
 
         $this->order->refresh();
-        $this->assertTrue($this->order->isPayed());
+        $this->assertTrue($this->order->isPaid());
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOfflinePaymentOverpaid($user): void
+    {
+        $this->$user->givePermissionTo('payments.offline');
+
+        $amount = $this->order->summary - 1;
+
+        $this->order->payments()->create([
+            'method' => 'payu',
+            'amount' => 1,
+            'paid' => true,
+        ]);
+
+        $code = $this->order->code;
+        $response = $this->actingAs($this->$user)
+            ->postJson("/orders/$code/pay/offline");
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'method' => 'offline',
+                'paid' => true,
+                'amount' => $amount,
+                'redirect_url' => null,
+                'continue_url' => null,
+            ]);
+
+        $this->assertDatabaseHas('payments', [
+            'order_id' => $this->order->getKey(),
+            'method' => 'offline',
+            'paid' => true,
+            'amount' => $amount,
+        ]);
+
+        $this->order->refresh();
+        $this->assertTrue($this->order->isPaid());
     }
 
 //    public function testPayPalNotification(): void
@@ -131,7 +240,7 @@ class PaymentTest extends TestCase
 //        Http::fake();
 //
 //        $payment = Payment::factory()->make([
-//            'payed' => false,
+//            'paid' => false,
 //        ]);
 //
 //        $this->order->payments()->save($payment);
@@ -145,7 +254,7 @@ class PaymentTest extends TestCase
 //        $response->assertOk();
 //        $this->assertDatabaseHas('payments', [
 //            'id' => $payment->getKey(),
-//            'payed' => true,
+//            'paid' => true,
 //        ]);
 //    }
 }

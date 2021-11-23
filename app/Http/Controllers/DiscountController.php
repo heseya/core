@@ -8,15 +8,22 @@ use App\Http\Requests\DiscountIndexRequest;
 use App\Http\Requests\DiscountUpdateRequest;
 use App\Http\Resources\DiscountResource;
 use App\Models\Discount;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Response;
 
 class DiscountController extends Controller implements DiscountControllerSwagger
 {
     public function index(DiscountIndexRequest $request): JsonResource
     {
-        $query = Discount::search($request->validated())->orderBy('updated_at', 'DESC');
+        $query = Discount::search($request->validated())
+            ->orderBy('updated_at', 'DESC')
+            ->with('orders');
 
-        return DiscountResource::collection($query->paginate($request->input('limit', 12)));
+        return DiscountResource::collection(
+            $query->paginate(Config::get('pagination.per_page')),
+        );
     }
 
     public function show(Discount $discount): JsonResource
@@ -36,5 +43,12 @@ class DiscountController extends Controller implements DiscountControllerSwagger
         $discount->update($request->validated());
 
         return DiscountResource::make($discount);
+    }
+
+    public function destroy(Discount $discount): JsonResponse
+    {
+        $discount->delete();
+
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

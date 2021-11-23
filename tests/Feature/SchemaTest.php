@@ -2,45 +2,160 @@
 
 namespace Tests\Feature;
 
+use App\Enums\SchemaType;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Schema;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
 class SchemaTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testIndex(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexUnauthorized($user): void
     {
         Schema::factory()->count(5)->create();
 
-        $response = $this->actingAs($this->user)->getJson('/schemas');
+        $response = $this->actingAs($this->$user)->getJson('/schemas');
+
+        $response->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexProductsAdd($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        Schema::factory()->count(5)->create();
+
+        $response = $this->actingAs($this->$user)->getJson('/schemas');
 
         $response
             ->assertOk()
             ->assertJsonCount(5, 'data');
     }
 
-    public function testShow(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexWithPagination($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        Schema::factory()->count(20)->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/schemas', ['limit' => 10])
+            ->assertOk()
+            ->assertJsonCount(10, 'data');
+
+        $this->assertEquals(Config::get('pagination.per_page'), 10);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexProductsEdit($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        Schema::factory()->count(5)->create();
+
+        $response = $this->actingAs($this->$user)->getJson('/schemas');
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(5, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowUnauthorized($user): void
     {
         $schema = Schema::factory()->create();
 
-        $response = $this->actingAs($this->user)->getJson('/schemas/id:' . $schema->getKey());
+        $response = $this->actingAs($this->$user)->getJson('/schemas/id:' . $schema->getKey());
+
+        $response->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowProductsAdd($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $schema = Schema::factory()->create();
+
+        $option1 = Option::factory()->create([
+            'name' => 'A',
+            'price' => 10,
+            'disabled' => false,
+            'order' => 0,
+            'schema_id' => $schema->getKey(),
+        ]);
+        $option2 = Option::factory()->create([
+            'name' => 'C',
+            'price' => 100,
+            'disabled' => false,
+            'order' => 2,
+            'schema_id' => $schema->getKey(),
+        ]);
+        $option3 = Option::factory()->create([
+            'name' => 'B',
+            'price' => 0,
+            'disabled' => false,
+            'order' => 1,
+            'schema_id' => $schema->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->$user)->getJson('/schemas/id:' . $schema->getKey())
+            ->assertOk()
+            ->assertJsonFragment(['id' => $schema->getKey()]);
+
+        $response = $response->json();
+
+        $this->assertEquals($option1->getKey(), $response['data']['options'][0]['id']);
+        $this->assertEquals($option3->getKey(), $response['data']['options'][1]['id']);
+        $this->assertEquals($option2->getKey(), $response['data']['options'][2]['id']);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowProductsEdit($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $schema = Schema::factory()->create();
+
+        $response = $this->actingAs($this->$user)->getJson('/schemas/id:' . $schema->getKey());
 
         $response
             ->assertOk()
             ->assertJsonFragment(['id' => $schema->getKey()]);
     }
 
-    public function testCreate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateUnauthorized($user): void
     {
         $item = Item::factory()->create();
 
-        $response = $this->actingAs($this->user)->postJson('/schemas', [
+        $response = $this->actingAs($this->$user)->postJson('/schemas', [
             'name' => 'Test',
-            'type' => 'select',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
             'price' => 120,
             'description' => 'test test',
             'hidden' => false,
@@ -58,26 +173,89 @@ class SchemaTest extends TestCase
             ],
         ]);
 
+        $response->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateProductsAdd($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $this->create($user);
+    }
+
+    public function create($user): void
+    {
+        $item = Item::factory()->create();
+
+        $response = $this->actingAs($this->$user)->postJson('/schemas', [
+            'name' => 'Test',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'price' => 120,
+            'description' => 'test test',
+            'hidden' => false,
+            'required' => false,
+            'options' => [
+                [
+                    'name' => 'L',
+                    'price' => 100,
+                    'disabled' => false,
+                    'items' => [
+                        $item->getKey(),
+                    ],
+                ],
+                [
+                    'name' => 'A',
+                    'price' => 1000,
+                    'disabled' => false,
+                ],
+                [
+                    'name' => 'B',
+                    'price' => 0,
+                    'disabled' => false,
+                ],
+            ],
+        ]);
+
         $response->assertCreated();
         $schema = $response->getData()->data;
         $option = $response->getData()->data->options[0];
 
         $this->assertDatabaseHas('schemas', [
             'name' => 'Test',
-            'type' => array_***REMOVED***(Schema::TYPES)['select'],
+            'type' => SchemaType::SELECT,
             'price' => 120,
             'description' => 'test test',
             'hidden' => 0,
             'required' => 0,
-            'default' => 0,
+            'default' => null,
         ]);
 
         $this->assertDatabaseHas('options', [
             'id' => $option->id,
             'name' => 'L',
+            'price' => 100,
+            'disabled' => 0,
+            'schema_id' => $schema->id,
+            'order' => 0,
+        ]);
+
+        $this->assertDatabaseHas('options', [
+            'name' => 'A',
+            'price' => 1000,
+            'disabled' => 0,
+            'schema_id' => $schema->id,
+            'order' => 1,
+        ]);
+
+        $this->assertDatabaseHas('options', [
+            'name' => 'B',
             'price' => 0,
             'disabled' => 0,
             'schema_id' => $schema->id,
+            'order' => 2,
         ]);
 
         $this->assertDatabaseHas('option_items', [
@@ -86,7 +264,151 @@ class SchemaTest extends TestCase
         ]);
     }
 
-    public function testUpdate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateProductsEdit($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $this->create($user);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateRelationUnauthorized($user): void
+    {
+        $usedSchema = Schema::factory()->create();
+
+        $response = $this->actingAs($this->$user)->postJson('/schemas', [
+            'name' => 'Multiplier',
+            'type' => SchemaType::getKey(SchemaType::MULTIPLY_SCHEMA),
+            'min' => 1,
+            'max' => 10,
+            'step' => 0.1,
+            'used_schemas' => [
+                $usedSchema->getKey(),
+            ],
+        ]);
+
+        $response->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateRelationProductsAdd($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $this->createRelation($user);
+    }
+
+    public function createRelation($user): void
+    {
+        $usedSchema = Schema::factory()->create();
+
+        $response = $this->actingAs($this->$user)->postJson('/schemas', [
+            'name' => 'Multiplier',
+            'type' => SchemaType::getKey(SchemaType::MULTIPLY_SCHEMA),
+            'min' => 1,
+            'max' => 10,
+            'step' => 0.1,
+            'used_schemas' => [
+                $usedSchema->getKey(),
+            ],
+        ]);
+
+        $response->assertCreated();
+        $schema = $response->getData()->data;
+
+        $this->assertDatabaseHas('schema_used_schemas', [
+            'schema_id' => $schema->id,
+            'used_schema_id' => $usedSchema->getKey(),
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateRelationProductsEdit($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $this->createRelation($user);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateHiddenAndRequired($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $response = $this->actingAs($this->$user)->postJson('/schemas', [
+            'name' => 'Test',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'price' => 120,
+            'description' => 'test test',
+            'hidden' => true,
+            'required' => true,
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateUnauthorized($user): void
+    {
+        $schema = Schema::factory()->create();
+
+        $item = Item::factory()->create();
+
+        $option = Option::factory()->create([
+            'name' => 'L',
+            'price' => 0,
+            'disabled' => false,
+            'schema_id' => $schema->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->$user)
+            ->patchJson('/schemas/id:' . $schema->getKey() , [
+                'name' => 'Test Updated',
+                'price' => 200,
+                'type' => SchemaType::getKey(SchemaType::SELECT),
+                'description' => 'test test',
+                'hidden' => false,
+                'required' => false,
+                'options' => [
+                    [
+                        'id' => $option->getKey(),
+                        'name' => 'L',
+                        'price' => 0,
+                        'disabled' => true,
+                        'items' => [
+                            $item->getKey(),
+                        ],
+                    ],
+                ],
+            ]);
+
+        $response->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateProductsAdd($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $this->update($user);
+    }
+
+    public function update($user): void
     {
         $schema = Schema::factory()->create();
 
@@ -111,13 +433,14 @@ class SchemaTest extends TestCase
             'schema_id' => $schema->getKey(),
         ]);
 
-        $response = $this->actingAs($this->user)->patchJson('/schemas/id:' . $schema->getKey() , [
+        $response = $this->actingAs($this->$user)->patchJson('/schemas/id:' . $schema->getKey() , [
             'name' => 'Test Updated',
             'price' => 200,
-            'type' => 'select',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
             'description' => 'test test',
             'hidden' => false,
             'required' => false,
+            'default' => 0,
             'options' => [
                 [
                     'id' => $option->getKey(),
@@ -136,6 +459,7 @@ class SchemaTest extends TestCase
         $this->assertDatabaseHas('schemas', [
             'name' => 'Test Updated',
             'price' => 200,
+            'default' => 0,
         ]);
 
         $this->assertDatabaseHas('options', [
@@ -161,28 +485,43 @@ class SchemaTest extends TestCase
         ]);
     }
 
-    public function testCreateRelation(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateProductsEdit($user): void
     {
-        $usedSchema = Schema::factory()->create();
+        $this->$user->givePermissionTo('products.edit');
 
-        $response = $this->actingAs($this->user)->postJson('/schemas', [
-            'name' => 'Multiplier',
-            'type' => 'multiply_schema',
-            'min' => 1,
-            'max' => 10,
-            'step' => 0.1,
-            'used_schemas' => [
-                $usedSchema->getKey(),
-            ],
-        ]);
+        $this->update($user);
+    }
 
-        $response->assertCreated();
-        $schema = $response->getData()->data;
+    /**
+     * @dataProvider authProvider
+     */
+    public function testRemoveUnauthorized($user): void
+    {
+        $schema = Schema::factory()->create();
 
-        $this->assertDatabaseHas('schema_used_schemas', [
-            'schema_id' => $schema->id,
-            'used_schema_id' => $usedSchema->getKey(),
-        ]);
+        $response = $this->actingAs($this->$user)
+            ->deleteJson('/schemas/id:' . $schema->getKey());
+
+        $response->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testRemove($user): void
+    {
+        $this->$user->givePermissionTo('schemas.remove');
+
+        $schema = Schema::factory()->create();
+
+        $response = $this->actingAs($this->$user)
+            ->deleteJson('/schemas/id:' . $schema->getKey());
+
+        $response->assertNoContent();
+        $this->assertDeleted($schema);
     }
 
     public function testPrice(): void
@@ -190,7 +529,7 @@ class SchemaTest extends TestCase
         $colors = Schema::create([
             'name' => 'Color',
             'price' => 0,
-            'type' => 'select',
+            'type' => SchemaType::SELECT,
         ]);
 
         $red = $colors->options()->create([
@@ -222,7 +561,7 @@ class SchemaTest extends TestCase
 
         $multiplier = Schema::create([
             'name' => 'Price Multiplier',
-            'type' => 'multiply',
+            'type' => SchemaType::MULTIPLY,
             'price' => 10,
             'min' => 1,
             'max' => 10,
@@ -240,7 +579,7 @@ class SchemaTest extends TestCase
         $colors = Schema::create([
             'name' => 'Color',
             'price' => 0,
-            'type' => 'select',
+            'type' => SchemaType::SELECT,
         ]);
 
         $red = $colors->options()->create([
@@ -250,7 +589,7 @@ class SchemaTest extends TestCase
 
         $multiplier = Schema::create([
             'name' => 'Multiplier',
-            'type' => 'multiply_schema',
+            'type' => SchemaType::MULTIPLY_SCHEMA,
             'min' => 1,
             'max' => 10,
             'step' => 0.1,
@@ -268,5 +607,81 @@ class SchemaTest extends TestCase
             $multiplier->getKey() => $value,
             $colors->getKey() => $red->getKey(),
         ]));
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithOptionPriceAndDisabledNull($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+        $schema = Schema::factory()->create();
+
+        $item = Item::factory()->create();
+        $item2 = Item::factory()->create();
+
+        $option = Option::factory()->create([
+            'name' => 'L',
+            'price' => 0,
+            'disabled' => false,
+            'schema_id' => $schema->getKey(),
+        ]);
+        $option->items()->sync([
+            $item->getKey(),
+            $item2->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->$user)->json('PATCH', '/schemas/id:' . $schema->getKey() , [
+            'name' => 'Test Updated',
+            'price' => 200,
+            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'description' => 'test test',
+            'hidden' => false,
+            'required' => false,
+            'default' => 0,
+            'options' => [
+                [
+                    'id' => $option->getKey(),
+                    'name' => 'L',
+                    'price' => null,
+                    'disabled' => null,
+                    'items' => [
+                        $item->getKey(),
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithOptionPriceAndDisabledNull($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+        $item = Item::factory()->create();
+
+        $response = $this->actingAs($this->$user)->postJson('/schemas', [
+            'name' => 'Test',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'price' => 120,
+            'description' => 'test test',
+            'hidden' => false,
+            'required' => false,
+            'options' => [
+                [
+                    'name' => 'L',
+                    'price' => null,
+                    'disabled' => null,
+                    'items' => [
+                        $item->getKey(),
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(422);
     }
 }

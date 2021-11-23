@@ -2,9 +2,10 @@
 
 namespace App\Http\Resources;
 
+use App\Http\Resources\Swagger\OrderPublicResourceSwagger;
 use Illuminate\Http\Request;
 
-class OrderPublicResource extends Resource
+class OrderPublicResource extends Resource implements OrderPublicResourceSwagger
 {
     public function base(Request $request): array
     {
@@ -12,7 +13,7 @@ class OrderPublicResource extends Resource
             'id' => $this->getKey(),
             'code' => $this->code,
             'status' => StatusResource::make($this->status),
-            'payed' => $this->isPayed(),
+            'paid' => $this->isPaid(),
             'payable' => $this->payable,
             'summary' => $this->summary,
             'shipping_method_id' => $this->shipping_method_id,

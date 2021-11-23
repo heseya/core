@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Events\OrderCreated;
 use App\Events\OrderStatusUpdated;
 use App\Models\Order;
 use App\Models\Payment;
@@ -16,7 +17,9 @@ class OrderTest extends TestCase
     private Order $order;
 
     private array $expected;
-    private array $expected_structure;
+    private array $expected_summary_structure;
+    private array $expected_full_structure;
+    private array $expected_full_view_structure;
 
     public function setUp(): void
     {
@@ -56,112 +59,156 @@ class OrderTest extends TestCase
                 'color' => $status->color,
                 'description' => $status->description,
             ],
-            'payed' => $this->order->isPayed(),
+            'paid' => $this->order->isPaid(),
         ];
 
-        $this->expected_structure = [
+        $this->expected_summary_structure = [
             'code',
             'status',
-            'payed',
+            'paid',
             'created_at',
         ];
+
+        $this->expected_full_structure = [
+            'code',
+            'status',
+            'paid',
+            'created_at',
+            'shipping_method',
+        ];
+
+        $this->expected_full_view_structure = $this->expected_full_structure + ['user'];
     }
 
-    public function testOverpaid(): void
-    {
-        $this->order->payments()->save(Payment::factory()->make([
-            'amount' => $this->order->summary * 2,
-            'payed' => true,
-        ]));
-
-        $this->assertTrue(
-            Order::findOrFail($this->order->getKey())->isPayed(),
-        );
-    }
-
-    public function testIndex(): void
+    public function testIndexUnauthorized(): void
     {
         $response = $this->getJson('/orders');
-        $response->assertUnauthorized();
+        $response->assertForbidden();
+    }
 
-        $response = $this->actingAs($this->user)->getJson('/orders');
-        $response
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders')
             ->assertOk()
+            ->assertJsonCount(1, 'data')
             ->assertJsonStructure(['data' => [
-                0 => $this->expected_structure,
+                0 => $this->expected_full_structure,
             ]])
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
+
+        $this->assertQueryCountLessThan(20);
     }
 
-    public function testViewPublic(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexPerformance($user): void
     {
-        $response = $this->getJson('/orders/' . $this->order->code);
-        $response
+        $this->$user->givePermissionTo('orders.show');
+
+        Order::factory()->count(499)->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders?limit=500')
             ->assertOk()
-            ->assertJsonStructure(['data' => $this->expected_structure])
-            ->assertJson(['data' => $this->expected]);
+            ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(20);
     }
 
-    public function testView(): void
+    public function testViewUnauthorized(): void
     {
         $response = $this->getJson('/orders/id:' . $this->order->getKey());
-        $response->assertUnauthorized();
-
-        $response = $this->actingAs($this->user)->getJson('/orders/id:' . $this->order->getKey());
-        $response
-            ->assertOk()
-            ->assertJsonFragment(['code' => $this->order->code]);
+        $response->assertForbidden();
     }
 
-    public function testCantCreateOrderWithoutItems(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testView($user): void
     {
-        $shippingMethod = ShippingMethod::factory()->create();
+        $this->$user->givePermissionTo('orders.show_details');
 
-        $response = $this->postJson('/orders', [
-            'email' => 'test@example.com',
-            'shipping_method_id' => $shippingMethod->getKey(),
-            'delivery_address' => [
-                'name' => 'Wojtek Testowy',
-                'phone' => '+48123321123',
-                'address' => 'Gdańska 89/1',
-                'zip' => '12-123',
-                'city' => 'Bydgoszcz',
-                'country' => 'PL',
-            ],
-            'items' => [],
-        ]);
-
-        $response->assertStatus(422);
-    }
-
-    public function testViewOverpaid(): void
-    {
-        $this->order->payments()->save(Payment::factory()->make([
-            'amount' => $this->order->summary * 2,
-            'payed' => true,
-        ]));
-
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->getJson('/orders/id:' . $this->order->getKey());
         $response
             ->assertOk()
-            ->assertJsonFragment(['payed' => true]);
+            ->assertJsonFragment(['code' => $this->order->code])
+            ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
     }
 
-    public function testViewOverpaidSummary(): void
+    public function testViewSummaryUnauthorized(): void
     {
-        $this->order->payments()->save(Payment::factory()->make([
-            'amount' => $this->order->summary * 2,
-            'payed' => true,
-        ]));
+        $response = $this->getJson('/orders/' . $this->order->code);
+        $response->assertForbidden();
+    }
 
-        $response = $this->actingAs($this->user)
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewSummary($user): void
+    {
+        $this->$user->givePermissionTo('orders.show_summary');
+
+        $response = $this->actingAs($this->$user)
             ->getJson('/orders/' . $this->order->code);
         $response
             ->assertOk()
-            ->assertJsonFragment(['payed' => true]);
+            ->assertJsonStructure(['data' => $this->expected_summary_structure])
+            ->assertJson(['data' => $this->expected]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewOverpaid($user): void
+    {
+        $this->$user->givePermissionTo('orders.show_details');
+
+        $summaryPaid = $this->order->summary * 2;
+
+        $this->order->payments()->save(Payment::factory()->make([
+            'amount' => $summaryPaid,
+            'paid' => true,
+        ]));
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/orders/id:' . $this->order->getKey());
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'paid' => true,
+                'summary_paid' => $summaryPaid
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewOverpaidSummary($user): void
+    {
+        $this->$user->givePermissionTo('orders.show_summary');
+
+        $this->order->payments()->save(Payment::factory()->make([
+            'amount' => $this->order->summary * 2,
+            'paid' => true,
+        ]));
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/orders/' . $this->order->code);
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['paid' => true]);
     }
 
     public function testUpdateOrderStatusUnauthorized(): void
@@ -174,25 +221,121 @@ class OrderTest extends TestCase
             'status_id' => $status->getKey(),
         ]);
 
-        $response->assertUnauthorized();
+        $response->assertForbidden();
         Event::assertNotDispatched(OrderStatusUpdated::class);
     }
 
-    public function testUpdateOrderStatus(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderStatus($user): void
     {
+        $this->$user->givePermissionTo('orders.edit.status');
+
         Event::fake([OrderStatusUpdated::class]);
 
         $status = Status::factory()->create();
 
-        $response = $this->actingAs($this->user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
-            'status_id' => $status->getKey(),
-        ]);
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+                'status_id' => $status->getKey(),
+            ])
+            ->assertOk();
 
-        $response->assertOk();
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
             'status_id' => $status->getKey(),
         ]);
+
         Event::assertDispatched(OrderStatusUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewUnderpaid($user): void
+    {
+        $this->$user->givePermissionTo('orders.show_details');
+
+        $summaryPaid = $this->order->summary / 2;
+
+        $this->order->payments()->save(Payment::factory()->make([
+            'amount' => $summaryPaid,
+            'paid' => true,
+        ]));
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/orders/id:' . $this->order->getKey());
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'paid' => false,
+                'summary_paid' => $summaryPaid,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewUnderpaidSummary($user): void
+    {
+        $this->$user->givePermissionTo('orders.show_summary');
+
+        $this->order->payments()->save(Payment::factory()->make([
+            'amount' => $this->order->summary / 2,
+            'paid' => true,
+        ]));
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/orders/' . $this->order->code);
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['paid' => false]);
+    }
+
+    public function testViewCreatedByUser(): void
+    {
+        $this->user->givePermissionTo(['orders.add', 'orders.show_details']);
+
+        $shippingMethod = ShippingMethod::factory()->create();
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        Event::fake([OrderCreated::class]);
+
+        $response = $this->actingAs($this->user)->json('POST', '/orders', [
+            'email' => 'test@example.com',
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'delivery_address' => [
+                'name' => 'Wojtek Testowy',
+                'phone' => '+48123321123',
+                'address' => 'Gdańska 89/1',
+                'zip' => '12-123',
+                'city' => 'Bydgoszcz',
+                'country' => 'PL',
+            ],
+            'items' => [
+                [
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                ]
+            ],
+        ]);
+
+        Event::assertDispatched(OrderCreated::class);
+
+        $order = Order::find($response->getData()->data->id);
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/orders/id:' . $order->getKey());
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'email' => $this->user->email,
+                'id' => $this->user->getKey(),
+            ])
+            ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
     }
 }

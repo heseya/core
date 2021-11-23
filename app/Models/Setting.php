@@ -2,13 +2,18 @@
 
 namespace App\Models;
 
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+
 /**
  * @OA\Schema ()
  *
  * @mixin IdeHelperSetting
  */
-class Setting extends Model
+class Setting extends Model implements AuditableContract
 {
+    use Auditable;
+
     /**
      * @OA\Property(
      *   property="name",
@@ -40,8 +45,6 @@ class Setting extends Model
 
     protected $casts = [
         'public' => 'bool',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     public function getPermanentAttribute(): bool

@@ -49,14 +49,13 @@ class Option extends Model
         'price',
         'disabled',
         'schema_id',
+        'order',
     ];
 
     protected $casts = [
         'price' => 'float',
         'disabled' => 'bool',
         'available' => 'bool',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     public function getAvailableAttribute($quantity = 1): bool

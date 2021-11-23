@@ -1,0 +1,14 @@
+{
+    "name": "heseya/resource",
+    "description": "Enhanced Laravel Json Resource",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Heseya\\Resource\\": "src/"
+        }
+    },
+    "require": {
+      "laravel/framework": "^8.0"
+    }
+}

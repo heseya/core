@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use League\HTMLToMarkdown\HtmlConverter;
 
@@ -21,7 +22,7 @@ class ChangeProductDescriptionToHtml extends Migration
         DB::table('products')->orderBy('id')->chunk(100, function ($pages) {
             foreach ($pages as $page) {
                 DB::table('products')->where('id', $page->id)->update([
-                    'description_html' => parsedown($page->description_md),
+                    'description_html' => $page->description_md,
                 ]);
             }
         });

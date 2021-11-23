@@ -56,7 +56,7 @@ class PayPal implements PaymentMethod
         }
 
         $payment->update([
-            'payed' => true,
+            'paid' => true,
         ]);
 
         return redirect(config('app.store_url') . '/status/' . $payment->order->code);

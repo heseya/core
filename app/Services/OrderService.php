@@ -12,6 +12,7 @@ use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class OrderService implements OrderServiceContract
@@ -46,12 +47,15 @@ class OrderService implements OrderServiceContract
 
         try {
             $deliveryAddress = $this->modifyAddress(
-                $order->delivery_address_id,
-                $dto->getDeliveryAddress()
+                $order,
+                'delivery_address_id',
+                $dto->getDeliveryAddress(),
             );
+
             $invoiceAddress = $this->modifyAddress(
-                $order->invoice_address_id,
-                $dto->getInvoiceAddress()
+                $order,
+                'invoice_address_id',
+                $dto->getInvoiceAddress(),
             );
 
             $order->update([
@@ -72,13 +76,13 @@ class OrderService implements OrderServiceContract
             DB::rollBack();
 
             throw new OrderException(
-                'Error editing the order for id: ' . $order->id,
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY
+                'Error while editing order',
+                JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
             );
         }
     }
 
-    private function modifyAddress(?string $uuid, ?AddressDto $addressDto): ?Address
+    private function modifyAddress(Order $order, string $attribute, ?AddressDto $addressDto): ?Address
     {
         if ($addressDto === null) {
             return null;
@@ -91,6 +95,14 @@ class OrderService implements OrderServiceContract
             }
         }
 
-        return !isset($exsistAddress) ? null : Address::updateOrCreate(['id' => $uuid], $address);
+        if (!isset($exsistAddress)) {
+            return null;
+        }
+
+        $old = Address::find($order->$attribute);
+        Cache::add('address.' . $order->$attribute, $old ? ((string) $old) : null);
+        $order->forceAudit($attribute);
+
+        return Address::updateOrCreate(['id' => $order->$attribute], $address);
     }
 }

@@ -6,10 +6,23 @@ use Tests\TestCase;
 
 class CountryTest extends TestCase
 {
-    public function testIndex(): void
+    public function testIndexUnauthorized(): void
     {
         $response = $this->getJson('/countries');
 
-        $response->assertOk();
+        $response->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
+    {
+        $this->$user->givePermissionTo('countries.show');
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/countries')
+            ->assertOk();
     }
 }

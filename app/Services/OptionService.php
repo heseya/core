@@ -13,7 +13,9 @@ class OptionService implements OptionServiceContract
     {
         $keep = Collection::empty();
 
-        foreach ($options as $input) {
+        foreach ($options as $order => $input) {
+            $input['order'] = $order;
+
             if (isset($input['id'])) {
                 $option = Option::findOrFail($input['id']);
                 $option->update($input);
@@ -21,7 +23,7 @@ class OptionService implements OptionServiceContract
                 $option = $schema->options()->create($input);
             }
 
-            $option->items()->sync($input['items']);
+            $option->items()->sync($input['items'] ?? []);
 
             $keep->add($option->getKey());
         }

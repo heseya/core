@@ -13,29 +13,28 @@ use Illuminate\Http\Resources\Json\JsonResource;
 interface ShippingMethodControllerSwagger
 {
     /**
-     * @OA\Get(
+     * @OA\Get (
      *   path="/shipping-methods",
-     *   summary="list shipping methods",
-     *   tags={"Shipping"},
-     *   @OA\Response(
-     *     response=200,
-     *     description="Success",
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="data",
-     *         type="array",
-     *         @OA\Items(ref="#/components/schemas/ShippingMethod"),
-     *       )
-     *     )
-     *   )
-     * )
-     */
-
-    /**
-     * @OA\Post(
-     *   path="/shipping-methods/filter",
      *   summary="list shipping methods by filters",
      *   tags={"Shipping"},
+     *   @OA\Parameter(
+     *     name="country",
+     *     in="query",
+     *     required=false,
+     *     @OA\Schema(
+     *       type="string",
+     *       example="DE",
+     *     )
+     *   ),
+     *     @OA\Parameter(
+     *     name="cart_value",
+     *     in="query",
+     *     required=false,
+     *     @OA\Schema(
+     *       type="float",
+     *       example=1200
+     *     )
+     *   ),
      *   @OA\RequestBody(
      *     ref="#/components/requestBodies/ShippingMethodIndex",
      *   ),
@@ -112,25 +111,6 @@ interface ShippingMethodControllerSwagger
      * )
      */
     public function update(ShippingMethodUpdateRequest $request, ShippingMethod $shipping_method): JsonResource;
-
-    /**
-     * @OA\Post(
-     *   path="/shipping-methods/order",
-     *   deprecated=true,
-     *   summary="Reorder shipping method",
-     *   tags={"Shipping"},
-     *   @OA\RequestBody(
-     *     ref="#/components/requestBodies/ShippingMethodReorder",
-     *   ),
-     *   @OA\Response(
-     *     response=204,
-     *     description="Success",
-     *   ),
-     *   security={
-     *     {"oauth": {}}
-     *   }
-     * )
-     */
 
     /**
      * @OA\Post(

@@ -16,7 +16,7 @@ services:
         php artisan key:generate
         sleep 15
         php artisan migrate --seed
-        php artisan passport:install
+        php artisan jwt:secret --always-no
         touch /usr/src/init
       fi
       exec apache2-foreground
@@ -24,9 +24,7 @@ services:
     image: mariadb:10.5
     restart: unless-stopped
     environment:
-      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
-      MYSQL_USER: ${DB_USERNAME}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_DATABASE}
     ports:
       - ${DB_PORT}:3306

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\ShippingMethodDto;
 use App\Http\Controllers\Swagger\ShippingMethodControllerSwagger;
 use App\Http\Requests\ShippingMethodIndexRequest;
 use App\Http\Requests\ShippingMethodReorderRequest;
@@ -16,18 +17,16 @@ use Illuminate\Support\Facades\Response;
 
 class ShippingMethodController extends Controller implements ShippingMethodControllerSwagger
 {
-    private ShippingMethodServiceContract $shippingMethodServiceContract;
-
-    public function __construct(ShippingMethodServiceContract $shippingMethodServiceContract)
-    {
-        $this->shippingMethodServiceContract = $shippingMethodServiceContract;
+    public function __construct(
+        private ShippingMethodServiceContract $shippingMethodService,
+    ) {
     }
 
     public function index(ShippingMethodIndexRequest $request): JsonResource
     {
-        $shippingMethods = $this->shippingMethodServiceContract->index(
+        $shippingMethods = $this->shippingMethodService->index(
             $request->input('country'),
-            $request->input('cart_value', 0)
+            $request->input('cart_value', 0),
         );
 
         return ShippingMethodResource::collection($shippingMethods);
@@ -35,28 +34,33 @@ class ShippingMethodController extends Controller implements ShippingMethodContr
 
     public function store(ShippingMethodStoreRequest $request): JsonResource
     {
-        $shippingMethod = $this->shippingMethodServiceContract->store($request);
+        $shippingMethod = $this->shippingMethodService->store(
+            ShippingMethodDto::instantiateFromRequest($request),
+        );
 
         return ShippingMethodResource::make($shippingMethod);
     }
 
     public function update(ShippingMethodUpdateRequest $request, ShippingMethod $shippingMethod): JsonResource
     {
-        $shippingMethod = $this->shippingMethodServiceContract->update($request, $shippingMethod);
+        $shippingMethod = $this->shippingMethodService->update(
+            $shippingMethod,
+            ShippingMethodDto::instantiateFromRequest($request),
+        );
 
         return ShippingMethodResource::make($shippingMethod);
     }
 
     public function reorder(ShippingMethodReorderRequest $request): JsonResponse
     {
-        $this->shippingMethodServiceContract->reorder($request->input('shipping_methods'));
+        $this->shippingMethodService->reorder($request->input('shipping_methods'));
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function destroy(ShippingMethod $shippingMethod): JsonResponse
     {
-        $this->shippingMethodServiceContract->destroy($shippingMethod);
+        $this->shippingMethodService->destroy($shippingMethod);
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }

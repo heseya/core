@@ -2,8 +2,7 @@
 
 namespace App\Services\Contracts;
 
-use App\Http\Requests\ShippingMethodStoreRequest;
-use App\Http\Requests\ShippingMethodUpdateRequest;
+use App\Dtos\ShippingMethodDto;
 use App\Models\ShippingMethod;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -11,9 +10,9 @@ interface ShippingMethodServiceContract
 {
     public function index(?string $country, float $cartValue): Collection;
 
-    public function store(ShippingMethodStoreRequest $request): ShippingMethod;
+    public function store(ShippingMethodDto $shippingMethodDto): ShippingMethod;
 
-    public function update(ShippingMethodUpdateRequest $request, ShippingMethod $shippingMethod): ShippingMethod;
+    public function update(ShippingMethod $shippingMethod, ShippingMethodDto $shippingMethodDto): ShippingMethod;
 
     public function reorder(array $shippingMethods): void;
 
