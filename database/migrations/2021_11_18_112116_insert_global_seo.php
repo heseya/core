@@ -2,6 +2,7 @@
 
 use App\Models\SeoMetadata;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\Cache;
 
 class InsertGlobalSeo extends Migration
 {
@@ -12,9 +13,10 @@ class InsertGlobalSeo extends Migration
      */
     public function up()
     {
-        SeoMetadata::firstOrCreate([
+        $seo = SeoMetadata::create([
             'global' => true,
         ]);
+        Cache::put('seo.global', $seo);
     }
 
     /**
@@ -24,6 +26,7 @@ class InsertGlobalSeo extends Migration
      */
     public function down()
     {
+        Cache::forget('seo.global');
         SeoMetadata::where('global', 1)->delete();
     }
 }
