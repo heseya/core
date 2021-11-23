@@ -24,6 +24,7 @@ class ProductSetParentChildrenResource extends Resource implements ProductSetRes
             'hide_on_index' => $this->hide_on_index,
             'parent' => ProductSetResource::make($this->parent),
             'children' => ProductSetChildrenResource::collection($children),
+            'seo' => SeoMetadataResource::make($this->seo),
         ];
     }
 }
