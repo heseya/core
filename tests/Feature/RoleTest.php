@@ -184,6 +184,16 @@ class RoleTest extends TestCase
         ]);
         $roleHasNoPermissions->givePermissionTo('roles.add');
 
+        $roleUnauthenticated = Role::create([
+            'name' => 'role5',
+            'description' => 'Role 5',
+        ]);
+
+        $roleUnauthenticated->type = RoleType::UNAUTHENTICATED;
+        $roleUnauthenticated->save();
+
+        $roleUnauthenticated->givePermissionTo('roles.show');
+
         $response = $this->actingAs($this->$user)->getJson('/roles?assignable=1');
 
         $response->assertOk()
@@ -234,10 +244,20 @@ class RoleTest extends TestCase
         ]);
         $roleHasNoPermissions->givePermissionTo('roles.add');
 
+        $roleUnauthenticated = Role::create([
+            'name' => 'role5',
+            'description' => 'Role 5',
+        ]);
+
+        $roleUnauthenticated->type = RoleType::UNAUTHENTICATED;
+        $roleUnauthenticated->save();
+
+        $roleUnauthenticated->givePermissionTo('roles.show');
+
         $response = $this->actingAs($this->$user)->getJson('/roles?assignable=0');
 
         $response->assertOk()
-            ->assertJsonCount(2, 'data')
+            ->assertJsonCount(3, 'data')
             ->assertJsonFragment([[
                 $roleHasSomePermissions->getKeyName() => $roleHasSomePermissions->getKey(),
                 'name' => $roleHasSomePermissions->name,
@@ -251,6 +271,13 @@ class RoleTest extends TestCase
                 'description' => $roleHasNoPermissions->description,
                 'assignable' => false,
                 'deletable' => true,
+            ]])
+            ->assertJsonFragment([[
+                $roleUnauthenticated->getKeyName() => $roleUnauthenticated->getKey(),
+                'name' => $roleUnauthenticated->name,
+                'description' => $roleUnauthenticated->description,
+                'assignable' => false,
+                'deletable' => false,
             ]]);
     }
 
@@ -397,6 +424,42 @@ class RoleTest extends TestCase
                 'description' => $role->description,
                 'assignable' => true,
                 'deletable' => true,
+                'permissions' => [
+                    'test.custom1',
+                    'test.custom2',
+                ],
+            ]]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowUnauthenticatedRoleUnassignable($user): void
+    {
+        $this->$user->givePermissionTo('roles.show_details');
+
+        $role = Role::create([
+            'name' => 'role1',
+            'description' => 'Role 1',
+        ]);
+
+        $role->type = RoleType::UNAUTHENTICATED;
+        $role->save();
+
+        $permission1 = Permission::create(['name' => 'test.custom1']);
+        $permission2 = Permission::create(['name' => 'test.custom2']);
+        $role->syncPermissions([$permission1, $permission2]);
+        $this->$user->givePermissionTo([$permission1, $permission2]);
+
+        $response = $this->actingAs($this->$user)->getJson('/roles/id:' . $role->getKey());
+
+        $response->assertOk()
+            ->assertJson(['data' => [
+                $role->getKeyName() => $role->getKey(),
+                'name' => $role->name,
+                'description' => $role->description,
+                'assignable' => false,
+                'deletable' => false,
                 'permissions' => [
                     'test.custom1',
                     'test.custom2',
