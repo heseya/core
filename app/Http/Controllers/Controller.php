@@ -17,7 +17,7 @@ abstract class Controller extends BaseController
      *   description="IMPORTANT!!! Auth locks replaced with permissions:
      *   <https://escl24.atlassian.net/wiki/spaces/HES/pages/6476169217/Autoryzacja>.
      *   You need specific permissions to access each endpoint.",
-     *   version="1.0.0",
+     *   version="2.0.0",
      * )
      *
      * @OA\SecurityScheme(
