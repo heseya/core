@@ -2,30 +2,29 @@
 
 namespace App\Dtos;
 
-use App\Dtos\Contracts\InstantiateFromRequest;
-use Illuminate\Http\Request;
+use App\Http\Requests\ShippingMethodStoreRequest;
+use App\Http\Requests\ShippingMethodUpdateRequest;
+use Heseya\Dto\Dto;
 
-class ShippingMethodDto extends Dto implements InstantiateFromRequest
+class ShippingMethodDto extends Dto
 {
-    public function __construct(
-        protected string $name,
-        protected bool $public,
-        protected bool $blackList,
-        protected ?array $paymentMethods,
-        protected ?array $countries,
-        protected ?array $priceRanges,
-    ) {
-    }
+    protected string $name;
+    protected bool $public;
+    protected bool $black_list;
+    protected ?array $payment_methods;
+    protected ?array $countries;
+    protected ?array $price_ranges;
 
-    public static function instantiateFromRequest(Request $request): self
-    {
+    public static function instantiateFromRequest(
+        ShippingMethodStoreRequest|ShippingMethodUpdateRequest $request,
+    ): self {
         return new self(
-            $request->input('name'),
-            $request->boolean('public'),
-            $request->boolean('black_list'),
-            $request->input('payment_methods'),
-            $request->input('countries'),
-            $request->input('price_ranges'),
+            name: $request->input('name'),
+            public: $request->boolean('public'),
+            black_list: $request->boolean('black_list'),
+            payment_methods: $request->input('payment_methods'),
+            countries: $request->input('countries'),
+            price_ranges: $request->input('price_ranges'),
         );
     }
 
@@ -41,12 +40,12 @@ class ShippingMethodDto extends Dto implements InstantiateFromRequest
 
     public function isBlackList(): bool
     {
-        return $this->blackList;
+        return $this->black_list;
     }
 
     public function getPaymentMethods(): ?array
     {
-        return $this->paymentMethods;
+        return $this->payment_methods;
     }
 
     public function getCountries(): ?array
@@ -56,6 +55,6 @@ class ShippingMethodDto extends Dto implements InstantiateFromRequest
 
     public function getPriceRanges(): ?array
     {
-        return $this->priceRanges;
+        return $this->price_ranges;
     }
 }
