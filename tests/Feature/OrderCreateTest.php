@@ -257,15 +257,17 @@ class OrderCreateTest extends TestCase
 
         Event::fake([OrderCreated::class]);
 
+        $schemaPrice = 10;
         $schema = Schema::factory()->create([
             'type' => SchemaType::getKey(SchemaType::STRING),
-            'price' => 10,
+            'price' => $schemaPrice,
             'required' => false, // Important!
         ]);
 
+        $productPrice = 100;
         $this->product->schemas()->sync([$schema->getKey()]);
         $this->product->update([
-            'price' => 100,
+            'price' => $productPrice,
         ]);
 
         $response = $this->actingAs($this->$user)->postJson('/orders', [
@@ -284,6 +286,15 @@ class OrderCreateTest extends TestCase
         ]);
 
         $response->assertCreated();
+
+        /** @var Order $order */
+        $order = Order::findOrFail(
+            $response->json('data.id'),
+        );
+
+        // Expected price doesn't include empty schema
+        $expectedOrderPrice = $productPrice + $this->shippingMethod->getPrice($productPrice);
+        $this->assertEquals($expectedOrderPrice, $order->summary);
     }
 
     /**
