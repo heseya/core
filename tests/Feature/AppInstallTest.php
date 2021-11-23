@@ -60,7 +60,7 @@ class AppInstallTest extends TestCase
                 'name' => 'App name',
                 'author' => 'Mr. Author',
                 'version' => '1.0.0',
-                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
+                'api_version' => '^2.0.0', // [TODO]
                 'description' => 'Cool description',
                 'microfrontend_url' => 'https://front.example.com',
                 'icon' => 'https://picsum.photos/200',
