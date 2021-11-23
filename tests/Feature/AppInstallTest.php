@@ -174,6 +174,16 @@ class AppInstallTest extends TestCase
                 ],
                 'internal_permissions' => [
                     [
+                        'name' => 'with_description_and_display_name',
+                        'display_name' => 'Permission name',
+                        'description' => 'Permission description',
+                    ],
+                    [
+                        'name' => 'with_description_and_no_display_name',
+                        'display_name' => null,
+                        'description' => 'Permission description',
+                    ],
+                    [
                         'name' => 'with_description',
                         'description' => 'Permission description',
                     ],
@@ -225,17 +235,32 @@ class AppInstallTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('permissions', [
+            'name' => 'app.' . Str::slug($name) . '.with_description_and_display_name',
+            'display_name' => 'Permission name',
+            'description' => 'Permission description',
+        ]);
+
+        $this->assertDatabaseHas('permissions', [
+            'name' => 'app.' . Str::slug($name) . '.with_description_and_no_display_name',
+            'display_name' => null,
+            'description' => 'Permission description',
+        ]);
+
+        $this->assertDatabaseHas('permissions', [
             'name' => 'app.' . Str::slug($name) . '.with_description',
+            'display_name' => null,
             'description' => 'Permission description',
         ]);
 
         $this->assertDatabaseHas('permissions', [
             'name' => 'app.' . Str::slug($name) . '.null_description',
+            'display_name' => null,
             'description' => null,
         ]);
 
         $this->assertDatabaseHas('permissions', [
             'name' => 'app.' . Str::slug($name) . '.no_description',
+            'display_name' => null,
             'description' => null,
         ]);
 
