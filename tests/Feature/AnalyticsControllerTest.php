@@ -4,12 +4,12 @@ namespace Tests\Feature;
 
 use App\Services\Contracts\AnalyticsServiceContract;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Tests\Traits\RefreshDatabase;
 
 class AnalyticsControllerTest extends TestCase
 {
-    use RefreshDatabase;
+
 
     public function testPaymentsUnauthorized(): void
     {

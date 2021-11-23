@@ -13,13 +13,13 @@ use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
+use Tests\Traits\RefreshDatabase;
 
 class OrderCreateTest extends TestCase
 {
-    use RefreshDatabase;
+
 
     private ShippingMethod $shippingMethod;
     private ProductSet $category;

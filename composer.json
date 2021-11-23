@@ -97,11 +97,15 @@
             "@composer style"
         ],
         "test": [
-            "@php artisan test --env=.env --parallel"
+            "@php artisan test --env=.env"
         ],
         "migrate:fresh": [
-            "@php artisan db:wipe --database mysql_audits",
+            "@php artisan db:wipe --database archive",
             "@php artisan migrate:fresh"
+        ],
+        "migrate:fresh --seed": [
+            "@php artisan db:wipe --database archive",
+            "@php artisan migrate:fresh --seed"
         ]
     },
     "repositories": [

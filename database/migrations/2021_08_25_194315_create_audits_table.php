@@ -13,7 +13,7 @@ class CreateAuditsTable extends Migration
      */
     public function up()
     {
-        Schema::connection('mysql_audits')->create('audits', function (Blueprint $table) {
+        Schema::connection('archive')->create('audits', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('user_type')->nullable();
             $table->uuid('user_id')->nullable();
@@ -40,6 +40,6 @@ class CreateAuditsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('audits');
+        Schema::connection('archive')->dropIfExists('audits');
     }
 }

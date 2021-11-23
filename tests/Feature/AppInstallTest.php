@@ -6,15 +6,15 @@ use App\Enums\RoleType;
 use App\Models\App;
 use App\Models\Permission;
 use App\Models\Role;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Tests\TestCase;
+use Tests\Traits\RefreshDatabase;
 
 class AppInstallTest extends TestCase
 {
-    use RefreshDatabase;
+
 
     private string $url = 'https://example.com:9000';
 

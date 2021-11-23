@@ -28,14 +28,14 @@ services:
       MYSQL_DATABASE: ${DB_DATABASE}
     ports:
       - ${DB_PORT}:3306
-  mysql_audits:
+  mysql_archive:
     image: mariadb:10.5
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_AUDITS_PASSWORD}
-      MYSQL_DATABASE: ${DB_AUDITS_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_ARCHIVE_PASSWORD}
+      MYSQL_DATABASE: ${DB_ARCHIVE_DATABASE}
     ports:
-      - ${DB_AUDITS_EXTERNAL_PORT}:3306
+      - ${DB_ARCHIVE_EXTERNAL_PORT}:3306
   adminer:
     image: adminer
     restart: unless-stopped

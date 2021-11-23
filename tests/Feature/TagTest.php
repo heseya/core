@@ -4,12 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\Product;
 use App\Models\Tag;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Tests\Traits\RefreshDatabase;
 
 class TagTest extends TestCase
 {
-    use RefreshDatabase;
+
 
     public function testIndexUnauthorized(): void
     {

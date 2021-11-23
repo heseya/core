@@ -6,13 +6,13 @@ use App\Enums\SchemaType;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Services\Contracts\ProductServiceContract;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
+use Tests\Traits\RefreshDatabase;
 
 class ProductServiceTest extends TestCase
 {
-    use RefreshDatabase;
+
 
     private ProductServiceContract $productService;
 

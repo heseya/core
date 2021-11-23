@@ -5,14 +5,13 @@ namespace Tests\Feature;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\Status;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use Tests\Traits\CreateShippingMethod;
 
 class OrderUpdateTest extends TestCase
 {
-    use RefreshDatabase, WithFaker, CreateShippingMethod;
+    use WithFaker, CreateShippingMethod;
 
     public const EMAIL = 'test@example.com';
     private Order $order;

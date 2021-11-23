@@ -31,17 +31,31 @@ use App\Models\Tag;
 use App\Models\Token;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Tests\TestCase;
+use Tests\Traits\RefreshDatabase;
 
 class TimeFormatTest extends TestCase
 {
-    use RefreshDatabase;
+
 
     public function testAddressTimeFormat(): void
     {
         $this->modelTimeFormat(Address::factory()->create(), ['created_at', 'updated_at']);
+    }
+
+    public function modelTimeFormat($model, array $fields): void
+    {
+        $model->refresh();
+
+        Collection::make($fields)->each(fn ($field) => [
+            $this->assertInstanceOf(Carbon::class, $model->$field, "Field $field error:"),
+            $this->assertEquals(
+                $model->$field->toIso8601String(),
+                $model->$field . '',
+                "Field $field error:",
+            ),
+        ]);
     }
 
     public function testAppTimeFormat(): void
@@ -268,19 +282,5 @@ class TimeFormatTest extends TestCase
     public function testUserTimeFormat(): void
     {
         $this->modelTimeFormat(User::factory()->create(), ['created_at', 'updated_at']);
-    }
-
-    public function modelTimeFormat($model, array $fields): void
-    {
-        $model->refresh();
-
-        Collection::make($fields)->each(fn ($field) => [
-            $this->assertInstanceOf(Carbon::class, $model->$field, "Field $field error:"),
-            $this->assertEquals(
-                $model->$field->toIso8601String(),
-                $model->$field . '',
-                "Field $field error:",
-            ),
-        ]);
     }
 }

@@ -6,12 +6,12 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Services\Contracts\AnalyticsServiceContract;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Tests\Traits\RefreshDatabase;
 
 class AnalyticsServiceTest extends TestCase
 {
-    use RefreshDatabase;
+
 
     public function setUp(): void
     {

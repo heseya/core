@@ -5,14 +5,14 @@ namespace Tests\Feature;
 use App\Models\App;
 use App\Models\Permission;
 use App\Models\Role;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
+use Tests\Traits\RefreshDatabase;
 
 class AppOtherTest extends TestCase
 {
-    use RefreshDatabase;
+
 
     private string $url = 'https://example.com:9000';
 

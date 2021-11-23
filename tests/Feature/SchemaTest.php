@@ -6,13 +6,13 @@ use App\Enums\SchemaType;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Schema;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
+use Tests\Traits\RefreshDatabase;
 
 class SchemaTest extends TestCase
 {
-    use RefreshDatabase;
+
 
     /**
      * @dataProvider authProvider

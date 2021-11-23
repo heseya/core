@@ -5,14 +5,11 @@ namespace Tests\Feature;
 use App\Models\Product;
 use App\Models\ProductSet;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class ProductSearchTest extends TestCase
 {
-    use RefreshDatabase;
-
     /**
      * @dataProvider authProvider
      */
@@ -181,34 +178,6 @@ class ProductSearchTest extends TestCase
             ->assertJsonFragment(['id' => $product->getKey()]);
     }
 
-    /**
-     * @dataProvider authProvider
-     */
-    public function testSearchByParentSetWithPrivateChildUnauthorized($user): void
-    {
-        $this->$user->givePermissionTo('products.show');
-
-        $this->getProductsByParentSet($this->$user, false)
-            ->assertOk()
-            ->assertJsonCount(0, 'data');
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testSearchByParentSetWithPrivateChild($user): void
-    {
-        $this->$user->givePermissionTo([
-            'products.show',
-            'product_sets.show_hidden',
-        ]);
-
-        $this->getProductsByParentSet($this->$user, false, $product)
-            ->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['id' => $product->getKey()]);
-    }
-
     private function getProductsByParentSet(
         Authenticatable $user,
         bool $isChildSetPublic,
@@ -236,5 +205,33 @@ class ProductSearchTest extends TestCase
 
         return $this->actingAs($user)
             ->getJson('/products?sets[]=' . $parentSet->slug);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByParentSetWithPrivateChildUnauthorized($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $this->getProductsByParentSet($this->$user, false)
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByParentSetWithPrivateChild($user): void
+    {
+        $this->$user->givePermissionTo([
+            'products.show',
+            'product_sets.show_hidden',
+        ]);
+
+        $this->getProductsByParentSet($this->$user, false, $product)
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $product->getKey()]);
     }
 }

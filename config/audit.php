@@ -119,7 +119,7 @@ return [
     'drivers' => [
         'database' => [
             'table' => 'audits',
-            'connection' => 'mysql_audits',
+            'connection' => 'archive',
         ],
     ],
 

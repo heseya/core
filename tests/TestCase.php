@@ -8,9 +8,7 @@ use App\Models\App as Application;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\TokenServiceContract;
-use Database\Seeders\PermissionSeeder;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Hash;
@@ -32,7 +30,7 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
         ini_set('memory_limit', '1024M');
 
-        $this->artisan('db:wipe', ['--database' => 'mysql_audits']);
+        $this->artisan('db:wipe', ['--database' => 'archive']);
         $this->artisan('migrate:fresh');
 
         $this->tokenService = App::make(TokenServiceContract::class);
