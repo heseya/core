@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\RoleType;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
@@ -13,7 +14,7 @@ class AddOwnerToUsers extends Migration
      */
     public function up()
     {
-        $owner = Role::where('name', 'Owner')->firstOrFail();
+        $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
 
         foreach (User::all() as $user) {
             $user->assignRole($owner);
