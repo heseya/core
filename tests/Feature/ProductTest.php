@@ -10,7 +10,6 @@ use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Models\WebHook;
-use App\Services\Contracts\MarkdownServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\App;
@@ -28,7 +27,6 @@ class ProductTest extends TestCase
     private array $expected;
     private array $expected_short;
 
-    private MarkdownServiceContract $markdownService;
     private ProductServiceContract $productService;
 
     public function setUp(): void
@@ -36,7 +34,6 @@ class ProductTest extends TestCase
         parent::setUp();
 
         $this->productService = App::make(ProductServiceContract::class);
-        $this->markdownService = App::make(MarkdownServiceContract::class);
 
         $this->product = Product::factory()->create([
             'public' => true,
@@ -100,8 +97,8 @@ class ProductTest extends TestCase
          * Expected full response
          */
         $this->expected = array_merge($this->expected_short, [
-            'description_md' => $this->markdownService->fromHtml($this->product->description_html),
             'description_html' => $this->product->description_html,
+            'description_short' => $this->product->description_short,
             'meta_description' => strip_tags($this->product->description_html),
             'gallery' => [],
             'schemas' => [[
@@ -348,6 +345,7 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'price' => 100.00,
             'description_html' => '<h1>Description</h1>',
+            'description_short' => 'So called short description...',
             'public' => true,
         ]);
 
@@ -358,8 +356,8 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
-                'description_md' => $this->markdownService->fromHtml('<h1>Description</h1>'),
                 'description_html' => '<h1>Description</h1>',
+                'description_short' => 'So called short description...',
                 'cover' => null,
                 'gallery' => [],
             ]]);
@@ -370,6 +368,7 @@ class ProductTest extends TestCase
             'price' => 100,
             'public' => true,
             'description_html' => '<h1>Description</h1>',
+            'description_short' => 'So called short description...',
         ]);
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
@@ -420,7 +419,6 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
-                'description_md' => $this->markdownService->fromHtml('<h1>Description</h1>'),
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -489,7 +487,6 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
-                'description_md' => $this->markdownService->fromHtml('<h1>Description</h1>'),
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -558,7 +555,6 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => false,
-                'description_md' => $this->markdownService->fromHtml('<h1>Description</h1>'),
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -620,7 +616,6 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => false,
-                'description_md' => $this->markdownService->fromHtml('<h1>Description</h1>'),
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -844,6 +839,7 @@ class ProductTest extends TestCase
             'slug' => 'updated',
             'price' => 150,
             'description_html' => '<h1>New description</h1>',
+            'description_short' => 'New so called short description',
             'public' => false,
         ]);
 
@@ -855,6 +851,7 @@ class ProductTest extends TestCase
             'slug' => 'updated',
             'price' => 150,
             'description_html' => '<h1>New description</h1>',
+            'description_short' => 'New so called short description',
             'public' => false,
         ]);
 
@@ -1315,5 +1312,19 @@ class ProductTest extends TestCase
                 && $payload['data_type'] === 'Product'
                 && $payload['event'] === 'ProductDeleted';
         });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSetsDefaultAsArray($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $response = $this->actingAs($this->$user)->json('GET', '/products?full=1&sets=');
+        $response
+            ->assertOk()
+            ->assertJsonCount(0, 'data')
+            ->assertJson(['data' => []]);
     }
 }

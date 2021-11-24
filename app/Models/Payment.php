@@ -34,7 +34,7 @@ class Payment extends Model
      * )
      *
      * @OA\Property(
-     *   property="payed",
+     *   property="paid",
      *   type="boolean",
      * )
      *
@@ -59,7 +59,7 @@ class Payment extends Model
     protected $fillable = [
         'external_id',
         'method',
-        'payed',
+        'paid',
         'amount',
         'redirect_url',
         'continue_url',
@@ -67,10 +67,8 @@ class Payment extends Model
     ];
 
     protected $casts = [
-        'payed' => 'boolean',
+        'paid' => 'boolean',
         'amount' => 'float',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     public function order(): BelongsTo

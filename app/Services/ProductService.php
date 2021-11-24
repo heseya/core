@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\SchemaType;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
@@ -55,13 +56,15 @@ class ProductService implements ProductServiceContract
             )->toArray();
             $valueMinMax = [$schema->min, $schema->max];
 
-            $minmax = match ($schema->type) {
+            $minmax = match ($schema->type->value) {
                 default => $getBestSchemasPrices(
                     $required ? ['filled'] : [null, 'filled'],
                 ),
-                2 => $getBestSchemasPrices([true, false]),
-                4 => $getBestSchemasPrices($required ? $options : array_merge($options, [null])),
-                6, 7 => $getBestSchemasPrices(
+                SchemaType::BOOLEAN => $getBestSchemasPrices([true, false]),
+                SchemaType::SELECT => $getBestSchemasPrices(
+                    $required ? $options : array_merge($options, [null]),
+                ),
+                SchemaType::MULTIPLY, SchemaType::MULTIPLY_SCHEMA => $getBestSchemasPrices(
                     $required ? $valueMinMax : array_merge($valueMinMax, [null]),
                 ),
             };

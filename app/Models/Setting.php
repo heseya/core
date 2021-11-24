@@ -45,8 +45,6 @@ class Setting extends Model implements AuditableContract
 
     protected $casts = [
         'public' => 'bool',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     public function getPermanentAttribute(): bool

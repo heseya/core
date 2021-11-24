@@ -120,7 +120,7 @@ class Przelewy24 implements PaymentMethod
 
         $payment->update([
             'external_id' => $validated['orderId'],
-            'payed' => true,
+            'paid' => true,
         ]);
     }
 

@@ -89,7 +89,7 @@ class PaymentTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'payu',
-                'payed' => false,
+                'paid' => false,
                 'amount' => $this->order->summary,
                 'redirect_url' => 'payment_url',
                 'continue_url' => 'continue_url',
@@ -99,7 +99,7 @@ class PaymentTest extends TestCase
     public function testPayuNotificationUnauthorized(): void
     {
         $payment = Payment::factory()->make([
-            'payed' => false,
+            'paid' => false,
         ]);
 
         $this->order->payments()->save($payment);
@@ -127,7 +127,7 @@ class PaymentTest extends TestCase
         $this->$user->givePermissionTo('payments.edit');
 
         $payment = Payment::factory()->make([
-            'payed' => false,
+            'paid' => false,
         ]);
 
         $this->order->payments()->save($payment);
@@ -148,7 +148,7 @@ class PaymentTest extends TestCase
         $response->assertOk();
         $this->assertDatabaseHas('payments', [
             'id' => $payment->getKey(),
-            'payed' => true,
+            'paid' => true,
         ]);
     }
 
@@ -179,7 +179,7 @@ class PaymentTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'offline',
-                'payed' => true,
+                'paid' => true,
                 'amount' => $this->order->summary,
                 'redirect_url' => null,
                 'continue_url' => null,
@@ -188,12 +188,12 @@ class PaymentTest extends TestCase
         $this->assertDatabaseHas('payments', [
             'order_id' => $this->order->getKey(),
             'method' => 'offline',
-            'payed' => true,
+            'paid' => true,
             'amount' => $this->order->summary,
         ]);
 
         $this->order->refresh();
-        $this->assertTrue($this->order->isPayed());
+        $this->assertTrue($this->order->isPaid());
     }
 
     /**
@@ -208,7 +208,7 @@ class PaymentTest extends TestCase
         $this->order->payments()->create([
             'method' => 'payu',
             'amount' => 1,
-            'payed' => true,
+            'paid' => true,
         ]);
 
         $code = $this->order->code;
@@ -219,7 +219,7 @@ class PaymentTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'offline',
-                'payed' => true,
+                'paid' => true,
                 'amount' => $amount,
                 'redirect_url' => null,
                 'continue_url' => null,
@@ -228,12 +228,12 @@ class PaymentTest extends TestCase
         $this->assertDatabaseHas('payments', [
             'order_id' => $this->order->getKey(),
             'method' => 'offline',
-            'payed' => true,
+            'paid' => true,
             'amount' => $amount,
         ]);
 
         $this->order->refresh();
-        $this->assertTrue($this->order->isPayed());
+        $this->assertTrue($this->order->isPaid());
     }
 
 //    public function testPayPalNotification(): void
@@ -241,7 +241,7 @@ class PaymentTest extends TestCase
 //        Http::fake();
 //
 //        $payment = Payment::factory()->make([
-//            'payed' => false,
+//            'paid' => false,
 //        ]);
 //
 //        $this->order->payments()->save($payment);
@@ -255,7 +255,7 @@ class PaymentTest extends TestCase
 //        $response->assertOk();
 //        $this->assertDatabaseHas('payments', [
 //            'id' => $payment->getKey(),
-//            'payed' => true,
+//            'paid' => true,
 //        ]);
 //    }
 }

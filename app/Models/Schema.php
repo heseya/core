@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\SchemaType;
 use App\Rules\OptionAvailable;
 use App\SearchTypes\SchemaSearch;
+use BenSampo\Enum\Exceptions\InvalidEnumKeyException;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Heseya\Sortable\Sortable;
@@ -45,20 +47,8 @@ class Schema extends Model
      *     it's price by own numeric value",
      *   enum={"string", "numeric", "boolean", "date", "select", "file", "multiply",
      *     "multiply_schema"},
-     * )
-     */
-    public const TYPES = [
-        0 => 'string',
-        1 => 'numeric',
-        2 => 'boolean',
-        3 => 'date',
-        4 => 'select',
-        5 => 'file',
-        6 => 'multiply',
-        7 => 'multiply_schema',
-    ];
-
-    /**
+     * ),
+     *
      * @OA\Property(
      *   property="name",
      *   type="string",
@@ -131,8 +121,7 @@ class Schema extends Model
         'hidden' => 'bool',
         'required' => 'bool',
         'available' => 'bool',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'type' => SchemaType::class,
     ];
 
     protected $searchable = [
@@ -151,7 +140,7 @@ class Schema extends Model
 
     public function getAvailableAttribute(): bool
     {
-        if ($this->type !== 4) {
+        if (!$this->type->is(SchemaType::SELECT)) {
             return true;
         }
 
@@ -189,12 +178,16 @@ class Schema extends Model
             $validation->push('min:' . $this->min);
         }
 
-        if ($this->type === 4) {
+        if ($this->type->is(SchemaType::SELECT)) {
             $validation->push('uuid');
             $validation->push(new OptionAvailable($this, $quantity));
         }
 
-        if ($this->type === 1 || $this->type === 6 || $this->type === 7) {
+        if (
+            $this->type->is(SchemaType::NUMERIC) ||
+            $this->type->is(SchemaType::MULTIPLY) ||
+            $this->type->is(SchemaType::MULTIPLY_SCHEMA)
+        ) {
             $validation->push('numeric');
         }
 
@@ -221,15 +214,13 @@ class Schema extends Model
         }
     }
 
-    public function getTypeNameAttribute(): string
-    {
-        return Schema::TYPES[$this->type];
-    }
-
+    /**
+     * @throws InvalidEnumKeyException
+     */
     public function setTypeAttribute($value): void
     {
         if (!is_integer($value)) {
-            $value = array_***REMOVED***(self::TYPES)[$value];
+            $value = SchemaType::fromKey($value);
         }
 
         $this->attributes['type'] = $value;
@@ -306,25 +297,28 @@ class Schema extends Model
             return 0;
         }
 
-        if (($this->type === 0 || $this->type === 1) && Str::length(trim($value)) === 0) {
+        if (
+            ($this->type->is(SchemaType::STRING) || $this->type->is(SchemaType::NUMERIC)) &&
+            Str::length(trim($value)) === 0
+        ) {
             return 0;
         }
 
-        if ($this->type === 2 && ((bool) $value) === false) {
+        if ($this->type->is(SchemaType::BOOLEAN) && ((bool) $value) === false) {
             return 0;
         }
 
-        if ($this->type === 4) {
+        if ($this->type->is(SchemaType::SELECT)) {
             $option = $this->options()->findOrFail($value);
 
             $price += $option->price;
         }
 
-        if ($this->type === 6) {
+        if ($this->type->is(SchemaType::MULTIPLY)) {
             $price *= (float) $value;
         }
 
-        if ($this->type === 7) {
+        if ($this->type->is(SchemaType::MULTIPLY_SCHEMA)) {
             $usedSchema = $this->usedSchemas()->firstOrFail();
             $price = $value * $usedSchema->getUsedPrice($schemas[$usedSchema->getKey()], $schemas);
         }

@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
@@ -58,6 +59,10 @@ final class Handler extends ExceptionHandler
         ],
         RoleException::class => [
             'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+        ],
+        AuthorizationException::class => [
+            'message' => 'Unauthorized',
+            'code' => Response::HTTP_FORBIDDEN,
         ],
         WebHookCreatorException::class => [
             'code' => Response::HTTP_FORBIDDEN,
