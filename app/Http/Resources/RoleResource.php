@@ -15,7 +15,7 @@ class RoleResource extends Resource implements RoleResourceSwagger
             'id' => $this->getKey(),
             'name' => $this->name,
             'description' => $this->description,
-            'assignable' => Auth::user()->hasAllPermissions(
+            'assignable' => $this->type->is(RoleType::UNAUTHENTICATED) ? false : Auth::user()->hasAllPermissions(
                 $this->getAllPermissions(),
             ),
             'deletable' => $this->type->is(RoleType::REGULAR),
