@@ -28,10 +28,11 @@ class WebHookNotification extends Notification
     public function toWebHook($notifiable)
     {
         if ($notifiable->with_issuer) {
-            $this->data['issuer'] = $this->data['issuer_type'] === IssuerType::APP
-                ? AppIssuerResource::make($this->issuer)->resolve()
-                : ($this->data['issuer_type'] === IssuerType::USER
-                    ? UserIssuerResource::make($this->issuer)->resolve() : null);
+            $this->data['issuer'] = match ($this->data['issuer_type']) {
+                IssuerType::APP => AppIssuerResource::make($this->issuer)->resolve(),
+                IssuerType::USER => UserIssuerResource::make($this->issuer)->resolve(),
+                IssuerType::UNAUTHENTICATED => null,
+            };
         }
         return $this->data;
     }
