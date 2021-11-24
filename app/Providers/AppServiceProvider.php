@@ -25,6 +25,7 @@ use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
 use App\Services\Contracts\ShippingMethodServiceContract;
 use App\Services\Contracts\TokenServiceContract;
+use App\Services\Contracts\UrlServiceContract;
 use App\Services\Contracts\UserServiceContract;
 use App\Services\DiscountService;
 use App\Services\MediaService;
@@ -41,6 +42,7 @@ use App\Services\SchemaService;
 use App\Services\SettingsService;
 use App\Services\ShippingMethodService;
 use App\Services\TokenService;
+use App\Services\UrlService;
 use App\Services\UserService;
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
 use Illuminate\Support\ServiceProvider;
@@ -68,6 +70,7 @@ class AppServiceProvider extends ServiceProvider
         AuditServiceContract::class => AuditService::class,
         TokenServiceContract::class => TokenService::class,
         ProductServiceContract::class => ProductService::class,
+        UrlServiceContract::class => UrlService::class,
     ];
 
     /**

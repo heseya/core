@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\AppUniqueUrl;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -61,7 +62,7 @@ class AppStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'url' => ['required', 'url'],
+            'url' => ['required', 'url', new AppUniqueUrl()],
             'name' => ['nullable', 'string'],
             'licence_key' => ['nullable', 'string'],
             'allowed_permissions' => ['present', 'array'],
