@@ -108,10 +108,12 @@ class AuthService implements AuthServiceContract
 
     public function resetPassword(string $email): void
     {
-        $user = $this->getUserByEmail($email);
-        $token = Password::createToken($user);
+        $user = User::whereEmail($email)->first();
+        if ($user) {
+            $token = Password::createToken($user);
 
-        $user->notify(new ResetPassword($token));
+            $user->notify(new ResetPassword($token));
+        }
     }
 
     public function showResetPasswordForm(?string $email, ?string $token): User

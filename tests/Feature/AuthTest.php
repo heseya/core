@@ -248,6 +248,31 @@ class AuthTest extends TestCase
         $response->assertNoContent();
     }
 
+    public function testResetPasswordDifferentEmail(): void
+    {
+        $this->user->givePermissionTo('auth.password_reset');
+
+        $email = $this->faker->unique()->safeEmail;
+        $password = 'Passwd###111';
+
+        $user = User::factory()->create([
+            'name' => $this->faker->firstName() . ' '  . $this->faker->lastName(),
+            'email' => $email,
+            'password' => Hash::make($password),
+        ]);
+
+        Mail::fake();
+        Mail::assertNothingSent();
+
+        $response = $this->actingAs($this->user)->postJson('/users/reset-password', [
+            'email' => $this->faker->unique()->safeEmail,
+        ]);
+
+        Mail::assertNothingSent();
+
+        $response->assertNoContent();
+    }
+
     public function testSaveResetPasswordUnauthorized(): void
     {
         $email = $this->faker->unique()->safeEmail;
