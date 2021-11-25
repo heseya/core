@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Events\OrderCreated;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderUpdatedStatus;
 use App\Listeners\WebHookEventListener;
@@ -23,7 +24,9 @@ class OrderTest extends TestCase
     private Order $order;
 
     private array $expected;
-    private array $expected_structure;
+    private array $expected_summary_structure;
+    private array $expected_full_structure;
+    private array $expected_full_view_structure;
 
     public function setUp(): void
     {
@@ -52,13 +55,6 @@ class OrderTest extends TestCase
             'price' => 49.99,
         ]);
 
-//        $item = Item::factory()->create();
-//
-//        $item_product->deposits()->create([
-//            'item_id' => $item->getKey(),
-//            'quantity' => -1 * $item_product->quantity,
-//        ]);
-
         /**
          * Expected response
          */
@@ -70,15 +66,25 @@ class OrderTest extends TestCase
                 'color' => $status->color,
                 'description' => $status->description,
             ],
-            'payed' => $this->order->isPayed(),
+            'paid' => $this->order->isPaid(),
         ];
 
-        $this->expected_structure = [
+        $this->expected_summary_structure = [
             'code',
             'status',
-            'payed',
+            'paid',
             'created_at',
         ];
+
+        $this->expected_full_structure = [
+            'code',
+            'status',
+            'paid',
+            'created_at',
+            'shipping_method',
+        ];
+
+        $this->expected_full_view_structure = $this->expected_full_structure + ['user'];
     }
 
     public function testIndexUnauthorized(): void
@@ -100,13 +106,13 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonStructure(['data' => [
-                0 => $this->expected_structure,
+                0 => $this->expected_full_structure,
             ]])
             ->assertJson(['data' => [
                 0 => $this->expected,
             ]]);
 
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(20);
     }
 
     /**
@@ -124,7 +130,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(20);
     }
 
     public function testViewUnauthorized(): void
@@ -144,7 +150,8 @@ class OrderTest extends TestCase
             ->getJson('/orders/id:' . $this->order->getKey());
         $response
             ->assertOk()
-            ->assertJsonFragment(['code' => $this->order->code]);
+            ->assertJsonFragment(['code' => $this->order->code])
+            ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
     }
 
     public function testViewSummaryUnauthorized(): void
@@ -164,7 +171,7 @@ class OrderTest extends TestCase
             ->getJson('/orders/' . $this->order->code);
         $response
             ->assertOk()
-            ->assertJsonStructure(['data' => $this->expected_structure])
+            ->assertJsonStructure(['data' => $this->expected_summary_structure])
             ->assertJson(['data' => $this->expected]);
     }
 
@@ -179,7 +186,7 @@ class OrderTest extends TestCase
 
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $summaryPaid,
-            'payed' => true,
+            'paid' => true,
         ]));
 
         $response = $this->actingAs($this->$user)
@@ -187,7 +194,7 @@ class OrderTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonFragment([
-                'payed' => true,
+                'paid' => true,
                 'summary_paid' => $summaryPaid
             ]);
     }
@@ -201,14 +208,14 @@ class OrderTest extends TestCase
 
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $this->order->summary * 2,
-            'payed' => true,
+            'paid' => true,
         ]));
 
         $response = $this->actingAs($this->$user)
             ->getJson('/orders/' . $this->order->code);
         $response
             ->assertOk()
-            ->assertJsonFragment(['payed' => true]);
+            ->assertJsonFragment(['paid' => true]);
     }
 
     public function testUpdateOrderStatusUnauthorized(): void
@@ -426,7 +433,7 @@ class OrderTest extends TestCase
 
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $summaryPaid,
-            'payed' => true,
+            'paid' => true,
         ]));
 
         $response = $this->actingAs($this->$user)
@@ -434,7 +441,7 @@ class OrderTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonFragment([
-                'payed' => false,
+                'paid' => false,
                 'summary_paid' => $summaryPaid,
             ]);
     }
@@ -448,13 +455,58 @@ class OrderTest extends TestCase
 
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $this->order->summary / 2,
-            'payed' => true,
+            'paid' => true,
         ]));
 
         $response = $this->actingAs($this->$user)
             ->getJson('/orders/' . $this->order->code);
         $response
             ->assertOk()
-            ->assertJsonFragment(['payed' => false]);
+            ->assertJsonFragment(['paid' => false]);
+    }
+
+    public function testViewCreatedByUser(): void
+    {
+        $this->user->givePermissionTo(['orders.add', 'orders.show_details']);
+
+        $shippingMethod = ShippingMethod::factory()->create();
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        Event::fake([OrderCreated::class]);
+
+        $response = $this->actingAs($this->user)->json('POST', '/orders', [
+            'email' => 'test@example.com',
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'delivery_address' => [
+                'name' => 'Wojtek Testowy',
+                'phone' => '+48123321123',
+                'address' => 'Gdańska 89/1',
+                'zip' => '12-123',
+                'city' => 'Bydgoszcz',
+                'country' => 'PL',
+            ],
+            'items' => [
+                [
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                ]
+            ],
+        ]);
+
+        Event::assertDispatched(OrderCreated::class);
+
+        $order = Order::find($response->getData()->data->id);
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/orders/id:' . $order->getKey());
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'email' => $this->user->email,
+                'id' => $this->user->getKey(),
+            ])
+            ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
     }
 }

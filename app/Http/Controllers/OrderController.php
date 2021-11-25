@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\OrderUpdateDto;
+use App\Enums\SchemaType;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
@@ -23,10 +24,12 @@ use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use App\Models\User;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Throwable;
 
@@ -83,6 +86,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             'status_id' => Status::select('id')->orderBy('order')->first()->getKey(),
             'delivery_address_id' => $deliveryAddress->getKey(),
             'invoice_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
+            'user_id' => Auth::user() instanceof User ? Auth::user()->getKey() : null,
         ]);
 
         try {
@@ -99,15 +103,17 @@ class OrderController extends Controller implements OrderControllerSwagger
                 $order->products()->save($orderProduct);
 
                 foreach ($product->schemas as $schema) {
-                    $schema->validate(
-                        $schemas[$schema->getKey()] ?? null,
-                        $item['quantity'],
-                    );
-
                     $value = $schemas[$schema->getKey()] ?? null;
+
+                    $schema->validate($value, $item['quantity']);
+
+                    if ($value === null) {
+                        continue;
+                    }
+
                     $price = $schema->getPrice($value, $schemas);
 
-                    if ($schema->type === 4) {
+                    if ($schema->type->is(SchemaType::SELECT)) {
                         $option = $schema->options()->findOrFail($value);
                         $value = $option->name;
 
@@ -205,7 +211,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             $order->payments()->create([
                 'method' => $payment['name'],
                 'amount' => $payment['amount'],
-                'payed' => $payment['payed'],
+                'paid' => $payment['paid'],
                 'created_at' => $request->input('created_at'),
             ]);
         }

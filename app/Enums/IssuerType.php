@@ -8,4 +8,5 @@ final class IssuerType extends Enum
 {
     public const APP = 'app';
     public const USER = 'user';
+    public const UNAUTHENTICATED = 'unauthenticated';
 }

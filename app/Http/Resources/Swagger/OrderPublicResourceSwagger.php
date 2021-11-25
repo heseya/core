@@ -25,7 +25,7 @@ interface OrderPublicResourceSwagger
      *     ref="#/components/schemas/Status",
      *   ),
      *   @OA\Property(
-     *     property="payed",
+     *     property="paid",
      *     type="boolean",
      *   ),
      *   @OA\Property(

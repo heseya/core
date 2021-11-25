@@ -75,6 +75,7 @@ class Order extends Model implements AuditableContract
         'delivery_address_id',
         'invoice_address_id',
         'created_at',
+        'user_id',
     ];
 
     protected $auditInclude = [
@@ -95,11 +96,6 @@ class Order extends Model implements AuditableContract
         'shipping_method_id' => ShippingMethodRedactor::class,
         'delivery_address_id' => AddressRedactor::class,
         'invoice_address_id' => AddressRedactor::class,
-    ];
-
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     protected array $searchable = [
@@ -145,7 +141,7 @@ class Order extends Model implements AuditableContract
     public function getPaidAmountAttribute(): float
     {
         return $this->payments
-            ->where('payed', true)
+            ->where('paid', true)
             ->sum('amount');
     }
 
@@ -160,7 +156,7 @@ class Order extends Model implements AuditableContract
     {
         return $this
             ->hasMany(Payment::class)
-            ->orderBy('payed', 'DESC')
+            ->orderBy('paid', 'DESC')
             ->orderBy('updated_at', 'DESC');
     }
 
@@ -172,18 +168,18 @@ class Order extends Model implements AuditableContract
      */
     public function getPayableAttribute(): bool
     {
-        return !$this->isPayed() &&
+        return !$this->isPaid() &&
             !$this->status->cancel &&
             $this->shippingMethod->paymentMethods()->count() > 0;
     }
 
     /**
      * @OA\Property(
-     *   property="payed",
+     *   property="paid",
      *   type="boolean",
      * )
      */
-    public function isPayed(): bool
+    public function isPaid(): bool
     {
         return $this->paid_amount >= $this->summary;
     }
@@ -274,5 +270,10 @@ class Order extends Model implements AuditableContract
         } while (Order::where('code', $code)->exists());
 
         return $code;
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

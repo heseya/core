@@ -83,7 +83,7 @@ class AuthService implements AuthServiceContract
             new TokenType(TokenType::ACCESS),
             $uuid,
         );
-        $identityToken = $this->tokenService->createToken(
+        $identityToken = $user instanceof App ? null : $this->tokenService->createToken(
             $user,
             new TokenType(TokenType::IDENTITY),
             $uuid,

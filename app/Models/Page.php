@@ -25,8 +25,6 @@ class Page extends Model implements AuditableContract
 
     protected $casts = [
         'public' => 'boolean',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     protected array $sortable = [

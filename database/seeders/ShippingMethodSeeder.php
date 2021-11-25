@@ -15,12 +15,21 @@ class ShippingMethodSeeder extends Seeder
      */
     public function run()
     {
-        ShippingMethod::factory()->count(3)->create(['public' => true])->each(function ($shipping_method) {
+        $this->createShippingMethods(3, true);
+        $this->createShippingMethods(2, false);
+    }
 
-            $payment_methods = PaymentMethod::factory()->count(rand(1, 3))->create();
-            $shipping_method->paymentMethods()->sync($payment_methods);
+    private function createShippingMethods(int $count, bool $public) {
+        ShippingMethod::factory()->count($count)->create(['public' => $public])->each(function (ShippingMethod $shippingMethod) {
+
+            $paymentMethods = PaymentMethod::factory()->count(rand(1, 3))->create();
+            $shippingMethod->paymentMethods()->sync($paymentMethods);
+            $priceRange = $shippingMethod->priceRanges()->create([
+                'start' => 0,
+            ]);
+            $priceRange->prices()->create([
+                'value' => rand(500, 2000) / 100.0,
+            ]);
         });
-
-        ShippingMethod::factory()->create(['public' => false]);
     }
 }

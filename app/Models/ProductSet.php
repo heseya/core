@@ -34,8 +34,6 @@ class ProductSet extends Model
         'public' => 'boolean',
         'public_parent' => 'boolean',
         'hide_on_index' => 'boolean',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     protected array $searchable = [

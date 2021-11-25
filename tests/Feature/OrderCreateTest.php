@@ -3,6 +3,9 @@
 namespace Tests\Feature;
 
 use App\Enums\DiscountType;
+use App\Enums\SchemaType;
+use App\Enums\IssuerType;
+use App\Enums\RoleType;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Listeners\WebHookEventListener;
@@ -15,6 +18,7 @@ use App\Models\Order;
 use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\ProductSet;
+use App\Models\Role;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\WebHook;
@@ -205,70 +209,81 @@ class OrderCreateTest extends TestCase
         Queue::assertPushed(CallWebhookJob::class);
     }
 
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateSimpleOrderWithWebHookDispatch($user): void
+    public function testCreateSimpleOrderWithWebHookEvent(): array
     {
-        $this->$user->givePermissionTo('orders.add');
-
-        $webHook = WebHook::factory()->create([
-            'events' => [
-                'OrderCreated'
-            ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
-            'with_issuer' => false,
-            'with_hidden' => false,
-        ]);
+        $this->user->givePermissionTo('orders.add');
 
         Event::fake([OrderCreated::class]);
 
-        $this->product->update([
-            'price' => 10,
-        ]);
-
-        $productQuantity = 20;
-
-        $response = $this->actingAs($this->$user)->postJson('/orders', [
+        $response = $this->actingAs($this->user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
-                    'quantity' => $productQuantity,
+                    'quantity' => 20,
                 ],
             ],
         ]);
 
-        $response->assertCreated();
-        $order = $response->getData()->data;
-
-        $this->assertDatabaseHas('orders', [
-            'id' => $order->id,
-            'email' => $this->email,
-            'shipping_price' => $this->shippingMethod->getPrice(
-                $this->product->price * $productQuantity,
-            ),
-        ]);
-        $this->assertDatabaseHas('addresses', $this->address->toArray());
-        $this->assertDatabaseHas('order_products', [
-            'order_id' => $order->id,
-            'product_id' => $this->product->getKey(),
-            'quantity' => 20,
-        ]);
+        $order = Order::find($response->getData()->data->id)->with('shippingMethod')->first();
 
         Event::assertDispatched(OrderCreated::class);
+        return [$order, new OrderCreated($order)];
+    }
+
+    public function testCreateSimpleOrderUnauthenticatedWithWebHookEvent(): array
+    {
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $response = $this->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 20,
+                ],
+            ],
+        ]);
+
+        $order = Order::find($response->getData()->data->id)->with('shippingMethod')->first();
+
+        Event::assertDispatched(OrderCreated::class);
+        return [$order, new OrderCreated($order)];
+    }
+
+    /**
+     * @dataProvider authProvider
+     * @depends testCreateSimpleOrderWithWebHookEvent
+     * @depends testCreateSimpleOrderUnauthenticatedWithWebHookEvent
+     */
+    public function testOrderCreatedWebHookDispatch($user, $payload, $payload2): void
+    {
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderCreated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
 
         Bus::fake();
 
-        $order = Order::find($order->id);
-        $event = new OrderCreated($order);
+        [$order, $event] = $payload;
+        [$orderUnauthenticated, $eventUnauthenticated] = $payload2;
         $listener = new WebHookEventListener();
 
         $listener->handle($event);
 
+        // Zalogowany użytkownik
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $order) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
@@ -276,6 +291,19 @@ class OrderCreateTest extends TestCase
                 && $payload['data']['id'] === $order->getKey()
                 && $payload['data_type'] === 'Order'
                 && $payload['event'] === 'OrderCreated';
+        });
+
+        $listener->handle($eventUnauthenticated);
+
+        // Niezalogowany użytkownik
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $orderUnauthenticated) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $orderUnauthenticated->getKey()
+                && $payload['data_type'] === 'Order'
+                && $payload['event'] === 'OrderCreated'
+                && $payload['issuer_type'] === IssuerType::UNAUTHENTICATED;
         });
     }
 
@@ -523,6 +551,55 @@ class OrderCreateTest extends TestCase
         ]);
 
         Event::assertDispatched(OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderNonRequiredSchemaEmpty($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $schemaPrice = 10;
+        $schema = Schema::factory()->create([
+            'type' => SchemaType::getKey(SchemaType::STRING),
+            'price' => $schemaPrice,
+            'required' => false, // Important!
+        ]);
+
+        $productPrice = 100;
+        $this->product->schemas()->sync([$schema->getKey()]);
+        $this->product->update([
+            'price' => $productPrice,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => 'test@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [
+                        $schema->getKey() => '',
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertCreated();
+
+        /** @var Order $order */
+        $order = Order::findOrFail(
+            $response->json('data.id'),
+        );
+
+        // Expected price doesn't include empty schema
+        $expectedOrderPrice = $productPrice + $this->shippingMethod->getPrice($productPrice);
+        $this->assertEquals($expectedOrderPrice, $order->summary);
     }
 
     /**

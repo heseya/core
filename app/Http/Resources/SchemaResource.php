@@ -10,7 +10,7 @@ class SchemaResource extends Resource
     {
         return [
             'id' => $this->getKey(),
-            'type' => $this->typeName,
+            'type' => $this->type->key,
             'name' => $this->name,
             'description' => $this->description,
             'price' => $this->price,

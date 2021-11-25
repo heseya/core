@@ -21,7 +21,7 @@ abstract class WebHookEvent
     public function __construct()
     {
         $this->triggered_at = Carbon::now()->format('c');
-        $this->issuer = Auth::user();
+        $this->issuer = Auth::user()->getAuthIdentifier() ? Auth::user() : null;
     }
 
     public function getData(): array
@@ -31,7 +31,8 @@ abstract class WebHookEvent
             'data_type' => $this->getDataType(),
             'event' => Str::remove('App\\Events\\', $this::class),
             'triggered_at' => $this->triggered_at,
-            'issuer_type' => IssuerType::getValue(strtoupper($this->getModelClass($this->issuer))),
+            'issuer_type' => $this->issuer ? IssuerType::getValue(strtoupper($this->getModelClass($this->issuer)))
+                : IssuerType::UNAUTHENTICATED,
         ];
     }
 
@@ -39,7 +40,7 @@ abstract class WebHookEvent
 
     abstract public function getDataType(): string;
 
-    public function getIssuer(): Model
+    public function getIssuer(): Model|null
     {
         return $this->issuer;
     }

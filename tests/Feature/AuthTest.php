@@ -82,7 +82,21 @@ class AuthTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testRefreshToken(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testRefreshTokenMissing($user): void
+    {
+        $this->$user->givePermissionTo('auth.login');
+
+        $response = $this->actingAs($this->$user)->postJson('/auth/refresh', [
+            'refresh_token' => null,
+        ]);
+
+        $response->assertUnprocessable();
+    }
+
+    public function testRefreshTokenUser(): void
     {
         $this->user->givePermissionTo('auth.login');
 
@@ -112,15 +126,14 @@ class AuthTest extends TestCase
 
     public function testRefreshTokenApp(): void
     {
-        $app = App::factory()->create();
-        $app->givePermissionTo('auth.login');
+        $this->application->givePermissionTo('auth.login');
 
         $token = $this->tokenService->createToken(
-            $app,
+            $this->application,
             new TokenType(TokenType::REFRESH),
         );
 
-        $response = $this->actingAs($app)->postJson('/auth/refresh', [
+        $response = $this->actingAs($this->application)->postJson('/auth/refresh', [
             'refresh_token' => $token,
         ]);
 
@@ -142,7 +155,9 @@ class AuthTest extends TestCase
                     'author',
                     'permissions',
                 ],
-            ]]);
+            ]])->assertJsonFragment([
+                'identity_token' => null,
+            ]);
     }
 
     /**
@@ -286,7 +301,7 @@ class AuthTest extends TestCase
             'password' => Hash::make('test'),
         ]);
 
-        $response = $this->actingAs($user)->patchJson('/user/password', [
+        $response = $this->actingAs($user)->patchJson('/users/password', [
             'password' => 'test',
             'password_new' => 'Test1@3456',
         ]);
@@ -302,7 +317,7 @@ class AuthTest extends TestCase
 
         $user->givePermissionTo('auth.password_change');
 
-        $response = $this->actingAs($user)->patchJson('/user/password', [
+        $response = $this->actingAs($user)->patchJson('/users/password', [
             'password' => 'test',
             'password_new' => 'Test1@3456',
         ]);
