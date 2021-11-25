@@ -28,27 +28,27 @@ class AnalyticsServiceTest extends TestCase
         $order = Order::factory()->create();
 
         $before = Payment::factory([
-            'payed' => true,
+            'paid' => true,
             'created_at' => $from->copy()->subDay(),
         ])->make();
 
         $onStart = Payment::factory([
-            'payed' => true,
+            'paid' => true,
             'created_at' => $from,
         ])->make();
 
         $during = Payment::factory([
-            'payed' => true,
+            'paid' => true,
             'created_at' => $from->copy()->addDays(15),
         ])->make();
 
         $onEnd = Payment::factory([
-            'payed' => true,
+            'paid' => true,
             'created_at' => $to->copy()->addHours(5),
         ])->make();
 
         $after = Payment::factory([
-            'payed' => true,
+            'paid' => true,
             'created_at' => $to->copy()->addDay(),
         ])->make();
 
@@ -92,22 +92,22 @@ class AnalyticsServiceTest extends TestCase
         $order = Order::factory()->create();
 
         $oneG0 = Payment::factory([
-            'payed' => true,
+            'paid' => true,
             'created_at' => $groupOne0,
         ])->make();
 
         $twoG0 = Payment::factory([
-            'payed' => true,
+            'paid' => true,
             'created_at' => $groupOne1,
         ])->make();
 
         $oneG1 = Payment::factory([
-            'payed' => true,
+            'paid' => true,
             'created_at' => $groupTwo0,
         ])->make();
 
         $twoG1 = Payment::factory([
-            'payed' => true,
+            'paid' => true,
             'created_at' => $groupTwo1,
         ])->make();
 

@@ -3,6 +3,9 @@
 namespace App\Services;
 
 use App\Dtos\PageDto;
+use App\Events\PageCreated;
+use App\Events\PageDeleted;
+use App\Events\PageUpdated;
 use App\Models\Page;
 use App\Services\Contracts\PageServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
@@ -48,6 +51,8 @@ class PageService implements PageServiceContract
 
         $page->seo()->save($this->seoMetadataService->create($dto->getSeo()));
 
+        PageCreated::dispatch($page);
+
         return $page;
     }
 
@@ -60,15 +65,18 @@ class PageService implements PageServiceContract
             $this->seoMetadataService->update($dto->getSeo(), $seo);
         }
 
+        PageUpdated::dispatch($page);
+
         return $page;
     }
 
     public function delete(Page $page): void
     {
-        $page->delete();
-
-        if ($page->seo !== null) {
-            $this->seoMetadataService->delete($page->seo);
+        if ($page->delete()) {
+            PageDeleted::dispatch($page);
+            if ($page->seo !== null) {
+                $this->seoMetadataService->delete($page->seo);
+            }
         }
     }
 

@@ -3,6 +3,9 @@
 namespace App\Services;
 
 use App\Dtos\ProductSetDto;
+use App\Events\ProductSetCreated;
+use App\Events\ProductSetDeleted;
+use App\Events\ProductSetUpdated;
 use App\Models\ProductSet;
 use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
@@ -79,6 +82,8 @@ class ProductSetService implements ProductSetServiceContract
         }
 
         $set->seo()->save($this->seoMetadataService->create($dto->getSeo()));
+
+        ProductSetCreated::dispatch($set);
 
         return $set;
     }
@@ -169,6 +174,9 @@ class ProductSetService implements ProductSetServiceContract
         if ($seo !== null) {
             $this->seoMetadataService->update($dto->getSeo(), $seo);
         }
+
+        ProductSetUpdated::dispatch($set);
+
         return $set;
     }
 
@@ -199,8 +207,11 @@ class ProductSetService implements ProductSetServiceContract
 
         $set->delete();
 
-        if ($set->seo !== null) {
-            $this->seoMetadataService->delete($set->seo);
+        if ($set->delete()) {
+            ProductSetDeleted::dispatch($set);
+            if ($set->seo !== null) {
+                $this->seoMetadataService->delete($set->seo);
+            }
         }
     }
 

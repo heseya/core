@@ -27,6 +27,12 @@ class Price extends Model
      *   type="string",
      *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
      * )
+     *
+     * @OA\Property(
+     *   property="model_type",
+     *   type="string",
+     *   example="App\Models\Product",
+     * )
      */
 
     /**
@@ -35,6 +41,7 @@ class Price extends Model
     protected $fillable = [
         'value',
         'model_id',
+        'model_type',
     ];
 
     /**
@@ -44,7 +51,5 @@ class Price extends Model
      */
     protected $casts = [
         'value' => 'float',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 }

@@ -23,5 +23,5 @@ Route::prefix('auth')->group(function (): void {
 
 Route::post('login', [AuthController::class, 'login'])
     ->middleware(['app.restrict', 'can:auth.login']);
-Route::patch('user/password', [AuthController::class, 'changePassword'])
+Route::patch('users/password', [AuthController::class, 'changePassword'])
     ->middleware(['app.restrict', 'can:auth.password_change']);

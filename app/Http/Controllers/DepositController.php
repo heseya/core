@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ItemUpdatedQuantity;
 use App\Http\Controllers\Swagger\DepositControllerSwagger;
 use App\Http\Requests\DepositCreateRequest;
 use App\Http\Resources\DepositResource;
@@ -29,6 +30,8 @@ class DepositController extends Controller implements DepositControllerSwagger
     public function store(Item $item, DepositCreateRequest $request): JsonResource
     {
         $deposit = $item->deposits()->create($request->validated());
+
+        ItemUpdatedQuantity::dispatch($item);
 
         return DepositResource::make($deposit);
     }

@@ -2,12 +2,12 @@
 
 namespace App\Listeners;
 
-use App\Events\OrderStatusUpdated as OrderStatusUpdatedEvent;
+use App\Events\OrderUpdatedStatus as OrderStatusUpdatedEvent;
 use App\Notifications\OrderStatusUpdated;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class OrderStatusUpdatedListener
+class OrderUpdatedStatusListener
 {
     public function handle(OrderStatusUpdatedEvent $event): void
     {

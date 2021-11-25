@@ -2,11 +2,21 @@
 
 namespace Tests\Feature;
 
+use App\Events\PageCreated;
+use App\Events\PageDeleted;
+use App\Events\PageUpdated;
+use App\Http\Resources\PageResource;
+use App\Listeners\WebHookEventListener;
 use App\Models\Page;
 use App\Models\SeoMetadata;
+use App\Models\WebHook;
+use Illuminate\Events\CallQueuedListener;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
 class PageTest extends TestCase
@@ -165,8 +175,12 @@ class PageTest extends TestCase
 
     public function testCreateUnauthorized(): void
     {
+        Event::fake([PageCreated::class]);
+
         $response = $this->postJson('/pages');
         $response->assertForbidden();
+
+        Event::assertNotDispatched(PageCreated::class);
     }
 
     /**
@@ -175,6 +189,8 @@ class PageTest extends TestCase
     public function testCreate($user): void
     {
         $this->$user->givePermissionTo('pages.add');
+
+        Event::fake([PageCreated::class]);
 
         $html = '<h1>hello world</h1>';
         $page = [
@@ -190,6 +206,63 @@ class PageTest extends TestCase
         ])->assertCreated();
 
         $this->assertDatabaseHas('pages', $page);
+
+        Event::assertDispatched(PageCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithWebHook($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'PageCreated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => true,
+            'with_hidden' => false,
+        ]);
+
+        Bus::fake();
+
+        $html = '<h1>hello world</h1>';
+        $page = [
+            'name' => 'Test',
+            'slug' => 'test-test',
+            'public' => true,
+            'content_html' => $html,
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/pages', $page);
+        $response->assertJson([
+            'data' => $page,
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('pages', $page);
+
+        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof PageCreated;
+        });
+
+        $page = Page::find($response->getData()->data->id);
+
+        $event = new PageCreated($page);
+        $listener = new WebHookEventListener();
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $page) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $page->getKey()
+                && $payload['data_type'] === 'Page'
+                && $payload['event'] === 'PageCreated';
+        });
     }
 
     /**
@@ -237,6 +310,8 @@ class PageTest extends TestCase
     {
         $this->$user->givePermissionTo('pages.add');
 
+        Event::fake([PageCreated::class]);
+
         for ($i = 0; $i < 3; $i++) {
             $name = ' order test ' . $this->faker->sentence(rand(1, 3));
             $page = [
@@ -264,12 +339,18 @@ class PageTest extends TestCase
             'id' => $uuids[2],
             'order' => 3,
         ]);
+
+        Event::assertDispatched(PageCreated::class);
     }
 
     public function testUpdateUnauthorized(): void
     {
+        Event::fake(PageUpdated::class);
+
         $response = $this->patchJson('/pages/id:' . $this->page->getKey());
         $response->assertForbidden();
+
+        Event::assertNotDispatched(PageUpdated::class);
     }
 
     /**
@@ -278,6 +359,8 @@ class PageTest extends TestCase
     public function testUpdate($user): void
     {
         $this->$user->givePermissionTo('pages.edit');
+
+        Event::fake(PageUpdated::class);
 
         $html = '<h1>hello world 2</h1>';
         $page = [
@@ -296,6 +379,68 @@ class PageTest extends TestCase
             ->assertOk()
             ->assertJson(['data' => $page]);
 
+        $this->assertDatabaseHas('pages', $page + ['id' => $this->page->getKey()]);
+
+        Event::assertDispatched(PageUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithWebHook($user): void
+    {
+        $this->$user->givePermissionTo('pages.edit');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'PageUpdated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => true,
+            'with_hidden' => true,
+        ]);
+
+        Bus::fake();
+
+        $html = '<h1>hello world 2</h1>';
+        $page = [
+            'name' => 'Test 2',
+            'slug' => 'test-2',
+            'public' => false,
+            'content_html' => $html,
+        ];
+
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/pages/id:' . $this->page->getKey(),
+            $page,
+        );
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => $page]);
+
+        $this->assertDatabaseHas('pages', $page + ['id' => $this->page->getKey()]);
+
+        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof PageUpdated;
+        });
+
+        $page = Page::find($response->getData()->data->id);
+
+        $event = new PageUpdated($page);
+        $listener = new WebHookEventListener();
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $page) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $page->getKey()
+                && $payload['data_type'] === 'Page'
+                && $payload['event'] === 'PageUpdated';
+        });
         $this->assertDatabaseHas('pages', [
             'id' => $this->page->getKey(),
             'name' => 'Test 2',
@@ -351,12 +496,16 @@ class PageTest extends TestCase
 
     public function testDeleteUnauthorized(): void
     {
+        Event::fake(PageDeleted::class);
+
         $page = $this->page->toArray();
         unset($page['content_html']);
 
         $response = $this->patchJson('/pages/id:' . $this->page->getKey());
         $response->assertForbidden();
         $this->assertDatabaseHas('pages', $page);
+
+        Event::assertNotDispatched(PageDeleted::class);
     }
 
     /**
@@ -369,11 +518,60 @@ class PageTest extends TestCase
         $seo = SeoMetadata::factory()->create();
         $this->page->seo()->save($seo);
 
+        Event::fake([PageDeleted::class]);
+
         $response = $this->actingAs($this->$user)
             ->deleteJson('/pages/id:' . $this->page->getKey());
         $response->assertNoContent();
-        $this->assertDeleted($this->page);
+        $this->assertSoftDeleted($this->page);
         $this->assertSoftDeleted($seo);
+
+        Event::assertDispatched(PageDeleted::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWithWebHook($user): void
+    {
+        $this->$user->givePermissionTo('pages.remove');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'PageDeleted'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => true,
+            'with_hidden' => true,
+        ]);
+
+        Bus::fake();
+
+        $response = $this->actingAs($this->$user)
+            ->deleteJson('/pages/id:' . $this->page->getKey());
+        $response->assertNoContent();
+        $this->assertSoftDeleted($this->page);
+
+        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof PageDeleted;
+        });
+
+        $page = $this->page;
+
+        $event = new PageDeleted($page);
+        $listener = new WebHookEventListener();
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $page) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $page->getKey()
+                && $payload['data_type'] === 'Page'
+                && $payload['event'] === 'PageDeleted';
+        });
     }
 
     /**

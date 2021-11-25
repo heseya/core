@@ -81,6 +81,7 @@ class Discount extends Model implements AuditableContract
      *   example="2021-09-13T11:11",
      * )
      */
+
     protected $fillable = [
         'description',
         'code',
@@ -93,11 +94,12 @@ class Discount extends Model implements AuditableContract
 
     protected $casts = [
         'type' => DiscountType::class,
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime',
-        'starts_at' => 'datetime:c',
-        'expires_at' => 'datetime:c',
+
+    ];
+
+    protected $dates = [
+        'starts_at',
+        'expires_at',
     ];
 
     protected array $searchable = [

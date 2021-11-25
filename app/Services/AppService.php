@@ -150,9 +150,8 @@ class AppService implements AppServiceContract
         $internalPermissions = Collection::make($appConfig['internal_permissions'])
             ->map(fn ($permission) => Permission::create([
                 'name' => "app.{$app->slug}.{$permission['name']}",
-                'description' => key_exists('description', $permission)
-                    ? $permission['description']
-                    : null,
+                'display_name' => $permission['display_name'] ?? null,
+                'description' => $permission['description'] ?? null,
             ]));
 
         $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
@@ -191,6 +190,7 @@ class AppService implements AppServiceContract
 
         Permission::where('name', 'like', 'app.' . $app->slug . '%')->delete();
         $app->role()->delete();
+        $app->webhooks()->delete();
         $app->delete();
     }
 

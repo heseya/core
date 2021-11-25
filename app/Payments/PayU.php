@@ -87,7 +87,7 @@ class PayU implements PaymentMethod
 
         if ($status === 'COMPLETED') {
             $payment->update([
-                'payed' => true,
+                'paid' => true,
             ]);
         }
 

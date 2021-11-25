@@ -315,9 +315,12 @@ class ShippingMethodTest extends TestCase
     {
         $this->$user->givePermissionTo('shipping_methods.add');
 
+        ShippingMethod::query()->delete();
+
         $shipping_method = [
             'name' => 'Test',
             'public' => true,
+            'black_list' => false,
         ];
 
         $response = $this->actingAs($this->$user)
@@ -342,6 +345,36 @@ class ShippingMethodTest extends TestCase
             ->assertJsonFragment(['value' => 10.37])
             ->assertJsonFragment(['start' => 200])
             ->assertJsonFragment(['value' => 0]);
+
+        $this->assertDatabaseHas('shipping_methods', $shipping_method);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateBlacklist($user): void
+    {
+        $this->$user->givePermissionTo('shipping_methods.add');
+
+        $shipping_method = [
+            'name' => 'Test',
+            'public' => true,
+            'black_list' => true,
+        ];
+
+        $response = $this->actingAs($this->$user)
+            ->postJson('/shipping-methods', $shipping_method + [
+                    'price_ranges' => [
+                        [
+                            'start' => 0,
+                            'value' => 10.37,
+                        ],
+                    ],
+                ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $shipping_method]);
 
         $this->assertDatabaseHas('shipping_methods', $shipping_method);
     }
@@ -423,6 +456,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test 2',
             'public' => false,
+            'black_list' => false,
         ];
 
         $response = $this->actingAs($this->$user)->patchJson(
@@ -449,6 +483,43 @@ class ShippingMethodTest extends TestCase
             ->assertJsonFragment(['value' => 10.37])
             ->assertJsonFragment(['start' => 200])
             ->assertJsonFragment(['value' => 0]);
+
+        $this->assertDatabaseHas(
+            'shipping_methods',
+            $shipping_method + ['id' => $this->shipping_method->getKey()],
+        );
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateBlacklistToTrue($user): void
+    {
+        $this->$user->givePermissionTo('shipping_methods.edit');
+
+        $this->shipping_method->update(['black_list' => false]);
+
+        $shipping_method = [
+            'name' => 'Test 2',
+            'public' => false,
+            'black_list' => true,
+        ];
+
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/shipping-methods/id:' . $this->shipping_method->getKey(),
+            $shipping_method + [
+                'price_ranges' => [
+                    [
+                        'start' => 0,
+                        'value' => 10.37,
+                    ],
+                ],
+            ],
+        );
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => $shipping_method]);
 
         $this->assertDatabaseHas(
             'shipping_methods',

@@ -15,7 +15,7 @@ class PaymentController extends Controller implements PaymentControllerSwagger
 {
     public function store(Order $order, string $method, PaymentStoreRequest $request): JsonResource
     {
-        if ($order->isPayed()) {
+        if ($order->isPaid()) {
             throw new StoreException('Order is already paid.');
         }
 
@@ -27,8 +27,8 @@ class PaymentController extends Controller implements PaymentControllerSwagger
 
         $payment = $order->payments()->create([
             'method' => $method,
-            'amount' => $order->summary - $order->payed,
-            'payed' => false,
+            'amount' => $order->summary - $order->paid_amount,
+            'paid' => false,
             'continue_url' => $request->input('continue_url'),
         ]);
 
@@ -59,7 +59,7 @@ class PaymentController extends Controller implements PaymentControllerSwagger
         $payment = $order->payments()->create([
             'method' => 'offline',
             'amount' => $order->summary - $order->paid_amount,
-            'payed' => true,
+            'paid' => true,
         ]);
 
         return PaymentResource::make($payment);

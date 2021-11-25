@@ -2,8 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Events\ProductSetDeleted;
+use App\Http\Resources\ProductSetResource;
+use App\Listeners\WebHookEventListener;
 use App\Models\Product;
 use App\Models\ProductSet;
+use App\Models\WebHook;
+use Illuminate\Events\CallQueuedListener;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Event;
+use Spatie\WebhookServer\CallWebhookJob;
 use App\Models\SeoMetadata;
 use Tests\TestCase;
 
@@ -11,12 +19,16 @@ class ProductSetOtherTest extends TestCase
 {
     public function testDeleteUnauthorized(): void
     {
+        Event::fake([ProductSetDeleted::class]);
+
         $newSet = ProductSet::factory()->create([
             'public' => true,
         ]);
 
         $response = $this->deleteJson('/product-sets/id:' . $newSet->getKey());
         $response->assertForbidden();
+
+        Event::assertNotDispatched(ProductSetDeleted::class);
     }
 
     /**
@@ -26,6 +38,8 @@ class ProductSetOtherTest extends TestCase
     {
         $this->$user->givePermissionTo('product_sets.remove');
 
+        Event::fake([ProductSetDeleted::class]);
+
         $newSet = ProductSet::factory()->create([
             'public' => true,
         ]);
@@ -34,7 +48,57 @@ class ProductSetOtherTest extends TestCase
             '/product-sets/id:' . $newSet->getKey(),
         );
         $response->assertNoContent();
-        $this->assertDeleted($newSet);
+        $this->assertSoftDeleted($newSet);
+
+        Event::assertDispatched(ProductSetDeleted::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWithWebHook($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.remove');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ProductSetDeleted'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => true,
+            'with_hidden' => false,
+        ]);
+
+        Bus::fake();
+
+        $newSet = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $response = $this->actingAs($this->$user)->deleteJson(
+            '/product-sets/id:' . $newSet->getKey(),
+        );
+        $response->assertNoContent();
+        $this->assertSoftDeleted($newSet);
+
+        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductSetDeleted;
+        });
+
+        $event = new ProductSetDeleted($newSet);
+        $listener = new WebHookEventListener();
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $newSet) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $newSet->getKey()
+                && $payload['data_type'] === 'ProductSet'
+                && $payload['event'] === 'ProductSetDeleted';
+        });
     }
 
     /**
@@ -43,6 +107,8 @@ class ProductSetOtherTest extends TestCase
     public function testDeleteWithProducts($user): void
     {
         $this->$user->givePermissionTo('product_sets.remove');
+
+        Event::fake([ProductSetDeleted::class]);
 
         $newSet = ProductSet::factory()->create([
             'public' => true,
@@ -62,22 +128,9 @@ class ProductSetOtherTest extends TestCase
             '/product-sets/id:' . $newSet->getKey(),
         );
         $response->assertNoContent();
-        $this->assertDeleted($newSet);
+        $this->assertSoftDeleted($newSet);
 
-        $this->assertDatabaseMissing('product_set_product', [
-            'product_id' => $product1->getKey(),
-            'product_set_id' => $newSet->getKey(),
-        ]);
-
-        $this->assertDatabaseMissing('product_set_product', [
-            'product_id' => $product2->getKey(),
-            'product_set_id' => $newSet->getKey(),
-        ]);
-
-        $this->assertDatabaseMissing('product_set_product', [
-            'product_id' => $product3->getKey(),
-            'product_set_id' => $newSet->getKey(),
-        ]);
+        Event::assertDispatched(ProductSetDeleted::class);
     }
 
     /**
@@ -86,6 +139,8 @@ class ProductSetOtherTest extends TestCase
     public function testDeleteWithSubsets($user): void
     {
         $this->$user->givePermissionTo('product_sets.remove');
+
+        Event::fake([ProductSetDeleted::class]);
 
         $newSet = ProductSet::factory()->create([
             'public' => true,
@@ -110,10 +165,12 @@ class ProductSetOtherTest extends TestCase
             '/product-sets/id:' . $newSet->getKey(),
         );
         $response->assertNoContent();
-        $this->assertDeleted($newSet);
-        $this->assertDeleted($subset1);
-        $this->assertDeleted($subset2);
-        $this->assertDeleted($subset3);
+        $this->assertSoftDeleted($newSet);
+        $this->assertSoftDeleted($subset1);
+        $this->assertSoftDeleted($subset2);
+        $this->assertSoftDeleted($subset3);
+
+        Event::assertDispatched(ProductSetDeleted::class);
     }
 
     /**
@@ -133,7 +190,7 @@ class ProductSetOtherTest extends TestCase
             '/product-sets/id:' . $newSet->getKey(),
         );
         $response->assertNoContent();
-        $this->assertDeleted($newSet);
+        $this->assertSoftDeleted($newSet);
         $this->assertSoftDeleted($seo);
     }
 

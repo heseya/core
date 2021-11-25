@@ -52,11 +52,6 @@ class Item extends Model implements AuditableContract
         'sku',
     ];
 
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
-
     protected array $searchable = [
         'name' => Like::class,
         'sku' => Like::class,

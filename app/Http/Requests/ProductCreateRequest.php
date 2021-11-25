@@ -29,6 +29,10 @@ namespace App\Http\Requests;
  *       type="string",
  *     ),
  *     @OA\Property(
+ *       property="description_short",
+ *       type="string",
+ *     ),
+ *     @OA\Property(
  *       property="public",
  *       type="boolean",
  *     ),
@@ -81,6 +85,7 @@ class ProductCreateRequest extends SeoMetadataRulesRequest
             'slug' => ['required', 'string', 'max:255', 'unique:products', 'alpha_dash'],
             'price' => ['required', 'numeric', 'min:0'],
             'description_html' => ['nullable', 'string'],
+            'description_short' => ['nullable', 'string', 'between:30,5000'],
             'public' => ['required', 'boolean'],
             'quantity_step' => ['numeric'],
 

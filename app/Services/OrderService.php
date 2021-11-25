@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Dtos\AddressDto;
 use App\Dtos\OrderUpdateDto;
+use App\Events\OrderUpdated;
 use App\Exceptions\OrderException;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
@@ -12,6 +13,7 @@ use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class OrderService implements OrderServiceContract
@@ -46,15 +48,16 @@ class OrderService implements OrderServiceContract
 
         try {
             $deliveryAddress = $this->modifyAddress(
-                $order->delivery_address_id,
+                $order,
+                'delivery_address_id',
                 $dto->getDeliveryAddress(),
             );
+
             $invoiceAddress = $this->modifyAddress(
-                $order->invoice_address_id,
+                $order,
+                'invoice_address_id',
                 $dto->getInvoiceAddress(),
             );
-
-            $order->forceAudit('delivery_address_id', 'invoice_address_id');
 
             $order->update([
                 'email' => $dto->getEmail() ?? $order->email,
@@ -69,6 +72,8 @@ class OrderService implements OrderServiceContract
 
             DB::commit();
 
+            OrderUpdated::dispatch($order);
+
             return OrderResource::make($order)->response();
         } catch (Exception $error) {
             DB::rollBack();
@@ -80,7 +85,7 @@ class OrderService implements OrderServiceContract
         }
     }
 
-    private function modifyAddress(?string $uuid, ?AddressDto $addressDto): ?Address
+    private function modifyAddress(Order $order, string $attribute, ?AddressDto $addressDto): ?Address
     {
         if ($addressDto === null) {
             return null;
@@ -93,6 +98,14 @@ class OrderService implements OrderServiceContract
             }
         }
 
-        return !isset($exsistAddress) ? null : Address::updateOrCreate(['id' => $uuid], $address);
+        if (!isset($exsistAddress)) {
+            return null;
+        }
+
+        $old = Address::find($order->$attribute);
+        Cache::add('address.' . $order->$attribute, $old ? ((string) $old) : null);
+        $order->forceAudit($attribute);
+
+        return Address::updateOrCreate(['id' => $order->$attribute], $address);
     }
 }

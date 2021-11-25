@@ -2,14 +2,24 @@
 
 namespace Tests\Feature;
 
+use App\Events\ProductCreated;
+use App\Events\ProductDeleted;
+use App\Events\ProductUpdated;
+use App\Listeners\WebHookEventListener;
 use App\Enums\MediaType;
 use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Models\SeoMetadata;
+use App\Models\WebHook;
 use App\Services\Contracts\ProductServiceContract;
+use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Queue;
+use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
 class ProductTest extends TestCase
@@ -91,6 +101,7 @@ class ProductTest extends TestCase
          */
         $this->expected = array_merge($this->expected_short, [
             'description_html' => $this->product->description_html,
+            'description_short' => $this->product->description_short,
             'meta_description' => strip_tags($this->product->description_html),
             'gallery' => [],
             'schemas' => [[
@@ -318,7 +329,9 @@ class ProductTest extends TestCase
 
     public function testCreateUnauthorized(): void
     {
+        Event::fake([ProductCreated::class]);
         $this->postJson('/products')->assertForbidden();
+        Event::assertNotDispatched(ProductCreated::class);
     }
 
     /**
@@ -327,6 +340,72 @@ class ProductTest extends TestCase
     public function testCreate($user): void
     {
         $this->$user->givePermissionTo('products.add');
+
+        Queue::fake();
+
+        $response = $this->actingAs($this->$user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'description_html' => '<h1>Description</h1>',
+            'description_short' => 'So called short description...',
+            'public' => true,
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'slug' => 'test',
+                'name' => 'Test',
+                'price' => 100,
+                'public' => true,
+                'description_html' => '<h1>Description</h1>',
+                'description_short' => 'So called short description...',
+                'cover' => null,
+                'gallery' => [],
+            ]]);
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'public' => true,
+            'description_html' => '<h1>Description</h1>',
+            'description_short' => 'So called short description...',
+        ]);
+
+        Queue::assertPushed(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductCreated;
+        });
+
+        $product = Product::find($response->getData()->data->id);
+        $event = new ProductCreated($product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithWebHookQueue($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ProductCreated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Queue::fake();
 
         $response = $this->actingAs($this->$user)->postJson('/products', [
             'name' => 'Test',
@@ -355,14 +434,233 @@ class ProductTest extends TestCase
             'public' => true,
             'description_html' => '<h1>Description</h1>',
         ]);
+
+        Queue::assertPushed(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductCreated;
+        });
+
+        $product = Product::find($response->getData()->data->id);
+        $event = new ProductCreated($product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $product) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $product->getKey()
+                && $payload['data_type'] === 'Product'
+                && $payload['event'] === 'ProductCreated';
+        });
     }
 
-    public function testCreateWithZeroPrice(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithWebHookDispatched($user): void
     {
-        $this->user->givePermissionTo('products.add');
+        $this->$user->givePermissionTo('products.add');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ProductCreated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Bus::fake();
+
+        $response = $this->actingAs($this->$user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'description_html' => '<h1>Description</h1>',
+            'public' => true,
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'slug' => 'test',
+                'name' => 'Test',
+                'price' => 100,
+                'public' => true,
+                'description_html' => '<h1>Description</h1>',
+                'cover' => null,
+                'gallery' => [],
+            ]]);
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'public' => true,
+            'description_html' => '<h1>Description</h1>',
+        ]);
+
+        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductCreated;
+        });
+
+        $product = Product::find($response->getData()->data->id);
+        $event = new ProductCreated($product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $product->getKey()
+                && $payload['data_type'] === 'Product'
+                && $payload['event'] === 'ProductCreated';
+        });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateHiddenWithWebHookWithoutHidden($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ProductCreated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Queue::fake();
+
+        $response = $this->actingAs($this->$user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'description_html' => '<h1>Description</h1>',
+            'public' => false,
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'slug' => 'test',
+                'name' => 'Test',
+                'price' => 100,
+                'public' => false,
+                'description_html' => '<h1>Description</h1>',
+                'cover' => null,
+                'gallery' => [],
+            ]]);
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'public' => false,
+            'description_html' => '<h1>Description</h1>',
+        ]);
+
+        Queue::assertPushed(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductCreated;
+        });
+
+        $product = Product::find($response->getData()->data->id);
+        $event = new ProductCreated($product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateHiddenWithWebHook($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ProductCreated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => true,
+        ]);
+
+        Bus::fake();
+
+        $response = $this->actingAs($this->$user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'description_html' => '<h1>Description</h1>',
+            'public' => false,
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'slug' => 'test',
+                'name' => 'Test',
+                'price' => 100,
+                'public' => false,
+                'description_html' => '<h1>Description</h1>',
+                'cover' => null,
+                'gallery' => [],
+            ]]);
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'public' => false,
+            'description_html' => '<h1>Description</h1>',
+        ]);
+
+        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
+            return $job->class = WebHookEventListener::class;
+        });
+
+        $product = Product::find($response->getData()->data->id);
+        $event = new ProductCreated($product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $product->getKey()
+                && $payload['data_type'] === 'Product'
+                && $payload['event'] === 'ProductCreated';
+        });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithZeroPrice($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
 
         $this
-            ->actingAs($this->user)
+            ->actingAs($this->$user)
             ->postJson('/products', [
                 'name' => 'Test',
                 'slug' => 'test',
@@ -378,12 +676,15 @@ class ProductTest extends TestCase
         ]);
     }
 
-    public function testCreateWithNegativePrice(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithNegativePrice($user): void
     {
-        $this->user->givePermissionTo('products.add');
+        $this->$user->givePermissionTo('products.add');
 
         $this
-            ->actingAs($this->user)
+            ->actingAs($this->$user)
             ->postJson('/products', [
                 'name' => 'Test',
                 'slug' => 'test',
@@ -399,6 +700,8 @@ class ProductTest extends TestCase
     public function testCreateWithSchemas($user): void
     {
         $this->$user->givePermissionTo('products.add');
+
+        Event::fake([ProductCreated::class]);
 
         $schema = Schema::factory()->create();
 
@@ -427,6 +730,8 @@ class ProductTest extends TestCase
             'product_id' => $product->id,
             'schema_id' => $schema->id,
         ]);
+
+        Event::assertDispatched(ProductCreated::class);
     }
 
     /**
@@ -435,6 +740,8 @@ class ProductTest extends TestCase
     public function testCreateWithSets($user): void
     {
         $this->$user->givePermissionTo('products.add');
+
+        Event::fake([ProductCreated::class]);
 
         $set1 = ProductSet::factory()->create();
         $set2 = ProductSet::factory()->create();
@@ -470,6 +777,8 @@ class ProductTest extends TestCase
             'product_id' => $product->id,
             'product_set_id' => $set2->getKey(),
         ]);
+
+        Event::assertDispatched(ProductCreated::class);
     }
 
     /**
@@ -575,8 +884,10 @@ class ProductTest extends TestCase
 
     public function testUpdateUnauthorized(): void
     {
+        Event::fake([ProductUpdated::class]);
         $this->patchJson('/products/id:' . $this->product->getKey())
             ->assertForbidden();
+        Event::assertNotDispatched(ProductUpdated::class);
     }
 
     /**
@@ -585,6 +896,62 @@ class ProductTest extends TestCase
     public function testUpdate($user): void
     {
         $this->$user->givePermissionTo('products.edit');
+
+        Queue::fake();
+
+        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150,
+            'description_html' => '<h1>New description</h1>',
+            'description_short' => 'New so called short description',
+            'public' => false,
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $this->product->getKey(),
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150,
+            'description_html' => '<h1>New description</h1>',
+            'description_short' => 'New so called short description',
+            'public' => false,
+        ]);
+
+        Queue::assertPushed(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductUpdated;
+        });
+
+        $product = Product::find($this->product->getKey());
+        $event = new ProductUpdated($product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithWebHookQueue($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ProductUpdated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => true,
+        ]);
+
+        Queue::fake();
 
         $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'Updated',
@@ -604,6 +971,85 @@ class ProductTest extends TestCase
             'description_html' => '<h1>New description</h1>',
             'public' => false,
         ]);
+
+        Queue::assertPushed(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductUpdated;
+        });
+
+        $product = Product::find($this->product->getKey());
+        $event = new ProductUpdated($product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $product) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $product->getKey()
+                && $payload['data_type'] === 'Product'
+                && $payload['event'] === 'ProductUpdated';
+        });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithWebHookDispatched($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ProductUpdated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => true,
+        ]);
+
+        Bus::fake();
+
+        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150,
+            'description_html' => '<h1>New description</h1>',
+            'public' => false,
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $this->product->getKey(),
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150,
+            'description_html' => '<h1>New description</h1>',
+            'public' => false,
+        ]);
+
+        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductUpdated;
+        });
+
+        $product = Product::find($this->product->getKey());
+        $event = new ProductUpdated($product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $product->getKey()
+                && $payload['data_type'] === 'Product'
+                && $payload['event'] === 'ProductUpdated';
+        });
     }
 
     /**
@@ -612,6 +1058,8 @@ class ProductTest extends TestCase
     public function testUpdateChangeSets($user): void
     {
         $this->$user->givePermissionTo('products.edit');
+
+        Event::fake([ProductUpdated::class]);
 
         $product = Product::factory()->create();
 
@@ -648,6 +1096,8 @@ class ProductTest extends TestCase
             'product_id' => $product->getKey(),
             'product_set_id' => $set1->getKey(),
         ]);
+
+        Event::assertDispatched(ProductUpdated::class);
     }
 
     /**
@@ -656,6 +1106,8 @@ class ProductTest extends TestCase
     public function testUpdateDeleteSets($user): void
     {
         $this->$user->givePermissionTo('products.edit');
+
+        Event::fake([ProductUpdated::class]);
 
         $product = Product::factory()->create();
 
@@ -677,6 +1129,8 @@ class ProductTest extends TestCase
         $this->assertDatabaseMissing('product_set_product', [
             'product_id' => $product->getKey(),
         ]);
+
+        Event::assertDispatched(ProductUpdated::class);
     }
 
     /**
@@ -848,8 +1302,10 @@ class ProductTest extends TestCase
 
     public function testDeleteUnauthorized(): void
     {
+        Event::fake(ProductDeleted::class);
         $this->deleteJson('/products/id:' . $this->product->getKey())
             ->assertForbidden();
+        Event::assertNotDispatched(ProductDeleted::class);
     }
 
     /**
@@ -859,6 +1315,7 @@ class ProductTest extends TestCase
     {
         $this->$user->givePermissionTo('products.remove');
 
+        Queue::fake();
         $product = Product::factory([
             'name' => 'Created',
             'slug' => 'created',
@@ -876,6 +1333,110 @@ class ProductTest extends TestCase
         $response->assertNoContent();
         $this->assertSoftDeleted($product);
         $this->assertSoftDeleted($seo);
+
+        Queue::assertPushed(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductDeleted;
+        });
+
+        $event = new ProductDeleted($this->product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWithWebHookQueue($user): void
+    {
+        $this->$user->givePermissionTo('products.remove');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ProductDeleted'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Queue::fake();
+
+        $response = $this->actingAs($this->$user)
+            ->deleteJson('/products/id:' . $this->product->getKey());
+
+        Queue::assertPushed(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductDeleted;
+        });
+
+        $response->assertNoContent();
+        $this->assertSoftDeleted($this->product);
+
+        $product = $this->product;
+        $event = new ProductDeleted($product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $product) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $product->getKey()
+                && $payload['data_type'] === 'Product'
+                && $payload['event'] === 'ProductDeleted';
+        });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWithWebHookDispatched($user): void
+    {
+        $this->$user->givePermissionTo('products.remove');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ProductDeleted'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Bus::fake();
+
+        $response = $this->actingAs($this->$user)
+            ->deleteJson('/products/id:' . $this->product->getKey());
+
+        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductDeleted;
+        });
+
+        $response->assertNoContent();
+        $this->assertSoftDeleted($this->product);
+
+        $product = $this->product;
+        $event = new ProductDeleted($product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $product->getKey()
+                && $payload['data_type'] === 'Product'
+                && $payload['event'] === 'ProductDeleted';
+        });
     }
 
     /**

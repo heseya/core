@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\SearchTypes\UserSearch;
+use App\Traits\HasWebHooks;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Heseya\Sortable\Sortable;
@@ -13,6 +14,7 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
@@ -41,7 +43,8 @@ class User extends Model implements
         SoftDeletes,
         Searchable,
         Sortable,
-        Auditable;
+        Auditable,
+        HasWebHooks;
 
     protected $fillable = [
         'name',
@@ -52,12 +55,6 @@ class User extends Model implements
     protected $hidden = [
         'password',
         'remember_token',
-    ];
-
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     protected array $searchable = [
@@ -88,5 +85,10 @@ class User extends Model implements
     public function getJWTCustomClaims(): array
     {
         return [];
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
     }
 }

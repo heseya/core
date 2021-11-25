@@ -17,10 +17,8 @@ class Token extends Model
         'expires_at',
     ];
 
-    protected $casts = [
-        'expires_at' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+    protected $dates = [
+        'expires_at',
     ];
 
     public function invalidate()

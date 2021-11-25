@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\SeoMetadataDto;
+use App\Events\ProductCreated;
+use App\Events\ProductDeleted;
+use App\Events\ProductUpdated;
 use App\Http\Controllers\Swagger\ProductControllerSwagger;
 use App\Http\Requests\ProductCreateRequest;
 use App\Http\Requests\ProductIndexRequest;
@@ -106,6 +109,8 @@ class ProductController extends Controller implements ProductControllerSwagger
         $seo_dto = SeoMetadataDto::fromFormRequest($request);
         $product->seo()->save($this->seoMetadataService->create($seo_dto));
 
+        ProductCreated::dispatch($product);
+
         return ProductResource::make($product);
     }
 
@@ -120,15 +125,18 @@ class ProductController extends Controller implements ProductControllerSwagger
             $this->seoMetadataService->update($seo_dto, $product->seo);
         }
 
+        ProductUpdated::dispatch($product);
+
         return ProductResource::make($product);
     }
 
     public function destroy(Product $product): JsonResponse
     {
-        $product->delete();
-
-        if ($product->seo !== null) {
-            $this->seoMetadataService->delete($product->seo);
+        if ($product->delete()) {
+            ProductDeleted::dispatch($product);
+            if ($product->seo !== null) {
+                $this->seoMetadataService->delete($product->seo);
+            }
         }
 
         return Response::json(null, 204);

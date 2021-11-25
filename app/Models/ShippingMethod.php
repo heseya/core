@@ -59,8 +59,6 @@ class ShippingMethod extends Model implements AuditableContract
     protected $casts = [
         'public' => 'boolean',
         'black_list' => 'boolean',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     public function orders(): HasMany

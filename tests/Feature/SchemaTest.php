@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\SchemaType;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Schema;
@@ -154,7 +155,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->postJson('/schemas', [
             'name' => 'Test',
-            'type' => 'select',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
             'price' => 120,
             'description' => 'test test',
             'hidden' => false,
@@ -191,7 +192,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->postJson('/schemas', [
             'name' => 'Test',
-            'type' => 'select',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
             'price' => 120,
             'description' => 'test test',
             'hidden' => false,
@@ -224,7 +225,7 @@ class SchemaTest extends TestCase
 
         $this->assertDatabaseHas('schemas', [
             'name' => 'Test',
-            'type' => array_***REMOVED***(Schema::TYPES)['select'],
+            'type' => SchemaType::SELECT,
             'price' => 120,
             'description' => 'test test',
             'hidden' => 0,
@@ -282,7 +283,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->postJson('/schemas', [
             'name' => 'Multiplier',
-            'type' => 'multiply_schema',
+            'type' => SchemaType::getKey(SchemaType::MULTIPLY_SCHEMA),
             'min' => 1,
             'max' => 10,
             'step' => 0.1,
@@ -304,13 +305,16 @@ class SchemaTest extends TestCase
         $this->createRelation($user);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
     public function createRelation($user): void
     {
         $usedSchema = Schema::factory()->create();
 
         $response = $this->actingAs($this->$user)->postJson('/schemas', [
             'name' => 'Multiplier',
-            'type' => 'multiply_schema',
+            'type' => SchemaType::getKey(SchemaType::MULTIPLY_SCHEMA),
             'min' => 1,
             'max' => 10,
             'step' => 0.1,
@@ -341,6 +345,25 @@ class SchemaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateHiddenAndRequired($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $response = $this->actingAs($this->$user)->postJson('/schemas', [
+            'name' => 'Test',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'price' => 120,
+            'description' => 'test test',
+            'hidden' => true,
+            'required' => true,
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateUnauthorized($user): void
     {
         $schema = Schema::factory()->create();
@@ -358,7 +381,7 @@ class SchemaTest extends TestCase
             ->patchJson('/schemas/id:' . $schema->getKey() , [
                 'name' => 'Test Updated',
                 'price' => 200,
-                'type' => 'select',
+                'type' => SchemaType::getKey(SchemaType::SELECT),
                 'description' => 'test test',
                 'hidden' => false,
                 'required' => false,
@@ -416,7 +439,7 @@ class SchemaTest extends TestCase
         $response = $this->actingAs($this->$user)->patchJson('/schemas/id:' . $schema->getKey() , [
             'name' => 'Test Updated',
             'price' => 200,
-            'type' => 'select',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
             'description' => 'test test',
             'hidden' => false,
             'required' => false,
@@ -509,7 +532,7 @@ class SchemaTest extends TestCase
         $colors = Schema::create([
             'name' => 'Color',
             'price' => 0,
-            'type' => 'select',
+            'type' => SchemaType::SELECT,
         ]);
 
         $red = $colors->options()->create([
@@ -541,7 +564,7 @@ class SchemaTest extends TestCase
 
         $multiplier = Schema::create([
             'name' => 'Price Multiplier',
-            'type' => 'multiply',
+            'type' => SchemaType::MULTIPLY,
             'price' => 10,
             'min' => 1,
             'max' => 10,
@@ -559,7 +582,7 @@ class SchemaTest extends TestCase
         $colors = Schema::create([
             'name' => 'Color',
             'price' => 0,
-            'type' => 'select',
+            'type' => SchemaType::SELECT,
         ]);
 
         $red = $colors->options()->create([
@@ -569,7 +592,7 @@ class SchemaTest extends TestCase
 
         $multiplier = Schema::create([
             'name' => 'Multiplier',
-            'type' => 'multiply_schema',
+            'type' => SchemaType::MULTIPLY_SCHEMA,
             'min' => 1,
             'max' => 10,
             'step' => 0.1,
@@ -587,5 +610,81 @@ class SchemaTest extends TestCase
             $multiplier->getKey() => $value,
             $colors->getKey() => $red->getKey(),
         ]));
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithOptionPriceAndDisabledNull($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+        $schema = Schema::factory()->create();
+
+        $item = Item::factory()->create();
+        $item2 = Item::factory()->create();
+
+        $option = Option::factory()->create([
+            'name' => 'L',
+            'price' => 0,
+            'disabled' => false,
+            'schema_id' => $schema->getKey(),
+        ]);
+        $option->items()->sync([
+            $item->getKey(),
+            $item2->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->$user)->json('PATCH', '/schemas/id:' . $schema->getKey() , [
+            'name' => 'Test Updated',
+            'price' => 200,
+            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'description' => 'test test',
+            'hidden' => false,
+            'required' => false,
+            'default' => 0,
+            'options' => [
+                [
+                    'id' => $option->getKey(),
+                    'name' => 'L',
+                    'price' => null,
+                    'disabled' => null,
+                    'items' => [
+                        $item->getKey(),
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithOptionPriceAndDisabledNull($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+        $item = Item::factory()->create();
+
+        $response = $this->actingAs($this->$user)->postJson('/schemas', [
+            'name' => 'Test',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'price' => 120,
+            'description' => 'test test',
+            'hidden' => false,
+            'required' => false,
+            'options' => [
+                [
+                    'name' => 'L',
+                    'price' => null,
+                    'disabled' => null,
+                    'items' => [
+                        $item->getKey(),
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(422);
     }
 }

@@ -17,7 +17,7 @@ class AnalyticsService implements AnalyticsServiceContract
         $key = $this->getGroupQuery($group);
 
         return Payment::select([$amount, $count, $key])
-            ->where('payed', true)
+            ->where('paid', true)
             ->whereDate('created_at', '>=', $from)
             ->whereDate('created_at', '<=', $to)
             ->groupBy('key')
