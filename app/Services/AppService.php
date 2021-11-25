@@ -190,6 +190,7 @@ class AppService implements AppServiceContract
 
         Permission::where('name', 'like', 'app.' . $app->slug . '%')->delete();
         $app->role()->delete();
+        $app->webhooks()->delete();
         $app->delete();
     }
 

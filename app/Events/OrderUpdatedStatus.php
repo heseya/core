@@ -3,18 +3,12 @@
 namespace App\Events;
 
 use App\Models\Order;
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
 
-class OrderStatusUpdated
+class OrderUpdatedStatus extends OrderEvent
 {
-    use Dispatchable, SerializesModels;
-
-    private Order $order;
-
     public function __construct(Order $order)
     {
-        $this->order = $order;
+        parent::__construct($order);
         $this->order->refresh();
     }
 

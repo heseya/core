@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Dtos\OrderUpdateDto;
 use App\Enums\SchemaType;
+use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
-use App\Events\OrderStatusUpdated;
+use App\Events\OrderUpdatedStatus;
 use App\Exceptions\OrderException;
 use App\Http\Controllers\Swagger\OrderControllerSwagger;
 use App\Http\Requests\OrderCreateRequest;
@@ -121,6 +122,7 @@ class OrderController extends Controller implements OrderControllerSwagger
                                 'item_id' => $optionItem->getKey(),
                                 'quantity' => -1 * $item['quantity'],
                             ]);
+                            ItemUpdatedQuantity::dispatch($optionItem);
                         }
                     }
 
@@ -246,10 +248,14 @@ class OrderController extends Controller implements OrderControllerSwagger
         ]);
 
         if ($status->cancel) {
+            $deposits = $order->deposits()->with('item')->get();
             $order->deposits()->delete();
+            foreach ($deposits as $deposit) {
+                ItemUpdatedQuantity::dispatch($deposit->item);
+            }
         }
 
-        OrderStatusUpdated::dispatch($order);
+        OrderUpdatedStatus::dispatch($order);
 
         return OrderResource::make($order)->response();
     }

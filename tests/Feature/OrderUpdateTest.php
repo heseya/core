@@ -2,11 +2,18 @@
 
 namespace Tests\Feature;
 
+use App\Events\OrderUpdated;
+use App\Listeners\WebHookEventListener;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\Status;
+use App\Models\WebHook;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Queue;
+use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 use Tests\Traits\CreateShippingMethod;
 
@@ -44,8 +51,12 @@ class OrderUpdateTest extends TestCase
 
     public function testUpdateUnauthorized(): void
     {
+        Event::fake();
+
         $response = $this->patchJson('/orders/id:' . $this->order->id);
         $response->assertForbidden();
+
+        Event::assertNotDispatched(OrderUpdated::class);
     }
 
     /**
@@ -54,6 +65,8 @@ class OrderUpdateTest extends TestCase
     public function testFullUpdateOrder($user): void
     {
         $this->$user->givePermissionTo('orders.edit');
+
+        Event::fake([OrderUpdated::class]);
 
         $email = $this->faker->email();
         $comment = $this->faker->text(200);
@@ -109,6 +122,199 @@ class OrderUpdateTest extends TestCase
             'delivery_address_id' => $responseData->delivery_address->id,
             'invoice_address_id' => $responseData->invoice_address->id,
         ]);
+
+        Event::assertDispatched(OrderUpdated::class);
+
+        Queue::fake();
+
+        $order = Order::find($this->order->getKey());
+        $event = new OrderUpdated($order);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testFullUpdateOrderWithWebHookQueue($user): void
+    {
+        $this->$user->givePermissionTo('orders.edit');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderUpdated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Event::fake([OrderUpdated::class]);
+
+        $email = $this->faker->freeEmail;
+        $comment = $this->faker->text(200);
+        $address = Address::factory()->create();
+
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+            'email' => $email,
+            'comment' => $comment,
+            'delivery_address' => $address->toArray(),
+            'invoice_address' => $address->toArray(),
+        ]);
+
+        $responseData = $response->getData()->data;
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'code' => $this->order->code,
+                'status' => [
+                    "cancel" => false,
+                    "color" => $this->status->color,
+                    "description" => $this->status->description,
+                    "id" => $this->status->id,
+                    "name" => $this->status->name
+                ],
+                'delivery_address' => [
+                    "id" => $responseData->delivery_address->id,
+                    "address" => $address->address,
+                    "city" => $address->city,
+                    "country" => $address->country ?? null,
+                    "country_name" => $responseData->delivery_address->country_name,
+                    "name" => $address->name,
+                    "phone" => $address->phone,
+                    "vat" => $address->vat,
+                    "zip" => $address->zip,
+                ],
+                'invoice_address' => [
+                    "id" => $responseData->invoice_address->id,
+                    "address" => $address->address,
+                    "city" => $address->city,
+                    "country" => $address->country,
+                    "country_name" => $responseData->invoice_address->country_name,
+                    "name" => $address->name,
+                    "phone" => $address->phone,
+                    "vat" => $address->vat,
+                    "zip" => $address->zip,
+                ]
+            ]);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'email' => $email,
+            'comment' => $comment,
+            'delivery_address_id' => $responseData->delivery_address->id,
+            'invoice_address_id' => $responseData->invoice_address->id,
+        ]);
+
+        Event::assertDispatched(OrderUpdated::class);
+
+        Queue::fake();
+
+        $order = Order::find($this->order->getKey());
+        $event = new OrderUpdated($order);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertPushed(CallWebhookJob::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testFullUpdateOrderWithWebHookDispatched($user): void
+    {
+        $this->$user->givePermissionTo('orders.edit');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderUpdated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Event::fake([OrderUpdated::class]);
+
+        $email = $this->faker->freeEmail;
+        $comment = $this->faker->text(200);
+        $address = Address::factory()->create();
+
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+            'email' => $email,
+            'comment' => $comment,
+            'delivery_address' => $address->toArray(),
+            'invoice_address' => $address->toArray(),
+        ]);
+
+        $responseData = $response->getData()->data;
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'code' => $this->order->code,
+                'status' => [
+                    "cancel" => false,
+                    "color" => $this->status->color,
+                    "description" => $this->status->description,
+                    "id" => $this->status->id,
+                    "name" => $this->status->name
+                ],
+                'delivery_address' => [
+                    "id" => $responseData->delivery_address->id,
+                    "address" => $address->address,
+                    "city" => $address->city,
+                    "country" => $address->country ?? null,
+                    "country_name" => $responseData->delivery_address->country_name,
+                    "name" => $address->name,
+                    "phone" => $address->phone,
+                    "vat" => $address->vat,
+                    "zip" => $address->zip,
+                ],
+                'invoice_address' => [
+                    "id" => $responseData->invoice_address->id,
+                    "address" => $address->address,
+                    "city" => $address->city,
+                    "country" => $address->country,
+                    "country_name" => $responseData->invoice_address->country_name,
+                    "name" => $address->name,
+                    "phone" => $address->phone,
+                    "vat" => $address->vat,
+                    "zip" => $address->zip,
+                ]
+            ]);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'email' => $email,
+            'comment' => $comment,
+            'delivery_address_id' => $responseData->delivery_address->id,
+            'invoice_address_id' => $responseData->invoice_address->id,
+        ]);
+
+        Event::assertDispatched(OrderUpdated::class);
+
+        Bus::fake();
+
+        $order = Order::find($this->order->getKey());
+        $event = new OrderUpdated($order);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $order) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $order->getKey()
+                && $payload['data_type'] === 'Order'
+                && $payload['event'] === 'OrderUpdated';
+        });
     }
 
     /**
@@ -117,6 +323,8 @@ class OrderUpdateTest extends TestCase
     public function testUpdateOrderByEmail($user): void
     {
         $this->$user->givePermissionTo('orders.edit');
+
+        Event::fake([OrderUpdated::class]);
 
         $email = $this->faker->email();
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
@@ -147,6 +355,8 @@ class OrderUpdateTest extends TestCase
             'delivery_address_id' => $this->addressDelivery->getKey(),
             'invoice_address_id' => $this->addressInvoice->getKey(),
         ]);
+
+        Event::assertDispatched(OrderUpdated::class);
     }
 
     /**
@@ -155,6 +365,8 @@ class OrderUpdateTest extends TestCase
     public function testUpdateOrderByComment($user): void
     {
         $this->$user->givePermissionTo('orders.edit');
+
+        Event::fake([OrderUpdated::class]);
 
         $comment = $this->faker->text(100);
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
@@ -185,6 +397,8 @@ class OrderUpdateTest extends TestCase
             'delivery_address_id' => $this->addressDelivery->getKey(),
             'invoice_address_id' => $this->addressInvoice->getKey(),
         ]);
+
+        Event::assertDispatched(OrderUpdated::class);
     }
 
     /**
@@ -193,6 +407,8 @@ class OrderUpdateTest extends TestCase
     public function testUpdateOrderWithEmptyComment($user): void
     {
         $this->$user->givePermissionTo('orders.edit');
+
+        Event::fake([OrderUpdated::class]);
 
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'comment' => ''
@@ -209,6 +425,8 @@ class OrderUpdateTest extends TestCase
             'id' => $this->order->getKey(),
             'comment' => '',
         ]);
+
+        Event::assertDispatched(OrderUpdated::class);
     }
 
     /**
@@ -217,6 +435,8 @@ class OrderUpdateTest extends TestCase
     public function testUpdateOrderWithDeliveryAddress($user): void
     {
         $this->$user->givePermissionTo('orders.edit');
+
+        Event::fake([OrderUpdated::class]);
 
         $this->addressDelivery = Address::factory()->create();
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
@@ -259,6 +479,8 @@ class OrderUpdateTest extends TestCase
             'comment' => $this->comment,
             'invoice_address_id' => $this->addressInvoice->getKey(),
         ]);
+
+        Event::assertDispatched(OrderUpdated::class);
     }
 
     /**
@@ -267,6 +489,8 @@ class OrderUpdateTest extends TestCase
     public function testUpdateOrderWithMissingDeliveryAddress($user): void
     {
         $this->$user->givePermissionTo('orders.edit');
+
+        Event::fake([OrderUpdated::class]);
 
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'invoice_address' => $this->addressDelivery->toArray()
@@ -296,6 +520,8 @@ class OrderUpdateTest extends TestCase
         ]);
 
         $this->checkAddress($this->addressDelivery);
+
+        Event::assertDispatched(OrderUpdated::class);
     }
 
     private function checkAddress(Address $address): void
@@ -319,6 +545,8 @@ class OrderUpdateTest extends TestCase
     {
         $this->$user->givePermissionTo('orders.edit');
 
+        Event::fake([OrderUpdated::class]);
+
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'delivery_address' => null
         ]);
@@ -332,6 +560,8 @@ class OrderUpdateTest extends TestCase
             'invoice_address_id' => $this->addressInvoice->getKey(),
             'delivery_address_id' => null,
         ]);
+
+        Event::assertDispatched(OrderUpdated::class);
     }
 
     /**
@@ -340,6 +570,8 @@ class OrderUpdateTest extends TestCase
     public function testUpdateOrderByInvoiceAddress($user): void
     {
         $this->$user->givePermissionTo('orders.edit');
+
+        Event::fake([OrderUpdated::class]);
 
         $this->addressInvoice = Address::factory()->create();
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
@@ -382,6 +614,8 @@ class OrderUpdateTest extends TestCase
             'comment' => $this->comment,
             'delivery_address_id' => $this->addressDelivery->getKey(),
         ]);
+
+        Event::assertDispatched(OrderUpdated::class);
     }
 
     /**
@@ -390,6 +624,8 @@ class OrderUpdateTest extends TestCase
     public function testUpdateOrderByMissingInvoiceAddress($user): void
     {
         $this->$user->givePermissionTo('orders.edit');
+
+        Event::fake([OrderUpdated::class]);
 
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'delivery_address' => $this->addressInvoice->toArray()
@@ -419,6 +655,8 @@ class OrderUpdateTest extends TestCase
         ]);
 
         $this->checkAddress($this->addressInvoice);
+
+        Event::assertDispatched(OrderUpdated::class);
     }
 
     /**
@@ -427,6 +665,8 @@ class OrderUpdateTest extends TestCase
     public function testUpdateOrderByEmptyInvoiceAddress($user): void
     {
         $this->$user->givePermissionTo('orders.edit');
+
+        Event::fake([OrderUpdated::class]);
 
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'invoice_address' => null
@@ -441,5 +681,7 @@ class OrderUpdateTest extends TestCase
             'delivery_address_id' => $this->addressDelivery->getKey(),
             'invoice_address_id' => null,
         ]);
+
+        Event::assertDispatched(OrderUpdated::class);
     }
 }

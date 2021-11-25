@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Order;
+use App\Events\OrderUpdatedStatus;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ShippingMethod;

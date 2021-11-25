@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Events\PageCreated;
+use App\Events\PageDeleted;
+use App\Events\PageUpdated;
 use App\Models\Page;
 use App\Services\Contracts\PageServiceContract;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -36,19 +39,27 @@ class PageService implements PageServiceContract
             $attributes = array_merge($attributes, ['order' => $pageCurrentOrder + 1]);
         }
 
-        return Page::create($attributes);
+        $page = Page::create($attributes);
+
+        PageCreated::dispatch($page);
+
+        return $page;
     }
 
     public function update(Page $page, array $attributes): Page
     {
         $page->update($attributes);
 
+        PageUpdated::dispatch($page);
+
         return $page;
     }
 
     public function delete(Page $page): void
     {
-        $page->delete();
+        if ($page->delete()) {
+            PageDeleted::dispatch($page);
+        }
     }
 
     public function reorder(array $pages): void

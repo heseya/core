@@ -2,7 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Events\ProductSetCreated;
+use App\Listeners\WebHookEventListener;
 use App\Models\ProductSet;
+use App\Models\WebHook;
+use Illuminate\Events\CallQueuedListener;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Event;
+use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
 class ProductSetCreateTest extends TestCase
@@ -46,6 +53,8 @@ class ProductSetCreateTest extends TestCase
      */
     public function testCreateUnauthorized(): void
     {
+        Event::fake([ProductSetCreated::class]);
+
         $set = [
             'name' => 'Test',
             'slug' => 'test',
@@ -53,6 +62,8 @@ class ProductSetCreateTest extends TestCase
 
         $response = $this->postJson('/product-sets', $set);
         $response->assertForbidden();
+
+        Event::assertNotDispatched(ProductSetCreated::class);
     }
 
     /**
@@ -61,6 +72,8 @@ class ProductSetCreateTest extends TestCase
     public function testCreateMinimal($user): void
     {
         $this->$user->givePermissionTo('product_sets.add');
+
+        Event::fake([ProductSetCreated::class]);
 
         $set = [
             'name' => 'Test',
@@ -87,6 +100,74 @@ class ProductSetCreateTest extends TestCase
         $this->assertDatabaseHas('product_sets', $set + $defaults + [
             'parent_id' => null,
         ]);
+
+        Event::assertDispatched(ProductSetCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateMinimalWithWebHook($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.add');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ProductSetCreated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => true,
+            'with_hidden' => false,
+        ]);
+
+        Bus::fake();
+
+        $set = [
+            'name' => 'Test',
+        ];
+
+        $defaults = [
+            'public' => true,
+            'hide_on_index' => false,
+            'slug' => 'test',
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
+                'slug_suffix' => 'test',
+                'slug_override' => false,
+            ]);
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $set + $defaults + [
+                    'slug_override' => false,
+                    'slug_suffix' => 'test',
+                    'parent' => null,
+                ]]);
+
+        $this->assertDatabaseHas('product_sets', $set + $defaults + [
+                'parent_id' => null,
+            ]);
+
+        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductSetCreated;
+        });
+
+        $set = ProductSet::find($response->getData()->data->id);
+
+        $event = new ProductSetCreated($set);
+        $listener = new WebHookEventListener();
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $set) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $set->getKey()
+                && $payload['data_type'] === 'ProductSet'
+                && $payload['event'] === 'ProductSetCreated';
+        });
     }
 
     /**
@@ -95,6 +176,8 @@ class ProductSetCreateTest extends TestCase
     public function testCreateFull($user): void
     {
         $this->$user->givePermissionTo('product_sets.add');
+
+        Event::fake([ProductSetCreated::class]);
 
         $set = [
             'name' => 'Test',
@@ -120,6 +203,73 @@ class ProductSetCreateTest extends TestCase
             'parent_id' => null,
             'slug' => 'test',
         ]);
+
+        Event::assertDispatched(ProductSetCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateFullWithWebHook($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.add');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ProductSetCreated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => true,
+            'with_hidden' => true,
+        ]);
+
+        Bus::fake();
+
+        $set = [
+            'name' => 'Test',
+            'public' => false,
+            'hide_on_index' => true,
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
+                'slug_suffix' => 'test',
+                'slug_override' => false,
+            ]);
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $set + [
+                    'slug_suffix' => 'test',
+                    'slug_override' => false,
+                    'parent' => null,
+                    'slug' => 'test',
+                ],
+            ]);
+
+        $this->assertDatabaseHas('product_sets', $set + [
+                'parent_id' => null,
+                'slug' => 'test',
+            ]);
+
+        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductSetCreated;
+        });
+
+        $set = ProductSet::find($response->getData()->data->id);
+
+        $event = new ProductSetCreated($set);
+        $listener = new WebHookEventListener();
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $set) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $set->getKey()
+                && $payload['data_type'] === 'ProductSet'
+                && $payload['event'] === 'ProductSetCreated';
+        });
     }
 
     /**
@@ -128,6 +278,8 @@ class ProductSetCreateTest extends TestCase
     public function testCreateParent($user): void
     {
         $this->$user->givePermissionTo('product_sets.add');
+
+        Event::fake([ProductSetCreated::class]);
 
         $set = [
             'name' => 'Test Parent',
@@ -172,6 +324,8 @@ class ProductSetCreateTest extends TestCase
             'parent_id' => $parentId,
             'order' => 1,
         ]);
+
+        Event::assertDispatched(ProductSetCreated::class);
     }
 
     /**
@@ -180,6 +334,8 @@ class ProductSetCreateTest extends TestCase
     public function testCreateChild($user): void
     {
         $this->$user->givePermissionTo('product_sets.add');
+
+        Event::fake([ProductSetCreated::class]);
 
         $parent = ProductSet::factory()->create([
             'public' => true,
@@ -221,6 +377,8 @@ class ProductSetCreateTest extends TestCase
         $this->assertDatabaseHas('product_sets', $set + $parentId + [
             'slug' => $parent->slug . '-test-child',
         ]);
+
+        Event::assertDispatched(ProductSetCreated::class);
     }
 
     /**
@@ -229,6 +387,8 @@ class ProductSetCreateTest extends TestCase
     public function testCreateOrder($user): void
     {
         $this->$user->givePermissionTo('product_sets.add');
+
+        Event::fake([ProductSetCreated::class]);
 
         ProductSet::factory()->create([
             'public' => true,
@@ -259,6 +419,8 @@ class ProductSetCreateTest extends TestCase
         $this->assertDatabaseHas('product_sets', $set + $order + [
             'slug' => 'test-order',
         ]);
+
+        Event::assertDispatched(ProductSetCreated::class);
     }
 
     /**
@@ -267,6 +429,8 @@ class ProductSetCreateTest extends TestCase
     public function testCreateChildVisibility($user): void
     {
         $this->$user->givePermissionTo('product_sets.add');
+
+        Event::fake([ProductSetCreated::class]);
 
         $parent = ProductSet::factory()->create([
             'public' => true,
@@ -300,6 +464,8 @@ class ProductSetCreateTest extends TestCase
         $this->assertDatabaseHas('product_sets', $set + $parentId + [
             'public_parent' => false,
         ]);
+
+        Event::assertDispatched(ProductSetCreated::class);
     }
 
     /**
@@ -308,6 +474,8 @@ class ProductSetCreateTest extends TestCase
     public function testCreateDuplicateSlug($user): void
     {
         $this->$user->givePermissionTo('product_sets.add');
+
+        Event::fake([ProductSetCreated::class]);
 
         ProductSet::factory()->create([
             'name' => 'Test duplicate',
@@ -320,6 +488,8 @@ class ProductSetCreateTest extends TestCase
             'slug_override' => false,
         ]);
         $response->assertStatus(422);
+
+        Event::assertNotDispatched(ProductSetCreated::class);
     }
 
     /**
@@ -328,6 +498,8 @@ class ProductSetCreateTest extends TestCase
     public function testCreateTreeView($user): void
     {
         $this->$user->givePermissionTo('product_sets.add');
+
+        Event::fake([ProductSetCreated::class]);
 
         $child = ProductSet::factory()->create([
             'parent_id' => 'null',
@@ -391,6 +563,8 @@ class ProductSetCreateTest extends TestCase
                     ],
                 ],
             ],
-        ]);
+            ]);
+
+        Event::assertDispatched(ProductSetCreated::class);
     }
 }

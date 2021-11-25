@@ -64,6 +64,12 @@ final class Handler extends ExceptionHandler
             'message' => 'Unauthorized',
             'code' => Response::HTTP_FORBIDDEN,
         ],
+        WebHookCreatorException::class => [
+            'code' => Response::HTTP_FORBIDDEN,
+        ],
+        WebHookEventException::class => [
+            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+        ],
     ];
 
     /**

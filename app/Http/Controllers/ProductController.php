@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ProductCreated;
+use App\Events\ProductDeleted;
+use App\Events\ProductUpdated;
 use App\Http\Controllers\Swagger\ProductControllerSwagger;
 use App\Http\Requests\ProductCreateRequest;
 use App\Http\Requests\ProductIndexRequest;
@@ -98,19 +101,29 @@ class ProductController extends Controller implements ProductControllerSwagger
     {
         $product = Product::create($request->validated());
 
-        return $this->productSetup($product, $request);
+        $this->productSetup($product, $request);
+
+        ProductCreated::dispatch($product);
+
+        return ProductResource::make($product);
     }
 
     public function update(ProductUpdateRequest $request, Product $product): JsonResource
     {
         $product->update($request->validated());
 
-        return $this->productSetup($product, $request);
+        $this->productSetup($product, $request);
+
+        ProductUpdated::dispatch($product);
+
+        return ProductResource::make($product);
     }
 
     public function destroy(Product $product): JsonResponse
     {
-        $product->delete();
+        if ($product->delete()) {
+            ProductDeleted::dispatch($product);
+        }
 
         return Response::json(null, 204);
     }
@@ -124,7 +137,7 @@ class ProductController extends Controller implements ProductControllerSwagger
     public function productSetup(
         Product $product,
         ProductCreateRequest|ProductUpdateRequest $request,
-    ): ProductResource {
+    ) {
         $this->mediaService->sync($product, $request->input('media', []));
         $product->tags()->sync($request->input('tags', []));
 
@@ -137,7 +150,5 @@ class ProductController extends Controller implements ProductControllerSwagger
         if ($request->has('sets')) {
             $product->sets()->sync($request->input('sets'));
         }
-
-        return ProductResource::make($product);
     }
 }
