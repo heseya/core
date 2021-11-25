@@ -6,9 +6,12 @@ use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
 use App\Listeners\WebHookEventListener;
+use App\Enums\MediaType;
+use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Schema;
+use App\Models\SeoMetadata;
 use App\Models\WebHook;
 use App\Services\Contracts\ProductServiceContract;
 use Illuminate\Events\CallQueuedListener;
@@ -153,7 +156,7 @@ class ProductTest extends TestCase
                 0 => $this->expected_short,
             ]]);
 
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(20);
     }
 
     /**
@@ -187,7 +190,7 @@ class ProductTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(20);
     }
 
     /**
@@ -781,6 +784,68 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateWithSeo($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $media = Media::factory()->create([
+            'type' => MediaType::PHOTO,
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ]);
+
+        $response = $this->actingAs($this->$user)->json('POST', '/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'description_html' => '<h1>Description</h1>',
+            'public' => true,
+            'seo' => [
+                'title' => 'seo title',
+                'description' => 'seo description',
+                'og_image_id' => $media->getKey(),
+            ]
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'slug' => 'test',
+                'name' => 'Test',
+                'price' => 100,
+                'public' => true,
+                'description_html' => '<h1>Description</h1>',
+                'cover' => null,
+                'gallery' => [],
+                'seo' => [
+                    'title' => 'seo title',
+                    'description' => 'seo description',
+                    'og_image' => [
+                        'id' => $media->getKey(),
+                    ]
+                ]
+            ]]);
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'public' => true,
+            'description_html' => '<h1>Description</h1>',
+        ]);
+
+        $this->assertDatabaseHas('seo_metadata', [
+           'title' => 'seo title',
+           'description' => 'seo description',
+           'model_id' => $response->getData()->data->id,
+           'model_type' => Product::class,
+        ]);
+
+        $this->assertDatabaseCount('seo_metadata', 2);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateMinMaxPrice($user): void
     {
         $this->$user->givePermissionTo('products.add');
@@ -1071,6 +1136,54 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateWithSeo($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $product = Product::factory([
+            'name' => 'Created',
+            'slug' => 'created',
+            'price' => 100,
+            'description_html' => '<h1>Description</h1>',
+            'public' => false,
+            'order' => 1,
+        ])->create();
+
+        $seo = SeoMetadata::factory()->create();
+        $product->seo()->save($seo);
+
+        $response = $this->actingAs($this->$user)->json('PATCH', '/products/id:' . $product->getKey(), [
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150,
+            'description_html' => '<h1>New description</h1>',
+            'public' => false,
+            'seo' => [
+                'title' => 'seo title',
+                'description' => 'seo description',
+            ],
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150,
+            'description_html' => '<h1>New description</h1>',
+            'public' => false,
+        ]);
+
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => 'seo title',
+            'description' => 'seo description',
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateMinMaxPrice($user): void
     {
         $this->$user->givePermissionTo('products.edit');
@@ -1203,11 +1316,23 @@ class ProductTest extends TestCase
         $this->$user->givePermissionTo('products.remove');
 
         Queue::fake();
+        $product = Product::factory([
+            'name' => 'Created',
+            'slug' => 'created',
+            'price' => 100,
+            'description_html' => '<h1>Description</h1>',
+            'public' => false,
+            'order' => 1,
+        ])->create();
+
+        $seo = SeoMetadata::factory()->create();
+        $product->seo()->save($seo);
 
         $response = $this->actingAs($this->$user)
-            ->deleteJson('/products/id:' . $this->product->getKey());
+            ->deleteJson('/products/id:' . $product->getKey());
         $response->assertNoContent();
-        $this->assertSoftDeleted($this->product);
+        $this->assertSoftDeleted($product);
+        $this->assertSoftDeleted($seo);
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
             return $job->class === WebHookEventListener::class

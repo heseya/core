@@ -234,29 +234,7 @@ class DiscountTest extends TestCase
             'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i')
         ]);
 
-        $response
-            ->assertCreated()
-            ->assertJsonFragment([
-                'description' => 'Testowy kupon',
-                'code' => 'S43SA2',
-                'discount' => 10,
-                'type' => DiscountType::PERCENTAGE,
-                'max_uses' => 20,
-                'uses' => 0,
-                'available' => true,
-                'starts_at' => Carbon::yesterday(),
-                'expires_at' => Carbon::tomorrow()
-            ]);
-
-        $this->assertDatabaseHas('discounts', [
-            'description' => 'Testowy kupon',
-            'code' => 'S43SA2',
-            'discount' => 10,
-            'max_uses' => 20,
-            'type' => DiscountType::PERCENTAGE,
-            'starts_at' => Carbon::yesterday(),
-            'expires_at' => Carbon::tomorrow()
-        ]);
+        $response->assertCreated();
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
             return $job->class === WebHookEventListener::class

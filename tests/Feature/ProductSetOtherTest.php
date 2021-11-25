@@ -12,6 +12,7 @@ use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Spatie\WebhookServer\CallWebhookJob;
+use App\Models\SeoMetadata;
 use Tests\TestCase;
 
 class ProductSetOtherTest extends TestCase
@@ -170,6 +171,27 @@ class ProductSetOtherTest extends TestCase
         $this->assertSoftDeleted($subset3);
 
         Event::assertDispatched(ProductSetDeleted::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWithSeo($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.remove');
+
+        $newSet = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+        $seo = SeoMetadata::factory()->create();
+        $newSet->seo()->save($seo);
+
+        $response = $this->actingAs($this->$user)->deleteJson(
+            '/product-sets/id:' . $newSet->getKey(),
+        );
+        $response->assertNoContent();
+        $this->assertSoftDeleted($newSet);
+        $this->assertSoftDeleted($seo);
     }
 
     /**

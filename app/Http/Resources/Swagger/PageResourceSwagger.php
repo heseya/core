@@ -54,6 +54,12 @@ interface PageResourceSwagger
      *     example="Lorem ipsum dolor sit amet",
      *     description="Tag stripped and trimmed version of HTML content to use as meta data",
      *   ),
+     *   @OA\Property(
+     *     property="seo",
+     *     type="object",
+     *     description="SEO metadata",
+     *     ref="#/components/schemas/SeoView",
+     *   ),
      * )
      */
     public function view(Request $request): array;

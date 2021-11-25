@@ -108,6 +108,12 @@ interface ProductSetResourceSwagger
      *       example="026bc5f6-8373-4aeb-972e-e78d72a67121",
      *     ),
      *   ),
+     *     @OA\Property(
+     *     property="seo",
+     *     type="object",
+     *     description="SEO metadata",
+     *     ref="#/components/schemas/SeoView",
+     *   ),
      * )
      */
 

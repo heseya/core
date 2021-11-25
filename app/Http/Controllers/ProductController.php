@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\SeoMetadataDto;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
@@ -17,6 +18,7 @@ use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
+use App\Services\Contracts\SeoMetadataServiceContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -32,6 +34,7 @@ class ProductController extends Controller implements ProductControllerSwagger
         private SchemaServiceContract $schemaService,
         private ProductServiceContract $productService,
         private ProductSetServiceContract $productSetService,
+        private SeoMetadataServiceContract $seoMetadataService
     ) {
     }
 
@@ -39,7 +42,7 @@ class ProductController extends Controller implements ProductControllerSwagger
     {
         $query = Product::search($request->validated())
             ->sort($request->input('sort', 'order'))
-            ->with(['media', 'tags', 'schemas', 'sets']);
+            ->with(['media', 'tags', 'schemas', 'sets', 'seo']);
 
         $canShowHiddenSets = Gate::allows('product_sets.show_hidden');
 
@@ -103,6 +106,9 @@ class ProductController extends Controller implements ProductControllerSwagger
 
         $this->productSetup($product, $request);
 
+        $seo_dto = SeoMetadataDto::fromFormRequest($request);
+        $product->seo()->save($this->seoMetadataService->create($seo_dto));
+
         ProductCreated::dispatch($product);
 
         return ProductResource::make($product);
@@ -114,6 +120,11 @@ class ProductController extends Controller implements ProductControllerSwagger
 
         $this->productSetup($product, $request);
 
+        if ($request->has('seo')) {
+            $seo_dto = SeoMetadataDto::fromFormRequest($request);
+            $this->seoMetadataService->update($seo_dto, $product->seo);
+        }
+
         ProductUpdated::dispatch($product);
 
         return ProductResource::make($product);
@@ -123,6 +134,9 @@ class ProductController extends Controller implements ProductControllerSwagger
     {
         if ($product->delete()) {
             ProductDeleted::dispatch($product);
+            if ($product->seo !== null) {
+                $this->seoMetadataService->delete($product->seo);
+            }
         }
 
         return Response::json(null, 204);
@@ -130,9 +144,7 @@ class ProductController extends Controller implements ProductControllerSwagger
 
     /**
      * @param Product $product
-     * @param ProductUpdateRequest $request
-     *
-     * @return ProductResource
+     * @param ProductCreateRequest|ProductUpdateRequest $request
      */
     public function productSetup(
         Product $product,

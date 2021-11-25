@@ -8,6 +8,7 @@ use App\Events\PageUpdated;
 use App\Http\Resources\PageResource;
 use App\Listeners\WebHookEventListener;
 use App\Models\Page;
+use App\Models\SeoMetadata;
 use App\Models\WebHook;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -267,6 +268,44 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateWithSeo($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        $html = '<h1>hello world</h1>';
+        $page = [
+            'name' => 'Test',
+            'slug' => 'test-test',
+            'public' => true,
+            'content_html' => $html,
+            'seo' => [
+                'title' => 'seo title',
+                'description' => 'seo description',
+            ]
+        ];
+
+        $response = $this->actingAs($this->$user)->json('POST', '/pages', $page);
+        $response->assertJson([
+            'data' => $page,
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('pages', [
+            'id' => $response->getData()->data->id,
+            'name' => 'Test',
+            'slug' => 'test-test',
+            'public' => true,
+            'content_html' => $html,
+        ]);
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => 'seo title',
+            'description' => 'seo description',
+            'model_id' => $response->getData()->data->id,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateByOrder($user): void
     {
         $this->$user->givePermissionTo('pages.add');
@@ -402,6 +441,57 @@ class PageTest extends TestCase
                 && $payload['data_type'] === 'Page'
                 && $payload['event'] === 'PageUpdated';
         });
+        $this->assertDatabaseHas('pages', [
+            'id' => $this->page->getKey(),
+            'name' => 'Test 2',
+            'slug' => 'test-2',
+            'public' => false,
+            'content_html' => $html,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithSeo($user): void
+    {
+        $this->$user->givePermissionTo('pages.edit');
+
+        $html = '<h1>hello world 2</h1>';
+        $page = [
+            'name' => 'Test 2',
+            'slug' => 'test-2',
+            'public' => false,
+            'content_html' => $html,
+            'seo' => [
+                'title' => 'seo title',
+                'description' => 'seo description',
+            ],
+        ];
+
+        $seo = SeoMetadata::factory()->create();
+        $this->page->seo()->save($seo);
+
+        $response = $this->actingAs($this->$user)->json('PATCH',
+            '/pages/id:' . $this->page->getKey(),
+            $page
+        );
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => $page]);
+
+        $this->assertDatabaseHas('pages', [
+            'id' => $this->page->getKey(),
+            'name' => 'Test 2',
+            'slug' => 'test-2',
+            'public' => false,
+            'content_html' => $html,
+        ]);
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => 'seo title',
+            'description' => 'seo description',
+        ]);
     }
 
     public function testDeleteUnauthorized(): void
@@ -425,12 +515,16 @@ class PageTest extends TestCase
     {
         $this->$user->givePermissionTo('pages.remove');
 
+        $seo = SeoMetadata::factory()->create();
+        $this->page->seo()->save($seo);
+
         Event::fake([PageDeleted::class]);
 
         $response = $this->actingAs($this->$user)
             ->deleteJson('/pages/id:' . $this->page->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($this->page);
+        $this->assertSoftDeleted($seo);
 
         Event::assertDispatched(PageDeleted::class);
     }

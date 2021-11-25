@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Events\ProductSetCreated;
 use App\Listeners\WebHookEventListener;
+use App\Enums\MediaType;
+use App\Models\Media;
 use App\Models\ProductSet;
 use App\Models\WebHook;
 use Illuminate\Events\CallQueuedListener;
@@ -566,5 +568,62 @@ class ProductSetCreateTest extends TestCase
             ]);
 
         Event::assertDispatched(ProductSetCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithSeo($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.add');
+
+        $set = [
+            'name' => 'Test',
+            'public' => false,
+            'hide_on_index' => true,
+        ];
+
+        $media = Media::factory()->create([
+            'type' => MediaType::PHOTO,
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
+                'slug_suffix' => 'test',
+                'slug_override' => false,
+                'seo' => [
+                    'title' => 'seo title',
+                    'description' => 'seo description',
+                    'og_image_id' => $media->getKey(),
+                ]
+            ]);
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $set + [
+                    'slug_suffix' => 'test',
+                    'slug_override' => false,
+                    'parent' => null,
+                    'slug' => 'test',
+                    'seo' => [
+                        'title' => 'seo title',
+                        'description' => 'seo description',
+                        'og_image' => [
+                            'id' => $media->getKey(),
+                        ]
+                    ]
+                ],
+            ]);
+
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => 'seo title',
+            'description' => 'seo description',
+            'model_id' => $response->getData()->data->id,
+            'model_type' => ProductSet::class,
+        ]);
+
+        $this->assertDatabaseHas('product_sets', $set + [
+                'parent_id' => null,
+                'slug' => 'test',
+            ]);
     }
 }

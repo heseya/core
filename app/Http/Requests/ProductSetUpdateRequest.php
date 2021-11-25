@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-
 /**
  * @OA\RequestBody(
  *   request="ProductSetUpdate",
@@ -57,14 +55,19 @@ use Illuminate\Foundation\Http\FormRequest;
  *         example="026bc5f6-8373-4aeb-972e-e78d72a67121",
  *       ),
  *     ),
+ *     @OA\Property(
+ *       property="seo",
+ *       type="object",
+ *       ref="#/components/schemas/SeoStore",
+ *     ),
  *   )
  * )
  */
-class ProductSetUpdateRequest extends FormRequest
+class ProductSetUpdateRequest extends SeoMetadataRulesRequest
 {
     public function rules(): array
     {
-        return [
+        return $this->rulesWithSeo([
             'name' => ['required', 'string', 'max:255'],
             'slug_suffix' => [
                 'required',
@@ -78,6 +81,6 @@ class ProductSetUpdateRequest extends FormRequest
             'parent_id' => ['present', 'nullable', 'uuid', 'exists:product_sets,id'],
             'children_ids' => ['present', 'array'],
             'children_ids.*' => ['uuid', 'exists:product_sets,id'],
-        ];
+        ]);
     }
 }
