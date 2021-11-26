@@ -90,7 +90,7 @@ class ProductTest extends TestCase
             'name' => $this->product->name,
             'slug' => $this->product->slug,
             'price' => (int) $this->product->price,
-            'visible' => $this->product->isPublic(),
+            'visible' => $this->product->public,
             'public' => (bool) $this->product->public,
             'available' => true,
             'cover' => null,

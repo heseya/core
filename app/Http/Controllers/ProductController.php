@@ -44,14 +44,8 @@ class ProductController extends Controller implements ProductControllerSwagger
             ->sort($request->input('sort', 'order'))
             ->with(['media', 'tags', 'schemas', 'sets', 'seo']);
 
-        $canShowHiddenSets = Gate::allows('product_sets.show_hidden');
-
         if (Gate::denies('products.show_hidden')) {
-            if (!$canShowHiddenSets) {
-                $query->public();
-            } else {
-                $query->where('public', true);
-            }
+            $query->public();
         }
 
         if ($request->has('sets')) {
@@ -60,6 +54,7 @@ class ProductController extends Controller implements ProductControllerSwagger
                 $request->input('sets') ?? [],
             )->with('allChildren')->get();
 
+            $canShowHiddenSets = Gate::allows('product_sets.show_hidden');
             $relationScope = $canShowHiddenSets ? 'allChildren' : 'allChildrenPublic';
 
             $setsFlat = $this->productSetService
@@ -93,7 +88,7 @@ class ProductController extends Controller implements ProductControllerSwagger
 
     public function show(ProductShowRequest $request, Product $product): JsonResource
     {
-        if (Gate::denies('products.show_hidden') && !$product->isPublic()) {
+        if (Gate::denies('products.show_hidden') && !$product->public) {
             throw new NotFoundHttpException();
         }
 

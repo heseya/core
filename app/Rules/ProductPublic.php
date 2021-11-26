@@ -22,7 +22,7 @@ class ProductPublic implements Rule
             return false;
         }
 
-        return $product->isPublic();
+        return $product->public;
     }
 
     public function message(): string

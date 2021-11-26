@@ -17,7 +17,7 @@ abstract class ProductEvent extends WebHookEvent
 
     public function isHidden(): bool
     {
-        return !$this->product->isPublic();
+        return !$this->product->public;
     }
 
     public function getDataContent(): array
