@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\WebHook;
+use App\Policies\WebHookPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -12,7 +14,9 @@ class AuthServiceProvider extends ServiceProvider
      *
      * @var array
      */
-    protected $policies = [];
+    protected $policies = [
+        WebHook::class => WebHookPolicy::class,
+    ];
 
     /**
      * Register any authentication / authorization services.

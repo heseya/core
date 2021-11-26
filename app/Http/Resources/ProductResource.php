@@ -39,6 +39,7 @@ class ProductResource extends Resource implements ProductResourceSwagger
             'gallery' => MediaResource::collection($this->media),
             'schemas' => SchemaResource::collection($this->schemas),
             'sets' => ProductSetResource::collection($sets),
+            'seo' => SeoMetadataResource::make($this->seo),
         ];
     }
 }

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\App;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\WebHook;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
@@ -199,5 +200,36 @@ class AppOtherTest extends TestCase
         $this->user->refresh();
         $this->assertFalse($this->user->hasRole($role));
         $this->assertFalse($this->user->hasPermissionTo($permission));
+    }
+
+    public function testUninstallWebHooks(): void
+    {
+        $this->user->givePermissionTo('apps.remove');
+
+        $app = App::factory()->create(['url' => $this->url]);
+
+        $webhook = WebHook::factory([
+            'model_type' => $app::class,
+            'creator_id' => $app->getKey(),
+        ])->create();
+
+        $this->assertDatabaseHas('web_hooks', [
+            'creator_id' => $app->getKey(),
+            'model_type' => App::class,
+        ]);
+
+        $this->assertTrue($app->webhooks->isNotEmpty());
+
+        Http::fake([
+            $this->url . '/uninstall' => Http::response(status: 204),
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->json('DELETE', '/apps/id:' . $app->getKey());
+
+        $response->assertNoContent();
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
+        $this->assertDeleted($app);
+        $this->assertSoftDeleted($webhook);
     }
 }

@@ -66,6 +66,11 @@ use Illuminate\Validation\Rule;
  *         example="0006c3a0-21af-4485-b7fe-9c42233cf03a",
  *       ),
  *     ),
+ *     @OA\Property(
+ *       property="seo",
+ *       type="object",
+ *       ref="#/components/schemas/SeoStore",
+ *     ),
  *   ),
  * )
  */

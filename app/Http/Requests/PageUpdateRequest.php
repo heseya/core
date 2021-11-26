@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
@@ -33,14 +32,19 @@ use Illuminate\Validation\Rule;
  *       description="HTML formated text to be displayed as a main content under the page header",
  *       example="<h1>Lorem ipsum dolor sit amet</h1>",
  *     ),
+ *     @OA\Property(
+ *       property="seo",
+ *       type="object",
+ *       ref="#/components/schemas/SeoStore",
+ *     ),
  *   )
  * )
  */
-class PageUpdateRequest extends FormRequest
+class PageUpdateRequest extends SeoMetadataRulesRequest
 {
     public function rules(): array
     {
-        return [
+        return $this->rulesWithSeo([
             'name' => ['string', 'max:255'],
             'slug' => [
                 'string',
@@ -49,6 +53,6 @@ class PageUpdateRequest extends FormRequest
             ],
             'public' => ['boolean'],
             'content_html' => ['string', 'min:1'],
-        ];
+        ]);
     }
 }

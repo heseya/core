@@ -45,7 +45,7 @@ class Deposit extends Model
         'order_product_id',
     ];
 
-    public function items(): BelongsTo
+    public function item(): BelongsTo
     {
         return $this->belongsTo(Item::class);
     }

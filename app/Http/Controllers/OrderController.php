@@ -4,14 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Dtos\OrderUpdateDto;
 use App\Enums\SchemaType;
+use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
-use App\Events\OrderStatusUpdated;
+use App\Events\OrderUpdatedStatus;
 use App\Exceptions\OrderException;
 use App\Http\Controllers\Swagger\OrderControllerSwagger;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderIndexRequest;
 use App\Http\Requests\OrderItemsRequest;
-use App\Http\Requests\OrderSyncRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Resources\OrderPublicResource;
@@ -121,6 +121,7 @@ class OrderController extends Controller implements OrderControllerSwagger
                                 'item_id' => $optionItem->getKey(),
                                 'quantity' => -1 * $item['quantity'],
                             ]);
+                            ItemUpdatedQuantity::dispatch($optionItem);
                         }
                     }
 
@@ -156,67 +157,6 @@ class OrderController extends Controller implements OrderControllerSwagger
         return OrderPublicResource::make($order);
     }
 
-    public function sync(OrderSyncRequest $request): JsonResponse
-    {
-        foreach ($request->input('items', []) as $item) {
-            Product::findOrFail($item['product_id']);
-        }
-
-        $deliveryAddress = Address::firstOrCreate($request->input('delivery_address'));
-
-        if ($request->filled('invoice_address.name')) {
-            $invoiceAddress = Address::firstOrCreate($request->input('invoice_address'));
-        }
-
-        $order = Order::updateOrCreate(['code' => $request->input('code')], [
-            'email' => $request->input('email'),
-            'comment' => $request->input('comment'),
-            'currency' => 'PLN',
-            'shipping_method_id' => $request->input('shipping_method_id'),
-            'shipping_price' => $request->input('shipping_price'),
-            'shipping_number' => $request->input('shipping_number'),
-            'status_id' => $request->input('status_id'),
-            'delivery_address_id' => $deliveryAddress->getKey(),
-            'invoice_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
-            'created_at' => $request->input('created_at'),
-        ]);
-
-        $order->products()->delete();
-
-        foreach ($request->input('items', []) as $item) {
-            $product = Product::findOrFail($item['product_id']);
-
-            $order_product = new OrderProduct([
-                'product_id' => $product->getKey(),
-                'quantity' => $item['quantity'],
-                'price' => $item['price'],
-            ]);
-
-            $order->products()->save($order_product);
-
-            foreach ($item['schemas'] ?? [] as $schema) {
-                $order_product->schemas()->create([
-                    'name' => $schema['name'],
-                    'value' => $schema['value'],
-                    'price' => $schema['price'],
-                ]);
-            }
-        }
-
-        $order->payments()->delete();
-
-        foreach ($request->input('payments') as $payment) {
-            $order->payments()->create([
-                'method' => $payment['name'],
-                'amount' => $payment['amount'],
-                'paid' => $payment['paid'],
-                'created_at' => $request->input('created_at'),
-            ]);
-        }
-
-        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
-    }
-
     public function verify(OrderItemsRequest $request): JsonResponse
     {
         foreach ($request->input('items', []) as $item) {
@@ -246,10 +186,14 @@ class OrderController extends Controller implements OrderControllerSwagger
         ]);
 
         if ($status->cancel) {
+            $deposits = $order->deposits()->with('item')->get();
             $order->deposits()->delete();
+            foreach ($deposits as $deposit) {
+                ItemUpdatedQuantity::dispatch($deposit->item);
+            }
         }
 
-        OrderStatusUpdated::dispatch($order);
+        OrderUpdatedStatus::dispatch($order);
 
         return OrderResource::make($order)->response();
     }

@@ -57,6 +57,9 @@ class ProductSetIndexTest extends TestCase
         $this->index($user);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
     public function index($user): void
     {
         $this->$user->givePermissionTo('product_sets.show');
@@ -282,7 +285,7 @@ class ProductSetIndexTest extends TestCase
                     ],
                 ],
             ],
-            ]);
+        ]);
     }
 
     /**

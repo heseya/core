@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Dtos\AddressDto;
 use App\Dtos\OrderUpdateDto;
+use App\Events\OrderUpdated;
 use App\Exceptions\OrderException;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
@@ -70,6 +71,8 @@ class OrderService implements OrderServiceContract
             ]);
 
             DB::commit();
+
+            OrderUpdated::dispatch($order);
 
             return OrderResource::make($order)->response();
         } catch (Exception $error) {

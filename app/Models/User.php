@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\SearchTypes\UserSearch;
+use App\Traits\HasWebHooks;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Heseya\Sortable\Sortable;
@@ -42,7 +43,8 @@ class User extends Model implements
         SoftDeletes,
         Searchable,
         Sortable,
-        Auditable;
+        Auditable,
+        HasWebHooks;
 
     protected $fillable = [
         'name',

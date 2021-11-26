@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Traits\HasSeoMetadata;
 use Heseya\Sortable\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
@@ -12,7 +14,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Page extends Model implements AuditableContract
 {
-    use HasFactory, Sortable, Auditable;
+    use HasFactory, Sortable, Auditable, SoftDeletes, HasSeoMetadata;
 
     protected $fillable = [
         'order',
