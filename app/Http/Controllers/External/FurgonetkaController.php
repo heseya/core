@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\External;
 
 use App\Exceptions\Error;
+use App\Exceptions\PackageException;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Swagger\FurgonetkaControllerSwagger;
 use App\Models\Order;
 use App\Models\PackageTemplate;
 use App\Models\Status;
+use App\Services\Contracts\SettingsServiceContract;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,6 +22,11 @@ use SoapClient;
 
 class FurgonetkaController extends Controller implements FurgonetkaControllerSwagger
 {
+    public function __construct(
+        private SettingsServiceContract $settingsService
+    ) {
+    }
+
     /**
      * Odbieranie statusów przesyłek z Furgonetka.pl w formacie JSON
      *
@@ -65,8 +72,8 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
     public function createPackage(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'order_id' => ['required', 'integer'],
-            'package_template_id' => ['required', 'integer'],
+            'order_id' => ['required', 'uuid'],
+            'package_template_id' => ['required', 'uuid'],
         ]);
 
         $order = Order::findOrFail($validated['order_id']);
@@ -184,15 +191,14 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
                 'type' => 'package',
                 'regulations_accept' => $regulations_accept,
                 'request_collection' => false,
-                // Nie ma danych wysyłającego jeszcze na sklepie
                 'sender' => [
-                    'name' => 'Dawid Sandecki',
-                    'email' => 'trafikadawidsandecki@gmail.com',
-                    'street' => 'Gdańska 57',
-                    'postcode' => '85-006',
-                    'city' => 'Bydgoszcz',
-                    'phone' => '+48 668 861 592',
-                    'company' => 'Trafika',
+                    'name' => $this->settingsService->getSetting('sender_name')->value,
+                    'email' => $this->settingsService->getSetting('sender_email')->value,
+                    'street' => $this->settingsService->getSetting('sender_street')->value,
+                    'postcode' => $this->settingsService->getSetting('sender_postcode')->value,
+                    'city' => $this->settingsService->getSetting('sender_city')->value,
+                    'phone' => $this->settingsService->getSetting('sender_phone')->value,
+                    'company' => $this->settingsService->getSetting('sender_company')->value,
                 ],
                 'receiver' => [
                     'email' => $order->email,
@@ -222,19 +228,13 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
         $validate = $client->validatePackage($packageData)->validatePackageResult;
 
         if ($validate->errors) {
-            return Error::abort(
-                $validate->errors->item,
-                502,
-            );
+            throw new PackageException('Invalid package data', 502, $validate->errors->item);
         }
 
         $package = $client->createPackage($packageData)->createPackageResult;
 
         if ($package->errors) {
-            return Error::abort(
-                $package->errors->item,
-                502,
-            );
+            throw new PackageException('The package cannot be shipped.', 502, $validate->errors->item);
         }
 
         $order->update([

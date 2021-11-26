@@ -75,6 +75,9 @@ final class Handler extends ExceptionHandler
             'message' => 'Unauthorized',
             'code' => Response::HTTP_UNAUTHORIZED,
         ],
+        PackageException::class => [
+            'code' => Response::HTTP_BAD_GATEWAY,
+        ],
     ];
 
     /**
