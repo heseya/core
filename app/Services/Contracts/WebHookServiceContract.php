@@ -7,7 +7,7 @@ use Illuminate\Support\Collection;
 
 interface WebHookServiceContract
 {
-    public function searchAll(array $attributes): Collection;
+    public function searchAll(array $attributes, ?string $sort): Collection;
 
     public function create(array $attributes): WebHook;
 
