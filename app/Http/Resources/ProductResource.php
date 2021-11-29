@@ -18,7 +18,7 @@ class ProductResource extends Resource implements ProductResourceSwagger
             'price_min' => $this->price_min,
             'price_max' => $this->price_max,
             'public' => $this->public,
-            'visible' => $this->isPublic(),
+            'visible' => $this->public,
             'available' => $this->available,
             'quantity_step' => $this->quantity_step,
             'cover' => MediaResource::make($this->media->first()),

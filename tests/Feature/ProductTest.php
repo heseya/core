@@ -90,7 +90,7 @@ class ProductTest extends TestCase
             'name' => $this->product->name,
             'slug' => $this->product->slug,
             'price' => (int) $this->product->price,
-            'visible' => $this->product->isPublic(),
+            'visible' => $this->product->public,
             'public' => (bool) $this->product->public,
             'available' => true,
             'cover' => null,
@@ -301,6 +301,31 @@ class ProductTest extends TestCase
     public function testShowHiddenUnauthorized($user): void
     {
         $this->$user->givePermissionTo('products.show_details');
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/' . $this->hidden_product->slug);
+        $response->assertNotFound();
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $this->hidden_product->getKey());
+        $response->assertNotFound();
+    }
+
+    /**
+     * Sets shouldn't affect product visibility
+     *
+     * @dataProvider authProvider
+     */
+    public function testShowHiddenWithPublicSetUnauthorized($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        /** @var ProductSet $publicSet */
+        $publicSet = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $publicSet->products()->attach($this->hidden_product);
 
         $response = $this->actingAs($this->$user)
             ->getJson('/products/' . $this->hidden_product->slug);
