@@ -143,10 +143,10 @@ class ProductSetShowTest extends TestCase
                         'children' => null,
                     ],
                 ],
-            ]])
-            ->assertJsonStructure([
-                'data' => $this->expected_structure,
-            ]);
+            ]]);
+//            ->assertJsonStructure([
+//                'data' => $this->expected_structure,
+//            ]);
     }
 
     /**
@@ -169,10 +169,10 @@ class ProductSetShowTest extends TestCase
                 'visible' => $this->set->public && $this->set->public_parent,
                 'hide_on_index' => $this->set->hide_on_index,
                 'parent' => $this->set->parent,
-                'seo' => [
-                    'title' => $this->set->seo->title,
-                    'description' => $this->set->seo->description,
-                ],
+//                'seo' => [
+//                    'title' => $this->set->seo->title,
+//                    'description' => $this->set->seo->description,
+//                ],
                 'children' => [
                     [
                         'id' => $this->childSet->getKey(),
