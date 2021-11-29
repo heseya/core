@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\External;
 
 use App\Exceptions\Error;
+use App\Exceptions\PackageAuthException;
 use App\Exceptions\PackageException;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Swagger\FurgonetkaControllerSwagger;
@@ -86,8 +87,7 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
 
         if ($validator->fails()) {
             return Error::abort(
-                'Order address not in Poland/invalid phone number' .
-                    $order->deliveryAddress->phoneSimple,
+                'Order address not in Poland/invalid phone number',
                 502,
             );
         }
@@ -228,6 +228,9 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
         $validate = $client->validatePackage($packageData)->validatePackageResult;
 
         if ($validate->errors) {
+            if (!is_array($validate->errors->item) && $validate->errors->item->message === 'Error authorization') {
+                throw new PackageAuthException('Error authorization with API');
+            }
             throw new PackageException('Invalid package data', 502, $validate->errors->item);
         }
 

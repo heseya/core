@@ -48,32 +48,32 @@ return [
     ],
 
     'sender_name' => [
-        'value' => 'Imie nazwisko',
+        'value' => null,
         'public' => false,
     ],
 
     'sender_email' => [
-        'value' => 'name@name.pl',
+        'value' => null,
         'public' => false,
     ],
 
     'sender_street' => [
-        'value' => 'Street 2',
+        'value' => null,
         'public' => false,
     ],
 
     'sender_postcode' => [
-        'value' => '62-800',
+        'value' => null,
         'public' => false,
     ],
 
     'sender_city' => [
-        'value' => 'City',
+        'value' => null,
         'public' => false,
     ],
 
     'sender_phone' => [
-        'value' => '732054143',
+        'value' => null,
         'public' => false,
     ],
 

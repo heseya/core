@@ -78,6 +78,9 @@ final class Handler extends ExceptionHandler
         PackageException::class => [
             'code' => Response::HTTP_BAD_GATEWAY,
         ],
+        PackageAuthException::class => [
+            'code' => Response::HTTP_BAD_GATEWAY,
+        ],
     ];
 
     /**
