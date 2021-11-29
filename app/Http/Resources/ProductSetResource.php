@@ -4,14 +4,15 @@ namespace App\Http\Resources;
 
 use App\Http\Resources\Swagger\ProductSetResourceSwagger;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class ProductSetResource extends Resource implements ProductSetResourceSwagger
 {
     public function base(Request $request): array
     {
-        $children = !Auth::check() ? $this->children()->public()->get() :
-            $this->children;
+        $children = Gate::denies('product_sets.show_hidden')
+            ? $this->childrenPublic
+            : $this->children;
 
         return [
             'id' => $this->getKey(),
