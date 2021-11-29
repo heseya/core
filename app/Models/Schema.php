@@ -169,7 +169,7 @@ class Schema extends Model
 
         if ($this->required) {
             $validation->push('required');
-        } else if ($input === null) {
+        } elseif ($input === null) {
             return;
         }
 
