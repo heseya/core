@@ -36,8 +36,7 @@ class ProductSetResourceUniversal extends Resource implements ProductSetResource
     public function base(Request $request): array
     {
         $parentResource = $this->showParent ? [
-            'parent' => ProductSetResourceUniversal::make($this->parent)
-                ->setIsPublic($this->public),
+            'parent' => ProductSetResourceUniversal::make($this->parent)->setIsPublic($this->public),
         ] : ['parent_id' => $this->parent_id];
 
         $children = $this->public
@@ -45,12 +44,9 @@ class ProductSetResourceUniversal extends Resource implements ProductSetResource
             : $this->children;
 
         $childrenResource = $this->showChildren ? [
-            'children' => ProductSetResourceUniversal::collection($children)
-                ->setIsPublic($this->public),
+            'children' => ProductSetResourceUniversal::collection($children)->setIsPublic($this->public),
         ] : [
-            'children_ids' => $children->map(
-                fn ($child) => $child->getKey(),
-            )->toArray(),
+            'children_ids' => $children->map(fn ($child) => $child->getKey())->toArray(),
         ];
 
         return [
