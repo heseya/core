@@ -140,6 +140,49 @@ class ProductSetShowTest extends TestCase
                         'visible' => $this->childSet->public && $this->childSet->public_parent,
                         'hide_on_index' => $this->childSet->hide_on_index,
                         'parent_id' => $this->childSet->parent_id,
+                        'children' => null,
+                    ],
+                ],
+            ]])
+            ->assertJsonStructure([
+                'data' => $this->expected_structure,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowTreeHidden($user): void
+    {
+        $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/product-sets/id:' . $this->set->getKey() . '?tree');
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $this->set->getKey(),
+                'name' => $this->set->name,
+                'slug' => $this->set->slug,
+                'slug_override' => false,
+                'public' => $this->set->public,
+                'visible' => $this->set->public && $this->set->public_parent,
+                'hide_on_index' => $this->set->hide_on_index,
+                'parent' => $this->set->parent,
+                'seo' => [
+                    'title' => $this->set->seo->title,
+                    'description' => $this->set->seo->description,
+                ],
+                'children' => [
+                    [
+                        'id' => $this->childSet->getKey(),
+                        'name' => $this->childSet->name,
+                        'slug' => $this->childSet->slug,
+                        'slug_override' => true,
+                        'public' => $this->childSet->public,
+                        'visible' => $this->childSet->public && $this->childSet->public_parent,
+                        'hide_on_index' => $this->childSet->hide_on_index,
+                        'parent_id' => $this->childSet->parent_id,
                         'children' => [
                             [
                                 'id' => $this->subChildSet->getKey(),
@@ -259,7 +302,7 @@ class ProductSetShowTest extends TestCase
                         'visible' => $this->childSet->public && $this->childSet->public_parent,
                         'hide_on_index' => $this->childSet->hide_on_index,
                         'parent_id' => $this->childSet->parent_id,
-                        'children' => [],
+                        'children' => null,
                     ],
                 ],
             ]]);
