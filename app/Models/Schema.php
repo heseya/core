@@ -12,6 +12,7 @@ use Heseya\Sortable\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -164,10 +165,12 @@ class Schema extends Model
      */
     public function validate($input, float $quantity = 0): void
     {
-        $validation = collect();
+        $validation = new Collection();
 
         if ($this->required) {
             $validation->push('required');
+        } else if ($input === null) {
+            return;
         }
 
         if ($this->max) {

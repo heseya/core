@@ -38,6 +38,6 @@ class OptionAvailable implements Rule
      */
     public function message(): string
     {
-        return ':attribute is not available';
+        return "This {$this->schema->name} option is not available in given quantity";
     }
 }
