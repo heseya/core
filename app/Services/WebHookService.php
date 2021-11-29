@@ -9,9 +9,9 @@ use Illuminate\Support\Facades\Auth;
 
 class WebHookService implements WebHookServiceContract
 {
-    public function searchAll(array $attributes): Collection
+    public function searchAll(array $attributes, ?string $sort): Collection
     {
-        return WebHook::search($attributes)->get();
+        return WebHook::search($attributes)->sort($sort)->get();
     }
 
     public function create(array $request): WebHook
