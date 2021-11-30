@@ -276,4 +276,93 @@ interface OrderControllerSwagger
      * )
      */
     public function update(OrderUpdateRequest $request, Order $order): JsonResponse;
+
+    /**
+     * @OA\Get(
+     *   path="/orders/my",
+     *   summary="user orders list",
+     *   tags={"Orders"},
+     *   @OA\Parameter(
+     *     name="search",
+     *     in="query",
+     *     description="Full text search.",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="sort",
+     *     in="query",
+     *     description="Sorting string.",
+     *     @OA\Schema(
+     *       type="string",
+     *       example="code:asc,created_at:desc,id"
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="status_id",
+     *     in="query",
+     *     description="Status UUID",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="shipping_method_id",
+     *     in="query",
+     *     description="Shipping Method UUID",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         type="array",
+     *         @OA\Items(
+     *           ref="#/components/schemas/Order",
+     *         )
+     *       )
+     *     )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function indexUserOrder(OrderIndexRequest $request): JsonResource;
+
+    /**
+     * @OA\Get(
+     *   path="/orders/my/id:{id}",
+     *   summary="user order view",
+     *   tags={"Orders"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *       example="5b320ba6-d5ee-4870-bed2-1a101704c2c4",
+     *     )
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/OrderView",
+     *       )
+     *     )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function showUserOrder(Order $order): JsonResource;
 }

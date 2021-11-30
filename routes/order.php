@@ -9,6 +9,8 @@ Route::prefix('orders')->group(function (): void {
         ->middleware('can:orders.show');
     Route::post(null, [OrderController::class, 'store'])
         ->middleware('can:orders.add');
+    Route::get('my', [OrderController::class, 'indexUserOrder']);
+    Route::get('my/id:{order:id}', [OrderController::class, 'showUserOrder']);
     Route::post('verify', [OrderController::class, 'verify'])
         ->middleware('can:cart.verify');
     Route::get('id:{order:id}', [OrderController::class, 'show'])
