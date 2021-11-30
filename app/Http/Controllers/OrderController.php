@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\OrderIndexDto;
 use App\Dtos\OrderUpdateDto;
 use App\Enums\SchemaType;
 use App\Events\ItemUpdatedQuantity;
@@ -211,7 +212,7 @@ class OrderController extends Controller implements OrderControllerSwagger
         Gate::inspect('indexUserOrder', [Order::class]);
 
         return OrderResource::collection(
-            $this->orderService->indexUserOrder($request->validated(), $request->input('sort'))
+            $this->orderService->indexUserOrder(OrderIndexDto::instantiateFromRequest($request))
         );
     }
 

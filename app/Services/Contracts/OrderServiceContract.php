@@ -2,6 +2,7 @@
 
 namespace App\Services\Contracts;
 
+use App\Dtos\OrderIndexDto;
 use App\Dtos\OrderUpdateDto;
 use App\Models\Order;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -13,5 +14,5 @@ interface OrderServiceContract
 
     public function update(OrderUpdateDto $dto, Order $order): JsonResponse;
 
-    public function indexUserOrder(array $search, ?string $sort): LengthAwarePaginator;
+    public function indexUserOrder(OrderIndexDto $dto): LengthAwarePaginator;
 }

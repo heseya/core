@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Dtos\AddressDto;
+use App\Dtos\OrderIndexDto;
 use App\Dtos\OrderUpdateDto;
 use App\Events\OrderUpdated;
 use App\Exceptions\OrderException;
@@ -88,10 +89,10 @@ class OrderService implements OrderServiceContract
         }
     }
 
-    public function indexUserOrder(array $search, ?string $sort): LengthAwarePaginator
+    public function indexUserOrder(OrderIndexDto $dto): LengthAwarePaginator
     {
-        return Order::search(['user_id' => Auth::user()->getAuthIdentifier()] + $search)
-            ->sort($sort)
+        return Order::search(['user_id' => Auth::id()] + $dto->getSearchCriteria())
+            ->sort($dto->getSort())
             ->with(['products', 'discounts', 'payments'])
             ->paginate(Config::get('pagination.per_page'));
     }

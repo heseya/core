@@ -285,9 +285,8 @@ class OrderTest extends TestCase
 
         $this->user->orders()->save($order);
 
-        $response = $this->actingAs($this->user)
-            ->json('GET', '/orders/my/id:' . $order->getKey());
-        $response
+        $this->actingAs($this->user)
+            ->json('GET', '/orders/my/id:' . $order->getKey())
             ->assertOk()
             ->assertJsonFragment(['code' => $order->code])
             ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
@@ -299,9 +298,8 @@ class OrderTest extends TestCase
 
         $this->user->orders()->save($order);
 
-        $response = $this
-            ->json('GET', '/orders/my/id:' . $order->getKey());
-        $response
+        $this
+            ->json('GET', '/orders/my/id:' . $order->getKey())
             ->assertStatus(404);
     }
 
