@@ -67,6 +67,15 @@ interface ProductControllerSwagger
      *       example="price:asc,created_at:desc,name"
      *     ),
      *   ),
+     *   @OA\Parameter(
+     *     name="tags[]",
+     *     in="query",
+     *     description="Tag array id search",
+     *     example="tags[]=5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&tags[]=33e37b2a-44e9-4d35-88db-d9a79a61e557",
+     *     @OA\Schema(
+     *       type="string",
+     *     ),
+     *   ),
      *   @OA\Response(
      *     response=200,
      *     description="Success",

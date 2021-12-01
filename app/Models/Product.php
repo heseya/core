@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\SearchTypes\ProductSearch;
+use App\SearchTypes\WhereBelongsToManyById;
 use App\Traits\HasSeoMetadata;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
@@ -56,6 +57,7 @@ class Product extends Model implements AuditableContract
         'slug' => Like::class,
         'public',
         'search' => ProductSearch::class,
+        'tags' => WhereBelongsToManyById::class,
     ];
 
     protected array $sortable = [
@@ -65,6 +67,7 @@ class Product extends Model implements AuditableContract
         'created_at',
         'updated_at',
         'order',
+        'public',
     ];
 
     protected string $defaultSortBy = 'created_at';
