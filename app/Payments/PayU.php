@@ -17,8 +17,11 @@ class PayU implements PaymentMethod
         $client_id = config('payu.client_id');
         $client_secret = config('payu.client_secret');
 
+        $payuUrl = rtrim(config('payu.url'), '/');
+        $appUrl = rtrim(config('app.url'), '/');
+
         $response = Http::post(
-            config('payu.url') . '/pl/standard/user/oauth/authorize?grant_type=client_credentials&client_id=' .
+            $payuUrl . '/pl/standard/user/oauth/authorize?grant_type=client_credentials&client_id=' .
                 $client_id . '&client_secret=' . $client_secret,
         )->throw();
 
@@ -26,15 +29,15 @@ class PayU implements PaymentMethod
 
         $response = Http::withToken($response['access_token'])->withOptions([
             'allow_redirects' => false,
-        ])->post(config('payu.url') . '/api/v2_1/orders', [
-            'notifyUrl' => config('app.url') . '/payments/payu',
+        ])->post($payuUrl . '/api/v2_1/orders', [
+            'notifyUrl' => $appUrl . '/payments/payu',
             'customerIp' => '127.0.0.1',
             'merchantPosId' => config('payu.pos_id'),
             'description' => 'Zakupy w sklepie internetowym.',
             'currencyCode' => $payment->order->currency,
             'totalAmount' => $amount,
             'extOrderId' => $payment->getKey(),
-            'returnUrl' => config('app.store_url') . '/status/' . $payment->order->code,
+            'continueUrl' => $payment->continue_url,
             'buyer' => [
                 'email' => $payment->order->email,
             ],
