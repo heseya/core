@@ -3,50 +3,62 @@
 namespace App\Http\Resources;
 
 use App\Http\Resources\Swagger\ProductSetResourceSwagger;
-use App\Models\ProductSet;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 
-// Universal class but cant work because resources are broken
+// Universal class can't work because methods are not coppied to collections
 class ProductSetResourceUniversal extends Resource implements ProductSetResourceSwagger
 {
-    private $nested;
-    private $tree;
+    private bool $showParent = false;
+    private bool $showChildren = false;
+    private bool $public = false;
 
-    public function __construct(ProductSet $resource, $nested = false, $tree = false)
-    {
-        parent::__construct($resource);
-
-        $this->nested = $nested;
-        $this->tree = $tree;
-    }
+//    public function withParent(bool $showParent = true): self
+//    {
+//        $this->showParent = $showParent;
+//
+//        return $this;
+//    }
+//
+//    public function withChildren(bool $showChildren = true): self
+//    {
+//        $this->showChildren = $showChildren;
+//
+//        return $this;
+//    }
+//
+//    public function setIsPublic(bool $public): self
+//    {
+//        $this->public = $public;
+//
+//        return $this;
+//    }
 
     public function base(Request $request): array
     {
-        $parent = $this->nested ? ['parent_id' => $this->parent_id] : [
-            'parent' => ProductSetResource::make($this->parent, true),
-        ];
+        $parentResource = $this->showParent ? [
+            'parent' => ProductSetResourceUniversal::make($this->parent)->setIsPublic($this->public),
+        ] : ['parent_id' => $this->parent_id];
 
-        $children = !Auth::check() ? $this->children()->public()->get() :
-            $this->children;
+        $children = $this->public
+            ? $this->childrenPublic
+            : $this->children;
 
-        $childrenResource = $this->tree ? [
-            'children' => ProductSetResource::collection($children),
+        $childrenResource = $this->showChildren ? [
+            'children' => ProductSetResourceUniversal::collection($children)->setIsPublic($this->public),
         ] : [
-            'children_ids' => $children->map(
-                fn ($child) => $child->getKey(),
-            )->toArray(),
+            'children_ids' => $children->map(fn ($child) => $child->getKey())->toArray(),
         ];
 
         return [
             'id' => $this->getKey(),
             'name' => $this->name,
             'slug' => $this->slug,
-            'slug_override' => Str::startsWith($this->slug, $this->parent->slug . '-'),
+            'slug_suffix' => $this->slugSuffix,
+            'slug_override' => $this->slugOverride,
             'public' => $this->public,
-            'public_parent' => $this->public_parent,
+            'visible' => $this->public_parent && $this->public,
             'hide_on_index' => $this->hide_on_index,
-        ] + $parent + $childrenResource;
+            'seo' => SeoMetadataResource::make($this->seo),
+        ] + $parentResource + $childrenResource;
     }
 }

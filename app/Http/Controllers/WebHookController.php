@@ -26,7 +26,7 @@ class WebHookController extends Controller implements WebHookControllerSwagger
 
     public function index(WebHookIndexRequest $request): JsonResource
     {
-        $webHooks = $this->webHookService->searchAll($request->validated());
+        $webHooks = $this->webHookService->searchAll($request->validated(), $request->input('sort'));
         return WebHookResource::collection($webHooks);
     }
 

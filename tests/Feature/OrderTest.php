@@ -133,6 +133,43 @@ class OrderTest extends TestCase
         $this->assertQueryCountLessThan(20);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSorted($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        Order::factory()->count(30)->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders?limit=30&sort=created_at:desc')
+            ->assertOk()
+            ->assertJsonCount(30, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSortedInvalid($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        Order::factory()->count(30)->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders?limit=30&sort=summary:desssc')
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'errors' => [
+                    ['You can\'t sort by summary field.'],
+                    ['Only asc|desc sorting directions are allowed on field summary.'],
+                ],
+            ]);
+    }
+
     public function testIndexUser(): void
     {
         $shipping_method = ShippingMethod::factory()->create();
