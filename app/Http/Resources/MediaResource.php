@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class MediaResource extends Resource
 {
@@ -10,7 +11,7 @@ class MediaResource extends Resource
     {
         return [
             'id' => $this->getKey(),
-            'type' => 'photo',
+            'type' => Str::lower($this->type->key),
             'url' => $this->url,
         ];
     }

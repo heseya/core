@@ -33,8 +33,6 @@ class ProductSet extends Model
         'public' => 'boolean',
         'public_parent' => 'boolean',
         'hide_on_index' => 'boolean',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     protected array $searchable = [
@@ -82,6 +80,21 @@ class ProductSet extends Model
     public function children(): HasMany
     {
         return $this->hasMany(self::class, 'parent_id');
+    }
+
+    public function childrenPublic(): HasMany
+    {
+        return $this->children()->public();
+    }
+
+    public function allChildren(): HasMany
+    {
+        return $this->children()->with('allChildren');
+    }
+
+    public function allChildrenPublic(): HasMany
+    {
+        return $this->childrenPublic()->with('allChildrenPublic');
     }
 
     public function products(): BelongsToMany

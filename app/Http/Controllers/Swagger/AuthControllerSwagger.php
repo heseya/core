@@ -6,6 +6,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Requests\PasswordResetRequest;
 use App\Http\Requests\PasswordResetSaveRequest;
+use App\Http\Requests\TokenRefreshRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -43,17 +44,16 @@ interface AuthControllerSwagger
      *           type="string",
      *         ),
      *         @OA\Property(
-     *           property="expires_at",
+     *           property="identity_token",
+     *           type="string",
+     *         ),
+     *         @OA\Property(
+     *           property="refresh_token",
      *           type="string",
      *         ),
      *         @OA\Property(
      *           property="user",
      *           ref="#/components/schemas/User"
-     *         ),
-     *         @OA\Property(
-     *           property="scopes",
-     *           type="array",
-     *           items="",
      *         ),
      *       )
      *     )
@@ -160,7 +160,51 @@ interface AuthControllerSwagger
     public function changePassword(PasswordChangeRequest $request): JsonResponse;
 
     /**
+     * @OA\Post(
+     *   path="/auth/refresh",
+     *   summary="Refresh access and identity tokens",
+     *   tags={"Auth"},
+     *   @OA\RequestBody(
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="refresh_token",
+     *         type="string",
+     *       ),
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         type="object",
+     *         @OA\Property(
+     *           property="token",
+     *           type="string",
+     *         ),
+     *         @OA\Property(
+     *           property="identity_token",
+     *           type="string",
+     *         ),
+     *         @OA\Property(
+     *           property="refresh_token",
+     *           type="string",
+     *         ),
+     *         @OA\Property(
+     *           property="user",
+     *           ref="#/components/schemas/User"
+     *         ),
+     *       )
+     *     )
+     *   )
+     * )
+     */
+    public function refresh(TokenRefreshRequest $request): JsonResource;
+
+    /**
      * @OA\Get(
+     *   deprecated=true,
      *   path="/auth/login-history",
      *   summary="Get login history",
      *   tags={"Auth"},
@@ -173,10 +217,11 @@ interface AuthControllerSwagger
      *   }
      * )
      */
-    public function loginHistory(Request $request): JsonResource;
+//    public function loginHistory(Request $request): JsonResource;
 
     /**
      * @OA\Get(
+     *   deprecated=true,
      *   path="/auth/kill-session/id:{id}",
      *   summary="Allow to 'kill' active session",
      *   tags={"Auth"},
@@ -199,10 +244,11 @@ interface AuthControllerSwagger
      *   }
      * )
      */
-    public function killActiveSession(Request $request, string $oauthAccessTokensId): JsonResource;
+//    public function killActiveSession(Request $request, string $oauthAccessTokensId): JsonResource;
 
     /**
      * @OA\Get(
+     *   deprecated=true,
      *   path="/auth/kill-all-sessions",
      *   summary="Allow to 'kill' all old sessions",
      *   tags={"Auth"},
@@ -215,5 +261,67 @@ interface AuthControllerSwagger
      *   }
      * )
      */
-    public function killAllSessions(Request $request): JsonResource;
+//    public function killAllSessions(Request $request): JsonResource;
+
+    /**
+     * @OA\Get(
+     *   path="/auth/profile",
+     *   summary="get your own user or app resource",
+     *   tags={"Auth"},
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         oneOf={
+     *           @OA\Schema(ref="#/components/schemas/UserView"),
+     *           @OA\Schema(ref="#/components/schemas/AppView"),
+     *         }
+     *       )
+     *     )
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function profile(Request $request): JsonResponse;
+
+    /**
+     * @OA\Get(
+     *   path="/auth/check",
+     *   summary="get profile resource of unauthenticated user",
+     *   tags={"Auth"},
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/ProfileView",
+     *       )
+     *     )
+     *   ),
+     * )
+     */
+
+    /**
+     * @OA\Get(
+     *   path="/auth/check/{identity_token}",
+     *   summary="get profile resource from identity token",
+     *   tags={"Auth"},
+     *   @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/ProfileView",
+     *       )
+     *     )
+     *   ),
+     * )
+     */
+    public function checkIdentity(Request $request, ?string $identityToken): JsonResource;
 }

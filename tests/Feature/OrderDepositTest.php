@@ -69,20 +69,33 @@ class OrderDepositTest extends TestCase
         ];
     }
 
-    public function testCantCreateOrder(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCantCreateOrder($user): void
     {
+        $this->$user->givePermissionTo('orders.add');
+
         $this
-            ->postJson('/orders', $this->request)
+            ->actingAs($this->$user)
+            ->json('POST', '/orders', $this->request)
             ->assertUnprocessable();
     }
 
-    public function testCreateOrder(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrder($user): void
     {
+        $this->$user->givePermissionTo('orders.add');
+
         $this->item->deposits()->create([
             'quantity' => 2,
         ]);
 
-        $response = $this->json('POST', '/orders', $this->request);
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('POST', '/orders', $this->request);
 
         $response->assertCreated();
         $order = Order::find($response->getData()->data->id);
@@ -111,8 +124,13 @@ class OrderDepositTest extends TestCase
         Event::assertDispatched(OrderCreated::class);
     }
 
-    public function testDeleteOrder(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteOrder($user): void
     {
+        $this->$user->givePermissionTo('orders.edit.status');
+
         $this->item->deposits()->create([
             'quantity' => 2,
         ]);
@@ -142,7 +160,7 @@ class OrderDepositTest extends TestCase
         $this->assertEquals(0, $this->item->quantity);
 
         $this
-            ->actingAs($this->user)
+            ->actingAs($this->$user)
             ->json('POST', "/orders/id:{$order->getKey()}/status", [
                 'status_id' => $status->getKey(),
             ])
@@ -157,6 +175,7 @@ class OrderDepositTest extends TestCase
             'quantity' => -2,
         ]);
 
+        $this->item->refresh();
         $this->assertEquals(2, $this->item->quantity);
 
         Event::assertDispatched(OrderStatusUpdated::class);

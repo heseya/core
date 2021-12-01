@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Swagger;
 
+use App\Http\Requests\StatusReorderRequest;
 use App\Models\Status;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -117,4 +118,23 @@ interface StatusControllerSwagger
      * )
      */
     public function destroy(Status $status): JsonResponse;
+
+    /**
+     * @OA\Post(
+     *   path="/statuses/reorder",
+     *   summary="Reorder statuses",
+     *   tags={"Statuses"},
+     *   @OA\RequestBody(
+     *     ref="#/components/requestBodies/StatusReorderRequest",
+     *   ),
+     *   @OA\Response(
+     *     response=204,
+     *     description="Success",
+     *   ),
+     *   security={
+     *     {"oauth": {}}
+     *   }
+     * )
+     */
+    public function reorder(StatusReorderRequest $request): JsonResponse;
 }

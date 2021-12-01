@@ -14,7 +14,10 @@ abstract class Controller extends BaseController
     /**
      * @OA\Info(
      *   title="Heseya Store API",
-     *   version="1.0.0",
+     *   description="IMPORTANT!!! Auth locks replaced with permissions:
+     *   <https://escl24.atlassian.net/wiki/spaces/HES/pages/6476169217/Autoryzacja>.
+     *   You need specific permissions to access each endpoint.",
+     *   version="2.0.0",
      * )
      *
      * @OA\SecurityScheme(
@@ -23,7 +26,6 @@ abstract class Controller extends BaseController
      *   securityScheme="oauth",
      *   @OA\Flow(
      *     flow="implicit",
-     *     authorizationUrl="https://dev.***REMOVED***/login",
      *     scopes={}
      *   )
      * )

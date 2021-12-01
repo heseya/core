@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Swagger;
 
-use App\Http\Requests\CreateAppRequest;
+use App\Http\Requests\AppDeleteRequest;
+use App\Http\Requests\AppStoreRequest;
+use App\Models\App;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -16,30 +18,89 @@ interface AppControllerSwagger
      *   @OA\Response(
      *     response=200,
      *     description="Success",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         type="array",
+     *         @OA\Items(
+     *           ref="#/components/schemas/App",
+     *         ),
+     *       )
+     *     )
      *   )
      * )
      */
     public function index(): JsonResource;
 
     /**
-     * @OA\Post(
-     *   path="/apps",
-     *   summary="Register new app",
+     * @OA\Get(
+     *   path="/apps/id:{id}",
+     *   summary="show an app",
      *   tags={"Apps"},
-     *   @OA\RequestBody(
-     *     @OA\JsonContent(
-     *       @OA\Property(
-     *         property="url",
-     *         type="string",
-     *         example="https://test.app.heseya.com",
-     *       ),
-     *     )
-     *   ),
      *   @OA\Response(
      *     response=200,
      *     description="Success",
-     *   )
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/AppView",
+     *       )
+     *     )
+     *   ),
      * )
      */
-    public function store(CreateAppRequest $request): JsonResponse;
+    public function show(App $app): JsonResource;
+
+    /**
+     * @OA\Post(
+     *   path="/apps",
+     *   summary="install a new app",
+     *   tags={"Apps"},
+     *   @OA\RequestBody(
+     *     ref="#/components/requestBodies/AppStore",
+     *   ),
+     *   @OA\Response(
+     *     response=201,
+     *     description="Created",
+     *     @OA\JsonContent(
+     *       @OA\Property(
+     *         property="data",
+     *         ref="#/components/schemas/AppView",
+     *       )
+     *     )
+     *   ),
+     * )
+     */
+    public function store(AppStoreRequest $request): JsonResource;
+
+    /**
+     * @OA\Delete(
+     *   path="/apps/id:{id}",
+     *   summary="delete app",
+     *   tags={"Apps"},
+     *   @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(
+     *       type="string",
+     *       example="1c8705ce-5fae-4468-b88a-8784cb5414a0",
+     *     )
+     *   ),
+     *   @OA\Parameter(
+     *     name="force",
+     *     in="query",
+     *     allowEmptyValue=true,
+     *     description="Force removal of the app",
+     *     @OA\Schema(
+     *       type="bool",
+     *     ),
+     *   ),
+     *   @OA\Response(
+     *     response=204,
+     *     description="Success",
+     *   ),
+     * )
+     */
+    public function destroy(App $app, AppDeleteRequest $request): JsonResponse;
 }

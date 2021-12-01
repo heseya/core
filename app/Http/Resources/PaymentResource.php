@@ -10,9 +10,8 @@ class PaymentResource extends Resource
     {
         return [
             'id' => $this->getKey(),
-            'external_id' => $this->external_id,
             'method' => $this->method,
-            'payed' => $this->payed,
+            'paid' => $this->paid,
             'amount' => $this->amount,
             'redirect_url' => $this->redirect_url,
             'continue_url' => $this->continue_url,

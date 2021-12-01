@@ -7,35 +7,39 @@ use Tests\TestCase;
 
 class ShippingMethodReorderTest extends TestCase
 {
-    public function testReorderUnauthorized(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testReorderUnauthorized($user): void
     {
         $shippingMethod1 = ShippingMethod::factory()->create();
         $shippingMethod2 = ShippingMethod::factory()->create();
         $shippingMethod3 = ShippingMethod::factory()->create();
 
         $this
+            ->actingAs($this->$user)
             ->json('POST', '/shipping-methods/reorder', [
                 $shippingMethod1->getKey(),
                 $shippingMethod3->getKey(),
                 $shippingMethod2->getKey(),
             ])
-            ->assertUnauthorized();
+            ->assertForbidden();
     }
 
-    public function testReorderDeprecated(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testReorder($user): void
     {
-        $this->testReorder('order');
-    }
+        $this->$user->givePermissionTo('shipping_methods.edit');
 
-    public function testReorder(string $url = 'reorder'): void
-    {
         $shippingMethod1 = ShippingMethod::factory()->create();
         $shippingMethod2 = ShippingMethod::factory()->create();
         $shippingMethod3 = ShippingMethod::factory()->create();
 
         $this
-            ->actingAs($this->user)
-            ->json('POST', "/shipping-methods/$url", ['shipping_methods' => [
+            ->actingAs($this->$user)
+            ->json('POST', '/shipping-methods/reorder', ['shipping_methods' => [
                 $shippingMethod1->getKey(),
                 $shippingMethod3->getKey(),
                 $shippingMethod2->getKey(),

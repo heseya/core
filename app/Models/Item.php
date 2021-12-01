@@ -3,21 +3,23 @@
 namespace App\Models;
 
 use App\SearchTypes\ItemSearch;
-use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
+use Heseya\Sortable\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @OA\Schema ()
  *
  * @mixin IdeHelperItem
  */
-class Item extends Model
+class Item extends Model implements AuditableContract
 {
-    use SoftDeletes, HasFactory, Searchable, Sortable;
+    use SoftDeletes, HasFactory, Searchable, Sortable, Auditable;
 
     /**
      * @OA\Property(
@@ -50,11 +52,6 @@ class Item extends Model
         'sku',
     ];
 
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
-
     protected array $searchable = [
         'name' => Like::class,
         'sku' => Like::class,
@@ -70,7 +67,7 @@ class Item extends Model
 
     public function getQuantityAttribute(): float
     {
-        return $this->deposits()->sum('quantity');
+        return $this->deposits->sum('quantity');
     }
 
     public function deposits(): HasMany

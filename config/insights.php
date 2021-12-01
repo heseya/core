@@ -3,12 +3,11 @@
 declare(strict_types=1);
 
 use Heseya\Insights\Sniffs\NotSpaceAfterNot;
-use Heseya\Insights\Sniffs\ReturnTypeHintSniff as HeseyaReturnTypeHintSniff;
+use NunoMaduro\PhpInsights\Domain\Insights\Composer\ComposerMustBeValid;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenDefineFunctions;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenPrivateMethods;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenTraits;
-use NunoMaduro\PhpInsights\Domain\Metrics\Code\Code;
 use NunoMaduro\PhpInsights\Domain\Metrics\Style\Style;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\CodeAnalysis\UselessOverridingMethodSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineEndingsSniff;
@@ -42,26 +41,6 @@ return [
     */
 
     'preset' => 'laravel',
-
-    /*
-    |--------------------------------------------------------------------------
-    | IDE
-    |--------------------------------------------------------------------------
-    |
-    | This options allow to add hyperlinks in your terminal to quickly open
-    | files in your favorite IDE while browsing your PhpInsights report.
-    |
-    | Supported: "textmate", "macvim", "emacs", "sublime", "phpstorm",
-    | "atom", "vscode".
-    |
-    | If you have another IDE that is not in this list but which provide an
-    | url-handler, you could fill this config with a pattern like this:
-    |
-    | myide://open?url=file://%f&line=%l
-    |
-    */
-
-    'ide' => 'phpstorm',
 
     /*
     |--------------------------------------------------------------------------
@@ -99,6 +78,7 @@ return [
         ForbiddenPublicPropertySniff::class,
         FunctionLengthSniff::class,
         LineEndingsSniff::class,
+        ComposerMustBeValid::class,
 
         // replaced with own
         SpaceAfterNotSniff::class,
@@ -134,7 +114,7 @@ return [
 
     'requirements' => [
         'min-quality' => 100,
-        'min-complexity' => 80,
+        'min-complexity' => 75,
         'min-architecture' => 100,
         'min-style' => 100,
         'disable-security-check' => false,

@@ -44,12 +44,18 @@ class ProductSetShowTest extends TestCase
     public function testShowUnauthorized(): void
     {
         $response = $this->getJson('/product-sets/id:' . $this->set->getKey());
-        $response->assertUnauthorized();
+        $response->assertForbidden();
     }
 
-    public function testShow(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShow($user): void
     {
-        $response = $this->actingAs($this->user)->getJson('/product-sets/id:' . $this->set->getKey());
+        $this->$user->givePermissionTo('product_sets.show_details');
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/product-sets/id:' . $this->set->getKey());
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -64,13 +70,31 @@ class ProductSetShowTest extends TestCase
                 'children_ids' => [
                     $this->childSet->getKey(),
                 ],
-            ],
-            ]);
+            ]]);
     }
 
-    public function testShowPrivate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowHiddenUnauthorized($user): void
     {
-        $response = $this->actingAs($this->user)->getJson('/product-sets/id:' . $this->privateSet->getKey());
+        $this->$user->givePermissionTo('product_sets.show_details');
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/product-sets/id:' . $this->privateSet->getKey())
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowHidden($user): void
+    {
+        $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/product-sets/id:' . $this->privateSet->getKey());
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -83,13 +107,18 @@ class ProductSetShowTest extends TestCase
                 'hide_on_index' => $this->privateSet->hide_on_index,
                 'parent' => null,
                 'children_ids' => [],
-            ],
-            ]);
+            ]]);
     }
 
-    public function testShowTree(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowTree($user): void
     {
-        $response = $this->actingAs($this->user)->getJson('/product-sets/id:' . $this->set->getKey() . '?tree');
+        $this->$user->givePermissionTo('product_sets.show_details');
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/product-sets/id:' . $this->set->getKey() . '?tree');
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -101,6 +130,49 @@ class ProductSetShowTest extends TestCase
                 'visible' => $this->set->public && $this->set->public_parent,
                 'hide_on_index' => $this->set->hide_on_index,
                 'parent' => $this->set->parent,
+                'children' => [
+                    [
+                        'id' => $this->childSet->getKey(),
+                        'name' => $this->childSet->name,
+                        'slug' => $this->childSet->slug,
+                        'slug_override' => true,
+                        'public' => $this->childSet->public,
+                        'visible' => $this->childSet->public && $this->childSet->public_parent,
+                        'hide_on_index' => $this->childSet->hide_on_index,
+                        'parent_id' => $this->childSet->parent_id,
+                        'children' => null,
+                    ],
+                ],
+            ]]);
+//            ->assertJsonStructure([
+//                'data' => $this->expected_structure,
+//            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowTreeHidden($user): void
+    {
+        $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/product-sets/id:' . $this->set->getKey() . '?tree');
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $this->set->getKey(),
+                'name' => $this->set->name,
+                'slug' => $this->set->slug,
+                'slug_override' => false,
+                'public' => $this->set->public,
+                'visible' => $this->set->public && $this->set->public_parent,
+                'hide_on_index' => $this->set->hide_on_index,
+                'parent' => $this->set->parent,
+//                'seo' => [
+//                    'title' => $this->set->seo->title,
+//                    'description' => $this->set->seo->description,
+//                ],
                 'children' => [
                     [
                         'id' => $this->childSet->getKey(),
@@ -126,12 +198,28 @@ class ProductSetShowTest extends TestCase
                         ],
                     ],
                 ],
-            ],
-            ]);
+            ]]);
     }
-    public function testShowSlug(): void
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowSlugUnauthorized($user): void
     {
-        $response = $this->getJson('/product-sets/' . $this->set->slug);
+        $response = $this->actingAs($this->$user)
+            ->getJson('/product-sets/' . $this->set->slug);
+        $response->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowSlug($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.show_details');
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/product-sets/' . $this->set->slug);
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -146,93 +234,29 @@ class ProductSetShowTest extends TestCase
                 'children_ids' => [
                     $this->childSet->getKey(),
                 ],
-            ],
-            ]);
+            ]]);
     }
 
-    public function testShowSlugTree(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowSlugHiddenUnauthorized($user): void
     {
-        $response = $this->getJson('/product-sets/' . $this->set->slug . '?tree');
-        $response
-            ->assertOk()
-            ->assertJson(['data' => [
-                'id' => $this->set->getKey(),
-                'name' => $this->set->name,
-                'slug' => $this->set->slug,
-                'slug_override' => false,
-                'public' => $this->set->public,
-                'visible' => $this->set->public && $this->set->public_parent,
-                'hide_on_index' => $this->set->hide_on_index,
-                'parent' => $this->set->parent,
-                'children' => [
-                    [
-                        'id' => $this->childSet->getKey(),
-                        'name' => $this->childSet->name,
-                        'slug' => $this->childSet->slug,
-                        'slug_override' => true,
-                        'public' => $this->childSet->public,
-                        'visible' => $this->childSet->public && $this->childSet->public_parent,
-                        'hide_on_index' => $this->childSet->hide_on_index,
-                        'parent_id' => $this->childSet->parent_id,
-                        'children' => [],
-                    ],
-                ],
-            ],
-            ]);
-    }
+        $this->$user->givePermissionTo('product_sets.show_details');
 
-    public function testShowSlugTreeAuthorized(): void
-    {
-        $response = $this->actingAs($this->user)->getJson('/product-sets/' . $this->set->slug . '?tree');
-        $response
-            ->assertOk()
-            ->assertJson(['data' => [
-                'id' => $this->set->getKey(),
-                'name' => $this->set->name,
-                'slug' => $this->set->slug,
-                'slug_override' => false,
-                'public' => $this->set->public,
-                'visible' => $this->set->public && $this->set->public_parent,
-                'hide_on_index' => $this->set->hide_on_index,
-                'parent' => $this->set->parent,
-                'children' => [
-                    [
-                        'id' => $this->childSet->getKey(),
-                        'name' => $this->childSet->name,
-                        'slug' => $this->childSet->slug,
-                        'slug_override' => true,
-                        'public' => $this->childSet->public,
-                        'visible' => $this->childSet->public && $this->childSet->public_parent,
-                        'hide_on_index' => $this->childSet->hide_on_index,
-                        'parent_id' => $this->childSet->parent_id,
-                        'children' => [
-                            [
-                                'id' => $this->subChildSet->getKey(),
-                                'name' => $this->subChildSet->name,
-                                'slug' => $this->subChildSet->slug,
-                                'slug_override' => true,
-                                'public' => $this->subChildSet->public,
-                                'visible' => $this->subChildSet->public && $this->subChildSet->public_parent,
-                                'hide_on_index' => $this->subChildSet->hide_on_index,
-                                'parent_id' => $this->subChildSet->parent_id,
-                                'children' => [],
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-            ]);
-    }
-
-    public function testShowSlugPrivateUnauthorized(): void
-    {
-        $response = $this->getJson('/product-sets/' . $this->privateSet->slug);
+        $response = $this->actingAs($this->$user)
+            ->getJson('/product-sets/' . $this->privateSet->slug);
         $response->assertNotFound();
     }
 
-    public function testShowSlugPrivate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowSlugHidden($user): void
     {
-        $response = $this->actingAs($this->user)->getJson('/product-sets/' . $this->privateSet->slug);
+        $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
+
+        $response = $this->actingAs($this->$user)->getJson('/product-sets/' . $this->privateSet->slug);
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -245,7 +269,90 @@ class ProductSetShowTest extends TestCase
                 'hide_on_index' => $this->privateSet->hide_on_index,
                 'parent' => null,
                 'children_ids' => [],
-            ],
-            ]);
+            ]]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowSlugTree($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.show_details');
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/product-sets/' . $this->set->slug . '?tree');
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $this->set->getKey(),
+                'name' => $this->set->name,
+                'slug' => $this->set->slug,
+                'slug_override' => false,
+                'public' => $this->set->public,
+                'visible' => $this->set->public && $this->set->public_parent,
+                'hide_on_index' => $this->set->hide_on_index,
+                'parent' => $this->set->parent,
+                'children' => [
+                    [
+                        'id' => $this->childSet->getKey(),
+                        'name' => $this->childSet->name,
+                        'slug' => $this->childSet->slug,
+                        'slug_override' => true,
+                        'public' => $this->childSet->public,
+                        'visible' => $this->childSet->public && $this->childSet->public_parent,
+                        'hide_on_index' => $this->childSet->hide_on_index,
+                        'parent_id' => $this->childSet->parent_id,
+                        'children' => null,
+                    ],
+                ],
+            ]]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowSlugTreeHidden($user): void
+    {
+        $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/product-sets/' . $this->set->slug . '?tree');
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $this->set->getKey(),
+                'name' => $this->set->name,
+                'slug' => $this->set->slug,
+                'slug_override' => false,
+                'public' => $this->set->public,
+                'visible' => $this->set->public && $this->set->public_parent,
+                'hide_on_index' => $this->set->hide_on_index,
+                'parent' => $this->set->parent,
+                'children' => [
+                    [
+                        'id' => $this->childSet->getKey(),
+                        'name' => $this->childSet->name,
+                        'slug' => $this->childSet->slug,
+                        'slug_override' => true,
+                        'public' => $this->childSet->public,
+                        'visible' => $this->childSet->public && $this->childSet->public_parent,
+                        'hide_on_index' => $this->childSet->hide_on_index,
+                        'parent_id' => $this->childSet->parent_id,
+                        'children' => [
+                            [
+                                'id' => $this->subChildSet->getKey(),
+                                'name' => $this->subChildSet->name,
+                                'slug' => $this->subChildSet->slug,
+                                'slug_override' => true,
+                                'public' => $this->subChildSet->public,
+                                'visible' => $this->subChildSet->public && $this->subChildSet->public_parent,
+                                'hide_on_index' => $this->subChildSet->hide_on_index,
+                                'parent_id' => $this->subChildSet->parent_id,
+                                'children' => [],
+                            ],
+                        ],
+                    ],
+                ],
+            ]]);
     }
 }

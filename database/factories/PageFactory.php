@@ -24,7 +24,7 @@ class PageFactory extends Factory
 
         return [
             'name' => $name,
-            'slug' => Str::slug($name),
+            'slug' => Str::slug($name) . '-' . rand(0, 1000),
             'public' => $this->faker->boolean,
             'content_html' => '<p>' . $this->faker->sentence(rand(20, 40)) . '</p>',
         ];

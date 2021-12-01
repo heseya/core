@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Audits\Redactors\AddressRedactor;
+use App\Audits\Redactors\ShippingMethodRedactor;
+use App\Audits\Redactors\StatusRedactor;
 use App\SearchTypes\OrderSearch;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
-use App\Traits\Sortable;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
+use Heseya\Sortable\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -16,15 +19,17 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use OwenIt\Auditing\Auditable;
+use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @OA\Schema ()
  *
  * @mixin IdeHelperOrder
  */
-class Order extends Model
+class Order extends Model implements AuditableContract
 {
-    use HasFactory, Searchable, Sortable, Notifiable;
+    use HasFactory, Searchable, Sortable, Notifiable, Auditable;
 
     /**
      * @OA\Property(
@@ -70,11 +75,27 @@ class Order extends Model
         'delivery_address_id',
         'invoice_address_id',
         'created_at',
+        'user_id',
     ];
 
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+    protected $auditInclude = [
+        'code',
+        'email',
+        'currency',
+        'comment',
+        'status_id',
+        'shipping_method_id',
+        'shipping_price',
+        'shipping_number',
+        'delivery_address_id',
+        'invoice_address_id',
+    ];
+
+    protected $attributeModifiers = [
+        'status_id' => StatusRedactor::class,
+        'shipping_method_id' => ShippingMethodRedactor::class,
+        'delivery_address_id' => AddressRedactor::class,
+        'invoice_address_id' => AddressRedactor::class,
     ];
 
     protected array $searchable = [
@@ -109,18 +130,18 @@ class Order extends Model
     }
 
     /**
-     * Summary amount of payed.
+     * Summary amount of paid.
      *
      * @OA\Property(
-     *   property="summary_payed",
+     *   property="summary_paid",
      *   type="float",
      *   example=199.99
      * )
      */
-    public function getPayedAmountAttribute(): float
+    public function getPaidAmountAttribute(): float
     {
-        return $this->payments()
-            ->where('payed', true)
+        return $this->payments
+            ->where('paid', true)
             ->sum('amount');
     }
 
@@ -135,7 +156,7 @@ class Order extends Model
     {
         return $this
             ->hasMany(Payment::class)
-            ->orderBy('payed', 'DESC')
+            ->orderBy('paid', 'DESC')
             ->orderBy('updated_at', 'DESC');
     }
 
@@ -147,20 +168,20 @@ class Order extends Model
      */
     public function getPayableAttribute(): bool
     {
-        return !$this->isPayed() &&
+        return !$this->isPaid() &&
             !$this->status->cancel &&
             $this->shippingMethod->paymentMethods()->count() > 0;
     }
 
     /**
      * @OA\Property(
-     *   property="payed",
+     *   property="paid",
      *   type="boolean",
      * )
      */
-    public function isPayed(): bool
+    public function isPaid(): bool
     {
-        return $this->payedAmount >= $this->summary;
+        return $this->paid_amount >= $this->summary;
     }
 
     /**
@@ -216,7 +237,8 @@ class Order extends Model
     {
         return $this
             ->belongsToMany(Discount::class, 'order_discounts')
-            ->withPivot(['type', 'discount']);
+            ->withPivot(['type', 'discount'])
+            ->withTrashed();
     }
 
     /**
@@ -249,5 +271,10 @@ class Order extends Model
         } while (Order::where('code', $code)->exists());
 
         return $code;
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

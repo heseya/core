@@ -24,11 +24,16 @@ class ProductSetUpdateTest extends TestCase
         ];
 
         $response = $this->patchJson('/product-sets/id:' . $newSet->getKey(), $set);
-        $response->assertUnauthorized();
+        $response->assertForbidden();
     }
 
-    public function testUpdate(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdate($user): void
     {
+        $this->$user->givePermissionTo('product_sets.edit');
+
         $newSet = ProductSet::factory()->create([
             'public' => false,
             'order' => 40,
@@ -44,7 +49,7 @@ class ProductSetUpdateTest extends TestCase
             'parent_id' => null,
         ];
 
-        $response = $this->actingAs($this->user)->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/product-sets/id:' . $newSet->getKey(),
             $set + $parentId + [
                 'children_ids' => [],
@@ -68,8 +73,13 @@ class ProductSetUpdateTest extends TestCase
         ]);
     }
 
-    public function testUpdateParentSlug(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateParentSlug($user): void
     {
+        $this->$user->givePermissionTo('product_sets.edit');
+
         $parent = ProductSet::factory()->create([
             'name' => 'Parent',
             'slug' => 'parent',
@@ -96,7 +106,7 @@ class ProductSetUpdateTest extends TestCase
             'public_parent' => false,
         ]);
 
-        $response = $this->actingAs($this->user)->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/product-sets/id:' . $parent->getKey(),
             [
                 'name' => 'New',
@@ -139,8 +149,13 @@ class ProductSetUpdateTest extends TestCase
         ]);
     }
 
-    public function testUpdateParentSlugTree(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateParentSlugTree($user): void
     {
+        $this->$user->givePermissionTo('product_sets.edit');
+
         $parent = ProductSet::factory()->create([
             'name' => 'Parent',
             'slug' => 'parent',
@@ -167,7 +182,7 @@ class ProductSetUpdateTest extends TestCase
             'public_parent' => false,
         ]);
 
-        $response = $this->actingAs($this->user)->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/product-sets/id:' . $parent->getKey() . '?tree',
             [
                 'name' => 'New',
@@ -216,6 +231,6 @@ class ProductSetUpdateTest extends TestCase
                     ],
                 ],
             ],
-            ]);
+        ]);
     }
 }

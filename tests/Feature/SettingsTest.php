@@ -6,17 +6,33 @@ use Tests\TestCase;
 
 class SettingsTest extends TestCase
 {
-    public function testIndex(): void
+    public function testIndexUnauthorized(): void
     {
-        $response = $this->getJson('/settings');
-
-        $response->assertOk();
+        $this->getJson('/settings')->assertForbidden();
     }
 
-    public function testView(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
     {
-        $response = $this->getJson('/settings/store_name');
+        $this->$user->givePermissionTo('settings.show');
 
-        $response->assertOk();
+        $this->actingAs($this->$user)->getJson('/settings')->assertOk();
+    }
+
+    public function testViewUnauthorized(): void
+    {
+        $this->getJson('/settings/store_name')->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testView($user): void
+    {
+        $this->$user->givePermissionTo('settings.show_details');
+
+        $this->actingAs($this->$user)->getJson('/settings/store_name')->assertOk();
     }
 }
