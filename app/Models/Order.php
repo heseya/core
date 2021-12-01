@@ -238,7 +238,8 @@ class Order extends Model implements AuditableContract
     {
         return $this
             ->belongsToMany(Discount::class, 'order_discounts')
-            ->withPivot(['type', 'discount']);
+            ->withPivot(['type', 'discount'])
+            ->withTrashed();
     }
 
     /**
