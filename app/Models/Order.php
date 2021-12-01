@@ -104,6 +104,7 @@ class Order extends Model implements AuditableContract
         'shipping_method_id',
         'code' => Like::class,
         'email' => Like::class,
+        'user_id',
     ];
 
     protected array $sortable = [

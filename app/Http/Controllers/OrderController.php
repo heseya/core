@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\OrderIndexDto;
 use App\Dtos\OrderUpdateDto;
 use App\Enums\SchemaType;
 use App\Events\ItemUpdatedQuantity;
@@ -30,6 +31,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Gate;
 use Throwable;
 
 class OrderController extends Controller implements OrderControllerSwagger
@@ -203,5 +205,21 @@ class OrderController extends Controller implements OrderControllerSwagger
         $orderUpdateDto = OrderUpdateDto::instantiateFromRequest($request);
 
         return $this->orderService->update($orderUpdateDto, $order);
+    }
+
+    public function indexUserOrder(OrderIndexRequest $request): JsonResource
+    {
+        Gate::inspect('indexUserOrder', [Order::class]);
+
+        return OrderResource::collection(
+            $this->orderService->indexUserOrder(OrderIndexDto::instantiateFromRequest($request))
+        );
+    }
+
+    public function showUserOrder(Order $order): JsonResource
+    {
+        Gate::inspect('showUserOrder', [Order::class, $order]);
+
+        return OrderResource::make($order);
     }
 }

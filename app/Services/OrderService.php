@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Dtos\AddressDto;
+use App\Dtos\OrderIndexDto;
 use App\Dtos\OrderUpdateDto;
 use App\Events\OrderUpdated;
 use App\Exceptions\OrderException;
@@ -12,8 +13,11 @@ use App\Models\Order;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Exception;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
 class OrderService implements OrderServiceContract
@@ -83,6 +87,14 @@ class OrderService implements OrderServiceContract
                 JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
             );
         }
+    }
+
+    public function indexUserOrder(OrderIndexDto $dto): LengthAwarePaginator
+    {
+        return Order::search(['user_id' => Auth::id()] + $dto->getSearchCriteria())
+            ->sort($dto->getSort())
+            ->with(['products', 'discounts', 'payments'])
+            ->paginate(Config::get('pagination.per_page'));
     }
 
     private function modifyAddress(Order $order, string $attribute, ?AddressDto $addressDto): ?Address

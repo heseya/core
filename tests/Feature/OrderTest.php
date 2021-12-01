@@ -170,6 +170,61 @@ class OrderTest extends TestCase
             ]);
     }
 
+    public function testIndexUser(): void
+    {
+        $shipping_method = ShippingMethod::factory()->create();
+        $status = Status::factory()->create();
+
+        $order = Order::factory()->create([
+            'shipping_method_id' => $shipping_method->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+
+        $this->user->orders()->save($order);
+
+        $this
+            ->actingAs($this->user)
+            ->json('GET', '/orders/my')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonStructure(['data' => [
+                0 => $this->expected_full_structure,
+            ]])
+            ->assertJson(['data' => [
+                0 => [
+                    'id' => $order->getKey()
+                ],
+            ]]);
+
+        $this->assertQueryCountLessThan(20);
+    }
+
+    public function testIndexUserPerformance(): void
+    {
+        $orders = Order::factory()->count(500)->create();
+
+        $this->user->orders()->saveMany($orders);
+
+        $this
+            ->actingAs($this->user)
+            ->json('GET', '/orders/my', ['limit' => '500'])
+            ->assertOk()
+            ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(20);
+    }
+
+    public function testIndexUserUnauthenticated(): void
+    {
+        $order = Order::factory()->create();
+
+        $this->user->orders()->save($order);
+
+        $this
+            ->json('GET', '/orders/my')
+            ->assertStatus(404);
+    }
+
     public function testViewUnauthorized(): void
     {
         $response = $this->getJson('/orders/id:' . $this->order->getKey());
@@ -253,6 +308,36 @@ class OrderTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonFragment(['paid' => true]);
+    }
+
+    public function testViewUser(): void
+    {
+        $shipping_method = ShippingMethod::factory()->create();
+        $status = Status::factory()->create();
+
+        $order = Order::factory()->create([
+            'shipping_method_id' => $shipping_method->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+
+        $this->user->orders()->save($order);
+
+        $this->actingAs($this->user)
+            ->json('GET', '/orders/my/id:' . $order->getKey())
+            ->assertOk()
+            ->assertJsonFragment(['code' => $order->code])
+            ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
+    }
+
+    public function testViewUserUnauthenticated(): void
+    {
+        $order = Order::factory()->create();
+
+        $this->user->orders()->save($order);
+
+        $this
+            ->json('GET', '/orders/my/id:' . $order->getKey())
+            ->assertStatus(404);
     }
 
     public function testUpdateOrderStatusUnauthorized(): void
