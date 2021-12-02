@@ -90,9 +90,6 @@
             "@ide-helper",
             "@php artisan insights --fix --no-interaction"
         ],
-        "docs": [
-            "@php artisan l5-swagger:generate"
-        ],
         "pre-commit": [
             "@composer style"
         ],

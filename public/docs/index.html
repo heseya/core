@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8">
     <title>Heseya Store API Docs</title>
-    <link href="./swagger-ui.css" rel="stylesheet" type="text/css" />
+    <link href="./swagger/swagger-ui.css" rel="stylesheet" type="text/css" />
     <style>
       html
       {
@@ -31,12 +31,12 @@
   <body>
     <div id="swagger-ui"></div>
 
-    <script charset="UTF-8" src="./swagger-ui-bundle.js"> </script>
-    <script charset="UTF-8" src="./swagger-ui-standalone-preset.js"> </script>
+    <script charset="UTF-8" src="./swagger/swagger-ui-bundle.js"> </script>
+    <script charset="UTF-8" src="./swagger/swagger-ui-standalone-preset.js"> </script>
     <script>
     window.onload = function() {
       window.ui = SwaggerUIBundle({
-          url: '/docs/api.yml',
+          url: './api.yml',
           dom_id: '#swagger-ui',
           deepLinking: true,
           presets: [
