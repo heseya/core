@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Swagger\PaymentMethodControllerSwagger;
 use App\Http\Requests\PaymentMethodIndexRequest;
 use App\Http\Resources\PaymentMethodResource;
 use App\Models\PaymentMethod;
@@ -12,7 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 
-class PaymentMethodController extends Controller implements PaymentMethodControllerSwagger
+class PaymentMethodController extends Controller
 {
     public function index(PaymentMethodIndexRequest $request): JsonResource
     {

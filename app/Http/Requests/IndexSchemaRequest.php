@@ -4,35 +4,6 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-/**
- * @OA\RequestBody(
- *   request="IndexSchema",
- *   @OA\JsonContent(
- *     @OA\Property(
- *       property="name",
- *       type="string",
- *     ),
- *     @OA\Property(
- *       property="hidden",
- *       type="boolean",
- *       example="false",
- *     ),
- *     @OA\Property(
- *       property="required",
- *       type="boolean",
- *       example="true",
- *     ),
- *     @OA\Property(
- *       property="search",
- *       type="string",
- *     ),
- *     @OA\Property(
- *       property="sort",
- *       type="string",
- *     ),
- *   )
- * )
- */
 class IndexSchemaRequest extends FormRequest
 {
     public function rules(): array

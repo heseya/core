@@ -8,44 +8,12 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
- * @OA\Schema ()
- *
  * @mixin IdeHelperStatus
  */
 class Status extends Model implements AuditableContract
 {
     use HasFactory, Auditable;
 
-    /**
-     * @OA\Property(
-     *   property="id",
-     *   type="string",
-     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
-     * )
-     *
-     * @OA\Property(
-     *   property="name",
-     *   type="string",
-     *   example="Cancel",
-     * )
-     *
-     * @OA\Property(
-     *   property="color",
-     *   type="string",
-     *   example="8f022c",
-     * )
-     *
-     * @OA\Property(
-     *   property="cancel",
-     *   type="boolean",
-     * )
-     *
-     * @OA\Property(
-     *   property="description",
-     *   type="string",
-     *   example="Your order has been cancelled!",
-     * )
-     */
     protected $fillable = [
         'name',
         'color',

@@ -2,10 +2,9 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\Swagger\SeoMetadataResourceSwagger;
 use Illuminate\Http\Request;
 
-class SeoMetadataResource extends Resource implements SeoMetadataResourceSwagger
+class SeoMetadataResource extends Resource
 {
     public function base(Request $request): array
     {

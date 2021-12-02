@@ -9,27 +9,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
- * @OA\Schema ()
- *
  * @mixin IdeHelperTag
  */
 class Tag extends Model
 {
     use HasFactory, Searchable;
 
-    /**
-     * @OA\Property(
-     *   property="name",
-     *   type="string",
-     *   example="Sale",
-     * ),
-     *
-     * @OA\Property(
-     *   property="color",
-     *   type="string",
-     *   example="000000",
-     * ),
-     */
     protected $fillable = [
         'name',
         'color',

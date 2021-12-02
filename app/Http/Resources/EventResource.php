@@ -2,10 +2,9 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\Swagger\EventResourceSwagger;
 use Illuminate\Http\Request;
 
-class EventResource extends Resource implements EventResourceSwagger
+class EventResource extends Resource
 {
     public function base(Request $request): array
     {

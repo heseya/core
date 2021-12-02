@@ -2,10 +2,9 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\Swagger\WebHookResourceSwagger;
 use Illuminate\Http\Request;
 
-class WebHookResource extends Resource implements WebHookResourceSwagger
+class WebHookResource extends Resource
 {
     public function base(Request $request): array
     {

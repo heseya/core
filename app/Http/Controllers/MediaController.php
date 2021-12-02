@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Swagger\MediaControllerSwagger;
 use App\Http\Requests\MediaStoreRequest;
 use App\Http\Resources\MediaResource;
 use App\Models\Media;
@@ -11,7 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
 
-class MediaController extends Controller implements MediaControllerSwagger
+class MediaController extends Controller
 {
     private MediaServiceContract $mediaServiceContract;
 

@@ -6,7 +6,6 @@ use App\Exceptions\Error;
 use App\Exceptions\PackageAuthException;
 use App\Exceptions\PackageException;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Swagger\FurgonetkaControllerSwagger;
 use App\Models\Order;
 use App\Models\PackageTemplate;
 use App\Models\Status;
@@ -21,7 +20,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use SoapClient;
 
-class FurgonetkaController extends Controller implements FurgonetkaControllerSwagger
+class FurgonetkaController extends Controller
 {
     public function __construct(
         private SettingsServiceContract $settingsService

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\PageDto;
-use App\Http\Controllers\Swagger\PageControllerSwagger;
 use App\Http\Requests\PageReorderRequest;
 use App\Http\Requests\PageStoreRequest;
 use App\Http\Requests\PageUpdateRequest;
@@ -14,7 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
 
-class PageController extends Controller implements PageControllerSwagger
+class PageController extends Controller
 {
     private PageServiceContract $pageService;
 

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\ProductSetDto;
-use App\Http\Controllers\Swagger\ProductSetControllerSwagger;
 use App\Http\Requests\ProductSetAttachRequest;
 use App\Http\Requests\ProductSetIndexRequest;
 use App\Http\Requests\ProductSetProductsRequest;
@@ -23,7 +22,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
 
-class ProductSetController extends Controller implements ProductSetControllerSwagger
+class ProductSetController extends Controller
 {
     private ProductSetService $productSetService;
 

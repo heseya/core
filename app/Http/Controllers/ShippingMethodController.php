@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\ShippingMethodDto;
-use App\Http\Controllers\Swagger\ShippingMethodControllerSwagger;
 use App\Http\Requests\ShippingMethodIndexRequest;
 use App\Http\Requests\ShippingMethodReorderRequest;
 use App\Http\Requests\ShippingMethodStoreRequest;
@@ -15,7 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
 
-class ShippingMethodController extends Controller implements ShippingMethodControllerSwagger
+class ShippingMethodController extends Controller
 {
     public function __construct(
         private ShippingMethodServiceContract $shippingMethodService,

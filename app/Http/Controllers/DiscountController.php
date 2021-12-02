@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Events\DiscountCreated;
 use App\Events\DiscountDeleted;
 use App\Events\DiscountUpdated;
-use App\Http\Controllers\Swagger\DiscountControllerSwagger;
 use App\Http\Requests\DiscountCreateRequest;
 use App\Http\Requests\DiscountIndexRequest;
 use App\Http\Requests\DiscountUpdateRequest;
@@ -16,7 +15,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 
-class DiscountController extends Controller implements DiscountControllerSwagger
+class DiscountController extends Controller
 {
     public function index(DiscountIndexRequest $request): JsonResource
     {

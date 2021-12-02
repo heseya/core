@@ -3,11 +3,10 @@
 namespace App\Http\Resources;
 
 use App\Enums\RoleType;
-use App\Http\Resources\Swagger\RoleResourceSwagger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class RoleResource extends Resource implements RoleResourceSwagger
+class RoleResource extends Resource
 {
     public function base(Request $request): array
     {

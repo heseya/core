@@ -23,45 +23,11 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
- * @OA\Schema ()
- *
  * @mixin IdeHelperOrder
  */
 class Order extends Model implements AuditableContract
 {
     use HasFactory, Searchable, Sortable, Notifiable, Auditable;
-
-    /**
-     * @OA\Property(
-     *   property="id",
-     *   type="string",
-     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
-     * )
-     *
-     * @OA\Property(
-     *   property="email",
-     *   type="string",
-     *   example="admin@example.com",
-     * )
-     *
-     * @OA\Property(
-     *   property="comment",
-     *   type="string",
-     *   example="asap plz",
-     * )
-     *
-     * @OA\Property(
-     *   property="shipping_number",
-     *   type="string",
-     *   example="630552359128340015809770",
-     * )
-     *
-     * @OA\Property(
-     *   property="shipping_price",
-     *   type="float",
-     *   example=18.70
-     * )
-     */
 
     protected $fillable = [
         'code',

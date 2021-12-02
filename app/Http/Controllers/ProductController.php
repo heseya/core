@@ -6,7 +6,6 @@ use App\Dtos\SeoMetadataDto;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
-use App\Http\Controllers\Swagger\ProductControllerSwagger;
 use App\Http\Requests\ProductCreateRequest;
 use App\Http\Requests\ProductIndexRequest;
 use App\Http\Requests\ProductShowRequest;
@@ -27,7 +26,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class ProductController extends Controller implements ProductControllerSwagger
+class ProductController extends Controller
 {
     public function __construct(
         private MediaServiceContract $mediaService,
@@ -109,6 +108,28 @@ class ProductController extends Controller implements ProductControllerSwagger
         return ProductResource::make($product);
     }
 
+    /**
+     * @param Product $product
+     * @param ProductCreateRequest|ProductUpdateRequest $request
+     */
+    public function productSetup(
+        Product $product,
+        ProductCreateRequest|ProductUpdateRequest $request,
+    ) {
+        $this->mediaService->sync($product, $request->input('media', []));
+        $product->tags()->sync($request->input('tags', []));
+
+        if ($request->has('schemas')) {
+            $this->schemaService->sync($product, $request->input('schemas'));
+        }
+
+        $this->productService->updateMinMaxPrices($product);
+
+        if ($request->has('sets')) {
+            $product->sets()->sync($request->input('sets'));
+        }
+    }
+
     public function update(ProductUpdateRequest $request, Product $product): JsonResource
     {
         $product->update($request->validated());
@@ -135,27 +156,5 @@ class ProductController extends Controller implements ProductControllerSwagger
         }
 
         return Response::json(null, 204);
-    }
-
-    /**
-     * @param Product $product
-     * @param ProductCreateRequest|ProductUpdateRequest $request
-     */
-    public function productSetup(
-        Product $product,
-        ProductCreateRequest|ProductUpdateRequest $request,
-    ) {
-        $this->mediaService->sync($product, $request->input('media', []));
-        $product->tags()->sync($request->input('tags', []));
-
-        if ($request->has('schemas')) {
-            $this->schemaService->sync($product, $request->input('schemas'));
-        }
-
-        $this->productService->updateMinMaxPrices($product);
-
-        if ($request->has('sets')) {
-            $product->sets()->sync($request->input('sets'));
-        }
     }
 }
