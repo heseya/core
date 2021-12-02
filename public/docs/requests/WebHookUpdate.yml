@@ -1,0 +1,32 @@
+WebHookUpdate:
+  content:
+    application/json:
+      schema:
+        properties:
+          name:
+            description: 'Displayed webhook name'
+            type: string
+            example: 'WebHook name'
+          url:
+            description: 'Displayed webhook url'
+            type: string
+            example: 'https://app.heseya.com'
+          secret:
+            description: 'Displayed webhook secret'
+            type: string
+            example: secret
+          with_issuer:
+            description: 'Whether issuer is visible in WebHookEvent.'
+            type: boolean
+            example: true
+          with_hidden:
+            description: 'Whether hidden data are visible in WebHookEvent.'
+            type: boolean
+            example: true
+          events:
+            description: 'List of WebHook events'
+            type: array
+            items:
+              type: string
+              example: OrderCreated
+        type: object
