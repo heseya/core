@@ -55,6 +55,8 @@ class OrderTest extends TestCase
             'price' => 49.99,
         ]);
 
+        $this->order->refresh();
+
         /**
          * Expected response
          */
@@ -160,12 +162,12 @@ class OrderTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->getJson('/orders?limit=30&sort=summary:desssc')
+            ->getJson('/orders?limit=30&sort=summmary:desssc')
             ->assertStatus(422)
             ->assertJsonFragment([
                 'errors' => [
-                    ['You can\'t sort by summary field.'],
-                    ['Only asc|desc sorting directions are allowed on field summary.'],
+                    ['You can\'t sort by summmary field.'],
+                    ['Only asc|desc sorting directions are allowed on field summmary.'],
                 ],
             ]);
     }

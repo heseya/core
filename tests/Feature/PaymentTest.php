@@ -36,6 +36,8 @@ class PaymentTest extends TestCase
             'quantity' => 1,
             'price' => 125.50,
         ]);
+
+        $this->order->refresh();
     }
 
     public function testPayuUrlUnauthorized(): void

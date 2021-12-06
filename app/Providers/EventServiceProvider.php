@@ -27,6 +27,8 @@ use App\Events\UserUpdated;
 use App\Listeners\OrderCreatedListener;
 use App\Listeners\OrderUpdatedStatusListener;
 use App\Listeners\WebHookEventListener;
+use App\Models\OrderProduct;
+use App\Observers\OrderProductObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -107,4 +109,10 @@ class EventServiceProvider extends ServiceProvider
             WebHookEventListener::class,
         ],
     ];
+
+    public function boot()
+    {
+        parent::boot();
+        OrderProduct::observe(OrderProductObserver::class);
+    }
 }

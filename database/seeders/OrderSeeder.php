@@ -10,6 +10,8 @@ use App\Models\Payment;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use App\Services\Contracts\OrderServiceContract;
+use App\Services\OrderService;
 use Illuminate\Database\Seeder;
 
 class OrderSeeder extends Seeder
@@ -24,7 +26,10 @@ class OrderSeeder extends Seeder
         $shipping_methods = ShippingMethod::all();
         $statuses = Status::all();
 
-        Order::factory()->count(50)->create()->each(function ($order) use ($shipping_methods, $statuses) {
+        /** @var OrderService $orderService */
+        $orderService = app(OrderServiceContract::class);
+
+        Order::factory()->count(50)->create()->each(function ($order) use ($shipping_methods, $statuses, $orderService) {
 
             $order->shipping_method_id = $shipping_methods->random()->getKey();
             $order->status_id = $statuses->random()->getKey();
@@ -46,6 +51,10 @@ class OrderSeeder extends Seeder
                     $product->schemas()->saveMany($schemas);
                 }
             });
+
+            $order->update([
+                'summary' => $orderService->calcSummary($order),
+            ]);
 
             for ($i = 0; $i < rand(0, 5); $i++) {
                 $order->payments()->save(Payment::factory()->make());

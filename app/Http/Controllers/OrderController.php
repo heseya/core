@@ -145,8 +145,11 @@ class OrderController extends Controller implements OrderControllerSwagger
             }
             $order->discounts()->sync($discounts);
 
+            $summary = $this->orderService->calcSummary($order);
+            $shippingPrice = $shippingMethod->getPrice($summary);
             $order->update([
-                'shipping_price' => $shippingMethod->getPrice($order->summary),
+                'shipping_price' => $shippingPrice,
+                'summary' => $summary + $shippingPrice,
             ]);
         } catch (Throwable $exception) {
             $order->delete();

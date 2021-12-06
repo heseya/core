@@ -6,8 +6,6 @@ use App\Audits\Redactors\AddressRedactor;
 use App\Audits\Redactors\ShippingMethodRedactor;
 use App\Audits\Redactors\StatusRedactor;
 use App\SearchTypes\OrderSearch;
-use App\Services\Contracts\OrderServiceContract;
-use App\Services\OrderService;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Heseya\Sortable\Sortable;
@@ -61,6 +59,12 @@ class Order extends Model implements AuditableContract
      *   type="float",
      *   example=18.70
      * )
+     *
+     * @OA\Property(
+     *   property="summary",
+     *   type="float",
+     *   example=2390.90
+     * )
      */
 
     protected $fillable = [
@@ -76,6 +80,7 @@ class Order extends Model implements AuditableContract
         'invoice_address_id',
         'created_at',
         'user_id',
+        'summary',
     ];
 
     protected $auditInclude = [
@@ -111,24 +116,12 @@ class Order extends Model implements AuditableContract
         'id',
         'code',
         'created_at',
+        'email',
+        'summary',
     ];
 
     protected string $defaultSortBy = 'created_at';
     protected string $defaultSortDirection = 'desc';
-
-    /**
-     * @OA\Property(
-     *   property="summary",
-     *   type="number",
-     * )
-     */
-    public function getSummaryAttribute(): float
-    {
-        /** @var OrderService $orderService */
-        $orderService = app(OrderServiceContract::class);
-
-        return $orderService->calcSummary($this);
-    }
 
     /**
      * Summary amount of paid.
