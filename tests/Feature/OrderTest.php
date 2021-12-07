@@ -68,7 +68,7 @@ class OrderTest extends TestCase
                 'color' => $status->color,
                 'description' => $status->description,
             ],
-            'paid' => $this->order->isPaid(),
+            'paid' => $this->order->paid,
         ];
 
         $this->expected_summary_structure = [
@@ -225,6 +225,47 @@ class OrderTest extends TestCase
         $this
             ->json('GET', '/orders/my')
             ->assertStatus(404);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByPaid($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $order1 = Order::factory()->create();
+
+        $order1->products()->create([
+            'product_id' => $product->getKey(),
+            'quantity' => 10,
+            'price' => 247.47,
+        ]);
+
+        $order1->refresh();
+        $order1->payments()->create([
+            'method' => 'payu',
+            'amount' => $order1->summary,
+            'paid' => true,
+        ]);
+
+        $order2 = Order::factory()->create();
+
+        $order2->products()->create([
+            'product_id' => $product->getKey(),
+            'quantity' => 10,
+            'price' => 247.47,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders?paid=1')
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
     }
 
     public function testViewUnauthorized(): void

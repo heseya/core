@@ -65,6 +65,12 @@ class Order extends Model implements AuditableContract
      *   type="float",
      *   example=2390.90
      * )
+     *
+     * @OA\Property(
+     *   property="paid",
+     *   type="boolean",
+     *   example=false,
+     * )
      */
 
     protected $fillable = [
@@ -81,6 +87,7 @@ class Order extends Model implements AuditableContract
         'created_at',
         'user_id',
         'summary',
+        'paid',
     ];
 
     protected $auditInclude = [
@@ -110,6 +117,7 @@ class Order extends Model implements AuditableContract
         'code' => Like::class,
         'email' => Like::class,
         'user_id',
+        'paid',
     ];
 
     protected array $sortable = [
@@ -122,6 +130,10 @@ class Order extends Model implements AuditableContract
 
     protected string $defaultSortBy = 'created_at';
     protected string $defaultSortDirection = 'desc';
+
+    protected $casts = [
+        'paid' => 'boolean',
+    ];
 
     /**
      * Summary amount of paid.
@@ -162,17 +174,11 @@ class Order extends Model implements AuditableContract
      */
     public function getPayableAttribute(): bool
     {
-        return !$this->isPaid() &&
+        return !$this->paid &&
             !$this->status->cancel &&
             $this->shippingMethod->paymentMethods()->count() > 0;
     }
 
-    /**
-     * @OA\Property(
-     *   property="paid",
-     *   type="boolean",
-     * )
-     */
     public function isPaid(): bool
     {
         return $this->paid_amount >= $this->summary;

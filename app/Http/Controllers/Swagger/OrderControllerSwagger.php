@@ -32,7 +32,7 @@ interface OrderControllerSwagger
      *     description="Sorting string.",
      *     @OA\Schema(
      *       type="string",
-     *       example="code:asc,created_at:desc,id"
+     *       example="code:asc,created_at:desc,id,email,summary"
      *     ),
      *   ),
      *   @OA\Parameter(
@@ -49,6 +49,14 @@ interface OrderControllerSwagger
      *     description="Shipping Method UUID",
      *     @OA\Schema(
      *       type="string",
+     *     ),
+     *   ),
+     *   @OA\Parameter(
+     *     name="paid",
+     *     in="query",
+     *     description="Is order paid",
+     *     @OA\Schema(
+     *       type="bool",
      *     ),
      *   ),
      *   @OA\Response(

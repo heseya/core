@@ -15,7 +15,7 @@ class PaymentController extends Controller implements PaymentControllerSwagger
 {
     public function store(Order $order, string $method, PaymentStoreRequest $request): JsonResource
     {
-        if ($order->isPaid()) {
+        if ($order->paid) {
             throw new StoreException('Order is already paid.');
         }
 

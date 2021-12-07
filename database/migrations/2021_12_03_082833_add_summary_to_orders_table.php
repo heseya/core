@@ -18,6 +18,7 @@ class AddSummaryToOrdersTable extends Migration
     {
         Schema::table('orders', function (Blueprint $table) {
             $table->float('summary', 19, 4)->default(0);
+            $table->boolean('paid')->default(false);
         });
 
         /** @var OrderService $orderService */
@@ -26,6 +27,7 @@ class AddSummaryToOrdersTable extends Migration
         Order::chunk(100, fn ($order) => $order->each(
             fn (Order $order) => $order->update([
                 'summary' => $orderService->calcSummary($order),
+                'paid' => $order->paid_amount >= $orderService->calcSummary($order),
             ])
         ));
     }
@@ -39,6 +41,7 @@ class AddSummaryToOrdersTable extends Migration
     {
         Schema::table('orders', function (Blueprint $table) {
             $table->dropColumn('summary');
+            $table->dropColumn('paid');
         });
     }
 }

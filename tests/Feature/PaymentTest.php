@@ -194,8 +194,13 @@ class PaymentTest extends TestCase
             'amount' => $this->order->summary,
         ]);
 
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'paid' => true,
+        ]);
+
         $this->order->refresh();
-        $this->assertTrue($this->order->isPaid());
+        $this->assertTrue($this->order->paid);
     }
 
     /**
@@ -234,8 +239,13 @@ class PaymentTest extends TestCase
             'amount' => $amount,
         ]);
 
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'paid' => true,
+        ]);
+
         $this->order->refresh();
-        $this->assertTrue($this->order->isPaid());
+        $this->assertTrue($this->order->paid);
     }
 
 //    public function testPayPalNotification(): void
