@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Swagger\WebHookControllerSwagger;
 use App\Http\Requests\WebHookCreateRequest;
 use App\Http\Requests\WebHookIndexRequest;
 use App\Http\Requests\WebHookUpdateRequest;
@@ -15,7 +14,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 
-class WebHookController extends Controller implements WebHookControllerSwagger
+class WebHookController extends Controller
 {
     private WebHookService $webHookService;
 

@@ -9,7 +9,6 @@ use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
 use App\Exceptions\OrderException;
-use App\Http\Controllers\Swagger\OrderControllerSwagger;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderIndexRequest;
 use App\Http\Requests\OrderItemsRequest;
@@ -34,7 +33,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Throwable;
 
-class OrderController extends Controller implements OrderControllerSwagger
+class OrderController extends Controller
 {
     private NameServiceContract $nameService;
     private OrderServiceContract $orderService;

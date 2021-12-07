@@ -2,11 +2,10 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\Swagger\ProductResourceSwagger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class ProductResource extends Resource implements ProductResourceSwagger
+class ProductResource extends Resource
 {
     public function base(Request $request): array
     {

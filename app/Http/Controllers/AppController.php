@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\AppInstallDto;
-use App\Http\Controllers\Swagger\AppControllerSwagger;
 use App\Http\Requests\AppDeleteRequest;
 use App\Http\Requests\AppStoreRequest;
 use App\Http\Resources\AppResource;
@@ -14,7 +13,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 
-class AppController extends Controller implements AppControllerSwagger
+class AppController extends Controller
 {
     public function __construct(private AppServiceContract $appService)
     {

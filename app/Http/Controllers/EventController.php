@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Swagger\EventControllerSwagger;
 use App\Http\Resources\EventResource;
 use App\Services\Contracts\EventServiceContract;
 use App\Services\EventService;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class EventController extends Controller implements EventControllerSwagger
+class EventController extends Controller
 {
     private EventService $eventService;
 

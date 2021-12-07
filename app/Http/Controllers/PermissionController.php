@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Swagger\PermissionControllerSwagger;
 use App\Http\Requests\PermissionIndexRequest;
 use App\Http\Resources\PermissionResource;
 use App\Services\Contracts\PermissionServiceContract;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class PermissionController extends Controller implements PermissionControllerSwagger
+class PermissionController extends Controller
 {
     private PermissionServiceContract $permissionService;
 

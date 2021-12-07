@@ -2,11 +2,10 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\Swagger\ProductSetResourceSwagger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
-class ProductSetParentChildrenResource extends Resource implements ProductSetResourceSwagger
+class ProductSetParentChildrenResource extends Resource
 {
     public function base(Request $request): array
     {

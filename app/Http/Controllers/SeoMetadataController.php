@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\SeoMetadataDto;
-use App\Http\Controllers\Swagger\SeoMetadataControllerSwagger;
 use App\Http\Requests\SeoMetadataRequest;
 use App\Http\Resources\SeoMetadataResource;
 use App\Models\SeoMetadata;
@@ -11,7 +10,7 @@ use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\SeoMetadataService;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class SeoMetadataController extends Controller implements SeoMetadataControllerSwagger
+class SeoMetadataController extends Controller
 {
     private SeoMetadataService $seoMetadataService;
 

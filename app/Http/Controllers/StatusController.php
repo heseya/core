@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\Error;
-use App\Http\Controllers\Swagger\StatusControllerSwagger;
 use App\Http\Requests\StatusReorderRequest;
 use App\Http\Resources\StatusResource;
 use App\Models\Status;
@@ -11,7 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class StatusController extends Controller implements StatusControllerSwagger
+class StatusController extends Controller
 {
     public function index(): JsonResource
     {

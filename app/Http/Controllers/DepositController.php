@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Events\ItemUpdatedQuantity;
-use App\Http\Controllers\Swagger\DepositControllerSwagger;
 use App\Http\Requests\DepositCreateRequest;
 use App\Http\Resources\DepositResource;
 use App\Models\Deposit;
@@ -11,7 +10,7 @@ use App\Models\Item;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
 
-class DepositController extends Controller implements DepositControllerSwagger
+class DepositController extends Controller
 {
     public function index(): JsonResource
     {

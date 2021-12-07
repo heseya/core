@@ -25,18 +25,6 @@ class OrderResource extends Resource
         ];
     }
 
-    /**
-     * @OA\Schema(
-     *   schema="OrderView",
-     *   allOf={
-     *     @OA\Schema(ref="#/components/schemas/Order"),
-     *   },
-     *   @OA\Property(
-     *      property="user",
-     *      ref="#/components/schemas/User",
-     *   )
-     * )
-     */
     public function view(Request $request): array
     {
         return [

@@ -4,31 +4,6 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-/**
- * @OA\RequestBody(
- *   request="OrderUpdate",
- *   @OA\JsonContent(
- *     @OA\Property(
- *       property="email",
- *       type="string",
- *       example="admin@example.com",
- *     ),
- *     @OA\Property(
- *       property="comment",
- *       type="string",
- *       example="asap plz",
- *     ),
- *     @OA\Property(
- *       property="delivery_address",
- *       ref="#/components/schemas/Address",
- *     ),
- *     @OA\Property(
- *       property="invoice_address",
- *       ref="#/components/schemas/Address",
- *     ),
- *   )
- * )
- */
 class OrderUpdateRequest extends FormRequest
 {
     public function rules(): array

@@ -2,10 +2,9 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\Swagger\AuditResourceSwagger;
 use Illuminate\Http\Request;
 
-class AuditResource extends Resource implements AuditResourceSwagger
+class AuditResource extends Resource
 {
     public function base(Request $request): array
     {
