@@ -303,7 +303,7 @@ class UserTest extends TestCase
             ->withArgs(function ($message) {
                 return str_contains(
                     $message,
-                    "App\Exceptions\AuthException(code: 0): "
+                    "AuthException(code: 0): "
                     . "Can't give a role with permissions you don't have to the user "
                     . "at /usr/src/app/app/Services/UserService.php:"
                 );
