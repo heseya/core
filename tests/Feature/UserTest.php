@@ -304,8 +304,7 @@ class UserTest extends TestCase
                 return str_contains(
                     $message,
                     "AuthException(code: 0): "
-                    . "Can't give a role with permissions you don't have to the user "
-                    . "at /usr/src/app/app/Services/UserService.php:"
+                    . "Can't give a role with permissions you don't have to the user at"
                 );
             });
 

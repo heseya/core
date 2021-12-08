@@ -26,8 +26,7 @@ class AuthTest extends TestCase
     {
         parent::setUp();
 
-        $this->expectedLog = 'AuthException(code: 0): '
-            . 'Invalid credentials at /usr/src/app/app/Services/AuthService.php:';
+        $this->expectedLog = 'AuthException(code: 0): Invalid credentials at';
     }
 
     public function testLoginUnauthorized(): void
@@ -333,7 +332,7 @@ class AuthTest extends TestCase
                 return str_contains(
                     $message,
                     'AuthException(code: 0): The token is invalid or inactive. '
-                    . 'Try to reset your password again. at /usr/src/app/app/Services/AuthService.php:'
+                    . 'Try to reset your password again. at'
                 );
             });
 
