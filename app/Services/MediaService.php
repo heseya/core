@@ -42,6 +42,15 @@ class MediaService implements MediaServiceContract
         ]);
     }
 
+    private function getMediaType(string $extension): int
+    {
+        return match ($extension) {
+            'jpeg', 'jpg', 'png', 'gif', 'bmp', 'svg', 'webp' => MediaType::PHOTO,
+            'mp4', 'webm' => MediaType::VIDEO,
+            default => MediaType::OTHER,
+        };
+    }
+
     public function destroy(Media $media): void
     {
         if ($media->products()->exists()) {
@@ -49,14 +58,5 @@ class MediaService implements MediaServiceContract
         }
 
         $media->forceDelete();
-    }
-
-    private function getMediaType(string $extension): int
-    {
-        return match ($extension) {
-            'jpeg', 'jpg', 'png', 'gif', 'bmp', 'svg' => MediaType::PHOTO,
-            'mp4', 'webm' => MediaType::VIDEO,
-            default => MediaType::OTHER,
-        };
     }
 }
