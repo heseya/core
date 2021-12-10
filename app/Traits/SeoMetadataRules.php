@@ -15,6 +15,7 @@ trait SeoMetadataRules
             'seo.keywords' => ['nullable', 'array'],
             'seo.og_image_id' => ['nullable', 'uuid', 'exists:media,id'],
             'seo.twitter_card' => ['nullable', new EnumValue(TwitterCardType::class, false)],
+            'seo.no_index' => ['nullable', 'boolean'],
         ];
     }
 }

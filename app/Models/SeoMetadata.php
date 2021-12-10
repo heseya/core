@@ -24,6 +24,7 @@ class SeoMetadata extends Model
         'twitter_card',
         'model_id',
         'model_type',
+        'no_index',
     ];
 
     protected $casts = [
@@ -32,6 +33,7 @@ class SeoMetadata extends Model
         'twitter_card' => TwitterCardType::class,
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'no_index' => 'bool',
     ];
 
     protected $attributes = [
