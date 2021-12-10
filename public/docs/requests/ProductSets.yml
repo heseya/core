@@ -30,6 +30,10 @@ ProductSetStore:
             description: 'HTML formated text to be displayed as a product set description'
             type: string
             example: '<h1>Lorem ipsum dolor sit amet</h1>'
+          cover_id:
+            description: 'Id of media cover'
+            type: string
+            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
           parent_id:
             description: 'Id of set, this set belongs to'
             type: string
@@ -75,6 +79,10 @@ ProductSetUpdate:
             description: 'HTML formated text to be displayed as a product set description'
             type: string
             example: '<h1>Lorem ipsum dolor sit amet</h1>'
+          cover_id:
+            description: 'Id of media cover'
+            type: string
+            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
           parent_id:
             description: 'Id of set, this set belongs to'
             type: string

@@ -26,6 +26,7 @@ class ProductSetParentChildrenResource extends Resource
             'children' => ProductSetChildrenResource::collection($children),
             'seo' => SeoMetadataResource::make($this->seo),
             'description_html' => $this->description_html,
+            'cover' => MediaResource::make($this->media),
         ];
     }
 }

@@ -29,6 +29,8 @@ ProductSet:
       items:
         type: string
         example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    cover:
+      $ref: './../api.yml#/components/schemas/Media'
   type: object
 
 ProductSetParent:
@@ -60,6 +62,8 @@ ProductSetParent:
       description: 'HTML formated text to be displayed as a product set description'
       type: string
       example: '<h1>Lorem ipsum dolor sit amet</h1>'
+    cover:
+      $ref: './../api.yml#/components/schemas/Media'
     parent:
       $ref: '#ProductSet'
     children_ids:

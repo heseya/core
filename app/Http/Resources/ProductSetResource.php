@@ -26,6 +26,7 @@ class ProductSetResource extends Resource
             'children_ids' => $children->map(
                 fn ($child) => $child->getKey(),
             )->toArray(),
+            'cover' => MediaResource::make($this->media),
         ];
     }
 }

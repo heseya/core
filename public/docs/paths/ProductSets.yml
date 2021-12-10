@@ -216,7 +216,6 @@ ProductSetsProducts:
   get:
     tags:
       - 'Product Sets'
-    operationId: 0dc137a2aa34dbea80996db278356917
     parameters:
       - name: limit
         in: query
@@ -240,7 +239,6 @@ ProductSetsProducts:
   post:
     tags:
       - 'Product Sets'
-    operationId: 83bb98bd825eb800df633b6edf3004b8
     parameters:
       - name: id
         in: path
