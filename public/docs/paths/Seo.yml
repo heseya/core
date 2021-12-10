@@ -1,0 +1,42 @@
+Seo:
+  get:
+    tags:
+      - SEO
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Seo.yml#SeoView'
+              type: object
+  patch:
+    tags:
+      - SEO
+    summary: 'Update or create global SEO'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: './../schemas/Seo.yml#SeoStore'
+    responses:
+      200:
+        description: Updated
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Seo.yml#SeoView'
+              type: object
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Seo.yml#SeoView'
+              type: object

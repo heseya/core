@@ -12,22 +12,19 @@ paths:
       description: "\n     *       Returns total amount and count of payments. By default period is last year.\n     *       Results are grouped in specified time frames.\n     *   "
       operationId: d66c4ebadd485eeef6d72f508f1f6533
       parameters:
-        -
-          name: from
+        - name: from
           in: path
           description: 'date datetime or timestamp by default in UTC+0; required if ''to'' is set'
           schema:
             type: string
           example: '2021-03-23'
-        -
-          name: to
+        - name: to
           in: path
           description: 'date datetime or timestamp by default in UTC+0'
           schema:
             type: string
           example: '2021-04-23 15:37'
-        -
-          name: group
+        - name: group
           in: path
           description: total/yearly/monthly/daily/hourly
           schema:
@@ -57,8 +54,7 @@ paths:
                     type: object
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /apps:
     get:
       tags:
@@ -116,15 +112,13 @@ paths:
       summary: 'delete app'
       operationId: 127981a2da0d4a3a6231136a8e30c6a1
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
             type: string
             example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
-        -
-          name: force
+        - name: force
           in: query
           description: 'Force removal of the app'
           allowEmptyValue: true
@@ -140,15 +134,13 @@ paths:
       summary: 'list changes for object'
       operationId: e30e643af2cbd18d3525f753fed7082e
       parameters:
-        -
-          name: object
+        - name: object
           in: path
           required: true
           schema:
             type: string
             example: products
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -224,8 +216,7 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/users/reset-password/{token}/{email}':
     get:
       tags:
@@ -236,8 +227,7 @@ paths:
         200:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /users/save-reset-password:
     patch:
       tags:
@@ -250,8 +240,7 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /users/password:
     patch:
       tags:
@@ -274,8 +263,7 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /auth/refresh:
     post:
       tags:
@@ -319,16 +307,14 @@ paths:
           description: Success
       deprecated: true
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/auth/kill-session/id:{id}':
     get:
       tags:
         - Auth
       summary: 'Allow to ''kill'' active session'
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           description: 'token id from the table ''oauth_access_tokens'''
           required: true
@@ -340,8 +326,7 @@ paths:
           description: Success
       deprecated: true
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /auth/kill-all-sessions:
     get:
       tags:
@@ -352,8 +337,7 @@ paths:
           description: Success
       deprecated: true
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /auth/profile:
     get:
       tags:
@@ -369,14 +353,11 @@ paths:
                 properties:
                   data:
                     oneOf:
-                      -
-                        $ref: '#/components/schemas/UserView'
-                      -
-                        $ref: '#/components/schemas/AppView'
+                      - $ref: '#/components/schemas/UserView'
+                      - $ref: '#/components/schemas/AppView'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /auth/check:
     get:
       tags:
@@ -445,8 +426,7 @@ paths:
                       $ref: '#/components/schemas/Deposit'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/items/id:{id}/deposits':
     get:
       tags:
@@ -454,8 +434,7 @@ paths:
       summary: 'list item deposits'
       operationId: 5099397a62f56c528043dae36a470bdd
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -471,16 +450,14 @@ paths:
                     $ref: '#/components/schemas/Deposit'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     post:
       tags:
         - Deposits
       summary: 'add new deposit'
       operationId: ae0156fddd1d7b7a2bd04984741711f4
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -501,8 +478,7 @@ paths:
                     $ref: '#/components/schemas/Deposit'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /discounts:
     get:
       tags:
@@ -510,20 +486,17 @@ paths:
       summary: 'get all discounts'
       operationId: 48cb22131f7f432605564e1929459975
       parameters:
-        -
-          name: search
+        - name: search
           in: query
           required: false
           schema:
             type: string
-        -
-          name: description
+        - name: description
           in: query
           required: false
           schema:
             type: string
-        -
-          name: code
+        - name: code
           in: query
           required: false
           schema:
@@ -541,8 +514,7 @@ paths:
                       $ref: '#/components/schemas/Discount'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     post:
       tags:
         - Discounts
@@ -564,8 +536,7 @@ paths:
                     $ref: '#/components/schemas/Discount'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/discounts/{code}':
     get:
       tags:
@@ -573,8 +544,7 @@ paths:
       summary: 'show discount'
       operationId: f961a76e9e4cd4035be42b73e8076385
       parameters:
-        -
-          name: code
+        - name: code
           in: path
           required: false
           schema:
@@ -596,8 +566,7 @@ paths:
       summary: 'delete discount'
       operationId: 696b261316fff870c9f296902a6f116e
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -607,16 +576,14 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     patch:
       tags:
         - Discounts
       summary: 'update discount'
       operationId: 0ce28dd72c4a02adb46ddd0768ad7f6b
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -638,8 +605,7 @@ paths:
                     $ref: '#/components/schemas/Discount'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /webhooks/events:
     get:
       tags:
@@ -688,8 +654,7 @@ paths:
                     example: 0000000773354Q
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /items:
     get:
       tags:
@@ -697,20 +662,17 @@ paths:
       summary: 'list items'
       operationId: fb17b17e6e977f8de38a545f2af09116
       parameters:
-        -
-          name: search
+        - name: search
           in: query
           description: 'Full text search'
           schema:
             type: string
-        -
-          name: name
+        - name: name
           in: query
           description: 'Name search'
           schema:
             type: string
-        -
-          name: sku
+        - name: sku
           in: query
           description: 'Sku search'
           schema:
@@ -728,8 +690,7 @@ paths:
                       $ref: '#/components/schemas/Item'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     post:
       tags:
         - Items
@@ -751,8 +712,7 @@ paths:
                     $ref: '#/components/schemas/Item'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/items/id:{id}':
     get:
       tags:
@@ -760,8 +720,7 @@ paths:
       summary: 'view item'
       operationId: 2cd8385badc622da6b55243dd17ac0fe
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -777,16 +736,14 @@ paths:
                     $ref: '#/components/schemas/Item'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     delete:
       tags:
         - Items
       summary: 'delete item'
       operationId: ec933ea4411015e739bbab2e07d01dca
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -796,16 +753,14 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     patch:
       tags:
         - Items
       summary: 'update item'
       operationId: b1ef0bdc3dee72a4cd944ee205c2fc99
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -827,8 +782,7 @@ paths:
                     $ref: '#/components/schemas/Item'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /media:
     post:
       tags:
@@ -857,8 +811,7 @@ paths:
                       $ref: '#/components/schemas/Media'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/media/id:{id}':
     delete:
       tags:
@@ -866,8 +819,7 @@ paths:
       summary: 'delete media'
       operationId: 58691c12ce9927d801e27e861c964e94
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -876,8 +828,7 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /orders:
     get:
       tags:
@@ -885,27 +836,23 @@ paths:
       summary: 'orders list'
       operationId: 9fdf75d4b6f010f07127a71f418336b1
       parameters:
-        -
-          name: search
+        - name: search
           in: query
           description: 'Full text search.'
           schema:
             type: string
-        -
-          name: sort
+        - name: sort
           in: query
           description: 'Sorting string.'
           schema:
             type: string
             example: 'code:asc,created_at:desc,id'
-        -
-          name: status_id
+        - name: status_id
           in: query
           description: 'Status UUID'
           schema:
             type: string
-        -
-          name: shipping_method_id
+        - name: shipping_method_id
           in: query
           description: 'Shipping Method UUID'
           schema:
@@ -923,8 +870,7 @@ paths:
                       $ref: '#/components/schemas/Order'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     post:
       tags:
         - Orders
@@ -949,8 +895,7 @@ paths:
       summary: 'order view'
       operationId: f3bcb423d9b3c6b686a18f4b4b9d3131
       parameters:
-        -
-          name: code
+        - name: code
           in: path
           required: true
           schema:
@@ -967,8 +912,7 @@ paths:
                     $ref: '#/components/schemas/OrderView'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/orders/{code}':
     get:
       tags:
@@ -976,8 +920,7 @@ paths:
       summary: 'public order view'
       operationId: 6625361c5cdd8384723a3b8521b0e96f
       parameters:
-        -
-          name: code
+        - name: code
           in: path
           required: true
           schema:
@@ -1035,8 +978,7 @@ paths:
       summary: 'change order status'
       operationId: 845b68fa22a7f832784446b0c89a40e4
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -1064,8 +1006,7 @@ paths:
                       $ref: '#/components/schemas/Order'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/orders/id:{order:id}':
     patch:
       tags:
@@ -1073,8 +1014,7 @@ paths:
       summary: 'update order'
       operationId: ff53701d16615e693cfb247e129858b5
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -1093,8 +1033,7 @@ paths:
                     $ref: '#/components/schemas/Order'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /orders/my:
     get:
       tags:
@@ -1102,27 +1041,23 @@ paths:
       summary: 'user orders list'
       operationId: 1666cc5faba950ee39069c3a6690f65e
       parameters:
-        -
-          name: search
+        - name: search
           in: query
           description: 'Full text search.'
           schema:
             type: string
-        -
-          name: sort
+        - name: sort
           in: query
           description: 'Sorting string.'
           schema:
             type: string
             example: 'code:asc,created_at:desc,id'
-        -
-          name: status_id
+        - name: status_id
           in: query
           description: 'Status UUID'
           schema:
             type: string
-        -
-          name: shipping_method_id
+        - name: shipping_method_id
           in: query
           description: 'Shipping Method UUID'
           schema:
@@ -1140,8 +1075,7 @@ paths:
                       $ref: '#/components/schemas/Order'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/orders/my/id:{id}':
     get:
       tags:
@@ -1149,8 +1083,7 @@ paths:
       summary: 'user order view'
       operationId: a24084e9a72ca4c8b2010b31195e97f6
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -1167,8 +1100,7 @@ paths:
                     $ref: '#/components/schemas/OrderView'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /package-templates:
     get:
       tags:
@@ -1188,8 +1120,7 @@ paths:
                       $ref: '#/components/schemas/PackageTemplateSwagger'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     post:
       tags:
         - Packages
@@ -1211,8 +1142,7 @@ paths:
                     $ref: '#/components/schemas/PackageTemplateSwagger'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/package-templates/id:{id}':
     delete:
       tags:
@@ -1220,8 +1150,7 @@ paths:
       summary: 'delete package'
       operationId: 0b01c1ca12327aac13892b9e5b103c0f
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -1230,16 +1159,14 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     patch:
       tags:
         - Packages
       summary: 'update package'
       operationId: c52220735d551c071d0d4e04ddc13a8e
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -1260,8 +1187,7 @@ paths:
                     $ref: '#/components/schemas/PackageTemplateSwagger'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /pages:
     get:
       tags:
@@ -1298,16 +1224,14 @@ paths:
                     $ref: '#/components/schemas/PageView'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/pages/{slug}':
     get:
       tags:
         - Pages
       summary: 'single page view'
       parameters:
-        -
-          name: slug
+        - name: slug
           in: path
           required: true
           schema:
@@ -1329,8 +1253,7 @@ paths:
       summary: alias
       operationId: ba0bd4e0f9d4ce9c18da285fd3c93bcc
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -1346,16 +1269,14 @@ paths:
                     $ref: '#/components/schemas/PageView'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     delete:
       tags:
         - Pages
       summary: 'delete page'
       operationId: 5284a2b1e29dda6d65eb3a091e592c8b
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -1364,16 +1285,14 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     patch:
       tags:
         - Pages
       summary: 'update page'
       operationId: 692a2573c6f6f2da427600913c1e29f7
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -1391,8 +1310,7 @@ paths:
                     $ref: '#/components/schemas/PageView'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /pages/reorder:
     post:
       tags:
@@ -1405,8 +1323,7 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/orders/{code}/pay/{payment_method}':
     post:
       tags:
@@ -1414,14 +1331,12 @@ paths:
       summary: 'redirect to payment'
       operationId: ce35e608cbca74b8595bda28675782f9
       parameters:
-        -
-          name: code
+        - name: code
           in: path
           required: true
           schema:
             type: string
-        -
-          name: payment_method
+        - name: payment_method
           in: path
           required: true
           schema:
@@ -1453,8 +1368,7 @@ paths:
       summary: 'Update payment status by payment provider'
       operationId: 87db72643167a8d9469558df40c05231
       parameters:
-        -
-          name: payment_method
+        - name: payment_method
           in: path
           required: true
           schema:
@@ -1469,8 +1383,7 @@ paths:
       summary: 'manualy create fulfilled order payment'
       operationId: 1972f4f3980985d1c0be469614a805bb
       parameters:
-        -
-          name: code
+        - name: code
           in: path
           required: true
           schema:
@@ -1492,8 +1405,7 @@ paths:
       summary: 'list payment methods'
       operationId: a5d642e5e63ae3dda3cb909c5351b547
       parameters:
-        -
-          name: shipping_method_id
+        - name: shipping_method_id
           in: query
           schema:
             type: integer
@@ -1530,8 +1442,7 @@ paths:
                     $ref: '#/components/schemas/PaymentMethod'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/payment-methods/id:{id}':
     delete:
       tags:
@@ -1539,8 +1450,7 @@ paths:
       summary: 'delete payment method'
       operationId: 9cecbc6d17aacf389f118ea0dc39fa68
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -1549,16 +1459,14 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     patch:
       tags:
         - Payments
       summary: 'update payment method'
       operationId: 290a917d70c611b728be451ed227b2e7
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -1579,8 +1487,7 @@ paths:
                     $ref: '#/components/schemas/PaymentMethod'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /permissions:
     get:
       tags:
@@ -1588,8 +1495,7 @@ paths:
       summary: 'list of permissions'
       operationId: 7e9aeafb806872b889961c1686a8331a
       parameters:
-        -
-          name: assignable
+        - name: assignable
           in: query
           description: 'Is the permission assignable by current user'
           schema:
@@ -1607,8 +1513,7 @@ paths:
                       $ref: '#/components/schemas/Permission'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /products:
     get:
       tags:
@@ -1616,46 +1521,39 @@ paths:
       summary: 'list products'
       operationId: 7bec44fd94ed36af1ed54898977f8835
       parameters:
-        -
-          name: search
+        - name: search
           in: query
           description: 'Full text search'
           schema:
             type: string
-        -
-          name: name
+        - name: name
           in: query
           description: 'Name search'
           schema:
             type: string
-        -
-          name: slug
+        - name: slug
           in: query
           description: 'Slug search'
           schema:
             type: string
-        -
-          name: public
+        - name: public
           in: query
           description: 'Is public search'
           schema:
             type: boolean
-        -
-          name: 'sets[]'
+        - name: 'sets[]'
           in: query
           description: 'Product set array slug search'
           schema:
             type: string
           example: 'sets[]=category-teapots&sets[]=category-mugs'
-        -
-          name: sort
+        - name: sort
           in: query
           description: 'Sorting string'
           schema:
             type: string
             example: 'price:asc,created_at:desc,name'
-        -
-          name: 'tags[]'
+        - name: 'tags[]'
           in: query
           description: 'Tag array id search'
           schema:
@@ -1691,16 +1589,14 @@ paths:
                     $ref: '#/components/schemas/ProductView'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/products/{slug}':
     get:
       tags:
         - Products
       summary: 'single product view'
       parameters:
-        -
-          name: slug
+        - name: slug
           in: path
           required: true
           schema:
@@ -1722,8 +1618,7 @@ paths:
       summary: alias
       operationId: ce74f21deb699cab61f5a466262da402
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -1739,16 +1634,14 @@ paths:
                     $ref: '#/components/schemas/ProductView'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     delete:
       tags:
         - Products
       summary: 'delete product'
       operationId: 1a09118b89678689087b83614784ecac
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -1757,16 +1650,14 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     patch:
       tags:
         - Products
       summary: 'update product'
       operationId: 3c598878a59e0d1e29a8f88d3249ed85
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -1784,315 +1675,19 @@ paths:
                     $ref: '#/components/schemas/ProductView'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /product-sets:
-    get:
-      tags:
-        - 'Product Sets'
-      operationId: a26169446a6f59f95e1c0027d34c423f
-      parameters:
-        -
-          name: root
-          in: query
-          description: 'Return only root lists'
-          allowEmptyValue: true
-          schema:
-            type: boolean
-        -
-          name: tree
-          in: query
-          description: 'Return sets starting from root with recursively nested children instead of id''s'
-          allowEmptyValue: true
-          schema:
-            type: boolean
-        -
-          name: search
-          in: query
-          description: 'Full text search'
-          schema:
-            type: string
-        -
-          name: name
-          in: query
-          description: 'Name search'
-          schema:
-            type: string
-        -
-          name: slug
-          in: query
-          description: 'Slug search'
-          schema:
-            type: string
-        -
-          name: public
-          in: query
-          description: 'Is public search'
-          schema:
-            type: boolean
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      oneOf:
-                        -
-                          $ref: '#/components/schemas/ProductSet'
-                        -
-                          $ref: '#/components/schemas/ProductSetChildren'
-                type: object
-    post:
-      tags:
-        - 'Product Sets'
-      operationId: 36141402490d440d8d4a64e265d1e949
-      parameters:
-        -
-          name: tree
-          in: query
-          description: 'Return set with recursively nested children instead of id''s'
-          allowEmptyValue: true
-          schema:
-            type: boolean
-      requestBody:
-        $ref: '#/components/requestBodies/ProductSetStore'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: object
-                    oneOf:
-                      -
-                        $ref: '#/components/schemas/ProductSetParent'
-                      -
-                        $ref: '#/components/schemas/ProductSetParentChildren'
-                type: object
-      security:
-        -
-          oauth: []
+    $ref: './paths/ProductSets.yml#ProductSets'
   '/product-sets/{slug}':
-    get:
-      tags:
-        - 'Product Sets'
-      parameters:
-        -
-          name: slug
-          in: path
-          required: true
-          schema:
-            type: string
-        -
-          name: tree
-          in: query
-          description: 'Return set with recursively nested children instead of id''s'
-          allowEmptyValue: true
-          schema:
-            type: boolean
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: object
-                    oneOf:
-                      -
-                        $ref: '#/components/schemas/ProductSetParent'
-                      -
-                        $ref: '#/components/schemas/ProductSetParentChildren'
-                type: object
+    $ref: './paths/ProductSets.yml#ProductSetsSlug'
   '/product-sets/id:{id}':
-    get:
-      tags:
-        - 'Product Sets'
-      operationId: 41ac16db76cbe3187731fb06ed76f298
-      parameters:
-        -
-          name: id
-          in: path
-          required: true
-          schema:
-            type: string
-        -
-          name: tree
-          in: query
-          description: 'Return set with recursively nested children instead of id''s'
-          allowEmptyValue: true
-          schema:
-            type: boolean
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: object
-                    oneOf:
-                      -
-                        $ref: '#/components/schemas/ProductSetParent'
-                      -
-                        $ref: '#/components/schemas/ProductSetParentChildren'
-                type: object
-    delete:
-      tags:
-        - 'Product Sets'
-      description: 'Delete set with all of it''s subsets'
-      operationId: 366d9601650bb23176ba43cf7fa45ff5
-      parameters:
-        -
-          name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
-      responses:
-        204:
-          description: Success
-      security:
-        -
-          oauth: []
-    patch:
-      tags:
-        - 'Product Sets'
-      operationId: 056f8268c8790a91c9acc95f7ef8e4cf
-      parameters:
-        -
-          name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
-        -
-          name: tree
-          in: query
-          description: 'Return set with recursively nested children instead of id''s'
-          allowEmptyValue: true
-          schema:
-            type: boolean
-      requestBody:
-        $ref: '#/components/requestBodies/ProductSetUpdate'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: object
-                    oneOf:
-                      -
-                        $ref: '#/components/schemas/ProductSetParent'
-                      -
-                        $ref: '#/components/schemas/ProductSetParentChildren'
-                type: object
-      security:
-        -
-          oauth: []
+    $ref: './paths/ProductSets.yml#ProductSetsParams'
   /product-sets/reorder:
-    post:
-      tags:
-        - 'Product Sets'
-      requestBody:
-        $ref: '#/components/requestBodies/ProductSetReorder'
-      responses:
-        204:
-          description: Success
-      security:
-        -
-          oauth: []
+    $ref: './paths/ProductSets.yml#ProductSetsReorder'
   '/product-sets/reorder/id:{id}':
-    post:
-      tags:
-        - 'Product Sets'
-      operationId: 68424e1e657502e3db14d677e28b8595
-      parameters:
-        -
-          name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
-      requestBody:
-        $ref: '#/components/requestBodies/ProductSetReorder'
-      responses:
-        204:
-          description: Success
-      security:
-        -
-          oauth: []
+    $ref: './paths/ProductSets.yml#ProductSetsReorderParams'
   '/product-sets/id:{id}/products':
-    get:
-      tags:
-        - 'Product Sets'
-      operationId: 0dc137a2aa34dbea80996db278356917
-      parameters:
-        -
-          name: limit
-          in: query
-          description: 'Pagination limit'
-          schema:
-            type: number
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Product'
-                type: object
-      security:
-        -
-          oauth: []
-    post:
-      tags:
-        - 'Product Sets'
-      operationId: 83bb98bd825eb800df633b6edf3004b8
-      parameters:
-        -
-          name: id
-          in: path
-          description: 'List of product id''s'
-          required: true
-          schema:
-            type: string
-            example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
-      requestBody:
-        $ref: '#/components/requestBodies/ProductSetAttach'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Product'
-                type: object
-      security:
-        -
-          oauth: []
+    $ref: './paths/ProductSets.yml#ProductSetsProducts'
   /roles:
     get:
       tags:
@@ -2100,26 +1695,22 @@ paths:
       summary: 'list roles'
       operationId: 1ee69486b9b73ea9a99a272e7e8cc4a8
       parameters:
-        -
-          name: search
+        - name: search
           in: query
           description: 'Full text search'
           schema:
             type: string
-        -
-          name: name
+        - name: name
           in: query
           description: 'Name search'
           schema:
             type: string
-        -
-          name: description
+        - name: description
           in: query
           description: 'Description search'
           schema:
             type: string
-        -
-          name: assignable
+        - name: assignable
           in: query
           description: 'Is the role assignable by current user'
           schema:
@@ -2137,8 +1728,7 @@ paths:
                       $ref: '#/components/schemas/Role'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     post:
       tags:
         - Roles
@@ -2157,8 +1747,7 @@ paths:
                     $ref: '#/components/schemas/RoleView'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/roles/id:{id}':
     get:
       tags:
@@ -2166,8 +1755,7 @@ paths:
       summary: 'view the role'
       operationId: 08386bda355d39cf0af6f115a8084e52
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -2183,16 +1771,14 @@ paths:
                     $ref: '#/components/schemas/RoleView'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     delete:
       tags:
         - Roles
       summary: 'delete the role'
       operationId: 7ed75454a751735873bcd73f3eb08be8
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -2201,16 +1787,14 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     patch:
       tags:
         - Roles
       summary: 'update the role'
       operationId: 7624efb612f704e4ae632a365952ffc4
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -2228,8 +1812,7 @@ paths:
                     $ref: '#/components/schemas/RoleView'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /schemas:
     get:
       tags:
@@ -2251,8 +1834,7 @@ paths:
                       $ref: '#/components/schemas/Schema'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     post:
       tags:
         - Schemas
@@ -2274,16 +1856,14 @@ paths:
                     $ref: '#/components/schemas/Schema'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/schemas/id:{id}':
     get:
       tags:
         - Schemas
       operationId: 73d12dd89ba8210a22b5240704e63ee8
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -2299,15 +1879,13 @@ paths:
                     $ref: '#/components/schemas/Schema'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     delete:
       tags:
         - Schemas
       operationId: 459ce0314ef100d188cd1d1d04025e99
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -2316,8 +1894,7 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     patch:
       tags:
         - Schemas
@@ -2339,52 +1916,9 @@ paths:
                     $ref: '#/components/schemas/Schema'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /seo:
-    get:
-      tags:
-        - SEO
-      operationId: 7b17c53f126bf045b423bf31054ca35e
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/SeoView'
-                type: object
-    patch:
-      tags:
-        - SEO
-      summary: 'Update or create global SEO'
-      operationId: 2befde1e5832bd2ed00f29f88dac10be
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SeoStore'
-      responses:
-        200:
-          description: Updated
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/SeoView'
-                type: object
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/SeoView'
-                type: object
+    $ref: './paths/Seo.yml#Seo'
   /settings:
     get:
       tags:
@@ -2392,8 +1926,7 @@ paths:
       summary: 'list settings'
       operationId: 6aa918d4f157546caf34e9bfb7983448
       parameters:
-        -
-          name: array
+        - name: array
           in: query
           required: false
           schema:
@@ -2411,8 +1944,7 @@ paths:
                       $ref: '#/components/schemas/Setting'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     post:
       tags:
         - Settings
@@ -2434,8 +1966,7 @@ paths:
                     $ref: '#/components/schemas/Setting'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/settings/{name}':
     get:
       tags:
@@ -2443,8 +1974,7 @@ paths:
       summary: 'view setting'
       operationId: 5fdde9e40352f6b79ba7bfae0aafeda9
       parameters:
-        -
-          name: name
+        - name: name
           in: path
           required: true
           schema:
@@ -2460,16 +1990,14 @@ paths:
                     $ref: '#/components/schemas/Setting'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     delete:
       tags:
         - Settings
       summary: 'delete setting'
       operationId: 9bc3e39ceddf56c192bfb169c970208f
       parameters:
-        -
-          name: name
+        - name: name
           in: path
           required: true
           schema:
@@ -2478,16 +2006,14 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     patch:
       tags:
         - Settings
       summary: 'update setting'
       operationId: e7664e5cd7086145821ce8e97333f8da
       parameters:
-        -
-          name: name
+        - name: name
           in: path
           required: true
           schema:
@@ -2508,8 +2034,7 @@ paths:
                     $ref: '#/components/schemas/Setting'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /shipping-methods:
     get:
       tags:
@@ -2517,15 +2042,13 @@ paths:
       summary: 'list shipping methods by filters'
       operationId: 6b997fdddd17af8be38f253492ed9fe0
       parameters:
-        -
-          name: country
+        - name: country
           in: query
           required: false
           schema:
             type: string
             example: DE
-        -
-          name: cart_value
+        - name: cart_value
           in: query
           required: false
           schema:
@@ -2563,8 +2086,7 @@ paths:
                     $ref: '#/components/schemas/ShippingMethod'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/shipping-methods/id:{id}':
     delete:
       tags:
@@ -2572,8 +2094,7 @@ paths:
       summary: 'delete shipping method'
       operationId: 4a50d0bcb5729b8f65d70f1566d96add
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -2583,16 +2104,14 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     patch:
       tags:
         - Shipping
       summary: 'update shipping method'
       operationId: 2b0d377eba101ec6eae3d6bd74dd0571
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -2611,8 +2130,7 @@ paths:
                     $ref: '#/components/schemas/ShippingMethod'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /shipping-methods/reorder:
     post:
       tags:
@@ -2625,8 +2143,7 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /statuses:
     get:
       tags:
@@ -2646,8 +2163,7 @@ paths:
                       $ref: '#/components/schemas/Status'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     post:
       tags:
         - Statuses
@@ -2669,8 +2185,7 @@ paths:
                     $ref: '#/components/schemas/Status'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/statuses/id:{id}':
     delete:
       tags:
@@ -2678,8 +2193,7 @@ paths:
       summary: 'delete status'
       operationId: 0f8dac40386ce194b6c0a207f9b7745d
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -2688,16 +2202,14 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     patch:
       tags:
         - Statuses
       summary: 'update status'
       operationId: 6301f7a758a5ac0d583aff675d4f4eac
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -2718,8 +2230,7 @@ paths:
                     $ref: '#/components/schemas/Status'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /statuses/reorder:
     post:
       tags:
@@ -2732,8 +2243,7 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /tags:
     get:
       tags:
@@ -2741,20 +2251,17 @@ paths:
       summary: 'list tags'
       operationId: a0c19d7d82ce89abc7303b7a8a387778
       parameters:
-        -
-          name: search
+        - name: search
           in: query
           description: 'Full text search'
           schema:
             type: string
-        -
-          name: name
+        - name: name
           in: query
           description: 'Name search'
           schema:
             type: string
-        -
-          name: color
+        - name: color
           in: query
           description: 'Color search'
           schema:
@@ -2772,8 +2279,7 @@ paths:
                       $ref: '#/components/schemas/Tag'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     post:
       tags:
         - Tags
@@ -2795,8 +2301,7 @@ paths:
                     $ref: '#/components/schemas/Tag'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/tags/id:{id}':
     delete:
       tags:
@@ -2804,8 +2309,7 @@ paths:
       summary: 'delete tag'
       operationId: c53bd49de67f61c4899a7dd6261eccc2
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -2815,16 +2319,14 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     patch:
       tags:
         - Tags
       summary: 'update tag'
       operationId: 39aca1d5ee43dd11c54ff3cd25a4541a
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -2846,8 +2348,7 @@ paths:
                     $ref: '#/components/schemas/Tag'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /users:
     get:
       tags:
@@ -2855,33 +2356,28 @@ paths:
       summary: 'user list'
       operationId: f032a91b3abe7f269e51caca28180cbc
       parameters:
-        -
-          name: search
+        - name: search
           in: query
           description: 'Full text search'
           schema:
             type: string
-        -
-          name: name
+        - name: name
           in: query
           description: 'Name search'
           schema:
             type: string
-        -
-          name: name
+        - name: name
           in: query
           description: 'Email search'
           schema:
             type: string
-        -
-          name: sort
+        - name: sort
           in: query
           description: 'Sorting string'
           schema:
             type: string
           example: 'name:desc'
-        -
-          name: pagination_limit
+        - name: pagination_limit
           in: query
           description: 'Number of elements per page'
           schema:
@@ -2900,8 +2396,7 @@ paths:
                       $ref: '#/components/schemas/User'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     post:
       tags:
         - Users
@@ -2920,8 +2415,7 @@ paths:
                     $ref: '#/components/schemas/User'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/users/id:{id}':
     get:
       tags:
@@ -2929,8 +2423,7 @@ paths:
       summary: 'user view'
       operationId: ee3780fa0db72f4a5375174edb7aced4
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -2947,16 +2440,14 @@ paths:
                     $ref: '#/components/schemas/User'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     delete:
       tags:
         - Users
       summary: 'delete user'
       operationId: 6942c632e12ffeb39f53a7337272409c
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -2966,16 +2457,14 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     patch:
       tags:
         - Users
       summary: 'update user'
       operationId: 5f078fc7c3a41ecfec08d2a748920615
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -2994,8 +2483,7 @@ paths:
                     $ref: '#/components/schemas/User'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   /webhooks:
     get:
       tags:
@@ -3003,15 +2491,13 @@ paths:
       summary: 'list webhooks by filters'
       operationId: f117e0d9744b820cd732d70bd7457c6d
       parameters:
-        -
-          name: name
+        - name: name
           in: query
           description: 'Name search'
           allowEmptyValue: true
           schema:
             type: string
-        -
-          name: url
+        - name: url
           in: query
           description: 'URL search'
           allowEmptyValue: true
@@ -3047,8 +2533,7 @@ paths:
                     $ref: '#/components/schemas/WebHook'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
   '/webhooks/id:{id}':
     get:
       tags:
@@ -3056,8 +2541,7 @@ paths:
       summary: 'show webhook'
       operationId: ed3a1cc4a7dc4d00ecb95aedb2eba3ea
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           description: 'Name search'
           required: true
@@ -3080,8 +2564,7 @@ paths:
       summary: 'delete webhook'
       operationId: 6b66c3b845cda9fb9fe63f7e1415392c
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -3091,16 +2574,14 @@ paths:
         204:
           description: Success
       security:
-        -
-          oauth: []
+        - oauth: [ ]
     patch:
       tags:
         - WebHooks
       summary: 'update webhook'
       operationId: 6592bce5d0ff79a23fd8060baf69d225
       parameters:
-        -
-          name: id
+        - name: id
           in: path
           required: true
           schema:
@@ -3119,8 +2600,7 @@ paths:
                     $ref: '#/components/schemas/WebHook'
                 type: object
       security:
-        -
-          oauth: []
+        - oauth: [ ]
 components:
   schemas:
     Error:
@@ -3134,37 +2614,11 @@ components:
           type: string
           example: 'Some error message.'
       type: object
-    SeoStore:
-      properties:
-        title:
-          description: 'Displayed seo title'
-          type: string
-          example: Title
-        description:
-          description: 'Displayed SEO description'
-          type: string
-          example: 'Description SEO'
-        keywords:
-          description: 'List of SEO keywords'
-          type: array
-          items:
-            type: string
-            example: PHP
-        og_image_id:
-          type: string
-          example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
-        twitter_card:
-          description: 'summary | summary_large_image'
-          type: string
-          example: summary
-      type: object
     OrderView:
       type: object
       allOf:
-        -
-          $ref: '#/components/schemas/Order'
-        -
-          properties:
+        - $ref: '#/components/schemas/Order'
+        - properties:
             user:
               $ref: '#/components/schemas/User'
     App:
@@ -3208,10 +2662,8 @@ components:
     AppView:
       type: object
       allOf:
-        -
-          $ref: '#/components/schemas/App'
-        -
-          properties:
+        - $ref: '#/components/schemas/App'
+        - properties:
             permissions:
               description: 'Permission names'
               type: array
@@ -3321,10 +2773,8 @@ components:
     PageView:
       type: object
       allOf:
-        -
-          $ref: '#/components/schemas/Page'
-        -
-          properties:
+        - $ref: '#/components/schemas/Page'
+        - properties:
             content_html:
               description: 'HTML formated text to be displayed as a main content under the page header'
               type: string
@@ -3405,10 +2855,8 @@ components:
     ProductView:
       type: object
       allOf:
-        -
-          $ref: '#/components/schemas/Product'
-        -
-          properties:
+        - $ref: '#/components/schemas/Product'
+        - properties:
             user_id:
               type: string
               example: 026bc5f6-8373-4aeb-972e-e78d72a67121
@@ -3440,137 +2888,6 @@ components:
                 $ref: '#/components/schemas/ProductSet'
             seo:
               $ref: '#/components/schemas/SeoView'
-    ProductSet:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        name:
-          description: 'Name displayed to the user'
-          type: string
-          example: AGD
-        slug:
-          description: 'Name used in the URL path'
-          type: string
-          example: agd
-        public:
-          description: 'Whether set is visible to unauthorized users'
-          type: boolean
-          example: true
-        hide_on_index:
-          description: 'Whether set products should be hidden from the main page'
-          type: boolean
-          example: false
-        parent_id:
-          description: 'Id of set, this set belongs to'
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        children_ids:
-          description: 'Ids of assigned subsets'
-          type: array
-          items:
-            type: string
-            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-      type: object
-    ProductSetParent:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        name:
-          description: 'Name displayed to the user'
-          type: string
-          example: AGD
-        slug:
-          description: 'Name used in the URL path'
-          type: string
-          example: agd
-        public:
-          description: 'Whether set should be visible to unauthorized users'
-          type: boolean
-          example: true
-        public_parent:
-          description: 'When any parent node is set to private, this setting overrides set visibility'
-          type: boolean
-          example: true
-        hide_on_index:
-          description: 'Whether set products should be hidden from the main page'
-          type: boolean
-          example: false
-        parent:
-          $ref: '#/components/schemas/ProductSet'
-        children_ids:
-          description: 'Ids of assigned subsets'
-          type: array
-          items:
-            type: string
-            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        seo:
-          $ref: '#/components/schemas/SeoView'
-      type: object
-    ProductSetChildren:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        name:
-          description: 'Name displayed to the user'
-          type: string
-          example: AGD
-        slug:
-          description: 'Name used in the URL path'
-          type: string
-          example: agd
-        public:
-          description: 'Whether set is visible to unauthorized users'
-          type: boolean
-          example: true
-        hide_on_index:
-          description: 'Whether set products should be hidden from the main page'
-          type: boolean
-          example: false
-        parent_id:
-          description: 'Id of set, this set belongs to'
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        children:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProductSetChildren'
-      type: object
-    ProductSetParentChildren:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        name:
-          description: 'Name displayed to the user'
-          type: string
-          example: AGD
-        slug:
-          description: 'Name used in the URL path'
-          type: string
-          example: agd
-        public:
-          description: 'Whether set is visible to unauthorized users'
-          type: boolean
-          example: true
-        public_parent:
-          description: 'When any parent node is set to private, this setting overrides set visibility'
-          type: boolean
-          example: true
-        hide_on_index:
-          description: 'Whether set products should be hidden from the main page'
-          type: boolean
-          example: false
-        parent:
-          $ref: '#/components/schemas/ProductSet'
-        children:
-          description: 'Ids of assigned subsets'
-          type: array
-          items:
-            $ref: '#/components/schemas/ProductSetChildren'
-      type: object
     ProfileView:
       properties:
         id:
@@ -3616,10 +2933,8 @@ components:
     RoleView:
       type: object
       allOf:
-        -
-          $ref: '#/components/schemas/Role'
-        -
-          properties:
+        - $ref: '#/components/schemas/Role'
+        - properties:
             permissions:
               description: 'Permission names'
               type: array
@@ -3630,29 +2945,6 @@ components:
               description: 'Whether the permissions can be edited with appropreiate permissions.'
               type: boolean
               example: true
-    SeoView:
-      properties:
-        title:
-          description: 'Displayed seo title'
-          type: string
-          example: Title
-        description:
-          description: 'Displayed SEO description'
-          type: string
-          example: 'Description SEO'
-        keywords:
-          description: 'List of SEO keywords'
-          type: array
-          items:
-            type: string
-            example: PHP
-        og_image:
-          $ref: '#/components/schemas/Media'
-        twitter_card:
-          description: 'summary | summary_large_image'
-          type: string
-          example: summary
-      type: object
     User:
       properties:
         id:
@@ -3679,10 +2971,8 @@ components:
     UserView:
       type: object
       allOf:
-        -
-          $ref: '#/components/schemas/User'
-        -
-          properties:
+        - $ref: '#/components/schemas/User'
+        - properties:
             permissions:
               description: 'User''s assigned permissions'
               type: array
@@ -4181,6 +3471,18 @@ components:
           type: string
           example: '000000'
       type: object
+    ProductSet:
+      $ref: './schemas/ProductSets.yml#ProductSet'
+    ProductSetChildren:
+      $ref: './schemas/ProductSets.yml#ProductSetChildren'
+    ProductSetParent:
+      $ref: './schemas/ProductSets.yml#ProductSetParent'
+    ProductSetParentChildren:
+      $ref: './schemas/ProductSets.yml#ProductSetParentChildren'
+    SeoStore:
+      $ref: './schemas/Seo.yml#SeoStore'
+    SeoView:
+      $ref: './schemas/Seo.yml#SeoView'
   requestBodies:
     AppStore:
       content:
@@ -4272,7 +3574,7 @@ components:
                 $ref: '#/components/schemas/Address'
               discounts:
                 type: array
-                items: []
+                items: [ ]
             type: object
     OrderUpdate:
       content:
@@ -4297,7 +3599,7 @@ components:
             properties:
               pages:
                 type: array
-                items: []
+                items: [ ]
             type: object
     PageStore:
       content:
@@ -4415,117 +3717,6 @@ components:
                 items:
                   type: string
                   example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
-              seo:
-                $ref: '#/components/schemas/SeoStore'
-            type: object
-    ProductSetAttach:
-      content:
-        application/json:
-          schema:
-            required:
-              - name
-              - slug
-            properties:
-              products:
-                description: 'Ids of assigned products'
-                type: array
-                items:
-                  type: string
-                  example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-            type: object
-    ProductSetReorder:
-      content:
-        application/json:
-          schema:
-            required:
-              - product_sets
-            properties:
-              product_sets:
-                description: 'Ids of reordered sets'
-                type: array
-                items:
-                  type: string
-                  example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-            type: object
-    ProductSetStore:
-      content:
-        application/json:
-          schema:
-            required:
-              - name
-              - slug
-            properties:
-              name:
-                description: 'Name displayed to the user'
-                type: string
-                example: AGD
-              slug_suffix:
-                description: 'Name used in the URL path usually proceeded by parent slug'
-                type: string
-                example: agd
-              slug_override:
-                description: 'Whether to use slug as suffix to parent or to override the entire slug'
-                type: boolean
-                example: true
-              public:
-                description: 'Whether set is visible to unauthorized users'
-                type: boolean
-                example: true
-              hide_on_index:
-                description: 'Whether set products should be hidden from the main page'
-                type: boolean
-                example: false
-              parent_id:
-                description: 'Id of set, this set belongs to'
-                type: string
-                example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-              children_ids:
-                description: 'Ids of assigned subsets'
-                type: array
-                items:
-                  type: string
-                  example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-              seo:
-                $ref: '#/components/schemas/SeoStore'
-            type: object
-    ProductSetUpdate:
-      content:
-        application/json:
-          schema:
-            required:
-              - name
-              - slug
-            properties:
-              name:
-                description: 'Name displayed to the user'
-                type: string
-                example: AGD
-              slug_suffix:
-                description: 'Name used in the URL path usually proceeded by parent slug'
-                type: string
-                example: agd
-              slug_override:
-                description: 'Whether to use slug as suffix to parent or to override the entire slug'
-                type: boolean
-                example: true
-              public:
-                description: 'Whether set is visible to unauthorized users'
-                type: boolean
-                example: true
-              hide_on_index:
-                description: 'Whether set products should be hidden from the main page'
-                type: boolean
-                example: false
-              parent_id:
-                description: 'Id of set, this set belongs to'
-                type: string
-                example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-              children_ids:
-                description: 'Ids of assigned subsets'
-                type: array
-                items:
-                  type: string
-                  example: 026bc5f6-8373-4aeb-972e-e78d72a67121
               seo:
                 $ref: '#/components/schemas/SeoStore'
             type: object
@@ -4801,5 +3992,4 @@ components:
       name: Authorization
       in: header
 security:
-  -
-    oauth: []
+  - oauth: [ ]

@@ -27,6 +27,7 @@ class ProductSetParentResource extends Resource
                 fn ($child) => $child->getKey(),
             )->toArray(),
             'seo' => SeoMetadataResource::make($this->seo),
+            'description_html' => $this->description_html,
         ];
     }
 }

@@ -29,6 +29,7 @@ class ProductSet extends Model
         'order',
         'hide_on_index',
         'parent_id',
+        'description_html',
     ];
 
     protected $casts = [
