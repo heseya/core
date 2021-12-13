@@ -39,7 +39,7 @@ SeoView:
         type: string
         example: PHP
     og_image:
-      $ref: './../api.yml#/components/schemas/Media'
+      $ref: './../schemas/Media.yml#Media'
     twitter_card:
       description: 'summary | summary_large_image'
       type: string

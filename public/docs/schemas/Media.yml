@@ -1,0 +1,12 @@
+Media:
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    type:
+      type: string
+      example: photo
+    url:
+      type: string
+      example: 'https://cdn.heseya.com/image.jpg'
+  type: object
