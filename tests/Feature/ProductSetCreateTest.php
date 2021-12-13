@@ -11,6 +11,7 @@ use App\Models\WebHook;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Str;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
@@ -181,6 +182,11 @@ class ProductSetCreateTest extends TestCase
 
         Event::fake([ProductSetCreated::class]);
 
+        $media = Media::factory()->create([
+            'type' => MediaType::PHOTO,
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ]);
+
         $set = [
             'name' => 'Test',
             'public' => false,
@@ -190,6 +196,7 @@ class ProductSetCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
             'slug_suffix' => 'test',
             'slug_override' => false,
+            'cover_id' => $media->getKey(),
         ]);
         $response
             ->assertCreated()
@@ -198,6 +205,11 @@ class ProductSetCreateTest extends TestCase
                 'slug_override' => false,
                 'parent' => null,
                 'slug' => 'test',
+                'cover' => [
+                    'id' => $media->getKey(),
+                    'type' => Str::lower($media->type->key),
+                    'url' => $media->url,
+                ],
             ],
             ]);
 

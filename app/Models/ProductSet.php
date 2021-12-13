@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -30,6 +31,7 @@ class ProductSet extends Model
         'hide_on_index',
         'parent_id',
         'description_html',
+        'cover_id',
     ];
 
     protected $casts = [
@@ -103,6 +105,11 @@ class ProductSet extends Model
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'product_set_product');
+    }
+
+    public function media(): HasOne
+    {
+        return $this->hasOne(Media::class, 'id', 'cover_id');
     }
 
     protected static function booted(): void

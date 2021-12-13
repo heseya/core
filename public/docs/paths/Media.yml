@@ -1,0 +1,45 @@
+Media:
+  post:
+    tags:
+      - Media
+    summary: 'upload new file'
+    requestBody:
+      content:
+        multipart/form-data:
+          schema:
+            properties:
+              file:
+                description: 'File. Accepted extensions: jpeg, png, gif, bmp, svg, mp4, webm'
+                type: binary
+            type: object
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Media.yml#Media'
+              type: object
+    security:
+      - oauth: [ ]
+
+MediaParams:
+  delete:
+    tags:
+      - Media
+    summary: 'delete media'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      204:
+        description: Success
+    security:
+      - oauth: [ ]

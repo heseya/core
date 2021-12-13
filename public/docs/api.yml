@@ -784,51 +784,9 @@ paths:
       security:
         - oauth: [ ]
   /media:
-    post:
-      tags:
-        - Media
-      summary: 'upload new file'
-      operationId: 76d4aca59a8744c76645d932034d2ea4
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              properties:
-                file:
-                  description: 'File. Accepted extensions: jpeg, png, gif, bmp, svg, mp4, webm'
-                  type: binary
-              type: object
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Media'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Media.yml#Media'
   '/media/id:{id}':
-    delete:
-      tags:
-        - Media
-      summary: 'delete media'
-      operationId: 58691c12ce9927d801e27e861c964e94
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
+    $ref: './paths/Media.yml#MediaParams'
   /orders:
     get:
       tags:
@@ -2845,7 +2803,7 @@ components:
           type: numeric
           example: 0.05
         cover:
-          $ref: '#/components/schemas/Media'
+          $ref: './schemas/Media.yml#Media'
         tags:
           description: 'Ids of assigned subsets'
           type: array
@@ -2875,7 +2833,7 @@ components:
               description: 'Ids of assigned subsets'
               type: array
               items:
-                $ref: '#/components/schemas/Media'
+                $ref: './schemas/Media.yml#Media'
             schemas:
               description: 'Ids of assigned subsets'
               type: array
@@ -3136,17 +3094,7 @@ components:
           example: '20'
       type: object
     Media:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        type:
-          type: string
-          example: photo
-        url:
-          type: string
-          example: 'https://cdn.heseya.com/image.jpg'
-      type: object
+      $ref: './schemas/Media.yml#Media'
     Option:
       properties:
         id:
