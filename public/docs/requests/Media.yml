@@ -1,0 +1,14 @@
+MediaUpdate:
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          alt:
+            description: 'Media alt description'
+            type: string
+            example: 'Example media alt description'
+          slug:
+            description: 'Media slug without domain and file extension'
+            type: string
+            example: 'test-slug'

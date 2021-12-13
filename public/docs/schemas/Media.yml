@@ -1,4 +1,5 @@
 Media:
+  type: object
   properties:
     id:
       type: string
@@ -9,4 +10,9 @@ Media:
     url:
       type: string
       example: 'https://cdn.heseya.com/image.jpg'
-  type: object
+    alt:
+      type: string
+      example: 'Example media alt description'
+    slug:
+      type: string
+      example: 'test-slug'

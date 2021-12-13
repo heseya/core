@@ -2,12 +2,14 @@
 
 namespace App\Services;
 
+use App\Dtos\MediaUpdateDto;
 use App\Enums\MediaType;
 use App\Exceptions\AppAccessException;
 use App\Models\Media;
 use App\Models\Product;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
+use Heseya\Dto\Missing;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
@@ -42,15 +44,6 @@ class MediaService implements MediaServiceContract
         ]);
     }
 
-    public function destroy(Media $media): void
-    {
-        if ($media->products()->exists()) {
-            Gate::authorize('products.edit');
-        }
-
-        $media->forceDelete();
-    }
-
     private function getMediaType(string $extension): int
     {
         return match ($extension) {
@@ -58,5 +51,46 @@ class MediaService implements MediaServiceContract
             'mp4', 'webm' => MediaType::VIDEO,
             default => MediaType::OTHER,
         };
+    }
+
+    public function update(Media $media, MediaUpdateDto $dto): Media
+    {
+        if (!($dto->getSlug() instanceof Missing)) {
+            $media->url = $this->updateSlug($media, $dto->getSlug());
+            $media->slug = $dto->getSlug();
+        }
+
+        if (!($dto->getAlt() instanceof Missing)) {
+            $media->alt = $dto->getAlt();
+        }
+
+        $media->save();
+
+        return $media;
+    }
+
+    private function updateSlug(Media $media, string $slug): string
+    {
+        $response = Http::asJson()
+            ->acceptJson()
+            ->withHeaders(['x-api-key' => config('silverbox.key')])
+            ->patch($media->url, [
+                'slug' => $slug,
+            ]);
+
+        if ($response->failed() || !isset($response['path'])) {
+            throw new AppAccessException('CDN responded with an error');
+        }
+
+        return $response['path'];
+    }
+
+    public function destroy(Media $media): void
+    {
+        if ($media->products()->exists()) {
+            Gate::authorize('products.edit');
+        }
+
+        $media->forceDelete();
     }
 }
