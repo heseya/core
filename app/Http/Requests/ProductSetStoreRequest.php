@@ -20,6 +20,7 @@ class ProductSetStoreRequest extends SeoMetadataRulesRequest
             'parent_id' => ['uuid', 'nullable', 'exists:product_sets,id'],
             'children_ids' => ['array'],
             'children_ids.*' => ['uuid', 'exists:product_sets,id'],
+            'description_html' => ['nullable', 'string'],
         ]);
     }
 }

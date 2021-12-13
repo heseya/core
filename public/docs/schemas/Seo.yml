@@ -1,0 +1,47 @@
+SeoStore:
+  properties:
+    title:
+      description: 'Displayed seo title'
+      type: string
+      example: Title
+    description:
+      description: 'Displayed SEO description'
+      type: string
+      example: 'Description SEO'
+    keywords:
+      description: 'List of SEO keywords'
+      type: array
+      items:
+        type: string
+        example: PHP
+    og_image_id:
+      type: string
+      example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+    twitter_card:
+      description: 'summary | summary_large_image'
+      type: string
+      example: summary
+  type: object
+SeoView:
+  properties:
+    title:
+      description: 'Displayed seo title'
+      type: string
+      example: Title
+    description:
+      description: 'Displayed SEO description'
+      type: string
+      example: 'Description SEO'
+    keywords:
+      description: 'List of SEO keywords'
+      type: array
+      items:
+        type: string
+        example: PHP
+    og_image:
+      $ref: './../api.yml#/components/schemas/Media'
+    twitter_card:
+      description: 'summary | summary_large_image'
+      type: string
+      example: summary
+  type: object
