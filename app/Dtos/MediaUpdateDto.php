@@ -23,7 +23,7 @@ class MediaUpdateDto extends Dto
     {
         return $this->alt;
     }
-    
+
     public function getSlug(): Missing|string
     {
         return $this->slug;

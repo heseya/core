@@ -44,15 +44,6 @@ class MediaService implements MediaServiceContract
         ]);
     }
 
-    private function getMediaType(string $extension): int
-    {
-        return match ($extension) {
-            'jpeg', 'jpg', 'png', 'gif', 'bmp', 'svg', 'webp' => MediaType::PHOTO,
-            'mp4', 'webm' => MediaType::VIDEO,
-            default => MediaType::OTHER,
-        };
-    }
-
     public function update(Media $media, MediaUpdateDto $dto): Media
     {
         if (!($dto->getSlug() instanceof Missing)) {
@@ -69,6 +60,24 @@ class MediaService implements MediaServiceContract
         return $media;
     }
 
+    public function destroy(Media $media): void
+    {
+        if ($media->products()->exists()) {
+            Gate::authorize('products.edit');
+        }
+
+        $media->forceDelete();
+    }
+
+    private function getMediaType(string $extension): int
+    {
+        return match ($extension) {
+            'jpeg', 'jpg', 'png', 'gif', 'bmp', 'svg', 'webp' => MediaType::PHOTO,
+            'mp4', 'webm' => MediaType::VIDEO,
+            default => MediaType::OTHER,
+        };
+    }
+
     private function updateSlug(Media $media, string $slug): string
     {
         $response = Http::asJson()
@@ -83,14 +92,5 @@ class MediaService implements MediaServiceContract
         }
 
         return $response['path'];
-    }
-
-    public function destroy(Media $media): void
-    {
-        if ($media->products()->exists()) {
-            Gate::authorize('products.edit');
-        }
-
-        $media->forceDelete();
     }
 }
