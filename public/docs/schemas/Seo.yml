@@ -40,5 +40,5 @@ SeoView:
     - type: object
       properties:
         og_image:
-          $ref: './../api.yml#/components/schemas/Media'
+          $ref: './../schemas/Media.yml#Media'
   type: object

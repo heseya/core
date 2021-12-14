@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
@@ -293,6 +294,80 @@ class ProductTest extends TestCase
                     'parent_id' => $set2->parent_id,
                     'children_ids' => [],
                     'cover' => null,
+                ],
+            ]]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowSetsWithCover($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $media1 = Media::factory()->create([
+            'type' => MediaType::PHOTO,
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ]);
+
+        $media2 = Media::factory()->create([
+            'type' => MediaType::PHOTO,
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ]);
+
+        $set1 = ProductSet::factory()->create([
+            'public' => true,
+            'cover_id' => $media1->getKey(),
+        ]);
+        $set2 = ProductSet::factory()->create([
+            'public' => true,
+            'cover_id' => $media2->getKey(),
+        ]);
+
+        $product->sets()->sync([$set1->getKey(), $set2->getKey()]);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/' . $product->slug);
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['sets' => [
+                [
+                    'id' => $set1->getKey(),
+                    'name' => $set1->name,
+                    'slug' => $set1->slug,
+                    'slug_suffix' => $set1->slugSuffix,
+                    'slug_override' => $set1->slugOverride,
+                    'public' => $set1->public,
+                    'visible' => $set1->public_parent && $set1->public,
+                    'hide_on_index' => $set1->hide_on_index,
+                    'parent_id' => $set1->parent_id,
+                    'children_ids' => [],
+                    'cover' => [
+                        'id' => $media1->getKey(),
+                        'type' => Str::lower($media1->type->key),
+                        'url' => $media1->url,
+                    ],
+                ],
+                [
+                    'id' => $set2->getKey(),
+                    'name' => $set2->name,
+                    'slug' => $set2->slug,
+                    'slug_suffix' => $set2->slugSuffix,
+                    'slug_override' => $set2->slugOverride,
+                    'public' => $set2->public,
+                    'visible' => $set2->public_parent && $set2->public,
+                    'hide_on_index' => $set2->hide_on_index,
+                    'parent_id' => $set2->parent_id,
+                    'children_ids' => [],
+                    'cover' => [
+                        'id' => $media2->getKey(),
+                        'type' => Str::lower($media2->type->key),
+                        'url' => $media2->url,
+                    ],
                 ],
             ]]);
     }
