@@ -354,6 +354,47 @@ class ProductTest extends TestCase
         $response->assertOk();
     }
 
+    public function noIndexProvider(): array
+    {
+        return [
+            'as user no index' => ['user', true],
+            'as application no index' => ['application', true],
+            'as user index' => ['user', false],
+            'as application index' => ['application', false],
+        ];
+    }
+
+    /**
+     * @dataProvider noIndexProvider
+     */
+    public function testShowSeoNoIndex($user, $noIndex): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory([
+            'public' => true
+        ])->create();
+
+        $seo = SeoMetadata::factory([
+            'no_index' => $noIndex,
+        ])->create();
+
+        $product->seo()->save($seo);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $product->getKey());
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['seo' => [
+                'title' => $seo->title,
+                'no_index' => $noIndex,
+                'description' => $seo->description,
+                'og_image' => null,
+                'twitter_card' => $seo->twitter_card,
+                'keywords' => $seo->keywords,
+            ]]);
+    }
+
     public function testCreateUnauthorized(): void
     {
         Event::fake([ProductCreated::class]);
@@ -830,6 +871,7 @@ class ProductTest extends TestCase
                 'title' => 'seo title',
                 'description' => 'seo description',
                 'og_image_id' => $media->getKey(),
+                'no_index' => true,
             ]
         ]);
 
@@ -848,7 +890,8 @@ class ProductTest extends TestCase
                     'description' => 'seo description',
                     'og_image' => [
                         'id' => $media->getKey(),
-                    ]
+                    ],
+                    'no_index' => true,
                 ]
             ]]);
 
@@ -861,10 +904,66 @@ class ProductTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('seo_metadata', [
-           'title' => 'seo title',
-           'description' => 'seo description',
-           'model_id' => $response->getData()->data->id,
-           'model_type' => Product::class,
+            'title' => 'seo title',
+            'description' => 'seo description',
+            'model_id' => $response->getData()->data->id,
+            'model_type' => Product::class,
+            'no_index' => true,
+        ]);
+
+        $this->assertDatabaseCount('seo_metadata', 2);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithSeoDefaultIndex($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $response = $this->actingAs($this->$user)->json('POST', '/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'description_html' => '<h1>Description</h1>',
+            'public' => true,
+            'seo' => [
+                'title' => 'seo title',
+                'description' => 'seo description',
+            ]
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'slug' => 'test',
+                'name' => 'Test',
+                'price' => 100,
+                'public' => true,
+                'description_html' => '<h1>Description</h1>',
+                'cover' => null,
+                'gallery' => [],
+                'seo' => [
+                    'title' => 'seo title',
+                    'description' => 'seo description',
+                    'no_index' => false,
+                ]
+            ]]);
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'public' => true,
+            'description_html' => '<h1>Description</h1>',
+        ]);
+
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => 'seo title',
+            'description' => 'seo description',
+            'model_id' => $response->getData()->data->id,
+            'model_type' => Product::class,
+            'no_index' => false,
         ]);
 
         $this->assertDatabaseCount('seo_metadata', 2);
