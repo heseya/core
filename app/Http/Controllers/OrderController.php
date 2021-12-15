@@ -25,6 +25,7 @@ use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\User;
+use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Illuminate\Http\JsonResponse;
@@ -36,13 +37,11 @@ use Throwable;
 
 class OrderController extends Controller implements OrderControllerSwagger
 {
-    private NameServiceContract $nameService;
-    private OrderServiceContract $orderService;
-
-    public function __construct(NameServiceContract $nameService, OrderServiceContract $orderService)
-    {
-        $this->nameService = $nameService;
-        $this->orderService = $orderService;
+    public function __construct(
+        private NameServiceContract $nameService,
+        private OrderServiceContract $orderService,
+        private DiscountServiceContract $discountService,
+    ) {
     }
 
     public function index(OrderIndexRequest $request): JsonResource
@@ -91,6 +90,7 @@ class OrderController extends Controller implements OrderControllerSwagger
         ]);
 
         try {
+            $summary = 0;
             foreach ($request->input('items', []) as $item) {
                 $product = Product::findOrFail($item['product_id']);
                 $schemas = $item['schemas'] ?? [];
@@ -102,6 +102,7 @@ class OrderController extends Controller implements OrderControllerSwagger
                 ]);
 
                 $order->products()->save($orderProduct);
+                $summary += $product->price * $item['quantity'];
 
                 foreach ($product->schemas as $schema) {
                     $value = $schemas[$schema->getKey()] ?? null;
@@ -132,24 +133,29 @@ class OrderController extends Controller implements OrderControllerSwagger
                         'value' => $value,
                         'price' => $price,
                     ]);
+
+                    $summary += $price;
                 }
             }
 
             $discounts = [];
+            $cartValue = $summary;
             foreach ($request->input('discounts', []) as $discount) {
                 $discount = Discount::where('code', $discount)->firstOrFail();
                 $discounts[$discount->getKey()] = [
                     'type' => $discount->type,
                     'discount' => $discount->discount,
                 ];
+                $summary -= $this->discountService->calc($cartValue, $discount);
             }
             $order->discounts()->sync($discounts);
 
-            $summary = $this->orderService->calcSummary($order);
+            $summary = ($summary < 0 ? 0 : $summary);
+
             $shippingPrice = $shippingMethod->getPrice($summary);
             $order->update([
                 'shipping_price' => $shippingPrice,
-                'summary' => $summary + $shippingPrice,
+                'summary' => round($summary + $shippingPrice, 2),
             ]);
         } catch (Throwable $exception) {
             $order->delete();

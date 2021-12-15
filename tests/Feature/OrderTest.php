@@ -13,6 +13,8 @@ use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\WebHook;
+use App\Services\Contracts\OrderServiceContract;
+use App\Services\OrderService;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
@@ -55,7 +57,12 @@ class OrderTest extends TestCase
             'price' => 49.99,
         ]);
 
-        $this->order->refresh();
+        /** @var OrderService $orderService */
+        $orderService = app(OrderServiceContract::class);
+
+        $this->order->update([
+            'summary' => $orderService->calcSummary($this->order),
+        ]);
 
         /**
          * Expected response
@@ -162,12 +169,12 @@ class OrderTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->getJson('/orders?limit=30&sort=summmary:desssc')
+            ->getJson('/orders?limit=30&sort=currency:desssc')
             ->assertStatus(422)
             ->assertJsonFragment([
                 'errors' => [
-                    ['You can\'t sort by summmary field.'],
-                    ['Only asc|desc sorting directions are allowed on field summmary.'],
+                    ['You can\'t sort by currency field.'],
+                    ['Only asc|desc sorting directions are allowed on field currency.'],
                 ],
             ]);
     }
