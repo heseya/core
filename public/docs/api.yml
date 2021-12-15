@@ -1877,6 +1877,8 @@ paths:
         - oauth: [ ]
   /seo:
     $ref: './paths/Seo.yml#Seo'
+  /seo/check:
+    $ref: './paths/Seo.yml#SeoCheck'
   /settings:
     get:
       tags:
@@ -3431,6 +3433,8 @@ components:
       $ref: './schemas/Seo.yml#SeoStore'
     SeoView:
       $ref: './schemas/Seo.yml#SeoView'
+    SeoKeywordsResponse:
+      $ref: './schemas/Seo.yml#SeoKeywordsResponse'
   requestBodies:
     AppStore:
       content:
