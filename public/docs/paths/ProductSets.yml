@@ -232,7 +232,7 @@ ProductSetsProducts:
                 data:
                   type: array
                   items:
-                    $ref: './../api.yml#/components/schemas/Product'
+                    $ref: './../schemas/Products.yml#Product'
               type: object
     security:
       - oauth: [ ]
@@ -259,7 +259,7 @@ ProductSetsProducts:
                 data:
                   type: array
                   items:
-                    $ref: './../api.yml#/components/schemas/Product'
+                    $ref: './../schemas/Products.yml#Product'
               type: object
     security:
       - oauth: [ ]

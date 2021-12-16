@@ -1,0 +1,9 @@
+Tag:
+  properties:
+    name:
+      type: string
+      example: Sale
+    color:
+      type: string
+      example: 111111
+  type: object
