@@ -16,6 +16,7 @@ class SeoMetadataRequest extends FormRequest
             'keywords' => ['nullable', 'array'],
             'og_image_id' => ['nullable', 'uuid', 'exists:media,id'],
             'twitter_card' => ['nullable', new EnumValue(TwitterCardType::class, false)],
+            'no_index' => ['nullable', 'boolean'],
         ];
     }
 }

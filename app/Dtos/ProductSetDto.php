@@ -76,12 +76,12 @@ class ProductSetDto extends Dto
         return $this->seo;
     }
 
-    public function getDescriptionHtml(): string
+    public function getDescriptionHtml(): Missing|string|null
     {
         return $this->description_html;
     }
 
-    public function getCoverId(): string
+    public function getCoverId(): Missing|string|null
     {
         return $this->cover_id;
     }
