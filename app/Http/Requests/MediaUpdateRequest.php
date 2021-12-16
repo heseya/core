@@ -9,7 +9,7 @@ class MediaUpdateRequest extends FormRequest
     public function rules()
     {
         return [
-            'alt' => ['string', 'string', 'max:100'],
+            'alt' => ['nullable', 'string', 'max:100'],
             'slug' => ['nullable', 'string', 'max:64'],
         ];
     }

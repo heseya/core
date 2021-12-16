@@ -8,8 +8,8 @@ use Heseya\Dto\Missing;
 
 class MediaUpdateDto extends Dto
 {
-    private string|Missing $alt;
-    private string|Missing $slug;
+    private string|null|Missing $alt;
+    private string|null|Missing $slug;
 
     public static function instantiateFromRequest(MediaUpdateRequest $request): self
     {
@@ -19,12 +19,12 @@ class MediaUpdateDto extends Dto
         );
     }
 
-    public function getAlt(): Missing|string
+    public function getAlt(): string|null|Missing
     {
         return $this->alt;
     }
 
-    public function getSlug(): Missing|string
+    public function getSlug(): string|null|Missing
     {
         return $this->slug;
     }
