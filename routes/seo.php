@@ -8,4 +8,6 @@ Route::prefix('seo')->group(function (): void {
         ->middleware('permission:seo.show');
     Route::patch(null, [SeoMetadataController::class, 'createOrUpdate'])
         ->middleware('permission:seo.edit');
+    Route::post('check', [SeoMetadataController::class, 'checkKeywords'])
+        ->middleware('permission:seo.edit|pages.edit|products.edit|product_sets.edit');
 });

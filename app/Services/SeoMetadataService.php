@@ -2,9 +2,14 @@
 
 namespace App\Services;
 
+use App\Dtos\SeoKeywordsDto;
 use App\Dtos\SeoMetadataDto;
+use App\Models\Page;
+use App\Models\Product;
+use App\Models\ProductSet;
 use App\Models\SeoMetadata;
 use App\Services\Contracts\SeoMetadataServiceContract;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class SeoMetadataService implements SeoMetadataServiceContract
@@ -46,5 +51,21 @@ class SeoMetadataService implements SeoMetadataServiceContract
     public function delete(SeoMetadata $seoMetadata): void
     {
         $seoMetadata->delete();
+    }
+
+    public function checkKeywords(SeoKeywordsDto $dto): Collection
+    {
+        $keywords = $dto->getKeywords();
+        return SeoMetadata::whereHasMorph(
+            'modelSeo',
+            [
+                Page::class,
+                Product::class,
+                ProductSet::class,
+            ]
+        )
+            ->whereJsonLength('keywords', count($keywords))
+            ->whereJsonContains('keywords', $keywords)
+            ->get();
     }
 }

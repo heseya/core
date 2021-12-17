@@ -17,10 +17,7 @@ Seo:
       - SEO
     summary: 'Update or create global SEO'
     requestBody:
-      content:
-        application/json:
-          schema:
-            $ref: './../schemas/Seo.yml#SeoStore'
+      $ref: './../requests/Seo.yml#SeoStore'
     responses:
       200:
         description: Updated
@@ -39,4 +36,21 @@ Seo:
               properties:
                 data:
                   $ref: './../schemas/Seo.yml#SeoView'
+              type: object
+
+SeoCheck:
+  post:
+    tags:
+      - SEO
+    requestBody:
+      $ref: './../requests/Seo.yml#SeoKeywordsCheck'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Seo.yml#SeoKeywordsResponse'
               type: object

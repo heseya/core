@@ -1,0 +1,23 @@
+SeoStore:
+  content:
+    application/json:
+      schema:
+        required:
+        allOf:
+          - $ref: './../schemas/Seo.yml#SeoStore'
+        type: object
+
+SeoKeywordsCheck:
+  content:
+    application/json:
+      schema:
+        required:
+          - keywords
+        type: object
+        properties:
+          keywords:
+            description: 'List of SEO keywords'
+            type: array
+            items:
+              type: string
+              example: PHP
