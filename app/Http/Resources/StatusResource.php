@@ -14,6 +14,8 @@ class StatusResource extends Resource
             'color' => $this->color,
             'cancel' => $this->cancel,
             'description' => $this->description,
+            'hidden' => $this->hidden,
+            'no_notifications' => $this->no_notifications,
         ];
     }
 }

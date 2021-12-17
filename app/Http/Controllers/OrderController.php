@@ -46,7 +46,10 @@ class OrderController extends Controller
 
     public function index(OrderIndexRequest $request): JsonResource
     {
-        $query = Order::search($request->validated())
+        $search_data = !$request->has('status_id')
+            ? $request->validated() + ['status.hidden' => 0] : $request->validated();
+
+        $query = Order::search($search_data)
             ->sort($request->input('sort'))
             ->with(['products', 'discounts', 'payments']);
 

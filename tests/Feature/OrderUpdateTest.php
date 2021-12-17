@@ -89,7 +89,9 @@ class OrderUpdateTest extends TestCase
                     "color" => $this->status->color,
                     "description" => $this->status->description,
                     "id" => $this->status->id,
-                    "name" => $this->status->name
+                    "name" => $this->status->name,
+                    "hidden" => $this->status->hidden,
+                    "no_notifications" => $this->status->no_notifications,
                 ],
                 'delivery_address' => [
                     "id" => $responseData->delivery_address->id,
@@ -176,7 +178,9 @@ class OrderUpdateTest extends TestCase
                     "color" => $this->status->color,
                     "description" => $this->status->description,
                     "id" => $this->status->id,
-                    "name" => $this->status->name
+                    "name" => $this->status->name,
+                    "hidden" => $this->status->hidden,
+                    "no_notifications" => $this->status->no_notifications,
                 ],
                 'delivery_address' => [
                     "id" => $responseData->delivery_address->id,
@@ -263,7 +267,9 @@ class OrderUpdateTest extends TestCase
                     "color" => $this->status->color,
                     "description" => $this->status->description,
                     "id" => $this->status->id,
-                    "name" => $this->status->name
+                    "name" => $this->status->name,
+                    "hidden" => $this->status->hidden,
+                    "no_notifications" => $this->status->no_notifications,
                 ],
                 'delivery_address' => [
                     "id" => $responseData->delivery_address->id,
@@ -342,7 +348,9 @@ class OrderUpdateTest extends TestCase
                  "color" => $this->status->color,
                  "description" => $this->status->description,
                  "id" => $this->status->getKey(),
-                 "name" => $this->status->name
+                 "name" => $this->status->name,
+                 "hidden" => $this->status->hidden,
+                 "no_notifications" => $this->status->no_notifications,
              ],
          ]);
 
@@ -384,7 +392,9 @@ class OrderUpdateTest extends TestCase
                      "color" => $this->status->color,
                      "description" => $this->status->description,
                      "id" => $this->status->getKey(),
-                     "name" => $this->status->name
+                     "name" => $this->status->name,
+                     "hidden" => $this->status->hidden,
+                     "no_notifications" => $this->status->no_notifications,
                  ],
              ]);
 
@@ -455,7 +465,9 @@ class OrderUpdateTest extends TestCase
                      "color" => $this->status->color,
                      "description" => $this->status->description,
                      "id" => $this->status->getKey(),
-                     "name" => $this->status->name
+                     "name" => $this->status->name,
+                     "hidden" => $this->status->hidden,
+                     "no_notifications" => $this->status->no_notifications,
                  ],
                  'delivery_address' => [
                      "address" => $this->addressDelivery->address,
@@ -590,7 +602,9 @@ class OrderUpdateTest extends TestCase
                      "color" => $this->status->color,
                      "description" => $this->status->description,
                      "id" => $this->status->getKey(),
-                     "name" => $this->status->name
+                     "name" => $this->status->name,
+                     "hidden" => $this->status->hidden,
+                     "no_notifications" => $this->status->no_notifications,
                  ],
                  'invoice_address' => [
                      "address" => $this->addressInvoice->address,
