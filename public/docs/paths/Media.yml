@@ -28,6 +28,24 @@ Media:
       - oauth: [ ]
 
 MediaParams:
+  patch:
+    tags:
+      - Media
+    summary: 'Update media'
+    requestBody:
+      $ref: './../requests/Media.yml#MediaUpdate'
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Media.yml#Media'
+              type: object
+    security:
+      - oauth: [ ]
   delete:
     tags:
       - Media
