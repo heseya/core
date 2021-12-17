@@ -204,6 +204,38 @@ class AuthTest extends TestCase
         ]);
     }
 
+    public function testLogoutWithInvalidatedTokenAfterRefreshToken(): void
+    {
+        $this->user->givePermissionTo('auth.login');
+
+        $response = $this->actingAs($this->user)->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+        ]);
+
+        $token = $response->getData()->data->token;
+        $refreshToken = $response->getData()->data->refresh_token;
+
+        $this
+            ->json(
+                'POST',
+                '/auth/refresh',
+                [
+                    'refresh_token' => $refreshToken,
+                ],
+                $this->defaultHeaders + ['Authorization' => 'Bearer ' . $token]
+            );
+
+        $this
+            ->json(
+                'POST',
+                '/auth/logout',
+                [],
+                $this->defaultHeaders + ['Authorization' => 'Bearer ' . $token]
+            )
+            ->assertStatus(422);
+    }
+
     public function testResetPasswordUnauthorized(): void
     {
         $email = $this->faker->unique()->safeEmail;

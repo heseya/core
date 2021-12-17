@@ -17,7 +17,7 @@ class SeoMetadataDto extends Dto
     private string|null|Missing $og_image;
     private string|null|Missing $model_id;
     private string|null|Missing $model_type;
-    private bool $no_index;
+    private bool|Missing $no_index;
 
     public static function fromFormRequest(SeoMetadataRulesRequest|SeoMetadataRequest $request): self
     {
@@ -30,7 +30,7 @@ class SeoMetadataDto extends Dto
             og_image: $request->input($seo . 'og_image_id', new Missing()),
             model_id: $request->input($seo . 'model_id', new Missing()),
             model_type: $request->input($seo . 'model_type', new Missing()),
-            no_index: $request->input($seo . 'no_index', false),
+            no_index: $request->input($seo . 'no_index', new Missing()),
         );
     }
 
@@ -69,7 +69,7 @@ class SeoMetadataDto extends Dto
         return $this->model_type;
     }
 
-    public function getNoIndex(): bool
+    public function getNoIndex(): Missing|bool
     {
         return $this->no_index;
     }
