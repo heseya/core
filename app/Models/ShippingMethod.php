@@ -23,6 +23,7 @@ class ShippingMethod extends Model implements AuditableContract
         'public',
         'order',
         'black_list',
+        'shipping_time',
     ];
 
     /**
@@ -33,6 +34,10 @@ class ShippingMethod extends Model implements AuditableContract
     protected $casts = [
         'public' => 'boolean',
         'black_list' => 'boolean',
+    ];
+
+    protected $attributes = [
+        'shipping_time' => 0,
     ];
 
     public function orders(): HasMany

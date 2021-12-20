@@ -321,6 +321,7 @@ class ShippingMethodTest extends TestCase
             'name' => 'Test',
             'public' => true,
             'black_list' => false,
+            'shipping_time' => 2,
         ];
 
         $response = $this->actingAs($this->$user)
@@ -360,6 +361,7 @@ class ShippingMethodTest extends TestCase
             'name' => 'Test',
             'public' => true,
             'black_list' => true,
+            'shipping_time' => 2,
         ];
 
         $response = $this->actingAs($this->$user)

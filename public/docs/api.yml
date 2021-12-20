@@ -390,23 +390,7 @@ paths:
                     $ref: '#/components/schemas/ProfileView'
                 type: object
   /countries:
-    get:
-      tags:
-        - Shipping
-      summary: 'list of all countries'
-      operationId: b1d502eba1de967f0843e48c0453b9b8
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Country'
-                type: object
+    $ref: './paths/Countries.yml#Countries'
   /deposits:
     get:
       tags:
@@ -1357,95 +1341,9 @@ paths:
                     $ref: '#/components/schemas/Payment'
                 type: object
   /payment-methods:
-    get:
-      tags:
-        - Payments
-      summary: 'list payment methods'
-      operationId: a5d642e5e63ae3dda3cb909c5351b547
-      parameters:
-        - name: shipping_method_id
-          in: query
-          schema:
-            type: integer
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/PaymentMethod'
-                type: object
-    post:
-      tags:
-        - Payments
-      summary: 'add new payment method'
-      operationId: a1c14fd09370fc6041c760526a64b8f0
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PaymentMethod'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/PaymentMethod'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/PaymentMethods.yml#/PaymentMethods'
   '/payment-methods/id:{id}':
-    delete:
-      tags:
-        - Payments
-      summary: 'delete payment method'
-      operationId: 9cecbc6d17aacf389f118ea0dc39fa68
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
-    patch:
-      tags:
-        - Payments
-      summary: 'update payment method'
-      operationId: 290a917d70c611b728be451ed227b2e7
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PaymentMethod'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/PaymentMethod'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/PaymentMethods.yml#/PaymentMethodsParams'
   /permissions:
     get:
       tags:
@@ -1996,114 +1894,11 @@ paths:
       security:
         - oauth: [ ]
   /shipping-methods:
-    get:
-      tags:
-        - Shipping
-      summary: 'list shipping methods by filters'
-      operationId: 6b997fdddd17af8be38f253492ed9fe0
-      parameters:
-        - name: country
-          in: query
-          required: false
-          schema:
-            type: string
-            example: DE
-        - name: cart_value
-          in: query
-          required: false
-          schema:
-            type: number
-            example: 1200
-      requestBody:
-        $ref: '#/components/requestBodies/ShippingMethodIndex'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/ShippingMethod'
-                type: object
-    post:
-      tags:
-        - Shipping
-      summary: 'add new shipping method'
-      operationId: 146da59d2a85cd097a5639d030ccc60d
-      requestBody:
-        $ref: '#/components/requestBodies/ShippingMethodStore'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/ShippingMethod'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/ShippingMethods.yml#/ShippingMethods'
   '/shipping-methods/id:{id}':
-    delete:
-      tags:
-        - Shipping
-      summary: 'delete shipping method'
-      operationId: 4a50d0bcb5729b8f65d70f1566d96add
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: d1365285-ad58-48da-88e2-99e9f4c0800d
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
-    patch:
-      tags:
-        - Shipping
-      summary: 'update shipping method'
-      operationId: 2b0d377eba101ec6eae3d6bd74dd0571
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: d1365285-ad58-48da-88e2-99e9f4c0800d
-      requestBody:
-        $ref: '#/components/requestBodies/ShippingMethodUpdate'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/ShippingMethod'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/ShippingMethods.yml#/ShippingMethodsParams'
   /shipping-methods/reorder:
-    post:
-      tags:
-        - Shipping
-      summary: 'Reorder shipping method'
-      operationId: 56b99079c09a03f4584b199623e830d0
-      requestBody:
-        $ref: '#/components/requestBodies/ShippingMethodReorder'
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
+    $ref: './paths/ShippingMethods.yml#/ShippingMethodsReorder'
   /statuses:
     get:
       tags:
@@ -3022,16 +2817,7 @@ components:
           example: '+48543234123'
       type: object
     Country:
-      properties:
-        code:
-          schema: Country
-          type: string
-          example: PL
-        name:
-          schema: Country
-          type: string
-          example: Poland
-      type: object
+      $ref: './schemas/Countries.yml#/Country'
     Deposit:
       properties:
         id:
@@ -3156,7 +2942,7 @@ components:
         status:
           $ref: '#/components/schemas/Status'
         shipping_method:
-          $ref: '#/components/schemas/ShippingMethod'
+          $ref: './schemas/ShippingMethods.yml#/ShippingMethod'
         delivery_address:
           $ref: '#/components/schemas/Address'
         invoice_address:
@@ -3221,47 +3007,11 @@ components:
           example: 'https://store.heseya.com/done/43SYK1'
       type: object
     PaymentMethod:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        name:
-          type: string
-          example: 'Heseya Pay'
-        alias:
-          type: string
-          example: heseya
-        public:
-          type: boolean
-      type: object
+      $ref: './schemas/PaymentMethods.yml#/PaymentMethod'
     Price:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        value:
-          type: number
-          example: 19.97
-        model_id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        model_type:
-          type: string
-          example: App\Models\Product
-      type: object
+      $ref: './schemas/PriceRanges.yml#/Price'
     PriceRange:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        start:
-          type: number
-          example: 0
-        prices:
-          type: array
-          items:
-            $ref: '#/components/schemas/Price'
-      type: object
+      $ref: './schemas/PriceRanges.yml#/PriceRange'
     Schema:
       description: "Schema allows a product to take on new optional characteristics that can be\n *   chosen by the userand influences the price based on said choices. Schemas can use other\n *   schemas for their price calculation e.g. multiply_schema multiplies price of different\n *   schema based on it's own value. SCHEMAS USED BY OTHERS SHOULD NOT AFFECT THE PRICE\n *   (schema multiplied by multiply_schema adds 0 to the price while multiply_schema adds\n *   the multiplied value)"
       properties:
@@ -3332,43 +3082,7 @@ components:
           type: boolean
       type: object
     ShippingMethod:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        name:
-          type: string
-          example: 'Next Day Courier'
-        public:
-          type: boolean
-        black_list:
-          type: boolean
-        payment_methods:
-          type: array
-          items:
-            $ref: '#/components/schemas/PaymentMethod'
-        countries:
-          type: array
-          items:
-            $ref: '#/components/schemas/Country'
-        'price_ranges (request)':
-          type: array
-          items:
-            properties:
-              start:
-                description: "start of the range (min = 0);\n     *         range goes from start to start of next range or infinity"
-                type: number
-                example: 0
-              value:
-                description: 'price in this range'
-                type: number
-                example: 18.7
-            type: object
-        'price_ranges (response)':
-          type: array
-          items:
-            $ref: '#/components/schemas/PriceRange'
-      type: object
+      $ref: './schemas/ShippingMethods.yml#/ShippingMethod'
     Status:
       properties:
         id:
@@ -3758,102 +3472,13 @@ components:
                   example: roles.add
             type: object
     ShippingMethodIndex:
-      content:
-        application/json:
-          schema:
-            properties:
-              country:
-                type: string
-              cart_value:
-                type: float
-            type: object
+      $ref: './requests/ShippingMethods.yml#/ShippingMethodIndex'
     ShippingMethodReorder:
-      content:
-        application/json:
-          schema:
-            properties:
-              shipping_methods:
-                type: array
-                items:
-                  type: string
-                  example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-            type: object
+      $ref: './requests/ShippingMethods.yml#/ShippingMethodReorder'
     ShippingMethodStore:
-      content:
-        application/json:
-          schema:
-            properties:
-              name:
-                type: string
-                example: dpd
-              public:
-                type: boolean
-                example: 'true'
-              black_list:
-                type: boolean
-                example: 'false'
-              payment_methods:
-                type: array
-                items:
-                  type: string
-                  example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-              countries:
-                type: array
-                items:
-                  type: string
-                  example: PL
-              price_ranges:
-                type: array
-                items:
-                  properties:
-                    start:
-                      description: "start of the range (min = 0);\n *             range goes from start to start of next range or infinity"
-                      type: number
-                      example: 0
-                    value:
-                      description: 'price in this range'
-                      type: number
-                      example: 18.7
-                  type: object
-            type: object
+      $ref: './requests/ShippingMethods.yml#/ShippingMethodStore'
     ShippingMethodUpdate:
-      content:
-        application/json:
-          schema:
-            properties:
-              name:
-                type: string
-                example: dpd
-              public:
-                type: boolean
-                example: 'true'
-              black_list:
-                type: boolean
-                example: 'false'
-              payment_methods:
-                type: array
-                items:
-                  type: string
-                  example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-              countries:
-                type: array
-                items:
-                  type: string
-                  example: PL
-              price_ranges:
-                type: array
-                items:
-                  properties:
-                    start:
-                      description: "start of the range (min = 0);\n *             range goes from start to start of next range or infinity"
-                      type: number
-                      example: 0
-                    value:
-                      description: 'price in this range'
-                      type: number
-                      example: 18.7
-                  type: object
-            type: object
+      $ref: './requests/ShippingMethods.yml#/ShippingMethodUpdate'
     StatusReorderRequest:
       content:
         application/json:
