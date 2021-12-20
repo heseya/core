@@ -1949,105 +1949,11 @@ paths:
       security:
         - oauth: [ ]
   /statuses:
-    get:
-      tags:
-        - Statuses
-      summary: 'list statuses'
-      operationId: 21fabc2338cedc89f668a2f3ca7df687
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Status'
-                type: object
-      security:
-        - oauth: [ ]
-    post:
-      tags:
-        - Statuses
-      summary: 'add new status'
-      operationId: 96e5860f8cf5c1ea532b22e05eb60600
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Status'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Status'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Statuses.yml#/Statuses'
   '/statuses/id:{id}':
-    delete:
-      tags:
-        - Statuses
-      summary: 'delete status'
-      operationId: 0f8dac40386ce194b6c0a207f9b7745d
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
-    patch:
-      tags:
-        - Statuses
-      summary: 'update status'
-      operationId: 6301f7a758a5ac0d583aff675d4f4eac
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Status'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Status'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Statuses.yml#/StatusesParams'
   /statuses/reorder:
-    post:
-      tags:
-        - Statuses
-      summary: 'Reorder statuses'
-      operationId: 9776338db5590ad8c17ada2648206f29
-      requestBody:
-        $ref: '#/components/requestBodies/StatusReorderRequest'
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
+    $ref: './paths/Statuses.yml#StatusesReorder'
   /tags:
     $ref: './paths/Tags.yml#Tags'
   '/tags/id:{id}':
@@ -2441,7 +2347,7 @@ components:
           type: string
           example: G3K4DH
         status:
-          $ref: '#/components/schemas/Status'
+          $ref: './schemas/Statuses.yml#/Status'
         paid:
           type: boolean
         payable:
@@ -2816,7 +2722,7 @@ components:
         paid:
           type: boolean
         status:
-          $ref: '#/components/schemas/Status'
+          $ref: './schemas/Statuses.yml#/Status'
         shipping_method:
           $ref: '#/components/schemas/ShippingMethod'
         delivery_address:
@@ -3032,22 +2938,7 @@ components:
             $ref: '#/components/schemas/PriceRange'
       type: object
     Status:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        name:
-          type: string
-          example: Cancel
-        color:
-          type: string
-          example: 8f022c
-        cancel:
-          type: boolean
-        description:
-          type: string
-          example: 'Your order has been cancelled!'
-      type: object
+      $ref: './schemas/Statuses.yml#/Status'
     PackageTemplateSwagger:
       title: PackageTemplate
       properties:
@@ -3426,16 +3317,7 @@ components:
                   type: object
             type: object
     StatusReorderRequest:
-      content:
-        application/json:
-          schema:
-            properties:
-              statuses:
-                type: array
-                items:
-                  type: string
-                  example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-            type: object
+      $ref: './requests/Statuses.yml#/StatusReorderRequest'
     UserCreate:
       content:
         application/json:

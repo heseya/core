@@ -20,10 +20,19 @@ class Status extends Model implements AuditableContract
         'cancel',
         'description',
         'order',
+        'hidden',
+        'no_notifications',
     ];
 
     protected $casts = [
         'cancel' => 'boolean',
+        'hidden' => 'boolean',
+        'no_notifications' => 'boolean',
+    ];
+
+    protected $attributes = [
+        'hidden' => false,
+        'no_notifications' => false,
     ];
 
     public function orders(): HasMany

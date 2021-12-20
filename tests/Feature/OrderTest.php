@@ -15,6 +15,7 @@ use App\Models\Status;
 use App\Models\WebHook;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
@@ -65,6 +66,8 @@ class OrderTest extends TestCase
                 'name' => $status->name,
                 'color' => $status->color,
                 'description' => $status->description,
+                'hidden' => $status->hidden,
+                'no_notifications' => $status->no_notifications,
             ],
             'paid' => $this->order->isPaid(),
         ];
@@ -210,6 +213,75 @@ class OrderTest extends TestCase
             ->json('GET', '/orders/my', ['limit' => '500'])
             ->assertOk()
             ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(20);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexWithHiddenStatus($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        $status = Status::factory([
+            'hidden' => true,
+        ])->create();
+
+        $order = Order::factory([
+            'status_id' => $status->getKey(),
+        ])->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/orders')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonStructure(['data' => [
+                0 => $this->expected_full_structure,
+            ]])
+            ->assertJson(['data' => [
+                0 => $this->expected,
+            ]]);
+
+        $this->assertQueryCountLessThan(20);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexFilterByHiddenStatus($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        $status = Status::factory([
+            'hidden' => true,
+        ])->create();
+
+        $order = Order::factory([
+            'status_id' => $status->getKey(),
+        ])->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/orders', ['status_id' => $status->getKey()])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonStructure(['data' => [
+                0 => $this->expected_full_structure,
+            ]])
+            ->assertJson(['data' => [
+                0 => [
+                    'code' => $order->code,
+                    'status' => [
+                        'id' => $status->getKey(),
+                        'name' => $status->name,
+                        'color' => $status->color,
+                        'description' => $status->description,
+                        'hidden' => $status->hidden,
+                        'no_notifications' => $status->no_notifications,
+                    ],
+            ]]]);
 
         $this->assertQueryCountLessThan(20);
     }
@@ -378,6 +450,34 @@ class OrderTest extends TestCase
         ]);
 
         Event::assertDispatched(OrderUpdatedStatus::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderStatusNoNotifications($user): void
+    {
+        $this->$user->givePermissionTo('orders.edit.status');
+
+        Notification::fake();
+
+        $status = Status::factory([
+            'no_notifications' => true,
+        ])->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+                'status_id' => $status->getKey(),
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+
+        Notification::assertNothingSent();
     }
 
     /**
