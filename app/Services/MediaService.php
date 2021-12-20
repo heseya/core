@@ -73,7 +73,7 @@ class MediaService implements MediaServiceContract
     {
         return match ($extension) {
             'jpeg', 'jpg', 'png', 'gif', 'bmp', 'svg', 'webp' => MediaType::PHOTO,
-            'mp4', 'webm' => MediaType::VIDEO,
+            'mp4', 'webm', 'ogg', 'avi', 'mov', 'wmv' => MediaType::VIDEO,
             default => MediaType::OTHER,
         };
     }
