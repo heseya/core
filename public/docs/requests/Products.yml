@@ -1,0 +1,64 @@
+Product:
+  type: object
+  properties:
+    name:
+      type: string
+    slug:
+      type: string
+    price:
+      type: number
+    description_html:
+      type: string
+    public:
+      type: boolean
+    media:
+      type: array
+      items:
+        type: string
+        example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+    tags:
+      type: array
+      items:
+        type: string
+        example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+    schemas:
+      type: array
+      items:
+        type: string
+        example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+    sets:
+      type: array
+      items:
+        type: string
+        example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+    seo:
+      $ref: './../schemas/Seo.yml#SeoStore'
+
+ProductStore:
+  content:
+    application/json:
+      schema:
+        required:
+          - name
+          - slug
+          - price
+          - public
+        allOf:
+          - $ref: '#Product'
+        properties:
+          description_short:
+            type: string
+        type: object
+
+ProductUpdate:
+  content:
+    application/json:
+      schema:
+        required:
+          - name
+          - slug
+          - price
+          - public
+        allOf:
+          - $ref: '#Product'
+        type: object
