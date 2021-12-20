@@ -1,0 +1,17 @@
+Countries:
+  get:
+    tags:
+      - Shipping
+    summary: 'list of all countries'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Countries.yml#/Country'
+              type: object

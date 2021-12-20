@@ -17,6 +17,7 @@ class ShippingMethodResource extends Resource
             'payment_methods' => PaymentMethodResource::collection($this->paymentMethods),
             'countries' => CountryResource::collection($this->countries),
             'price_ranges' => PriceRangeResource::collection($this->priceRanges->sortBy('start')),
+            'shipping_time' => $this->shipping_time,
         ];
     }
 }
