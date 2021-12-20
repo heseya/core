@@ -36,10 +36,6 @@ class ShippingMethod extends Model implements AuditableContract
         'black_list' => 'boolean',
     ];
 
-    protected $attributes = [
-        'shipping_time' => 0,
-    ];
-
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);

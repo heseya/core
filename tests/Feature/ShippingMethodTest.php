@@ -26,6 +26,7 @@ class ShippingMethodTest extends TestCase
         $this->shipping_method = ShippingMethod::factory()->create([
             'public' => true,
             'black_list' => true,
+            'shipping_time' => 2,
         ]);
 
         $lowRange = PriceRange::create(['start' => 0]);
@@ -60,6 +61,7 @@ class ShippingMethodTest extends TestCase
             'id' => $this->shipping_method->getKey(),
             'name' => $this->shipping_method->name,
             'public' => $this->shipping_method->public,
+            'shipping_time' => $this->shipping_method->shipping_time,
         ];
 
         $this->priceRangesWithNoInitialStart = [
@@ -348,6 +350,50 @@ class ShippingMethodTest extends TestCase
             ->assertJsonFragment(['value' => 0]);
 
         $this->assertDatabaseHas('shipping_methods', $shipping_method);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateShippingTime($user): void
+    {
+        $this->$user->givePermissionTo('shipping_methods.add');
+
+        ShippingMethod::query()->delete();
+
+        $response = $this->actingAs($this->$user)
+            ->json('POST', '/shipping-methods', [
+                'name' => 'Test Shipping Time',
+                'public' => true,
+                'black_list' => false,
+                'shipping_time' => 2,
+                'price_ranges' => [
+                    [
+                        'start' => 0,
+                        'value' => 10.37,
+                    ],
+                    [
+                        'start' => 200,
+                        'value' => 0,
+                    ],
+                ],
+            ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'name' => 'Test Shipping Time',
+                'public' => true,
+                'black_list' => false,
+                'shipping_time' => 2,
+            ]]);
+
+        $this->assertDatabaseHas('shipping_methods', [
+            'name' => 'Test Shipping Time',
+            'public' => true,
+            'black_list' => false,
+            'shipping_time' => 2,
+        ]);
     }
 
     /**
