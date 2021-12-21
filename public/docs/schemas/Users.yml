@@ -1,0 +1,35 @@
+User:
+  type: object
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    email:
+      description: 'User''s email address'
+      type: string
+      example: email@example.com
+    name:
+      description: 'User''s displayed name'
+      type: string
+      example: 'Johny Mielony'
+    avatar:
+      description: 'User''s avatar url'
+      type: string
+      example: //www.gravatar.com/avatar/example.jpg
+    roles:
+      description: 'User''s assigned roless'
+      type: array
+      items:
+        $ref: './Roles.yml#/Role'
+
+UserView:
+  type: object
+  allOf:
+    - $ref: '#/User'
+    - properties:
+        permissions:
+          description: 'User''s assigned permissions'
+          type: array
+          items:
+            type: string
+            example: roles.show_details
