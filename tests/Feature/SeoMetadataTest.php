@@ -314,4 +314,86 @@ class SeoMetadataTest extends TestCase
             ],
         ]]);
     }
+
+    /**
+     * @dataProvider duplicationsProvider
+     */
+    public function testCheckKeywordsNoDuplicatesExisting($user, $keywords): void
+    {
+        $this->$user->givePermissionTo('seo.edit');
+
+        $product = Product::factory([
+            'public' => true,
+        ])->create();
+
+        $product->seo()->save(SeoMetadata::factory([
+            'keywords' => [
+                'PHP',
+                'Laravel',
+                'Java',
+            ],
+        ])->create());
+
+        $this->actingAs($this->$user)->json('POST', '/seo/check', [
+            'keywords' => $keywords,
+            'excluded' => [
+                'id' => $product->getKey(),
+                'model' => 'Product',
+            ],
+        ])->assertOk()->assertJsonFragment(['data' => [
+            'duplicated' => false,
+            'duplicates' => [],
+        ]]);
+    }
+
+    /**
+     * @dataProvider duplicationsProvider
+     */
+    public function testCheckKeywordsDuplicatesExisting($user, $keywords): void
+    {
+        $this->$user->givePermissionTo('seo.edit');
+
+        $product = Product::factory([
+            'public' => true,
+        ])->create();
+
+        $product->seo()->save(SeoMetadata::factory([
+            'keywords' => [
+                'PHP',
+                'Laravel',
+                'Java',
+            ],
+        ])->create());
+
+        $product2 = Product::factory([
+            'public' => true,
+        ])->create();
+
+        $product2->seo()->save(SeoMetadata::factory([
+            'keywords' => [
+                'PHP',
+                'Laravel',
+                'Java',
+            ],
+        ])->create());
+
+        $this->actingAs($this->$user)->json('POST', '/seo/check', [
+            'keywords' => $keywords,
+            'excluded' => [
+                'id' => $product->getKey(),
+                'model' => 'Product',
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data.duplicates')
+            ->assertJsonFragment(['data' => [
+            'duplicated' => true,
+            'duplicates' => [
+                [
+                    'id' => $product2->getKey(),
+                    'model_type' => Str::afterLast($product2::class, '\\'),
+                ],
+            ],
+        ]]);
+    }
 }
