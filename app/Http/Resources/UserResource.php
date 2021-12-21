@@ -14,6 +14,7 @@ class UserResource extends Resource
             'name' => $this->name,
             'avatar' => $this->avatar,
             'roles' => RoleResource::collection($this->roles),
+            'is_tfa_active' => $this->is_tfa_active,
         ];
     }
 

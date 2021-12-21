@@ -192,7 +192,7 @@ paths:
                       refresh_token:
                         type: string
                       user:
-                        $ref: '#/components/schemas/User'
+                        $ref: './schemas/Users.yml#/User'
                     type: object
                 type: object
   /auth/logout:
@@ -294,7 +294,7 @@ paths:
                       refresh_token:
                         type: string
                       user:
-                        $ref: '#/components/schemas/User'
+                        $ref: './schemas/Users.yml#/User'
                     type: object
                 type: object
   /auth/login-history:
@@ -353,7 +353,7 @@ paths:
                 properties:
                   data:
                     oneOf:
-                      - $ref: '#/components/schemas/UserView'
+                      - $ref: './schemas/Users.yml#/UserView'
                       - $ref: '#/components/schemas/AppView'
                 type: object
       security:
@@ -1389,130 +1389,9 @@ paths:
   '/product-sets/id:{id}/products':
     $ref: './paths/ProductSets.yml#ProductSetsProducts'
   /roles:
-    get:
-      tags:
-        - Roles
-      summary: 'list roles'
-      operationId: 1ee69486b9b73ea9a99a272e7e8cc4a8
-      parameters:
-        - name: search
-          in: query
-          description: 'Full text search'
-          schema:
-            type: string
-        - name: name
-          in: query
-          description: 'Name search'
-          schema:
-            type: string
-        - name: description
-          in: query
-          description: 'Description search'
-          schema:
-            type: string
-        - name: assignable
-          in: query
-          description: 'Is the role assignable by current user'
-          schema:
-            type: boolean
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Role'
-                type: object
-      security:
-        - oauth: [ ]
-    post:
-      tags:
-        - Roles
-      summary: 'add a new role'
-      operationId: 62fcd42f85f47e343b6f52de4dc13ac8
-      requestBody:
-        $ref: '#/components/requestBodies/RoleStore'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/RoleView'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Roles.yml#/Roles'
   '/roles/id:{id}':
-    get:
-      tags:
-        - Roles
-      summary: 'view the role'
-      operationId: 08386bda355d39cf0af6f115a8084e52
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/RoleView'
-                type: object
-      security:
-        - oauth: [ ]
-    delete:
-      tags:
-        - Roles
-      summary: 'delete the role'
-      operationId: 7ed75454a751735873bcd73f3eb08be8
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
-    patch:
-      tags:
-        - Roles
-      summary: 'update the role'
-      operationId: 7624efb612f704e4ae632a365952ffc4
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        $ref: '#/components/requestBodies/RoleUpdate'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/RoleView'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Roles.yml#/RolesParams'
   /schemas:
     get:
       tags:
@@ -1754,140 +1633,9 @@ paths:
   '/tags/id:{id}':
     $ref: './paths/Tags.yml#TagsParams'
   /users:
-    get:
-      tags:
-        - Users
-      summary: 'user list'
-      operationId: f032a91b3abe7f269e51caca28180cbc
-      parameters:
-        - name: search
-          in: query
-          description: 'Full text search'
-          schema:
-            type: string
-        - name: name
-          in: query
-          description: 'Name search'
-          schema:
-            type: string
-        - name: name
-          in: query
-          description: 'Email search'
-          schema:
-            type: string
-        - name: sort
-          in: query
-          description: 'Sorting string'
-          schema:
-            type: string
-          example: 'name:desc'
-        - name: pagination_limit
-          in: query
-          description: 'Number of elements per page'
-          schema:
-            type: number
-          example: 12
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/User'
-                type: object
-      security:
-        - oauth: [ ]
-    post:
-      tags:
-        - Users
-      summary: 'add new user'
-      operationId: f606067fc259a8e463c576a68154b9cb
-      requestBody:
-        $ref: '#/components/requestBodies/UserCreate'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/User'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Users.yml#/Users'
   '/users/id:{id}':
-    get:
-      tags:
-        - Users
-      summary: 'user view'
-      operationId: ee3780fa0db72f4a5375174edb7aced4
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/User'
-                type: object
-      security:
-        - oauth: [ ]
-    delete:
-      tags:
-        - Users
-      summary: 'delete user'
-      operationId: 6942c632e12ffeb39f53a7337272409c
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
-    patch:
-      tags:
-        - Users
-      summary: 'update user'
-      operationId: 5f078fc7c3a41ecfec08d2a748920615
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
-      requestBody:
-        $ref: '#/components/requestBodies/UserUpdate'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/User'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Users.yml#/UsersParams'
   /webhooks:
     get:
       tags:
@@ -2024,7 +1772,7 @@ components:
         - $ref: '#/components/schemas/Order'
         - properties:
             user:
-              $ref: '#/components/schemas/User'
+              $ref: './schemas/Users.yml#/User'
     App:
       properties:
         id:
@@ -2103,7 +1851,7 @@ components:
                 example: value
             type: object
         user:
-          $ref: '#/components/schemas/User'
+          $ref: './schemas/Users.yml#/User'
       type: object
     Event:
       properties:
@@ -2232,76 +1980,13 @@ components:
             example: roles.show_details
       type: object
     Role:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        name:
-          description: 'Name of the role'
-          type: string
-          example: Admin
-        description:
-          description: 'Description of the role'
-          type: string
-          example: 'Role with permission to everything'
-        assignable:
-          description: 'Whether the role assignable by current user.'
-          type: boolean
-          example: true
-        deletable:
-          description: 'Whether the role can be deleted with appropreiate permissions.'
-          type: boolean
-          example: true
-      type: object
+      $ref: './schemas/Roles.yml#/Role'
     RoleView:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/Role'
-        - properties:
-            permissions:
-              description: 'Permission names'
-              type: array
-              items:
-                type: string
-                example: roles.show_details
-            locked_permissions:
-              description: 'Whether the permissions can be edited with appropreiate permissions.'
-              type: boolean
-              example: true
+      $ref: './schemas/Roles.yml#/RoleView'
     User:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        email:
-          description: 'User''s email address'
-          type: string
-          example: email@example.com
-        name:
-          description: 'User''s displayed name'
-          type: string
-          example: 'Johny Mielony'
-        avatar:
-          description: 'User''s avatar url'
-          type: string
-          example: //www.gravatar.com/avatar/example.jpg
-        roles:
-          description: 'User''s assigned roless'
-          type: array
-          items:
-            $ref: '#/components/schemas/Role'
-      type: object
+      $ref: './schemas/Users.yml#/User'
     UserView:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/User'
-        - properties:
-            permissions:
-              description: 'User''s assigned permissions'
-              type: array
-              items:
-                type: string
-                example: roles.show_details
+      $ref: './schemas/Users.yml#/UserView'
     WebHookEventLogEntry:
       properties:
         id:
@@ -2892,47 +2577,9 @@ components:
     ProductUpdate:
       $ref: './requests/Products.yml#ProductUpdate'
     RoleStore:
-      content:
-        application/json:
-          schema:
-            required:
-              - name
-            properties:
-              name:
-                description: 'Name of the role'
-                type: string
-                example: Admin
-              description:
-                description: 'Description of the role'
-                type: string
-                example: 'Role with permission to everything'
-              permissions:
-                description: 'Permission names'
-                type: array
-                items:
-                  type: string
-                  example: roles.add
-            type: object
+      $ref: './requests/Roles.yml#/RoleStore'
     RoleUpdate:
-      content:
-        application/json:
-          schema:
-            properties:
-              name:
-                description: 'Name of the role'
-                type: string
-                example: Admin
-              description:
-                description: 'Description of the role'
-                type: string
-                example: 'Role with permission to everything'
-              permissions:
-                description: 'Permission names'
-                type: array
-                items:
-                  type: string
-                  example: roles.add
-            type: object
+      $ref: './requests/Roles.yml#/RoleUpdate'
     ShippingMethodIndex:
       $ref: './requests/ShippingMethods.yml#/ShippingMethodIndex'
     ShippingMethodReorder:
@@ -2944,44 +2591,9 @@ components:
     StatusReorderRequest:
       $ref: './requests/Statuses.yml#/StatusReorderRequest'
     UserCreate:
-      content:
-        application/json:
-          schema:
-            properties:
-              name:
-                type: string
-                example: 'Marianna Szulc'
-              email:
-                type: string
-                example: admin@example.com
-              password:
-                type: string
-                example: '123@@#abYZ'
-              roles:
-                description: 'Ids of assigned roles'
-                type: array
-                items:
-                  type: string
-                  example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-            type: object
+      $ref: './requests/Users.yml#/UserCreate'
     UserUpdate:
-      content:
-        application/json:
-          schema:
-            properties:
-              name:
-                type: string
-                example: 'Marianna Szulc'
-              email:
-                type: string
-                example: admin@example.com
-              roles:
-                description: 'Ids of assigned roles'
-                type: array
-                items:
-                  type: string
-                  example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-            type: object
+      $ref: './requests/Users.yml#/UserUpdate'
     WebHookCreate:
       content:
         application/json:
