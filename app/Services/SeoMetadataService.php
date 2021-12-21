@@ -4,13 +4,17 @@ namespace App\Services;
 
 use App\Dtos\SeoKeywordsDto;
 use App\Dtos\SeoMetadataDto;
+use App\Enums\SeoModelType;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\SeoMetadata;
 use App\Services\Contracts\SeoMetadataServiceContract;
+use Heseya\Dto\Missing;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class SeoMetadataService implements SeoMetadataServiceContract
 {
@@ -56,13 +60,26 @@ class SeoMetadataService implements SeoMetadataServiceContract
     public function checkKeywords(SeoKeywordsDto $dto): Collection
     {
         $keywords = $dto->getKeywords();
+
+        $excluded_id = $dto->getExcludedId();
+        $excluded_model = $dto->getExcludedModel();
+
+        $morph_closure = !$excluded_id instanceof Missing
+            ? function (Builder $query, $type) use ($excluded_id, $excluded_model) {
+                if ($type === SeoModelType::getValue(Str::upper(Str::snake($excluded_model)))) {
+                    $query->where('model_id', '!=', $excluded_id);
+                }
+            }
+        : null;
+
         return SeoMetadata::whereHasMorph(
             'modelSeo',
             [
                 Page::class,
                 Product::class,
                 ProductSet::class,
-            ]
+            ],
+            $morph_closure
         )
             ->whereJsonLength('keywords', count($keywords))
             ->whereJsonContains('keywords', $keywords)

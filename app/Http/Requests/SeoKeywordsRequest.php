@@ -10,6 +10,8 @@ class SeoKeywordsRequest extends FormRequest
     {
         return [
             'keywords' => ['required', 'array'],
+            'excluded.id' => ['required_with_all:excluded', 'uuid'],
+            'excluded.model' => ['required_with_all:excluded', 'string'],
         ];
     }
 }
