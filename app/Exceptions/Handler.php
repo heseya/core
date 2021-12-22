@@ -123,4 +123,9 @@ final class Handler extends ExceptionHandler
             ->response()
             ->setStatusCode($error->code);
     }
+
+    public function report(Throwable $e)
+    {
+        return $e instanceof StoreException && $e->isSimpleLogs() ? $e->logException() : parent::report($e);
+    }
 }

@@ -38,7 +38,7 @@ class AuthService implements AuthServiceContract
         ]);
 
         if ($token === false) {
-            throw new AuthException('Invalid credentials');
+            throw new AuthException('Invalid credentials', simpleLogs: true);
         }
 
         $identityToken = $this->tokenService->createToken(
@@ -238,7 +238,7 @@ class AuthService implements AuthServiceContract
     {
         $user = User::whereEmail($email)->first();
         if (!$user) {
-            throw new AuthException('User does not exist');
+            throw new AuthException('User does not exist', simpleLogs: true);
         }
 
         return $user;
@@ -247,14 +247,17 @@ class AuthService implements AuthServiceContract
     private function checkCredentials(User $user, string $password): void
     {
         if (!Hash::check($password, $user->password)) {
-            throw new AuthException('Invalid credentials');
+            throw new AuthException('Invalid credentials', simpleLogs: true);
         }
     }
 
     private function checkPasswordResetToken(User $user, string $token): void
     {
         if (!Password::tokenExists($user, $token)) {
-            throw new AuthException('The token is invalid or inactive. Try to reset your password again.');
+            throw new AuthException(
+                'The token is invalid or inactive. Try to reset your password again.',
+                simpleLogs: true
+            );
         }
     }
 }

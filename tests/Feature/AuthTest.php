@@ -9,6 +9,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -18,6 +19,15 @@ use Tests\TestCase;
 class AuthTest extends TestCase
 {
     use WithFaker;
+
+    private string $expectedLog;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->expectedLog = 'AuthException(code: 0): Invalid credentials at';
+    }
 
     public function testLoginUnauthorized(): void
     {
@@ -56,6 +66,12 @@ class AuthTest extends TestCase
     public function testLoginInvalidCredential(): void
     {
         $this->user->givePermissionTo('auth.login');
+
+        Log::shouldReceive('error')
+            ->once()
+            ->withArgs(function ($message) {
+                return str_contains($message, $this->expectedLog);
+            });
 
         $response = $this->actingAs($this->user)->postJson('/login', [
             'email' => $this->user->email,
@@ -352,6 +368,41 @@ class AuthTest extends TestCase
         $this->assertFalse(Password::tokenExists($user, $token));
     }
 
+    function testSaveResetPasswordInvalidToken(): void
+    {
+        $this->user->givePermissionTo('auth.password_reset');
+
+        $email = $this->faker->unique()->safeEmail;
+        $newPassword = 'NewPasswd###111';
+
+        $user = User::factory()->create([
+            'name' => $this->faker->firstName() . ' '  . $this->faker->lastName(),
+            'email' => $email,
+        ]);
+
+        $token = Password::createToken($user);
+        $this->assertTrue(Password::tokenExists($user, $token));
+
+        Log::shouldReceive('error')
+            ->once()
+            ->withArgs(function ($message) {
+                return str_contains(
+                    $message,
+                    'AuthException(code: 0): The token is invalid or inactive. '
+                    . 'Try to reset your password again. at'
+                );
+            });
+
+        $response = $this->actingAs($this->user)->json('PATCH', '/users/save-reset-password', [
+            'email' => $email,
+            'password' => $newPassword,
+            'token' => 'token',
+        ]);
+
+        $user->refresh();
+        $response->assertStatus(422);
+    }
+
     public function testChangePasswordUnauthorized(): void
     {
         $user = User::factory()->create([
@@ -383,6 +434,28 @@ class AuthTest extends TestCase
 
         $user->refresh();
         $this->assertTrue(Hash::check('Test1@3456', $user->password));
+    }
+
+    public function testChangePasswordInvalidPassword(): void
+    {
+        $user = User::factory()->create([
+            'password' => Hash::make('test'),
+        ]);
+
+        $user->givePermissionTo('auth.password_change');
+
+        Log::shouldReceive('error')
+            ->once()
+            ->withArgs(function ($message) {
+                return str_contains($message, $this->expectedLog);
+            });
+
+        $response = $this->actingAs($user)->json('PATCH', '/users/password', [
+            'password' => 'tests',
+            'password_new' => 'Test1@3456',
+        ]);
+
+        $response->assertStatus(422);
     }
 
 //    public function testLoginHistoryUnauthorized(): void
