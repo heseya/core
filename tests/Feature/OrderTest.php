@@ -15,6 +15,7 @@ use App\Models\Status;
 use App\Models\WebHook;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
@@ -58,7 +59,7 @@ class OrderTest extends TestCase
         ]);
 
         /** @var OrderService $orderService */
-        $orderService = app(OrderServiceContract::class);
+        $orderService = App::make(OrderServiceContract::class);
 
         $this->order->update([
             'summary' => $orderService->calcSummary($this->order),

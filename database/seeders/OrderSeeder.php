@@ -12,6 +12,7 @@ use App\Models\Status;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\App;
 
 class OrderSeeder extends Seeder
 {
@@ -26,7 +27,7 @@ class OrderSeeder extends Seeder
         $statuses = Status::all();
 
         /** @var OrderService $orderService */
-        $orderService = app(OrderServiceContract::class);
+        $orderService = App::make(OrderServiceContract::class);
 
         Order::factory()->count(50)->create()->each(function ($order) use ($shipping_methods, $statuses, $orderService) {
 
