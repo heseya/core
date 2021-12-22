@@ -2,10 +2,9 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\Swagger\OrderPublicResourceSwagger;
 use Illuminate\Http\Request;
 
-class OrderPublicResource extends Resource implements OrderPublicResourceSwagger
+class OrderPublicResource extends Resource
 {
     public function base(Request $request): array
     {

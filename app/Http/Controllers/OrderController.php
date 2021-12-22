@@ -9,7 +9,6 @@ use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
 use App\Exceptions\OrderException;
-use App\Http\Controllers\Swagger\OrderControllerSwagger;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderIndexRequest;
 use App\Http\Requests\OrderItemsRequest;
@@ -35,7 +34,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Throwable;
 
-class OrderController extends Controller implements OrderControllerSwagger
+class OrderController extends Controller
 {
     public function __construct(
         private NameServiceContract $nameService,
@@ -46,7 +45,10 @@ class OrderController extends Controller implements OrderControllerSwagger
 
     public function index(OrderIndexRequest $request): JsonResource
     {
-        $query = Order::search($request->validated())
+        $search_data = !$request->has('status_id')
+            ? $request->validated() + ['status.hidden' => 0] : $request->validated();
+
+        $query = Order::search($search_data)
             ->sort($request->input('sort'))
             ->with(['products', 'discounts', 'payments']);
 

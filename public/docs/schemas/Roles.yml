@@ -1,0 +1,38 @@
+Role:
+  type: object
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    name:
+      description: 'Name of the role'
+      type: string
+      example: Admin
+    description:
+      description: 'Description of the role'
+      type: string
+      example: 'Role with permission to everything'
+    assignable:
+      description: 'Whether the role assignable by current user.'
+      type: boolean
+      example: true
+    deletable:
+      description: 'Whether the role can be deleted with appropreiate permissions.'
+      type: boolean
+      example: true
+
+RoleView:
+  type: object
+  allOf:
+    - $ref: '#/Role'
+    - properties:
+        permissions:
+          description: 'Permission names'
+          type: array
+          items:
+            type: string
+            example: roles.show_details
+        locked_permissions:
+          description: 'Whether the permissions can be edited with appropreiate permissions.'
+          type: boolean
+          example: true

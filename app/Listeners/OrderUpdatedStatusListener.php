@@ -14,7 +14,9 @@ class OrderUpdatedStatusListener
         $order = $event->getOrder();
 
         try {
-            $order->notify(new OrderStatusUpdated($order));
+            if (!$order->status->no_notifications) {
+                $order->notify(new OrderStatusUpdated($order));
+            }
         } catch (Throwable) {
             Log::error("Couldn't send order update to the address: {$order->email}");
         }

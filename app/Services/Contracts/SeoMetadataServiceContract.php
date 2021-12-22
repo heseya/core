@@ -2,8 +2,10 @@
 
 namespace App\Services\Contracts;
 
+use App\Dtos\SeoKeywordsDto;
 use App\Dtos\SeoMetadataDto;
 use App\Models\SeoMetadata;
+use Illuminate\Support\Collection;
 
 interface SeoMetadataServiceContract
 {
@@ -16,4 +18,6 @@ interface SeoMetadataServiceContract
     public function update(SeoMetadataDto $dto, SeoMetadata $seo): SeoMetadata;
 
     public function delete(SeoMetadata $seoMetadata): void;
+
+    public function checkKeywords(SeoKeywordsDto $dto): Collection;
 }

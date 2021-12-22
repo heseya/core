@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Swagger\AuditControllerSwagger;
 use App\Http\Resources\AuditResource;
 use App\Services\Contracts\AuditServiceContract;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class AuditController extends Controller implements AuditControllerSwagger
+class AuditController extends Controller
 {
     public function __construct(
         private AuditServiceContract $auditService,

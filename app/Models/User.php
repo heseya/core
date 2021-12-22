@@ -50,6 +50,9 @@ class User extends Model implements
         'name',
         'email',
         'password',
+        'tfa_type',
+        'tfa_secret',
+        'is_tfa_active',
     ];
 
     protected $hidden = [
@@ -67,6 +70,10 @@ class User extends Model implements
         'name',
         'created_at',
         'updated_at',
+    ];
+
+    protected $casts = [
+        'is_tfa_active' => 'bool',
     ];
 
     /**

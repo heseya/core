@@ -2,10 +2,9 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\Swagger\WebHookEventLogEntryResourceSwagger;
 use Illuminate\Http\Request;
 
-class WebHookEventLogEntryResource extends Resource implements WebHookEventLogEntryResourceSwagger
+class WebHookEventLogEntryResource extends Resource
 {
     public function base(Request $request): array
     {

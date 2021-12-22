@@ -17,6 +17,8 @@ class ProductSetDto extends Dto
     private string|null|Missing $parent_id;
     private array $children_ids;
     private SeoMetadataDto $seo;
+    private string|null|Missing $description_html;
+    private string|null|Missing $cover_id;
 
     public static function fromFormRequest(ProductSetStoreRequest|ProductSetUpdateRequest $request): self
     {
@@ -29,6 +31,8 @@ class ProductSetDto extends Dto
             parent_id: $request->input('parent_id', null),
             children_ids: $request->input('children_ids', []),
             seo: SeoMetadataDto::fromFormRequest($request),
+            description_html: $request->input('description_html'),
+            cover_id: $request->input('cover_id'),
         );
     }
 
@@ -70,5 +74,15 @@ class ProductSetDto extends Dto
     public function getSeo(): SeoMetadataDto
     {
         return $this->seo;
+    }
+
+    public function getDescriptionHtml(): Missing|string|null
+    {
+        return $this->description_html;
+    }
+
+    public function getCoverId(): Missing|string|null
+    {
+        return $this->cover_id;
     }
 }

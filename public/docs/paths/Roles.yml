@@ -1,0 +1,121 @@
+Roles:
+  get:
+    tags:
+      - Roles
+    summary: 'list roles'
+    parameters:
+      - name: search
+        in: query
+        description: 'Full text search'
+        schema:
+          type: string
+      - name: name
+        in: query
+        description: 'Name search'
+        schema:
+          type: string
+      - name: description
+        in: query
+        description: 'Description search'
+        schema:
+          type: string
+      - name: assignable
+        in: query
+        description: 'Is the role assignable by current user'
+        schema:
+          type: boolean
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Roles.yml#/Role'
+              type: object
+    security:
+      - oauth: [ ]
+  post:
+    tags:
+      - Roles
+    summary: 'add a new role'
+    requestBody:
+      $ref: './../requests/Roles.yml#/RoleStore'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Roles.yml#/RoleView'
+              type: object
+    security:
+      - oauth: [ ]
+
+RolesParams:
+  get:
+    tags:
+      - Roles
+    summary: 'view the role'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Roles.yml#/RoleView'
+              type: object
+    security:
+      - oauth: [ ]
+  delete:
+    tags:
+      - Roles
+    summary: 'delete the role'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      204:
+        description: Success
+    security:
+      - oauth: [ ]
+  patch:
+    tags:
+      - Roles
+    summary: 'update the role'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      $ref: './../requests/Roles.yml#/RoleUpdate'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Roles.yml#/RoleView'
+              type: object
+    security:
+      - oauth: [ ]

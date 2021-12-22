@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Swagger\AnalyticsControllerSwagger;
 use App\Http\Requests\AnalyticsPaymentsRequest;
 use App\Http\Resources\AnalyticsPaymentsResource;
 use App\Services\Contracts\AnalyticsServiceContract;
 use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class AnalyticsController extends Controller implements AnalyticsControllerSwagger
+class AnalyticsController extends Controller
 {
     private AnalyticsServiceContract $analyticsService;
 

@@ -35,6 +35,7 @@ class UserTest extends TestCase
             'name' => $this->user->name,
             'avatar' => $this->user->avatar,
             'roles' => [],
+            'is_tfa_active' => $this->user->is_tfa_active,
         ];
 
         // Owner role needs to exist for user service to function properly
@@ -108,7 +109,9 @@ class UserTest extends TestCase
     {
         $this->user->givePermissionTo('users.show');
 
-        $user = User::factory()->create();
+        $user = User::factory([
+            'is_tfa_active' => false,
+        ])->create();
 
         $this
             ->actingAs($this->user)
@@ -121,6 +124,7 @@ class UserTest extends TestCase
                 'name' => $user->name,
                 'avatar' => $user->avatar,
                 'roles' => [],
+                'is_tfa_active' => $user->is_tfa_active,
             ]);
     }
 
@@ -128,7 +132,9 @@ class UserTest extends TestCase
     {
         $this->user->givePermissionTo('users.show');
 
-        $user = User::factory()->create();
+        $user = User::factory([
+            'is_tfa_active' => false,
+        ])->create();
 
         $this
             ->actingAs($this->user)
@@ -141,6 +147,7 @@ class UserTest extends TestCase
                 'name' => $user->name,
                 'avatar' => $user->avatar,
                 'roles' => [],
+                'is_tfa_active' => $user->is_tfa_active,
             ]);
     }
 
@@ -148,7 +155,9 @@ class UserTest extends TestCase
     {
         $this->user->givePermissionTo('users.show');
 
-        $user = User::factory()->create();
+        $user = User::factory([
+            'is_tfa_active' => false,
+        ])->create();
 
         $response = $this->actingAs($this->user)->getJson('/users?search=' . $user->name);
         $response
@@ -160,6 +169,7 @@ class UserTest extends TestCase
                 'name' => $user->name,
                 'avatar' => $user->avatar,
                 'roles' => [],
+                'is_tfa_active' => $user->is_tfa_active,
             ]);
     }
 
@@ -167,7 +177,9 @@ class UserTest extends TestCase
     {
         $this->user->givePermissionTo('users.show');
 
-        $user = User::factory()->create();
+        $user = User::factory([
+            'is_tfa_active' => false,
+        ])->create();
 
         $response = $this->actingAs($this->user)->getJson('/users?search=' . $user->email);
         $response
@@ -179,6 +191,7 @@ class UserTest extends TestCase
                 'name' => $user->name,
                 'avatar' => $user->avatar,
                 'roles' => [],
+                'is_tfa_active' => $user->is_tfa_active,
             ]);
     }
 

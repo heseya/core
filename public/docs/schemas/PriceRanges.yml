@@ -1,0 +1,29 @@
+Price:
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    value:
+      type: number
+      example: 19.97
+    model_id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    model_type:
+      type: string
+      example: App\Models\Product
+  type: object
+
+PriceRange:
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    start:
+      type: number
+      example: 0
+    prices:
+      type: array
+      items:
+        $ref: '#/Price'
+  type: object

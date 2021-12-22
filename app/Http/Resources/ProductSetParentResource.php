@@ -2,11 +2,10 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\Swagger\ProductSetResourceSwagger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
-class ProductSetParentResource extends Resource implements ProductSetResourceSwagger
+class ProductSetParentResource extends Resource
 {
     public function base(Request $request): array
     {
@@ -28,6 +27,8 @@ class ProductSetParentResource extends Resource implements ProductSetResourceSwa
                 fn ($child) => $child->getKey(),
             )->toArray(),
             'seo' => SeoMetadataResource::make($this->seo),
+            'description_html' => $this->description_html,
+            'cover' => MediaResource::make($this->media),
         ];
     }
 }

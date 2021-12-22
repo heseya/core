@@ -19,89 +19,12 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
- * @OA\Schema (
- *   description="Schema allows a product to take on new optional characteristics that can be
- *   chosen by the userand influences the price based on said choices. Schemas can use other
- *   schemas for their price calculation e.g. multiply_schema multiplies price of different
- *   schema based on it's own value. SCHEMAS USED BY OTHERS SHOULD NOT AFFECT THE PRICE
- *   (schema multiplied by multiply_schema adds 0 to the price while multiply_schema adds
- *   the multiplied value)",
- * )
- *
  * @mixin IdeHelperSchema
  */
 class Schema extends Model
 {
     use HasFactory, Searchable, Sortable;
 
-    /**
-     * @OA\Property(
-     *   property="id",
-     *   type="string",
-     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
-     * ),
-     *
-     * @OA\Property(
-     *   property="type",
-     *   type="string",
-     *   description="multiply_schema(min, max, step) type uses one schema and multiplies
-     *     it's price by own numeric value",
-     *   enum={"string", "numeric", "boolean", "date", "select", "file", "multiply",
-     *     "multiply_schema"},
-     * ),
-     *
-     * @OA\Property(
-     *   property="name",
-     *   type="string",
-     *   example="Size",
-     * ),
-     * @OA\Property(
-     *   property="description",
-     *   type="string",
-     *   description="Short description, no html or md allowed",
-     * ),
-     * @OA\Property(
-     *   property="price",
-     *   type="float",
-     *   description="Additional price the customer will have to pay after selecting the option
-     *     (can be negative)",
-     *   example=9.99,
-     * ),
-     * @OA\Property(
-     *   property="hidden",
-     *   type="boolean",
-     *   example=false,
-     * ),
-     * @OA\Property(
-     *   property="required",
-     *   type="boolean",
-     *   example=false,
-     * ),
-     * @OA\Property(
-     *   property="min",
-     *   type="string",
-     * ),
-     * @OA\Property(
-     *   property="max",
-     *   type="string",
-     * ),
-     * @OA\Property(
-     *   property="step",
-     *   type="string",
-     * ),
-     * @OA\Property(
-     *   property="default",
-     *   type="string",
-     * ),
-     * @OA\Property(
-     *   property="pattern",
-     *   type="string",
-     * ),
-     * @OA\Property(
-     *   property="validation",
-     *   type="string",
-     * ),
-     */
     protected $fillable = [
         'type',
         'name',
@@ -255,13 +178,6 @@ class Schema extends Model
         );
     }
 
-    /**
-     * @OA\Property(
-     *   property="options",
-     *   type="array",
-     *   @OA\Items(ref="#/components/schemas/Option"),
-     * )
-     */
     public function options(): HasMany
     {
         return $this->hasMany(Option::class)
@@ -270,18 +186,6 @@ class Schema extends Model
             ->orderBy('name', 'DESC');
     }
 
-    /**
-     * @OA\Property(
-     *   property="used_schemas",
-     *   description="Array of schema id's given schema uses e.g.
-     *   multiply_schema type uses one schema of which price it miltiplies",
-     *   type="array",
-     *   @OA\Items(
-     *     type="string",
-     *     example="used-schema-ids",
-     *   ),
-     * )
-     */
     public function usedSchemas(): BelongsToMany
     {
         return $this->belongsToMany(

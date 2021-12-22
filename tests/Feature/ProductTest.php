@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
@@ -279,6 +280,7 @@ class ProductTest extends TestCase
                     'hide_on_index' => $set1->hide_on_index,
                     'parent_id' => $set1->parent_id,
                     'children_ids' => [],
+                    'cover' => null,
                 ],
                 [
                     'id' => $set2->getKey(),
@@ -291,6 +293,81 @@ class ProductTest extends TestCase
                     'hide_on_index' => $set2->hide_on_index,
                     'parent_id' => $set2->parent_id,
                     'children_ids' => [],
+                    'cover' => null,
+                ],
+            ]]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowSetsWithCover($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $media1 = Media::factory()->create([
+            'type' => MediaType::PHOTO,
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ]);
+
+        $media2 = Media::factory()->create([
+            'type' => MediaType::PHOTO,
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ]);
+
+        $set1 = ProductSet::factory()->create([
+            'public' => true,
+            'cover_id' => $media1->getKey(),
+        ]);
+        $set2 = ProductSet::factory()->create([
+            'public' => true,
+            'cover_id' => $media2->getKey(),
+        ]);
+
+        $product->sets()->sync([$set1->getKey(), $set2->getKey()]);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/' . $product->slug);
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['sets' => [
+                [
+                    'id' => $set1->getKey(),
+                    'name' => $set1->name,
+                    'slug' => $set1->slug,
+                    'slug_suffix' => $set1->slugSuffix,
+                    'slug_override' => $set1->slugOverride,
+                    'public' => $set1->public,
+                    'visible' => $set1->public_parent && $set1->public,
+                    'hide_on_index' => $set1->hide_on_index,
+                    'parent_id' => $set1->parent_id,
+                    'children_ids' => [],
+                    'cover' => [
+                        'id' => $media1->getKey(),
+                        'type' => Str::lower($media1->type->key),
+                        'url' => $media1->url,
+                    ],
+                ],
+                [
+                    'id' => $set2->getKey(),
+                    'name' => $set2->name,
+                    'slug' => $set2->slug,
+                    'slug_suffix' => $set2->slugSuffix,
+                    'slug_override' => $set2->slugOverride,
+                    'public' => $set2->public,
+                    'visible' => $set2->public_parent && $set2->public,
+                    'hide_on_index' => $set2->hide_on_index,
+                    'parent_id' => $set2->parent_id,
+                    'children_ids' => [],
+                    'cover' => [
+                        'id' => $media2->getKey(),
+                        'type' => Str::lower($media2->type->key),
+                        'url' => $media2->url,
+                    ],
                 ],
             ]]);
     }
@@ -350,6 +427,47 @@ class ProductTest extends TestCase
         $response = $this->actingAs($this->$user)
             ->getJson('/products/id:' . $this->hidden_product->getKey());
         $response->assertOk();
+    }
+
+    public function noIndexProvider(): array
+    {
+        return [
+            'as user no index' => ['user', true],
+            'as application no index' => ['application', true],
+            'as user index' => ['user', false],
+            'as application index' => ['application', false],
+        ];
+    }
+
+    /**
+     * @dataProvider noIndexProvider
+     */
+    public function testShowSeoNoIndex($user, $noIndex): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory([
+            'public' => true
+        ])->create();
+
+        $seo = SeoMetadata::factory([
+            'no_index' => $noIndex,
+        ])->create();
+
+        $product->seo()->save($seo);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $product->getKey());
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['seo' => [
+                'title' => $seo->title,
+                'no_index' => $noIndex,
+                'description' => $seo->description,
+                'og_image' => null,
+                'twitter_card' => $seo->twitter_card,
+                'keywords' => $seo->keywords,
+            ]]);
     }
 
     public function testCreateUnauthorized(): void
@@ -828,6 +946,7 @@ class ProductTest extends TestCase
                 'title' => 'seo title',
                 'description' => 'seo description',
                 'og_image_id' => $media->getKey(),
+                'no_index' => true,
             ]
         ]);
 
@@ -846,7 +965,8 @@ class ProductTest extends TestCase
                     'description' => 'seo description',
                     'og_image' => [
                         'id' => $media->getKey(),
-                    ]
+                    ],
+                    'no_index' => true,
                 ]
             ]]);
 
@@ -859,10 +979,66 @@ class ProductTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('seo_metadata', [
-           'title' => 'seo title',
-           'description' => 'seo description',
-           'model_id' => $response->getData()->data->id,
-           'model_type' => Product::class,
+            'title' => 'seo title',
+            'description' => 'seo description',
+            'model_id' => $response->getData()->data->id,
+            'model_type' => Product::class,
+            'no_index' => true,
+        ]);
+
+        $this->assertDatabaseCount('seo_metadata', 2);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithSeoDefaultIndex($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $response = $this->actingAs($this->$user)->json('POST', '/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'description_html' => '<h1>Description</h1>',
+            'public' => true,
+            'seo' => [
+                'title' => 'seo title',
+                'description' => 'seo description',
+            ]
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'slug' => 'test',
+                'name' => 'Test',
+                'price' => 100,
+                'public' => true,
+                'description_html' => '<h1>Description</h1>',
+                'cover' => null,
+                'gallery' => [],
+                'seo' => [
+                    'title' => 'seo title',
+                    'description' => 'seo description',
+                    'no_index' => false,
+                ]
+            ]]);
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'public' => true,
+            'description_html' => '<h1>Description</h1>',
+        ]);
+
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => 'seo title',
+            'description' => 'seo description',
+            'model_id' => $response->getData()->data->id,
+            'model_type' => Product::class,
+            'no_index' => false,
         ]);
 
         $this->assertDatabaseCount('seo_metadata', 2);

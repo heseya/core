@@ -2,10 +2,9 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\Swagger\PageResourceSwagger;
 use Illuminate\Http\Request;
 
-class PageResource extends Resource implements PageResourceSwagger
+class PageResource extends Resource
 {
     public function base(Request $request): array
     {
