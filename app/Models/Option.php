@@ -26,29 +26,6 @@ class Option extends Model
         'available' => 'bool',
     ];
 
-    public function getAvailableAttribute($quantity = 1): bool
-    {
-        // diwne obejście ale niech bedzie
-        $quantity = $quantity ?? 1;
-
-        if ($this->disabled) {
-            return false;
-        }
-
-        if ($this->items->count() <= 0) {
-            return true;
-        }
-
-        // all items must be available for the option to be available
-        foreach ($this->items as $item) {
-            if ($item->quantity < $quantity) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     /**
      * @OA\Property(
      *   property="items",
