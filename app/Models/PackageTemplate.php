@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
-use App\Models\Swagger\PackageTemplateSwagger;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * @mixin IdeHelperPackageTemplate
  */
-class PackageTemplate extends Model implements PackageTemplateSwagger
+class PackageTemplate extends Model
 {
     use HasFactory;
 

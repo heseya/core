@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\SearchTypes\ProductSearch;
+use App\SearchTypes\WhereBelongsToManyById;
+use App\Traits\HasSeoMetadata;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Heseya\Sortable\Sortable;
@@ -18,7 +20,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Product extends Model implements AuditableContract
 {
-    use HasFactory, SoftDeletes, Searchable, Sortable, Auditable;
+    use HasFactory, SoftDeletes, Searchable, Sortable, Auditable, HasSeoMetadata;
 
     protected $fillable = [
         'name',
@@ -27,6 +29,7 @@ class Product extends Model implements AuditableContract
         'description_html',
         'description_short',
         'public',
+        'public_legacy',
         'quantity_step',
         'price_min',
         'price_max',
@@ -54,6 +57,7 @@ class Product extends Model implements AuditableContract
         'slug' => Like::class,
         'public',
         'search' => ProductSearch::class,
+        'tags' => WhereBelongsToManyById::class,
     ];
 
     protected array $sortable = [
@@ -63,6 +67,7 @@ class Product extends Model implements AuditableContract
         'created_at',
         'updated_at',
         'order',
+        'public',
     ];
 
     protected string $defaultSortBy = 'created_at';
@@ -110,14 +115,6 @@ class Product extends Model implements AuditableContract
             ->orderByPivot('order');
     }
 
-    public function isPublic(): bool
-    {
-        $isAnySetPublic = $this->sets->count() === 0 ||
-            $this->sets->where('public', true)->where('public_parent', true);
-
-        return $this->public && $isAnySetPublic;
-    }
-
     public function sets(): BelongsToMany
     {
         return $this->belongsToMany(ProductSet::class, 'product_set_product');
@@ -125,16 +122,6 @@ class Product extends Model implements AuditableContract
 
     public function scopePublic($query): Builder
     {
-        $query->where('public', true)->where(function (Builder $query): void {
-            $query
-                ->whereDoesntHave('sets')
-                ->orWhereHas(
-                    'sets',
-                    fn (Builder $builder) => $builder
-                        ->where('public', true)->where('public_parent', true),
-                );
-        });
-
-        return $query;
+        return $query->where('public', true);
     }
 }

@@ -47,4 +47,38 @@ return [
         'public' => false,
     ],
 
+    'sender_name' => [
+        'value' => null,
+        'public' => false,
+    ],
+
+    'sender_email' => [
+        'value' => null,
+        'public' => false,
+    ],
+
+    'sender_street' => [
+        'value' => null,
+        'public' => false,
+    ],
+
+    'sender_postcode' => [
+        'value' => null,
+        'public' => false,
+    ],
+
+    'sender_city' => [
+        'value' => null,
+        'public' => false,
+    ],
+
+    'sender_phone' => [
+        'value' => null,
+        'public' => false,
+    ],
+
+    'sender_company' => [
+        'value' => null,
+        'public' => false,
+    ],
 ];

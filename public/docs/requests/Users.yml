@@ -1,0 +1,39 @@
+UserCreate:
+  content:
+    application/json:
+      schema:
+        properties:
+          name:
+            type: string
+            example: 'Marianna Szulc'
+          email:
+            type: string
+            example: admin@example.com
+          password:
+            type: string
+            example: '123@@#abYZ'
+          roles:
+            description: 'Ids of assigned roles'
+            type: array
+            items:
+              type: string
+              example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+        type: object
+UserUpdate:
+  content:
+    application/json:
+      schema:
+        properties:
+          name:
+            type: string
+            example: 'Marianna Szulc'
+          email:
+            type: string
+            example: admin@example.com
+          roles:
+            description: 'Ids of assigned roles'
+            type: array
+            items:
+              type: string
+              example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+        type: object

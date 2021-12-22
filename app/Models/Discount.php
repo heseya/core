@@ -14,73 +14,11 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
- * @OA\Schema ()
- *
  * @mixin IdeHelperDiscount
  */
 class Discount extends Model implements AuditableContract
 {
     use HasFactory, Searchable, SoftDeletes, Auditable;
-
-    /**
-     * @OA\Property(
-     *   property="id",
-     *   type="string",
-     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
-     * )
-     *
-     * @OA\Property(
-     *   property="code",
-     *   type="string",
-     *   example="83734AE",
-     * )
-     *
-     * @OA\Property(
-     *   property="description",
-     *   type="string",
-     *   example="Balck Weekend 2021",
-     * )
-     *
-     * @OA\Property(
-     *   property="type",
-     *   type="number",
-     *   example="0",
-     * )
-     *
-     * @OA\Property(
-     *   property="discount",
-     *   type="float",
-     *   example="50",
-     * )
-     *
-     * @OA\Property(
-     *   property="uses",
-     *   type="float",
-     *   example="41",
-     * )
-     *
-     * @OA\Property(
-     *   property="max_uses",
-     *   type="float",
-     *   example="100",
-     * )
-     *
-     * @OA\Property(
-     *   property="available",
-     *   type="boolean",
-     *   example="true",
-     * )
-     * @OA\Property(
-     *   property="starts_at",
-     *   type="datetime",
-     *   example="2021-09-13T11:11",
-     * )
-     * @OA\Property(
-     *   property="expires_at",
-     *   type="datetime",
-     *   example="2021-09-13T11:11",
-     * )
-     */
 
     protected $fillable = [
         'description',

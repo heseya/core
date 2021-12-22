@@ -183,16 +183,34 @@ class MediaTest extends TestCase
         $this->assertDatabaseMissing('media', ['id' => $media->getKey()]);
     }
 
+    public function videoProvider(): array
+    {
+        return [
+            'as user mp4' => ['user', '.mp4'],
+            'as user webm' => ['user', '.webm'],
+            'as user ogg' => ['user', '.ogg'],
+            'as user avi' => ['user', '.avi'],
+            'as user mov' => ['user', '.mov'],
+            'as user wmv' => ['user', '.wmv'],
+            'as app mp4' => ['application', '.mp4'],
+            'as app webm' => ['application', '.webm'],
+            'as app ogg' => ['application', '.ogg'],
+            'as app avi' => ['application', '.avi'],
+            'as app mov' => ['application', '.mov'],
+            'as app wmv' => ['application', '.wmv'],
+        ];
+    }
+
     /**
-     * @dataProvider authProvider
+     * @dataProvider videoProvider
      */
-    public function testUploadVideo($user): void
+    public function testUploadVideo($user, $extension): void
     {
         $this->$user->givePermissionTo('pages.add');
 
-        Http::fake(['*' => Http::response([0 => ['path' => 'video.mp4']])]);
+        Http::fake(['*' => Http::response([0 => ['path' => 'video' . $extension]])]);
 
-        $file = UploadedFile::fake()->image('video.mp4');
+        $file = UploadedFile::fake()->image('video' . $extension);
         $response = $this->actingAs($this->$user)->postJson('/media', [
             'file' => $file,
         ]);

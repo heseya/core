@@ -2,10 +2,9 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\Swagger\UserResourceSwagger;
 use Illuminate\Http\Request;
 
-class UserResource extends Resource implements UserResourceSwagger
+class UserResource extends Resource
 {
     public function base(Request $request): array
     {
@@ -15,6 +14,7 @@ class UserResource extends Resource implements UserResourceSwagger
             'name' => $this->name,
             'avatar' => $this->avatar,
             'roles' => RoleResource::collection($this->roles),
+            'is_tfa_active' => $this->is_tfa_active,
         ];
     }
 

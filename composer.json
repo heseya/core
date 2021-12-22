@@ -7,16 +7,15 @@
         "php": "^8.0",
         "barryvdh/laravel-ide-helper": "^2.10",
         "bensampo/laravel-enum": "^3.3",
-        "darkaonline/l5-swagger": "^8.0",
         "doctrine/dbal": "^3.1",
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.3",
         "heseya/demo": "dev-master",
-        "heseya/laravel-searchable": "^1.0",
-        "heseya/resource": "*",
-        "heseya/pagination": "*",
         "heseya/dto": "*",
+        "heseya/laravel-searchable": "^1.0",
+        "heseya/pagination": "*",
+        "heseya/resource": "*",
         "heseya/sortable": "*",
         "jenssegers/agent": "^2.6",
         "laravel/framework": "^8.44",
@@ -29,6 +28,7 @@
         "propaganistas/laravel-phone": "^4.3",
         "sentry/sentry-laravel": "^2.6",
         "spatie/laravel-permission": "^4.2",
+        "spatie/laravel-webhook-server": "^3.0",
         "srmklive/paypal": "^3.0",
         "tymon/jwt-auth": "^1.0.2"
     },
@@ -89,9 +89,6 @@
         "style": [
             "@ide-helper",
             "@php artisan insights --fix --no-interaction"
-        ],
-        "docs": [
-            "@php artisan l5-swagger:generate"
         ],
         "pre-commit": [
             "@composer style"

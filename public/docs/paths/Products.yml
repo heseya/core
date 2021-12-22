@@ -1,0 +1,164 @@
+Products:
+  get:
+    tags:
+      - Products
+    summary: 'list products'
+    parameters:
+      - name: search
+        in: query
+        description: 'Full text search'
+        schema:
+          type: string
+      - name: name
+        in: query
+        description: 'Name search'
+        schema:
+          type: string
+      - name: slug
+        in: query
+        description: 'Slug search'
+        schema:
+          type: string
+      - name: public
+        in: query
+        description: 'Is public search'
+        schema:
+          type: boolean
+      - name: 'sets[]'
+        in: query
+        description: 'Product set array slug search'
+        schema:
+          type: string
+        example: 'sets[]=category-teapots&sets[]=category-mugs'
+      - name: sort
+        in: query
+        description: 'Sorting string'
+        schema:
+          type: string
+          example: 'price:asc,created_at:desc,name'
+      - name: 'tags[]'
+        in: query
+        description: 'Tag array id search'
+        schema:
+          type: string
+        example: 'tags[]=5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&tags[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+      - name: available
+        in: query
+        description: 'Is available search'
+        schema:
+          type: boolean
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Products.yml#Product'
+              type: object
+  post:
+    tags:
+      - Products
+    summary: 'create product'
+    requestBody:
+      $ref: './../requests/Products.yml#ProductStore'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Products.yml#ProductView'
+              type: object
+    security:
+      - oauth: [ ]
+
+ProductsSlug:
+  get:
+    tags:
+      - Products
+    summary: 'single product view'
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Products.yml#ProductView'
+              type: object
+
+ProductsParams:
+  get:
+    tags:
+      - Products
+    summary: alias
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Products.yml#ProductView'
+              type: object
+    security:
+      - oauth: [ ]
+  delete:
+    tags:
+      - Products
+    summary: 'delete product'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      204:
+        description: Success
+    security:
+      - oauth: [ ]
+  patch:
+    tags:
+      - Products
+    summary: 'update product'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      $ref: './../requests/Products.yml#/ProductUpdate'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Products.yml#ProductView'
+              type: object
+    security:
+      - oauth: [ ]

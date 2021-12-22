@@ -1,0 +1,11 @@
+Country:
+  type: object
+  properties:
+    code:
+      schema: Country
+      type: string
+      example: PL
+    name:
+      schema: Country
+      type: string
+      example: Poland

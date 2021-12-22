@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\ProductSet;
+use App\Models\SeoMetadata;
 use Tests\TestCase;
 
 class ProductSetShowTest extends TestCase
@@ -11,6 +12,8 @@ class ProductSetShowTest extends TestCase
     private ProductSet $privateSet;
     private ProductSet $childSet;
     private ProductSet $subChildSet;
+
+    private array $expected_structure;
 
     public function setUp(): void
     {
@@ -22,11 +25,15 @@ class ProductSetShowTest extends TestCase
             'order' => 10,
         ]);
 
+        $this->set->seo()->save(SeoMetadata::factory()->create());
+
         $this->privateSet = ProductSet::factory()->create([
             'public' => false,
             'public_parent' => true,
             'order' => 11,
         ]);
+
+        $this->privateSet->seo()->save(SeoMetadata::factory()->create());
 
         $this->childSet = ProductSet::factory()->create([
             'public' => true,
@@ -34,11 +41,27 @@ class ProductSetShowTest extends TestCase
             'parent_id' => $this->set->getKey(),
         ]);
 
+        $this->childSet->seo()->save(SeoMetadata::factory()->create());
+
         $this->subChildSet = ProductSet::factory()->create([
             'public' => false,
             'public_parent' => true,
             'parent_id' => $this->childSet->getKey(),
         ]);
+
+        $this->subChildSet->seo()->save(SeoMetadata::factory()->create());
+
+        $this->expected_structure = [
+            'id',
+            'name',
+            'slug',
+            'slug_override',
+            'public',
+            'visible',
+            'hide_on_index',
+            'parent',
+            'seo',
+        ];
     }
 
     public function testShowUnauthorized(): void
@@ -70,7 +93,14 @@ class ProductSetShowTest extends TestCase
                 'children_ids' => [
                     $this->childSet->getKey(),
                 ],
-            ]]);
+                'seo' => [
+                    'title' => $this->set->seo->title,
+                    'description' => $this->set->seo->description,
+                ],
+            ]])
+            ->assertJsonStructure([
+                'data' => $this->expected_structure,
+            ]);
     }
 
     /**
@@ -107,7 +137,14 @@ class ProductSetShowTest extends TestCase
                 'hide_on_index' => $this->privateSet->hide_on_index,
                 'parent' => null,
                 'children_ids' => [],
-            ]]);
+                'seo' => [
+                    'title' => $this->privateSet->seo->title,
+                    'description' => $this->privateSet->seo->description,
+                ],
+            ]])
+            ->assertJsonStructure([
+                'data' => $this->expected_structure,
+            ]);
     }
 
     /**
@@ -130,6 +167,10 @@ class ProductSetShowTest extends TestCase
                 'visible' => $this->set->public && $this->set->public_parent,
                 'hide_on_index' => $this->set->hide_on_index,
                 'parent' => $this->set->parent,
+                'seo' => [
+                    'title' => $this->set->seo->title,
+                    'description' => $this->set->seo->description,
+                ],
                 'children' => [
                     [
                         'id' => $this->childSet->getKey(),
@@ -143,10 +184,10 @@ class ProductSetShowTest extends TestCase
                         'children' => null,
                     ],
                 ],
-            ]]);
-//            ->assertJsonStructure([
-//                'data' => $this->expected_structure,
-//            ]);
+            ]])
+            ->assertJsonStructure([
+                'data' => $this->expected_structure,
+            ]);
     }
 
     /**
@@ -169,10 +210,10 @@ class ProductSetShowTest extends TestCase
                 'visible' => $this->set->public && $this->set->public_parent,
                 'hide_on_index' => $this->set->hide_on_index,
                 'parent' => $this->set->parent,
-//                'seo' => [
-//                    'title' => $this->set->seo->title,
-//                    'description' => $this->set->seo->description,
-//                ],
+                'seo' => [
+                    'title' => $this->set->seo->title,
+                    'description' => $this->set->seo->description,
+                ],
                 'children' => [
                     [
                         'id' => $this->childSet->getKey(),
@@ -198,7 +239,10 @@ class ProductSetShowTest extends TestCase
                         ],
                     ],
                 ],
-            ]]);
+            ]])
+            ->assertJsonStructure([
+                'data' => $this->expected_structure,
+            ]);
     }
 
     /**
@@ -234,7 +278,14 @@ class ProductSetShowTest extends TestCase
                 'children_ids' => [
                     $this->childSet->getKey(),
                 ],
-            ]]);
+                'seo' => [
+                    'title' => $this->set->seo->title,
+                    'description' => $this->set->seo->description,
+                ],
+            ]])
+            ->assertJsonStructure([
+                'data' => $this->expected_structure,
+            ]);
     }
 
     /**
@@ -269,7 +320,14 @@ class ProductSetShowTest extends TestCase
                 'hide_on_index' => $this->privateSet->hide_on_index,
                 'parent' => null,
                 'children_ids' => [],
-            ]]);
+                'seo' => [
+                    'title' => $this->privateSet->seo->title,
+                    'description' => $this->privateSet->seo->description,
+                ],
+            ]])
+            ->assertJsonStructure([
+                'data' => $this->expected_structure,
+            ]);
     }
 
     /**
@@ -292,6 +350,10 @@ class ProductSetShowTest extends TestCase
                 'visible' => $this->set->public && $this->set->public_parent,
                 'hide_on_index' => $this->set->hide_on_index,
                 'parent' => $this->set->parent,
+                'seo' => [
+                    'title' => $this->set->seo->title,
+                    'description' => $this->set->seo->description,
+                ],
                 'children' => [
                     [
                         'id' => $this->childSet->getKey(),
@@ -305,7 +367,10 @@ class ProductSetShowTest extends TestCase
                         'children' => null,
                     ],
                 ],
-            ]]);
+            ]])
+            ->assertJsonStructure([
+                'data' => $this->expected_structure,
+            ]);
     }
 
     /**
@@ -328,6 +393,10 @@ class ProductSetShowTest extends TestCase
                 'visible' => $this->set->public && $this->set->public_parent,
                 'hide_on_index' => $this->set->hide_on_index,
                 'parent' => $this->set->parent,
+                'seo' => [
+                    'title' => $this->set->seo->title,
+                    'description' => $this->set->seo->description,
+                ],
                 'children' => [
                     [
                         'id' => $this->childSet->getKey(),
@@ -353,6 +422,9 @@ class ProductSetShowTest extends TestCase
                         ],
                     ],
                 ],
-            ]]);
+            ]])
+            ->assertJsonStructure([
+                'data' => $this->expected_structure,
+            ]);
     }
 }

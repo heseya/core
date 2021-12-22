@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Swagger\SettingControllerSwagger;
 use App\Http\Requests\SettingCreateRequest;
 use App\Http\Requests\SettingUpdateRequest;
 use App\Http\Resources\SettingResource;
@@ -14,7 +13,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class SettingController extends Controller implements SettingControllerSwagger
+class SettingController extends Controller
 {
     private SettingsServiceContract $settingsService;
 

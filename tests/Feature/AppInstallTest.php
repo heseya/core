@@ -6,6 +6,7 @@ use App\Enums\RoleType;
 use App\Models\App;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Services\Contracts\UrlServiceContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
@@ -17,6 +18,15 @@ class AppInstallTest extends TestCase
     use RefreshDatabase;
 
     private string $url = 'https://example.com:9000';
+    private UrlServiceContract $urlService;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->urlService = app(UrlServiceContract::class);
+        $this->url = $this->urlService->normalizeUrl($this->url);
+    }
 
     public function testInstallUnauthorized(): void
     {
@@ -735,5 +745,43 @@ class AppInstallTest extends TestCase
 
         $response->assertStatus(422);
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
+    }
+
+    public function testInstallDuplicateApp(): void
+    {
+        $this->user->givePermissionTo([
+            'apps.install',
+            'products.show',
+        ]);
+
+        App::factory()->create([
+            'url' => $this->url . '?query#fragment',
+        ]);
+
+        Http::fake([
+            $this->url => Http::response([
+                'name' => 'App name',
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
+                'description' => 'Cool description',
+                'microfrontend_url' => 'https://front.example.com',
+                'icon' => 'https://picsum.photos/200',
+                'licence_required' => false,
+                'required_permissions' => [],
+                'internal_permissions' => [],
+            ]),
+            $this->url . '/install' => Http::response([
+                'uninstall_token' => Str::random(128),
+            ]),
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/apps', [
+            'url' => $this->url,
+            'allowed_permissions' => [],
+            'public_app_permissions' => [],
+        ]);
+
+        $response->assertUnprocessable();
     }
 }

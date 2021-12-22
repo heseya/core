@@ -220,6 +220,38 @@ class AuthTest extends TestCase
         ]);
     }
 
+    public function testLogoutWithInvalidatedTokenAfterRefreshToken(): void
+    {
+        $this->user->givePermissionTo('auth.login');
+
+        $response = $this->actingAs($this->user)->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+        ]);
+
+        $token = $response->getData()->data->token;
+        $refreshToken = $response->getData()->data->refresh_token;
+
+        $this
+            ->json(
+                'POST',
+                '/auth/refresh',
+                [
+                    'refresh_token' => $refreshToken,
+                ],
+                $this->defaultHeaders + ['Authorization' => 'Bearer ' . $token]
+            );
+
+        $this
+            ->json(
+                'POST',
+                '/auth/logout',
+                [],
+                $this->defaultHeaders + ['Authorization' => 'Bearer ' . $token]
+            )
+            ->assertStatus(422);
+    }
+
     public function testResetPasswordUnauthorized(): void
     {
         $email = $this->faker->unique()->safeEmail;
@@ -260,6 +292,31 @@ class AuthTest extends TestCase
         $response = $this->actingAs($this->user)->postJson('/users/reset-password', [
             'email' => $user->email,
         ]);
+
+        $response->assertNoContent();
+    }
+
+    public function testResetPasswordDifferentEmail(): void
+    {
+        $this->user->givePermissionTo('auth.password_reset');
+
+        $email = $this->faker->unique()->safeEmail;
+        $password = 'Passwd###111';
+
+        $user = User::factory()->create([
+            'name' => $this->faker->firstName() . ' '  . $this->faker->lastName(),
+            'email' => $email,
+            'password' => Hash::make($password),
+        ]);
+
+        Mail::fake();
+        Mail::assertNothingSent();
+
+        $response = $this->actingAs($this->user)->postJson('/users/reset-password', [
+            'email' => $this->faker->unique()->safeEmail,
+        ]);
+
+        Mail::assertNothingSent();
 
         $response->assertNoContent();
     }

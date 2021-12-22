@@ -29,6 +29,8 @@ class StatusTest extends TestCase
             'color' => $this->status_model->color,
             'cancel' => false,
             'description' => $this->status_model->description,
+            'hidden' => $this->status_model->hidden,
+            'no_notifications' => $this->status_model->no_notifications,
         ];
     }
 
@@ -69,12 +71,39 @@ class StatusTest extends TestCase
             'name' => 'Test Status',
             'color' => 'ffffff',
             'description' => 'To jest status testowy.',
+            'hidden' => true,
+            'no_notifications' => true,
         ];
 
         $response = $this->actingAs($this->$user)->postJson('/statuses', $status);
         $response
             ->assertCreated()
             ->assertJson(['data' => $status]);
+
+        $this->assertDatabaseHas('statuses', $status);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateDefault($user): void
+    {
+        $this->$user->givePermissionTo('statuses.add');
+
+        $status = [
+            'name' => 'Test Status',
+            'color' => 'ffffff',
+            'description' => 'To jest status testowy.',
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/statuses', $status);
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $status + [
+                    'hidden' => false,
+                    'no_notifications' => false
+                ]
+            ]);
 
         $this->assertDatabaseHas('statuses', $status);
     }

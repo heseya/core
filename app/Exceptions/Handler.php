@@ -12,6 +12,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 
 final class Handler extends ExceptionHandler
 {
@@ -63,6 +64,22 @@ final class Handler extends ExceptionHandler
         AuthorizationException::class => [
             'message' => 'Unauthorized',
             'code' => Response::HTTP_FORBIDDEN,
+        ],
+        WebHookCreatorException::class => [
+            'code' => Response::HTTP_FORBIDDEN,
+        ],
+        WebHookEventException::class => [
+            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+        ],
+        TokenExpiredException::class => [
+            'message' => 'Unauthorized',
+            'code' => Response::HTTP_UNAUTHORIZED,
+        ],
+        PackageException::class => [
+            'code' => Response::HTTP_BAD_GATEWAY,
+        ],
+        PackageAuthException::class => [
+            'code' => Response::HTTP_BAD_GATEWAY,
         ],
     ];
 

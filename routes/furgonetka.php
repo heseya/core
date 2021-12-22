@@ -7,5 +7,5 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('furgonetka')->group(function (): void {
     Route::post('webhook', [FurgonetkaController::class, 'webhook']);
     Route::post('create-package', [FurgonetkaController::class, 'createPackage'])
-        ->middleware('auth:api');
+        ->middleware('permission:orders.edit|orders.edit.status');
 });

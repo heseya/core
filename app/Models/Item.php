@@ -13,39 +13,11 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
- * @OA\Schema ()
- *
  * @mixin IdeHelperItem
  */
 class Item extends Model implements AuditableContract
 {
     use SoftDeletes, HasFactory, Searchable, Sortable, Auditable;
-
-    /**
-     * @OA\Property(
-     *   property="id",
-     *   type="string",
-     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
-     * )
-     *
-     * @OA\Property(
-     *   property="name",
-     *   type="string",
-     *   example="Chain",
-     * )
-     *
-     * @OA\Property(
-     *   property="sku",
-     *   type="string",
-     *   example="K121"
-     * )
-     *
-     * @OA\Property(
-     *   property="quantity",
-     *   type="float",
-     *   example="20",
-     * )
-     */
 
     protected $fillable = [
         'name',

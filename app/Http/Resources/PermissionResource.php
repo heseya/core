@@ -2,11 +2,10 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\Swagger\PermissionResourceSwagger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class PermissionResource extends Resource implements PermissionResourceSwagger
+class PermissionResource extends Resource
 {
     public function base(Request $request): array
     {

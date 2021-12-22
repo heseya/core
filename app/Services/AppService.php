@@ -12,6 +12,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\TokenServiceContract;
+use App\Services\Contracts\UrlServiceContract;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -22,8 +23,10 @@ use Throwable;
 
 class AppService implements AppServiceContract
 {
-    public function __construct(protected TokenServiceContract $tokenService)
-    {
+    public function __construct(
+        protected TokenServiceContract $tokenService,
+        protected UrlServiceContract $urlService,
+    ) {
     }
 
     public function install(AppInstallDto $dto): App
@@ -112,9 +115,7 @@ class AppService implements AppServiceContract
             $uuid,
         );
 
-        $url = Str::endsWith($dto->getUrl(), '/')
-            ? "{$dto->getUrl()}install"
-            : "{$dto->getUrl()}/install";
+        $url = $this->urlService->urlAppendPath($dto->getUrl(), '/install');
 
         try {
             $response = Http::post($url, [
@@ -190,6 +191,7 @@ class AppService implements AppServiceContract
 
         Permission::where('name', 'like', 'app.' . $app->slug . '%')->delete();
         $app->role()->delete();
+        $app->webhooks()->delete();
         $app->delete();
     }
 

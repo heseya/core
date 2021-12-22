@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Product;
 use App\Models\ProductSet;
+use App\Models\Tag;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
@@ -236,5 +237,71 @@ class ProductSearchTest extends TestCase
 
         return $this->actingAs($user)
             ->getJson('/products?sets[]=' . $parentSet->slug);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByTag($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $tag = Tag::factory()->create();
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        // Product not in tag
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $tag->products()->attach($product);
+
+        $this->actingAs($this->$user)
+            ->json('GET', '/products', ['tags' => [$tag->getKey()]])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $product->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByTags($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $tag1 = Tag::factory()->create();
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $tag2 = Tag::factory()->create();
+
+        $product2 = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        // Product not in tag
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $tag1->products()->attach($product1);
+        $tag2->products()->attach($product2);
+
+        $this->actingAs($this->$user)
+            ->json('GET', '/products', [
+                'tags' => [
+                    $tag1->getKey(),
+                    $tag2->getKey(),
+                ]])
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment(['id' => $product1->getKey()])
+            ->assertJsonFragment(['id' => $product2->getKey()]);
     }
 }

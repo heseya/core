@@ -14,6 +14,7 @@ class OrderIndexRequest extends FormRequest
 
             'status_id' => ['nullable', 'uuid'],
             'shipping_method_id' => ['nullable', 'uuid'],
+            'paid' => ['nullable', 'boolean'],
         ];
     }
 }

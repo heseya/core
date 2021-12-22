@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Services\Contracts\UrlServiceContract;
+use App\Traits\HasWebHooks;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\Access\Authorizable;
+use Illuminate\Support\Facades\App as AppFacade;
 use Spatie\Permission\Contracts\Permission;
 use Spatie\Permission\Traits\HasPermissions;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -23,7 +26,8 @@ class App extends Model implements
     use HasFactory,
         Authorizable,
         Authenticatable,
-        HasPermissions;
+        HasPermissions,
+        HasWebHooks;
 
     protected $guard_name = 'api';
 
@@ -41,6 +45,14 @@ class App extends Model implements
         'uninstall_token',
         'role_id',
     ];
+
+    public function setUrlAttribute(string $url): void
+    {
+        /** @var UrlServiceContract $urlService */
+        $urlService = AppFacade::make(UrlServiceContract::class);
+
+        $this->attributes['url'] = $urlService->normalizeUrl($url);
+    }
 
     public function getJWTIdentifier(): string
     {

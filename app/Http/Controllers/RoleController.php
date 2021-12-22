@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Dtos\RoleCreateDto;
 use App\Dtos\RoleSearchDto;
 use App\Dtos\RoleUpdateDto;
-use App\Http\Controllers\Swagger\RoleControllerSwagger;
 use App\Http\Requests\RoleIndexRequest;
 use App\Http\Requests\RoleStoreRequest;
 use App\Http\Requests\RoleUpdateRequest;
@@ -15,7 +14,7 @@ use App\Services\Contracts\RoleServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class RoleController extends Controller implements RoleControllerSwagger
+class RoleController extends Controller
 {
     private RoleServiceContract $roleService;
 

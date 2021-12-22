@@ -32,6 +32,7 @@ class ProductSetFactory extends Factory
             'public_parent' => true,
             'order' => $order,
             'hide_on_index' => $this->faker->boolean,
+            'description_html' => '<p>' . $this->faker->sentence(10) . '</p>',
         ];
     }
 }

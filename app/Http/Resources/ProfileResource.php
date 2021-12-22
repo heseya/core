@@ -2,11 +2,10 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\Swagger\ProfileResourceSwagger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
-class ProfileResource extends Resource implements ProfileResourceSwagger
+class ProfileResource extends Resource
 {
     private ?string $permissionPrefix = null;
 
