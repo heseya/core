@@ -788,7 +788,7 @@ paths:
           description: 'Sorting string.'
           schema:
             type: string
-            example: 'code:asc,created_at:desc,id'
+            example: 'code:asc,created_at:desc,id:asc,email:desc,summary:desc'
         - name: status_id
           in: query
           description: 'Status UUID'
@@ -799,6 +799,11 @@ paths:
           description: 'Shipping Method UUID'
           schema:
             type: string
+        - name: paid
+          in: query
+          description: 'Is order paid'
+          schema:
+            type: boolean
       responses:
         200:
           description: Success

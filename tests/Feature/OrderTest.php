@@ -13,6 +13,9 @@ use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\WebHook;
+use App\Services\Contracts\OrderServiceContract;
+use App\Services\OrderService;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
@@ -56,6 +59,13 @@ class OrderTest extends TestCase
             'price' => 49.99,
         ]);
 
+        /** @var OrderService $orderService */
+        $orderService = App::make(OrderServiceContract::class);
+
+        $this->order->update([
+            'summary' => $orderService->calcSummary($this->order),
+        ]);
+
         /**
          * Expected response
          */
@@ -69,7 +79,7 @@ class OrderTest extends TestCase
                 'hidden' => $status->hidden,
                 'no_notifications' => $status->no_notifications,
             ],
-            'paid' => $this->order->isPaid(),
+            'paid' => $this->order->paid,
         ];
 
         $this->expected_summary_structure = [
@@ -163,12 +173,12 @@ class OrderTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->getJson('/orders?limit=30&sort=summary:desssc')
+            ->getJson('/orders?limit=30&sort=currency:desssc')
             ->assertStatus(422)
             ->assertJsonFragment([
                 'errors' => [
-                    ['You can\'t sort by summary field.'],
-                    ['Only asc|desc sorting directions are allowed on field summary.'],
+                    ['You can\'t sort by currency field.'],
+                    ['Only asc|desc sorting directions are allowed on field currency.'],
                 ],
             ]);
     }
@@ -295,6 +305,52 @@ class OrderTest extends TestCase
         $this
             ->json('GET', '/orders/my')
             ->assertStatus(404);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByPaid($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+        $status = Status::factory()->create();
+
+        $order1 = Order::factory([
+            'status_id' => $status->getKey(),
+        ])->create();
+
+        $order1->products()->create([
+            'product_id' => $product->getKey(),
+            'quantity' => 10,
+            'price' => 247.47,
+        ]);
+
+        $order1->refresh();
+        $order1->payments()->create([
+            'method' => 'payu',
+            'amount' => $order1->summary,
+            'paid' => true,
+        ]);
+
+        $order2 = Order::factory([
+            'status_id' => $status->getKey(),
+        ])->create();
+
+        $order2->products()->create([
+            'product_id' => $product->getKey(),
+            'quantity' => 10,
+            'price' => 247.47,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders?paid=1')
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
     }
 
     public function testViewUnauthorized(): void

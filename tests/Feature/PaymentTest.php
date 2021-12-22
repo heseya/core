@@ -36,6 +36,8 @@ class PaymentTest extends TestCase
             'quantity' => 1,
             'price' => 125.50,
         ]);
+
+        $this->order->refresh();
     }
 
     public function testPayuUrlUnauthorized(): void
@@ -192,8 +194,13 @@ class PaymentTest extends TestCase
             'amount' => $this->order->summary,
         ]);
 
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'paid' => true,
+        ]);
+
         $this->order->refresh();
-        $this->assertTrue($this->order->isPaid());
+        $this->assertTrue($this->order->paid);
     }
 
     /**
@@ -232,8 +239,13 @@ class PaymentTest extends TestCase
             'amount' => $amount,
         ]);
 
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'paid' => true,
+        ]);
+
         $this->order->refresh();
-        $this->assertTrue($this->order->isPaid());
+        $this->assertTrue($this->order->paid);
     }
 
 //    public function testPayPalNotification(): void
