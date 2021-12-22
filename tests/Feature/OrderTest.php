@@ -317,8 +317,11 @@ class OrderTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
         ]);
+        $status = Status::factory()->create();
 
-        $order1 = Order::factory()->create();
+        $order1 = Order::factory([
+            'status_id' => $status->getKey(),
+        ])->create();
 
         $order1->products()->create([
             'product_id' => $product->getKey(),
@@ -333,7 +336,9 @@ class OrderTest extends TestCase
             'paid' => true,
         ]);
 
-        $order2 = Order::factory()->create();
+        $order2 = Order::factory([
+            'status_id' => $status->getKey(),
+        ])->create();
 
         $order2->products()->create([
             'product_id' => $product->getKey(),

@@ -7,8 +7,6 @@ use App\Audits\Redactors\ShippingMethodRedactor;
 use App\Audits\Redactors\StatusRedactor;
 use App\SearchTypes\OrderSearch;
 use App\SearchTypes\WhereHasStatusHidden;
-use App\Services\Contracts\OrderServiceContract;
-use App\Services\OrderService;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Heseya\Sortable\Sortable;
