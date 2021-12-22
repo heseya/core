@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 class UserTest extends TestCase
@@ -296,6 +297,16 @@ class UserTest extends TestCase
                 $role3->getKey(),
             ],
         ];
+
+        Log::shouldReceive('error')
+            ->once()
+            ->withArgs(function ($message) {
+                return str_contains(
+                    $message,
+                    "AuthException(code: 0): "
+                    . "Can't give a role with permissions you don't have to the user at"
+                );
+            });
 
         $response = $this->actingAs($this->user)->postJson('/users', $data);
         $response->assertStatus(422);

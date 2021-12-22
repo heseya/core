@@ -32,6 +32,7 @@ class UserService implements UserServiceContract
         if (!Auth::user()->hasAllPermissions($permissions)) {
             throw new AuthException(
                 'Can\'t give a role with permissions you don\'t have to the user',
+                simpleLogs: true,
             );
         }
 
