@@ -1,0 +1,33 @@
+AppStore:
+  content:
+    application/json:
+      schema:
+        required:
+          - url
+          - allowed_permissions
+        properties:
+          url:
+            description: 'Url of the applications microfrontend configuration page'
+            type: string
+            example: 'https://microfront.app.heseya.com'
+          name:
+            description: 'Name of the app'
+            type: string
+            example: 'Super App'
+          licence_key:
+            description: 'Licence key allowing to install application'
+            type: string
+            example: '6v5e*B^%e8n76rn869r6n9r75nim76E&%nm996f7e87m'
+          allowed_permissions:
+            description: 'Permissions granted to the app'
+            type: array
+            items:
+              type: string
+              example: products.add
+          public_app_permissions:
+            description: 'App permissions granted to unauthenticated users'
+            type: array
+            items:
+              type: string
+              example: review.add
+        type: object

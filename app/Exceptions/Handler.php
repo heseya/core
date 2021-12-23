@@ -81,6 +81,9 @@ final class Handler extends ExceptionHandler
         PackageAuthException::class => [
             'code' => Response::HTTP_BAD_GATEWAY,
         ],
+        TFAException::class => [
+            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+        ],
     ];
 
     /**

@@ -19,6 +19,10 @@ Route::prefix('auth')->group(function (): void {
         ->middleware('can:auth.check_identity');
     Route::get('check/{identity_token}', [AuthController::class, 'checkIdentity'])
         ->middleware('can:auth.check_identity');
+    Route::post('2fa/setup', [AuthController::class, 'setupTFA'])
+        ->middleware('can:authenticated');
+    Route::post('2fa/confirm', [AuthController::class, 'confirmTFA'])
+        ->middleware('can:authenticated');
 });
 
 Route::post('login', [AuthController::class, 'login'])

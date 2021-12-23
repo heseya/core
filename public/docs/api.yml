@@ -56,77 +56,9 @@ paths:
       security:
         - oauth: [ ]
   /apps:
-    get:
-      tags:
-        - Apps
-      summary: 'All registered app list'
-      operationId: 6eaf1692950938c71bffef610a2c941a
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/App'
-                type: object
-    post:
-      tags:
-        - Apps
-      summary: 'install a new app'
-      operationId: 4936b400005af864ddd432ac0b476995
-      requestBody:
-        $ref: '#/components/requestBodies/AppStore'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/AppView'
-                type: object
+    $ref: './paths/Apps.yml#/Apps'
   '/apps/id:{id}':
-    get:
-      tags:
-        - Apps
-      summary: 'show an app'
-      operationId: 690076eb463ceb173c9ed46a2cd8e114
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/AppView'
-                type: object
-    delete:
-      tags:
-        - Apps
-      summary: 'delete app'
-      operationId: 127981a2da0d4a3a6231136a8e30c6a1
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
-        - name: force
-          in: query
-          description: 'Force removal of the app'
-          allowEmptyValue: true
-          schema:
-            type: boolean
-      responses:
-        204:
-          description: Success
+    $ref: './paths/Apps.yml#/AppsParams'
   '/audits/{object}/id:{id}':
     get:
       tags:
@@ -159,236 +91,35 @@ paths:
                       $ref: '#/components/schemas/Audit'
                 type: object
   /login:
-    post:
-      tags:
-        - Auth
-      summary: Login
-      operationId: 614c182a075050a98da662867ad0229b
-      requestBody:
-        content:
-          application/json:
-            schema:
-              properties:
-                email:
-                  type: string
-                  example: admin@example.com
-                password:
-                  type: string
-                  example: secret
-              type: object
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    properties:
-                      token:
-                        type: string
-                      identity_token:
-                        type: string
-                      refresh_token:
-                        type: string
-                      user:
-                        $ref: './schemas/Users.yml#/User'
-                    type: object
-                type: object
+    $ref: './paths/Auth.yml#/Login'
   /auth/logout:
-    post:
-      tags:
-        - Auth
-      summary: Logout
-      operationId: 6ff250949d00a5e056f9f8c1fdbec616
-      responses:
-        204:
-          description: 'Success no content'
+    $ref: './paths/Auth.yml#/Logout'
   /users/reset-password:
-    post:
-      tags:
-        - Auth
-      summary: 'Reset password'
-      operationId: 7915410e7e769ad485b7eb82fb1c385e
-      requestBody:
-        $ref: '#/components/requestBodies/PasswordReset'
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
+    $ref: './paths/Auth.yml#/ResetPassword'
   '/users/reset-password/{token}/{email}':
-    get:
-      tags:
-        - Auth
-      summary: 'Show reset password form'
-      operationId: 76d8f27a85dee87959d9c7edc649ca59
-      responses:
-        200:
-          description: Success
-      security:
-        - oauth: [ ]
+    $ref: './paths/Auth.yml#/ResetPasswordParams'
   /users/save-reset-password:
-    patch:
-      tags:
-        - Auth
-      summary: 'save the reset password'
-      operationId: 3c1ccfbf05683f16bb36d3fb43f35c59
-      requestBody:
-        $ref: '#/components/requestBodies/PasswordResetSave'
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
+    $ref: './paths/Auth.yml#/SaveResetPassword'
   /users/password:
-    patch:
-      tags:
-        - Auth
-      summary: 'Change password'
-      operationId: 0f7a47857c09912027137b06abb412ef
-      requestBody:
-        content:
-          application/json:
-            schema:
-              properties:
-                password:
-                  type: string
-                  example: secret
-                password_new:
-                  type: string
-                  example: xsw@!QAZ34
-              type: object
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
+    $ref: './paths/Auth.yml#/Password'
   /auth/refresh:
-    post:
-      tags:
-        - Auth
-      summary: 'Refresh access and identity tokens'
-      operationId: b6ef47cb38556f09d94a219bb10ce868
-      requestBody:
-        content:
-          application/json:
-            schema:
-              properties:
-                refresh_token:
-                  type: string
-              type: object
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    properties:
-                      token:
-                        type: string
-                      identity_token:
-                        type: string
-                      refresh_token:
-                        type: string
-                      user:
-                        $ref: './schemas/Users.yml#/User'
-                    type: object
-                type: object
+    $ref: './paths/Auth.yml#/Refresh'
   /auth/login-history:
-    get:
-      tags:
-        - Auth
-      summary: 'Get login history'
-      responses:
-        200:
-          description: Success
-      deprecated: true
-      security:
-        - oauth: [ ]
+    $ref: './paths/Auth.yml#/LoginHistory'
   '/auth/kill-session/id:{id}':
-    get:
-      tags:
-        - Auth
-      summary: 'Allow to ''kill'' active session'
-      parameters:
-        - name: id
-          in: path
-          description: 'token id from the table ''oauth_access_tokens'''
-          required: true
-          schema:
-            type: string
-            example: 47e380b746d6cacb20473b82d911b2701a3c05422c65cbc4872045a100fcb72be554ad1680aef2bf
-      responses:
-        200:
-          description: Success
-      deprecated: true
-      security:
-        - oauth: [ ]
+    $ref: './paths/Auth.yml#/KillSessionParams'
   /auth/kill-all-sessions:
-    get:
-      tags:
-        - Auth
-      summary: 'Allow to ''kill'' all old sessions'
-      responses:
-        200:
-          description: Success
-      deprecated: true
-      security:
-        - oauth: [ ]
+    $ref: './paths/Auth.yml#/KillSession'
   /auth/profile:
-    get:
-      tags:
-        - Auth
-      summary: 'get your own user or app resource'
-      operationId: 3b669647885ea36d62385cce472ba888
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    oneOf:
-                      - $ref: './schemas/Users.yml#/UserView'
-                      - $ref: '#/components/schemas/AppView'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Auth.yml#/Profile'
   /auth/check:
-    get:
-      tags:
-        - Auth
-      summary: 'get profile resource of unauthenticated user'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/ProfileView'
-                type: object
+    $ref: './paths/Auth.yml#/Check'
   '/auth/check/{identity_token}':
-    get:
-      tags:
-        - Auth
-      summary: 'get profile resource from identity token'
-      operationId: bc7e17afb88db22a3ec32aa00f229f15
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/ProfileView'
-                type: object
+    $ref: './paths/Auth.yml#/CheckParams'
+  /auth/2fa/setup:
+    $ref: './paths/Auth.yml#/TFASetup'
+  /auth/2fa/confirm:
+    $ref: './paths/Auth.yml#/TFAConfirm'
   /countries:
     $ref: './paths/Countries.yml#Countries'
   /deposits:
@@ -1779,54 +1510,9 @@ components:
             user:
               $ref: './schemas/Users.yml#/User'
     App:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        url:
-          description: 'Root url of the application'
-          type: string
-          example: 'https://app.heseya.com'
-        microfrontend_url:
-          description: 'Url of the applications microfrontend configuration page'
-          type: string
-          example: 'https://microfront.app.heseya.com'
-        name:
-          description: 'Name of the app'
-          type: string
-          example: 'Super App'
-        slug:
-          description: 'Unique slugified name'
-          type: string
-          example: super_app
-        version:
-          description: 'App version'
-          type: string
-          example: ^1.0.0
-        description:
-          description: 'Description of the app'
-          type: string
-          example: 'App responsible for creating products page layout'
-        icon:
-          description: 'App icon url'
-          type: string
-          example: 'https://picsum.photos/200'
-        author:
-          description: 'Name of an author or team'
-          type: string
-          example: 'Adam Nowak'
-      type: object
+      $ref: './schemas/Apps.yml#/App'
     AppView:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/App'
-        - properties:
-            permissions:
-              description: 'Permission names'
-              type: array
-              items:
-                type: string
-                example: roles.show_details
+      $ref: './schemas/Apps.yml#/AppView'
     Audit:
       properties:
         id:
@@ -1965,29 +1651,15 @@ components:
     ProductView:
       $ref: './schemas/Products.yml#/ProductView'
     ProfileView:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        name:
-          description: 'Users name'
-          type: string
-          example: terms-and-conditions
-        avatar:
-          description: 'Name displayed as a page header'
-          type: string
-          example: 'Terms & Conditions'
-        permissions:
-          description: 'Permission names'
-          type: array
-          items:
-            type: string
-            example: roles.show_details
-      type: object
+      $ref: './schemas/Auth.yml#/Profile'
     Role:
       $ref: './schemas/Roles.yml#/Role'
     RoleView:
       $ref: './schemas/Roles.yml#/RoleView'
+    TFASetupEmail:
+      $ref: './schemas/Auth.yml#/TFASetupEmail'
+    TFASetupApp:
+      $ref: './schemas/Auth.yml#/TFASetupApp'
     User:
       $ref: './schemas/Users.yml#/User'
     UserView:
@@ -2387,38 +2059,7 @@ components:
       $ref: './schemas/Seo.yml#SeoKeywordsResponse'
   requestBodies:
     AppStore:
-      content:
-        application/json:
-          schema:
-            required:
-              - url
-              - allowed_permissions
-            properties:
-              url:
-                description: 'Url of the applications microfrontend configuration page'
-                type: string
-                example: 'https://microfront.app.heseya.com'
-              name:
-                description: 'Name of the app'
-                type: string
-                example: 'Super App'
-              licence_key:
-                description: 'Licence key allowing to install application'
-                type: string
-                example: '6v5e*B^%e8n76rn869r6n9r75nim76E&%nm996f7e87m'
-              allowed_permissions:
-                description: 'Permissions granted to the app'
-                type: array
-                items:
-                  type: string
-                  example: products.add
-              public_app_permissions:
-                description: 'App permissions granted to unauthenticated users'
-                type: array
-                items:
-                  type: string
-                  example: review.add
-            type: object
+      $ref: './requests/Apps.yml#/AppStore'
     IndexSchema:
       content:
         application/json:
@@ -2556,27 +2197,9 @@ components:
                 $ref: '#/components/schemas/SeoStore'
             type: object
     PasswordReset:
-      content:
-        application/json:
-          schema:
-            properties:
-              email:
-                type: string
-                example: admin@example.com
-            type: object
+      $ref: './requests/Auth.yml#/PasswordReset'
     PasswordResetSave:
-      content:
-        application/json:
-          schema:
-            properties:
-              token:
-                type: string
-              email:
-                type: string
-                example: admin@example.com
-              password:
-                type: string
-            type: object
+      $ref: './requests/Auth.yml#/PasswordResetSave'
     ProductStore:
       $ref: './requests/Products.yml#ProductStore'
     ProductUpdate:

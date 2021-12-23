@@ -2,9 +2,13 @@
 
 namespace App\Services;
 
+use App\Dtos\TFAConfirmDto;
+use App\Dtos\TFASetupDto;
 use App\Enums\RoleType;
+use App\Enums\TFAType;
 use App\Enums\TokenType;
 use App\Exceptions\AuthException;
+use App\Exceptions\TFAException;
 use App\Models\App;
 use App\Models\Role;
 use App\Models\Token;
@@ -17,6 +21,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use PHPGangsta_GoogleAuthenticator;
 
 class AuthService implements AuthServiceContract
 {
@@ -188,6 +193,78 @@ class AuthService implements AuthServiceContract
     public function isAppAuthenticated(): bool
     {
         return Auth::user() instanceof App;
+    }
+
+    public function setupTFA(TFASetupDto $dto): array
+    {
+        if (!$this->isUserAuthenticated()) {
+            throw new TFAException('Only users can set up Two-Factor Authentication');
+        }
+
+        if (Auth::user()->is_tfa_active) {
+            throw new TFAException('Two-Factor Authentication is already setup.');
+        }
+
+        return match ($dto->getType()) {
+            TFAType::APP => $this->googleTFA(),
+            default => throw new TFAException('Invalid Two-Factor Authentication type.'),
+        };
+    }
+
+    public function confirmTFA(TFAConfirmDto $dto): array
+    {
+        if (!$this->isUserAuthenticated()) {
+            throw new TFAException('Only users can set up Two-Factor Authentication');
+        }
+
+        if (Auth::user()->is_tfa_active) {
+            throw new TFAException('Two-Factor Authentication is already setup.');
+        }
+
+        if (!Auth::user()->tfa_type) {
+            throw new TFAException('First select Two-Factor Authentication type.');
+        }
+
+        $valid = match (Auth::user()->tfa_type) {
+            TFAType::APP => $this->googleTFAVerify($dto->getCode()),
+        };
+
+        if (!$valid) {
+            throw new TFAException('Invalid Two-Factor Authentication token.');
+        }
+
+        Auth::user()->update([
+            'is_tfa_active' => true,
+        ]);
+
+        // Dodać mechanizm generowania kodów odzyskujących
+        return [];
+    }
+
+    private function googleTFAVerify(string $code): bool
+    {
+        $google_authenticator = new PHPGangsta_GoogleAuthenticator();
+
+        return $google_authenticator->verifyCode(Auth::user()->tfa_secret, $code);
+    }
+
+    private function googleTFA(): array
+    {
+        $google_authenticator = new PHPGangsta_GoogleAuthenticator();
+
+        $secret = $google_authenticator->createSecret();
+        $qr_code_url = $google_authenticator->getQRCodeGoogleUrl(Config::get('app.name'), $secret);
+
+        Auth::user()->update([
+            'tfa_type' => TFAType::APP,
+            'tfa_secret' => $secret,
+        ]);
+
+        return [
+            'type' => TFAType::APP,
+            'secret' => $secret,
+            'qr_code_url' => $qr_code_url,
+        ];
     }
 
 //    public function loginHistory(User $user): Builder

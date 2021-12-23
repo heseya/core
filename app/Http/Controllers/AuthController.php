@@ -2,14 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\TFAConfirmDto;
+use App\Dtos\TFASetupDto;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Requests\PasswordResetRequest;
 use App\Http\Requests\PasswordResetSaveRequest;
+use App\Http\Requests\TFAConfirmRequest;
+use App\Http\Requests\TFASetupRequest;
 use App\Http\Requests\TokenRefreshRequest;
 use App\Http\Resources\AppResource;
 use App\Http\Resources\AuthResource;
 use App\Http\Resources\ProfileResource;
+use App\Http\Resources\TFAConfirmResource;
+use App\Http\Resources\TFAResource;
 use App\Http\Resources\UserResource;
 use App\Models\App;
 use App\Services\Contracts\AppServiceContract;
@@ -146,5 +152,15 @@ class AuthController extends Controller
             : null;
 
         return ProfileResource::make($user)->stripedPermissionPrefix($prefix);
+    }
+
+    public function setupTFA(TFASetupRequest $request): JsonResource
+    {
+        return TFAResource::make($this->authService->setupTFA(TFASetupDto::fromFormRequest($request)));
+    }
+
+    public function confirmTFA(TFAConfirmRequest $request): JsonResource
+    {
+        return TFAConfirmResource::make($this->authService->confirmTFA(TFAConfirmDto::fromFormRequest($request)));
     }
 }
