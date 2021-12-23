@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Enums\MediaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
 use App\Listeners\WebHookEventListener;
-use App\Enums\MediaType;
 use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductSet;
@@ -350,6 +350,8 @@ class ProductTest extends TestCase
                         'id' => $media1->getKey(),
                         'type' => Str::lower($media1->type->key),
                         'url' => $media1->url,
+                        'slug' => $media1->slug,
+                        'alt' => $media1->alt,
                     ],
                 ],
                 [
@@ -367,6 +369,8 @@ class ProductTest extends TestCase
                         'id' => $media2->getKey(),
                         'type' => Str::lower($media2->type->key),
                         'url' => $media2->url,
+                        'slug' => $media2->slug,
+                        'alt' => $media2->alt,
                     ],
                 ],
             ]]);

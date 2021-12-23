@@ -49,7 +49,8 @@ class MediaUpdateTest extends TestCase
             ->json('PATCH', "/media/id:{$this->media->getKey()}", [
                 'alt' => 'Test alt description',
             ])
-            ->assertOk();
+            ->assertOk()
+            ->assertJsonFragment(['alt' => 'Test alt description']);
 
         $this->assertDatabaseHas('media', [
             'id' => $this->media->getKey(),
@@ -72,7 +73,9 @@ class MediaUpdateTest extends TestCase
             ->json('PATCH', "/media/id:{$this->media->getKey()}", [
                 'slug' => 'test-slug',
             ])
-            ->assertOk();
+            ->assertOk()
+            ->assertJsonFragment(['slug' => 'test-slug'])
+            ->assertJsonFragment(['url' => 'http://cdn.example.com/dev/test-slug.jpg']);
 
         $this->assertDatabaseHas('media', [
             'id' => $this->media->getKey(),
