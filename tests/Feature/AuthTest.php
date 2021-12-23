@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\RoleType;
+use App\Enums\TFAType;
 use App\Enums\TokenType;
 use App\Models\App;
 use App\Models\Permission;
@@ -13,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use PHPGangsta_GoogleAuthenticator;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
@@ -787,6 +790,122 @@ class AuthTest extends TestCase
                     'raw_name',
                 ],
             ]]);
+    }
+
+    public function testSetupTfaUnauthorized(): void
+    {
+        $this->json('POST', '/auth/2fa/setup', [
+            'type' => TFAType::APP,
+        ])->assertForbidden();
+    }
+
+    public function testConfirmTfaUnauthorized(): void
+    {
+        $this->json('POST', '/auth/2fa/confirm', [
+            'code' => '123456',
+        ])->assertForbidden();
+    }
+
+    public function testAlreadySetupTfa(): void
+    {
+        $this->user->update([
+            'tfa_type' => TFAType::APP,
+            'tfa_secret' => 'secret',
+            'is_tfa_active' => true,
+        ]);
+
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/setup', [
+            'type' => TFAType::APP,
+        ])
+            ->assertStatus(422)
+            ->assertJsonFragment(['message' => 'Two-Factor Authentication is already setup.']);
+    }
+
+    public function confirmAlreadySetupTfa(): void
+    {
+        $this->user->update([
+            'tfa_type' => TFAType::APP,
+            'tfa_secret' => 'secret',
+            'is_tfa_active' => true,
+        ]);
+
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
+            'code' => '123456',
+        ])
+            ->assertStatus(422)
+            ->assertJsonFragment(['message' => 'Two-Factor Authentication is already setup.']);
+    }
+
+    public function confirmNoSetupTfa(): void
+    {
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
+            'code' => '123456',
+        ])
+            ->assertStatus(422)
+            ->assertJsonFragment(['message' => 'First select Two-Factor Authentication type.']);
+    }
+
+    public function confirmInvalidToken(): void
+    {
+        $this->user->update([
+            'tfa_type' => TFAType::APP,
+            'tfa_secret' => 'secret',
+            'is_tfa_active' => false,
+        ]);
+
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
+            'code' => 'INVALID',
+        ])
+            ->assertStatus(422)
+            ->assertJsonFragment(['message' => 'Invalid Two-Factor Authentication token.']);
+    }
+
+    public function testSetupAppTfa(): void
+    {
+        $response = $this->actingAs($this->user)->json('POST', '/auth/2fa/setup', [
+            'type' => TFAType::APP,
+        ]);
+
+        $secret = $response->getData()->data->secret;
+
+        $this->assertDatabaseHas('users', [
+            'id' => $this->user->getKey(),
+            'tfa_type' => TFAType::APP,
+            'tfa_secret' => $secret,
+            'is_tfa_active' => false,
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonStructure(['data' => [
+                'type',
+                'secret',
+                'qr_code_url',
+            ]]);
+    }
+
+    public function testConfirmAppTfa(): void
+    {
+        $google_authenticator = new PHPGangsta_GoogleAuthenticator();
+
+        $secret = $google_authenticator->createSecret();
+        $code = $google_authenticator->getCode($secret);
+
+        $this->user->update([
+            'tfa_type' => TFAType::APP,
+            'tfa_secret' => $secret,
+        ]);
+
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
+            'code' => $code,
+        ])->assertOk()->assertJsonStructure(['data' => [
+            'recovery_codes'
+        ]]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $this->user->getKey(),
+            'is_tfa_active' => true,
+        ]);
     }
 
 //    public function testAuthWithReokedToken(): void

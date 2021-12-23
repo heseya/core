@@ -4,9 +4,11 @@ namespace App\Providers;
 
 use App\Models\Order;
 use App\Models\WebHook;
+use App\Policies\AuthenticatedPolicy;
 use App\Policies\OrderPolicy;
 use App\Policies\WebHookPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rules\Password;
 
 class AuthServiceProvider extends ServiceProvider
@@ -27,6 +29,8 @@ class AuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerPolicies();
+
+        Gate::define('authenticated', [AuthenticatedPolicy::class, 'authenticated']);
 
         Password::defaults(function () {
             return Password::min(10)

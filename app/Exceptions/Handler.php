@@ -84,6 +84,9 @@ final class Handler extends ExceptionHandler
         ItemException::class => [
             'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
         ],
+        TFAException::class => [
+            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+        ],
     ];
 
     /**

@@ -2,6 +2,8 @@
 
 namespace App\Services\Contracts;
 
+use App\Dtos\TFAConfirmDto;
+use App\Dtos\TFASetupDto;
 use App\Models\User;
 
 interface AuthServiceContract
@@ -27,6 +29,10 @@ interface AuthServiceContract
     public function isUserAuthenticated(): bool;
 
     public function isAppAuthenticated(): bool;
+
+    public function setupTFA(TFASetupDto $dto): array;
+
+    public function confirmTFA(TFAConfirmDto $dto): array;
 
 //    public function loginHistory(User $user): Builder;
 //

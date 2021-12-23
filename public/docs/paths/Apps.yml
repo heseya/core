@@ -1,0 +1,69 @@
+Apps:
+  get:
+    tags:
+      - Apps
+    summary: 'All registered app list'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Apps.yml#/App'
+              type: object
+  post:
+    tags:
+      - Apps
+    summary: 'install a new app'
+    requestBody:
+      $ref: './../requests/Apps.yml#/AppStore'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Apps.yml#/AppView'
+              type: object
+
+AppsParams:
+  get:
+    tags:
+      - Apps
+    summary: 'show an app'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Apps.yml#/AppView'
+              type: object
+  delete:
+    tags:
+      - Apps
+    summary: 'delete app'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+      - name: force
+        in: query
+        description: 'Force removal of the app'
+        allowEmptyValue: true
+        schema:
+          type: boolean
+    responses:
+      204:
+        description: Success
