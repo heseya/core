@@ -21,6 +21,7 @@ use App\Models\Discount;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
+use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\User;
@@ -71,19 +72,7 @@ class OrderController extends Controller
 
     public function store(OrderCreateRequest $request): JsonResource
     {
-        # Schema values validation
-        foreach ($request->input('items', []) as $item) {
-            $product = Product::findOrFail($item['product_id']);
-            $schemas = $item['schemas'] ?? [];
-
-            foreach ($product->schemas as $schema) {
-                $value = $schemas[$schema->getKey()] ?? null;
-
-                $schema->validate($value, $item['quantity']);
-            }
-        }
-
-        # Warehouse items validation
+        # Schema values and warehouse items validation
         $items = [];
 
         foreach ($request->input('items', []) as $item) {
