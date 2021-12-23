@@ -32,6 +32,12 @@ MediaParams:
     tags:
       - Media
     summary: 'Update media'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
     requestBody:
       $ref: './../requests/Media.yml#MediaUpdate'
     responses:
