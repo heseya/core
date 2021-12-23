@@ -13,6 +13,8 @@ class MediaResource extends Resource
             'id' => $this->getKey(),
             'type' => Str::lower($this->type->key),
             'url' => $this->url,
+            'slug' => $this->slug,
+            'alt' => $this->alt,
         ];
     }
 }

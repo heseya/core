@@ -21,10 +21,12 @@ use App\Models\Discount;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
+use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\User;
 use App\Services\Contracts\DiscountServiceContract;
+use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Illuminate\Http\JsonResponse;
@@ -40,6 +42,7 @@ class OrderController extends Controller
         private NameServiceContract $nameService,
         private OrderServiceContract $orderService,
         private DiscountServiceContract $discountService,
+        private ItemServiceContract $itemService,
     ) {
     }
 
@@ -69,6 +72,36 @@ class OrderController extends Controller
 
     public function store(OrderCreateRequest $request): JsonResource
     {
+        # Schema values and warehouse items validation
+        $items = [];
+
+        foreach ($request->input('items', []) as $item) {
+            $product = Product::findOrFail($item['product_id']);
+            $schemas = $item['schemas'] ?? [];
+
+            /** @var Schema $schema */
+            foreach ($product->schemas as $schema) {
+                $value = $schemas[$schema->getKey()] ?? null;
+
+                $schema->validate($value, $item['quantity']);
+
+                if ($value === null) {
+                    continue;
+                }
+
+                $schemaItems = $schema->getItems($value, $item['quantity']);
+                $items = $this->itemService->addItemArrays($items, $schemaItems);
+            }
+        }
+
+        $this->itemService->validateItems($items);
+
+        # Discount validation
+        foreach ($request->input('discounts', []) as $discount) {
+            Discount::where('code', $discount)->firstOrFail();
+        }
+
+        # Creating order
         $validated = $request->validated();
 
         $shippingMethod = ShippingMethod::findOrFail($request->input('shipping_method_id'));
@@ -91,8 +124,10 @@ class OrderController extends Controller
             'user_id' => Auth::user() instanceof User ? Auth::user()->getKey() : null,
         ]);
 
+        # Add products to order
+        $summary = 0;
+
         try {
-            $summary = 0;
             foreach ($request->input('items', []) as $item) {
                 $product = Product::findOrFail($item['product_id']);
                 $schemas = $item['schemas'] ?? [];
@@ -106,10 +141,9 @@ class OrderController extends Controller
                 $order->products()->save($orderProduct);
                 $summary += $product->price * $item['quantity'];
 
+                # Add schemas to products
                 foreach ($product->schemas as $schema) {
                     $value = $schemas[$schema->getKey()] ?? null;
-
-                    $schema->validate($value, $item['quantity']);
 
                     if ($value === null) {
                         continue;
@@ -121,6 +155,7 @@ class OrderController extends Controller
                         $option = $schema->options()->findOrFail($value);
                         $value = $option->name;
 
+                        # Remove items from warehouse
                         foreach ($option->items as $optionItem) {
                             $orderProduct->deposits()->create([
                                 'item_id' => $optionItem->getKey(),
@@ -139,31 +174,35 @@ class OrderController extends Controller
                     $summary += $price;
                 }
             }
-
-            $discounts = [];
-            $cartValue = $summary;
-            foreach ($request->input('discounts', []) as $discount) {
-                $discount = Discount::where('code', $discount)->firstOrFail();
-                $discounts[$discount->getKey()] = [
-                    'type' => $discount->type,
-                    'discount' => $discount->discount,
-                ];
-                $summary -= $this->discountService->calc($cartValue, $discount);
-            }
-            $order->discounts()->sync($discounts);
-
-            $summary = ($summary < 0 ? 0 : $summary);
-
-            $shippingPrice = $shippingMethod->getPrice($summary);
-            $order->update([
-                'shipping_price' => $shippingPrice,
-                'summary' => round($summary + $shippingPrice, 2),
-            ]);
         } catch (Throwable $exception) {
             $order->delete();
 
             throw $exception;
         }
+
+        # Apply discounts to order
+        $discounts = [];
+        $cartValue = $summary;
+        foreach ($request->input('discounts', []) as $discount) {
+            $discount = Discount::where('code', $discount)->first();
+
+            $discounts[$discount->getKey()] = [
+                'type' => $discount->type,
+                'discount' => $discount->discount,
+            ];
+
+            $summary -= $this->discountService->calc($cartValue, $discount);
+        }
+        $order->discounts()->sync($discounts);
+
+        # Calculate shipping price for complete order
+        $summary = max($summary, 0);
+        $shippingPrice = $shippingMethod->getPrice($summary);
+
+        $order->update([
+            'shipping_price' => $shippingPrice,
+            'summary' => round($summary + $shippingPrice, 2),
+        ]);
 
         OrderCreated::dispatch($order);
 

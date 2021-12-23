@@ -23,6 +23,8 @@ class Media extends Model
     protected $fillable = [
         'type',
         'url',
+        'slug',
+        'alt',
     ];
 
     protected $casts = [

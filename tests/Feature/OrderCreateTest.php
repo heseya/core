@@ -3,9 +3,9 @@
 namespace Tests\Feature;
 
 use App\Enums\DiscountType;
-use App\Enums\SchemaType;
 use App\Enums\IssuerType;
 use App\Enums\RoleType;
+use App\Enums\SchemaType;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Listeners\WebHookEventListener;
@@ -151,7 +151,7 @@ class OrderCreateTest extends TestCase
     {
         $this->$user->givePermissionTo('orders.add');
 
-        $webHook = WebHook::factory()->create([
+        WebHook::factory()->create([
             'events' => [
                 'OrderCreated'
             ],

@@ -30,7 +30,7 @@ class OptionAvailable implements Rule
             return false;
         }
 
-        return $option->getAvailableAttribute($this->quantity);
+        return !$option->disabled;
     }
 
     /**

@@ -591,6 +591,32 @@ paths:
                 type: object
       security:
         - oauth: [ ]
+    patch:
+      tags:
+        - Orders
+      summary: 'update order'
+      operationId: ff53701d16615e693cfb247e129858b5
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+      requestBody:
+        $ref: '#/components/requestBodies/OrderUpdate'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Order'
+                type: object
+      security:
+        - oauth: [ ]
   '/orders/{code}':
     get:
       tags:
@@ -682,33 +708,6 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Order'
-                type: object
-      security:
-        - oauth: [ ]
-  '/orders/id:{order:id}':
-    patch:
-      tags:
-        - Orders
-      summary: 'update order'
-      operationId: ff53701d16615e693cfb247e129858b5
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
-      requestBody:
-        $ref: '#/components/requestBodies/OrderUpdate'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Order'
                 type: object
       security:
         - oauth: [ ]

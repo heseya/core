@@ -86,13 +86,13 @@ class Schema extends Model
      *
      * @throws ValidationException
      */
-    public function validate($input, float $quantity = 0): void
+    public function validate($value, float $quantity = 0): void
     {
         $validation = new Collection();
 
         if ($this->required) {
             $validation->push('required');
-        } elseif ($input === null) {
+        } elseif ($value === null) {
             return;
         }
 
@@ -124,7 +124,7 @@ class Schema extends Model
         ];
 
         $validator = Validator::make(
-            [$this->getKey() => $input],
+            [$this->getKey() => $value],
             [$this->getKey() => $validation],
             [
                 'required' => Lang::get('validation.schema.required', $validationStrings),
@@ -138,6 +138,23 @@ class Schema extends Model
         if ($validator->fails()) {
             throw new ValidationException($validator);
         }
+    }
+
+    public function getItems($value, float $quantity = 0): array
+    {
+        $items = [];
+
+        if ($value === null || !$this->type->is(SchemaType::SELECT)) {
+            return $items;
+        }
+
+        $option = $this->options()->find($value);
+
+        foreach ($option->items as $item) {
+            $items[$item->getKey()] = $quantity;
+        }
+
+        return $items;
     }
 
     /**
