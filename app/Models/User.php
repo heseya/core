@@ -98,4 +98,9 @@ class User extends Model implements
     {
         return $this->hasMany(Order::class);
     }
+
+    public function securityCodes(): HasMany
+    {
+        return $this->hasMany(OneTimeSecurityCode::class, 'user_id', 'id');
+    }
 }
