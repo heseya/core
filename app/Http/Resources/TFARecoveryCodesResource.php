@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 
-class TFAConfirmResource extends Resource
+class TFARecoveryCodesResource extends Resource
 {
     public function base(Request $request): array
     {

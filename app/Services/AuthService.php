@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Dtos\TFAConfirmDto;
+use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
 use App\Enums\RoleType;
 use App\Enums\TFAType;
@@ -244,10 +245,26 @@ class AuthService implements AuthServiceContract
             'is_tfa_active' => true,
         ]);
 
-        Auth::user()->securityCodes()->delete();
+        return $this->oneTimeSecurityCodeService->generateRecoveryCodes();
+    }
 
-        // Dodać mechanizm generowania kodów odzyskujących
-        return [];
+    public function generateRecoveryCodes(TFAPasswordDto $dto): array
+    {
+        $user = $dto->getUser();
+        $this->checkCredentials($user, $dto->getPassword());
+
+        if (!$user->is_tfa_active) {
+            throw new TFAException('Two-Factor Authentication is not setup.');
+        }
+
+        return $this->oneTimeSecurityCodeService->generateRecoveryCodes();
+    }
+
+    public function showRecoveryCodes(TFAPasswordDto $dto): array
+    {
+        $this->checkCredentials($dto->getUser(), $dto->getPassword());
+
+        return $this->oneTimeSecurityCodeService->showRecoveryCodes();
     }
 
     private function emailTFA(): array

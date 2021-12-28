@@ -6,6 +6,7 @@ use App\Models\OneTimeSecurityCode;
 use App\Models\User;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 
@@ -22,6 +23,27 @@ class OneTimeSecurityCodeService implements OneTimeSecurityCodeContract
         ]);
 
         return $code;
+    }
+
+    public function generateRecoveryCodes(int $codes = 3): array
+    {
+        Auth::user()->securityCodes()->delete();
+
+        $recovery_codes = [];
+
+        for ($i = 0; $i < $codes; $i++) {
+            array_push($recovery_codes, $this->generateOneTimeSecurityCode(Auth::user()));
+        }
+
+        return $recovery_codes;
+    }
+
+    public function showRecoveryCodes(): array
+    {
+        $recovery_codes = Auth::user()->securityCodes()->whereNull('expires_at')->get()
+            ->map(fn ($code) => $code->code);
+
+        return $recovery_codes->all();
     }
 
     private function generateCode(array $modules, string $separator = ''): string
