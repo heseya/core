@@ -39,6 +39,10 @@ interface AuthServiceContract
 
     public function showRecoveryCodes(TFAPasswordDto $dto): array;
 
+    public function removeTFA(TFAPasswordDto $dto): void;
+
+    public function removeUsersTFA(User $user): void;
+
 //    public function loginHistory(User $user): Builder;
 //
 //    public function killActiveSession(User $user, string $oauthAccessTokensId);

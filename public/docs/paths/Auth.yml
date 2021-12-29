@@ -355,3 +355,21 @@ TFARecoveryCreate:
                         type: string
                         example: XyDZR-M9GWZ
               type: object
+
+TFARemove:
+  post:
+    tags:
+      - Auth
+    summary: 2FA Remove
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              password:
+                type: string
+                example: secret
+            type: object
+  responses:
+    204:
+      description: Success
