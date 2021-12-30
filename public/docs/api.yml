@@ -1499,16 +1499,7 @@ paths:
 components:
   schemas:
     Error:
-      properties:
-        code:
-          description: 'Http response code.'
-          type: integer
-          example: 500
-        message:
-          description: 'Error message.'
-          type: string
-          example: 'Some error message.'
-      type: object
+      $ref: './schemas/Error.yml#/Error'
     OrderView:
       type: object
       allOf:

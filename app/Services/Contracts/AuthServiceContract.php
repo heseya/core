@@ -9,7 +9,7 @@ use App\Models\User;
 
 interface AuthServiceContract
 {
-    public function login(string $email, string $password, ?string $ip, ?string $userAgent): array;
+    public function login(string $email, string $password, ?string $ip, ?string $userAgent, ?string $code): array;
 
     public function refresh(string $refreshToken, ?string $ip, ?string $userAgent): array;
 
