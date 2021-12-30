@@ -14,8 +14,11 @@ use App\Models\Role;
 use App\Models\Token;
 use App\Models\User;
 use App\Notifications\ResetPassword;
+use App\Notifications\TFAInitialization;
 use App\Services\Contracts\AuthServiceContract;
+use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
@@ -25,8 +28,10 @@ use PHPGangsta_GoogleAuthenticator;
 
 class AuthService implements AuthServiceContract
 {
-    public function __construct(protected TokenServiceContract $tokenService)
-    {
+    public function __construct(
+        protected TokenServiceContract $tokenService,
+        protected OneTimeSecurityCodeContract $oneTimeSecurityCodeService,
+    ) {
     }
 
     public function login(string $email, string $password, ?string $ip, ?string $userAgent): array
@@ -207,6 +212,7 @@ class AuthService implements AuthServiceContract
 
         return match ($dto->getType()) {
             TFAType::APP => $this->googleTFA(),
+            TFAType::EMAIL => $this->emailTFA(),
             default => throw new TFAException('Invalid Two-Factor Authentication type.'),
         };
     }
@@ -227,6 +233,7 @@ class AuthService implements AuthServiceContract
 
         $valid = match (Auth::user()->tfa_type) {
             TFAType::APP => $this->googleTFAVerify($dto->getCode()),
+            TFAType::EMAIL => $this->emailTFAVerify($dto->getCode()),
         };
 
         if (!$valid) {
@@ -237,8 +244,41 @@ class AuthService implements AuthServiceContract
             'is_tfa_active' => true,
         ]);
 
+        Auth::user()->securityCodes()->delete();
+
         // Dodać mechanizm generowania kodów odzyskujących
         return [];
+    }
+
+    private function emailTFA(): array
+    {
+        Auth::user()->securityCodes()->delete();
+        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(Auth::user(), 900000);
+
+        Auth::user()->update([
+            'tfa_type' => TFAType::EMAIL,
+        ]);
+
+        Auth::user()->notify(new TFAInitialization($code));
+
+        return [
+            'type' => TFAType::EMAIL,
+        ];
+    }
+
+    private function emailTFAVerify(string $code): bool
+    {
+        $security_codes = Auth::user()->securityCodes()
+            ->where('expires_at', '>', Carbon::now())
+            ->orWhereNull('expires_at')->get();
+
+        foreach ($security_codes as $security_code) {
+            if ($security_code->code === $code) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function googleTFAVerify(string $code): bool
