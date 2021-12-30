@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\OneTimeSecurityCode;
 use App\Models\User;
+use App\Notifications\TFARecoveryCodes;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -34,6 +35,8 @@ class OneTimeSecurityCodeService implements OneTimeSecurityCodeContract
         for ($i = 0; $i < $codes; $i++) {
             array_push($recovery_codes, $this->generateOneTimeSecurityCode(Auth::user()));
         }
+
+        Auth::user()->notify(new TFARecoveryCodes());
 
         return $recovery_codes;
     }

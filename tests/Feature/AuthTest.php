@@ -10,6 +10,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use App\Notifications\TFAInitialization;
+use App\Notifications\TFARecoveryCodes;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -923,6 +924,8 @@ class AuthTest extends TestCase
 
     public function testConfirmAppTfa(): void
     {
+        Notification::fake();
+
         $google_authenticator = new PHPGangsta_GoogleAuthenticator();
 
         $secret = $google_authenticator->createSecret();
@@ -938,6 +941,10 @@ class AuthTest extends TestCase
         ])->assertOk()->assertJsonStructure(['data' => [
             'recovery_codes'
         ]]);
+
+        Notification::assertSentTo(
+            [$this->user], TFARecoveryCodes::class
+        );
 
         $this->assertDatabaseHas('users', [
             'id' => $this->user->getKey(),
@@ -975,6 +982,8 @@ class AuthTest extends TestCase
 
     public function testConfirmEmailTfa(): void
     {
+        Notification::fake();
+
         $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user, 900000);
 
         $this->user->update([
@@ -986,6 +995,10 @@ class AuthTest extends TestCase
         ])->assertOk()->assertJsonStructure(['data' => [
             'recovery_codes'
         ]]);
+
+        Notification::assertSentTo(
+            [$this->user], TFARecoveryCodes::class
+        );
 
         $this->assertDatabaseHas('users', [
             'id' => $this->user->getKey(),
@@ -1029,6 +1042,8 @@ class AuthTest extends TestCase
      */
     public function testRecoveryCodesCreate($method, $secret): void
     {
+        Notification::fake();
+
         $this->user->update([
             'tfa_type' => $method,
             'tfa_secret' => $secret,
@@ -1038,6 +1053,10 @@ class AuthTest extends TestCase
         $response = $this->actingAs($this->user)->json('POST', '/auth/2fa/recovery/create', [
             'password' => $this->password,
         ])->assertOk();
+
+        Notification::assertSentTo(
+            [$this->user], TFARecoveryCodes::class
+        );
 
         $recovery_codes = OneTimeSecurityCode::where('user_id', '=', $this->user->getKey())
             ->whereNull('expires_at')
