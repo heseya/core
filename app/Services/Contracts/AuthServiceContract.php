@@ -37,8 +37,6 @@ interface AuthServiceContract
 
     public function generateRecoveryCodes(TFAPasswordDto $dto): array;
 
-    public function showRecoveryCodes(TFAPasswordDto $dto): array;
-
 //    public function loginHistory(User $user): Builder;
 //
 //    public function killActiveSession(User $user, string $oauthAccessTokensId);

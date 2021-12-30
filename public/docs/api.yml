@@ -120,8 +120,6 @@ paths:
     $ref: './paths/Auth.yml#/TFASetup'
   /auth/2fa/confirm:
     $ref: './paths/Auth.yml#/TFAConfirm'
-  /auth/2fa/recovery/view:
-    $ref: './paths/Auth.yml#/TFARecoveryView'
   /auth/2fa/recovery/create:
     $ref: './paths/Auth.yml#/TFARecoveryCreate'
   /countries:
