@@ -17,6 +17,11 @@ class Language extends Model
         'hidden',
     ];
 
+    protected $casts = [
+        'default' => 'boolean',
+        'hidden' => 'boolean',
+    ];
+
     public static function default(): self
     {
         return self::where('default', true)->first();

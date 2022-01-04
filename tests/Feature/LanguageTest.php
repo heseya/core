@@ -70,7 +70,7 @@ class LanguageTest extends TestCase
                 'hidden' => false,
                 'default' => true,
             ])
-            ->assertUnauthorized();
+            ->assertForbidden();
     }
 
     /**
@@ -96,15 +96,95 @@ class LanguageTest extends TestCase
             'hidden' => false,
             'default' => true,
         ]);
-        $this->assertDatabaseMissing('languages', [
+
+        // check if default language changed
+        $this->assertDatabaseHas('languages', [
             'iso' => 'pl',
-            'default' => false,
-        ]);
-        $this->assertDatabaseMissing('languages', [
-            'iso' => 'de',
             'default' => false,
         ]);
 
         $this->assertEquals('es', Language::default()->iso);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithoutPermissions($user): void
+    {
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/languages/id:{$this->language->getKey()}", [
+                'iso' => 'es',
+                'name' => 'Spain',
+                'hidden' => false,
+                'default' => true,
+            ])
+            ->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdate($user): void
+    {
+        $this->$user->givePermissionTo('languages.edit');
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/languages/id:{$this->languageHidden->getKey()}", [
+                'iso' => 'es',
+                'name' => 'Spain',
+                'hidden' => false,
+                'default' => true,
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('languages', [
+            'iso' => 'es',
+            'name' => 'Spain',
+            'hidden' => false,
+            'default' => true,
+        ]);
+
+        // check if default language changed
+        $this->assertDatabaseHas('languages', [
+            'iso' => 'pl',
+            'default' => false,
+        ]);
+
+        $this->assertEquals('es', Language::default()->iso);
+    }
+
+    public function testDeleteUnauthorized(): void
+    {
+        $this
+            ->json('DELETE', "/languages/id:{$this->language->getKey()}")
+            ->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDelete($user): void
+    {
+        $this->$user->givePermissionTo('languages.remove');
+
+        $this
+            ->actingAs($this->$user)
+            ->json('DELETE', "/languages/id:{$this->languageHidden->getKey()}")
+            ->assertNoContent();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteDefaultLanguage($user): void
+    {
+        $this->$user->givePermissionTo('languages.remove');
+
+        $this
+            ->actingAs($this->$user)
+            ->json('DELETE', "/languages/id:{$this->language->getKey()}")
+            ->assertStatus(400);
     }
 }

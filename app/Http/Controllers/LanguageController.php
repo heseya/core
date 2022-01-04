@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\StoreException;
+use App\Dtos\LanguageDto;
 use App\Http\Requests\LanguageCreateRequest;
 use App\Http\Requests\LanguageUpdateRequest;
 use App\Http\Resources\LanguageResource;
 use App\Models\Language;
+use App\Services\Contracts\LanguageServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
@@ -15,11 +16,15 @@ use Illuminate\Support\Facades\Response;
 
 class LanguageController extends Controller
 {
+    public function __construct(
+        private LanguageServiceContract $languageService,
+    ) {}
+
     public function index(): JsonResource
     {
         $query = Language::query();
 
-        if (Gate::allows('products.show_hidden')) {
+        if (!Gate::allows('languages.show_hidden')) {
             $query->where('hidden', false);
         }
 
@@ -30,25 +35,26 @@ class LanguageController extends Controller
 
     public function store(LanguageCreateRequest $request): JsonResource
     {
-        $language = Language::create($request->validated());
+        $language = $this->languageService->create(
+            LanguageDto::instantiateFromRequest($request),
+        );
 
         return LanguageResource::make($language);
     }
 
     public function update(Language $language, LanguageUpdateRequest $request): JsonResource
     {
-        $language->update($request->validated());
+        $language = $this->languageService->update(
+            $language,
+            LanguageDto::instantiateFromRequest($request),
+        );
 
         return LanguageResource::make($language);
     }
 
     public function destroy(Language $language): JsonResponse
     {
-        if (Language::count() <= 1) {
-            throw new StoreException('There must be at least one language.');
-        }
-
-        $language->delete();
+        $this->languageService->delete($language);
 
         return Response::json(null, 204);
     }
