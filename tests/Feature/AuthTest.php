@@ -5,11 +5,13 @@ namespace Tests\Feature;
 use App\Enums\TFAType;
 use App\Enums\TokenType;
 use App\Models\App;
+use App\Models\OneTimeSecurityCode;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use App\Notifications\TFAInitialization;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -941,6 +943,8 @@ class AuthTest extends TestCase
             'id' => $this->user->getKey(),
             'is_tfa_active' => true,
         ]);
+
+        $this->assertDatabaseCount('one_time_security_codes', 3);
     }
 
     public function testSetupEmailTfa(): void
@@ -988,7 +992,62 @@ class AuthTest extends TestCase
             'is_tfa_active' => true,
         ]);
 
-        $this->assertDatabaseCount('one_time_security_codes', 0);
+        $this->assertDatabaseCount('one_time_security_codes', 3);
+    }
+
+    public function testRecoveryCodesCreateUnauthorized(): void
+    {
+        $this->json('POST', '/auth/2fa/recovery/create', [
+            'password' => $this->password,
+        ])->assertForbidden();
+    }
+
+    public function testRecoveryCodesCreateInvalidPassword(): void
+    {
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/recovery/create', [
+            'password' => 'invalid',
+        ])
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'message' => 'Invalid credentials',
+            ]);
+    }
+
+    public function testRecoveryCodesCreateNoTfa(): void
+    {
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/recovery/create', [
+            'password' => $this->password,
+        ])
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'message' => 'Two-Factor Authentication is not setup.',
+            ]);
+    }
+
+    /**
+     * @dataProvider tfaMethodProvider
+     */
+    public function testRecoveryCodesCreate($method, $secret): void
+    {
+        $this->user->update([
+            'tfa_type' => $method,
+            'tfa_secret' => $secret,
+            'is_tfa_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->user)->json('POST', '/auth/2fa/recovery/create', [
+            'password' => $this->password,
+        ])->assertOk();
+
+        $recovery_codes = OneTimeSecurityCode::where('user_id', '=', $this->user->getKey())
+            ->whereNull('expires_at')
+            ->get();
+
+        $response->assertJsonStructure(['data' => [
+            'recovery_codes',
+        ]]);
+
+        $this->assertDatabaseCount('one_time_security_codes', count($recovery_codes));
     }
 
 //    public function testAuthWithReokedToken(): void

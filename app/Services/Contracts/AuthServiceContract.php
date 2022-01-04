@@ -3,6 +3,7 @@
 namespace App\Services\Contracts;
 
 use App\Dtos\TFAConfirmDto;
+use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
 use App\Models\User;
 
@@ -33,6 +34,8 @@ interface AuthServiceContract
     public function setupTFA(TFASetupDto $dto): array;
 
     public function confirmTFA(TFAConfirmDto $dto): array;
+
+    public function generateRecoveryCodes(TFAPasswordDto $dto): array;
 
 //    public function loginHistory(User $user): Builder;
 //

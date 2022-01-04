@@ -291,5 +291,36 @@ TFAConfirm:
                       type: array
                       items:
                         type: string
-                        example: 654321
+                        example: XyDZR-M9GWZ
+              type: object
+
+TFARecoveryCreate:
+  post:
+    tags:
+      - Auth
+    summary: 2FA Create recovery codes
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              password:
+                type: string
+                example: secret
+            type: object
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: object
+                  properties:
+                    recovery_codes:
+                      type: array
+                      items:
+                        type: string
+                        example: XyDZR-M9GWZ
               type: object
