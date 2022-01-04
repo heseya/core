@@ -6,6 +6,9 @@ use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @mixin IdeHelperLanguage
+ */
 class Language extends Model
 {
     use HasUuid, HasFactory;

@@ -14,13 +14,13 @@ class LanguageService implements LanguageServiceContract
         $language = Language::create($dto->toArray());
 
         if ($dto->getDefault() === true) {
-            $this->setDefault($language);
+            $this->defaultSet($language);
         }
 
         return $language;
     }
 
-    public function setDefault(Language $language): void
+    public function defaultSet(Language $language): void
     {
         Language::where('id', '!=', $language->getKey())->update(['default' => false]);
     }
@@ -30,7 +30,7 @@ class LanguageService implements LanguageServiceContract
         $language->update($dto->toArray());
 
         if ($dto->getDefault() === true) {
-            $this->setDefault($language);
+            $this->defaultSet($language);
         }
 
         return $language;

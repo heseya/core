@@ -13,5 +13,5 @@ interface LanguageServiceContract
 
     public function delete(Language $language): void;
 
-    public function setDefault(Language $language): void;
+    public function defaultSet(Language $language): void;
 }
