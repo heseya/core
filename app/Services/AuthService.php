@@ -203,13 +203,8 @@ class AuthService implements AuthServiceContract
 
     public function setupTFA(TFASetupDto $dto): array
     {
-        if (!$this->isUserAuthenticated()) {
-            throw new TFAException('Only users can set up Two-Factor Authentication');
-        }
-
-        if (Auth::user()->is_tfa_active) {
-            throw new TFAException('Two-Factor Authentication is already setup.');
-        }
+        $this->checkIsUserTFA();
+        $this->checkIsTFA(Auth::user());
 
         return match ($dto->getType()) {
             TFAType::APP => $this->googleTFA(),
@@ -220,13 +215,8 @@ class AuthService implements AuthServiceContract
 
     public function confirmTFA(TFAConfirmDto $dto): array
     {
-        if (!$this->isUserAuthenticated()) {
-            throw new TFAException('Only users can set up Two-Factor Authentication');
-        }
-
-        if (Auth::user()->is_tfa_active) {
-            throw new TFAException('Two-Factor Authentication is already setup.');
-        }
+        $this->checkIsUserTFA();
+        $this->checkIsTFA(Auth::user());
 
         if (!Auth::user()->tfa_type) {
             throw new TFAException('First select Two-Factor Authentication type.');
@@ -253,11 +243,26 @@ class AuthService implements AuthServiceContract
         $user = $dto->getUser();
         $this->checkCredentials($user, $dto->getPassword());
 
-        if (!$user->is_tfa_active) {
-            throw new TFAException('Two-Factor Authentication is not setup.');
-        }
+        $this->checkNoTFA($user);
 
         return $this->oneTimeSecurityCodeService->generateRecoveryCodes();
+    }
+
+    public function removeTFA(TFAPasswordDto $dto): void
+    {
+        $user = $dto->getUser();
+        $this->checkCredentials($user, $dto->getPassword());
+
+        $this->checkNoTFA($user);
+
+        $this->removeUserTFAData($user);
+    }
+
+    public function removeUsersTFA(User $user): void
+    {
+        $this->checkNoTFA($user);
+
+        $this->removeUserTFAData($user);
     }
 
     private function emailTFA(): array
@@ -386,5 +391,37 @@ class AuthService implements AuthServiceContract
                 simpleLogs: true
             );
         }
+    }
+
+    private function checkNoTFA(User $user): void
+    {
+        if (!$user->is_tfa_active) {
+            throw new TFAException('Two-Factor Authentication is not setup.');
+        }
+    }
+
+    private function checkIsTFA(User $user): void
+    {
+        if ($user->is_tfa_active) {
+            throw new TFAException('Two-Factor Authentication is already setup.');
+        }
+    }
+
+    private function checkIsUserTFA(): void
+    {
+        if (!$this->isUserAuthenticated()) {
+            throw new TFAException('Only users can set up Two-Factor Authentication');
+        }
+    }
+
+    private function removeUserTFAData(User $user): void
+    {
+        $user->securityCodes()->delete();
+
+        $user->update([
+            'tfa_type' => null,
+            'tfa_secret' => null,
+            'is_tfa_active' => false,
+        ]);
     }
 }

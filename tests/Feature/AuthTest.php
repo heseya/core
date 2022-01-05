@@ -1050,6 +1050,102 @@ class AuthTest extends TestCase
         $this->assertDatabaseCount('one_time_security_codes', count($recovery_codes));
     }
 
+    public function testRemoveTfaUnauthorized(): void
+    {
+        $this->json('POST', '/auth/2fa/remove', [
+            'password' => $this->password,
+        ])->assertForbidden();
+    }
+
+    public function testRemoveTfaNoTfa(): void
+    {
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/remove', [
+            'password' => $this->password,
+        ])
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'message' => 'Two-Factor Authentication is not setup.',
+            ]);
+    }
+
+    /**
+     * @dataProvider tfaMethodProvider
+     */
+    public function testRemoveTfa($method, $secret): void
+    {
+        $this->user->update([
+            'tfa_type' => $method,
+            'tfa_secret' => $secret,
+            'is_tfa_active' => true,
+        ]);
+
+        OneTimeSecurityCode::factory([
+            'user_id' => $this->user->getKey(),
+        ])->create();
+
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/remove', [
+            'password' => $this->password,
+        ])->assertNoContent();
+
+        $this->assertDatabaseCount('one_time_security_codes', 0);
+        $this->assertDatabaseHas('users', [
+            'id' => $this->user->getKey(),
+            'tfa_type' => null,
+            'tfa_secret' => null,
+            'is_tfa_active' => false,
+        ]);
+    }
+
+    public function testRemoveUserTfaUnauthorized(): void
+    {
+        $otherUser = User::factory()->create();
+
+        $this->actingAs($this->user)->json('POST', '/users/id:' . $otherUser->getKey() . '/2fa/remove')
+            ->assertForbidden();
+    }
+
+    public function testRemoveUserTfaNoTfa(): void
+    {
+        $this->user->givePermissionTo('users.2fa_remove');
+
+        $otherUser = User::factory()->create();
+
+        $this->actingAs($this->user)->json('POST', '/users/id:' . $otherUser->getKey() . '/2fa/remove')
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'message' => 'Two-Factor Authentication is not setup.',
+            ]);
+    }
+
+    /**
+     * @dataProvider tfaMethodProvider
+     */
+    public function testRemoveUserTfa($method, $secret): void
+    {
+        $this->user->givePermissionTo('users.2fa_remove');
+
+        $otherUser = User::factory([
+            'tfa_type' => $method,
+            'tfa_secret' => $secret,
+            'is_tfa_active' => true,
+        ])->create();
+
+        OneTimeSecurityCode::factory([
+            'user_id' => $otherUser->getKey(),
+        ])->create();
+
+        $this->actingAs($this->user)->json('POST', '/users/id:' . $otherUser->getKey() . '/2fa/remove')
+            ->assertNoContent();
+
+        $this->assertDatabaseCount('one_time_security_codes', 0);
+        $this->assertDatabaseHas('users', [
+            'id' => $otherUser->getKey(),
+            'tfa_type' => null,
+            'tfa_secret' => null,
+            'is_tfa_active' => false,
+        ]);
+    }
+
 //    public function testAuthWithReokedToken(): void
 //    {
 //        $user = User::factory()->create();

@@ -129,3 +129,19 @@ UsersParams:
               type: object
     security:
       - oauth: [ ]
+
+UserTFARemove:
+  post:
+    tags:
+      - Auth
+    summary: User 2FA Remove
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+  responses:
+    204:
+      description: Success

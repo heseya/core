@@ -20,6 +20,7 @@ use App\Http\Resources\TFARecoveryCodesResource;
 use App\Http\Resources\TFAResource;
 use App\Http\Resources\UserResource;
 use App\Models\App;
+use App\Models\User;
 use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\AuthServiceContract;
 use Illuminate\Http\JsonResponse;
@@ -170,5 +171,17 @@ class AuthController extends Controller
     {
         $dto = TFAPasswordDto::fromFormRequest($request);
         return TFARecoveryCodesResource::make($this->authService->generateRecoveryCodes($dto));
+    }
+
+    public function removeTFA(TFAPasswordRequest $request): JsonResponse
+    {
+        $this->authService->removeTFA(TFAPasswordDto::fromFormRequest($request));
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    public function removeUsersTFA(User $user): JsonResponse
+    {
+        $this->authService->removeUsersTFA($user);
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

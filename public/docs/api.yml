@@ -122,6 +122,8 @@ paths:
     $ref: './paths/Auth.yml#/TFAConfirm'
   /auth/2fa/recovery/create:
     $ref: './paths/Auth.yml#/TFARecoveryCreate'
+  /auth/2fa/remove:
+    $ref: './paths/Auth.yml#/TFARemove'
   /countries:
     $ref: './paths/Countries.yml#Countries'
   /deposits:
@@ -1373,6 +1375,8 @@ paths:
     $ref: './paths/Users.yml#/Users'
   '/users/id:{id}':
     $ref: './paths/Users.yml#/UsersParams'
+  '/users/id:{id}/2fa/remove':
+    $ref: './paths/Users.yml#/UserTFARemove'
   /webhooks:
     get:
       tags:
