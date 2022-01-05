@@ -995,39 +995,6 @@ class AuthTest extends TestCase
         $this->assertDatabaseCount('one_time_security_codes', 3);
     }
 
-    public function testRecoveryCodesViewUnauthorized(): void
-    {
-        $this->json('POST', '/auth/2fa/recovery/view', [
-            'password' => $this->password,
-        ])->assertForbidden();
-    }
-
-    public function testRecoveryCodesView(): void
-    {
-        $code = OneTimeSecurityCode::factory([
-            'user_id' => $this->user->getKey(),
-        ])->create();
-
-        $code2 = OneTimeSecurityCode::factory([
-            'user_id' => $this->user->getKey(),
-            'expires_at' => Carbon::tomorrow(),
-        ])->create();
-
-        $this->actingAs($this->user)->json('POST', '/auth/2fa/recovery/view', [
-            'password' => $this->password,
-        ])
-            ->assertOk()
-            ->assertJsonStructure(['data' => [
-                'recovery_codes'
-            ]])
-            ->assertJsonFragment([
-                'recovery_codes' => [
-                    $code->code,
-                ]
-            ])
-            ->assertJsonCount(1, 'data.recovery_codes');
-    }
-
     public function testRecoveryCodesCreateUnauthorized(): void
     {
         $this->json('POST', '/auth/2fa/recovery/create', [
@@ -1072,12 +1039,13 @@ class AuthTest extends TestCase
             'password' => $this->password,
         ])->assertOk();
 
-        $recovery_codes = OneTimeSecurityCode::where('user_id', '=', $this->user->getKey())->whereNull('expires_at')
-            ->get()->map(fn ($code) => $code->code)->all();
+        $recovery_codes = OneTimeSecurityCode::where('user_id', '=', $this->user->getKey())
+            ->whereNull('expires_at')
+            ->get();
 
-        $response->assertJsonFragment([
-            'recovery_codes' => $recovery_codes,
-        ]);
+        $response->assertJsonStructure(['data' => [
+            'recovery_codes',
+        ]]);
 
         $this->assertDatabaseCount('one_time_security_codes', count($recovery_codes));
     }

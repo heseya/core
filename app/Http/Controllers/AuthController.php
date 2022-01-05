@@ -173,12 +173,6 @@ class AuthController extends Controller
         return TFARecoveryCodesResource::make($this->authService->generateRecoveryCodes($dto));
     }
 
-    public function showRecoveryCodes(TFAPasswordRequest $request): JsonResource
-    {
-        $dto = TFAPasswordDto::fromFormRequest($request);
-        return TFARecoveryCodesResource::make($this->authService->showRecoveryCodes($dto));
-    }
-
     public function removeTFA(TFAPasswordRequest $request): JsonResponse
     {
         $this->authService->removeTFA(TFAPasswordDto::fromFormRequest($request));

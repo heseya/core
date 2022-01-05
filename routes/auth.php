@@ -23,10 +23,10 @@ Route::prefix('auth')->group(function (): void {
         ->middleware('can:authenticated');
     Route::post('2fa/confirm', [AuthController::class, 'confirmTFA'])
         ->middleware('can:authenticated');
+
     Route::post('2fa/remove', [AuthController::class, 'removeTFA'])
         ->middleware('can:authenticated');
-    Route::post('2fa/recovery/view', [AuthController::class, 'showRecoveryCodes'])
-        ->middleware('can:authenticated');
+
     Route::post('2fa/recovery/create', [AuthController::class, 'generateRecoveryCodes'])
         ->middleware('can:authenticated');
 });

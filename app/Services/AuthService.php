@@ -248,13 +248,6 @@ class AuthService implements AuthServiceContract
         return $this->oneTimeSecurityCodeService->generateRecoveryCodes();
     }
 
-    public function showRecoveryCodes(TFAPasswordDto $dto): array
-    {
-        $this->checkCredentials($dto->getUser(), $dto->getPassword());
-
-        return $this->oneTimeSecurityCodeService->showRecoveryCodes();
-    }
-
     public function removeTFA(TFAPasswordDto $dto): void
     {
         $user = $dto->getUser();
@@ -295,7 +288,7 @@ class AuthService implements AuthServiceContract
             ->orWhereNull('expires_at')->get();
 
         foreach ($security_codes as $security_code) {
-            if ($security_code->code === $code) {
+            if (Hash::check($code, $security_code->code)) {
                 return true;
             }
         }

@@ -37,8 +37,6 @@ interface AuthServiceContract
 
     public function generateRecoveryCodes(TFAPasswordDto $dto): array;
 
-    public function showRecoveryCodes(TFAPasswordDto $dto): array;
-
     public function removeTFA(TFAPasswordDto $dto): void;
 
     public function removeUsersTFA(User $user): void;
