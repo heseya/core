@@ -25,7 +25,7 @@ class LanguageController extends Controller
     {
         $query = Language::query();
 
-        if (!Gate::allows('languages.show_hidden')) {
+        if (Gate::denies('languages.show_hidden')) {
             $query->where('hidden', false);
         }
 

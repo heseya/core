@@ -25,8 +25,8 @@ class Language extends Model
         'hidden' => 'boolean',
     ];
 
-    public static function default(): self
+    public function scopeDefault($query)
     {
-        return self::where('default', true)->first();
+        return $query->where('default', true)->first();
     }
 }
