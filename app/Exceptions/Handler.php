@@ -108,6 +108,11 @@ final class Handler extends ExceptionHandler
         $class = $exception::class;
 
         if (array_key_exists($class, self::ERRORS)) {
+            if (method_exists($exception, 'isTypeSet') && $exception->isTypeSet()) {
+                return TFAExceptionResource::make($exception->toArray())
+                    ->response()
+                    ->setStatusCode($exception->getCode());
+            }
             $error = new Error(
                 self::ERRORS[$class]['message'] ?? $exception->getMessage(),
                 self::ERRORS[$class]['code'] ?? 500,

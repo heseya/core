@@ -16,6 +16,7 @@ use App\Models\Token;
 use App\Models\User;
 use App\Notifications\ResetPassword;
 use App\Notifications\TFAInitialization;
+use App\Notifications\TFASecurityCode;
 use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
@@ -35,7 +36,7 @@ class AuthService implements AuthServiceContract
     ) {
     }
 
-    public function login(string $email, string $password, ?string $ip, ?string $userAgent): array
+    public function login(string $email, string $password, ?string $ip, ?string $userAgent, ?string $code): array
     {
         $uuid = Str::uuid()->toString();
 
@@ -51,6 +52,8 @@ class AuthService implements AuthServiceContract
         if ($token === false) {
             throw new AuthException('Invalid credentials', simpleLogs: true);
         }
+
+        $this->verifyTFA($code);
 
         $identityToken = $this->tokenService->createToken(
             Auth::user(),
@@ -222,14 +225,7 @@ class AuthService implements AuthServiceContract
             throw new TFAException('First select Two-Factor Authentication type.');
         }
 
-        $valid = match (Auth::user()->tfa_type) {
-            TFAType::APP => $this->googleTFAVerify($dto->getCode()),
-            TFAType::EMAIL => $this->emailTFAVerify($dto->getCode()),
-        };
-
-        if (!$valid) {
-            throw new TFAException('Invalid Two-Factor Authentication token.');
-        }
+        $this->checkIsValidTFA($dto->getCode());
 
         Auth::user()->update([
             'is_tfa_active' => true,
@@ -268,7 +264,10 @@ class AuthService implements AuthServiceContract
     private function emailTFA(): array
     {
         Auth::user()->securityCodes()->delete();
-        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(Auth::user(), 900000);
+        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
+            Auth::user(),
+            Config::get('tfa.code_expires_time')
+        );
 
         Auth::user()->update([
             'tfa_type' => TFAType::EMAIL,
@@ -284,11 +283,11 @@ class AuthService implements AuthServiceContract
     private function emailTFAVerify(string $code): bool
     {
         $security_codes = Auth::user()->securityCodes()
-            ->where('expires_at', '>', Carbon::now())
-            ->orWhereNull('expires_at')->get();
+            ->where('expires_at', '>', Carbon::now())->get();
 
         foreach ($security_codes as $security_code) {
             if (Hash::check($code, $security_code->code)) {
+                $security_code->delete();
                 return true;
             }
         }
@@ -423,5 +422,70 @@ class AuthService implements AuthServiceContract
             'tfa_secret' => null,
             'is_tfa_active' => false,
         ]);
+    }
+
+    private function verifyTFA(?string $code): void
+    {
+        if (!Auth::user()->is_tfa_active && $code !== null) {
+            throw new TFAException('Two-Factor Authentication is not setup.', simpleLogs: true);
+        }
+
+        if (Auth::user()->is_tfa_active) {
+            match ($code) {
+                null => $this->noTFACode(),
+                default => $this->checkIsValidTFA($code),
+            };
+        }
+    }
+
+    private function checkIsValidTFA(string $code): void
+    {
+        $valid = match (Auth::user()->tfa_type) {
+            TFAType::APP => $this->googleTFAVerify($code),
+            TFAType::EMAIL => $this->emailTFAVerify($code),
+        };
+
+        if (Auth::user()->is_tfa_active && !$valid) {
+            $valid = $this->verifyRecoveryCode($code);
+        }
+
+        if (!$valid) {
+            throw new TFAException('Invalid Two-Factor Authentication token.', simpleLogs: true);
+        }
+    }
+
+    private function verifyRecoveryCode(string $code): bool
+    {
+        $security_codes = Auth::user()->securityCodes()
+            ->whereNull('expires_at')->get();
+
+        foreach ($security_codes as $security_code) {
+            if (Hash::check($code, $security_code->code)) {
+                $security_code->delete();
+                Auth::user()->securityCodes()->whereNotNull('expires_at')->delete();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function noTFACode(): void
+    {
+        if (Auth::user()->tfa_type === TFAType::EMAIL) {
+            Auth::user()->securityCodes()->where('expires_at', '<', Carbon::now())->delete();
+            $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
+                Auth::user(),
+                Config::get('tfa.code_expires_time')
+            );
+
+            Auth::user()->notify(new TFASecurityCode($code));
+        }
+        throw new TFAException(
+            'Two-Factor Authentication is required',
+            403,
+            simpleLogs: true,
+            type: Auth::user()->tfa_type
+        );
     }
 }

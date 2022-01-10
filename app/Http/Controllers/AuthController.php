@@ -42,7 +42,8 @@ class AuthController extends Controller
             $request->input('email'),
             $request->input('password'),
             $request->ip(),
-            $request->userAgent()
+            $request->userAgent(),
+            $request->input('code'),
         );
 
         return AuthResource::make($tokens);

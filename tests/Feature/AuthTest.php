@@ -11,9 +11,11 @@ use App\Models\Role;
 use App\Models\User;
 use App\Notifications\TFAInitialization;
 use App\Notifications\TFARecoveryCodes;
+use App\Notifications\TFASecurityCode;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -30,6 +32,7 @@ class AuthTest extends TestCase
 
     private string $expectedLog;
     private OneTimeSecurityCodeContract $oneTimeSecurityCodeService;
+    private array $expected;
 
     public function setUp(): void
     {
@@ -37,6 +40,18 @@ class AuthTest extends TestCase
 
         $this->expectedLog = 'AuthException(code: 0): Invalid credentials at';
         $this->oneTimeSecurityCodeService = \Illuminate\Support\Facades\App::make(OneTimeSecurityCodeContract::class);
+
+        $this->expected = [
+            'token',
+            'identity_token',
+            'refresh_token',
+            'user' => [
+                'id',
+                'email',
+                'name',
+                'avatar',
+            ],
+        ];
     }
 
     public function testLoginUnauthorized(): void
@@ -60,17 +75,7 @@ class AuthTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonStructure(['data' => [
-                'token',
-                'identity_token',
-                'refresh_token',
-                'user' => [
-                    'id',
-                    'email',
-                    'name',
-                    'avatar',
-                ],
-            ]]);
+            ->assertJsonStructure(['data' => $this->expected]);
     }
 
     public function testLoginInvalidCredential(): void
@@ -89,6 +94,144 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    public function testLoginDisabledTfaCode(): void
+    {
+        $this->user->givePermissionTo('auth.login');
+
+        $response = $this->actingAs($this->user)->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+            'code' => 'code',
+        ]);
+
+        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+            ->assertJsonFragment([
+                'message' => 'Two-Factor Authentication is not setup.'
+            ]);
+    }
+
+    /**
+     * @dataProvider tfaMethodProvider
+     */
+    public function testLoginEnabledTfaNoCode($method, $secret): void
+    {
+        $this->user->givePermissionTo('auth.login');
+
+        Notification::fake();
+
+        $this->user->update([
+            'tfa_type' => $method,
+            'tfa_secret' => $secret,
+            'is_tfa_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+        ]);
+
+        if ($method === TFAType::EMAIL) {
+            Notification::assertSentTo([$this->user], TFASecurityCode::class);
+        }
+
+        $response->assertStatus(Response::HTTP_FORBIDDEN)
+            ->assertJsonFragment([
+                'message' => 'Two-Factor Authentication is required'
+            ]);
+    }
+
+    /**
+     * @dataProvider tfaMethodProvider
+     */
+    public function testLoginEnabledTfaCode($method, $secret): void
+    {
+        $this->user->givePermissionTo('auth.login');
+
+        Notification::fake();
+
+        $this->user->update([
+            'tfa_type' => $method,
+            'tfa_secret' => $secret,
+            'is_tfa_active' => true,
+        ]);
+        $code = '';
+
+        if ($method === TFAType::EMAIL) {
+            $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user, Config::get('tfa.code_expires_time'));
+        } elseif ($method === TFAType::APP) {
+            $google_authenticator = new PHPGangsta_GoogleAuthenticator();
+            $code = $google_authenticator->getCode($secret);
+        }
+
+        $response = $this->actingAs($this->user)->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+            'code' => $code,
+        ]);
+
+        $response->assertOk()
+            ->assertJsonStructure(['data' => $this->expected]);
+
+        $this->assertDatabaseCount('one_time_security_codes', 0);
+    }
+
+    /**
+     * @dataProvider tfaMethodProvider
+     */
+    public function testLoginEnabledTfaRecoveryCode($method, $secret): void
+    {
+        $this->user->givePermissionTo('auth.login');
+
+        Notification::fake();
+
+        $this->user->update([
+            'tfa_type' => $method,
+            'tfa_secret' => $secret,
+            'is_tfa_active' => true,
+        ]);
+
+        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user);
+
+        $response = $this->actingAs($this->user)->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+            'code' => $code,
+        ]);
+
+        $response->assertOk()
+            ->assertJsonStructure(['data' => $this->expected]);
+
+        $this->assertDatabaseCount('one_time_security_codes', 0);
+    }
+
+    /**
+     * @dataProvider tfaMethodProvider
+     */
+    public function testLoginEnabledTfaInvalidCode($method, $secret): void
+    {
+        $this->user->givePermissionTo('auth.login');
+
+        Notification::fake();
+
+        $this->user->update([
+            'tfa_type' => $method,
+            'tfa_secret' => $secret,
+            'is_tfa_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+            'code' => 'INVALID',
+        ]);
+
+        $response
+            ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+            ->assertJsonFragment([
+                'message' => 'Invalid Two-Factor Authentication token.'
+            ]);
     }
 
     /**
@@ -984,7 +1127,7 @@ class AuthTest extends TestCase
     {
         Notification::fake();
 
-        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user, 900000);
+        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user, Config::get('tfa.code_expires_time'));
 
         $this->user->update([
             'tfa_type' => TFAType::EMAIL,
