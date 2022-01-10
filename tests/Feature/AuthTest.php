@@ -14,6 +14,7 @@ use App\Notifications\TFASecurityCode;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -157,7 +158,7 @@ class AuthTest extends TestCase
         $code = '';
 
         if ($method === TFAType::EMAIL) {
-            $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user, 900000);
+            $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user, Config::get('tfa.code_expires_time'));
         } elseif ($method === TFAType::APP) {
             $google_authenticator = new PHPGangsta_GoogleAuthenticator();
             $code = $google_authenticator->getCode($secret);
@@ -1117,7 +1118,7 @@ class AuthTest extends TestCase
 
     public function testConfirmEmailTfa(): void
     {
-        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user, 900000);
+        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user, Config::get('tfa.code_expires_time'));
 
         $this->user->update([
             'tfa_type' => TFAType::EMAIL,

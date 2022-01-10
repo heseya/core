@@ -271,7 +271,10 @@ class AuthService implements AuthServiceContract
     private function emailTFA(): array
     {
         Auth::user()->securityCodes()->delete();
-        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(Auth::user(), 900000);
+        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
+            Auth::user(),
+            Config::get('tfa.code_expires_time')
+        );
 
         Auth::user()->update([
             'tfa_type' => TFAType::EMAIL,
@@ -478,7 +481,10 @@ class AuthService implements AuthServiceContract
     {
         if (Auth::user()->tfa_type === TFAType::EMAIL) {
             Auth::user()->securityCodes()->where('expires_at', '<', Carbon::now())->delete();
-            $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(Auth::user(), 900000);
+            $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
+                Auth::user(),
+                Config::get('tfa.code_expires_time')
+            );
 
             Auth::user()->notify(new TFASecurityCode($code));
         }
