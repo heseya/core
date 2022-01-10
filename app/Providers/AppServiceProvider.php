@@ -16,6 +16,7 @@ use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\LanguageServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\NameServiceContract;
+use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\OptionServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\Contracts\PageServiceContract;
@@ -38,6 +39,7 @@ use App\Services\ItemService;
 use App\Services\LanguageService;
 use App\Services\MediaService;
 use App\Services\NameService;
+use App\Services\OneTimeSecurityCodeService;
 use App\Services\OptionService;
 use App\Services\OrderService;
 use App\Services\PageService;
@@ -86,6 +88,7 @@ class AppServiceProvider extends ServiceProvider
         UrlServiceContract::class => UrlService::class,
         ItemServiceContract::class => ItemService::class,
         LanguageServiceContract::class => LanguageService::class,
+        OneTimeSecurityCodeContract::class => OneTimeSecurityCodeService::class,
     ];
 
     /**

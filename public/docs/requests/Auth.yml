@@ -1,0 +1,23 @@
+PasswordReset:
+  content:
+    application/json:
+      schema:
+        properties:
+          email:
+            type: string
+            example: admin@example.com
+        type: object
+
+PasswordResetSave:
+  content:
+    application/json:
+      schema:
+        properties:
+          token:
+            type: string
+          email:
+            type: string
+            example: admin@example.com
+          password:
+            type: string
+        type: object
