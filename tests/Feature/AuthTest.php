@@ -10,6 +10,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use App\Notifications\TFAInitialization;
+use App\Notifications\TFARecoveryCodes;
 use App\Notifications\TFASecurityCode;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use Carbon\Carbon;
@@ -1066,6 +1067,8 @@ class AuthTest extends TestCase
 
     public function testConfirmAppTfa(): void
     {
+        Notification::fake();
+
         $google_authenticator = new PHPGangsta_GoogleAuthenticator();
 
         $secret = $google_authenticator->createSecret();
@@ -1081,6 +1084,10 @@ class AuthTest extends TestCase
         ])->assertOk()->assertJsonStructure(['data' => [
             'recovery_codes'
         ]]);
+
+        Notification::assertSentTo(
+            [$this->user], TFARecoveryCodes::class
+        );
 
         $this->assertDatabaseHas('users', [
             'id' => $this->user->getKey(),
@@ -1118,6 +1125,8 @@ class AuthTest extends TestCase
 
     public function testConfirmEmailTfa(): void
     {
+        Notification::fake();
+
         $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user, Config::get('tfa.code_expires_time'));
 
         $this->user->update([
@@ -1130,45 +1139,16 @@ class AuthTest extends TestCase
             'recovery_codes'
         ]]);
 
+        Notification::assertSentTo(
+            [$this->user], TFARecoveryCodes::class
+        );
+
         $this->assertDatabaseHas('users', [
             'id' => $this->user->getKey(),
             'is_tfa_active' => true,
         ]);
 
         $this->assertDatabaseCount('one_time_security_codes', 3);
-    }
-
-    public function testRecoveryCodesViewUnauthorized(): void
-    {
-        $this->json('POST', '/auth/2fa/recovery/view', [
-            'password' => $this->password,
-        ])->assertForbidden();
-    }
-
-    public function testRecoveryCodesView(): void
-    {
-        $code = OneTimeSecurityCode::factory([
-            'user_id' => $this->user->getKey(),
-        ])->create();
-
-        $code2 = OneTimeSecurityCode::factory([
-            'user_id' => $this->user->getKey(),
-            'expires_at' => Carbon::tomorrow(),
-        ])->create();
-
-        $this->actingAs($this->user)->json('POST', '/auth/2fa/recovery/view', [
-            'password' => $this->password,
-        ])
-            ->assertOk()
-            ->assertJsonStructure(['data' => [
-                'recovery_codes'
-            ]])
-            ->assertJsonFragment([
-                'recovery_codes' => [
-                    $code->code,
-                ]
-            ])
-            ->assertJsonCount(1, 'data.recovery_codes');
     }
 
     public function testRecoveryCodesCreateUnauthorized(): void
@@ -1205,6 +1185,8 @@ class AuthTest extends TestCase
      */
     public function testRecoveryCodesCreate($method, $secret): void
     {
+        Notification::fake();
+
         $this->user->update([
             'tfa_type' => $method,
             'tfa_secret' => $secret,
@@ -1215,12 +1197,17 @@ class AuthTest extends TestCase
             'password' => $this->password,
         ])->assertOk();
 
-        $recovery_codes = OneTimeSecurityCode::where('user_id', '=', $this->user->getKey())->whereNull('expires_at')
-            ->get()->map(fn ($code) => $code->code)->all();
+        Notification::assertSentTo(
+            [$this->user], TFARecoveryCodes::class
+        );
 
-        $response->assertJsonFragment([
-            'recovery_codes' => $recovery_codes,
-        ]);
+        $recovery_codes = OneTimeSecurityCode::where('user_id', '=', $this->user->getKey())
+            ->whereNull('expires_at')
+            ->get();
+
+        $response->assertJsonStructure(['data' => [
+            'recovery_codes',
+        ]]);
 
         $this->assertDatabaseCount('one_time_security_codes', count($recovery_codes));
     }

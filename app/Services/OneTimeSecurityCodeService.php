@@ -4,10 +4,11 @@ namespace App\Services;
 
 use App\Models\OneTimeSecurityCode;
 use App\Models\User;
+use App\Notifications\TFARecoveryCodes;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class OneTimeSecurityCodeService implements OneTimeSecurityCodeContract
@@ -17,7 +18,7 @@ class OneTimeSecurityCodeService implements OneTimeSecurityCodeContract
         $code = $this->generateCode([5, 5], '-');
 
         OneTimeSecurityCode::create([
-            'code' => Crypt::encryptString($code),
+            'code' => Hash::make($code),
             'expires_at' => $expires_time > 0 ? Carbon::now()->addMilliseconds($expires_time) : null,
             'user_id' => $user->getKey(),
         ]);
@@ -35,15 +36,9 @@ class OneTimeSecurityCodeService implements OneTimeSecurityCodeContract
             array_push($recovery_codes, $this->generateOneTimeSecurityCode(Auth::user()));
         }
 
+        Auth::user()->notify(new TFARecoveryCodes());
+
         return $recovery_codes;
-    }
-
-    public function showRecoveryCodes(): array
-    {
-        $recovery_codes = Auth::user()->securityCodes()->whereNull('expires_at')->get()
-            ->map(fn ($code) => $code->code);
-
-        return $recovery_codes->all();
     }
 
     private function generateCode(array $modules, string $separator = ''): string

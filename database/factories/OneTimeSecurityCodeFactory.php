@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use App\Models\OneTimeSecurityCode;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class OneTimeSecurityCodeFactory extends Factory
@@ -20,7 +20,7 @@ class OneTimeSecurityCodeFactory extends Factory
     public function definition()
     {
         return [
-            'code' => Crypt::encrypt(Str::random(5) . '-' . Str::random(5)),
+            'code' => Hash::make(Str::random(5) . '-' . Str::random(5)),
             'expires_at' => null,
         ];
     }

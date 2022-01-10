@@ -17,7 +17,7 @@ User:
       type: string
       example: //www.gravatar.com/avatar/example.jpg
     roles:
-      description: 'User''s assigned roless'
+      description: 'User''s assigned roles'
       type: array
       items:
         $ref: './Roles.yml#/Role'
