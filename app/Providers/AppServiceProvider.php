@@ -13,6 +13,7 @@ use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\EventServiceContract;
 use App\Services\Contracts\ItemServiceContract;
+use App\Services\Contracts\LanguageServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
@@ -35,6 +36,7 @@ use App\Services\Contracts\WebHookServiceContract;
 use App\Services\DiscountService;
 use App\Services\EventService;
 use App\Services\ItemService;
+use App\Services\LanguageService;
 use App\Services\MediaService;
 use App\Services\NameService;
 use App\Services\OneTimeSecurityCodeService;
@@ -85,6 +87,7 @@ class AppServiceProvider extends ServiceProvider
         SeoMetadataServiceContract::class => SeoMetadataService::class,
         UrlServiceContract::class => UrlService::class,
         ItemServiceContract::class => ItemService::class,
+        LanguageServiceContract::class => LanguageService::class,
         OneTimeSecurityCodeContract::class => OneTimeSecurityCodeService::class,
     ];
 
