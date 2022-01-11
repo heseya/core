@@ -15,7 +15,8 @@ class ShippingMethodDto extends Dto
     protected ?array $payment_methods;
     protected ?array $countries;
     protected ?array $price_ranges;
-    protected int|Missing $shipping_time;
+    protected int|Missing $shipping_time_min;
+    protected int|Missing $shipping_time_max;
 
     public static function instantiateFromRequest(
         ShippingMethodStoreRequest|ShippingMethodUpdateRequest $request,
@@ -27,7 +28,8 @@ class ShippingMethodDto extends Dto
             payment_methods: $request->input('payment_methods'),
             countries: $request->input('countries'),
             price_ranges: $request->input('price_ranges'),
-            shipping_time: $request->input('shipping_time', new Missing()),
+            shipping_time_min: $request->input('shipping_time_min', new Missing()),
+            shipping_time_max: $request->input('shipping_time_max', new Missing()),
         );
     }
 
@@ -61,8 +63,13 @@ class ShippingMethodDto extends Dto
         return $this->price_ranges;
     }
 
-    public function getShippingTime(): Missing|int
+    public function getShippingTimeMin(): Missing|int
     {
-        return $this->shipping_time;
+        return $this->shipping_time_min;
+    }
+
+    public function getShippingTimeMax(): Missing|int
+    {
+        return $this->shipping_time_max;
     }
 }
