@@ -20,7 +20,8 @@ class ShippingMethodStoreRequest extends FormRequest
             'price_ranges' => ['required', 'array', 'min:1', new ShippingMethodPriceRanges()],
             'price_ranges.*.start' => ['required', 'numeric', 'min:0', 'distinct'],
             'price_ranges.*.value' => ['required', 'numeric', 'min:0'],
-            'shipping_time' => ['required', 'numeric', 'min:0'],
+            'shipping_time_min' => ['required', 'numeric', 'integer', 'min:0'],
+            'shipping_time_max' => ['required', 'numeric', 'integer', 'min:0', 'gte:shipping_time_min'],
         ];
     }
 }
