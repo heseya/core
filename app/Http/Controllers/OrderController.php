@@ -241,7 +241,11 @@ class OrderController extends Controller
             $deposits = $order->deposits()->with('item')->get();
             $order->deposits()->delete();
             foreach ($deposits as $deposit) {
-                ItemUpdatedQuantity::dispatch($deposit->item);
+                $item = $deposit->item;
+                $item->update([
+                    'quantity' => $item->quantity - $deposit->quantity,
+                ]);
+                ItemUpdatedQuantity::dispatch($item);
             }
         }
 

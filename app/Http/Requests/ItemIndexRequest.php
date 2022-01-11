@@ -13,6 +13,7 @@ class ItemIndexRequest extends FormRequest
             'sku' => ['nullable', 'string', 'max:255'],
             'search' => ['nullable', 'string', 'max:255'],
             'sort' => ['nullable', 'string', 'max:255'],
+            'sold_out' => ['nullable', 'boolean'],
         ];
     }
 }

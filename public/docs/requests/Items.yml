@@ -1,0 +1,9 @@
+Item:
+  type: object
+  properties:
+    name:
+      type: string
+      example: Chain
+    sku:
+      type: string
+      example: K121
