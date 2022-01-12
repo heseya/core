@@ -31,6 +31,8 @@ class ItemTest extends TestCase
             'item_id' => $this->item->getKey(),
         ]);
 
+        $this->item->refresh();
+
         /**
          * Expected response
          */
@@ -81,6 +83,72 @@ class ItemTest extends TestCase
             ->getJson('/items?limit=500')
             ->assertOk()
             ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(10);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexFilterByAvailable($user): void
+    {
+        $this->$user->givePermissionTo('items.show');
+
+        Deposit::factory([
+            'quantity' => 10,
+        ])->create([
+            'item_id' => $this->item->getKey(),
+        ]);
+
+        $this->item->refresh();
+
+        $item_sold_out = Item::factory()->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/items', ['sold_out' => 0])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJson(['data' => [
+                0 => [
+                    'id' => $this->item->getKey(),
+                    'name' => $this->item->name,
+                    'sku' => $this->item->sku,
+                    'quantity' => $this->item->quantity,
+                ],
+            ]]);
+
+        $this->assertQueryCountLessThan(10);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexFilterBySoldOut($user): void
+    {
+        $this->$user->givePermissionTo('items.show');
+
+        Deposit::factory([
+            'quantity' => 10,
+        ])->create([
+            'item_id' => $this->item->getKey(),
+        ]);
+
+        $item_sold_out = Item::factory()->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/items', ['sold_out' => 1])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJson(['data' => [
+                0 => [
+                    'id' => $item_sold_out->getKey(),
+                    'name' => $item_sold_out->name,
+                    'sku' => $item_sold_out->sku,
+                    'quantity' => $item_sold_out->quantity,
+                ],
+            ]]);
 
         $this->assertQueryCountLessThan(10);
     }

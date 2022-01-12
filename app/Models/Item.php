@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\SearchTypes\ItemSearch;
+use App\SearchTypes\WhereSoldOut;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Heseya\Sortable\Sortable;
@@ -22,12 +23,14 @@ class Item extends Model implements AuditableContract
     protected $fillable = [
         'name',
         'sku',
+        'quantity',
     ];
 
     protected array $searchable = [
         'name' => Like::class,
         'sku' => Like::class,
         'search' => ItemSearch::class,
+        'sold_out' => WhereSoldOut::class,
     ];
 
     protected array $sortable = [
@@ -35,12 +38,12 @@ class Item extends Model implements AuditableContract
         'sku',
         'created_at',
         'updated_at',
+        'quantity',
     ];
 
-    public function getQuantityAttribute(): float
-    {
-        return $this->deposits->sum('quantity');
-    }
+    protected $casts = [
+        'quantity' => 'float',
+    ];
 
     public function deposits(): HasMany
     {
