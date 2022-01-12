@@ -180,4 +180,70 @@ class OrderDepositTest extends TestCase
 
         Event::assertDispatched(OrderStatusUpdated::class);
     }
+
+    /**
+     * You cannot buy an item whose schematics require more items than there are in stock.
+     *
+     * @dataProvider authProvider
+     */
+    public function testCantCreateOrderWithoutItems($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        $this->item->deposits()->create([
+            'quantity' => 1,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('POST', '/orders', $this->request)
+            ->assertUnprocessable();
+
+        Event::assertNotDispatched(OrderCreated::class);
+    }
+
+    /**
+     * HES-488
+     *
+     * If an order has two required schemes using the same item,
+     * you cannot buy the product when there is only one item left in stock.
+     *
+     * @dataProvider authProvider
+     */
+    public function testCantCreateOrderWithoutMultipleItems($user): void
+    {
+        $schema = Schema::factory()->create([
+            'type' => 'select',
+            'price' => 0,
+            'hidden' => false,
+        ]);
+        $this->product->schemas()->sync([$schema->getKey()]);
+        $option = $schema->options()->create([
+            'name' => 'XL',
+            'price' => 0,
+        ]);
+        $option->items()->sync([$this->item->getKey()]);
+
+        $this->item->deposits()->create([
+            'quantity' => 1,
+        ]);
+
+        $this->$user->givePermissionTo('orders.add');
+
+        $this->request['items'] = [
+            'product_id' => $this->product->getKey(),
+            'quantity' => 1,
+            'schemas' => [
+                $this->schema->getKey() => $this->option->getKey(),
+                $schema->getKey() => $option->getKey(),
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->json('POST', '/orders', $this->request)
+            ->assertUnprocessable();
+
+        Event::assertNotDispatched(OrderCreated::class);
+    }
 }

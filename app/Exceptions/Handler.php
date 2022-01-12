@@ -64,6 +64,9 @@ final class Handler extends ExceptionHandler
             'message' => 'Unauthorized',
             'code' => Response::HTTP_FORBIDDEN,
         ],
+        ItemException::class => [
+            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+        ],
     ];
 
     /**

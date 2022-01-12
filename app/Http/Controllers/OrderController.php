@@ -21,9 +21,12 @@ use App\Models\Discount;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
+use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\User;
+use App\Services\Contracts\DiscountServiceContract;
+use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Illuminate\Http\JsonResponse;
@@ -34,13 +37,12 @@ use Throwable;
 
 class OrderController extends Controller implements OrderControllerSwagger
 {
-    private NameServiceContract $nameService;
-    private OrderServiceContract $orderService;
-
-    public function __construct(NameServiceContract $nameService, OrderServiceContract $orderService)
-    {
-        $this->nameService = $nameService;
-        $this->orderService = $orderService;
+    public function __construct(
+        private NameServiceContract $nameService,
+        private OrderServiceContract $orderService,
+        private DiscountServiceContract $discountService,
+        private ItemServiceContract $itemService,
+    ) {
     }
 
     public function index(OrderIndexRequest $request): JsonResource
@@ -66,6 +68,36 @@ class OrderController extends Controller implements OrderControllerSwagger
 
     public function store(OrderCreateRequest $request): JsonResource
     {
+        # Schema values and warehouse items validation
+        $items = [];
+
+        foreach ($request->input('items', []) as $item) {
+            $product = Product::findOrFail($item['product_id']);
+            $schemas = $item['schemas'] ?? [];
+
+            /** @var Schema $schema */
+            foreach ($product->schemas as $schema) {
+                $value = $schemas[$schema->getKey()] ?? null;
+
+                $schema->validate($value, $item['quantity']);
+
+                if ($value === null) {
+                    continue;
+                }
+
+                $schemaItems = $schema->getItems($value, $item['quantity']);
+                $items = $this->itemService->addItemArrays($items, $schemaItems);
+            }
+        }
+
+        $this->itemService->validateItems($items);
+
+        # Discount validation
+        foreach ($request->input('discounts', []) as $discount) {
+            Discount::where('code', $discount)->firstOrFail();
+        }
+
+        # Creating order
         $validated = $request->validated();
 
         $shippingMethod = ShippingMethod::findOrFail($request->input('shipping_method_id'));
@@ -88,6 +120,7 @@ class OrderController extends Controller implements OrderControllerSwagger
             'user_id' => Auth::user() instanceof User ? Auth::user()->getKey() : null,
         ]);
 
+        # Add products to order
         try {
             foreach ($request->input('items', []) as $item) {
                 $product = Product::findOrFail($item['product_id']);
@@ -101,10 +134,9 @@ class OrderController extends Controller implements OrderControllerSwagger
 
                 $order->products()->save($orderProduct);
 
+                # Add schemas to products
                 foreach ($product->schemas as $schema) {
                     $value = $schemas[$schema->getKey()] ?? null;
-
-                    $schema->validate($value, $item['quantity']);
 
                     if ($value === null) {
                         continue;
