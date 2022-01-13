@@ -11,6 +11,7 @@ use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
 
@@ -31,8 +32,8 @@ class MediaService implements MediaServiceContract
     public function store(UploadedFile $file): Media
     {
         $response = Http::attach('file', $file->getContent(), 'file')
-            ->withHeaders(['x-api-key' => config('silverbox.key')])
-            ->post(config('silverbox.host') . '/' . config('silverbox.client'));
+            ->withHeaders(['x-api-key' => Config::get('silverbox.key')])
+            ->post(Config::get('silverbox.host') . '/' . Config::get('silverbox.client'));
 
         if ($response->failed()) {
             throw new AppAccessException('CDN responded with an error');
@@ -40,7 +41,7 @@ class MediaService implements MediaServiceContract
 
         return Media::create([
             'type' => $this->getMediaType($file->extension()),
-            'url' => config('silverbox.host') . '/' . $response[0]['path'],
+            'url' => Config::get('silverbox.host') . '/' . $response[0]['path'],
         ]);
     }
 
@@ -82,7 +83,7 @@ class MediaService implements MediaServiceContract
     {
         $response = Http::asJson()
             ->acceptJson()
-            ->withHeaders(['x-api-key' => config('silverbox.key')])
+            ->withHeaders(['x-api-key' => Config::get('silverbox.key')])
             ->patch($media->url, [
                 'slug' => $slug,
             ]);
@@ -91,6 +92,6 @@ class MediaService implements MediaServiceContract
             throw new AppAccessException('CDN responded with an error');
         }
 
-        return config('silverbox.host') . '/' . $response['path'];
+        return Config::get('silverbox.host') . '/' . $response['path'];
     }
 }

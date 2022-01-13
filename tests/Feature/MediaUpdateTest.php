@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\MediaType;
 use App\Models\Media;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -16,9 +17,12 @@ class MediaUpdateTest extends TestCase
     {
         parent::setUp();
 
+        Config::set('silverbox.host', 'http://cdn.example.com');
+        Config::set('silverbox.client', 'dev');
+
         Http::fake([
             'http://cdn.example.com/dev/photo.jpg' => Http::response([
-                'path' => 'http://cdn.example.com/dev/test-slug.jpg',
+                'path' => 'dev/test-slug.jpg',
             ]),
         ]);
 
