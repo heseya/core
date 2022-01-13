@@ -91,6 +91,6 @@ class MediaService implements MediaServiceContract
             throw new AppAccessException('CDN responded with an error');
         }
 
-        return $response['path'];
+        return config('silverbox.host') . '/' . $response['path'];
     }
 }
