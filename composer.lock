@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2bf7d1b3582188b4039f728cddc826db",
+    "content-hash": "3b41219c28da0d0d69a68811a60ef069",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -11062,11 +11062,17 @@
         },
         {
             "name": "heseya/insights",
-            "version": "dev-master",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/heseya/insights.git",
+                "reference": "88bc2a6255a2a1a9eb2440e83573b76ca9806129"
+            },
             "dist": {
-                "type": "path",
-                "url": "./heseya/insights",
-                "reference": "2a3f03f4437de8dd0ed7323b2fc34bca67082648"
+                "type": "zip",
+                "url": "https://api.github.com/repos/heseya/insights/zipball/88bc2a6255a2a1a9eb2440e83573b76ca9806129",
+                "reference": "88bc2a6255a2a1a9eb2440e83573b76ca9806129",
+                "shasum": ""
             },
             "require": {
                 "nunomaduro/phpinsights": "^2.0"
@@ -11077,15 +11083,18 @@
                     "Heseya\\Insights\\": "src/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "authors": [
                 {
                     "name": "Jędrzej Buliński",
                     "email": "jedrzej@heseya.com"
                 }
             ],
-            "transport-options": {
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/heseya/insights/issues",
+                "source": "https://github.com/heseya/insights/tree/1.0.0"
+            },
+            "time": "2022-01-14T17:56:55+00:00"
         },
         {
             "name": "laravel/tinker",

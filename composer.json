@@ -37,7 +37,7 @@
         "brianium/paratest": "^6.3",
         "facade/ignition": "^2.9",
         "fakerphp/faker": "^v1.15",
-        "heseya/insights": "*",
+        "heseya/insights": "^1.0",
         "laravel/tinker": "^2.6",
         "mattiasgeniar/phpunit-query-count-assertions": "^1.1",
         "mbezhanov/faker-provider-collection": "^2.0",
@@ -99,10 +99,6 @@
         ]
     },
     "repositories": [
-        {
-            "type": "path",
-            "url": "./heseya/insights"
-        },
         {
             "type": "path",
             "url": "./heseya/demo"
