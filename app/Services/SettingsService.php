@@ -30,7 +30,7 @@ class SettingsService implements SettingsServiceContract
 
     public function getSetting(string $name): Setting
     {
-        $config = Config::get("settings.$name");
+        $config = Config::get("settings.${name}");
 
         if ($config === null) {
             return Setting::where('name', $name)->firstOrFail();
