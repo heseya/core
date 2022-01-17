@@ -12,7 +12,7 @@
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.3",
         "heseya/demo": "dev-master",
-        "heseya/dto": "*",
+        "heseya/dto": "^1.0",
         "heseya/laravel-searchable": "^1.0",
         "heseya/pagination": "*",
         "heseya/resource": "*",
@@ -114,10 +114,6 @@
         {
             "type": "path",
             "url": "./heseya/pagination"
-        },
-        {
-            "type": "path",
-            "url": "./heseya/dto"
         },
         {
             "type": "path",
