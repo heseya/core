@@ -26,6 +26,7 @@ use App\Services\Contracts\AuthServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 
 class AuthController extends Controller
@@ -182,6 +183,8 @@ class AuthController extends Controller
 
     public function removeUsersTFA(User $user): JsonResponse
     {
+        Gate::inspect('removeUserTFA', [User::class, $user]);
+
         $this->authService->removeUsersTFA($user);
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
