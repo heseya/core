@@ -2,6 +2,7 @@
 
 namespace App\SearchTypes;
 
+use App\Enums\RoleType;
 use Heseya\Searchable\Searches\Search;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
@@ -14,15 +15,19 @@ class RoleAssignableSearch extends Search
             ->map(fn ($perm) => $perm->getKey())->toArray();
 
         if ($this->value === true) {
-            $query->whereDoesntHave(
-                'permissions',
-                fn (Builder $sub) => $sub->whereNotIn('id', $permissions),
-            );
+            $query
+                ->where('type', '!=', RoleType::UNAUTHENTICATED)
+                ->whereDoesntHave(
+                    'permissions',
+                    fn (Builder $sub) => $sub->whereNotIn('id', $permissions),
+                );
         } elseif ($this->value === false) {
-            $query->whereHas(
-                'permissions',
-                fn (Builder $sub) => $sub->whereNotIn('id', $permissions),
-            );
+            $query
+                ->where('type', '=', RoleType::UNAUTHENTICATED)
+                ->orWhereHas(
+                    'permissions',
+                    fn (Builder $sub) => $sub->whereNotIn('id', $permissions),
+                );
         }
 
         return $query;
