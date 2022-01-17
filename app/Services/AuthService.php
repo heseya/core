@@ -307,7 +307,11 @@ class AuthService implements AuthServiceContract
         $google_authenticator = new PHPGangsta_GoogleAuthenticator();
 
         $secret = $google_authenticator->createSecret();
-        $qr_code_url = $google_authenticator->getQRCodeGoogleUrl(Config::get('app.name'), $secret);
+        $qr_code_url = $google_authenticator->getQRCodeGoogleUrl(
+            Auth::user()->email,
+            $secret,
+            Config::get('app.name')
+        );
 
         Auth::user()->update([
             'tfa_type' => TFAType::APP,
