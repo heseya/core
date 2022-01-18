@@ -5,8 +5,9 @@ namespace App\Models;
 use App\Enums\SchemaType;
 use App\Rules\OptionAvailable;
 use App\SearchTypes\SchemaSearch;
+use App\SearchTypes\TranslatedLike;
+use App\SortColumnTypes\TranslatedColumn;
 use BenSampo\Enum\Exceptions\InvalidEnumKeyException;
-use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Heseya\Sortable\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,13 +18,14 @@ use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Spatie\Translatable\HasTranslations;
 
 /**
  * @mixin IdeHelperSchema
  */
 class Schema extends Model
 {
-    use HasFactory, Searchable, Sortable;
+    use HasFactory, Searchable, Sortable, HasTranslations;
 
     protected $fillable = [
         'type',
@@ -40,6 +42,11 @@ class Schema extends Model
         'validation',
     ];
 
+    protected $translatable = [
+        'name',
+        'description',
+    ];
+
     protected $casts = [
         'price' => 'float',
         'hidden' => 'bool',
@@ -50,13 +57,13 @@ class Schema extends Model
 
     protected $searchable = [
         'search' => SchemaSearch::class,
-        'name' => Like::class,
+        'name' => TranslatedLike::class,
         'hidden',
         'required',
     ];
 
     protected array $sortable = [
-        'name',
+        'name' => TranslatedColumn::class,
         'sku',
         'created_at',
         'updated_at',

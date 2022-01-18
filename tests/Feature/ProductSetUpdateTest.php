@@ -392,8 +392,8 @@ class ProductSetUpdateTest extends TestCase
                 'slug' => 'test-edit',
             ]);
         $this->assertDatabaseHas('seo_metadata', [
-           'title' => 'seo title',
-           'description' => 'seo description',
+           "title->{$this->lang}" => 'seo title',
+           "description->{$this->lang}" => 'seo description',
         ]);
     }
 }

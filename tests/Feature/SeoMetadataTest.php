@@ -95,13 +95,13 @@ class SeoMetadataTest extends TestCase
             'data' => $this->expected_structure,
         ]);
 
-        $seo = SeoMetadata::where('global', '=', true)->first();
+        $seo = SeoMetadata::where('global', true)->first();
 
         $this->assertEquals(['key', 'words'], $seo->keywords);
 
         $this->assertDatabaseHas('seo_metadata', [
-            'title' => $seo->title,
-            'description' => $seo->description,
+            "title->{$this->lang}" => $seo->title,
+            "description->{$this->lang}" => $seo->description,
             'global' => true,
             'twitter_card' => $seo->twitter_card,
         ]);
@@ -136,13 +136,13 @@ class SeoMetadataTest extends TestCase
             'data' => $this->expected_structure,
         ]);
 
-        $seo = SeoMetadata::where('global', '=', true)->first();
+        $seo = SeoMetadata::where('global', true)->first();
 
         $this->assertEquals(['key', 'words'], $seo->keywords);
 
         $this->assertDatabaseHas('seo_metadata', [
-            'title' => $seo->title,
-            'description' => $seo->description,
+            "title->{$this->lang}" => $seo->title,
+            "description->{$this->lang}" => $seo->description,
             'global' => true,
         ]);
     }
@@ -170,15 +170,15 @@ class SeoMetadataTest extends TestCase
                 'data' => $this->expected_structure,
             ]);
 
-        $seo2 = SeoMetadata::where('global', '=', true)->first();
+        $seo2 = SeoMetadata::where('global', true)->first();
 
         $this->assertEquals(['key', 'words'], $seo2->keywords);
 
         $this->assertDatabaseCount('seo_metadata', 1);
 
         $this->assertDatabaseHas('seo_metadata', [
-            'title' => $seo2->title,
-            'description' => $seo2->description,
+            "title->{$this->lang}" => $seo2->title,
+            "description->{$this->lang}" => $seo2->description,
             'global' => true,
         ]);
     }
@@ -188,13 +188,10 @@ class SeoMetadataTest extends TestCase
      */
     public function testCheckKeywordsUnauthorized($user): void
     {
-        $seo = SeoMetadata::factory([
-            'keywords' => [
-                'PHP',
-                'Laravel',
-                'Java',
-            ]
-        ])->create();
+        $seo = SeoMetadata::factory()->make()
+            ->setTranslation('keywords', $this->lang, ['PHP', 'Laravel', 'Java']);
+
+        $seo->save();
 
         $this->actingAs($this->$user)->json('POST', '/seo/check', [
             'keywords' => array_merge($seo->keywords, ['Spring Boot']),
@@ -208,15 +205,10 @@ class SeoMetadataTest extends TestCase
     {
         $this->$user->givePermissionTo('seo.edit');
 
-        $seo = SeoMetadata::where('global', '=', true)->first();
+        /** @var SeoMetadata $seo */
+        $seo = SeoMetadata::where('global', true)->first();
 
-        $seo->update([
-            'keywords' => [
-                'Global PHP',
-                'Global Laravel',
-                'Global Java',
-            ],
-        ]);
+        $seo->setTranslation('keywords', $this->lang, ['PHP', 'Laravel', 'Java']);
 
         $this->actingAs($this->$user)->json('POST', '/seo/check', [
             'keywords' => [
@@ -255,13 +247,10 @@ class SeoMetadataTest extends TestCase
             'public' => true,
         ])->create();
 
-        $product->seo()->save(SeoMetadata::factory([
-            'keywords' => [
-                'PHP',
-                'Laravel',
-                'Java',
-            ],
-        ])->create());
+        $seo = SeoMetadata::factory()->make()
+            ->setTranslation('keywords', $this->lang, ['PHP', 'Laravel', 'Java']);
+
+        $product->seo()->save($seo);
 
         $this->actingAs($this->$user)->json('POST', '/seo/check', [
             'keywords' => $keywords,
@@ -294,13 +283,10 @@ class SeoMetadataTest extends TestCase
             'public' => true,
         ])->create();
 
-        $product->seo()->save(SeoMetadata::factory([
-            'keywords' => [
-                'PHP',
-                'Laravel',
-                'Java',
-            ],
-        ])->create());
+        $seo = SeoMetadata::factory()->make()
+            ->setTranslation('keywords', $this->lang, ['PHP', 'Laravel', 'Java']);
+
+        $product->seo()->save($seo);
 
         $this->actingAs($this->$user)->json('POST', '/seo/check', [
             'keywords' => $keywords,
@@ -326,13 +312,10 @@ class SeoMetadataTest extends TestCase
             'public' => true,
         ])->create();
 
-        $product->seo()->save(SeoMetadata::factory([
-            'keywords' => [
-                'PHP',
-                'Laravel',
-                'Java',
-            ],
-        ])->create());
+        $seo = SeoMetadata::factory()->make()
+            ->setTranslation('keywords', $this->lang, ['PHP', 'Laravel', 'Java']);
+
+        $product->seo()->save($seo);
 
         $this->actingAs($this->$user)->json('POST', '/seo/check', [
             'keywords' => $keywords,
@@ -357,25 +340,19 @@ class SeoMetadataTest extends TestCase
             'public' => true,
         ])->create();
 
-        $product->seo()->save(SeoMetadata::factory([
-            'keywords' => [
-                'PHP',
-                'Laravel',
-                'Java',
-            ],
-        ])->create());
+        $seo = SeoMetadata::factory()->make()
+            ->setTranslation('keywords', $this->lang, ['PHP', 'Laravel', 'Java']);
+
+        $product->seo()->save($seo);
 
         $product2 = Product::factory([
             'public' => true,
         ])->create();
 
-        $product2->seo()->save(SeoMetadata::factory([
-            'keywords' => [
-                'PHP',
-                'Laravel',
-                'Java',
-            ],
-        ])->create());
+        $seo2 = SeoMetadata::factory()->make()
+            ->setTranslation('keywords', $this->lang, ['PHP', 'Laravel', 'Java']);
+
+        $product2->seo()->save($seo2);
 
         $this->actingAs($this->$user)->json('POST', '/seo/check', [
             'keywords' => $keywords,

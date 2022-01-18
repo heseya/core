@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\SeoMetadata;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\App;
 
 class SeoMetadataFactory extends Factory
 {
@@ -24,7 +25,10 @@ class SeoMetadataFactory extends Factory
         return [
             'title' => $this->faker->word,
             'description' => $this->faker->sentence,
-            'keywords' => $this->faker->words(),
+            'keywords' => [
+                App::getLocale() => $this->faker->words(),
+            ],
+            'no_index' => $this->faker->boolean,
         ];
     }
 }

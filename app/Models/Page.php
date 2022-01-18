@@ -8,19 +8,25 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use Spatie\Translatable\HasTranslations;
 
 /**
  * @mixin IdeHelperPage
  */
 class Page extends Model implements AuditableContract
 {
-    use HasFactory, Sortable, Auditable, SoftDeletes, HasSeoMetadata;
+    use HasFactory, Sortable, Auditable, SoftDeletes, HasSeoMetadata, HasTranslations;
 
     protected $fillable = [
         'order',
         'name',
         'slug',
         'public',
+        'content_html',
+    ];
+
+    protected $translatable = [
+        'name',
         'content_html',
     ];
 

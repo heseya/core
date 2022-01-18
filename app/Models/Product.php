@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\SearchTypes\ProductSearch;
+use App\SearchTypes\TranslatedLike;
 use App\SearchTypes\WhereBelongsToManyById;
+use App\SortColumnTypes\TranslatedColumn;
 use App\Traits\HasSeoMetadata;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
@@ -14,13 +16,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use Spatie\Translatable\HasTranslations;
 
 /**
  * @mixin IdeHelperProduct
  */
 class Product extends Model implements AuditableContract
 {
-    use HasFactory, SoftDeletes, Searchable, Sortable, Auditable, HasSeoMetadata;
+    use HasFactory, SoftDeletes, Searchable, Sortable, Auditable, HasSeoMetadata, HasTranslations;
 
     protected $fillable = [
         'name',
@@ -33,6 +36,12 @@ class Product extends Model implements AuditableContract
         'quantity_step',
         'price_min',
         'price_max',
+    ];
+
+    protected $translatable = [
+        'name',
+        'description_html',
+        'description_short',
     ];
 
     protected $auditInclude = [
@@ -53,7 +62,7 @@ class Product extends Model implements AuditableContract
     ];
 
     protected array $searchable = [
-        'name' => Like::class,
+        'name' => TranslatedLike::class,
         'slug' => Like::class,
         'public',
         'search' => ProductSearch::class,
@@ -63,7 +72,7 @@ class Product extends Model implements AuditableContract
     protected array $sortable = [
         'id',
         'price',
-        'name',
+        'name' => TranslatedColumn::class,
         'created_at',
         'updated_at',
         'order',

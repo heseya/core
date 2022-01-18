@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Language;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\App;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,6 +15,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+        App::setLocale(Language::where('default', true)->firstOrFail()->getKey());
+
         $this
             ->call(ItemSeeder::class)
             ->call(ProductSetSeeder::class)
