@@ -24,12 +24,16 @@ trait Sortable
                     ],
                     [
                         'required' => 'You must specify sort field.',
-                        '0.in' => 'You can\'t sort by ' . $field . ' field.',
-                        '1.in' => 'Only asc|desc sorting directions are allowed on field ' . $field . '.',
-                    ])->validate();
+                        '0.in' => "You can't sort by {$field} field.",
+                        '1.in' => "Only asc|desc sorting directions are allowed on field {$field}.",
+                    ],
+                )->validate();
 
                 $order = count($option) > 1 ? $option[1] : 'asc';
-                $query->orderBy($field, $order);
+                $query->orderBy(
+                    $this->getFieldColumnName($field),
+                    $order,
+                );
             }
         }
 
@@ -41,7 +45,24 @@ trait Sortable
 
     private function getSortable(): array
     {
-        return $this->sortable ?? [];
+        return $this->sortable
+            ? array_map(
+                fn ($key, $value) => is_string($key)
+                    ? $key
+                    : $value,
+                array_keys($this->sortable),
+                $this->sortable,
+            ) : [];
+    }
+
+    private function getFieldColumnName(string $field): string
+    {
+        $column = $this->sortable[$field] ?? $field;
+
+        return class_exists($column)
+            && in_array(SortableColumn::class, class_implements($column) ?? [])
+                ? $column::getColumnName($field)
+                : $field;
     }
 
     private function getDefaultSortBy(): string
