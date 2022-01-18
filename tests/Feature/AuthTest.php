@@ -1279,6 +1279,17 @@ class AuthTest extends TestCase
             ]);
     }
 
+    public function testRemoveUserTfaYourself(): void
+    {
+        $this->user->givePermissionTo('users.2fa_remove');
+
+        $this->actingAs($this->user)->json('POST', '/users/id:' . $this->user->getKey() . '/2fa/remove')
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'message' => 'You cannot remove 2FA yourself in this way.',
+            ]);
+    }
+
     /**
      * @dataProvider tfaMethodProvider
      */
