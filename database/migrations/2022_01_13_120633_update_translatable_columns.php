@@ -24,9 +24,9 @@ class UpdateTranslatableColumns extends Migration
         $lang = $language->getKey();
 
         DbSchema::table('products', function (Blueprint $table) {
-            $table->json('name')->change();
-            $table->json('description_html')->nullable()->change();
-            $table->json('description_short')->nullable()->change();
+            $table->text('name')->change();
+            $table->text('description_html')->nullable()->change();
+            $table->text('description_short')->nullable()->change();
         });
 
         Product::chunk(100, fn ($products) => $products->each(
@@ -41,8 +41,8 @@ class UpdateTranslatableColumns extends Migration
         ));
 
         DbSchema::table('schemas', function (Blueprint $table) {
-            $table->json('name')->change();
-            $table->json('description')->nullable()->change();
+            $table->text('name')->change();
+            $table->text('description')->nullable()->change();
         });
 
         Schema::chunk(100, fn ($schemas) => $schemas->each(
@@ -56,7 +56,7 @@ class UpdateTranslatableColumns extends Migration
         ));
 
         DbSchema::table('options', function (Blueprint $table) {
-            $table->json('name')->change();
+            $table->text('name')->change();
         });
 
         Option::chunk(100, fn ($options) => $options->each(
@@ -69,8 +69,8 @@ class UpdateTranslatableColumns extends Migration
         ));
 
         DbSchema::table('pages', function (Blueprint $table) {
-            $table->json('name')->change();
-            $table->json('content_html')->nullable()->change();
+            $table->text('name')->change();
+            $table->text('content_html')->nullable()->change();
         });
 
         Page::chunk(100, fn ($pages) => $pages->each(
@@ -84,8 +84,8 @@ class UpdateTranslatableColumns extends Migration
         ));
 
         DbSchema::table('statuses', function (Blueprint $table) {
-            $table->json('name')->change();
-            $table->json('description')->nullable()->change();
+            $table->text('name')->change();
+            $table->text('description')->nullable()->change();
         });
 
         Status::chunk(100, fn ($statuses) => $statuses->each(
@@ -99,11 +99,10 @@ class UpdateTranslatableColumns extends Migration
         ));
 
         DbSchema::table('seo_metadata', function (Blueprint $table) {
-            $table->json('title')->nullable()->change();
-            $table->json('description')->nullable()->change();
-            $table->json('keywords')->nullable()->change();
-//            $table->json('og_image')->nullable()->change();
-            $table->json('no_index')->change();
+            $table->text('title')->nullable()->change();
+            $table->text('description')->nullable()->change();
+            $table->text('keywords')->nullable()->change();
+            $table->text('no_index')->change();
         });
 
         SeoMetadata::chunk(100, fn ($seo) => $seo->each(
@@ -115,7 +114,6 @@ class UpdateTranslatableColumns extends Migration
                     ->setTranslation('title', $lang, $attr['title'])
                     ->setTranslation('description', $lang, $attr['description'])
                     ->replaceTranslations('keywords', [$lang => json_decode($attr['keywords'])])
-//                    ->setTranslation('og_image', $lang, $attr['og_image'])
                     ->save();
             },
         ));

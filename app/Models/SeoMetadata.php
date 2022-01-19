@@ -32,7 +32,6 @@ class SeoMetadata extends Model
         'title',
         'description',
         'keywords',
-//        'og_image',
         'no_index',
     ];
 
@@ -53,16 +52,6 @@ class SeoMetadata extends Model
     {
         return $this->hasOne(Media::class, 'id', 'og_image');
     }
-
-//    public function getKeywordsAttribute($value)
-//    {
-//        return json_decode($value);
-//    }
-//
-//    public function setKeywordsAttribute($value)
-//    {
-//        $this->attributes['keywords'] = json_encode($value);
-//    }
 
     public function modelSeo(): MorphTo
     {
