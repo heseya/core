@@ -68,7 +68,10 @@ class ProductController extends Controller
             });
         }
 
-        if (Gate::denies('products.show_hidden') && !$request->hasAny(['sets', 'search', 'name', 'slug', 'public', 'tags'])) {
+        if (
+            Gate::denies('products.show_hidden') &&
+            !$request->hasAny(['sets', 'search', 'name', 'slug', 'public', 'tags'])
+        ) {
             $query->whereDoesntHave('sets', function (Builder $query) {
                 return $query->where('hide_on_index', true);
             });
