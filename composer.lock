@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "97547e5ebdbfe41b2d4fd5fbf45530ee",
+    "content-hash": "3b41219c28da0d0d69a68811a60ef069",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -2411,14 +2411,21 @@
         },
         {
             "name": "heseya/dto",
-            "version": "dev-master",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/heseya/dto.git",
+                "reference": "3a761f600cba75f4941b2781777e3f463d73a290"
+            },
             "dist": {
-                "type": "path",
-                "url": "./heseya/dto",
-                "reference": "0d88051f99fa5820233120222cb6bcf3dd6a81b8"
+                "type": "zip",
+                "url": "https://api.github.com/repos/heseya/dto/zipball/3a761f600cba75f4941b2781777e3f463d73a290",
+                "reference": "3a761f600cba75f4941b2781777e3f463d73a290",
+                "shasum": ""
             },
             "require": {
-                "laravel/framework": "^8.0"
+                "laravel/framework": "^8.0|^9.0",
+                "php": "^8.0"
             },
             "type": "library",
             "autoload": {
@@ -2427,16 +2434,19 @@
                     "Heseya\\Dto\\Tests\\": "tests/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "authors": [
                 {
                     "name": "Bartosz Juraszewski",
                     "email": "bartek@heseya.com"
                 }
             ],
-            "description": "Heseya Store Dto with optional properties",
-            "transport-options": {
-                "relative": true
-            }
+            "description": "Heseya Dto with optional properties",
+            "support": {
+                "issues": "https://github.com/heseya/dto/issues",
+                "source": "https://github.com/heseya/dto/tree/1.0.0"
+            },
+            "time": "2022-01-17T13:48:06+00:00"
         },
         {
             "name": "heseya/laravel-searchable",
@@ -10979,11 +10989,17 @@
         },
         {
             "name": "heseya/insights",
-            "version": "dev-master",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/heseya/insights.git",
+                "reference": "88bc2a6255a2a1a9eb2440e83573b76ca9806129"
+            },
             "dist": {
-                "type": "path",
-                "url": "./heseya/insights",
-                "reference": "2a3f03f4437de8dd0ed7323b2fc34bca67082648"
+                "type": "zip",
+                "url": "https://api.github.com/repos/heseya/insights/zipball/88bc2a6255a2a1a9eb2440e83573b76ca9806129",
+                "reference": "88bc2a6255a2a1a9eb2440e83573b76ca9806129",
+                "shasum": ""
             },
             "require": {
                 "nunomaduro/phpinsights": "^2.0"
@@ -10994,15 +11010,18 @@
                     "Heseya\\Insights\\": "src/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "authors": [
                 {
                     "name": "Jędrzej Buliński",
                     "email": "jedrzej@heseya.com"
                 }
             ],
-            "transport-options": {
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/heseya/insights/issues",
+                "source": "https://github.com/heseya/insights/tree/1.0.0"
+            },
+            "time": "2022-01-14T17:56:55+00:00"
         },
         {
             "name": "laravel/tinker",
