@@ -177,6 +177,41 @@ class AuthTest extends TestCase
         $this->assertDatabaseCount('one_time_security_codes', 0);
     }
 
+    public function testLoginEnabledTfaOldCode(): void
+    {
+        $this->user->givePermissionTo('auth.login');
+
+        Notification::fake();
+
+        $this->user->update([
+            'tfa_type' => 'email',
+            'tfa_secret' => null,
+            'is_tfa_active' => true,
+        ]);
+
+        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user, Config::get('tfa.code_expires_time'));
+
+        // Wygenerowanie nowego kodu
+        $this->actingAs($this->user)->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+            'code' => $code,
+        ]);
+
+        $response
+            ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+            ->assertJsonFragment([
+                'message' => 'Invalid Two-Factor Authentication token.'
+            ]);
+
+        $this->assertDatabaseCount('one_time_security_codes', 1);
+    }
+
     /**
      * @dataProvider tfaMethodProvider
      */
