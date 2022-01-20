@@ -514,11 +514,11 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => true,
-            'description_html' => '<h1>Description</h1>',
-            'description_short' => 'So called short description...',
+            "description_html->{$this->lang}" => '<h1>Description</h1>',
+            "description_short->{$this->lang}" => 'So called short description...',
         ]);
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
@@ -576,10 +576,10 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => true,
-            'description_html' => '<h1>Description</h1>',
+            "description_html->{$this->lang}" => '<h1>Description</h1>',
         ]);
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
@@ -644,10 +644,10 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => true,
-            'description_html' => '<h1>Description</h1>',
+            "description_html->{$this->lang}" => '<h1>Description</h1>',
         ]);
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
@@ -712,10 +712,10 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => false,
-            'description_html' => '<h1>Description</h1>',
+            "description_html->{$this->lang}" => '<h1>Description</h1>',
         ]);
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
@@ -773,10 +773,10 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => false,
-            'description_html' => '<h1>Description</h1>',
+            "description_html->{$this->lang}" => '<h1>Description</h1>',
         ]);
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
@@ -818,7 +818,7 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 0,
         ]);
     }
@@ -867,10 +867,10 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 150,
             'public' => false,
-            'description_html' => null,
+            "description_html->{$this->lang}" => null,
         ]);
 
         $this->assertDatabaseHas('product_schemas', [
@@ -909,10 +909,10 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 150,
             'public' => false,
-            'description_html' => null,
+            "description_html->{$this->lang}" => null,
         ]);
 
         $this->assertDatabaseHas('product_set_product', [
@@ -976,18 +976,18 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => true,
-            'description_html' => '<h1>Description</h1>',
+            "description_html->{$this->lang}" => '<h1>Description</h1>',
         ]);
 
         $this->assertDatabaseHas('seo_metadata', [
-            'title' => 'seo title',
-            'description' => 'seo description',
+            "title->{$this->lang}" => 'seo title',
+            "description->{$this->lang}" => 'seo description',
             'model_id' => $response->getData()->data->id,
             'model_type' => Product::class,
-            'no_index' => true,
+            "no_index->{$this->lang}" => true,
         ]);
 
         $this->assertDatabaseCount('seo_metadata', 2);
@@ -1031,18 +1031,18 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => 100,
             'public' => true,
-            'description_html' => '<h1>Description</h1>',
+            "description_html->{$this->lang}" => '<h1>Description</h1>',
         ]);
 
         $this->assertDatabaseHas('seo_metadata', [
-            'title' => 'seo title',
-            'description' => 'seo description',
+            "title->{$this->lang}" => 'seo title',
+            "description->{$this->lang}" => 'seo description',
             'model_id' => $response->getData()->data->id,
             'model_type' => Product::class,
-            'no_index' => false,
+            "no_index->{$this->lang}" => false,
         ]);
 
         $this->assertDatabaseCount('seo_metadata', 2);
@@ -1078,12 +1078,12 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'price' => $productPrice,
             'price_min' => $productPrice,
             'price_max' => $productPrice + $schemaPrice,
             'public' => false,
-            'description_html' => null,
+            "description_html->{$this->lang}" => null,
         ]);
     }
 
@@ -1117,11 +1117,11 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
-            'name' => 'Updated',
+            "name->{$this->lang}" => 'Updated',
             'slug' => 'updated',
             'price' => 150,
-            'description_html' => '<h1>New description</h1>',
-            'description_short' => 'New so called short description',
+            "description_html->{$this->lang}" => '<h1>New description</h1>',
+            "description_short->{$this->lang}" => 'New so called short description',
             'public' => false,
         ]);
 
@@ -1170,10 +1170,10 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
-            'name' => 'Updated',
+            "name->{$this->lang}" => 'Updated',
             'slug' => 'updated',
             'price' => 150,
-            'description_html' => '<h1>New description</h1>',
+            "description_html->{$this->lang}" => '<h1>New description</h1>',
             'public' => false,
         ]);
 
@@ -1229,10 +1229,10 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
-            'name' => 'Updated',
+            "name->{$this->lang}" => 'Updated',
             'slug' => 'updated',
             'price' => 150,
-            'description_html' => '<h1>New description</h1>',
+            "description_html->{$this->lang}" => '<h1>New description</h1>',
             'public' => false,
         ]);
 
@@ -1373,16 +1373,16 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $product->getKey(),
-            'name' => 'Updated',
+            "name->{$this->lang}" => 'Updated',
             'slug' => 'updated',
             'price' => 150,
-            'description_html' => '<h1>New description</h1>',
+            "description_html->{$this->lang}" => '<h1>New description</h1>',
             'public' => false,
         ]);
 
         $this->assertDatabaseHas('seo_metadata', [
-            'title' => 'seo title',
-            'description' => 'seo description',
+            "title->{$this->lang}" => 'seo title',
+            "description->{$this->lang}" => 'seo description',
         ]);
     }
 

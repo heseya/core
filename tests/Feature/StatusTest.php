@@ -80,7 +80,13 @@ class StatusTest extends TestCase
             ->assertCreated()
             ->assertJson(['data' => $status]);
 
-        $this->assertDatabaseHas('statuses', $status);
+        $this->assertDatabaseHas('statuses', [
+            "name->{$this->lang}" => 'Test Status',
+            'color' => 'ffffff',
+            "description->{$this->lang}" => 'To jest status testowy.',
+            'hidden' => true,
+            'no_notifications' => true,
+        ]);
     }
 
     /**
@@ -105,7 +111,11 @@ class StatusTest extends TestCase
                 ]
             ]);
 
-        $this->assertDatabaseHas('statuses', $status);
+        $this->assertDatabaseHas('statuses', [
+            "name->{$this->lang}" => 'Test Status',
+            'color' => 'ffffff',
+            "description->{$this->lang}" => 'To jest status testowy.',
+        ]);
     }
 
     public function testUpdateUnauthorized(): void
@@ -135,7 +145,11 @@ class StatusTest extends TestCase
             ->assertOk()
             ->assertJson(['data' => $status]);
 
-        $this->assertDatabaseHas('statuses', $status + ['id' => $this->status_model->getKey()]);
+        $this->assertDatabaseHas('statuses', [
+            "name->{$this->lang}" => 'Test Status 2',
+            'color' => '444444',
+            "description->{$this->lang}" => 'Testowy opis testowego statusu 2.',
+        ] + ['id' => $this->status_model->getKey()]);
     }
 
     public function testDeleteUnauthorized(): void

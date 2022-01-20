@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Spatie\Translatable\HasTranslations;
 
 /**
  * @mixin IdeHelperOption
  */
 class Option extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTranslations;
 
     protected $fillable = [
         'name',
@@ -18,6 +19,10 @@ class Option extends Model
         'disabled',
         'schema_id',
         'order',
+    ];
+
+    protected $translatable = [
+        'name',
     ];
 
     protected $casts = [

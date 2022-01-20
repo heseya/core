@@ -205,7 +205,12 @@ class PageTest extends TestCase
             'data' => $page,
         ])->assertCreated();
 
-        $this->assertDatabaseHas('pages', $page);
+        $this->assertDatabaseHas('pages', [
+            "name->{$this->lang}" => 'Test',
+            'slug' => 'test-test',
+            'public' => true,
+            "content_html->{$this->lang}" => $html,
+        ]);
 
         Event::assertDispatched(PageCreated::class);
     }
@@ -242,7 +247,12 @@ class PageTest extends TestCase
             'data' => $page,
         ])->assertCreated();
 
-        $this->assertDatabaseHas('pages', $page);
+        $this->assertDatabaseHas('pages', [
+            "name->{$this->lang}" => 'Test',
+            'slug' => 'test-test',
+            'public' => true,
+            "content_html->{$this->lang}" => $html,
+        ]);
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
             return $job->class === WebHookEventListener::class
@@ -291,14 +301,14 @@ class PageTest extends TestCase
 
         $this->assertDatabaseHas('pages', [
             'id' => $response->getData()->data->id,
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'slug' => 'test-test',
             'public' => true,
-            'content_html' => $html,
+            "content_html->{$this->lang}" => $html,
         ]);
         $this->assertDatabaseHas('seo_metadata', [
-            'title' => 'seo title',
-            'description' => 'seo description',
+            "title->{$this->lang}" => 'seo title',
+            "description->{$this->lang}" => 'seo description',
             'model_id' => $response->getData()->data->id,
         ]);
     }
@@ -379,7 +389,13 @@ class PageTest extends TestCase
             ->assertOk()
             ->assertJson(['data' => $page]);
 
-        $this->assertDatabaseHas('pages', $page + ['id' => $this->page->getKey()]);
+        $this->assertDatabaseHas('pages', [
+            'id' => $this->page->getKey(),
+            "name->{$this->lang}" => 'Test 2',
+            'slug' => 'test-2',
+            'public' => false,
+            "content_html->{$this->lang}" => $html,
+        ]);
 
         Event::assertDispatched(PageUpdated::class);
     }
@@ -420,7 +436,13 @@ class PageTest extends TestCase
             ->assertOk()
             ->assertJson(['data' => $page]);
 
-        $this->assertDatabaseHas('pages', $page + ['id' => $this->page->getKey()]);
+        $this->assertDatabaseHas('pages', [
+            'id' => $this->page->getKey(),
+            "name->{$this->lang}" => 'Test 2',
+            'slug' => 'test-2',
+            'public' => false,
+            "content_html->{$this->lang}" => $html,
+        ]);
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
             return $job->class === WebHookEventListener::class
@@ -443,10 +465,10 @@ class PageTest extends TestCase
         });
         $this->assertDatabaseHas('pages', [
             'id' => $this->page->getKey(),
-            'name' => 'Test 2',
+            "name->{$this->lang}" => 'Test 2',
             'slug' => 'test-2',
             'public' => false,
-            'content_html' => $html,
+            "content_html->{$this->lang}" => $html,
         ]);
     }
 
@@ -483,14 +505,14 @@ class PageTest extends TestCase
 
         $this->assertDatabaseHas('pages', [
             'id' => $this->page->getKey(),
-            'name' => 'Test 2',
+            "name->{$this->lang}" => 'Test 2',
             'slug' => 'test-2',
             'public' => false,
-            'content_html' => $html,
+            "content_html->{$this->lang}" => $html,
         ]);
         $this->assertDatabaseHas('seo_metadata', [
-            'title' => 'seo title',
-            'description' => 'seo description',
+            "title->{$this->lang}" => 'seo title',
+            "description->{$this->lang}" => 'seo description',
         ]);
     }
 
@@ -500,10 +522,14 @@ class PageTest extends TestCase
 
         $page = $this->page->toArray();
         unset($page['content_html']);
+        unset($page['name']);
 
         $response = $this->patchJson('/pages/id:' . $this->page->getKey());
         $response->assertForbidden();
-        $this->assertDatabaseHas('pages', $page);
+        $this->assertDatabaseHas('pages', $page + [
+            "name->{$this->lang}" => $this->page->name,
+            "content_html->{$this->lang}" => $this->page->content_html,
+        ]);
 
         Event::assertNotDispatched(PageDeleted::class);
     }

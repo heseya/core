@@ -224,10 +224,10 @@ class SchemaTest extends TestCase
         $option = $response->getData()->data->options[0];
 
         $this->assertDatabaseHas('schemas', [
-            'name' => 'Test',
+            "name->{$this->lang}" => 'Test',
             'type' => SchemaType::SELECT,
             'price' => 120,
-            'description' => 'test test',
+            "description->{$this->lang}" => 'test test',
             'hidden' => 0,
             'required' => 0,
             'default' => null,
@@ -235,7 +235,7 @@ class SchemaTest extends TestCase
 
         $this->assertDatabaseHas('options', [
             'id' => $option->id,
-            'name' => 'L',
+            "name->{$this->lang}" => 'L',
             'price' => 100,
             'disabled' => 0,
             'schema_id' => $schema->id,
@@ -243,7 +243,7 @@ class SchemaTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('options', [
-            'name' => 'A',
+            "name->{$this->lang}" => 'A',
             'price' => 1000,
             'disabled' => 0,
             'schema_id' => $schema->id,
@@ -251,7 +251,7 @@ class SchemaTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('options', [
-            'name' => 'B',
+            "name->{$this->lang}" => 'B',
             'price' => 0,
             'disabled' => 0,
             'schema_id' => $schema->id,
@@ -460,14 +460,14 @@ class SchemaTest extends TestCase
         $response->assertOk();
 
         $this->assertDatabaseHas('schemas', [
-            'name' => 'Test Updated',
+            "name->{$this->lang}" => 'Test Updated',
             'price' => 200,
             'default' => 0,
         ]);
 
         $this->assertDatabaseHas('options', [
             'id' => $option->getKey(),
-            'name' => 'L',
+            "name->{$this->lang}" => 'L',
             'price' => 0,
             'disabled' => 1,
             'schema_id' => $schema->getKey(),

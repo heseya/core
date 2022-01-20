@@ -6,13 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use Spatie\Translatable\HasTranslations;
 
 /**
  * @mixin IdeHelperStatus
  */
 class Status extends Model implements AuditableContract
 {
-    use HasFactory, Auditable;
+    use HasFactory, Auditable, HasTranslations;
 
     protected $fillable = [
         'name',
@@ -28,6 +29,11 @@ class Status extends Model implements AuditableContract
         'cancel' => 'boolean',
         'hidden' => 'boolean',
         'no_notifications' => 'boolean',
+    ];
+
+    protected $translatable = [
+        'name',
+        'description',
     ];
 
     protected $attributes = [

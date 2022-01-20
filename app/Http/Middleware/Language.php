@@ -16,9 +16,11 @@ class Language
      */
     public function handle($request, Closure $next): mixed
     {
-        if ($request->hasHeader('x-language')) {
-            App::setLocale($request->header('x-language'));
-        }
+//        if ($request->hasHeader('x-language')) {
+//            App::setLocale($request->header('x-language'));
+//        }
+
+        App::setLocale(\App\Models\Language::where('default', true)->firstOrFail()->getKey());
 
         return $next($request);
     }

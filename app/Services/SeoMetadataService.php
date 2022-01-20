@@ -13,6 +13,7 @@ use App\Services\Contracts\SeoMetadataServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
@@ -20,18 +21,27 @@ class SeoMetadataService implements SeoMetadataServiceContract
 {
     public function show(): SeoMetadata
     {
-        return SeoMetadata::where('global', '=', true)->firstOrFail();
+        return SeoMetadata::where('global', true)->firstOrFail();
     }
 
     public function createOrUpdate(SeoMetadataDto $dto): SeoMetadata
     {
-        $seo = SeoMetadata::firstOrCreate(
-            ['global' => true],
-            $dto->toArray()
-        );
+        $seo = SeoMetadata::where('global', '=', true)->first();
+
+        if (!$seo) {
+            $seo = SeoMetadata::make($dto->toArray() + [
+                'global' => true,
+                'no_index' => $dto->getNoIndex() instanceof Missing ? true : $dto->getNoIndex(),
+            ]);
+
+            $seo->setTranslation('keywords', App::getLocale(), $dto->getKeywords())
+                ->save();
+        }
 
         if (!$seo->wasRecentlyCreated) {
-            $seo->update($dto->toArray());
+            $seo->fill($dto->toArray())
+                ->setTranslation('keywords', App::getLocale(), $dto->getKeywords())
+                ->save();
         }
 
         Cache::put('seo.global', $seo);
@@ -41,14 +51,24 @@ class SeoMetadataService implements SeoMetadataServiceContract
 
     public function create(SeoMetadataDto $dto): SeoMetadata
     {
-        return SeoMetadata::create(
-            $dto->toArray()
-        );
+        /** @var SeoMetadata $seo */
+        $seo = SeoMetadata::make($dto->toArray() + [
+            'no_index' => $dto->getNoIndex() instanceof Missing ? false : $dto->getNoIndex(),
+        ]);
+
+        $seo->setTranslation('keywords', App::getLocale(), $dto->getKeywords())
+            ->save();
+
+        return $seo;
     }
 
     public function update(SeoMetadataDto $dto, SeoMetadata $seoMetadata): SeoMetadata
     {
-        $seoMetadata->update($dto->toArray());
+        $seoMetadata
+            ->fill($dto->toArray())
+            ->setTranslation('keywords', App::getLocale(), $dto->getKeywords())
+            ->save();
+
         return $seoMetadata;
     }
 
@@ -72,6 +92,8 @@ class SeoMetadataService implements SeoMetadataServiceContract
             }
         : null;
 
+        $lang = App::getLocale();
+
         return SeoMetadata::whereHasMorph(
             'modelSeo',
             [
@@ -81,8 +103,8 @@ class SeoMetadataService implements SeoMetadataServiceContract
             ],
             $morph_closure
         )
-            ->whereJsonLength('keywords', count($keywords))
-            ->whereJsonContains('keywords', $keywords)
+            ->whereJsonLength("keywords->{$lang}", count($keywords))
+            ->whereJsonContains("keywords->{$lang}", $keywords)
             ->get();
     }
 }

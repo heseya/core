@@ -5,6 +5,7 @@ namespace Tests;
 use App\Enums\RoleType;
 use App\Enums\TokenType;
 use App\Models\App as Application;
+use App\Models\Language;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\TokenServiceContract;
@@ -27,10 +28,15 @@ abstract class TestCase extends BaseTestCase
     public string $password = 'secret';
     public TokenServiceContract $tokenService;
 
+    public string $lang;
+
     public function setUp(): void
     {
         parent::setUp();
         ini_set('memory_limit', '1024M');
+
+        $this->lang = Language::where('default', true)->firstOrFail()->getKey();
+        App::setLocale($this->lang);
 
         $this->tokenService = App::make(TokenServiceContract::class);
 
