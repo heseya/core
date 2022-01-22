@@ -40,6 +40,7 @@ class Schema extends Model
         'default',
         'pattern',
         'validation',
+        'published',
     ];
 
     protected $translatable = [
@@ -53,6 +54,7 @@ class Schema extends Model
         'required' => 'bool',
         'available' => 'bool',
         'type' => SchemaType::class,
+        'published' => 'array',
     ];
 
     protected $searchable = [

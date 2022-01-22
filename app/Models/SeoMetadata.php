@@ -26,6 +26,7 @@ class SeoMetadata extends Model
         'model_id',
         'model_type',
         'no_index',
+        'published',
     ];
 
     protected $translatable = [
@@ -42,6 +43,7 @@ class SeoMetadata extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'no_index' => 'bool',
+        'published' => 'array',
     ];
 
     protected $attributes = [

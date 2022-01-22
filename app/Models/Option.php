@@ -19,6 +19,7 @@ class Option extends Model
         'disabled',
         'schema_id',
         'order',
+        'published',
     ];
 
     protected $translatable = [
@@ -29,6 +30,7 @@ class Option extends Model
         'price' => 'float',
         'disabled' => 'bool',
         'available' => 'bool',
+        'published' => 'array',
     ];
 
     public function getAvailableAttribute($quantity = 1): bool

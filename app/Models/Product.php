@@ -36,6 +36,7 @@ class Product extends Model implements AuditableContract
         'quantity_step',
         'price_min',
         'price_max',
+        'published',
     ];
 
     protected $translatable = [
@@ -59,6 +60,7 @@ class Product extends Model implements AuditableContract
         'public' => 'bool',
         'available' => 'bool',
         'quantity_step' => 'float',
+        'published' => 'array',
     ];
 
     protected array $searchable = [

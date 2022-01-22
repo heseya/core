@@ -29,6 +29,7 @@ class SeoMetadataFactory extends Factory
                 App::getLocale() => $this->faker->words(),
             ],
             'no_index' => $this->faker->boolean,
+            'published' => [App::getLocale() => $this->faker->boolean],
         ];
     }
 }
