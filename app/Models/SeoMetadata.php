@@ -50,6 +50,11 @@ class SeoMetadata extends Model
         'global' => false,
     ];
 
+    public function getPublishedAttribute($value): array
+    {
+        return json_decode($value, true) ?? [];
+    }
+
     public function media(): HasOne
     {
         return $this->hasOne(Media::class, 'id', 'og_image');

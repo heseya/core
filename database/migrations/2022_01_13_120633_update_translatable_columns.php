@@ -27,7 +27,7 @@ class UpdateTranslatableColumns extends Migration
             $table->text('name')->change();
             $table->text('description_html')->nullable()->change();
             $table->text('description_short')->nullable()->change();
-            $table->text('published')->default('[]');
+            $table->text('published')->nullable();
         });
 
         Product::chunk(100, fn ($products) => $products->each(
@@ -45,7 +45,7 @@ class UpdateTranslatableColumns extends Migration
         DbSchema::table('schemas', function (Blueprint $table) {
             $table->text('name')->change();
             $table->text('description')->nullable()->change();
-            $table->text('published')->default('[]');
+            $table->text('published')->nullable();
         });
 
         Schema::chunk(100, fn ($schemas) => $schemas->each(
@@ -61,7 +61,7 @@ class UpdateTranslatableColumns extends Migration
 
         DbSchema::table('options', function (Blueprint $table) {
             $table->text('name')->change();
-            $table->text('published')->default('[]');
+            $table->text('published')->nullable();
         });
 
         Option::chunk(100, fn ($options) => $options->each(
@@ -77,7 +77,7 @@ class UpdateTranslatableColumns extends Migration
         DbSchema::table('pages', function (Blueprint $table) {
             $table->text('name')->change();
             $table->text('content_html')->nullable()->change();
-            $table->text('published')->default('[]');
+            $table->text('published')->nullable();
         });
 
         Page::chunk(100, fn ($pages) => $pages->each(
@@ -94,7 +94,7 @@ class UpdateTranslatableColumns extends Migration
         DbSchema::table('statuses', function (Blueprint $table) {
             $table->text('name')->change();
             $table->text('description')->nullable()->change();
-            $table->text('published')->default('[]');
+            $table->text('published')->nullable();
         });
 
         Status::chunk(100, fn ($statuses) => $statuses->each(
@@ -113,7 +113,7 @@ class UpdateTranslatableColumns extends Migration
             $table->text('description')->nullable()->change();
             $table->text('keywords')->nullable()->change();
             $table->text('no_index')->change();
-            $table->text('published')->default('[]');
+            $table->text('published')->nullable();
         });
 
         SeoMetadata::chunk(100, fn ($seo) => $seo->each(
