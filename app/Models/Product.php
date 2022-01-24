@@ -84,6 +84,11 @@ class Product extends Model implements AuditableContract
     protected string $defaultSortBy = 'created_at';
     protected string $defaultSortDirection = 'desc';
 
+    public function getPublishedAttribute($value): array
+    {
+        return json_decode($value, true) ?? [];
+    }
+
     public function media(): BelongsToMany
     {
         return $this

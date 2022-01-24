@@ -41,4 +41,9 @@ class Page extends Model implements AuditableContract
         'created_at',
         'updated_at',
     ];
+
+    public function getPublishedAttribute($value): array
+    {
+        return json_decode($value, true) ?? [];
+    }
 }

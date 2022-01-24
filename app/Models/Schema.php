@@ -71,6 +71,11 @@ class Schema extends Model
         'updated_at',
     ];
 
+    public function getPublishedAttribute($value): array
+    {
+        return json_decode($value, true) ?? [];
+    }
+
     public function getAvailableAttribute(): bool
     {
         if (!$this->type->is(SchemaType::SELECT)) {

@@ -43,6 +43,11 @@ class Status extends Model implements AuditableContract
         'no_notifications' => false,
     ];
 
+    public function getPublishedAttribute($value): array
+    {
+        return json_decode($value, true) ?? [];
+    }
+
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);

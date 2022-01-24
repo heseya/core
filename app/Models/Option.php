@@ -33,6 +33,11 @@ class Option extends Model
         'published' => 'array',
     ];
 
+    public function getPublishedAttribute($value): array
+    {
+        return json_decode($value, true) ?? [];
+    }
+
     public function getAvailableAttribute($quantity = 1): bool
     {
         // diwne obejście ale niech bedzie
