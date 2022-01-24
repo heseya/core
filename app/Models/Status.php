@@ -23,12 +23,14 @@ class Status extends Model implements AuditableContract
         'order',
         'hidden',
         'no_notifications',
+        'published',
     ];
 
     protected $casts = [
         'cancel' => 'boolean',
         'hidden' => 'boolean',
         'no_notifications' => 'boolean',
+        'published' => 'array',
     ];
 
     protected $translatable = [
@@ -40,6 +42,11 @@ class Status extends Model implements AuditableContract
         'hidden' => false,
         'no_notifications' => false,
     ];
+
+    public function getPublishedAttribute($value): array
+    {
+        return json_decode($value, true) ?? [];
+    }
 
     public function orders(): HasMany
     {

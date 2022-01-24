@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
 class ProductFactory extends Factory
@@ -29,6 +30,7 @@ class ProductFactory extends Factory
             'description_html' => '<p>' . $this->faker->sentence(10) . '</p>',
             'description_short' => $this->faker->sentence(10),
             'public' => $this->faker->boolean,
+            'published' => [App::getLocale() => $this->faker->boolean],
         ];
     }
 }

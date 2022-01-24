@@ -27,12 +27,14 @@ class UpdateTranslatableColumns extends Migration
             $table->text('name')->change();
             $table->text('description_html')->nullable()->change();
             $table->text('description_short')->nullable()->change();
+            $table->text('published')->nullable();
         });
 
         Product::chunk(100, fn ($products) => $products->each(
             function (Product $product) use ($lang) {
                 $attr = $product->getAttributes();
                 $product
+                    ->setRawAttributes(['published' => json_encode([$lang => true])])
                     ->setTranslation('name', $lang, $attr['name'])
                     ->setTranslation('description_html', $lang, $attr['description_html'])
                     ->setTranslation('description_short', $lang, $attr['description_short'])
@@ -43,12 +45,14 @@ class UpdateTranslatableColumns extends Migration
         DbSchema::table('schemas', function (Blueprint $table) {
             $table->text('name')->change();
             $table->text('description')->nullable()->change();
+            $table->text('published')->nullable();
         });
 
         Schema::chunk(100, fn ($schemas) => $schemas->each(
             function (Schema $schema) use ($lang) {
                 $attr = $schema->getAttributes();
                 $schema
+                    ->setRawAttributes(['published' => json_encode([$lang => true])])
                     ->setTranslation('name', $lang, $attr['name'])
                     ->setTranslation('description', $lang, $attr['description'])
                     ->save();
@@ -57,12 +61,14 @@ class UpdateTranslatableColumns extends Migration
 
         DbSchema::table('options', function (Blueprint $table) {
             $table->text('name')->change();
+            $table->text('published')->nullable();
         });
 
         Option::chunk(100, fn ($options) => $options->each(
             function (Option $option) use ($lang) {
                 $attr = $option->getAttributes();
                 $option
+                    ->setRawAttributes(['published' => json_encode([$lang => true])])
                     ->setTranslation('name', $lang, $attr['name'])
                     ->save();
             },
@@ -71,12 +77,14 @@ class UpdateTranslatableColumns extends Migration
         DbSchema::table('pages', function (Blueprint $table) {
             $table->text('name')->change();
             $table->text('content_html')->nullable()->change();
+            $table->text('published')->nullable();
         });
 
         Page::chunk(100, fn ($pages) => $pages->each(
             function (Page $page) use ($lang) {
                 $attr = $page->getAttributes();
                 $page
+                    ->setRawAttributes(['published' => json_encode([$lang => true])])
                     ->setTranslation('name', $lang, $attr['name'])
                     ->setTranslation('content_html', $lang, $attr['content_html'])
                     ->save();
@@ -86,12 +94,14 @@ class UpdateTranslatableColumns extends Migration
         DbSchema::table('statuses', function (Blueprint $table) {
             $table->text('name')->change();
             $table->text('description')->nullable()->change();
+            $table->text('published')->nullable();
         });
 
         Status::chunk(100, fn ($statuses) => $statuses->each(
             function (Status $status) use ($lang) {
                 $attr = $status->getAttributes();
                 $status
+                    ->setRawAttributes(['published' => json_encode([$lang => true])])
                     ->setTranslation('name', $lang, $attr['name'])
                     ->setTranslation('description', $lang, $attr['description'])
                     ->save();
@@ -103,6 +113,7 @@ class UpdateTranslatableColumns extends Migration
             $table->text('description')->nullable()->change();
             $table->text('keywords')->nullable()->change();
             $table->text('no_index')->change();
+            $table->text('published')->nullable();
         });
 
         SeoMetadata::chunk(100, fn ($seo) => $seo->each(
@@ -110,7 +121,10 @@ class UpdateTranslatableColumns extends Migration
                 $attr = $seo->getAttributes();
 
                 $seo
-                    ->setRawAttributes(['no_index' => json_encode([$lang => (boolean) $attr['no_index']])])
+                    ->setRawAttributes([
+                        'published' => json_encode([$lang => true]),
+                        'no_index' => json_encode([$lang => (boolean) $attr['no_index']]),
+                    ])
                     ->setTranslation('title', $lang, $attr['title'])
                     ->setTranslation('description', $lang, $attr['description'])
                     ->replaceTranslations('keywords', [$lang => json_decode($attr['keywords'])])

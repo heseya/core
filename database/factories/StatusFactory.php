@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Status;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
 class StatusFactory extends Factory
@@ -24,6 +25,7 @@ class StatusFactory extends Factory
             'name' => $this->faker->unique()->word,
             'color' => ltrim($this->faker->hexcolor, '#'),
             'description' => Str::limit($this->faker->paragraph, 220),
+            'published' => [App::getLocale() => $this->faker->boolean],
         ];
     }
 }

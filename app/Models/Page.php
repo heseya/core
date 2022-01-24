@@ -23,6 +23,7 @@ class Page extends Model implements AuditableContract
         'slug',
         'public',
         'content_html',
+        'published',
     ];
 
     protected $translatable = [
@@ -32,6 +33,7 @@ class Page extends Model implements AuditableContract
 
     protected $casts = [
         'public' => 'boolean',
+        'published' => 'array',
     ];
 
     protected array $sortable = [
@@ -39,4 +41,9 @@ class Page extends Model implements AuditableContract
         'created_at',
         'updated_at',
     ];
+
+    public function getPublishedAttribute($value): array
+    {
+        return json_decode($value, true) ?? [];
+    }
 }

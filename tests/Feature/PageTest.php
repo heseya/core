@@ -523,6 +523,7 @@ class PageTest extends TestCase
         $page = $this->page->toArray();
         unset($page['content_html']);
         unset($page['name']);
+        unset($page['published']);
 
         $response = $this->patchJson('/pages/id:' . $this->page->getKey());
         $response->assertForbidden();
