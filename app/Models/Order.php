@@ -6,6 +6,7 @@ use App\Audits\Redactors\AddressRedactor;
 use App\Audits\Redactors\ShippingMethodRedactor;
 use App\Audits\Redactors\StatusRedactor;
 use App\SearchTypes\OrderSearch;
+use App\SearchTypes\WhereCreatedAtFromTo;
 use App\SearchTypes\WhereHasStatusHidden;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
@@ -74,6 +75,8 @@ class Order extends Model implements AuditableContract
         'user_id',
         'status.hidden' => WhereHasStatusHidden::class,
         'paid',
+        'from' => WhereCreatedAtFromTo::class,
+        'to' => WhereCreatedAtFromTo::class,
     ];
 
     protected array $sortable = [
