@@ -4,12 +4,11 @@ namespace App\SearchTypes;
 
 use Heseya\Searchable\Searches\Search;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Str;
 
-class WhereDateFrom extends Search
+class WhereCreatedAfter extends Search
 {
     public function query(Builder $query): Builder
     {
-        return $query->where(Str::beforeLast($this->key, '_from'), '>=', $this->value);
+        return $query->where('created_at', '>=', $this->value);
     }
 }
