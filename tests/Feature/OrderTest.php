@@ -378,7 +378,7 @@ class OrderTest extends TestCase
         $response = $this
             ->actingAs($this->$user)
             ->json('GET', '/orders', [
-                'from' => $from,
+                'created_at_from' => $from,
             ]);
 
         $response
@@ -412,7 +412,7 @@ class OrderTest extends TestCase
         $response = $this
             ->actingAs($this->$user)
             ->json('GET', '/orders', [
-                'to' => $to,
+                'created_at_to' => $to,
             ]);
 
         $response
@@ -447,8 +447,8 @@ class OrderTest extends TestCase
         $response = $this
             ->actingAs($this->$user)
             ->json('GET', '/orders', [
-                'from' => $from,
-                'to' => $to,
+                'created_at_from' => $from,
+                'created_at_to' => $to,
             ]);
 
         $response
