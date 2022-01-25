@@ -15,6 +15,7 @@ use App\Models\Status;
 use App\Models\WebHook;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
@@ -351,6 +352,109 @@ class OrderTest extends TestCase
             ->getJson('/orders?paid=1')
             ->assertOk()
             ->assertJsonCount(1, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByFrom($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        $status = Status::factory()->create();
+
+        $from = $this->order->created_at;
+
+        Order::factory([
+            'status_id' => $status->getKey(),
+            'created_at' => Carbon::yesterday(),
+        ])->create();
+
+        $order2 = Order::factory([
+            'status_id' => $status->getKey(),
+            'created_at' => Carbon::tomorrow(),
+        ])->create();
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('GET', '/orders', [
+                'from' => $from,
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment(['id' => $this->order->getKey()])
+            ->assertJsonFragment(['id' => $order2->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByTo($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        $status = Status::factory()->create();
+
+        $to = $this->order->created_at;
+
+        $order1 = Order::factory([
+            'status_id' => $status->getKey(),
+            'created_at' => Carbon::yesterday(),
+        ])->create();
+
+        Order::factory([
+            'status_id' => $status->getKey(),
+            'created_at' => Carbon::tomorrow(),
+        ])->create();
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('GET', '/orders', [
+                'to' => $to,
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment(['id' => $this->order->getKey()])
+            ->assertJsonFragment(['id' => $order1->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByFromTo($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        $status = Status::factory()->create();
+
+        $from = Carbon::yesterday()->addHour();
+        $to = Carbon::tomorrow()->subHour();
+
+        Order::factory([
+            'status_id' => $status->getKey(),
+            'created_at' => Carbon::yesterday(),
+        ])->create();
+
+        Order::factory([
+            'status_id' => $status->getKey(),
+            'created_at' => Carbon::tomorrow(),
+        ])->create();
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('GET', '/orders', [
+                'from' => $from,
+                'to' => $to,
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $this->order->getKey()]);
     }
 
     public function testViewUnauthorized(): void
