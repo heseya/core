@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\MediaType;
 use App\Models\Media;
 use App\Models\Product;
+use Illuminate\Http\Testing\File;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -188,31 +189,33 @@ class MediaTest extends TestCase
     public function videoProvider(): array
     {
         return [
-            'as user mp4' => ['user', '.mp4'],
-            'as user webm' => ['user', '.webm'],
-            'as user ogg' => ['user', '.ogg'],
-            'as user avi' => ['user', '.avi'],
-            'as user mov' => ['user', '.mov'],
-            'as user wmv' => ['user', '.wmv'],
-            'as app mp4' => ['application', '.mp4'],
-            'as app webm' => ['application', '.webm'],
-            'as app ogg' => ['application', '.ogg'],
-            'as app avi' => ['application', '.avi'],
-            'as app mov' => ['application', '.mov'],
-            'as app wmv' => ['application', '.wmv'],
+            'as user mp4' => ['user', '.mp4', 'video/mp4'],
+            'as user webm' => ['user', '.webm', 'video/webm'],
+            'as user ogv' => ['user', '.ogv', 'video/ogg'],
+            'as user ogg' => ['user', '.ogg', 'video/ogg'],
+            'as user mov' => ['user', '.mov', 'video/quicktime'],
+            'as user wmv' => ['user', '.wmv', 'video/x-ms-wmv'],
+            'as app mp4' => ['application', '.mp4', 'video/mp4'],
+            'as app webm' => ['application', '.webm', 'video/webm'],
+            'as app ogv' => ['application', '.ogv', 'video/ogg'],
+            'as app ogg' => ['application', '.ogg', 'video/ogg'],
+            'as app mov' => ['application', '.mov', 'video/quicktime'],
+            'as app wmv' => ['application', '.wmv', 'video/x-ms-wmv'],
         ];
     }
 
     /**
      * @dataProvider videoProvider
      */
-    public function testUploadVideo($user, $extension): void
+    public function testUploadVideo($user, $extension, $mime): void
     {
         $this->$user->givePermissionTo('pages.add');
 
         Http::fake(['*' => Http::response([0 => ['path' => 'video' . $extension]])]);
 
         $file = UploadedFile::fake()->image('video' . $extension);
+        $file->mimeTypeToReport = $mime;
+
         $response = $this->actingAs($this->$user)->postJson('/media', [
             'file' => $file,
         ]);
@@ -225,6 +228,33 @@ class MediaTest extends TestCase
                 'type',
                 'url',
             ]]);
+    }
+
+    public function invalidVideoProvider(): array
+    {
+        return [
+            'as user avi' => ['user', '.avi', 'video/x-msvideo'],
+            'as user ogg audio' => ['user', '.ogg', 'audio/ogg'],
+            'as app avi' => ['application', '.avi', 'video/x-msvideo'],
+            'as app ogg audio' => ['application', '.ogg', 'audio/ogg'],
+        ];
+    }
+
+    /**
+     * @dataProvider invalidVideoProvider
+     */
+    public function testUploadInvalidVideo($user, $extension, $mime): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        Http::fake(['*' => Http::response([0 => ['path' => 'video' . $extension]])]);
+
+        $file = UploadedFile::fake()->image('video' . $extension);
+        $file->mimeTypeToReport = $mime;
+
+        $this->actingAs($this->$user)->postJson('/media', [
+            'file' => $file,
+        ])->assertStatus(422);
     }
 
     /**
