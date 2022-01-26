@@ -9,6 +9,7 @@ use App\Listeners\WebHookEventListener;
 use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\WebHook;
+use Carbon\Carbon;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
@@ -149,6 +150,79 @@ class ItemTest extends TestCase
                     'quantity' => $item_sold_out->quantity,
                 ],
             ]]);
+
+        $this->assertQueryCountLessThan(10);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexFilterBySoldOutAndDay($user): void
+    {
+        $this->$user->givePermissionTo('items.show');
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/items', [
+                'sold_out' => 1,
+                'day' => Carbon::now(),
+            ])
+            ->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSortByQuantityAndFilterByDay($user): void
+    {
+        $this->$user->givePermissionTo('items.show');
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/items', [
+                'sort' => 'quantity:asc',
+                'day' => Carbon::now(),
+            ])
+            ->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexFilterByDay($user): void
+    {
+        $this->$user->givePermissionTo('items.show');
+
+        Deposit::factory([
+            'quantity' => 10,
+            'created_at' => Carbon::yesterday(),
+        ])->create([
+            'item_id' => $this->item->getKey(),
+        ]);
+
+        $item2 = Item::factory()->create();
+        Deposit::factory([
+            'quantity' => 5,
+        ])->create([
+            'item_id' => $item2->getKey(),
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/items', ['day' => Carbon::yesterday()])
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $item2->getKey(),
+                'name' => $item2->name,
+                'sku' => $item2->sku,
+                'quantity' => 0,
+            ])->assertJsonFragment([
+                'id' => $this->item->getKey(),
+                'name' => $this->item->name,
+                'sku' => $this->item->sku,
+                'quantity' => 10,
+            ]);
 
         $this->assertQueryCountLessThan(10);
     }

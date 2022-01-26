@@ -49,4 +49,14 @@ class Item extends Model implements AuditableContract
     {
         return $this->hasMany(Deposit::class);
     }
+
+    public function getQuantity(string|null $day): float
+    {
+        if ($day) {
+            return $this->deposits
+                ->where('created_at', '<=', $day)
+                ->sum('quantity');
+        }
+        return $this->quantity ?? 0;
+    }
 }
