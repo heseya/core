@@ -1048,121 +1048,9 @@ paths:
   /seo/check:
     $ref: './paths/Seo.yml#SeoCheck'
   /settings:
-    get:
-      tags:
-        - Settings
-      summary: 'list settings'
-      operationId: 6aa918d4f157546caf34e9bfb7983448
-      parameters:
-        - name: array
-          in: query
-          required: false
-          schema:
-            type: boolean
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Setting'
-                type: object
-      security:
-        - oauth: [ ]
-    post:
-      tags:
-        - Settings
-      summary: 'add new setting'
-      operationId: 139ba84032e309923174c5ad0fa849d5
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Setting'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Setting'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Settings.yml#/Settings'
   '/settings/{name}':
-    get:
-      tags:
-        - Settings
-      summary: 'view setting'
-      operationId: 5fdde9e40352f6b79ba7bfae0aafeda9
-      parameters:
-        - name: name
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Setting'
-                type: object
-      security:
-        - oauth: [ ]
-    delete:
-      tags:
-        - Settings
-      summary: 'delete setting'
-      operationId: 9bc3e39ceddf56c192bfb169c970208f
-      parameters:
-        - name: name
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
-    patch:
-      tags:
-        - Settings
-      summary: 'update setting'
-      operationId: e7664e5cd7086145821ce8e97333f8da
-      parameters:
-        - name: name
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Setting'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Setting'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Settings.yml#/SettingsParams'
   /shipping-methods:
     $ref: './paths/ShippingMethods.yml#/ShippingMethods'
   '/shipping-methods/id:{id}':
@@ -1778,17 +1666,7 @@ components:
             example: used-schema-ids
       type: object
     Setting:
-      properties:
-        name:
-          type: string
-          example: setting-name
-        value:
-          type: string
-        public:
-          type: boolean
-        permanent:
-          type: boolean
-      type: object
+      $ref: './schemas/Settings.yml#/Setting'
     ShippingMethod:
       $ref: './schemas/ShippingMethods.yml#/ShippingMethod'
     Status:
