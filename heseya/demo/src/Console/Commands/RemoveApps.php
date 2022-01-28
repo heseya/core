@@ -1,0 +1,66 @@
+<?php
+
+namespace Heseya\Demo\Console\Commands;
+
+use App\Models\App;
+use App\Services\Contracts\AppServiceContract;
+use Exception;
+use Illuminate\Console\Command;
+
+class RemoveApps extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'apps:remove {--force : Whether apps should be uninstall with force}';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Uninstall all apps';
+
+    /**
+     * Create a new command instance.
+     *
+     * @return void
+     */
+    public function __construct(
+        private AppServiceContract $appService,
+    )
+    {
+        parent::__construct();
+    }
+
+    /**
+     * Execute the console command.
+     */
+    public function handle()
+    {
+        try {
+            $apps = App::all();
+            $count = count($apps);
+
+            if ($count === 0) {
+                $this->info('Nothing to remove.');
+                return;
+            }
+
+            $bar = $this->output->createProgressBar($count);
+
+            foreach ($apps as $app) {
+                $this->appService->uninstall($app, $this->option('force'));
+                $bar->advance();
+            }
+
+            $bar->finish();
+            $this->info("\nSuccessfully removed all apps!");
+        } catch (Exception $exception) {
+            $this->error($exception->getMessage());
+            return;
+        }
+    }
+}
