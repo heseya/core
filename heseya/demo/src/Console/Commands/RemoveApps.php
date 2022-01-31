@@ -31,6 +31,7 @@ class RemoveApps extends Command
     public function __construct(
         private AppServiceContract $appService,
     ) {
+        parent::__construct();
     }
 
     /**
