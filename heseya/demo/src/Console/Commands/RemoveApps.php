@@ -14,7 +14,7 @@ class RemoveApps extends Command
      *
      * @var string
      */
-    protected $signature = 'apps:remove {--force : Whether apps should be uninstall with force}';
+    protected $signature = 'apps:remove {--force : Whether apps should be uninstalled with force}';
 
     /**
      * The console command description.
@@ -30,9 +30,7 @@ class RemoveApps extends Command
      */
     public function __construct(
         private AppServiceContract $appService,
-    )
-    {
-        parent::__construct();
+    ) {
     }
 
     /**
@@ -57,7 +55,7 @@ class RemoveApps extends Command
             }
 
             $bar->finish();
-            $this->info("\nSuccessfully removed all apps!");
+            $this->info(PHP_EOL . 'Successfully removed all apps!');
         } catch (Exception $exception) {
             $this->error($exception->getMessage());
             return;
