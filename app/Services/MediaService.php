@@ -45,9 +45,18 @@ class MediaService implements MediaServiceContract
         ]);
     }
 
+    private function getMediaType(string $extension): int
+    {
+        return match ($extension) {
+            'jpeg', 'jpg', 'png', 'gif', 'bmp', 'svg', 'webp' => MediaType::PHOTO,
+            'mp4', 'webm', 'ogg', 'avi', 'mov', 'wmv' => MediaType::VIDEO,
+            default => MediaType::OTHER,
+        };
+    }
+
     public function update(Media $media, MediaUpdateDto $dto): Media
     {
-        if (!($dto->getSlug() instanceof Missing)) {
+        if (!($dto->getSlug() instanceof Missing) && $media->slug !== $dto->getSlug()) {
             $media->url = $this->updateSlug($media, $dto->getSlug());
             $media->slug = $dto->getSlug();
         }
@@ -59,24 +68,6 @@ class MediaService implements MediaServiceContract
         $media->save();
 
         return $media;
-    }
-
-    public function destroy(Media $media): void
-    {
-        if ($media->products()->exists()) {
-            Gate::authorize('products.edit');
-        }
-
-        $media->forceDelete();
-    }
-
-    private function getMediaType(string $extension): int
-    {
-        return match ($extension) {
-            'jpeg', 'jpg', 'png', 'gif', 'bmp', 'svg', 'webp' => MediaType::PHOTO,
-            'mp4', 'webm', 'ogg', 'avi', 'mov', 'wmv' => MediaType::VIDEO,
-            default => MediaType::OTHER,
-        };
     }
 
     private function updateSlug(Media $media, string $slug): string
@@ -93,5 +84,14 @@ class MediaService implements MediaServiceContract
         }
 
         return Config::get('silverbox.host') . '/' . $response['path'];
+    }
+
+    public function destroy(Media $media): void
+    {
+        if ($media->products()->exists()) {
+            Gate::authorize('products.edit');
+        }
+
+        $media->forceDelete();
     }
 }

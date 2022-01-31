@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class MediaUpdateRequest extends FormRequest
 {
@@ -10,7 +11,11 @@ class MediaUpdateRequest extends FormRequest
     {
         return [
             'alt' => ['nullable', 'string', 'max:100'],
-            'slug' => ['string', 'max:64'],
+            'slug' => [
+                'string',
+                'max:64',
+                Rule::unique('media')->ignore($this->route('media')->slug, 'slug'),
+            ],
         ];
     }
 }
