@@ -193,14 +193,16 @@ class ItemTest extends TestCase
     {
         $this->$user->givePermissionTo('items.show');
 
+        $item2 = Item::factory()->create([
+            'created_at' => Carbon::yesterday(),
+        ]);
         Deposit::factory([
-            'quantity' => 10,
+            'quantity' => 5,
             'created_at' => Carbon::yesterday(),
         ])->create([
-            'item_id' => $this->item->getKey(),
+            'item_id' => $item2->getKey(),
         ]);
 
-        $item2 = Item::factory()->create();
         Deposit::factory([
             'quantity' => 5,
         ])->create([
@@ -211,17 +213,12 @@ class ItemTest extends TestCase
             ->actingAs($this->$user)
             ->json('GET', '/items', ['day' => Carbon::yesterday()])
             ->assertOk()
-            ->assertJsonCount(2, 'data')
+            ->assertJsonCount(1, 'data')
             ->assertJsonFragment([
                 'id' => $item2->getKey(),
                 'name' => $item2->name,
                 'sku' => $item2->sku,
-                'quantity' => 0,
-            ])->assertJsonFragment([
-                'id' => $this->item->getKey(),
-                'name' => $this->item->name,
-                'sku' => $this->item->sku,
-                'quantity' => 10,
+                'quantity' => 5,
             ]);
 
         $this->assertQueryCountLessThan(10);
