@@ -24,19 +24,15 @@ class Option extends Model
 
     protected $translatable = [
         'name',
+        'published',
     ];
 
     protected $casts = [
         'price' => 'float',
         'disabled' => 'bool',
         'available' => 'bool',
-        'published' => 'array',
+        'published' => 'bool',
     ];
-
-    public function getPublishedAttribute($value): array
-    {
-        return json_decode($value, true) ?? [];
-    }
 
     public function getAvailableAttribute($quantity = 1): bool
     {

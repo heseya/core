@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Language;
+use App\Models\Product;
+use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
 class LanguageTest extends TestCase
@@ -22,6 +24,8 @@ class LanguageTest extends TestCase
             'default' => true,
             'hidden' => false,
         ]);
+
+        App::setLocale($this->language->getKey());
 
         $this->languageHidden = Language::create([
             'iso' => 'en',
@@ -186,5 +190,107 @@ class LanguageTest extends TestCase
             ->actingAs($this->$user)
             ->json('DELETE', "/languages/id:{$this->language->getKey()}")
             ->assertStatus(400);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testGetDefaultTranslation($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'name' => 'Nazwa',
+            'description_html' => 'Opis HTML',
+            'description_short' => 'Krótki opis',
+            'public' => true,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products/id:' . $product->getKey())
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $product->getKey(),
+                'name' => 'Nazwa',
+                'description_html' => 'Opis HTML',
+                'description_short' => 'Krótki opis',
+                'iso' => $this->language->iso,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testGetRequestedTranslation($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $newLanguage = Language::create([
+            'iso' => 'de',
+            'name' => 'Deutsch',
+            'default' => false,
+            'hidden' => false,
+        ]);
+
+        App::setLocale($newLanguage->getKey());
+        /** @var Product $product */
+        $product = Product::factory()->create([
+            'name' => 'Name',
+            'description_html' => 'HTML Beschreibung',
+            'description_short' => 'Kurze Beschreibung',
+            'public' => true,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products/id:' . $product->getKey(), [], [
+                'Accept-Language' => $newLanguage->iso,
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $product->getKey(),
+                'name' => 'Name',
+                'description_html' => 'HTML Beschreibung',
+                'description_short' => 'Kurze Beschreibung',
+                'iso' => $newLanguage->iso,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testGetHiddenTranslation($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        /** @var Product $product */
+        $product = Product::factory()->create([
+            'name' => 'Nazwa',
+            'description_html' => 'Opis HTML',
+            'description_short' => 'Krótki opis',
+            'public' => true,
+        ]);
+
+        $product->setLocale($this->languageHidden->getKey())->update([
+            'name' => 'Hidden name',
+            'description_html' => 'Hidden HTML description',
+            'description_short' => 'Hidden short description',
+            'public' => true,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products/id:' . $product->getKey(), [
+                'Accept-Language' => $this->languageHidden->iso,
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $product->getKey(),
+                'name' => 'Nazwa',
+                'description_html' => 'Opis HTML',
+                'description_short' => 'Krótki opis',
+                'iso' => $this->language->iso,
+            ]);
     }
 }

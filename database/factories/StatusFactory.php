@@ -25,7 +25,7 @@ class StatusFactory extends Factory
             'name' => $this->faker->unique()->word,
             'color' => ltrim($this->faker->hexcolor, '#'),
             'description' => Str::limit($this->faker->paragraph, 220),
-            'published' => [App::getLocale() => $this->faker->boolean],
+            'published' => $this->faker->boolean,
         ];
     }
 }

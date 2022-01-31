@@ -30,12 +30,13 @@ class Status extends Model implements AuditableContract
         'cancel' => 'boolean',
         'hidden' => 'boolean',
         'no_notifications' => 'boolean',
-        'published' => 'array',
+        'published' => 'bool',
     ];
 
     protected $translatable = [
         'name',
         'description',
+        'published',
     ];
 
     protected $attributes = [
