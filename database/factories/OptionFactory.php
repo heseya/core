@@ -24,7 +24,7 @@ class OptionFactory extends Factory
             'name' => $this->faker->word,
             'price' => rand(0, 1) ? $this->faker->numberBetween(0, 100) : 0,
             'disabled' => rand(0, 10) === 0,
-            'published' => [App::getLocale() => $this->faker->boolean],
+            'published' => $this->faker->boolean,
         ];
     }
 }

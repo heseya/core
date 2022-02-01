@@ -31,7 +31,7 @@ class SchemaFactory extends Factory
             'default' => null,
             'pattern' => null,
             'validation' => null,
-            'published' => [App::getLocale() => $this->faker->boolean],
+            'published' => $this->faker->boolean,
         ];
     }
 }

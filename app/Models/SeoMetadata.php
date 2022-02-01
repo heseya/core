@@ -34,6 +34,7 @@ class SeoMetadata extends Model
         'description',
         'keywords',
         'no_index',
+        'published',
     ];
 
     protected $casts = [
@@ -43,17 +44,12 @@ class SeoMetadata extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'no_index' => 'bool',
-        'published' => 'array',
+        'published' => 'bool',
     ];
 
     protected $attributes = [
         'global' => false,
     ];
-
-    public function getPublishedAttribute($value): array
-    {
-        return json_decode($value, true) ?? [];
-    }
 
     public function media(): HasOne
     {

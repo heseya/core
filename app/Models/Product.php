@@ -43,6 +43,7 @@ class Product extends Model implements AuditableContract
         'name',
         'description_html',
         'description_short',
+        'published',
     ];
 
     protected $auditInclude = [
@@ -60,7 +61,7 @@ class Product extends Model implements AuditableContract
         'public' => 'bool',
         'available' => 'bool',
         'quantity_step' => 'float',
-        'published' => 'array',
+        'published' => 'bool',
     ];
 
     protected array $searchable = [
@@ -83,11 +84,6 @@ class Product extends Model implements AuditableContract
 
     protected string $defaultSortBy = 'created_at';
     protected string $defaultSortDirection = 'desc';
-
-    public function getPublishedAttribute($value): array
-    {
-        return json_decode($value, true) ?? [];
-    }
 
     public function media(): BelongsToMany
     {
