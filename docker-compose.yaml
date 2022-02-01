@@ -33,6 +33,11 @@ services:
     restart: unless-stopped
     environment:
       - ADMINER_DEFAULT_SERVER=mysql_service
+  redis:
+    image: redis:6.2
+    restart: unless-stopped
+    ports:
+      - ${REDIS_PORT}:6379
   nginx:
     image: nginx
     restart: unless-stopped
