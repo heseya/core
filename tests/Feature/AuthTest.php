@@ -75,7 +75,8 @@ class AuthTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonStructure(['data' => $this->expected]);
+            ->assertJsonStructure(['data' => $this->expected])
+            ->assertJsonFragment(['name' => 'Authenticated']);
     }
 
     public function testLoginInvalidCredential(): void

@@ -14,7 +14,9 @@ class RoleResource extends Resource
             'id' => $this->getKey(),
             'name' => $this->name,
             'description' => $this->description,
-            'assignable' => Auth::user() !== null && $this->type->isNot(RoleType::UNAUTHENTICATED)
+            'assignable' => Auth::user() !== null
+            && $this->type->isNot(RoleType::UNAUTHENTICATED)
+            && $this->type->isNot(RoleType::AUTHENTICATED)
                 ? Auth::user()->hasAllPermissions(
                     $this->getAllPermissions(),
                 ) : false,
