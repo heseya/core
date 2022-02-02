@@ -193,6 +193,46 @@ class ItemTest extends TestCase
     {
         $this->$user->givePermissionTo('items.show');
 
+        $created_at = Carbon::yesterday()->addHours(12);
+
+        $item2 = Item::factory()->create([
+            'created_at' => $created_at,
+        ]);
+        Deposit::factory([
+            'quantity' => 5,
+            'created_at' => $created_at,
+        ])->create([
+            'item_id' => $item2->getKey(),
+        ]);
+
+        Deposit::factory([
+            'quantity' => 5,
+        ])->create([
+            'item_id' => $item2->getKey(),
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/items', ['day' => $created_at->format('Y-m-d')])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $item2->getKey(),
+                'name' => $item2->name,
+                'sku' => $item2->sku,
+                'quantity' => 5,
+            ]);
+
+        $this->assertQueryCountLessThan(10);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexFilterByDayWithHour($user): void
+    {
+        $this->$user->givePermissionTo('items.show');
+
         $item2 = Item::factory()->create([
             'created_at' => Carbon::yesterday(),
         ]);
