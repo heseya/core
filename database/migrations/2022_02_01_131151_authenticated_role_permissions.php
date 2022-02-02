@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\RoleType;
 use App\Models\Role;
 use Illuminate\Database\Migrations\Migration;
 
@@ -12,7 +13,7 @@ class AuthenticatedRolePermissions extends Migration
      */
     public function up()
     {
-        $authenticated = Role::findByName('Authenticated');
+        $authenticated = Role::where('type', RoleType::AUTHENTICATED)->firstOrFail();
 
         $authenticated->givePermissionTo([
             'auth.login',
@@ -50,7 +51,7 @@ class AuthenticatedRolePermissions extends Migration
      */
     public function down()
     {
-        $authenticated = Role::findByName('Authenticated');
+        $authenticated = Role::where('type', RoleType::AUTHENTICATED)->firstOrFail();
 
         $authenticated->revokePermissionTo([
             'auth.login',
