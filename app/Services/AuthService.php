@@ -49,8 +49,6 @@ class AuthService implements AuthServiceContract
             'password' => $password,
         ]);
 
-        Auth::user()->assignRole(Role::where('type', RoleType::AUTHENTICATED)->get());
-
         if ($token === false) {
             throw new AuthException('Invalid credentials', simpleLogs: true);
         }

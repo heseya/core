@@ -2,6 +2,7 @@
 
 use App\Enums\RoleType;
 use App\Models\Role;
+use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 
 class AddAuthenticatedRole extends Migration
@@ -13,9 +14,13 @@ class AddAuthenticatedRole extends Migration
      */
     public function up()
     {
-        $logged_user = Role::create(['name' => 'Authenticated']);
-        $logged_user->type = RoleType::AUTHENTICATED;
-        $logged_user->save();
+        $authenticated = Role::create(['name' => 'Authenticated']);
+        $authenticated->type = RoleType::AUTHENTICATED;
+        $authenticated->save();
+
+        foreach (User::all() as $user) {
+            $user->assignRole($authenticated);
+        }
     }
 
     /**
@@ -25,6 +30,11 @@ class AddAuthenticatedRole extends Migration
      */
     public function down()
     {
-        Role::where('type', '=', RoleType::AUTHENTICATED)->delete();
+        $authenticated = Role::where('type', '=', RoleType::AUTHENTICATED);
+        foreach (User::all() as $user) {
+            $user->removeRole($authenticated);
+        }
+
+       $authenticated->delete();
     }
 }
