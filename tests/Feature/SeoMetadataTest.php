@@ -84,7 +84,7 @@ class SeoMetadataTest extends TestCase
 
         $response->assertCreated()->assertJson(fn (AssertableJson $json) =>
             $json->has('meta', fn ($json) =>
-                    $json->missing('seo')
+                    $json->has('seo')
                         ->etc())
                 ->has('data', fn ($json) =>
                     $json->where('title', $seo['title'])
