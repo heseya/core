@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\RoleType;
 use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Database\Migrations\Migration;
@@ -15,7 +16,7 @@ class OrdersShowOwnPermission extends Migration
     {
         Permission::create(['name' => 'orders.show_own', 'display_name' => 'Dostęp do listy zamówień zalogowanego użytkownika']);
 
-        $owner = Role::findByName('Owner');
+        $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
         $owner->givePermissionTo(['orders.show_own']);
         $owner->save();
     }
@@ -27,7 +28,7 @@ class OrdersShowOwnPermission extends Migration
      */
     public function down()
     {
-        $owner = Role::findByName('Owner');
+        $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
         $owner->revokePermissionTo(['orders.show_own']);
         $owner->save();
 
