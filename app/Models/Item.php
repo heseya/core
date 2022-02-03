@@ -11,6 +11,7 @@ use Heseya\Sortable\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
@@ -55,6 +56,9 @@ class Item extends Model implements AuditableContract
     public function getQuantity(string|null $day): float
     {
         if ($day) {
+            if (!Str::contains($day, ':')) {
+                $day = Str::before($day, 'T') . 'T23:59:59';
+            }
             return $this->deposits
                 ->where('created_at', '<=', $day)
                 ->sum('quantity');

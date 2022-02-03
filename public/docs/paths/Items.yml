@@ -32,9 +32,10 @@ Items:
           type: boolean
       - name: day
         in: query
-        description: 'Items status as at day. If present cannot search by sold_out field and sort by quantity'
+        description: 'Items status as at day. If present cannot search by sold_out field and sort by quantity.
+        If only date is provided then default time is set to 23:59:59'
         schema:
-          type: datetime
+          type: date | datetime
     responses:
       200:
         description: Success
