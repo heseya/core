@@ -379,3 +379,35 @@ TFARemove:
   responses:
     204:
       description: Success
+
+Register:
+  post:
+    tags:
+      - Auth
+    summary: 'Register new user'
+    requestBody:
+      $ref: './../requests/Auth.yml#/Register'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: './../schemas/Users.yml#/User'
+            example:
+              data:
+                id: 026bc5f6-8373-4aeb-972e-e78d72a67121
+                email: admin@example.com
+                name: 'Registered user'
+                avatar: '//www.gravatar.com/avatar/example.jpg'
+                roles:
+                  - id: 026bc5f6-8373-4aeb-972e-e78d72a67121
+                    name: 'Authenticated'
+                    description: 'Authenticated user role'
+                    assignable: false
+                    deletable: false
+    security:
+      - oauth: [ ]

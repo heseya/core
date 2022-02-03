@@ -2,6 +2,7 @@
 
 namespace App\Services\Contracts;
 
+use App\Dtos\RegisterDto;
 use App\Dtos\TFAConfirmDto;
 use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
@@ -40,6 +41,8 @@ interface AuthServiceContract
     public function removeTFA(TFAPasswordDto $dto): void;
 
     public function removeUsersTFA(User $user): void;
+
+    public function register(RegisterDto $dto): User;
 
 //    public function loginHistory(User $user): Builder;
 //

@@ -92,6 +92,8 @@ paths:
                 type: object
   /login:
     $ref: './paths/Auth.yml#/Login'
+  /register:
+    $ref: './paths/Auth.yml#/Register'
   /auth/logout:
     $ref: './paths/Auth.yml#/Logout'
   /users/reset-password:

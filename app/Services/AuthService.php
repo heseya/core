@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Dtos\RegisterDto;
 use App\Dtos\TFAConfirmDto;
 use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
@@ -259,6 +260,21 @@ class AuthService implements AuthServiceContract
         $this->checkNoTFA($user);
 
         $this->removeUserTFAData($user);
+    }
+
+    public function register(RegisterDto $dto): User
+    {
+        $user = User::create([
+            'name' => $dto->getName(),
+            'email' => $dto->getEmail(),
+            'password' => Hash::make($dto->getPassword()),
+        ]);
+
+        $authenticated = Role::where('type', RoleType::AUTHENTICATED)->first();
+
+        $user->syncRoles($authenticated);
+
+        return $user;
     }
 
     private function emailTFA(): array
