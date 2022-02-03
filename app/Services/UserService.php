@@ -26,7 +26,7 @@ class UserService implements UserServiceContract
 
     public function create(string $name, string $email, string $password, array $roles): User
     {
-        $roleModels = Role::findMany($roles);
+        $roleModels = Role::whereIn('id', $roles)->orWhere('type', RoleType::AUTHENTICATED)->get();
 
         $permissions = $roleModels->flatMap(
             fn ($role) => $role->getPermissionNames(),
@@ -57,7 +57,7 @@ class UserService implements UserServiceContract
         $authenticable = Auth::user();
 
         if ($roles !== null) {
-            $roleModels = Role::findMany($roles);
+            $roleModels = Role::whereIn('id', $roles)->orWhere('type', RoleType::AUTHENTICATED)->get();
 
             $newRoles = $roleModels->diff($user->roles);
             $removedRoles = $user->roles->diff($roleModels);

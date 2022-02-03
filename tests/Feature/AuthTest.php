@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\RoleType;
 use App\Enums\TFAType;
 use App\Enums\TokenType;
 use App\Models\App;
@@ -1317,6 +1318,59 @@ class AuthTest extends TestCase
             'tfa_secret' => null,
             'is_tfa_active' => false,
         ]);
+    }
+
+    public function testRegisterUnauthorized(): void
+    {
+        $this->json('POST', '/register', [
+            'name' => 'Registered user',
+            'email' => $this->faker->email(),
+            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+        ])->assertForbidden();
+    }
+
+    public function testRegisterEmailTaken(): void
+    {
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.register');
+
+        $this->json('POST', '/register', [
+            'name' => 'Registered user',
+            'email' => $this->user->email,
+            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+        ])->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    public function testRegister(): void
+    {
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.register');
+
+        $email = $this->faker->email();
+        $this->json('POST', '/register', [
+            'name' => 'Registered user',
+            'email' => $email,
+            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+        ])
+            ->assertCreated()
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'email',
+                    'avatar',
+                    'roles',
+                ],
+            ])
+            ->assertJsonFragment([
+                'name' => 'Registered user',
+                'email' => $email,
+            ])
+            ->assertJsonFragment([
+                'name' => 'Authenticated',
+                'assignable' => false,
+                'deletable' => false,
+            ]);
     }
 
 //    public function testAuthWithReokedToken(): void

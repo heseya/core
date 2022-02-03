@@ -194,6 +194,16 @@ class RoleTest extends TestCase
 
         $roleUnauthenticated->givePermissionTo('roles.show');
 
+        $roleAuthenticated = Role::create([
+            'name' => 'role6',
+            'description' => 'Role 6',
+        ]);
+
+        $roleAuthenticated->type = RoleType::AUTHENTICATED;
+        $roleAuthenticated->save();
+
+        $roleAuthenticated->givePermissionTo('roles.show');
+
         $response = $this->actingAs($this->$user)->getJson('/roles?assignable=1');
 
         $response->assertOk()
@@ -254,10 +264,20 @@ class RoleTest extends TestCase
 
         $roleUnauthenticated->givePermissionTo('roles.show');
 
+        $roleAuthenticated = Role::create([
+            'name' => 'role6',
+            'description' => 'Role 6',
+        ]);
+
+        $roleAuthenticated->type = RoleType::AUTHENTICATED;
+        $roleAuthenticated->save();
+
+        $roleAuthenticated->givePermissionTo('roles.show');
+
         $response = $this->actingAs($this->$user)->getJson('/roles?assignable=0');
 
         $response->assertOk()
-            ->assertJsonCount(3, 'data')
+            ->assertJsonCount(4, 'data')
             ->assertJsonFragment([[
                 $roleHasSomePermissions->getKeyName() => $roleHasSomePermissions->getKey(),
                 'name' => $roleHasSomePermissions->name,
@@ -276,6 +296,13 @@ class RoleTest extends TestCase
                 $roleUnauthenticated->getKeyName() => $roleUnauthenticated->getKey(),
                 'name' => $roleUnauthenticated->name,
                 'description' => $roleUnauthenticated->description,
+                'assignable' => false,
+                'deletable' => false,
+            ]])
+            ->assertJsonFragment([[
+                $roleAuthenticated->getKeyName() => $roleAuthenticated->getKey(),
+                'name' => $roleAuthenticated->name,
+                'description' => $roleAuthenticated->description,
                 'assignable' => false,
                 'deletable' => false,
             ]]);
@@ -1031,6 +1058,29 @@ class RoleTest extends TestCase
 
         $this->assertDatabaseHas('roles', [
             $owner->getKeyName() => $owner->getKey(),
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteLoggedUserRole($user): void
+    {
+        $this->$user->givePermissionTo(Permission::all());
+
+        $role = Role::create([
+            'name' => 'Authenticated',
+            'description' => 'Authenticated',
+        ]);
+        $role->type = RoleType::AUTHENTICATED;
+        $role->save();
+
+        $response = $this->actingAs($this->$user)
+            ->deleteJson('/roles/id:' . $role->getKey());
+        $response->assertStatus(422);
+
+        $this->assertDatabaseHas('roles', [
+            $role->getKeyName() => $role->getKey(),
         ]);
     }
 }
