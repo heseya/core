@@ -19,17 +19,22 @@ Items:
         description: 'Sku search'
         schema:
           type: string
-      - name: sold_out
-        in: query
-        description: 'Items sold out search'
-        schema:
-          type: boolean
       - name: sort
         in: query
-        description: 'Sorting string.'
+        description: 'Sorting string. Cannot sort by quantity if field day is present'
         schema:
           type: string
           example: 'name:asc,created_at:desc,updated_at:asc,sku:desc,quantity:desc'
+      - name: sold_out
+        in: query
+        description: 'Items sold out search. Cannot search by this field if field day is present'
+        schema:
+          type: boolean
+      - name: day
+        in: query
+        description: 'Items status as at day. If present cannot search by sold_out field and sort by quantity'
+        schema:
+          type: datetime
     responses:
       200:
         description: Success
@@ -42,6 +47,28 @@ Items:
                   items:
                     $ref: './../schemas/Items.yml#/Item'
               type: object
+      422:
+        description: Error displayed if fields day and sold_out are present and sort is set by quantity
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Error.yml#/Error'
+              type: object
+              example:
+                code: 422
+                message: "The given data was invalid."
+                errors: {
+                    sort: [
+                        "The selected sort is invalid."
+                    ],
+                    sold_out: [
+                        "The sold out field must be empty or not present unless the day is null."
+                    ]
+                }
     security:
       - oauth: [ ]
   post:

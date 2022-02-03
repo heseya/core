@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\SearchTypes\ItemSearch;
+use App\SearchTypes\WhereCreatedBefore;
 use App\SearchTypes\WhereSoldOut;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
@@ -31,6 +32,7 @@ class Item extends Model implements AuditableContract
         'sku' => Like::class,
         'search' => ItemSearch::class,
         'sold_out' => WhereSoldOut::class,
+        'day' => WhereCreatedBefore::class,
     ];
 
     protected array $sortable = [
@@ -48,5 +50,15 @@ class Item extends Model implements AuditableContract
     public function deposits(): HasMany
     {
         return $this->hasMany(Deposit::class);
+    }
+
+    public function getQuantity(string|null $day): float
+    {
+        if ($day) {
+            return $this->deposits
+                ->where('created_at', '<=', $day)
+                ->sum('quantity');
+        }
+        return $this->quantity ?? 0;
     }
 }

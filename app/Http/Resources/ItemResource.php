@@ -12,7 +12,7 @@ class ItemResource extends Resource
             'id' => $this->getKey(),
             'name' => $this->name,
             'sku' => $this->sku,
-            'quantity' => $this->quantity,
+            'quantity' => $this->getQuantity($request->input('day')),
         ];
     }
 }
