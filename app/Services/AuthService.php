@@ -18,6 +18,7 @@ use App\Models\User;
 use App\Notifications\ResetPassword;
 use App\Notifications\TFAInitialization;
 use App\Notifications\TFASecurityCode;
+use App\Notifications\UserRegistered;
 use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
@@ -273,6 +274,8 @@ class AuthService implements AuthServiceContract
         $authenticated = Role::where('type', RoleType::AUTHENTICATED)->first();
 
         $user->syncRoles($authenticated);
+
+        $user->notify(new UserRegistered());
 
         return $user;
     }
