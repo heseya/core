@@ -275,37 +275,6 @@ paths:
                     items:
                       $ref: '#/components/schemas/Event'
                 type: object
-  /furgonetka/create-package:
-    post:
-      tags:
-        - Furgonetka
-      summary: 'creates package on furgonetka'
-      operationId: 6edcc011870082e4d26f4657fec9f374
-      requestBody:
-        content:
-          application/json:
-            schema:
-              properties:
-                order_id:
-                  type: string
-                  example: 0246aa10-2585-44c0-8937-f7155af61f03
-                package_template_id:
-                  type: string
-                  example: 8026e9a2-78f8-456c-9008-48c77442e9a4
-              type: object
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  shipping_number:
-                    type: string
-                    example: 0000000773354Q
-                type: object
-      security:
-        - oauth: [ ]
   /items:
     $ref: './paths/Items.yml#/Items'
   '/items/id:{id}':
