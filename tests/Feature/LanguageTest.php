@@ -302,7 +302,7 @@ class LanguageTest extends TestCase
         $this->$user->givePermissionTo('languages.edit');
 
         $this
-            ->actingAs($this->user)
+            ->actingAs($this->$user)
             ->json('PATCH', "/languages/id:{$this->language->getKey()}", [
                 'iso' => 'pl',
                 'name' => 'Polski',
