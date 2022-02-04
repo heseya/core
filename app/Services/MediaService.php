@@ -36,7 +36,7 @@ class MediaService implements MediaServiceContract
             ->post(Config::get('silverbox.host') . '/' . Config::get('silverbox.client'));
 
         if ($response->failed()) {
-            throw new AppAccessException('CDN responded with an error');
+            throw new AppAccessException('CDN responded with an error', 500);
         }
 
         return Media::create([
@@ -89,7 +89,7 @@ class MediaService implements MediaServiceContract
             ]);
 
         if ($response->failed() || !isset($response['path'])) {
-            throw new AppAccessException('CDN responded with an error');
+            throw new AppAccessException('CDN responded with an error', 500);
         }
 
         return Config::get('silverbox.host') . '/' . $response['path'];
