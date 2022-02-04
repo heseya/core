@@ -27,6 +27,10 @@ class LanguageService implements LanguageServiceContract
 
     public function update(Language $language, LanguageDto $dto): Language
     {
+        if($language->default && !$dto->getDefault()){
+            throw new StoreException('There must be exactly one default language.');
+        }
+
         $language->update($dto->toArray());
 
         if ($dto->getDefault() === true) {

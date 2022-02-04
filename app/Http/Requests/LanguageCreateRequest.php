@@ -2,15 +2,32 @@
 
 namespace App\Http\Requests;
 
-class LanguageCreateRequest extends LanguageUpdateRequest
+use Illuminate\Foundation\Http\FormRequest;
+
+class LanguageCreateRequest extends FormRequest
 {
     public function rules(): array
     {
-        return array_merge_recursive(parent::rules(), [
-            'iso' => ['required'],
-            'name' => ['required'],
-            'default' => ['required'],
-            'hidden' => ['required'],
-        ]);
+        return [
+            'iso' => [
+                'required',
+                'string',
+                'max:16',
+                'unique:languages'
+            ],
+            'name' => [
+                'required',
+                'string',
+                'max:80'
+            ],
+            'default' => [
+                'required',
+                'boolean'
+            ],
+            'hidden' => [
+                'required',
+                'boolean'
+            ],
+        ];
     }
 }
