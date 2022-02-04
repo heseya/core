@@ -13,20 +13,20 @@ class LanguageCreateRequest extends FormRequest
                 'required',
                 'string',
                 'max:16',
-                'unique:languages'
+                'unique:languages',
             ],
             'name' => [
                 'required',
                 'string',
-                'max:80'
+                'max:80',
             ],
             'default' => [
                 'required',
-                'boolean'
+                'boolean',
             ],
             'hidden' => [
                 'required',
-                'boolean'
+                'boolean',
             ],
         ];
     }
