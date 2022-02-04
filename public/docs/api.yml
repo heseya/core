@@ -92,6 +92,8 @@ paths:
                 type: object
   /login:
     $ref: './paths/Auth.yml#/Login'
+  /register:
+    $ref: './paths/Auth.yml#/Register'
   /auth/logout:
     $ref: './paths/Auth.yml#/Logout'
   /users/reset-password:
@@ -127,77 +129,9 @@ paths:
   /countries:
     $ref: './paths/Countries.yml#Countries'
   /deposits:
-    get:
-      tags:
-        - Deposits
-      summary: 'list deposits'
-      operationId: a03051d488c250841fe7c20bd6990add
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Deposit'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Deposits.yml#/Deposits'
   '/items/id:{id}/deposits':
-    get:
-      tags:
-        - Deposits
-      summary: 'list item deposits'
-      operationId: 5099397a62f56c528043dae36a470bdd
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Deposit'
-                type: object
-      security:
-        - oauth: [ ]
-    post:
-      tags:
-        - Deposits
-      summary: 'add new deposit'
-      operationId: ae0156fddd1d7b7a2bd04984741711f4
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Deposit'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Deposit'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Deposits.yml#/ItemDeposits'
   /discounts:
     get:
       tags:
@@ -375,133 +309,9 @@ paths:
       security:
         - oauth: [ ]
   /items:
-    get:
-      tags:
-        - Items
-      summary: 'list items'
-      operationId: fb17b17e6e977f8de38a545f2af09116
-      parameters:
-        - name: search
-          in: query
-          description: 'Full text search'
-          schema:
-            type: string
-        - name: name
-          in: query
-          description: 'Name search'
-          schema:
-            type: string
-        - name: sku
-          in: query
-          description: 'Sku search'
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Item'
-                type: object
-      security:
-        - oauth: [ ]
-    post:
-      tags:
-        - Items
-      summary: 'add new item'
-      operationId: a3915553e021c4fa0ab6d313df9d4369
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Item'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Item'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Items.yml#/Items'
   '/items/id:{id}':
-    get:
-      tags:
-        - Items
-      summary: 'view item'
-      operationId: 2cd8385badc622da6b55243dd17ac0fe
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Item'
-                type: object
-      security:
-        - oauth: [ ]
-    delete:
-      tags:
-        - Items
-      summary: 'delete item'
-      operationId: ec933ea4411015e739bbab2e07d01dca
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
-    patch:
-      tags:
-        - Items
-      summary: 'update item'
-      operationId: b1ef0bdc3dee72a4cd944ee205c2fc99
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Item'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Item'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Items.yml#/ItemsParams'
   /media:
     $ref: './paths/Media.yml#Media'
   '/media/id:{id}':
@@ -1240,121 +1050,9 @@ paths:
   /seo/check:
     $ref: './paths/Seo.yml#SeoCheck'
   /settings:
-    get:
-      tags:
-        - Settings
-      summary: 'list settings'
-      operationId: 6aa918d4f157546caf34e9bfb7983448
-      parameters:
-        - name: array
-          in: query
-          required: false
-          schema:
-            type: boolean
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Setting'
-                type: object
-      security:
-        - oauth: [ ]
-    post:
-      tags:
-        - Settings
-      summary: 'add new setting'
-      operationId: 139ba84032e309923174c5ad0fa849d5
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Setting'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Setting'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Settings.yml#/Settings'
   '/settings/{name}':
-    get:
-      tags:
-        - Settings
-      summary: 'view setting'
-      operationId: 5fdde9e40352f6b79ba7bfae0aafeda9
-      parameters:
-        - name: name
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Setting'
-                type: object
-      security:
-        - oauth: [ ]
-    delete:
-      tags:
-        - Settings
-      summary: 'delete setting'
-      operationId: 9bc3e39ceddf56c192bfb169c970208f
-      parameters:
-        - name: name
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
-    patch:
-      tags:
-        - Settings
-      summary: 'update setting'
-      operationId: e7664e5cd7086145821ce8e97333f8da
-      parameters:
-        - name: name
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Setting'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Setting'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Settings.yml#/SettingsParams'
   /shipping-methods:
     $ref: './paths/ShippingMethods.yml#/ShippingMethods'
   '/shipping-methods/id:{id}':
@@ -1497,16 +1195,7 @@ paths:
 components:
   schemas:
     Error:
-      properties:
-        code:
-          description: 'Http response code.'
-          type: integer
-          example: 500
-        message:
-          description: 'Error message.'
-          type: string
-          example: 'Some error message.'
-      type: object
+      $ref: './schemas/Error.yml#/Error'
     OrderView:
       type: object
       allOf:
@@ -1754,20 +1443,7 @@ components:
     Country:
       $ref: './schemas/Countries.yml#/Country'
     Deposit:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        quantity:
-          type: number
-          example: '12.5'
-        item_id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        order_product_id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-      type: object
+      $ref: './schemas/Deposits.yml#/Deposit'
     Discount:
       properties:
         id:
@@ -1802,20 +1478,7 @@ components:
           example: '2021-09-13T11:11'
       type: object
     Item:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        name:
-          type: string
-          example: Chain
-        sku:
-          type: string
-          example: K121
-        quantity:
-          type: float
-          example: '20'
-      type: object
+      $ref: './schemas/Items.yml#/Item'
     Media:
       $ref: './schemas/Media.yml#Media'
     Option:
@@ -2005,17 +1668,7 @@ components:
             example: used-schema-ids
       type: object
     Setting:
-      properties:
-        name:
-          type: string
-          example: setting-name
-        value:
-          type: string
-        public:
-          type: boolean
-        permanent:
-          type: boolean
-      type: object
+      $ref: './schemas/Settings.yml#/Setting'
     ShippingMethod:
       $ref: './schemas/ShippingMethods.yml#/ShippingMethod'
     Status:

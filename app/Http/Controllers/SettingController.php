@@ -63,17 +63,15 @@ class SettingController extends Controller
             $setting = Setting::where('name', $name)->first();
 
             if ($setting === null) {
-                // Coppy setting from config to db
-
-                $setting = Setting::create($config + [
-                    'name' => $name,
-                ]);
+                $config = array_replace($config, $request->validated());
+                $setting = Setting::create($config);
+            } else {
+                $setting->update($request->validated());
             }
         } else {
             $setting = Setting::where('name', $name)->firstOrFail();
+            $setting->update($request->validated());
         }
-
-        $setting->update($request->validated());
 
         return SettingResource::make($setting);
     }

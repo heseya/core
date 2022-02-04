@@ -25,6 +25,7 @@ class UserTest extends TestCase
     public array $expected;
     private string $validPassword = 'V@l1dPa55word';
     private Role $owner;
+    private Role $authenticated;
 
     public function setUp(): void
     {
@@ -44,6 +45,10 @@ class UserTest extends TestCase
             ->givePermissionTo(Permission::all());
         $this->owner->type = RoleType::OWNER;
         $this->owner->save();
+
+        $this->authenticated = Role::updateOrCreate(['name' => 'Authenticated']);
+        $this->authenticated->type = RoleType::AUTHENTICATED;
+        $this->authenticated->save();
     }
 
     public function testIndexUnauthorized(): void
@@ -242,7 +247,8 @@ class UserTest extends TestCase
         $response
             ->assertCreated()
             ->assertJsonPath('data.email', $data['email'])
-            ->assertJsonPath('data.name', $data['name']);
+            ->assertJsonPath('data.name', $data['name'])
+            ->assertJsonFragment(['name' => 'Authenticated']);
 
         $userId = $response->getData()->data->id;
 
@@ -254,6 +260,7 @@ class UserTest extends TestCase
 
         $user = User::find($userId);
         $this->assertTrue(Hash::check($data['password'], $user->password));
+        $this->assertTrue($user->hasAllRoles([$this->authenticated]));
 
         Event::assertDispatched(UserCreated::class);
     }
@@ -466,6 +473,12 @@ class UserTest extends TestCase
                 'description' => $role3->description,
                 'assignable' => true,
                 'deletable' => true,
+            ]])->assertJsonFragment([[
+                'id' => $this->authenticated->getKey(),
+                'name' => $this->authenticated->name,
+                'description' => $this->authenticated->description,
+                'assignable' => false,
+                'deletable' => false,
             ]])->assertJsonPath('data.permissions', [
                 'permission.1',
                 'permission.2',
@@ -474,7 +487,7 @@ class UserTest extends TestCase
         $user = User::findOrFail($response->getData()->data->id);
 
         $this->assertTrue(
-            $user->hasAllRoles([$role1, $role2, $role3]),
+            $user->hasAllRoles([$role1, $role2, $role3, $this->authenticated]),
         );
 
         $this->assertTrue(
@@ -687,6 +700,12 @@ class UserTest extends TestCase
                 'description' => $role3->description,
                 'assignable' => true,
                 'deletable' => true,
+            ]])->assertJsonFragment([[
+                'id' => $this->authenticated->getKey(),
+                'name' => $this->authenticated->name,
+                'description' => $this->authenticated->description,
+                'assignable' => false,
+                'deletable' => false,
             ]])->assertJsonPath('data.permissions', [
                 'permission.1',
                 'permission.2',
@@ -695,7 +714,7 @@ class UserTest extends TestCase
         $user->refresh();
 
         $this->assertTrue(
-            $user->hasAllRoles([$role1, $role2, $role3]),
+            $user->hasAllRoles([$role1, $role2, $role3, $this->authenticated]),
         );
 
         $this->assertTrue(
@@ -775,9 +794,19 @@ class UserTest extends TestCase
         );
         $response
             ->assertOk()
-            ->assertJsonPath('data.roles', [])
+            ->assertJsonPath('data.roles', [
+                0 => [
+                    'id' => $this->authenticated->getKey(),
+                    'name' => $this->authenticated->name,
+                    'description' => $this->authenticated->description,
+                    'assignable' => false,
+                    'deletable' => false,
+                ]
+            ])
             ->assertJsonPath('data.permissions', []);
         $user->refresh();
+
+        $this->assertTrue($user->hasAllRoles([$this->authenticated]));
 
         $this->assertFalse(
             $user->hasAnyRole([$role1, $role2, $role3]),

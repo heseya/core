@@ -1,0 +1,6 @@
+DepositCreate:
+  type: object
+  properties:
+    quantity:
+      type: number
+      example: '12.5'
