@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Notifications\TFAInitialization;
 use App\Notifications\TFARecoveryCodes;
 use App\Notifications\TFASecurityCode;
+use App\Notifications\UserRegistered;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -1331,6 +1332,8 @@ class AuthTest extends TestCase
 
     public function testRegisterEmailTaken(): void
     {
+        Notification::fake();
+
         $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
         $role->givePermissionTo('auth.register');
 
@@ -1339,10 +1342,14 @@ class AuthTest extends TestCase
             'email' => $this->user->email,
             'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
         ])->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+
+        Notification::assertNothingSent();
     }
 
     public function testRegister(): void
     {
+        Notification::fake();
+
         $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
         $role->givePermissionTo('auth.register');
 
@@ -1371,6 +1378,12 @@ class AuthTest extends TestCase
                 'assignable' => false,
                 'deletable' => false,
             ]);
+
+        $user = User::where('email', $email)->first();
+
+        Notification::assertSentTo(
+            [$user], UserRegistered::class,
+        );
     }
 
 //    public function testAuthWithReokedToken(): void
