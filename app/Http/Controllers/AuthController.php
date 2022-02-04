@@ -63,7 +63,7 @@ class AuthController extends Controller
         return AuthResource::make($tokens);
     }
 
-    public function logout(Request $request): JsonResponse
+    public function logout(): JsonResponse
     {
         $this->authService->logout();
 
@@ -109,31 +109,6 @@ class AuthController extends Controller
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
-
-//    public function loginHistory(Request $request): JsonResource
-//    {
-//        $session = $this->authServiceContract->loginHistory($request->user());
-//
-//        return LoginHistoryResource::collection(
-//            $session->paginate(12),
-//        );
-//    }
-//
-//    public function killActiveSession(Request $request, string $oauthAccessTokensId): JsonResource
-//    {
-//        $session = $this->authServiceContract->killActiveSession($request->user(), $oauthAccessTokensId);
-//
-//        return LoginHistoryResource::collection(
-//            $session->paginate(12),
-//        );
-//    }
-//
-//    public function killAllSessions(Request $request): JsonResource
-//    {
-//        $session = $this->authServiceContract->killAllSessions($request->user());
-//
-//        return LoginHistoryResource::collection($session);
-//    }
 
     public function profile(Request $request): JsonResponse
     {
