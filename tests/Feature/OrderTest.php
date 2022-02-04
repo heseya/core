@@ -12,6 +12,7 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use App\Models\User;
 use App\Models\WebHook;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
@@ -185,6 +186,8 @@ class OrderTest extends TestCase
 
     public function testIndexUser(): void
     {
+        $this->user->givePermissionTo('orders.show_own');
+
         $shipping_method = ShippingMethod::factory()->create();
         $status = Status::factory()->create();
 
@@ -194,6 +197,20 @@ class OrderTest extends TestCase
         ]);
 
         $this->user->orders()->save($order);
+
+        $another_user = User::factory()->create();
+
+        $order_another_user = Order::factory()->create([
+            'shipping_method_id' => $shipping_method->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+
+        $another_user->orders()->save($order_another_user);
+
+        $order_no_user = Order::factory()->create([
+            'shipping_method_id' => $shipping_method->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
 
         $this
             ->actingAs($this->user)
@@ -207,13 +224,21 @@ class OrderTest extends TestCase
                 0 => [
                     'id' => $order->getKey()
                 ],
-            ]]);
+            ]])
+            ->assertJsonMissing([
+                'id' => $order_another_user->getKey(),
+            ])
+            ->assertJsonMissing([
+                'id' => $order_no_user->getKey(),
+            ]);
 
         $this->assertQueryCountLessThan(20);
     }
 
     public function testIndexUserPerformance(): void
     {
+        $this->user->givePermissionTo('orders.show_own');
+
         $orders = Order::factory()->count(500)->create();
 
         $this->user->orders()->saveMany($orders);
@@ -304,7 +329,7 @@ class OrderTest extends TestCase
 
         $this
             ->json('GET', '/orders/my')
-            ->assertStatus(404);
+            ->assertForbidden();
     }
 
     /**
@@ -440,6 +465,8 @@ class OrderTest extends TestCase
 
     public function testViewUser(): void
     {
+        $this->user->givePermissionTo('orders.show_own');
+
         $shipping_method = ShippingMethod::factory()->create();
         $status = Status::factory()->create();
 
@@ -451,10 +478,39 @@ class OrderTest extends TestCase
         $this->user->orders()->save($order);
 
         $this->actingAs($this->user)
-            ->json('GET', '/orders/my/id:' . $order->getKey())
+            ->json('GET', '/orders/my/' . $order->code)
             ->assertOk()
-            ->assertJsonFragment(['code' => $order->code])
+            ->assertJsonFragment([
+                'id' => $order->getKey(),
+                'code' => $order->code,
+            ])
             ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
+    }
+
+    public function testViewUserOrderNoUser(): void
+    {
+        $this->user->givePermissionTo('orders.show_own');
+
+        $order = Order::factory()->create();
+
+        $this->actingAs($this->user)
+            ->json('GET', '/orders/my/' . $order->code)
+            ->assertStatus(404);
+    }
+
+    public function testViewUserOrderAnotherUser(): void
+    {
+        $this->user->givePermissionTo('orders.show_own');
+
+        $another_user = User::factory()->create();
+
+        $order = Order::factory()->create();
+
+        $another_user->orders()->save($order);
+
+        $this->actingAs($this->user)
+            ->json('GET', '/orders/my/' . $order->code)
+            ->assertStatus(404);
     }
 
     public function testViewUserUnauthenticated(): void
@@ -464,8 +520,8 @@ class OrderTest extends TestCase
         $this->user->orders()->save($order);
 
         $this
-            ->json('GET', '/orders/my/id:' . $order->getKey())
-            ->assertStatus(404);
+            ->json('GET', '/orders/my/' . $order->code)
+            ->assertForbidden();
     }
 
     public function testUpdateOrderStatusUnauthorized(): void
