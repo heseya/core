@@ -173,7 +173,6 @@ return [
         /*
          * PackageTemplate Service Providers...
          */
-        Jenssegers\Agent\AgentServiceProvider::class,
         Spatie\Permission\PermissionServiceProvider::class,
         OwenIt\Auditing\AuditingServiceProvider::class,
 
