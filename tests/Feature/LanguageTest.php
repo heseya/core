@@ -268,7 +268,6 @@ class LanguageTest extends TestCase
      */
     public function testDeleteWithWebHookDispatched($user): void
     {
-        //
         $this->$user->givePermissionTo('languages.remove');
 
         $language = Language::create([
