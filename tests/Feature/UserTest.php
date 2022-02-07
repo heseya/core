@@ -649,12 +649,9 @@ class UserTest extends TestCase
         Event::assertNotDispatched(UserUpdated::class);
     }
 
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateAddRoles($user): void
+    public function testUpdateAddRoles(): void
     {
-        $this->$user->givePermissionTo('users.edit');
+        $this->user->givePermissionTo('users.edit');
 
         Event::fake([UserUpdated::class]);
 
@@ -668,7 +665,7 @@ class UserTest extends TestCase
 
         $role1->syncPermissions([$permission1, $permission2]);
         $role2->syncPermissions([$permission1]);
-        $this->$user->givePermissionTo([$permission1, $permission2]);
+        $this->user->givePermissionTo([$permission1, $permission2]);
 
         $data = [
             'roles' => [
@@ -678,7 +675,7 @@ class UserTest extends TestCase
             ],
         ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
+        $response = $this->actingAs($this->user)->patchJson(
             '/users/id:' . $otherUser->getKey(),
             $data,
         );
