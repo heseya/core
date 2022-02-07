@@ -2,9 +2,17 @@
 
 namespace Tests\Feature;
 
+use App\Events\LanguageCreated;
+use App\Events\LanguageDeleted;
+use App\Events\LanguageUpdated;
+use App\Listeners\WebHookEventListener;
 use App\Models\Language;
 use App\Models\Product;
+use App\Models\WebHook;
+use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Bus;
+use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
 class LanguageTest extends TestCase
@@ -113,6 +121,57 @@ class LanguageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateWithWebHookDispatched($user): void
+    {
+        $this->$user->givePermissionTo('languages.add');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'LanguageCreated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => true,
+            'with_hidden' => false,
+        ]);
+
+        Bus::fake();
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('POST', '/languages', [
+                'iso' => 'nl',
+                'name' => 'Netherland',
+                'hidden' => false,
+                'default' => false,
+            ]);
+
+        $response->assertCreated();
+
+        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof LanguageCreated;
+        });
+
+        $language = Language::find($response->getData()->data->id);
+
+        $event = new LanguageCreated($language);
+        $listener = new WebHookEventListener();
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $language) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $language->getKey()
+                && $payload['data_type'] === 'Language'
+                && $payload['event'] === 'LanguageCreated';
+        });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateWithoutPermissions($user): void
     {
         $this
@@ -159,6 +218,71 @@ class LanguageTest extends TestCase
         $this->assertEquals('es', Language::default()->iso);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithWebHookDispatched($user): void
+    {
+        $this->$user->givePermissionTo('languages.edit');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'LanguageUpdated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Bus::fake();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/languages/id:{$this->languageHidden->getKey()}", [
+                'iso' => 'nl',
+                'name' => 'Netherland',
+                'hidden' => false,
+                'default' => true,
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('languages', [
+            'iso' => 'nl',
+            'name' => 'Netherland',
+            'hidden' => false,
+            'default' => true,
+        ]);
+
+        // check if default language changed
+        $this->assertDatabaseHas('languages', [
+            'iso' => 'pl',
+            'default' => false,
+        ]);
+
+        $this->assertEquals('nl', Language::default()->iso);
+
+        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof LanguageUpdated;
+        });
+
+        $language = Language::find($this->languageHidden->getKey());
+        $event = new LanguageUpdated($language);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $language) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $language->getKey()
+                && $payload['data_type'] === 'Language'
+                && $payload['event'] === 'LanguageUpdated';
+        });
+    }
+
     public function testDeleteUnauthorized(): void
     {
         $this
@@ -177,6 +301,51 @@ class LanguageTest extends TestCase
             ->actingAs($this->$user)
             ->json('DELETE', "/languages/id:{$this->languageHidden->getKey()}")
             ->assertNoContent();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWithWebHookDispatched($user): void
+    {
+        $this->$user->givePermissionTo('languages.remove');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'LanguageDeleted'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Bus::fake();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('DELETE', "/languages/id:{$this->languageHidden->getKey()}")
+            ->assertNoContent();
+
+        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof LanguageDeleted;
+        });
+
+        $language = Language::find($this->languageHidden->getKey());
+        $event = new LanguageDeleted($language);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $language) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $language->getKey()
+                && $payload['data_type'] === 'Language'
+                && $payload['event'] === 'LanguageUpdated';
+        });
     }
 
     /**
