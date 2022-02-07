@@ -502,6 +502,10 @@ paths:
                 type: object
       security:
         - oauth: [ ]
+  /languages:
+    $ref: './paths/Languages.yml#/Languages'
+  '/languages/id:{id}':
+    $ref: './paths/Languages.yml#/LanguagesParams'
   /media:
     $ref: './paths/Media.yml#Media'
   '/media/id:{id}':
@@ -1816,6 +1820,8 @@ components:
           type: float
           example: '20'
       type: object
+    Language:
+      $ref: './schemas/Languages.yml#/Language'
     Media:
       $ref: './schemas/Media.yml#Media'
     Option:
