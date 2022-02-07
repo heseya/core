@@ -353,28 +353,28 @@ class UserTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateEmailTakenByDeletedUser(): void
+    public function testCreateEmailTakenByDeletedUser($user): void
     {
-        $this->user->givePermissionTo('users.add');
+        $this->$user->givePermissionTo('users.add');
 
         Event::fake([UserCreated::class]);
 
-        $user = User::factory()->create();
-        $user->delete();
+        $otherUser = User::factory()->create();
+        $otherUser->delete();
 
         $name = User::factory()->raw()['name'];
         $data = [
             'name' => $name,
-            'email' => $user->email,
+            'email' => $otherUser->email,
             'password' => $this->validPassword,
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/users', $data);
+        $response = $this->actingAs($this->$user)->postJson('/users', $data);
         $response->assertCreated();
 
         $this->assertDatabaseHas('users', [
             'name' => $name,
-            'email' => $user->email,
+            'email' => $otherUser->email,
         ]);
 
         Event::assertDispatched(UserCreated::class);
@@ -383,9 +383,9 @@ class UserTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateRolesMissingPermissions(): void
+    public function testCreateRolesMissingPermissions($user): void
     {
-        $this->user->givePermissionTo('users.add');
+        $this->$user->givePermissionTo('users.add');
 
         Event::fake([UserCreated::class]);
 
@@ -398,7 +398,7 @@ class UserTest extends TestCase
 
         $role1->syncPermissions([$permission1, $permission2]);
         $role2->syncPermissions([$permission1]);
-        $this->user->givePermissionTo($permission2);
+        $this->$user->givePermissionTo($permission2);
 
         $data = User::factory()->raw() + [
             'password' => $this->validPassword,
@@ -419,7 +419,7 @@ class UserTest extends TestCase
                 );
             });
 
-        $response = $this->actingAs($this->user)->postJson('/users', $data);
+        $response = $this->actingAs($this->$user)->postJson('/users', $data);
         $response->assertStatus(422);
 
         $this->assertDatabaseMissing('users', [
@@ -429,9 +429,6 @@ class UserTest extends TestCase
         Event::assertNotDispatched(UserUpdated::class);
     }
 
-    /**
-     * @dataProvider authProvider
-     */
     public function testCreateRoles(): void
     {
         $this->user->givePermissionTo('users.add');
@@ -516,28 +513,28 @@ class UserTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdate(): void
+    public function testUpdate($user): void
     {
-        $this->user->givePermissionTo('users.edit');
+        $this->$user->givePermissionTo('users.edit');
 
         Event::fake([UserUpdated::class]);
 
-        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
         $data = User::factory()->raw();
 
-        $response = $this->actingAs($this->user)->patchJson(
-            '/users/id:' . $user->getKey(),
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/users/id:' . $otherUser->getKey(),
             $data,
         );
 
         $response
             ->assertOk()
-            ->assertJsonPath('data.id', $user->getKey())
+            ->assertJsonPath('data.id', $otherUser->getKey())
             ->assertJsonPath('data.email', $data['email'])
             ->assertJsonPath('data.name', $data['name']);
 
         $this->assertDatabaseHas('users', [
-            'id' => $user->getKey(),
+            'id' => $otherUser->getKey(),
             'name' => $data['name'],
             'email' => $data['email'],
         ]);
@@ -608,13 +605,13 @@ class UserTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateAddRolesMissingPermissions(): void
+    public function testUpdateAddRolesMissingPermissions($user): void
     {
-        $this->user->givePermissionTo('users.edit');
+        $this->$user->givePermissionTo('users.edit');
 
         Event::fake([UserUpdated::class]);
 
-        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
         $role1 = Role::create(['name' => 'Role 1']);
         $role2 = Role::create(['name' => 'Role 2']);
         $role3 = Role::create(['name' => 'Role 3']);
@@ -624,7 +621,7 @@ class UserTest extends TestCase
 
         $role1->syncPermissions([$permission1, $permission2]);
         $role2->syncPermissions([$permission1]);
-        $this->user->givePermissionTo([$permission2]);
+        $this->$user->givePermissionTo([$permission2]);
 
         $data = [
             'roles' => [
@@ -634,19 +631,19 @@ class UserTest extends TestCase
             ],
         ];
 
-        $response = $this->actingAs($this->user)->patchJson(
-            '/users/id:' . $user->getKey(),
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/users/id:' . $otherUser->getKey(),
             $data,
         );
         $response->assertStatus(422);
-        $user->refresh();
+        $otherUser->refresh();
 
         $this->assertFalse(
-            $user->hasAnyRole([$role1, $role2, $role3]),
+            $otherUser->hasAnyRole([$role1, $role2, $role3]),
         );
 
         $this->assertFalse(
-            $user->hasAnyPermission([$permission1, $permission2]),
+            $otherUser->hasAnyPermission([$permission1, $permission2]),
         );
 
         Event::assertNotDispatched(UserUpdated::class);
@@ -655,13 +652,13 @@ class UserTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateAddRoles(): void
+    public function testUpdateAddRoles($user): void
     {
-        $this->user->givePermissionTo('users.edit');
+        $this->$user->givePermissionTo('users.edit');
 
         Event::fake([UserUpdated::class]);
 
-        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
         $role1 = Role::create(['name' => 'Role 1']);
         $role2 = Role::create(['name' => 'Role 2']);
         $role3 = Role::create(['name' => 'Role 3']);
@@ -671,7 +668,7 @@ class UserTest extends TestCase
 
         $role1->syncPermissions([$permission1, $permission2]);
         $role2->syncPermissions([$permission1]);
-        $this->user->givePermissionTo([$permission1, $permission2]);
+        $this->$user->givePermissionTo([$permission1, $permission2]);
 
         $data = [
             'roles' => [
@@ -681,8 +678,8 @@ class UserTest extends TestCase
             ],
         ];
 
-        $response = $this->actingAs($this->user)->patchJson(
-            '/users/id:' . $user->getKey(),
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/users/id:' . $otherUser->getKey(),
             $data,
         );
         $response
@@ -710,14 +707,14 @@ class UserTest extends TestCase
                 'permission.2',
             ]);
 
-        $user->refresh();
+        $otherUser->refresh();
 
         $this->assertTrue(
-            $user->hasAllRoles([$role1, $role2, $role3]),
+            $otherUser->hasAllRoles([$role1, $role2, $role3]),
         );
 
         $this->assertTrue(
-            $user->hasAllPermissions([$permission1, $permission2]),
+            $otherUser->hasAllPermissions([$permission1, $permission2]),
         );
 
         Event::assertDispatched(UserUpdated::class);
