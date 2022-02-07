@@ -3,9 +3,11 @@
 namespace App\Providers;
 
 use App\Models\Order;
+use App\Models\User;
 use App\Models\WebHook;
 use App\Policies\AuthenticatedPolicy;
 use App\Policies\OrderPolicy;
+use App\Policies\UserPolicy;
 use App\Policies\WebHookPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
@@ -21,6 +23,7 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         WebHook::class => WebHookPolicy::class,
         Order::class => OrderPolicy::class,
+        User::class => UserPolicy::class,
     ];
 
     /**

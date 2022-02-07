@@ -232,4 +232,20 @@ class AppOtherTest extends TestCase
         $this->assertDeleted($app);
         $this->assertSoftDeleted($webhook);
     }
+
+    public function testUninstallCommand(): void
+    {
+        $app = App::factory()->create(['url' => $this->url]);
+
+        Http::fake([
+            $this->url . '/uninstall' => Http::response(status: 204),
+            $this->application->url . '/uninstall' => Http::response(status: 204),
+        ]);
+
+        $this->artisan('apps:remove')->assertExitCode(0);
+
+        $this->assertDatabaseCount('apps', 0); // +1 from TestCase
+        $this->assertDeleted($app);
+        $this->assertDeleted($this->application);
+    }
 }

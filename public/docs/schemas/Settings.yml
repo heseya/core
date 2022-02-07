@@ -1,0 +1,12 @@
+Setting:
+  properties:
+    name:
+      type: string
+      example: setting-name
+    value:
+      type: string
+    public:
+      type: boolean
+    permanent:
+      type: boolean
+  type: object

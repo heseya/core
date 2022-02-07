@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ItemIndexRequest extends FormRequest
 {
@@ -12,7 +13,17 @@ class ItemIndexRequest extends FormRequest
             'name' => ['nullable', 'string', 'max:255'],
             'sku' => ['nullable', 'string', 'max:255'],
             'search' => ['nullable', 'string', 'max:255'],
+            // TODO poprawić sortowanie po ilości w przypadku stanu na dany dzień
             'sort' => ['nullable', 'string', 'max:255'],
+            'sold_out' => ['nullable', 'boolean', 'prohibited_unless:day,null'],
+            'day' => ['nullable', 'date', 'before_or_equal:now'],
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->sometimes('sort', Rule::notIn(['quantity:asc', 'quantity:desc']), function ($input) {
+            return $input->day !== null;
+        });
     }
 }

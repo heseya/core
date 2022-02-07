@@ -23,7 +23,8 @@ class ShippingMethod extends Model implements AuditableContract
         'public',
         'order',
         'black_list',
-        'shipping_time',
+        'shipping_time_min',
+        'shipping_time_max',
     ];
 
     /**
