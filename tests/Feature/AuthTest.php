@@ -810,7 +810,7 @@ class AuthTest extends TestCase
             ]);
     }
 
-    public function testProfile(): void
+    public function testProfileUser(): void
     {
         $user = User::factory()->create();
         $role1 = Role::create(['name' => 'Role 1']);
@@ -882,26 +882,32 @@ class AuthTest extends TestCase
             ->assertForbidden();
     }
 
-    public function testCheckIdentityInvalidToken(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCheckIdentityInvalidToken($user): void
     {
-        $this->user->givePermissionTo('auth.check_identity');
+        $this->$user->givePermissionTo('auth.check_identity');
 
-        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
 
         $token = $this->tokenService->createToken(
-                $user,
+                $otherUser,
                 new TokenType(TokenType::IDENTITY),
             ) . 'invalid_hash';
 
-        $this->actingAs($this->user)->getJson("/auth/check/$token")
+        $this->actingAs($this->$user)->getJson("/auth/check/$token")
             ->assertStatus(422);
     }
 
-    public function testCheckIdentityNoToken(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCheckIdentityNoToken($user): void
     {
-        $this->user->givePermissionTo('auth.check_identity');
+        $this->$user->givePermissionTo('auth.check_identity');
 
-        $this->actingAs($this->user)->getJson("/auth/check")
+        $this->actingAs($this->$user)->getJson("/auth/check")
             ->assertOk()
             ->assertJsonFragment([
                 'id' => null,
@@ -909,31 +915,74 @@ class AuthTest extends TestCase
             ]);
     }
 
-    public function testCheckIdentity(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCheckIdentity($user): void
     {
-        $this->user->givePermissionTo('auth.check_identity');
+        $this->$user->givePermissionTo('auth.check_identity');
 
-        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
         $role1 = Role::create(['name' => 'Role 1']);
 
         $permission1 = Permission::create(['name' => 'permission.1']);
         $permission2 = Permission::create(['name' => 'permission.2']);
 
         $role1->syncPermissions([$permission1, $permission2]);
-        $user->syncRoles([$role1]);
+        $otherUser->syncRoles([$role1]);
 
         $token = $this->tokenService->createToken(
-            $user,
+            $otherUser,
             new TokenType(TokenType::IDENTITY),
         );
 
-        $this->actingAs($this->user)->getJson("/auth/check/$token")
+        $this->actingAs($this->$user)->getJson("/auth/check/$token")
             ->assertOk()
             ->assertJson(['data' => [
-                'id' => $user->getKey(),
-                'name' => $user->name,
-                'avatar' => $user->avatar,
+                'id' => $otherUser->getKey(),
+                'name' => $otherUser->name,
+                'avatar' => $otherUser->avatar,
                 'permissions' => [
+                    'permission.1',
+                    'permission.2',
+                ],
+            ]]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCheckIdentityNoAppMapping($user): void
+    {
+        App::factory()->create([
+            'slug' => 'app_slug',
+        ]);
+
+        $this->$user->givePermissionTo('auth.check_identity');
+
+        $otherUser = User::factory()->create();
+        $role1 = Role::create(['name' => 'Role 1']);
+
+        $permission1 = Permission::create(['name' => 'permission.1']);
+        $permission2 = Permission::create(['name' => 'permission.2']);
+        $permission3 = Permission::create(['name' => 'app.app_slug.raw_name']);
+
+        $role1->syncPermissions([$permission1, $permission2, $permission3]);
+        $otherUser->syncRoles([$role1]);
+
+        $token = $this->tokenService->createToken(
+            $otherUser,
+            new TokenType(TokenType::IDENTITY),
+        );
+
+        $this->actingAs($this->$user)->getJson("/auth/check/$token")
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $otherUser->getKey(),
+                'name' => $otherUser->name,
+                'avatar' => $otherUser->avatar,
+                'permissions' => [
+                    'app.app_slug.raw_name',
                     'permission.1',
                     'permission.2',
                 ],
