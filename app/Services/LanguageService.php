@@ -53,8 +53,8 @@ class LanguageService implements LanguageServiceContract
             throw new StoreException('There must be at least one language.');
         }
 
-        $language->delete();
-
         LanguageDeleted::dispatch($language);
+
+        $language->delete();
     }
 }
