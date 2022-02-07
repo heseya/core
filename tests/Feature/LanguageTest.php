@@ -12,6 +12,7 @@ use App\Models\WebHook;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Event;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
@@ -125,9 +126,9 @@ class LanguageTest extends TestCase
     {
         $this->$user->givePermissionTo('languages.add');
 
-        $webHook = WebHook::factory()->create([
+        WebHook::factory()->create([
             'events' => [
-                'LanguageCreated'
+                'LanguageCreated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -135,38 +136,19 @@ class LanguageTest extends TestCase
             'with_hidden' => false,
         ]);
 
-        Bus::fake();
+        Event::fake(LanguageCreated::class);
 
-        $response = $this
+        $this
             ->actingAs($this->$user)
             ->json('POST', '/languages', [
                 'iso' => 'nl',
                 'name' => 'Netherland',
                 'hidden' => false,
                 'default' => false,
-            ]);
+            ])
+            ->assertCreated();
 
-        $response->assertCreated();
-
-        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
-            return $job->class === WebHookEventListener::class
-                && $job->data[0] instanceof LanguageCreated;
-        });
-
-        $language = Language::find($response->getData()->data->id);
-
-        $event = new LanguageCreated($language);
-        $listener = new WebHookEventListener();
-        $listener->handle($event);
-
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $language) {
-            $payload = $job->payload;
-            return $job->webhookUrl === $webHook->url
-                && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $language->getKey()
-                && $payload['data_type'] === 'Language'
-                && $payload['event'] === 'LanguageCreated';
-        });
+        Event::assertDispatched(LanguageCreated::class);
     }
 
     /**
