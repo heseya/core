@@ -27,6 +27,7 @@ class UserTest extends TestCase
     private string $validPassword = 'V@l1dPa55word';
     private Role $owner;
     private Role $authenticated;
+    private Role $unauthenticated;
     private Collection $authenticatedPermissions;
 
     public function setUp(): void
@@ -51,6 +52,10 @@ class UserTest extends TestCase
         $this->authenticated = Role::updateOrCreate(['name' => 'Authenticated']);
         $this->authenticated->type = RoleType::AUTHENTICATED;
         $this->authenticated->save();
+
+        $this->unauthenticated = Role::updateOrCreate(['name' => 'Unathenticated']);
+        $this->unauthenticated->type = RoleType::UNAUTHENTICATED;
+        $this->unauthenticated->save();
 
         $this->authenticatedPermissions = $this->authenticated->getAllPermissions()
             ->map(fn ($perm) => $perm->name)
@@ -237,10 +242,12 @@ class UserTest extends TestCase
         Event::assertNotDispatched(UserCreated::class);
     }
 
-    public function testCreateAsUser(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreate($user): void
     {
-        $this->user->assignRole($this->authenticated);
-        $this->user->givePermissionTo('users.add');
+        $this->$user->givePermissionTo('users.add');
 
         Event::fake([UserCreated::class]);
 
@@ -248,41 +255,7 @@ class UserTest extends TestCase
             'password' => $this->validPassword,
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/users', $data);
-        $response
-            ->assertCreated()
-            ->assertJsonPath('data.email', $data['email'])
-            ->assertJsonPath('data.name', $data['name'])
-            ->assertJsonFragment(['name' => 'Authenticated']);
-
-        $userId = $response->getData()->data->id;
-
-        $this->assertDatabaseHas('users', [
-            'id' => $userId,
-            'name' => $data['name'],
-            'email' => $data['email'],
-        ]);
-
-        $user = User::find($userId);
-        $this->assertTrue(Hash::check($data['password'], $user->password));
-        $this->assertTrue($user->hasAllRoles([$this->authenticated]));
-
-        Event::assertDispatched(UserCreated::class);
-    }
-
-    public function testCreateAsApp(): void
-    {
-        $this->application->givePermissionTo(
-            $this->authenticatedPermissions->push('users.add')->values()->toArray()
-        );
-
-        Event::fake([UserCreated::class]);
-
-        $data = User::factory()->raw() + [
-                'password' => $this->validPassword,
-            ];
-
-        $response = $this->actingAs($this->application)->postJson('/users', $data);
+        $response = $this->actingAs($this->$user)->postJson('/users', $data);
         $response
             ->assertCreated()
             ->assertJsonPath('data.email', $data['email'])
@@ -307,7 +280,6 @@ class UserTest extends TestCase
     public function testCreateWithWebHook(): void
     {
         $this->user->givePermissionTo('users.add');
-        $this->user->assignRole($this->authenticated);
 
         $webHook = WebHook::factory()->create([
             'events' => [
@@ -388,7 +360,6 @@ class UserTest extends TestCase
     public function testCreateEmailTakenByDeletedUser(): void
     {
         $this->user->givePermissionTo('users.add');
-        $this->user->assignRole($this->authenticated);
 
         Event::fake([UserCreated::class]);
 
@@ -468,7 +439,6 @@ class UserTest extends TestCase
     public function testCreateRoles(): void
     {
         $this->user->givePermissionTo('users.add');
-        $this->user->assignRole($this->authenticated);
 
         Event::fake([UserCreated::class]);
 
@@ -544,6 +514,36 @@ class UserTest extends TestCase
         );
 
         Event::assertDispatched(UserCreated::class);
+    }
+
+    public function unassignableProvider(): array
+    {
+        return [
+            'as user Authenticated' => ['user', RoleType::AUTHENTICATED],
+            'as user Unauthenticated' => ['user', RoleType::UNAUTHENTICATED],
+            'as app Authenticated' => ['application', RoleType::AUTHENTICATED],
+            'as app Unauthenticated' => ['application', RoleType::UNAUTHENTICATED],
+        ];
+    }
+
+    /**
+     * @dataProvider unassignableProvider
+     */
+    public function testCreateUnassignableRole($user, $role): void
+    {
+        $this->$user->givePermissionTo('users.add');
+
+        $data = User::factory()->raw() + [
+                'password' => $this->validPassword,
+                'roles' => [
+                    match($role) {
+                        RoleType::AUTHENTICATED => $this->authenticated->getKey(),
+                        RoleType::UNAUTHENTICATED => $this->unauthenticated->getKey(),
+                    }
+                ],
+            ];
+
+        $this->actingAs($this->$user)->postJson('/users', $data)->assertStatus(422);
     }
 
     public function testUpdateUnauthorized(): void
@@ -698,7 +698,6 @@ class UserTest extends TestCase
     public function testUpdateAddRoles(): void
     {
         $this->user->givePermissionTo('users.edit');
-        $this->user->assignRole($this->authenticated);
 
         Event::fake([UserUpdated::class]);
 
@@ -773,6 +772,28 @@ class UserTest extends TestCase
         Event::assertDispatched(UserUpdated::class);
     }
 
+    /**
+     * @dataProvider unassignableProvider
+     */
+    public function testUpdateUnassignableRole($user, $role): void
+    {
+        $this->$user->givePermissionTo('users.edit');
+
+        $otherUser = User::factory()->create();
+
+        $data = [
+            'roles' => [
+                match($role) {
+                    RoleType::AUTHENTICATED => $this->authenticated->getKey(),
+                    RoleType::UNAUTHENTICATED => $this->unauthenticated->getKey(),
+                }
+            ],
+        ];
+
+        $this->actingAs($this->$user)->patchJson('/users/id:' . $otherUser->getKey(), $data)
+            ->assertStatus(422);
+    }
+
     public function testUpdateRemoveRolesMissingPermissions(): void
     {
         $this->user->givePermissionTo('users.edit');
@@ -817,7 +838,6 @@ class UserTest extends TestCase
     public function testUpdateRemoveRoles(): void
     {
         $this->user->givePermissionTo('users.edit');
-        $this->user->assignRole($this->authenticated);
 
         Event::fake([UserUpdated::class]);
 
