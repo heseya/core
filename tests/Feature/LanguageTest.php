@@ -5,15 +5,11 @@ namespace Tests\Feature;
 use App\Events\LanguageCreated;
 use App\Events\LanguageDeleted;
 use App\Events\LanguageUpdated;
-use App\Listeners\WebHookEventListener;
 use App\Models\Language;
 use App\Models\Product;
 use App\Models\WebHook;
-use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
-use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
 class LanguageTest extends TestCase
@@ -207,7 +203,7 @@ class LanguageTest extends TestCase
     {
         $this->$user->givePermissionTo('languages.edit');
 
-        $webHook = WebHook::factory()->create([
+        WebHook::factory()->create([
             'events' => [
                 'LanguageUpdated'
             ],
@@ -217,7 +213,7 @@ class LanguageTest extends TestCase
             'with_hidden' => false,
         ]);
 
-        Bus::fake();
+        Event::fake(LanguageUpdated::class);
 
         $this
             ->actingAs($this->$user)
@@ -244,25 +240,7 @@ class LanguageTest extends TestCase
 
         $this->assertEquals('nl', Language::default()->iso);
 
-        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
-            return $job->class === WebHookEventListener::class
-                && $job->data[0] instanceof LanguageUpdated;
-        });
-
-        $language = Language::find($this->language->getKey());
-        $event = new LanguageUpdated($language);
-        $listener = new WebHookEventListener();
-
-        $listener->handle($event);
-
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $language) {
-            $payload = $job->payload;
-            return $job->webhookUrl === $webHook->url
-                && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $language->getKey()
-                && $payload['data_type'] === 'Language'
-                && $payload['event'] === 'LanguageUpdated';
-        });
+        Event::assertDispatched(LanguageUpdated::class);
     }
 
     public function testDeleteUnauthorized(): void
@@ -299,7 +277,7 @@ class LanguageTest extends TestCase
             'default' => false,
             ]);
 
-        $webHook = WebHook::factory()->create([
+        WebHook::factory()->create([
             'events' => [
                 'LanguageDeleted'
             ],
@@ -309,32 +287,14 @@ class LanguageTest extends TestCase
             'with_hidden' => false,
         ]);
 
-        Bus::fake();
+        Event::fake(LanguageDeleted::class);
 
         $this
             ->actingAs($this->$user)
             ->json('DELETE', "/languages/id:{$language->getKey()}")
             ->assertNoContent();
 
-        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
-            return $job->class === WebHookEventListener::class
-                && $job->data[0] instanceof LanguageDeleted;
-        });
-
-        $language = Language::find($language->getKey());
-        $event = new LanguageDeleted($language);
-        $listener = new WebHookEventListener();
-
-        $listener->handle($event);
-
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $language) {
-            $payload = $job->payload;
-            return $job->webhookUrl === $webHook->url
-                && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $language->getKey()
-                && $payload['data_type'] === 'Language'
-                && $payload['event'] === 'LanguageUpdated';
-        });
+        Event::assertDispatched(LanguageDeleted::class);
     }
 
     /**
