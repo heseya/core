@@ -239,7 +239,7 @@ class LanguageTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->json('PATCH', "/languages/id:{$this->languageHidden->getKey()}", [
+            ->json('PATCH', "/languages/id:{$this->language->getKey()}", [
                 'iso' => 'nl',
                 'name' => 'Netherland',
                 'hidden' => false,
@@ -256,7 +256,7 @@ class LanguageTest extends TestCase
 
         // check if default language changed
         $this->assertDatabaseHas('languages', [
-            'iso' => 'pl',
+            'iso' => 'en',
             'default' => false,
         ]);
 
@@ -267,7 +267,7 @@ class LanguageTest extends TestCase
                 && $job->data[0] instanceof LanguageUpdated;
         });
 
-        $language = Language::find($this->languageHidden->getKey());
+        $language = Language::find($this->language->getKey());
         $event = new LanguageUpdated($language);
         $listener = new WebHookEventListener();
 
@@ -310,6 +310,13 @@ class LanguageTest extends TestCase
     {
         $this->$user->givePermissionTo('languages.remove');
 
+        $language = Language::create([
+            'iso' => 'nl',
+            'name' => 'Netherland',
+            'hidden' => false,
+            'default' => false,
+            ]);
+
         $webHook = WebHook::factory()->create([
             'events' => [
                 'LanguageDeleted'
@@ -324,7 +331,7 @@ class LanguageTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->json('DELETE', "/languages/id:{$this->languageHidden->getKey()}")
+            ->json('DELETE', "/languages/id:{$language->getKey()}")
             ->assertNoContent();
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
@@ -332,7 +339,7 @@ class LanguageTest extends TestCase
                 && $job->data[0] instanceof LanguageDeleted;
         });
 
-        $language = Language::find($this->languageHidden->getKey());
+        $language = Language::find($language->getKey());
         $event = new LanguageDeleted($language);
         $listener = new WebHookEventListener();
 
