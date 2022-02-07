@@ -257,9 +257,16 @@ class LanguageTest extends TestCase
     {
         $this->$user->givePermissionTo('languages.remove');
 
+        $language = Language::create([
+            'iso' => 'nl',
+            'name' => 'Netherland',
+            'hidden' => false,
+            'default' => false,
+        ]);
+
         $this
             ->actingAs($this->$user)
-            ->json('DELETE', "/languages/id:{$this->languageHidden->getKey()}")
+            ->json('DELETE', "/languages/id:{$language->getKey()}")
             ->assertNoContent();
     }
 
