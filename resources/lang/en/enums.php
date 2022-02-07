@@ -27,5 +27,8 @@ return [
         EventType::DISCOUNT_CREATED => 'Event triggered when new discounts are created',
         EventType::DISCOUNT_UPDATED => 'Event triggered after discount is updated',
         EventType::DISCOUNT_DELETED => 'Event triggered after discount is deleted',
+        EventType::LANGUAGE_CREATED => 'Event triggered when new language are created',
+        EventType::LANGUAGE_UPDATED => 'Event triggered after language is updated',
+        EventType::LANGUAGE_DELETED => 'Event triggered after language is deleted',
     ]
 ];
