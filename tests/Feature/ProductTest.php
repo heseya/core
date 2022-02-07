@@ -149,6 +149,15 @@ class ProductTest extends TestCase
     {
         $this->$user->givePermissionTo('products.show');
 
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+        $set = ProductSet::factory()->create([
+            'public' => true,
+            'hide_on_index' => true,
+        ]);
+        $product->sets()->sync([$set->getKey()]);
+
         $response = $this->actingAs($this->$user)->getJson('/products?limit=100');
         $response
             ->assertOk()
@@ -167,10 +176,20 @@ class ProductTest extends TestCase
     {
         $this->$user->givePermissionTo(['products.show', 'products.show_hidden']);
 
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+        $set = ProductSet::factory()->create([
+            'public' => true,
+            'hide_on_index' => true,
+        ]);
+
+        $product->sets()->sync([$set->getKey()]);
+
         $response = $this->actingAs($this->$user)->getJson('/products');
         $response
             ->assertOk()
-            ->assertJsonCount(2, 'data'); // Should show all products.
+            ->assertJsonCount(3, 'data'); // Should show all products.
     }
 
     /**
@@ -264,9 +283,9 @@ class ProductTest extends TestCase
 
         $product->sets()->sync([$set1->getKey(), $set2->getKey()]);
 
-        $response = $this->actingAs($this->$user)
-            ->getJson('/products/' . $product->slug);
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/products/' . $product->slug)
             ->assertOk()
             ->assertJsonFragment(['sets' => [
                 [

@@ -1,0 +1,106 @@
+Settings:
+  get:
+    tags:
+      - Settings
+    summary: 'list settings'
+    parameters:
+      - name: array
+        in: query
+        required: false
+        schema:
+          type: boolean
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Settings.yml#/Setting'
+              type: object
+    security:
+      - oauth: [ ]
+  post:
+    tags:
+      - Settings
+    summary: 'add new setting'
+    requestBody:
+      $ref: './../requests/Settings.yml#/Setting'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Settings.yml#/Setting'
+              type: object
+    security:
+      - oauth: [ ]
+
+SettingsParams:
+  get:
+    tags:
+      - Settings
+    summary: 'view setting'
+    parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Settings.yml#/Setting'
+              type: object
+    security:
+      - oauth: [ ]
+  delete:
+    tags:
+      - Settings
+    summary: 'delete setting'
+    parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      204:
+        description: Success
+    security:
+      - oauth: [ ]
+  patch:
+    tags:
+      - Settings
+    summary: 'update setting'
+    parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      $ref: './../requests/Settings.yml#/Setting'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Settings.yml#/Setting'
+              type: object
+    security:
+      - oauth: [ ]

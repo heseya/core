@@ -19,7 +19,7 @@ class Pagination
     {
         if ($request->exists(self::LIMIT_NAME)) {
             $validator = Validator::make($request->only(self::LIMIT_NAME), [
-                self::LIMIT_NAME => ['integer', 'min:1', 'max:' . config('pagination.max')],
+                self::LIMIT_NAME => ['integer', 'min:1', 'max:' . Config::get('pagination.max')],
             ]);
 
             if ($validator->fails()) {

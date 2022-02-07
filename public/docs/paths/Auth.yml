@@ -11,9 +11,15 @@ Login:
               email:
                 type: string
                 example: admin@example.com
+                required: true
               password:
                 type: string
                 example: secret
+                required: true
+              code:
+                type: string
+                example: XyDZR-M9GWZ
+                required: false
             type: object
     responses:
       200:
@@ -34,6 +40,37 @@ Login:
                       $ref: './../schemas/Users.yml#/User'
                   type: object
               type: object
+      403:
+        description: 2FA code not provided
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  properties:
+                    code:
+                      type: number
+                      example: 403
+                    message:
+                      type: string
+                      example: Two-Factor Authentication is required
+                    type:
+                      type: string
+                      example: email
+                  type: object
+              type: object
+      422:
+        description: Error
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Error.yml#/Error'
+              type: object
+            example:
+              code: 422
+              name: "Invalid Two-Factor Authentication token"
 
 Logout:
   post:
@@ -342,3 +379,35 @@ TFARemove:
   responses:
     204:
       description: Success
+
+Register:
+  post:
+    tags:
+      - Auth
+    summary: 'Register new user'
+    requestBody:
+      $ref: './../requests/Auth.yml#/Register'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: './../schemas/Users.yml#/User'
+            example:
+              data:
+                id: 026bc5f6-8373-4aeb-972e-e78d72a67121
+                email: admin@example.com
+                name: 'Registered user'
+                avatar: '//www.gravatar.com/avatar/example.jpg'
+                roles:
+                  - id: 026bc5f6-8373-4aeb-972e-e78d72a67121
+                    name: 'Authenticated'
+                    description: 'Authenticated user role'
+                    assignable: false
+                    deletable: false
+    security:
+      - oauth: [ ]

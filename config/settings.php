@@ -8,7 +8,7 @@ return [
     ],
 
     'store_logo' => [
-        'value' => 'https://heseya.com/img/logo.svg',
+        'value' => null,
         'public' => true,
     ],
 

@@ -2,6 +2,7 @@
 
 namespace App\Services\Contracts;
 
+use App\Dtos\RegisterDto;
 use App\Dtos\TFAConfirmDto;
 use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
@@ -9,7 +10,7 @@ use App\Models\User;
 
 interface AuthServiceContract
 {
-    public function login(string $email, string $password, ?string $ip, ?string $userAgent): array;
+    public function login(string $email, string $password, ?string $ip, ?string $userAgent, ?string $code): array;
 
     public function refresh(string $refreshToken, ?string $ip, ?string $userAgent): array;
 
@@ -40,6 +41,8 @@ interface AuthServiceContract
     public function removeTFA(TFAPasswordDto $dto): void;
 
     public function removeUsersTFA(User $user): void;
+
+    public function register(RegisterDto $dto): User;
 
 //    public function loginHistory(User $user): Builder;
 //

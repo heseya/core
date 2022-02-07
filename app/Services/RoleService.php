@@ -70,7 +70,8 @@ class RoleService implements RoleServiceContract
     {
         if (
             $role->type->is(RoleType::OWNER) ||
-            $role->type->is(RoleType::UNAUTHENTICATED)
+            $role->type->is(RoleType::UNAUTHENTICATED) ||
+            $role->type->is(RoleType::AUTHENTICATED)
         ) {
             throw new RoleException('Can\'t delete built-in roles');
         }
