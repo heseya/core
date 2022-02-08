@@ -18,6 +18,8 @@ class ProductUpdateRequest extends ProductCreateRequest
             Rule::unique('products')->ignore($this->route('product')->slug, 'slug'),
         ];
 
+        $rules['published'] = ['nullable', 'array', 'min:1'];
+
         return $rules;
     }
 }

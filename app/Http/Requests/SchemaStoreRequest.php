@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\SchemaType;
+use App\Rules\Translations;
 use BenSampo\Enum\Rules\EnumKey;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -11,9 +12,16 @@ class SchemaStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'translations' => [
+                new Translations(['name', 'description']),
+            ],
+//            'name' => ['required', 'string', 'max:255'],
+//            'description' => ['nullable', 'string', 'max:255'],
+
+            'published' => ['required', 'array', 'min:1'],
+            'published.*' => ['uuid', 'exists:languages,id'],
+
             'type' => ['required', 'string', new EnumKey(SchemaType::class)],
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:255'],
             'price' => ['nullable', 'numeric'],
             'hidden' => ['nullable', 'boolean'],
             'required' => ['nullable', 'boolean'],

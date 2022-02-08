@@ -2,16 +2,22 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\Translations;
+
 class ProductCreateRequest extends SeoMetadataRulesRequest
 {
     public function rules(): array
     {
         return $this->rulesWithSeo([
-            'name' => ['required', 'string', 'max:255'],
+            'translations' => [
+                new Translations(['name', 'description_html', 'description_short']),
+            ],
+
+            'published' => ['required', 'array', 'min:1'],
+            'published.*' => ['uuid', 'exists:languages,id'],
+
             'slug' => ['required', 'string', 'max:255', 'unique:products', 'alpha_dash'],
             'price' => ['required', 'numeric', 'min:0'],
-            'description_html' => ['nullable', 'string'],
-            'description_short' => ['nullable', 'string', 'between:30,5000'],
             'public' => ['required', 'boolean'],
             'quantity_step' => ['numeric'],
 

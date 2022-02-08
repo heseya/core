@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\SchemaType;
+use App\Models\Interfaces\Translatable;
 use App\Rules\OptionAvailable;
 use App\SearchTypes\SchemaSearch;
 use App\SearchTypes\TranslatedLike;
@@ -23,7 +24,7 @@ use Spatie\Translatable\HasTranslations;
 /**
  * @mixin IdeHelperSchema
  */
-class Schema extends Model
+class Schema extends Model implements Translatable
 {
     use HasFactory, Searchable, Sortable, HasTranslations;
 
@@ -46,7 +47,6 @@ class Schema extends Model
     protected $translatable = [
         'name',
         'description',
-        'published',
     ];
 
     protected $casts = [
@@ -55,7 +55,7 @@ class Schema extends Model
         'required' => 'bool',
         'available' => 'bool',
         'type' => SchemaType::class,
-        'published' => 'bool',
+        'published' => 'array',
     ];
 
     protected $searchable = [

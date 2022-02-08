@@ -6,11 +6,14 @@ use App\Dtos\SeoMetadataDto;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
+use App\Exceptions\PublishingException;
 use App\Http\Requests\ProductCreateRequest;
 use App\Http\Requests\ProductIndexRequest;
 use App\Http\Requests\ProductShowRequest;
 use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Resources\ProductResource;
+use App\Models\Interfaces\Translatable;
+use App\Models\Model;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Services\Contracts\MediaServiceContract;
@@ -18,6 +21,7 @@ use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
+use App\Services\Contracts\TranslationServiceContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -33,7 +37,8 @@ class ProductController extends Controller
         private SchemaServiceContract $schemaService,
         private ProductServiceContract $productService,
         private ProductSetServiceContract $productSetService,
-        private SeoMetadataServiceContract $seoMetadataService
+        private SeoMetadataServiceContract $seoMetadataService,
+        private TranslationServiceContract $translationService,
     ) {
     }
 
@@ -97,9 +102,21 @@ class ProductController extends Controller
         return ProductResource::make($product);
     }
 
+    /**
+     * @throws PublishingException
+     */
     public function store(ProductCreateRequest $request): JsonResource
     {
-        $product = Product::create($request->validated());
+        /** @var Product $product */
+        $product = Product::make($request->validated());
+
+        foreach($request->input('translations') as $lang => $translations) {
+            $product->setLocale($lang)->fill($translations);
+        }
+
+        $this->translationService->checkPublished($product, ['name']);
+
+        $product->save();
 
         $this->productSetup($product, $request);
 
@@ -133,9 +150,20 @@ class ProductController extends Controller
         }
     }
 
+    /**
+     * @throws PublishingException
+     */
     public function update(ProductUpdateRequest $request, Product $product): JsonResource
     {
-        $product->update($request->validated());
+        $product->fill($request->validated());
+
+        foreach($request->input('translations') as $lang => $translations) {
+            $product->setLocale($lang)->fill($translations);
+        }
+
+        $this->translationService->checkPublished($product, ['name']);
+
+        $product->save();
 
         $this->productSetup($product, $request);
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Interfaces\Translatable;
 use App\SearchTypes\ProductSearch;
 use App\SearchTypes\TranslatedLike;
 use App\SearchTypes\WhereBelongsToManyById;
@@ -21,7 +22,7 @@ use Spatie\Translatable\HasTranslations;
 /**
  * @mixin IdeHelperProduct
  */
-class Product extends Model implements AuditableContract
+class Product extends Model implements AuditableContract, Translatable
 {
     use HasFactory, SoftDeletes, Searchable, Sortable, Auditable, HasSeoMetadata, HasTranslations;
 
@@ -43,7 +44,6 @@ class Product extends Model implements AuditableContract
         'name',
         'description_html',
         'description_short',
-        'published',
     ];
 
     protected $auditInclude = [
@@ -61,7 +61,7 @@ class Product extends Model implements AuditableContract
         'public' => 'bool',
         'available' => 'bool',
         'quantity_step' => 'float',
-        'published' => 'bool',
+        'published' => 'array',
     ];
 
     protected array $searchable = [

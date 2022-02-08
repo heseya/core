@@ -29,12 +29,11 @@ class Page extends Model implements AuditableContract
     protected $translatable = [
         'name',
         'content_html',
-        'published',
     ];
 
     protected $casts = [
         'public' => 'boolean',
-        'published' => 'bool',
+        'published' => 'array',
     ];
 
     protected array $sortable = [

@@ -191,10 +191,8 @@ class SchemaTest extends TestCase
         $item = Item::factory()->create();
 
         $response = $this->actingAs($this->$user)->postJson('/schemas', [
-            'name' => 'Test',
             'type' => SchemaType::getKey(SchemaType::SELECT),
             'price' => 120,
-            'description' => 'test test',
             'hidden' => false,
             'required' => false,
             'options' => [
@@ -217,6 +215,13 @@ class SchemaTest extends TestCase
                     'disabled' => false,
                 ],
             ],
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'description' => 'test test',
+                ],
+            ],
+            'published' => [$this->lang],
         ]);
 
         $response->assertCreated();
@@ -313,7 +318,6 @@ class SchemaTest extends TestCase
         $usedSchema = Schema::factory()->create();
 
         $response = $this->actingAs($this->$user)->postJson('/schemas', [
-            'name' => 'Multiplier',
             'type' => SchemaType::getKey(SchemaType::MULTIPLY_SCHEMA),
             'min' => 1,
             'max' => 10,
@@ -321,6 +325,12 @@ class SchemaTest extends TestCase
             'used_schemas' => [
                 $usedSchema->getKey(),
             ],
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Multiplier',
+                ],
+            ],
+            'published' => [$this->lang],
         ]);
 
         $response->assertCreated();
@@ -437,10 +447,8 @@ class SchemaTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->$user)->patchJson('/schemas/id:' . $schema->getKey() , [
-            'name' => 'Test Updated',
             'price' => 200,
             'type' => SchemaType::getKey(SchemaType::SELECT),
-            'description' => 'test test',
             'hidden' => false,
             'required' => false,
             'default' => 0,
@@ -455,6 +463,13 @@ class SchemaTest extends TestCase
                     ],
                 ],
             ],
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test Updated',
+                    'description' => 'test test',
+                ],
+            ],
+            'published' => [$this->lang],
         ]);
 
         $response->assertOk();

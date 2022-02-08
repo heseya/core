@@ -34,7 +34,7 @@ class UpdateTranslatableColumns extends Migration
             function (Product $product) use ($lang) {
                 $attr = $product->getAttributes();
                 $product
-                    ->setRawAttributes(['published' => json_encode([$lang => true])])
+                    ->setAttribute('published', [$lang])
                     ->setTranslation('name', $lang, $attr['name'])
                     ->setTranslation('description_html', $lang, $attr['description_html'])
                     ->setTranslation('description_short', $lang, $attr['description_short'])
@@ -52,7 +52,7 @@ class UpdateTranslatableColumns extends Migration
             function (Schema $schema) use ($lang) {
                 $attr = $schema->getAttributes();
                 $schema
-                    ->setRawAttributes(['published' => json_encode([$lang => true])])
+                    ->setAttribute('published', [$lang])
                     ->setTranslation('name', $lang, $attr['name'])
                     ->setTranslation('description', $lang, $attr['description'])
                     ->save();
@@ -68,7 +68,7 @@ class UpdateTranslatableColumns extends Migration
             function (Option $option) use ($lang) {
                 $attr = $option->getAttributes();
                 $option
-                    ->setRawAttributes(['published' => json_encode([$lang => true])])
+                    ->setAttribute('published', [$lang])
                     ->setTranslation('name', $lang, $attr['name'])
                     ->save();
             },
@@ -84,7 +84,7 @@ class UpdateTranslatableColumns extends Migration
             function (Page $page) use ($lang) {
                 $attr = $page->getAttributes();
                 $page
-                    ->setRawAttributes(['published' => json_encode([$lang => true])])
+                    ->setAttribute('published', [$lang])
                     ->setTranslation('name', $lang, $attr['name'])
                     ->setTranslation('content_html', $lang, $attr['content_html'])
                     ->save();
@@ -101,7 +101,7 @@ class UpdateTranslatableColumns extends Migration
             function (Status $status) use ($lang) {
                 $attr = $status->getAttributes();
                 $status
-                    ->setRawAttributes(['published' => json_encode([$lang => true])])
+                    ->setAttribute('published', [$lang])
                     ->setTranslation('name', $lang, $attr['name'])
                     ->setTranslation('description', $lang, $attr['description'])
                     ->save();
@@ -122,9 +122,9 @@ class UpdateTranslatableColumns extends Migration
 
                 $seo
                     ->setRawAttributes([
-                        'published' => json_encode([$lang => true]),
                         'no_index' => json_encode([$lang => (boolean) $attr['no_index']]),
                     ])
+                    ->setAttribute('published', [$lang])
                     ->setTranslation('title', $lang, $attr['title'])
                     ->setTranslation('description', $lang, $attr['description'])
                     ->replaceTranslations('keywords', [$lang => json_decode($attr['keywords'])])
@@ -140,6 +140,28 @@ class UpdateTranslatableColumns extends Migration
      */
     public function down()
     {
-        //
+        DbSchema::table('products', function (Blueprint $table) {
+            $table->dropColumn('published');
+        });
+
+        DbSchema::table('schemas', function (Blueprint $table) {
+            $table->dropColumn('published');
+        });
+
+        DbSchema::table('options', function (Blueprint $table) {
+            $table->dropColumn('published');
+        });
+
+        DbSchema::table('pages', function (Blueprint $table) {
+            $table->dropColumn('published');
+        });
+
+        DbSchema::table('statuses', function (Blueprint $table) {
+            $table->dropColumn('published');
+        });
+
+        DbSchema::table('seo_metadata', function (Blueprint $table) {
+            $table->dropColumn('published');
+        });
     }
 }
