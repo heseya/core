@@ -312,6 +312,10 @@ paths:
     $ref: './paths/Items.yml#/Items'
   '/items/id:{id}':
     $ref: './paths/Items.yml#/ItemsParams'
+  /languages:
+    $ref: './paths/Languages.yml#/Languages'
+  '/languages/id:{id}':
+    $ref: './paths/Languages.yml#/LanguagesParams'
   /media:
     $ref: './paths/Media.yml#Media'
   '/media/id:{id}':
@@ -1479,6 +1483,8 @@ components:
       type: object
     Item:
       $ref: './schemas/Items.yml#/Item'
+    Language:
+      $ref: './schemas/Languages.yml#/Language'
     Media:
       $ref: './schemas/Media.yml#Media'
     Option:
