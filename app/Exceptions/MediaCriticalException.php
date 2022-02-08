@@ -7,8 +7,8 @@ use Throwable;
 class MediaCriticalException extends StoreException
 {
     public function __construct(
-        string     $message = '',
-        int        $code = 0,
+        string $message = '',
+        int $code = 0,
         ?Throwable $previous = null
     )
     {
