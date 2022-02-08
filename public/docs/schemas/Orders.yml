@@ -43,39 +43,6 @@ Order:
         $ref: '#/OrderProduct'
   type: object
 
-OrderView:
-  type: object
-  allOf:
-    - $ref: '#/Order'
-    - properties:
-        user:
-          $ref: './Users.yml#/User'
-
-OrderSummary:
-  properties:
-    id:
-      type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-    code:
-      description: 'Product''s secondary identifier'
-      type: string
-      example: G3K4DH
-    status:
-      $ref: './Statuses.yml#/Status'
-    paid:
-      type: boolean
-    payable:
-      type: boolean
-    summary:
-      type: number
-    shipping_method_id:
-      type: string
-      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-    created_at:
-      type: datetime
-      example: '2021-09-13T11:11'
-  type: object
-
 OrderProduct:
   properties:
     product_id:
@@ -107,4 +74,37 @@ OrderSchema:
     price:
       type: number
       example: '49.99'
+  type: object
+
+OrderView:
+  type: object
+  allOf:
+    - $ref: '#/Order'
+    - properties:
+        user:
+          $ref: './Users.yml#/User'
+
+OrderSummary:
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    code:
+      description: 'Product''s secondary identifier'
+      type: string
+      example: G3K4DH
+    status:
+      $ref: './Statuses.yml#/Status'
+    paid:
+      type: boolean
+    payable:
+      type: boolean
+    summary:
+      type: number
+    shipping_method_id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    created_at:
+      type: datetime
+      example: '2021-09-13T11:11'
   type: object

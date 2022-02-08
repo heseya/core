@@ -11,6 +11,7 @@
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.3",
+        "heseya/2fa": "^2.0",
         "heseya/demo": "dev-master",
         "heseya/dto": "^1.0",
         "heseya/laravel-searchable": "^1.0",

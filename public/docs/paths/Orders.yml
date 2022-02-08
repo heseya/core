@@ -30,6 +30,16 @@ Orders:
         description: 'Is order paid'
         schema:
           type: boolean
+      - name: from
+        in: query
+        description: 'Date datetime from'
+        schema:
+          type: datetime
+      - name: to
+        in: query
+        description: 'Date datetime to'
+        schema:
+          type: datetime
     responses:
       200:
         description: Success
@@ -232,11 +242,16 @@ OrdersMy:
         description: 'Shipping Method UUID'
         schema:
           type: string
-      - name: paid
+      - name: from
         in: query
-        description: 'Is order paid'
+        description: 'Date datetime from'
         schema:
-          type: boolean
+          type: datetime
+      - name: to
+        in: query
+        description: 'Date datetime to'
+        schema:
+          type: datetime
     responses:
       200:
         description: Success
@@ -252,18 +267,18 @@ OrdersMy:
     security:
       - oauth: [ ]
 
-OrdersMyParams:
+OrdersMyId:
   get:
     tags:
       - Orders
     summary: 'user order view'
     parameters:
-      - name: code
+      - name: id
         in: path
         required: true
         schema:
           type: string
-          example: D3PT88
+          example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
     responses:
       200:
         description: Success
@@ -277,7 +292,7 @@ OrdersMyParams:
     security:
       - oauth: [ ]
 
-OrdersPay:
+OrdersCodePay:
   post:
     tags:
       - Orders
@@ -314,11 +329,11 @@ OrdersPay:
                   $ref: './../schemas/Payments.yml#/Payment'
               type: object
 
-OrdersPayOffline:
+OrdersCodePayOffline:
   post:
     tags:
       - Orders
-    summary: 'manually create fulfilled order payment'
+    summary: 'manualy create fulfilled order payment'
     parameters:
       - name: code
         in: path

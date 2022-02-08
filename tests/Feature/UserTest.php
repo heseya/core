@@ -123,93 +123,105 @@ class UserTest extends TestCase
             ]]);
     }
 
-    public function testIndexNameSearch(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexNameSearch($user): void
     {
-        $this->user->givePermissionTo('users.show');
+        $this->$user->givePermissionTo('users.show');
 
-        $user = User::factory([
+        $otherUser = User::factory([
             'is_tfa_active' => false,
         ])->create();
 
         $this
-            ->actingAs($this->user)
-            ->getJson('/users?name=' . $user->name)
+            ->actingAs($this->$user)
+            ->getJson('/users?name=' . $otherUser->name)
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0', [
-                'id' => $user->getKey(),
-                'email' => $user->email,
-                'name' => $user->name,
-                'avatar' => $user->avatar,
+                'id' => $otherUser->getKey(),
+                'email' => $otherUser->email,
+                'name' => $otherUser->name,
+                'avatar' => $otherUser->avatar,
                 'roles' => [],
-                'is_tfa_active' => $user->is_tfa_active,
+                'is_tfa_active' => $otherUser->is_tfa_active,
             ]);
     }
 
-    public function testIndexEmailSearch(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexEmailSearch($user): void
     {
-        $this->user->givePermissionTo('users.show');
+        $this->$user->givePermissionTo('users.show');
 
-        $user = User::factory([
+        $otherUser = User::factory([
             'is_tfa_active' => false,
         ])->create();
 
         $this
-            ->actingAs($this->user)
-            ->getJson('/users?email=' . $user->email)
+            ->actingAs($this->$user)
+            ->getJson('/users?email=' . $otherUser->email)
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0', [
-                'id' => $user->getKey(),
-                'email' => $user->email,
-                'name' => $user->name,
-                'avatar' => $user->avatar,
+                'id' => $otherUser->getKey(),
+                'email' => $otherUser->email,
+                'name' => $otherUser->name,
+                'avatar' => $otherUser->avatar,
                 'roles' => [],
-                'is_tfa_active' => $user->is_tfa_active,
+                'is_tfa_active' => $otherUser->is_tfa_active,
             ]);
     }
 
-    public function testIndexFullSearchName(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexFullSearchName($user): void
     {
-        $this->user->givePermissionTo('users.show');
+        $this->$user->givePermissionTo('users.show');
 
-        $user = User::factory([
+        $otherUser = User::factory([
             'is_tfa_active' => false,
         ])->create();
 
-        $response = $this->actingAs($this->user)->getJson('/users?search=' . $user->name);
+        $response = $this->actingAs($this->$user)->getJson('/users?search=' . $otherUser->name);
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0', [
-                'id' => $user->getKey(),
-                'email' => $user->email,
-                'name' => $user->name,
-                'avatar' => $user->avatar,
+                'id' => $otherUser->getKey(),
+                'email' => $otherUser->email,
+                'name' => $otherUser->name,
+                'avatar' => $otherUser->avatar,
                 'roles' => [],
-                'is_tfa_active' => $user->is_tfa_active,
+                'is_tfa_active' => $otherUser->is_tfa_active,
             ]);
     }
 
-    public function testIndexFullSearchEmail(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexFullSearchEmail($user): void
     {
-        $this->user->givePermissionTo('users.show');
+        $this->$user->givePermissionTo('users.show');
 
-        $user = User::factory([
+        $otherUser = User::factory([
             'is_tfa_active' => false,
         ])->create();
 
-        $response = $this->actingAs($this->user)->getJson('/users?search=' . $user->email);
+        $response = $this->actingAs($this->$user)->getJson('/users?search=' . $otherUser->email);
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0', [
-                'id' => $user->getKey(),
-                'email' => $user->email,
-                'name' => $user->name,
-                'avatar' => $user->avatar,
+                'id' => $otherUser->getKey(),
+                'email' => $otherUser->email,
+                'name' => $otherUser->name,
+                'avatar' => $otherUser->avatar,
                 'roles' => [],
-                'is_tfa_active' => $user->is_tfa_active,
+                'is_tfa_active' => $otherUser->is_tfa_active,
             ]);
     }
 
@@ -277,16 +289,19 @@ class UserTest extends TestCase
         Event::assertDispatched(UserCreated::class);
     }
 
-    public function testCreateWithWebHook(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithWebHook($user): void
     {
-        $this->user->givePermissionTo('users.add');
+        $this->$user->givePermissionTo('users.add');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'UserCreated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => true,
             'with_hidden' => false,
         ]);
@@ -297,7 +312,7 @@ class UserTest extends TestCase
                 'password' => $this->validPassword,
             ];
 
-        $response = $this->actingAs($this->user)->postJson('/users', $data);
+        $response = $this->actingAs($this->$user)->postJson('/users', $data);
         $response
             ->assertCreated()
             ->assertJsonPath('data.email', $data['email'])
@@ -311,23 +326,23 @@ class UserTest extends TestCase
             'email' => $data['email'],
         ]);
 
-        $user = User::find($userId);
-        $this->assertTrue(Hash::check($data['password'], $user->password));
+        $foundUser = User::find($userId);
+        $this->assertTrue(Hash::check($data['password'], $foundUser->password));
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
             return $job->class === WebHookEventListener::class
                 && $job->data[0] instanceof UserCreated;
         });
 
-        $event = new UserCreated($user);
+        $event = new UserCreated($foundUser);
         $listener = new WebHookEventListener();
         $listener->handle($event);
 
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $user) {
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $foundUser) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $user->getKey()
+                && $payload['data']['id'] === $foundUser->getKey()
                 && $payload['data_type'] === 'User'
                 && $payload['event'] === 'UserCreated';
         });
@@ -357,28 +372,28 @@ class UserTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateEmailTakenByDeletedUser(): void
+    public function testCreateEmailTakenByDeletedUser($user): void
     {
-        $this->user->givePermissionTo('users.add');
+        $this->$user->givePermissionTo('users.add');
 
         Event::fake([UserCreated::class]);
 
-        $user = User::factory()->create();
-        $user->delete();
+        $otherUser = User::factory()->create();
+        $otherUser->delete();
 
         $name = User::factory()->raw()['name'];
         $data = [
             'name' => $name,
-            'email' => $user->email,
+            'email' => $otherUser->email,
             'password' => $this->validPassword,
         ];
 
-        $response = $this->actingAs($this->user)->postJson('/users', $data);
+        $response = $this->actingAs($this->$user)->postJson('/users', $data);
         $response->assertCreated();
 
         $this->assertDatabaseHas('users', [
             'name' => $name,
-            'email' => $user->email,
+            'email' => $otherUser->email,
         ]);
 
         Event::assertDispatched(UserCreated::class);
@@ -387,9 +402,9 @@ class UserTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateRolesMissingPermissions(): void
+    public function testCreateRolesMissingPermissions($user): void
     {
-        $this->user->givePermissionTo('users.add');
+        $this->$user->givePermissionTo('users.add');
 
         Event::fake([UserCreated::class]);
 
@@ -402,7 +417,7 @@ class UserTest extends TestCase
 
         $role1->syncPermissions([$permission1, $permission2]);
         $role2->syncPermissions([$permission1]);
-        $this->user->givePermissionTo($permission2);
+        $this->$user->givePermissionTo($permission2);
 
         $data = User::factory()->raw() + [
             'password' => $this->validPassword,
@@ -423,7 +438,7 @@ class UserTest extends TestCase
                 );
             });
 
-        $response = $this->actingAs($this->user)->postJson('/users', $data);
+        $response = $this->actingAs($this->$user)->postJson('/users', $data);
         $response->assertStatus(422);
 
         $this->assertDatabaseMissing('users', [
@@ -433,9 +448,6 @@ class UserTest extends TestCase
         Event::assertNotDispatched(UserUpdated::class);
     }
 
-    /**
-     * @dataProvider authProvider
-     */
     public function testCreateRoles(): void
     {
         $this->user->givePermissionTo('users.add');
@@ -559,28 +571,28 @@ class UserTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdate(): void
+    public function testUpdate($user): void
     {
-        $this->user->givePermissionTo('users.edit');
+        $this->$user->givePermissionTo('users.edit');
 
         Event::fake([UserUpdated::class]);
 
-        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
         $data = User::factory()->raw();
 
-        $response = $this->actingAs($this->user)->patchJson(
-            '/users/id:' . $user->getKey(),
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/users/id:' . $otherUser->getKey(),
             $data,
         );
 
         $response
             ->assertOk()
-            ->assertJsonPath('data.id', $user->getKey())
+            ->assertJsonPath('data.id', $otherUser->getKey())
             ->assertJsonPath('data.email', $data['email'])
             ->assertJsonPath('data.name', $data['name']);
 
         $this->assertDatabaseHas('users', [
-            'id' => $user->getKey(),
+            'id' => $otherUser->getKey(),
             'name' => $data['name'],
             'email' => $data['email'],
         ]);
@@ -588,38 +600,41 @@ class UserTest extends TestCase
         Event::assertDispatched(UserUpdated::class);
     }
 
-    public function testUpdateWithWebHook(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithWebHook($user): void
     {
-        $this->user->givePermissionTo('users.edit');
+        $this->$user->givePermissionTo('users.edit');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'UserUpdated'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => true,
             'with_hidden' => false,
         ]);
 
         Bus::fake();
 
-        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
         $data = User::factory()->raw();
 
-        $response = $this->actingAs($this->user)->patchJson(
-            '/users/id:' . $user->getKey(),
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/users/id:' . $otherUser->getKey(),
             $data,
         );
 
         $response
             ->assertOk()
-            ->assertJsonPath('data.id', $user->getKey())
+            ->assertJsonPath('data.id', $otherUser->getKey())
             ->assertJsonPath('data.email', $data['email'])
             ->assertJsonPath('data.name', $data['name']);
 
         $this->assertDatabaseHas('users', [
-            'id' => $user->getKey(),
+            'id' => $otherUser->getKey(),
             'name' => $data['name'],
             'email' => $data['email'],
         ]);
@@ -629,17 +644,17 @@ class UserTest extends TestCase
                 && $job->data[0] instanceof UserUpdated;
         });
 
-        $user = User::find($user->getKey());
+        $foundUser = User::find($otherUser->getKey());
 
-        $event = new UserUpdated($user);
+        $event = new UserUpdated($foundUser);
         $listener = new WebHookEventListener();
         $listener->handle($event);
 
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $user) {
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $foundUser) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $user->getKey()
+                && $payload['data']['id'] === $foundUser->getKey()
                 && $payload['data_type'] === 'User'
                 && $payload['event'] === 'UserUpdated';
         });
@@ -648,13 +663,13 @@ class UserTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateAddRolesMissingPermissions(): void
+    public function testUpdateAddRolesMissingPermissions($user): void
     {
-        $this->user->givePermissionTo('users.edit');
+        $this->$user->givePermissionTo('users.edit');
 
         Event::fake([UserUpdated::class]);
 
-        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
         $role1 = Role::create(['name' => 'Role 1']);
         $role2 = Role::create(['name' => 'Role 2']);
         $role3 = Role::create(['name' => 'Role 3']);
@@ -664,7 +679,7 @@ class UserTest extends TestCase
 
         $role1->syncPermissions([$permission1, $permission2]);
         $role2->syncPermissions([$permission1]);
-        $this->user->givePermissionTo([$permission2]);
+        $this->$user->givePermissionTo([$permission2]);
 
         $data = [
             'roles' => [
@@ -674,34 +689,31 @@ class UserTest extends TestCase
             ],
         ];
 
-        $response = $this->actingAs($this->user)->patchJson(
-            '/users/id:' . $user->getKey(),
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/users/id:' . $otherUser->getKey(),
             $data,
         );
         $response->assertStatus(422);
-        $user->refresh();
+        $otherUser->refresh();
 
         $this->assertFalse(
-            $user->hasAnyRole([$role1, $role2, $role3]),
+            $otherUser->hasAnyRole([$role1, $role2, $role3]),
         );
 
         $this->assertFalse(
-            $user->hasAnyPermission([$permission1, $permission2]),
+            $otherUser->hasAnyPermission([$permission1, $permission2]),
         );
 
         Event::assertNotDispatched(UserUpdated::class);
     }
 
-    /**
-     * @dataProvider authProvider
-     */
     public function testUpdateAddRoles(): void
     {
         $this->user->givePermissionTo('users.edit');
 
         Event::fake([UserUpdated::class]);
 
-        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
         $role1 = Role::create(['name' => 'Role 1']);
         $role2 = Role::create(['name' => 'Role 2']);
         $role3 = Role::create(['name' => 'Role 3']);
@@ -728,7 +740,7 @@ class UserTest extends TestCase
             ->toArray();
 
         $response = $this->actingAs($this->user)->patchJson(
-            '/users/id:' . $user->getKey(),
+            '/users/id:' . $otherUser->getKey(),
             $data,
         );
         $response
@@ -759,14 +771,14 @@ class UserTest extends TestCase
                 'deletable' => false,
             ]])->assertJsonPath('data.permissions', $permissions);
 
-        $user->refresh();
+        $otherUser->refresh();
 
         $this->assertTrue(
             $user->hasAllRoles([$role1, $role2, $role3, $this->authenticated]),
         );
 
         $this->assertTrue(
-            $user->hasAllPermissions([$permission1, $permission2]),
+            $otherUser->hasAllPermissions([$permission1, $permission2]),
         );
 
         Event::assertDispatched(UserUpdated::class);
@@ -796,15 +808,15 @@ class UserTest extends TestCase
 
     public function testUpdateRemoveRolesMissingPermissions(): void
     {
-        $this->user->givePermissionTo('users.edit');
+        $this->$user->givePermissionTo('users.edit');
 
         Event::fake([UserUpdated::class]);
 
-        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
         $role1 = Role::create(['name' => 'Role 1']);
         $role2 = Role::create(['name' => 'Role 2']);
         $role3 = Role::create(['name' => 'Role 3']);
-        $user->assignRole([$role1, $role2, $role3]);
+        $otherUser->assignRole([$role1, $role2, $role3]);
 
         $permission1 = Permission::create(['name' => 'permission.1']);
         $permission2 = Permission::create(['name' => 'permission.2']);
@@ -817,49 +829,52 @@ class UserTest extends TestCase
             'roles' => [],
         ];
 
-        $response = $this->actingAs($this->user)->patchJson(
-            '/users/id:' . $user->getKey(),
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/users/id:' . $otherUser->getKey(),
             $data,
         );
         $response->assertStatus(422);
-        $user->refresh();
+        $otherUser->refresh();
 
         $this->assertTrue(
-            $user->hasAllRoles([$role1, $role2, $role3]),
+            $otherUser->hasAllRoles([$role1, $role2, $role3]),
         );
 
         $this->assertTrue(
-            $user->hasAllPermissions([$permission1, $permission2]),
+            $otherUser->hasAllPermissions([$permission1, $permission2]),
         );
 
         Event::assertNotDispatched(UserUpdated::class);
     }
 
-    public function testUpdateRemoveRoles(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateRemoveRoles($user): void
     {
-        $this->user->givePermissionTo('users.edit');
+        $this->$user->givePermissionTo('users.edit');
 
         Event::fake([UserUpdated::class]);
 
-        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
         $role1 = Role::create(['name' => 'Role 1']);
         $role2 = Role::create(['name' => 'Role 2']);
         $role3 = Role::create(['name' => 'Role 3']);
-        $user->assignRole([$role1, $role2, $role3]);
+        $otherUser->assignRole([$role1, $role2, $role3]);
 
         $permission1 = Permission::create(['name' => 'permission.1']);
         $permission2 = Permission::create(['name' => 'permission.2']);
 
         $role1->syncPermissions([$permission1, $permission2]);
         $role2->syncPermissions([$permission1]);
-        $this->user->givePermissionTo([$permission1, $permission2]);
+        $this->$user->givePermissionTo([$permission1, $permission2]);
 
         $data = [
             'roles' => [],
         ];
 
-        $response = $this->actingAs($this->user)->patchJson(
-            '/users/id:' . $user->getKey(),
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/users/id:' . $otherUser->getKey(),
             $data,
         );
         $response
@@ -879,11 +894,11 @@ class UserTest extends TestCase
         $this->assertTrue($user->hasAllRoles([$this->authenticated]));
 
         $this->assertFalse(
-            $user->hasAnyRole([$role1, $role2, $role3]),
+            $otherUser->hasAnyRole([$role1, $role2, $role3]),
         );
 
         $this->assertFalse(
-            $user->hasAnyPermission([$permission1, $permission2]),
+            $otherUser->hasAnyPermission([$permission1, $permission2]),
         );
 
         Event::assertDispatched(UserUpdated::class);
@@ -1018,23 +1033,26 @@ class UserTest extends TestCase
         Event::assertDispatched(UserDeleted::class);
     }
 
-    public function testDeleteWithWebHook(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWithWebHook($user): void
     {
-        $this->user->givePermissionTo('users.remove');
+        $this->$user->givePermissionTo('users.remove');
 
         $webHook = WebHook::factory()->create([
             'events' => [
                 'UserDeleted'
             ],
-            'model_type' => $this->user::class,
-            'creator_id' => $this->user->getKey(),
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
             'with_issuer' => true,
             'with_hidden' => false,
         ]);
 
         Bus::fake();
 
-        $response = $this->actingAs($this->user)->deleteJson('/users/id:' . $this->user->getKey());
+        $response = $this->actingAs($this->$user)->deleteJson('/users/id:' . $this->user->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($this->user);
 
@@ -1043,17 +1061,17 @@ class UserTest extends TestCase
                 && $job->data[0] instanceof UserDeleted;
         });
 
-        $user = $this->user;
+        $otherUser = $this->user;
 
-        $event = new UserDeleted($user);
+        $event = new UserDeleted($otherUser);
         $listener = new WebHookEventListener();
         $listener->handle($event);
 
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $user) {
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $otherUser) {
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $user->getKey()
+                && $payload['data']['id'] === $otherUser->getKey()
                 && $payload['data_type'] === 'User'
                 && $payload['event'] === 'UserDeleted';
         });

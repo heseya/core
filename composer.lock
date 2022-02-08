@@ -2378,6 +2378,53 @@
             "time": "2020-03-05T20:41:28+00:00"
         },
         {
+            "name": "heseya/2fa",
+            "version": "2.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/heseya/2fa-php.git",
+                "reference": "8dd084a504650e81fa9d33a34e134c3fc50dafd0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/heseya/2fa-php/zipball/8dd084a504650e81fa9d33a34e134c3fc50dafd0",
+                "reference": "8dd084a504650e81fa9d33a34e134c3fc50dafd0",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "PHPGangsta/GoogleAuthenticator.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-4-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Michael Kliewe",
+                    "email": "info@phpgangsta.de",
+                    "homepage": "http://www.phpgangsta.de/",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Google Authenticator 2-factor authentication",
+            "keywords": [
+                "googleauthenticator",
+                "rfc6238",
+                "totp"
+            ],
+            "support": {
+                "issues": "https://github.com/PHPGangsta/GoogleAuthenticator/issues",
+                "source": "https://github.com/PHPGangsta/GoogleAuthenticator"
+            },
+            "time": "2022-01-27T08:37:29+00:00"
+        },
+        {
             "name": "heseya/demo",
             "version": "dev-master",
             "dist": {
@@ -5355,54 +5402,6 @@
                 "source": "https://github.com/phpDocumentor/TypeResolver/tree/1.6.0"
             },
             "time": "2022-01-04T19:58:01+00:00"
-        },
-        {
-            "name": "phpgangsta/googleauthenticator",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/PHPGangsta/GoogleAuthenticator.git",
-                "reference": "505c2af8337b559b33557f37cda38e5f843f3768"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/PHPGangsta/GoogleAuthenticator/zipball/505c2af8337b559b33557f37cda38e5f843f3768",
-                "reference": "505c2af8337b559b33557f37cda38e5f843f3768",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3"
-            },
-            "default-branch": true,
-            "type": "library",
-            "autoload": {
-                "classmap": [
-                    "PHPGangsta/GoogleAuthenticator.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-4-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Michael Kliewe",
-                    "email": "info@phpgangsta.de",
-                    "homepage": "http://www.phpgangsta.de/",
-                    "role": "Developer"
-                }
-            ],
-            "description": "Google Authenticator 2-factor authentication",
-            "keywords": [
-                "googleauthenticator",
-                "rfc6238",
-                "totp"
-            ],
-            "support": {
-                "issues": "https://github.com/PHPGangsta/GoogleAuthenticator/issues",
-                "source": "https://github.com/PHPGangsta/GoogleAuthenticator"
-            },
-            "time": "2019-03-20T00:55:58+00:00"
         },
         {
             "name": "phpoption/phpoption",
@@ -13866,8 +13865,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "heseya/demo": 20,
-        "phpgangsta/googleauthenticator": 20
+        "heseya/demo": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

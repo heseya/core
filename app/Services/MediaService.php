@@ -47,7 +47,7 @@ class MediaService implements MediaServiceContract
 
     public function update(Media $media, MediaUpdateDto $dto): Media
     {
-        if (!($dto->getSlug() instanceof Missing)) {
+        if (!($dto->getSlug() instanceof Missing) && $media->slug !== $dto->getSlug()) {
             $media->url = $this->updateSlug($media, $dto->getSlug());
             $media->slug = $dto->getSlug();
         }
@@ -74,7 +74,7 @@ class MediaService implements MediaServiceContract
     {
         return match ($extension) {
             'jpeg', 'jpg', 'png', 'gif', 'bmp', 'svg', 'webp' => MediaType::PHOTO,
-            'mp4', 'webm', 'ogg', 'avi', 'mov', 'wmv' => MediaType::VIDEO,
+            'mp4', 'webm', 'ogg', 'ogv', 'mov', 'wmv' => MediaType::VIDEO,
             default => MediaType::OTHER,
         };
     }
