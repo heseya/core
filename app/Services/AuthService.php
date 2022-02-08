@@ -297,7 +297,7 @@ class AuthService implements AuthServiceContract
     private function noTFACode(): void
     {
         if (Auth::user()->tfa_type === TFAType::EMAIL) {
-            Auth::user()->securityCodes()->where('expires_at', '<', Carbon::now())->delete();
+            Auth::user()->securityCodes()->where('expires_at', '!=', null)->delete();
             $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
                 Auth::user(),
                 Config::get('tfa.code_expires_time')
