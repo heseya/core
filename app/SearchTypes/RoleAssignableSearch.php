@@ -17,6 +17,7 @@ class RoleAssignableSearch extends Search
         if ($this->value === true) {
             $query
                 ->where('type', '!=', RoleType::UNAUTHENTICATED)
+                ->where('type', '!=', RoleType::AUTHENTICATED)
                 ->whereDoesntHave(
                     'permissions',
                     fn (Builder $sub) => $sub->whereNotIn('id', $permissions),
@@ -24,6 +25,7 @@ class RoleAssignableSearch extends Search
         } elseif ($this->value === false) {
             $query
                 ->where('type', '=', RoleType::UNAUTHENTICATED)
+                ->orWhere('type', '=', RoleType::AUTHENTICATED)
                 ->orWhereHas(
                     'permissions',
                     fn (Builder $sub) => $sub->whereNotIn('id', $permissions),

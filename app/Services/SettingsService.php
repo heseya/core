@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Setting;
 use App\Services\Contracts\SettingsServiceContract;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 
 class SettingsService implements SettingsServiceContract
 {
@@ -12,7 +13,7 @@ class SettingsService implements SettingsServiceContract
     {
         $settings = Setting::orderBy('name')->get();
 
-        collect(config('settings'))->each(function ($setting, $key) use ($settings): void {
+        Collection::make(Config::get('settings'))->each(function ($setting, $key) use ($settings): void {
             if (!$settings->contains('name', $key)) {
                 $settings->push(Setting::make($setting + [
                     'name' => $key,
@@ -29,7 +30,7 @@ class SettingsService implements SettingsServiceContract
 
     public function getSetting(string $name): Setting
     {
-        $config = config('settings.' . $name);
+        $config = Config::get("settings.${name}");
 
         if ($config === null) {
             return Setting::where('name', $name)->firstOrFail();

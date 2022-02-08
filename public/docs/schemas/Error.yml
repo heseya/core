@@ -1,0 +1,11 @@
+Error:
+  properties:
+    code:
+      description: 'Http response code.'
+      type: integer
+      example: 500
+    message:
+      description: 'Error message.'
+      type: string
+      example: 'Some error message.'
+  type: object

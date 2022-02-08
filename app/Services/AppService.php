@@ -51,11 +51,26 @@ class AppService implements AppServiceContract
         }
 
         if ($response->failed()) {
-            throw new AppException('Failed to connect with application');
+            throw new AppException(
+                'Application info responded with invalid status code',
+                0,
+                null,
+                [
+                    "Status code: {$response->status()}",
+                    "Body: {$response->body()}",
+                ],
+            );
         }
 
         if (!$this->isAppRootValid($response)) {
-            throw new AppException('App responded with invalid info');
+            throw new AppException(
+                'App responded with invalid info',
+                0,
+                null,
+                [
+                    "Body: {$response->body()}",
+                ],
+            );
         }
 
         $appConfig = $response->json();
@@ -133,7 +148,15 @@ class AppService implements AppServiceContract
         if ($response->failed()) {
             $app->delete();
 
-            throw new AppException('Failed to install the application');
+            throw new AppException(
+                'App installation responded with an invalid status code',
+                0,
+                null,
+                [
+                    "Status code: {$response->status()}",
+                    "Body: {$response->body()}",
+                ],
+            );
         }
 
         if (!$this->isResponseValid($response, [
@@ -141,7 +164,14 @@ class AppService implements AppServiceContract
         ])) {
             $app->delete();
 
-            throw new AppException('App has invalid installation response');
+            throw new AppException(
+                'App has invalid installation response',
+                0,
+                null,
+                [
+                    "Body: {$response->body()}",
+                ],
+            );
         }
 
         $app->update([

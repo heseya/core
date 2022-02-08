@@ -27,6 +27,8 @@ class DepositsTest extends TestCase
             'item_id' => $this->item->getKey(),
         ]);
 
+        $this->item->refresh();
+
         $this->expected = [
             'id' => $deposit->getKey(),
             'quantity' => $deposit->quantity,
@@ -106,6 +108,8 @@ class DepositsTest extends TestCase
 
         Event::fake(ItemUpdatedQuantity::class);
 
+        $quantity = $this->item->quantity;
+
         $deposit = [
             'quantity' => 1200000.50,
         ];
@@ -122,6 +126,11 @@ class DepositsTest extends TestCase
             ]]);
 
         $this->assertDatabaseHas('deposits', ['item_id' => $this->item->getKey()] + $deposit);
+
+        $this->assertDatabaseHas('items', [
+            'id' => $this->item->getKey(),
+            'quantity' => $quantity + $deposit['quantity'],
+        ]);
 
         Event::assertDispatched(ItemUpdatedQuantity::class);
     }

@@ -120,6 +120,10 @@ class OrderDepositTest extends TestCase
             'item_id' => $this->item->getKey(),
             'order_product_id' => $order->products->first()->getKey(),
         ]);
+        $this->assertDatabaseHas('items', [
+            'id' => $this->item->getKey(),
+            'quantity' => 0,
+        ]);
 
         Event::assertDispatched(OrderCreated::class);
     }
@@ -173,6 +177,10 @@ class OrderDepositTest extends TestCase
         $this->assertDatabaseMissing('deposits', [
             'id' => $deposit->getKey(),
             'quantity' => -2,
+        ]);
+        $this->assertDatabaseHas('items', [
+            'id' => $this->item->getKey(),
+            'quantity' => 2,
         ]);
 
         $this->item->refresh();

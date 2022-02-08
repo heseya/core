@@ -26,5 +26,10 @@ class UserSeeder extends Seeder
         );
 
         User::factory()->count(5)->create();
+
+        $authenticated = Role::where('type', RoleType::AUTHENTICATED)->firstOrFail();
+        foreach (User::all() as $user) {
+            $user->assignRole($authenticated);
+        }
     }
 }
