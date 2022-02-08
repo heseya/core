@@ -1,0 +1,110 @@
+Order:
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    email:
+      type: string
+      example: admin@example.com
+    comment:
+      type: string
+      example: 'asap plz'
+    shipping_number:
+      type: string
+      example: '630552359128340015809770'
+    shipping_price:
+      type: number
+      example: 18.7
+    summary:
+      type: number
+    summary_paid:
+      description: 'Summary amount of paid.'
+      type: number
+      example: 199.99
+    payments:
+      type: array
+      items:
+        $ref: './Payments.yml#/Payment'
+    payable:
+      type: boolean
+    paid:
+      type: boolean
+    status:
+      $ref: './Statuses.yml#/Status'
+    shipping_method:
+      $ref: './ShippingMethods.yml#/ShippingMethod'
+    delivery_address:
+      $ref: './Addresses.yml#/Address'
+    invoice_address:
+      $ref: './Addresses.yml#/Address'
+    products:
+      type: array
+      items:
+        $ref: '#/OrderProduct'
+  type: object
+
+OrderView:
+  type: object
+  allOf:
+    - $ref: '#/Order'
+    - properties:
+        user:
+          $ref: './Users.yml#/User'
+
+OrderSummary:
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    code:
+      description: 'Product''s secondary identifier'
+      type: string
+      example: G3K4DH
+    status:
+      $ref: './Statuses.yml#/Status'
+    paid:
+      type: boolean
+    payable:
+      type: boolean
+    summary:
+      type: number
+    shipping_method_id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    created_at:
+      type: datetime
+      example: '2021-09-13T11:11'
+  type: object
+
+OrderProduct:
+  properties:
+    product_id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    quantity:
+      type: number
+      example: '12.4'
+    price:
+      type: number
+      example: '199.99'
+    schemas:
+      type: array
+      items:
+        $ref: '#/OrderSchema'
+  type: object
+
+OrderSchema:
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    name:
+      type: string
+      example: Size
+    value:
+      type: string
+      example: XL
+    price:
+      type: number
+      example: '49.99'
+  type: object
