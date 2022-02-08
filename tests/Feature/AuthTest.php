@@ -15,7 +15,6 @@ use App\Notifications\TFARecoveryCodes;
 use App\Notifications\TFASecurityCode;
 use App\Notifications\UserRegistered;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;

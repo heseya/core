@@ -774,7 +774,7 @@ class UserTest extends TestCase
         $otherUser->refresh();
 
         $this->assertTrue(
-            $user->hasAllRoles([$role1, $role2, $role3, $this->authenticated]),
+            $otherUser->hasAllRoles([$role1, $role2, $role3, $this->authenticated]),
         );
 
         $this->assertTrue(
@@ -808,7 +808,7 @@ class UserTest extends TestCase
 
     public function testUpdateRemoveRolesMissingPermissions(): void
     {
-        $this->$user->givePermissionTo('users.edit');
+        $this->user->givePermissionTo('users.edit');
 
         Event::fake([UserUpdated::class]);
 
@@ -829,7 +829,7 @@ class UserTest extends TestCase
             'roles' => [],
         ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
+        $response = $this->actingAs($this->user)->patchJson(
             '/users/id:' . $otherUser->getKey(),
             $data,
         );
@@ -889,9 +889,9 @@ class UserTest extends TestCase
                 ]
             ])
             ->assertJsonPath('data.permissions', $this->authenticatedPermissions->toArray());
-        $user->refresh();
+        $otherUser->refresh();
 
-        $this->assertTrue($user->hasAllRoles([$this->authenticated]));
+        $this->assertTrue($otherUser->hasAllRoles([$this->authenticated]));
 
         $this->assertFalse(
             $otherUser->hasAnyRole([$role1, $role2, $role3]),
