@@ -26,6 +26,9 @@ return [
         EventType::DISCOUNT_CREATED => ['discounts.show_details', 'discounts.show'],
         EventType::DISCOUNT_UPDATED => ['discounts.show_details', 'discounts.show'],
         EventType::DISCOUNT_DELETED => ['discounts.show_details', 'discounts.show'],
+        EventType::LANGUAGE_CREATED => [],
+        EventType::LANGUAGE_UPDATED => [],
+        EventType::LANGUAGE_DELETED => [],
     ],
 
     'permissions_hidden' => [
@@ -38,5 +41,8 @@ return [
         EventType::PRODUCT_SET_CREATED => ['product_sets.show_hidden'],
         EventType::PRODUCT_SET_UPDATED => ['product_sets.show_hidden'],
         EventType::PRODUCT_SET_DELETED => ['product_sets.show_hidden'],
+        EventType::LANGUAGE_CREATED => ['languages.show_hidden'],
+        EventType::LANGUAGE_UPDATED => ['languages.show_hidden'],
+        EventType::LANGUAGE_DELETED => ['languages.show_hidden'],
     ],
 ];

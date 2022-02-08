@@ -27,5 +27,8 @@ return [
         EventType::DISCOUNT_CREATED => 'Zdarzenie wyzwalane po utworzeniu nowych kodów rabatowych',
         EventType::DISCOUNT_UPDATED => 'Zdarzenie wyzwalane po aktualizacji kodów rabatowych',
         EventType::DISCOUNT_DELETED => 'Zdarzenie wyzwalane po usunięciu kodów rabatowych',
+        EventType::LANGUAGE_CREATED => 'Zdarzenie wyzwalane po utworzeniu nowego języka',
+        EventType::LANGUAGE_UPDATED => 'Zdarzenie wyzwalane po aktualizacji języka',
+        EventType::LANGUAGE_DELETED => 'Zdarzenie wyzwalane po usunięciu języka',
     ]
 ];
