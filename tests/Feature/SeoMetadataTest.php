@@ -23,10 +23,25 @@ class SeoMetadataTest extends TestCase
         ];
     }
 
-    public function testShowUnauthorized(): void
+    public function testShowUnauthenticated(): void
     {
+        $seo = SeoMetadata::where('global', 1)->first();
+
         $response = $this->json('GET', '/seo');
-        $response->assertForbidden();
+
+        $response->assertOk()
+            ->assertJson(fn (AssertableJson $json) =>
+            $json->has('meta', fn ($json) =>
+            $json->has('seo')
+                ->etc())
+                ->has('data', fn ($json) =>
+                $json->where('title', $seo->title)
+                    ->where('description', $seo->description)
+                    ->etc())
+                ->etc())
+            ->assertJsonStructure([
+                'data' => $this->expected_structure
+            ]);
     }
 
     /**
@@ -34,8 +49,6 @@ class SeoMetadataTest extends TestCase
      */
     public function testShow($user): void
     {
-        $this->$user->givePermissionTo('seo.show');
-
         $seo = SeoMetadata::where('global', 1)->first();
 
         $response = $this->actingAs($this->$user)->json('GET', '/seo');
@@ -68,51 +81,9 @@ class SeoMetadataTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateWithoutGlobalShow($user): void
+    public function testCreateGlobal($user): void
     {
         $this->$user->givePermissionTo('seo.edit');
-
-        SeoMetadata::where('global', 1)->delete();
-
-        $seo = [
-            'title' => 'title',
-            'description' => 'description',
-            'keywords' => ['key', 'words'],
-            'twitter_card' => 'summary',
-        ];
-        $response = $this->actingAs($this->$user)->json('PATCH', '/seo', $seo);
-
-        $response->assertCreated()->assertJson(fn (AssertableJson $json) =>
-            $json->has('meta', fn ($json) =>
-                    $json->has('seo')
-                        ->etc())
-                ->has('data', fn ($json) =>
-                    $json->where('title', $seo['title'])
-                        ->where('description', $seo['description'])
-                        ->etc())
-                ->etc()
-        )->assertJsonStructure([
-            'data' => $this->expected_structure,
-        ]);
-
-        $seo = SeoMetadata::where('global', '=', true)->first();
-
-        $this->assertEquals(['key', 'words'], $seo->keywords);
-
-        $this->assertDatabaseHas('seo_metadata', [
-            'title' => $seo->title,
-            'description' => $seo->description,
-            'global' => true,
-            'twitter_card' => $seo->twitter_card,
-        ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateWithGlobalShow($user): void
-    {
-        $this->$user->givePermissionTo(['seo.edit', 'seo.show']);
 
         SeoMetadata::where('global', 1)->delete();
 
