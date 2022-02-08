@@ -25,7 +25,6 @@
         "omnipay/paypal": "^3.0",
         "owen-it/laravel-auditing": "^12.0",
         "php-http/curl-client": "^2.2",
-        "phpgangsta/googleauthenticator": "dev-master",
         "predis/predis": "^1.1",
         "propaganistas/laravel-phone": "^4.3",
         "sentry/sentry-laravel": "^2.6",
