@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\SchemaType;
+use App\Enums\SchemaType
 use App\Rules\OptionAvailable;
 use App\SearchTypes\SchemaSearch;
 use App\SearchTypes\TranslatedLike;
@@ -46,7 +46,6 @@ class Schema extends Model
     protected $translatable = [
         'name',
         'description',
-        'published',
     ];
 
     protected $casts = [
@@ -55,7 +54,7 @@ class Schema extends Model
         'required' => 'bool',
         'available' => 'bool',
         'type' => SchemaType::class,
-        'published' => 'bool',
+        'published' => 'array',
     ];
 
     protected $searchable = [

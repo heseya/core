@@ -94,6 +94,7 @@ return [
     'numeric' => ':attribute musi być liczbą.',
     'password' => 'Hasło jest nieprawidłowe.',
     'present' => 'Pole :attribute musi być obecne.',
+    'prohibited_unless' => 'Pole :attribute musi być puste lub nieobecne gdy :other jest :values.',
     'regex' => 'Format :attribute jest nieprawidłowy.',
     'required' => 'Pole :attribute jest wymagane.',
     'required_if' => 'Pole :attribute jest wymagane gdy :other jest :value.',

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\RegisterDto;
 use App\Dtos\TFAConfirmDto;
 use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
@@ -9,6 +10,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Requests\PasswordResetRequest;
 use App\Http\Requests\PasswordResetSaveRequest;
+use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\TFAConfirmRequest;
 use App\Http\Requests\TFAPasswordRequest;
 use App\Http\Requests\TFASetupRequest;
@@ -26,6 +28,7 @@ use App\Services\Contracts\AuthServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 
 class AuthController extends Controller
@@ -42,7 +45,8 @@ class AuthController extends Controller
             $request->input('email'),
             $request->input('password'),
             $request->ip(),
-            $request->userAgent()
+            $request->userAgent(),
+            $request->input('code'),
         );
 
         return AuthResource::make($tokens);
@@ -181,7 +185,14 @@ class AuthController extends Controller
 
     public function removeUsersTFA(User $user): JsonResponse
     {
+        Gate::inspect('removeUserTFA', [User::class, $user]);
+
         $this->authService->removeUsersTFA($user);
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    public function register(RegisterRequest $request): JsonResource
+    {
+        return UserResource::make($this->authService->register(RegisterDto::fromFormRequest($request)));
     }
 }

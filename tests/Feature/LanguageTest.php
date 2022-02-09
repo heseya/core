@@ -2,9 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Events\LanguageCreated;
+use App\Events\LanguageDeleted;
+use App\Events\LanguageUpdated;
 use App\Models\Language;
 use App\Models\Product;
+use App\Models\WebHook;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
 class LanguageTest extends TestCase
@@ -113,6 +118,38 @@ class LanguageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateWithWebHookDispatched($user): void
+    {
+        $this->$user->givePermissionTo('languages.add');
+
+        WebHook::factory()->create([
+            'events' => [
+                'LanguageCreated',
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => true,
+            'with_hidden' => false,
+        ]);
+
+        Event::fake(LanguageCreated::class);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('POST', '/languages', [
+                'iso' => 'nl',
+                'name' => 'Netherland',
+                'hidden' => false,
+                'default' => false,
+            ])
+            ->assertCreated();
+
+        Event::assertDispatched(LanguageCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateWithoutPermissions($user): void
     {
         $this
@@ -159,6 +196,53 @@ class LanguageTest extends TestCase
         $this->assertEquals('es', Language::default()->iso);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithWebHookDispatched($user): void
+    {
+        $this->$user->givePermissionTo('languages.edit');
+
+        WebHook::factory()->create([
+            'events' => [
+                'LanguageUpdated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Event::fake(LanguageUpdated::class);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/languages/id:{$this->language->getKey()}", [
+                'iso' => 'nl',
+                'name' => 'Netherland',
+                'hidden' => false,
+                'default' => true,
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('languages', [
+            'iso' => 'nl',
+            'name' => 'Netherland',
+            'hidden' => false,
+            'default' => true,
+        ]);
+
+        // check if default language changed
+        $this->assertDatabaseHas('languages', [
+            'iso' => 'en',
+            'default' => false,
+        ]);
+
+        $this->assertEquals('nl', Language::default()->iso);
+
+        Event::assertDispatched(LanguageUpdated::class);
+    }
+
     public function testDeleteUnauthorized(): void
     {
         $this
@@ -173,10 +257,51 @@ class LanguageTest extends TestCase
     {
         $this->$user->givePermissionTo('languages.remove');
 
+        $language = Language::create([
+            'iso' => 'nl',
+            'name' => 'Netherland',
+            'hidden' => false,
+            'default' => false,
+        ]);
+
         $this
             ->actingAs($this->$user)
-            ->json('DELETE', "/languages/id:{$this->languageHidden->getKey()}")
+            ->json('DELETE', "/languages/id:{$language->getKey()}")
             ->assertNoContent();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWithWebHookDispatched($user): void
+    {
+        $this->$user->givePermissionTo('languages.remove');
+
+        $language = Language::create([
+            'iso' => 'nl',
+            'name' => 'Netherland',
+            'hidden' => false,
+            'default' => false,
+            ]);
+
+        WebHook::factory()->create([
+            'events' => [
+                'LanguageDeleted'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Event::fake(LanguageDeleted::class);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('DELETE', "/languages/id:{$language->getKey()}")
+            ->assertNoContent();
+
+        Event::assertDispatched(LanguageDeleted::class);
     }
 
     /**

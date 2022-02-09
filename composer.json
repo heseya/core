@@ -12,7 +12,7 @@
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.3",
         "heseya/demo": "dev-master",
-        "heseya/dto": "*",
+        "heseya/dto": "^1.0",
         "heseya/laravel-searchable": "^1.0",
         "heseya/pagination": "*",
         "heseya/resource": "*",
@@ -26,6 +26,7 @@
         "owen-it/laravel-auditing": "^12.0",
         "php-http/curl-client": "^2.2",
         "phpgangsta/googleauthenticator": "dev-master",
+        "predis/predis": "^1.1",
         "propaganistas/laravel-phone": "^4.3",
         "sentry/sentry-laravel": "^2.6",
         "spatie/laravel-permission": "^4.2",
@@ -38,7 +39,7 @@
         "brianium/paratest": "^6.3",
         "facade/ignition": "^2.9",
         "fakerphp/faker": "^v1.15",
-        "heseya/insights": "*",
+        "heseya/insights": "^1.0",
         "laravel/tinker": "^2.6",
         "mattiasgeniar/phpunit-query-count-assertions": "^1.1",
         "mbezhanov/faker-provider-collection": "^2.0",
@@ -102,10 +103,6 @@
     "repositories": [
         {
             "type": "path",
-            "url": "./heseya/insights"
-        },
-        {
-            "type": "path",
             "url": "./heseya/demo"
         },
         {
@@ -115,10 +112,6 @@
         {
             "type": "path",
             "url": "./heseya/pagination"
-        },
-        {
-            "type": "path",
-            "url": "./heseya/dto"
         },
         {
             "type": "path",

@@ -46,6 +46,9 @@ class User extends Model implements
         Auditable,
         HasWebHooks;
 
+    // Bez tego nie działały testy, w których jako aplikacja tworzy się użytkownika z określoną rolą
+    protected $guard_name = 'api';
+
     protected $fillable = [
         'name',
         'email',

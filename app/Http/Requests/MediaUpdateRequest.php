@@ -10,7 +10,7 @@ class MediaUpdateRequest extends FormRequest
     {
         return [
             'alt' => ['nullable', 'string', 'max:100'],
-            'slug' => ['nullable', 'string', 'max:64'],
+            'slug' => ['string', 'max:64'],
         ];
     }
 }

@@ -3,6 +3,9 @@
 namespace App\Services;
 
 use App\Dtos\LanguageDto;
+use App\Events\LanguageCreated;
+use App\Events\LanguageDeleted;
+use App\Events\LanguageUpdated;
 use App\Exceptions\StoreException;
 use App\Models\Language;
 use App\Services\Contracts\LanguageServiceContract;
@@ -16,6 +19,8 @@ class LanguageService implements LanguageServiceContract
         if ($dto->getDefault() === true) {
             $this->defaultSet($language);
         }
+
+        LanguageCreated::dispatch($language);
 
         return $language;
     }
@@ -37,6 +42,8 @@ class LanguageService implements LanguageServiceContract
             $this->defaultSet($language);
         }
 
+        LanguageUpdated::dispatch($language);
+
         return $language;
     }
 
@@ -49,6 +56,8 @@ class LanguageService implements LanguageServiceContract
         if (Language::count() <= 1) {
             throw new StoreException('There must be at least one language.');
         }
+
+        LanguageDeleted::dispatch($language);
 
         $language->delete();
     }

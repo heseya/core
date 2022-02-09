@@ -9,6 +9,9 @@ use App\Events\ItemCreated;
 use App\Events\ItemDeleted;
 use App\Events\ItemUpdated;
 use App\Events\ItemUpdatedQuantity;
+use App\Events\LanguageCreated;
+use App\Events\LanguageDeleted;
+use App\Events\LanguageUpdated;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdated;
 use App\Events\OrderUpdatedStatus;
@@ -27,7 +30,9 @@ use App\Events\UserUpdated;
 use App\Listeners\OrderCreatedListener;
 use App\Listeners\OrderUpdatedStatusListener;
 use App\Listeners\WebHookEventListener;
+use App\Models\Deposit;
 use App\Models\Payment;
+use App\Observers\DepositObserver;
 use App\Observers\PaymentObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
@@ -108,11 +113,21 @@ class EventServiceProvider extends ServiceProvider
         UserUpdated::class => [
             WebHookEventListener::class,
         ],
+        LanguageCreated::class => [
+            WebHookEventListener::class,
+        ],
+        LanguageUpdated::class => [
+            WebHookEventListener::class,
+        ],
+        LanguageDeleted::class => [
+            WebHookEventListener::class,
+        ],
     ];
 
     public function boot()
     {
         parent::boot();
         Payment::observe(PaymentObserver::class);
+        Deposit::observe(DepositObserver::class);
     }
 }

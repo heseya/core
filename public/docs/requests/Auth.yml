@@ -21,3 +21,19 @@ PasswordResetSave:
           password:
             type: string
         type: object
+
+Register:
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          name:
+            type: string
+            example: 'Registered user'
+          email:
+            type: string
+            example: admin@example.com
+          password:
+            type: string
+            example: secret

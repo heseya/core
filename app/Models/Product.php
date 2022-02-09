@@ -43,7 +43,6 @@ class Product extends Model implements AuditableContract
         'name',
         'description_html',
         'description_short',
-        'published',
     ];
 
     protected $auditInclude = [
@@ -61,7 +60,7 @@ class Product extends Model implements AuditableContract
         'public' => 'bool',
         'available' => 'bool',
         'quantity_step' => 'float',
-        'published' => 'bool',
+        'published' => 'array',
     ];
 
     protected array $searchable = [
