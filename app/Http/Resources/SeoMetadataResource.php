@@ -11,7 +11,7 @@ class SeoMetadataResource extends Resource
 
     public function base(Request $request): array
     {
-        $data =  [
+        $data = [
             'title' => $this->title,
             'description' => $this->description,
             'keywords' => $this->keywords,

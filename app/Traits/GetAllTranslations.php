@@ -14,9 +14,9 @@ trait GetAllTranslations
         $allTranslations = [];
         $languages = $this->published;
 
-        foreach($this->getTranslations(allowedLocales: $languages) as $field => $translations){
-            foreach($translations as $locale => $translation){
-                if(!array_key_exists($locale, $allTranslations)) {
+        foreach ($this->getTranslations(allowedLocales: $languages) as $field => $translations) {
+            foreach ($translations as $locale => $translation) {
+                if (!array_key_exists($locale, $allTranslations)) {
                     $allTranslations[$locale] = [];
                 }
 

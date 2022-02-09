@@ -11,7 +11,7 @@ class SchemaResource extends Resource
 
     public function base(Request $request): array
     {
-        $data =  [
+        $data = [
             'id' => $this->getKey(),
             'type' => $this->type->key,
             'name' => $this->name,
