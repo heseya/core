@@ -27,7 +27,10 @@ class ProductResource extends Resource
             'tags' => TagResource::collection($this->tags),
         ];
 
-        return array_merge($data, array_key_exists('translations', $request->toArray()) ? $this->getAllTranslations() : []);
+        return array_merge(
+            $data,
+            array_key_exists('translations', $request->toArray()) ? $this->getAllTranslations() : []
+        );
     }
 
     public function view(Request $request): array

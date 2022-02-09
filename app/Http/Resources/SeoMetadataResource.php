@@ -20,6 +20,9 @@ class SeoMetadataResource extends Resource
             'no_index' => $this->no_index,
         ];
 
-        return array_merge($data, array_key_exists('translations', $request->toArray()) ? $this->getAllTranslations() : []);
+        return array_merge(
+            $data,
+            array_key_exists('translations', $request->toArray()) ? $this->getAllTranslations() : []
+        );
     }
 }

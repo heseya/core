@@ -19,7 +19,10 @@ class PageResource extends Resource
             'order' => $this->order,
         ];
 
-        return array_merge($data, array_key_exists('translations', $request->toArray()) ? $this->getAllTranslations() : []);
+        return array_merge(
+            $data,
+            array_key_exists('translations', $request->toArray()) ? $this->getAllTranslations() : []
+        );
     }
 
     public function view(Request $request): array

@@ -30,7 +30,10 @@ class SchemaResource extends Resource
             'used_schemas' => $this->usedSchemas->map(fn ($schema) => $schema->getKey()),
         ];
 
-        return array_merge($data, array_key_exists('translations', $request->toArray()) ? $this->getAllTranslations() : []);
+        return array_merge(
+            $data,
+            array_key_exists('translations', $request->toArray()) ? $this->getAllTranslations() : []
+        );
     }
 
     public function view(Request $request): array

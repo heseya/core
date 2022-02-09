@@ -21,6 +21,9 @@ class StatusResource extends Resource
             'no_notifications' => $this->no_notifications,
         ];
 
-        return array_merge($data, array_key_exists('translations', $request->toArray()) ? $this->getAllTranslations() : []);
+        return array_merge(
+            $data,
+            array_key_exists('translations', $request->toArray()) ? $this->getAllTranslations() : []
+        );
     }
 }

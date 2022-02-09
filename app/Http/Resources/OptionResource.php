@@ -20,6 +20,9 @@ class OptionResource extends Resource
             'items' => ItemResource::collection($this->items),
         ];
 
-        return array_merge($data, array_key_exists('translations', $request->toArray()) ? $this->getAllTranslations() : []);
+        return array_merge(
+            $data,
+            array_key_exists('translations', $request->toArray()) ? $this->getAllTranslations() : []
+        );
     }
 }
