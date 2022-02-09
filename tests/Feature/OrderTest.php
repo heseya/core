@@ -985,7 +985,7 @@ class OrderTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('orders', [
-            'user_id' => Auth::user()->getKey(),
+            'user_id' => $this->$user->getKey(),
         ]);
     }
 }
