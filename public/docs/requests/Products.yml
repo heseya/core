@@ -67,7 +67,6 @@ ProductUpdate:
     application/json:
       schema:
         required:
-          - translations
           - slug
           - price
           - public

@@ -197,30 +197,34 @@ class SchemaTest extends TestCase
             'required' => false,
             'options' => [
                 [
-                    'name' => 'L',
                     'price' => 100,
                     'disabled' => false,
                     'items' => [
                         $item->getKey(),
                     ],
+                    'translations' => [$this->lang => [
+                        'name' => 'L',
+                    ]],
                 ],
                 [
-                    'name' => 'A',
                     'price' => 1000,
                     'disabled' => false,
+                    'translations' => [$this->lang => [
+                        'name' => 'A',
+                    ]],
                 ],
                 [
-                    'name' => 'B',
                     'price' => 0,
                     'disabled' => false,
+                    'translations' => [$this->lang => [
+                        'name' => 'B',
+                    ]],
                 ],
             ],
-            'translations' => [
-                $this->lang => [
-                    'name' => 'Test',
-                    'description' => 'test test',
-                ],
-            ],
+            'translations' => [$this->lang => [
+                'name' => 'Test',
+                'description' => 'test test',
+            ]],
             'published' => [$this->lang],
         ]);
 
@@ -455,12 +459,14 @@ class SchemaTest extends TestCase
             'options' => [
                 [
                     'id' => $option->getKey(),
-                    'name' => 'L',
                     'price' => 0,
                     'disabled' => true,
                     'items' => [
                         $item->getKey(),
                     ],
+                    'translations' => [$this->lang => [
+                        'name' => 'L',
+                    ]],
                 ],
             ],
             'translations' => [

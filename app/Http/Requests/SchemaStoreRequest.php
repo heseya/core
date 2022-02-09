@@ -13,6 +13,7 @@ class SchemaStoreRequest extends FormRequest
     {
         return [
             'translations' => [
+                'required',
                 new Translations(['name', 'description']),
             ],
 //            'name' => ['required', 'string', 'max:255'],
@@ -33,7 +34,11 @@ class SchemaStoreRequest extends FormRequest
             'validation' => ['nullable', 'string', 'max:255'],
 
             'options' => ['nullable', 'array'],
-            'options.*.name' => ['required', 'string', 'max:255'],
+            'options.*.translations' => [
+                'required',
+                new Translations(['name']),
+            ],
+//            'options.*.name' => ['required', 'string', 'max:255'],
             'options.*.price' => ['sometimes', 'required', 'numeric'],
             'options.*.disabled' => ['sometimes', 'required', 'boolean'],
 

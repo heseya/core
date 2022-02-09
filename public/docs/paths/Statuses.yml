@@ -22,10 +22,7 @@ Statuses:
       - Statuses
     summary: 'add new status'
     requestBody:
-      content:
-        application/json:
-          schema:
-            $ref: './../schemas/Statuses.yml#/Status'
+      $ref: './../requests/Statuses.yml#/StatusStore'
     responses:
       201:
         description: Created
@@ -66,10 +63,7 @@ StatusesParams:
         schema:
           type: integer
     requestBody:
-      content:
-        application/json:
-          schema:
-            $ref: './../schemas/Statuses.yml#/Status'
+      $ref: './../requests/Statuses.yml#/StatusUpdate'
     responses:
       200:
         description: Success

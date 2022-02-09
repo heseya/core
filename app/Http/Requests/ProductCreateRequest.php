@@ -10,8 +10,12 @@ class ProductCreateRequest extends SeoMetadataRulesRequest
     {
         return $this->rulesWithSeo([
             'translations' => [
+                'required',
                 new Translations(['name', 'description_html', 'description_short']),
             ],
+//            'name' => ['required', 'string', 'max:255'],
+//            'description_html' => ['nullable', 'string'],
+//            'description_short' => ['nullable', 'string', 'between:30,5000'],
 
             'published' => ['required', 'array', 'min:1'],
             'published.*' => ['uuid', 'exists:languages,id'],

@@ -157,7 +157,7 @@ class ProductController extends Controller
     {
         $product->fill($request->validated());
 
-        foreach($request->input('translations') as $lang => $translations) {
+        foreach($request->input('translations', []) as $lang => $translations) {
             $product->setLocale($lang)->fill($translations);
         }
 

@@ -38,7 +38,7 @@ class Translations implements Rule
                 return $this->failWithError(":attribute.{$language} should contain appropriate fields");
             }
 
-            if (count(array_intersect($this->fields, $translations)) > 0) {
+            if (count(array_intersect($this->fields, array_keys($translations))) < 1) {
                 return $this->failWithError(":attribute.{$language} should contain appropriate fields");
             }
         }

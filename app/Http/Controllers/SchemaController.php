@@ -53,6 +53,8 @@ class SchemaController extends Controller
             $schema->refresh();
         }
 
+        $this->translationService->checkPublishedRelations($schema, ['options' => ['name']]);
+
         if ($request->has('used_schemas')) {
             foreach ($request->input('used_schemas') as $input) {
                 $used_schema = Schema::findOrFail($input);
@@ -78,7 +80,7 @@ class SchemaController extends Controller
     {
         $schema->fill($request->validated());
 
-        foreach($request->input('translations') as $lang => $translations) {
+        foreach($request->input('translations', []) as $lang => $translations) {
             $schema->setLocale($lang)->fill($translations);
         }
 
@@ -90,6 +92,8 @@ class SchemaController extends Controller
             $this->optionService->sync($schema, $request->input('options'));
             $schema->refresh();
         }
+
+        $this->translationService->checkPublishedRelations($schema, ['options' => ['name']]);
 
         if ($request->has('used_schemas')) {
             $schema->usedSchemas()->detach();

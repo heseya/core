@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\Translations;
 use Illuminate\Validation\Rule;
 
 class ProductUpdateRequest extends ProductCreateRequest
@@ -19,6 +20,10 @@ class ProductUpdateRequest extends ProductCreateRequest
         ];
 
         $rules['published'] = ['nullable', 'array', 'min:1'];
+        $rules['translations'] = [
+            'nullable',
+            new Translations(['name', 'description_html', 'description_short']),
+        ];
 
         return $rules;
     }

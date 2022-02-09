@@ -2,13 +2,23 @@
 
 namespace App\Services;
 
+use App\Exceptions\PublishingException;
 use App\Models\Option;
 use App\Models\Schema;
 use App\Services\Contracts\OptionServiceContract;
+use App\Services\Contracts\TranslationServiceContract;
 use Illuminate\Support\Collection;
 
 class OptionService implements OptionServiceContract
 {
+    public function __construct(
+        protected TranslationServiceContract $translationService,
+    ) {
+    }
+
+    /**
+     * @throws PublishingException
+     */
     public function sync(Schema $schema, array $options = []): void
     {
         $keep = Collection::empty();
@@ -18,10 +28,16 @@ class OptionService implements OptionServiceContract
 
             if (isset($input['id'])) {
                 $option = Option::findOrFail($input['id']);
-                $option->update($input);
+                $option->fill($input);
             } else {
-                $option = $schema->options()->create($input);
+                $option = $schema->options()->make($input);
             }
+
+            foreach($input['translations'] ?? [] as $lang => $translations) {
+                $option->setLocale($lang)->fill($translations);
+            }
+
+            $option->save();
 
             $option->items()->sync($input['items'] ?? []);
 

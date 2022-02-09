@@ -1,3 +1,46 @@
+Status:
+  type: object
+  properties:
+    translations:
+      type: object
+      properties:
+        language-uuid:
+          type: object
+          properties:
+            name:
+              type: string
+              example: 'Cancel'
+            description:
+              type: string
+              example: 'Your order has been cancelled!'
+    published:
+      type: array
+      description: 'Array of published language ids'
+      items:
+        type: string
+        example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    color:
+      type: string
+      example: 8f022c
+    cancel:
+      type: boolean
+
+StatusStore:
+  content:
+    application/json:
+      schema:
+        $ref: '#/Status'
+
+StatusUpdate:
+  content:
+    application/json:
+      schema:
+        $ref: '#/Status'
+
+
 StatusReorderRequest:
   content:
     application/json:
