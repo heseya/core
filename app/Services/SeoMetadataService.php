@@ -85,4 +85,15 @@ class SeoMetadataService implements SeoMetadataServiceContract
             ->whereJsonContains('keywords', $keywords)
             ->get();
     }
+
+    public function getGlobalSeo(): SeoMetadata | null
+    {
+        $seo = Cache::get('seo.global');
+
+        if (!$seo) {
+            $seo = SeoMetadata::where('global', true)->first();
+            Cache::put('seo.global', $seo);
+        }
+        return $seo;
+    }
 }
