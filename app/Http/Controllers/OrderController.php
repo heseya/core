@@ -24,7 +24,6 @@ use App\Models\Product;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
-use App\Models\User;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\NameServiceContract;
