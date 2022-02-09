@@ -6,7 +6,6 @@ use App\Http\Requests\LanguageCreateRequest;
 use App\Http\Requests\LanguageUpdateRequest;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
-use Illuminate\Foundation\Http\FormRequest;
 
 class LanguageDto extends Dto
 {
