@@ -44,6 +44,7 @@ class Order extends Model implements AuditableContract
         'invoice_address_id',
         'created_at',
         'user_id',
+        'user_type',
         'summary',
         'paid',
     ];

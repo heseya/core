@@ -65,6 +65,11 @@ class App extends Model implements
         return [];
     }
 
+    public function orders(): MorphMany
+    {
+        return $this->morphMany(Order::class, 'user');
+    }
+
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
@@ -78,10 +83,5 @@ class App extends Model implements
     protected function hasPermissionViaRole(Permission $permission): bool
     {
         return false;
-    }
-
-    public function orders(): MorphMany
-    {
-        return $this->morphMany(Order::class, 'user');
     }
 }
