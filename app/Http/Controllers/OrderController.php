@@ -121,7 +121,8 @@ class OrderController extends Controller
             'status_id' => Status::select('id')->orderBy('order')->first()->getKey(),
             'delivery_address_id' => $deliveryAddress->getKey(),
             'invoice_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
-            'user_id' => Auth::user() instanceof User ? Auth::user()->getKey() : null,
+            'user_id' => Auth::user()->getKey(),
+            'user_type' => Auth::user()::class,
         ]);
 
         # Add products to order

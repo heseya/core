@@ -18,6 +18,7 @@ use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
@@ -28,7 +29,6 @@ use Tests\TestCase;
 class OrderTest extends TestCase
 {
     private Order $order;
-
     private array $expected;
     private array $expected_summary_structure;
     private array $expected_full_structure;
@@ -223,7 +223,7 @@ class OrderTest extends TestCase
             ]])
             ->assertJson(['data' => [
                 0 => [
-                    'id' => $order->getKey()
+                    'id' => $order->getKey(),
                 ],
             ]])
             ->assertJsonMissing([
@@ -317,7 +317,7 @@ class OrderTest extends TestCase
                         'hidden' => $status->hidden,
                         'no_notifications' => $status->no_notifications,
                     ],
-            ]]]);
+                ]]]);
 
         $this->assertQueryCountLessThan(20);
     }
@@ -544,7 +544,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'paid' => true,
-                'summary_paid' => $summaryPaid
+                'summary_paid' => $summaryPaid,
             ]);
     }
 
@@ -705,7 +705,7 @@ class OrderTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ItemUpdatedQuantity'
+                'ItemUpdatedQuantity',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -751,6 +751,7 @@ class OrderTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $item) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $item->getKey()
@@ -768,7 +769,7 @@ class OrderTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'OrderUpdatedStatus'
+                'OrderUpdatedStatus',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -801,6 +802,7 @@ class OrderTest extends TestCase
 
         Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $order) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $order->getKey()
@@ -818,7 +820,7 @@ class OrderTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'OrderUpdatedStatus'
+                'OrderUpdatedStatus',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -852,6 +854,7 @@ class OrderTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $order) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $order->getKey()
@@ -929,7 +932,7 @@ class OrderTest extends TestCase
                 [
                     'product_id' => $product->getKey(),
                     'quantity' => 1,
-                ]
+                ],
             ],
         ]);
 
@@ -946,5 +949,43 @@ class OrderTest extends TestCase
                 'id' => $this->user->getKey(),
             ])
             ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOrderHasUser($user)
+    {
+        $this->$user->givePermissionTo(['orders.add']);
+
+        $shippingMethod = ShippingMethod::factory()->create();
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        Event::fake([OrderCreated::class]);
+
+        $this->actingAs($this->$user)->json('POST', '/orders', [
+            'email' => 'test@example.com',
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'delivery_address' => [
+                'name' => 'Wojtek Testowy',
+                'phone' => '+48123321123',
+                'address' => 'Gdańska 89/1',
+                'zip' => '12-123',
+                'city' => 'Bydgoszcz',
+                'country' => 'PL',
+            ],
+            'items' => [
+                [
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+        ]);
+
+        $this->assertDatabaseHas('orders', [
+            'user_id' => Auth::user()->getKey(),
+        ]);
     }
 }
