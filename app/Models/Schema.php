@@ -2,8 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\SchemaType;
-use App\Models\Interfaces\Translatable;
+use App\Enums\SchemaType
 use App\Rules\OptionAvailable;
 use App\SearchTypes\SchemaSearch;
 use App\SearchTypes\TranslatedLike;
@@ -24,7 +23,7 @@ use Spatie\Translatable\HasTranslations;
 /**
  * @mixin IdeHelperSchema
  */
-class Schema extends Model implements Translatable
+class Schema extends Model
 {
     use HasFactory, Searchable, Sortable, HasTranslations;
 
