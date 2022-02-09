@@ -2,14 +2,17 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\GetAllTranslations;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ProductResource extends Resource
 {
+    use GetAllTranslations;
+
     public function base(Request $request): array
     {
-        return [
+        $data = [
             'id' => $this->getKey(),
             'slug' => $this->slug,
             'name' => $this->name,
@@ -23,6 +26,8 @@ class ProductResource extends Resource
             'cover' => MediaResource::make($this->media->first()),
             'tags' => TagResource::collection($this->tags),
         ];
+
+        return array_merge($data, array_key_exists('translations', $request->toArray()) ? $this->getAllTranslations() : []);
     }
 
     public function view(Request $request): array
