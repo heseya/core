@@ -28,7 +28,7 @@ class PageFactory extends Factory
             'slug' => Str::slug($name) . '-' . rand(0, 1000),
             'public' => $this->faker->boolean,
             'content_html' => '<p>' . $this->faker->sentence(rand(20, 40)) . '</p>',
-            'published' => $this->faker->boolean,
+            'published' => [App::getLocale()],
         ];
     }
 }

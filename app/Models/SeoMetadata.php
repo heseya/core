@@ -34,7 +34,6 @@ class SeoMetadata extends Model
         'description',
         'keywords',
         'no_index',
-        'published',
     ];
 
     protected $casts = [
@@ -44,7 +43,7 @@ class SeoMetadata extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'no_index' => 'bool',
-        'published' => 'bool',
+        'published' => 'array',
     ];
 
     protected $attributes = [
