@@ -2,13 +2,16 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\GetAllTranslations;
 use Illuminate\Http\Request;
 
 class StatusResource extends Resource
 {
+    use GetAllTranslations;
+
     public function base(Request $request): array
     {
-        return [
+        $data = [
             'id' => $this->getKey(),
             'name' => $this->name,
             'color' => $this->color,
@@ -17,5 +20,7 @@ class StatusResource extends Resource
             'hidden' => $this->hidden,
             'no_notifications' => $this->no_notifications,
         ];
+
+        return array_merge($data, array_key_exists('translations', $request->toArray()) ? $this->getAllTranslations() : []);
     }
 }
