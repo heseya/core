@@ -87,6 +87,9 @@ final class Handler extends ExceptionHandler
         TFAException::class => [
             'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
         ],
+        MediaCriticalException::class => [
+            'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
+        ]
     ];
 
     /**

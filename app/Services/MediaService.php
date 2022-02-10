@@ -37,7 +37,7 @@ class MediaService implements MediaServiceContract
             ->post(Config::get('silverbox.host') . '/' . Config::get('silverbox.client'));
 
         if ($response->failed()) {
-            throw new MediaCriticalException('CDN responded with an error', 500);
+            throw new MediaCriticalException('CDN responded with an error');
         }
 
         return Media::create([
