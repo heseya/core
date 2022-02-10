@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\SchemaType
+use App\Enums\SchemaType;
 use App\Rules\OptionAvailable;
 use App\SearchTypes\SchemaSearch;
 use App\SearchTypes\TranslatedLike;

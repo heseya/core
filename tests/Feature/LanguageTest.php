@@ -418,4 +418,28 @@ class LanguageTest extends TestCase
                 'iso' => $this->language->iso,
             ]);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUncheckCurrentDefaultLanguage($user): void
+    {
+        $this->$user->givePermissionTo('languages.edit');
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/languages/id:{$this->language->getKey()}", [
+                'iso' => 'pl',
+                'name' => 'Polski',
+                'hidden' => false,
+                'default' => false,
+            ])
+            ->assertStatus(400)
+            ->assertJsonFragment(['message' => 'There must be exactly one default language.']);
+
+        $this->assertDatabaseHas('languages', [
+            'id' => $this->language->getKey(),
+            'default' => true,
+        ]);
+    }
 }
