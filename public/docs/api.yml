@@ -277,37 +277,6 @@ paths:
                     items:
                       $ref: '#/components/schemas/Event'
                 type: object
-  /furgonetka/create-package:
-    post:
-      tags:
-        - Furgonetka
-      summary: 'creates package on furgonetka'
-      operationId: 6edcc011870082e4d26f4657fec9f374
-      requestBody:
-        content:
-          application/json:
-            schema:
-              properties:
-                order_id:
-                  type: string
-                  example: 0246aa10-2585-44c0-8937-f7155af61f03
-                package_template_id:
-                  type: string
-                  example: 8026e9a2-78f8-456c-9008-48c77442e9a4
-              type: object
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  shipping_number:
-                    type: string
-                    example: 0000000773354Q
-                type: object
-      security:
-        - oauth: [ ]
   /items:
     $ref: './paths/Items.yml#/Items'
   '/items/id:{id}':
@@ -317,281 +286,19 @@ paths:
   '/media/id:{id}':
     $ref: './paths/Media.yml#MediaParams'
   /orders:
-    get:
-      tags:
-        - Orders
-      summary: 'orders list'
-      operationId: 9fdf75d4b6f010f07127a71f418336b1
-      parameters:
-        - name: search
-          in: query
-          description: 'Full text search.'
-          schema:
-            type: string
-        - name: sort
-          in: query
-          description: 'Sorting string.'
-          schema:
-            type: string
-            example: 'code:asc,created_at:desc,id:asc,email:desc,summary:desc'
-        - name: status_id
-          in: query
-          description: 'Status UUID'
-          schema:
-            type: string
-        - name: shipping_method_id
-          in: query
-          description: 'Shipping Method UUID'
-          schema:
-            type: string
-        - name: paid
-          in: query
-          description: 'Is order paid'
-          schema:
-            type: boolean
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Order'
-                type: object
-      security:
-        - oauth: [ ]
-    post:
-      tags:
-        - Orders
-      summary: 'add new order'
-      operationId: 1ac8dd2092fc982c39aedc5d9a26e913
-      requestBody:
-        $ref: '#/components/requestBodies/OrderCreate'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Order'
-                type: object
+    $ref: './paths/Orders.yml#/Orders'
   '/orders/id:{id}':
-    get:
-      tags:
-        - Orders
-      summary: 'order view'
-      operationId: f3bcb423d9b3c6b686a18f4b4b9d3131
-      parameters:
-        - name: code
-          in: path
-          required: true
-          schema:
-            type: string
-            example: D3PT88
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/OrderView'
-                type: object
-      security:
-        - oauth: [ ]
-    patch:
-      tags:
-        - Orders
-      summary: 'update order'
-      operationId: ff53701d16615e693cfb247e129858b5
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
-      requestBody:
-        $ref: '#/components/requestBodies/OrderUpdate'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Order'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Orders.yml#/OrdersParams'
   '/orders/{code}':
-    get:
-      tags:
-        - Orders
-      summary: 'public order view'
-      operationId: 6625361c5cdd8384723a3b8521b0e96f
-      parameters:
-        - name: code
-          in: path
-          required: true
-          schema:
-            type: string
-            example: D3PT88
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/OrderSummary'
-                type: object
+    $ref: './paths/Orders.yml#/OrdersCode'
   /orders/verify:
-    post:
-      tags:
-        - Orders
-      summary: 'verify cart'
-      operationId: b9ce9843f58d7031838020052d4bb4d7
-      requestBody:
-        request: OrderCreate
-        content:
-          application/json:
-            schema:
-              properties:
-                items:
-                  type: array
-                  items:
-                    properties:
-                      product_id:
-                        type: string
-                        example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-                      quantity:
-                        type: number
-                      schemas:
-                        properties:
-                          119c0a63-1ea1-4769-8d5f-169f68de5598:
-                            type: string
-                            example: 123459fb-39a4-4dd0-8240-14793aa1f73b
-                          02b97693-857c-4fb9-9999-47400ac5fbef:
-                            type: string
-                            example: 'HE + YA'
-                        type: object
-                    type: object
-              type: object
-      responses:
-        204:
-          description: Success
+    $ref: './paths/Orders.yml#/OrdersVerify'
   '/orders/id:{id}/status':
-    post:
-      tags:
-        - Orders
-      summary: 'change order status'
-      operationId: 845b68fa22a7f832784446b0c89a40e4
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
-      requestBody:
-        request: OrderCreate
-        content:
-          application/json:
-            schema:
-              properties:
-                status_id:
-                  type: integer
-              type: object
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Order'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Orders.yml#/OrdersStatus'
   /orders/my:
-    get:
-      tags:
-        - Orders
-      summary: 'user orders list'
-      operationId: 1666cc5faba950ee39069c3a6690f65e
-      parameters:
-        - name: search
-          in: query
-          description: 'Full text search.'
-          schema:
-            type: string
-        - name: sort
-          in: query
-          description: 'Sorting string.'
-          schema:
-            type: string
-            example: 'code:asc,created_at:desc,id'
-        - name: status_id
-          in: query
-          description: 'Status UUID'
-          schema:
-            type: string
-        - name: shipping_method_id
-          in: query
-          description: 'Shipping Method UUID'
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Order'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Orders.yml#/OrdersMy'
   '/orders/my/id:{id}':
-    get:
-      tags:
-        - Orders
-      summary: 'user order view'
-      operationId: a24084e9a72ca4c8b2010b31195e97f6
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/OrderView'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Orders.yml#/OrdersMyId'
   /package-templates:
     get:
       tags:
@@ -816,42 +523,7 @@ paths:
       security:
         - oauth: [ ]
   '/orders/{code}/pay/{payment_method}':
-    post:
-      tags:
-        - Orders
-      summary: 'redirect to payment'
-      operationId: ce35e608cbca74b8595bda28675782f9
-      parameters:
-        - name: code
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: payment_method
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        request: OrderCreate
-        content:
-          application/json:
-            schema:
-              properties:
-                continue_url:
-                  description: 'URL that the buyer will be redirected to, after making payment'
-                  type: string
-              type: object
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Payment'
-                type: object
+    $ref: './paths/Orders.yml#/OrdersCodePay'
   '/payments/{payment_method}':
     post:
       tags:
@@ -868,27 +540,7 @@ paths:
         200:
           description: Success
   '/orders/{code}/pay/offline':
-    post:
-      tags:
-        - Orders
-      summary: 'manualy create fulfilled order payment'
-      operationId: 1972f4f3980985d1c0be469614a805bb
-      parameters:
-        - name: code
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Payment'
-                type: object
+    $ref: './paths/Orders.yml#/OrdersCodePayOffline'
   /payment-methods:
     $ref: './paths/PaymentMethods.yml#/PaymentMethods'
   '/payment-methods/id:{id}':
@@ -1197,12 +849,7 @@ components:
     Error:
       $ref: './schemas/Error.yml#/Error'
     OrderView:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/Order'
-        - properties:
-            user:
-              $ref: './schemas/Users.yml#/User'
+      $ref: './schemas/Orders.yml#/OrderView'
     App:
       $ref: './schemas/Apps.yml#/App'
     AppView:
@@ -1266,29 +913,7 @@ components:
             example: products.show_hidden
       type: object
     OrderSummary:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        code:
-          description: 'Product''s secondary identifier'
-          type: string
-          example: G3K4DH
-        status:
-          $ref: './schemas/Statuses.yml#/Status'
-        paid:
-          type: boolean
-        payable:
-          type: boolean
-        summary:
-          type: number
-        shipping_method_id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        created_at:
-          type: datetime
-          example: '2021-09-13T11:11'
-      type: object
+      $ref: './schemas/Orders.yml#/OrderSummary'
     Page:
       properties:
         id:
@@ -1414,32 +1039,7 @@ components:
             $ref: '#/components/schemas/WebHookEventLogEntry'
       type: object
     Address:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        name:
-          type: string
-          example: 'Johny Mielony'
-        address:
-          type: string
-          example: 'Gdańska 89/1'
-        vat:
-          type: string
-          example: '9571099580'
-        zip:
-          type: string
-          example: 80-200
-        city:
-          type: string
-          example: Bydgoszcz
-        country:
-          type: string
-          example: PL
-        phone:
-          type: string
-          example: '+48543234123'
-      type: object
+      $ref: './schemas/Addresses.yml#/Address'
     Country:
       $ref: './schemas/Countries.yml#/Country'
     Deposit:
@@ -1507,103 +1107,13 @@ components:
             $ref: '#/components/schemas/Item'
       type: object
     Order:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        email:
-          type: string
-          example: admin@example.com
-        comment:
-          type: string
-          example: 'asap plz'
-        shipping_number:
-          type: string
-          example: '630552359128340015809770'
-        shipping_price:
-          type: number
-          example: 18.7
-        summary:
-          type: number
-        summary_paid:
-          description: 'Summary amount of paid.'
-          type: number
-          example: 199.99
-        payments:
-          type: array
-          items:
-            $ref: '#/components/schemas/Payment'
-        payable:
-          type: boolean
-        paid:
-          type: boolean
-        status:
-          $ref: './schemas/Statuses.yml#/Status'
-        shipping_method:
-          $ref: './schemas/ShippingMethods.yml#/ShippingMethod'
-        delivery_address:
-          $ref: '#/components/schemas/Address'
-        invoice_address:
-          $ref: '#/components/schemas/Address'
-        products:
-          type: array
-          items:
-            $ref: '#/components/schemas/OrderProduct'
-      type: object
+      $ref: './schemas/Orders.yml#/Order'
     OrderProduct:
-      properties:
-        product_id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        quantity:
-          type: number
-          example: '12.4'
-        price:
-          type: number
-          example: '199.99'
-        schemas:
-          type: array
-          items:
-            $ref: '#/components/schemas/OrderSchema'
-      type: object
+      $ref: './schemas/Orders.yml#/OrderProduct'
     OrderSchema:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        name:
-          type: string
-          example: Size
-        value:
-          type: string
-          example: XL
-        price:
-          type: number
-          example: '49.99'
-      type: object
+      $ref: './schemas/Orders.yml#/OrderSchema'
     Payment:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        external_id:
-          type: string
-          example: D2spSDJ21LSA
-        method:
-          type: string
-          example: heseya
-        paid:
-          type: boolean
-        amount:
-          type: number
-          example: 80.92
-        redirect_url:
-          type: string
-          example: 'https://pay.heseya.com/DS62SA'
-        continue_url:
-          type: string
-          example: 'https://store.heseya.com/done/43SYK1'
-      type: object
+      $ref: './schemas/Payments.yml#/Payment'
     PaymentMethod:
       $ref: './schemas/PaymentMethods.yml#/PaymentMethod'
     Price:
@@ -1737,62 +1247,9 @@ components:
                 type: string
             type: object
     OrderCreate:
-      content:
-        application/json:
-          schema:
-            properties:
-              email:
-                type: string
-                example: admin@example.com
-              comment:
-                type: string
-                example: 'asap plz'
-              shipping_method_id:
-                type: string
-                example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-              items:
-                type: array
-                items:
-                  properties:
-                    product_id:
-                      type: string
-                      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-                    quantity:
-                      type: number
-                    schemas:
-                      properties:
-                        119c0a63-1ea1-4769-8d5f-169f68de5598:
-                          type: string
-                          example: 123459fb-39a4-4dd0-8240-14793aa1f73b
-                        02b97693-857c-4fb9-9999-47400ac5fbef:
-                          type: string
-                          example: 'HE + YA'
-                      type: object
-                  type: object
-              delivery_address:
-                $ref: '#/components/schemas/Address'
-              invoice_address:
-                $ref: '#/components/schemas/Address'
-              discounts:
-                type: array
-                items: [ ]
-            type: object
+      $ref: './requests/Orders.yml#/OrderCreate'
     OrderUpdate:
-      content:
-        application/json:
-          schema:
-            properties:
-              email:
-                type: string
-                example: admin@example.com
-              comment:
-                type: string
-                example: 'asap plz'
-              delivery_address:
-                $ref: '#/components/schemas/Address'
-              invoice_address:
-                $ref: '#/components/schemas/Address'
-            type: object
+      $ref: './requests/Orders.yml#/OrderUpdate'
     PageReorder:
       content:
         application/json:

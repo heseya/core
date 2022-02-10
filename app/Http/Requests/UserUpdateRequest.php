@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\RoleType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,7 +21,12 @@ class UserUpdateRequest extends FormRequest
                     ->whereNull('deleted_at'),
             ],
             'roles' => ['array'],
-            'roles.*' => ['uuid', 'exists:roles,id'],
+            'roles.*' => [
+                'uuid',
+                Rule::exists('roles', 'id')->where(function ($query) {
+                    return $query->whereNotIn('type', [RoleType::AUTHENTICATED, RoleType::UNAUTHENTICATED]);
+                }),
+            ],
         ];
     }
 }
