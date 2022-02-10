@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\TwitterCardType;
+use App\Models\Interfaces\Translatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -12,7 +13,7 @@ use Spatie\Translatable\HasTranslations;
 /**
  * @mixin IdeHelperSeoMetadata
  */
-class SeoMetadata extends Model
+class SeoMetadata extends Model implements Translatable
 {
     use HasFactory, SoftDeletes, HasTranslations;
 

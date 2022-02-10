@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\SeoMetadata;
 use App\Services\Contracts\SeoMetadataServiceContract;
+use App\Services\Contracts\TranslationServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -19,6 +20,11 @@ use Illuminate\Support\Str;
 
 class SeoMetadataService implements SeoMetadataServiceContract
 {
+    public function __construct(
+        protected TranslationServiceContract $translationService,
+    ) {
+    }
+
     public function show(): SeoMetadata
     {
         return SeoMetadata::where('global', true)->firstOrFail();
@@ -26,22 +32,38 @@ class SeoMetadataService implements SeoMetadataServiceContract
 
     public function createOrUpdate(SeoMetadataDto $dto): SeoMetadata
     {
-        $seo = SeoMetadata::where('global', '=', true)->first();
+        $seo = SeoMetadata::where('global', true)->first();
 
         if (!$seo) {
             $seo = SeoMetadata::make($dto->toArray() + [
                 'global' => true,
-                'no_index' => $dto->getNoIndex() instanceof Missing ? true : $dto->getNoIndex(),
+//                'no_index' => $dto->getNoIndex() instanceof Missing ? true : $dto->getNoIndex(),
             ]);
 
-            $seo->setTranslation('keywords', App::getLocale(), $dto->getKeywords())
-                ->save();
+            foreach($dto->getTranslations() as $lang => $translations) {
+                dd($translations->toArray());
+                $seo->setLocale($lang)->fill($translations->toArray() + [
+                    'no_index' => $translations->getNoIndex() instanceof Missing
+                        ? true
+                        : $dto->getNoIndex(),
+                ]);
+            }
+
+            $this->translationService->checkPublished($seo, []);
+
+            $seo->save();
         }
 
         if (!$seo->wasRecentlyCreated) {
-            $seo->fill($dto->toArray())
-                ->setTranslation('keywords', App::getLocale(), $dto->getKeywords())
-                ->save();
+            $seo->fill($dto->toArray());
+
+            foreach($dto->getTranslations() as $lang => $translations) {
+                $seo->setLocale($lang)->fill($translations->toArray());
+            }
+
+            $this->translationService->checkPublished($seo, []);
+
+            $seo->save();
         }
 
         Cache::put('seo.global', $seo);
@@ -53,21 +75,35 @@ class SeoMetadataService implements SeoMetadataServiceContract
     {
         /** @var SeoMetadata $seo */
         $seo = SeoMetadata::make($dto->toArray() + [
-            'no_index' => $dto->getNoIndex() instanceof Missing ? false : $dto->getNoIndex(),
+//            'no_index' => $dto->getNoIndex() instanceof Missing ? false : $dto->getNoIndex(),
         ]);
 
-        $seo->setTranslation('keywords', App::getLocale(), $dto->getKeywords())
-            ->save();
+        foreach($dto->getTranslations() as $lang => $translations) {
+            $seo->setLocale($lang)->fill($translations->toArray() + [
+                'no_index' => $translations->getNoIndex() instanceof Missing
+                    ? true
+                    : $dto->getNoIndex(),
+            ]);
+        }
+
+        $this->translationService->checkPublished($seo, []);
+
+        $seo->save();
 
         return $seo;
     }
 
     public function update(SeoMetadataDto $dto, SeoMetadata $seoMetadata): SeoMetadata
     {
-        $seoMetadata
-            ->fill($dto->toArray())
-            ->setTranslation('keywords', App::getLocale(), $dto->getKeywords())
-            ->save();
+        $seoMetadata->fill($dto->toArray());
+
+        foreach($dto->getTranslations() as $lang => $translations) {
+            $seoMetadata->setLocale($lang)->fill($translations->toArray());
+        }
+
+        $this->translationService->checkPublished($seoMetadata, []);
+
+        $seoMetadata->save();
 
         return $seoMetadata;
     }

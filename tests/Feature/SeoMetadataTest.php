@@ -92,20 +92,29 @@ class SeoMetadataTest extends TestCase
             'description' => 'description',
             'keywords' => ['key', 'words'],
         ];
-        $response = $this->actingAs($this->$user)->json('PATCH', '/seo', $seo);
-
-        $response->assertCreated()->assertJson(fn (AssertableJson $json) =>
-            $json->has('meta', fn ($json) =>
-                    $json->has('seo')
-                        ->etc())
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', '/seo', [
+                'translations' => [
+                    $this->lang => $seo,
+                ],
+                'published' => [$this->lang],
+            ])
+            ->assertCreated()
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->has('meta', fn ($json) =>
+                    $json->has('seo')->etc()
+                )
                 ->has('data', fn ($json) =>
                     $json->where('title', $seo['title'])
                         ->where('description', $seo['description'])
-                        ->etc())
+                        ->etc()
+                )
                 ->etc()
-        )->assertJsonStructure([
-            'data' => $this->expected_structure,
-        ]);
+            )
+            ->assertJsonStructure([
+                'data' => $this->expected_structure,
+            ]);
 
         $seo = SeoMetadata::where('global', true)->first();
 
@@ -130,9 +139,15 @@ class SeoMetadataTest extends TestCase
             'description' => 'description',
             'keywords' => ['key', 'words'],
         ];
-        $response = $this->actingAs($this->$user)->json('PATCH', '/seo', $seo2);
-
-        $response->assertOk()
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', '/seo', [
+                'translations' => [
+                    $this->lang => $seo2,
+                ],
+                'published' => [$this->lang],
+            ])
+            ->assertOk()
             ->assertJsonFragment([
                 'title' => $seo2['title'],
                 'description' => $seo2['description'],

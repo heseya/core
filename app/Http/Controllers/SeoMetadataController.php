@@ -22,7 +22,7 @@ class SeoMetadataController extends Controller
         $this->seoMetadataService = $seoMetadataService;
     }
 
-    public function show(SeoMetadata $seoMetadata): JsonResource
+    public function show(): JsonResource
     {
         return SeoMetadataResource::make($this->seoMetadataService->show());
     }

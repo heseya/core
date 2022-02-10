@@ -10,43 +10,50 @@ use Heseya\Dto\Missing;
 
 class SeoMetadataDto extends Dto
 {
-    private string|null|Missing $title;
-    private string|null|Missing $description;
-    private array|null|Missing $keywords;
+    /** @var array<string, SeoMetadataTranslationDto> */
+    private array $translations;
+    /** @var string[] */
+    private array $published;
     private string|null|Missing $twitter_card;
     private string|null|Missing $og_image;
     private string|null|Missing $model_id;
     private string|null|Missing $model_type;
-    private bool|Missing $no_index;
 
     public static function fromFormRequest(SeoMetadataRulesRequest|SeoMetadataRequest $request): self
     {
         $seo = $request->has('seo') ? 'seo.' : '';
+
+        $translations = array_map(
+            fn ($data) => new SeoMetadataTranslationDto($data),
+            $request->input($seo . 'translations', []),
+        );
+
+//        dd($translations);
+
         return new self(
-            title: $request->input($seo . 'title', new Missing()),
-            description: $request->input($seo . 'description', new Missing()),
-            keywords: $request->input($seo . 'keywords', new Missing()),
+            translations: $translations,
+            published: $request->input('published', []),
             twitter_card: $request->input($seo . 'twitter_card', new Missing()),
             og_image: $request->input($seo . 'og_image_id', new Missing()),
             model_id: $request->input($seo . 'model_id', new Missing()),
             model_type: $request->input($seo . 'model_type', new Missing()),
-            no_index: $request->input($seo . 'no_index', new Missing()),
         );
     }
 
-    public function getTitle(): Missing|string|null
+    /**
+     * @return SeoMetadataTranslationDto[]
+     */
+    public function getTranslations(): array
     {
-        return $this->title;
+        return $this->translations;
     }
 
-    public function getDescription(): Missing|string|null
+    /**
+     * @return string[]
+     */
+    public function getPublished(): array
     {
-        return $this->description;
-    }
-
-    public function getKeywords(): Missing|array|null
-    {
-        return $this->keywords;
+        return $this->published;
     }
 
     public function getTwitterCard(): Missing|TwitterCardType|null
@@ -67,10 +74,5 @@ class SeoMetadataDto extends Dto
     public function getModelType(): Missing|string|null
     {
         return $this->model_type;
-    }
-
-    public function getNoIndex(): Missing|bool
-    {
-        return $this->no_index;
     }
 }
