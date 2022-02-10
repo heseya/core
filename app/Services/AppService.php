@@ -190,7 +190,7 @@ class AppService implements AppServiceContract
         $owner->givePermissionTo($internalPermissions);
 
         if ($internalPermissions->isNotEmpty()) {
-            if(Auth::user() instanceof User) {
+            if (Auth::user() instanceof User) {
                 $this->createAppOwnerRole($app, $internalPermissions);
             }
 
