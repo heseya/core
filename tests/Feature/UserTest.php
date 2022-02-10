@@ -448,9 +448,12 @@ class UserTest extends TestCase
         Event::assertNotDispatched(UserUpdated::class);
     }
 
-    public function testCreateRoles(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateRoles($user): void
     {
-        $this->user->givePermissionTo('users.add');
+        $this->$user->givePermissionTo('users.add');
 
         Event::fake([UserCreated::class]);
 
@@ -463,7 +466,7 @@ class UserTest extends TestCase
 
         $role1->syncPermissions([$permission1, $permission2]);
         $role2->syncPermissions([$permission1]);
-        $this->user->givePermissionTo([$permission1, $permission2]);
+        $this->$user->givePermissionTo([$permission1, $permission2]);
 
         $data = User::factory()->raw() + [
                 'password' => $this->validPassword,
@@ -480,7 +483,7 @@ class UserTest extends TestCase
             ->values()
             ->toArray();
 
-        $response = $this->actingAs($this->user)->postJson('/users', $data);
+        $response = $this->actingAs($this->$user)->postJson('/users', $data);
         $response
             ->assertCreated()
             ->assertJsonPath('data.email', $data['email'])
@@ -707,9 +710,12 @@ class UserTest extends TestCase
         Event::assertNotDispatched(UserUpdated::class);
     }
 
-    public function testUpdateAddRoles(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateAddRoles($user): void
     {
-        $this->user->givePermissionTo('users.edit');
+        $this->$user->givePermissionTo('users.edit');
 
         Event::fake([UserUpdated::class]);
 
@@ -723,7 +729,7 @@ class UserTest extends TestCase
 
         $role1->syncPermissions([$permission1, $permission2]);
         $role2->syncPermissions([$permission1]);
-        $this->user->givePermissionTo([$permission1, $permission2]);
+        $this->$user->givePermissionTo([$permission1, $permission2]);
 
         $data = [
             'roles' => [
@@ -739,7 +745,7 @@ class UserTest extends TestCase
             ->values()
             ->toArray();
 
-        $response = $this->actingAs($this->user)->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             '/users/id:' . $otherUser->getKey(),
             $data,
         );
