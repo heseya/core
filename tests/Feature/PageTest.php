@@ -78,7 +78,7 @@ class PageTest extends TestCase
                 0 => $this->expected,
             ]]);
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     /**
@@ -96,7 +96,7 @@ class PageTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     /**

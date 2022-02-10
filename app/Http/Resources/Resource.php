@@ -2,9 +2,10 @@
 
 namespace App\Http\Resources;
 
+use App\Services\Contracts\SeoMetadataServiceContract;
 use Heseya\Resource\JsonResource;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 
 class Resource extends JsonResource
@@ -25,21 +26,21 @@ class Resource extends JsonResource
      */
     public function with($request): array
     {
-        $meta = [
-            'currency' => [
-                'name' => 'Polski Złoty',
-                'symbol' => 'PLN',
-                'decimals' => 2,
-            ],
-            'language' => LanguageResource::make(
-                Config::get('language.model'),
-            ),
-        ];
-        if ($request->user() !== null && $request->user()->hasPermissionTo('seo.show')) {
-            $meta['seo'] = SeoMetadataResource::make(Cache::get('seo.global'));
-        }
+        /** @var SeoMetadataServiceContract $seoMetadataService */
+        $seoMetadataService = App::make(SeoMetadataServiceContract::class);
+
         return [
-            'meta' => $meta,
+            'meta' => [
+                'currency' => [
+                    'name' => 'Polski Złoty',
+                    'symbol' => 'PLN',
+                    'decimals' => 2,
+                ],
+                'language' => LanguageResource::make(
+                    Config::get('language.model'),
+                ),
+                'seo' => SeoMetadataResource::make($seoMetadataService->getGlobalSeo()),
+            ],
         ];
     }
 }

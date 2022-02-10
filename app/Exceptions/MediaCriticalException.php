@@ -4,7 +4,7 @@ namespace App\Exceptions;
 
 use Throwable;
 
-class PackageAuthException extends StoreException
+class MediaCriticalException extends StoreException
 {
     public function __construct(
         string $message = '',

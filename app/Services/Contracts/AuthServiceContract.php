@@ -14,7 +14,7 @@ interface AuthServiceContract
 
     public function refresh(string $refreshToken, ?string $ip, ?string $userAgent): array;
 
-//    public function logout(User $user): void;
+    public function logout(): void;
 
     public function resetPassword(string $email): void;
 
@@ -43,10 +43,4 @@ interface AuthServiceContract
     public function removeUsersTFA(User $user): void;
 
     public function register(RegisterDto $dto): User;
-
-//    public function loginHistory(User $user): Builder;
-//
-//    public function killActiveSession(User $user, string $oauthAccessTokensId);
-//
-//    public function killAllSessions(User $user);
 }

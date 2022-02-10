@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class OrderResource extends Resource
@@ -35,7 +36,8 @@ class OrderResource extends Resource
             'shipping_number' => $this->shipping_number,
             'payable' => $this->payable,
             'discounts' => DiscountResource::collection($this->discounts),
-            'user' => UserResource::make($this->user)->baseOnly(),
+            'user' => $this->user instanceof User
+                ? UserResource::make($this->user)->baseOnly() : AppResource::make($this->user),
         ];
     }
 }
