@@ -13,7 +13,8 @@ class LanguageUpdateRequest extends FormRequest
             'iso' => [
                 'string',
                 'max:16',
-                Rule::unique('languages', 'iso')->ignore($this->input('iso')),
+                Rule::unique('languages', 'iso')
+                    ->ignore($this->route()->parameters()['language']->getKey()),
             ],
             'name' => ['string', 'max:80'],
             'default' => ['boolean'],

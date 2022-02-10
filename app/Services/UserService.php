@@ -29,7 +29,7 @@ class UserService implements UserServiceContract
         $roleModels = Role::whereIn('id', $roles)->orWhere('type', RoleType::AUTHENTICATED)->get();
 
         $permissions = $roleModels->flatMap(
-            fn ($role) => $role->getPermissionNames(),
+            fn ($role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
         )->unique();
 
         if (!Auth::user()->hasAllPermissions($permissions)) {
@@ -63,7 +63,7 @@ class UserService implements UserServiceContract
             $removedRoles = $user->roles->diff($roleModels);
 
             $permissions = $newRoles->flatMap(
-                fn ($role) => $role->getPermissionNames(),
+                fn ($role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
             )->unique();
 
             if (!$authenticable->hasAllPermissions($permissions)) {
@@ -73,7 +73,7 @@ class UserService implements UserServiceContract
             }
 
             $permissions = $removedRoles->flatMap(
-                fn ($role) => $role->getPermissionNames(),
+                fn ($role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
             )->unique();
 
             if (!$authenticable->hasAllPermissions($permissions)) {

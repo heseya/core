@@ -2,6 +2,7 @@
 
 namespace App\Dtos;
 
+use App\Http\Requests\LanguageCreateRequest;
 use App\Http\Requests\LanguageUpdateRequest;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
@@ -13,7 +14,7 @@ class LanguageDto extends Dto
     private bool|Missing $default;
     private bool|Missing $hidden;
 
-    public static function instantiateFromRequest(LanguageUpdateRequest $request): self
+    public static function instantiateFromRequest(LanguageCreateRequest|LanguageUpdateRequest $request): self
     {
         return new self(
             iso: $request->input('iso', new Missing()),

@@ -6,6 +6,8 @@ use App\Audits\Redactors\AddressRedactor;
 use App\Audits\Redactors\ShippingMethodRedactor;
 use App\Audits\Redactors\StatusRedactor;
 use App\SearchTypes\OrderSearch;
+use App\SearchTypes\WhereCreatedAfter;
+use App\SearchTypes\WhereCreatedBefore;
 use App\SearchTypes\WhereHasStatusHidden;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
@@ -16,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use OwenIt\Auditing\Auditable;
@@ -41,6 +44,7 @@ class Order extends Model implements AuditableContract
         'invoice_address_id',
         'created_at',
         'user_id',
+        'user_type',
         'summary',
         'paid',
     ];
@@ -74,6 +78,8 @@ class Order extends Model implements AuditableContract
         'user_id',
         'status.hidden' => WhereHasStatusHidden::class,
         'paid',
+        'from' => WhereCreatedAfter::class,
+        'to' => WhereCreatedBefore::class,
     ];
 
     protected array $sortable = [
@@ -229,8 +235,8 @@ class Order extends Model implements AuditableContract
         return $code;
     }
 
-    public function user(): BelongsTo
+    public function user(): MorphTo
     {
-        return $this->belongsTo(User::class);
+        return $this->morphTo('order', 'user_type', 'user_id', 'id');
     }
 }

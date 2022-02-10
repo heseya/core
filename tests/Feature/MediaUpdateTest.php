@@ -94,4 +94,48 @@ class MediaUpdateTest extends TestCase
                 $request['slug'] === 'test-slug';
         });
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCantUpdateSlugNotUnique($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        Media::create([
+            'type' => MediaType::PHOTO,
+            'url' => 'http://cdn.example.com/dev/photo.jpg',
+            'slug' => 'test-slug',
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/media/id:{$this->media->getKey()}", [
+                'slug' => 'test-slug',
+            ])
+            ->assertUnprocessable();
+
+        Http::assertNothingSent();
+    }
+
+    /**
+     * @dataProvider authProvider
+     *
+     * When user send same slug response should be ok, but request to CDN shouldn't be sent.
+     */
+    public function testUpdateSameSlug($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        $this->media->update(['slug' => 'test-slug']);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/media/id:{$this->media->getKey()}", [
+                'slug' => 'test-slug',
+            ])
+            ->assertOk();
+
+        Http::assertNothingSent();
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Dtos\MediaUpdateDto;
 use App\Enums\MediaType;
 use App\Exceptions\AppAccessException;
+use App\Exceptions\MediaCriticalException;
 use App\Models\Media;
 use App\Models\Product;
 use App\Services\Contracts\MediaServiceContract;
@@ -36,7 +37,7 @@ class MediaService implements MediaServiceContract
             ->post(Config::get('silverbox.host') . '/' . Config::get('silverbox.client'));
 
         if ($response->failed()) {
-            throw new AppAccessException('CDN responded with an error');
+            throw new MediaCriticalException('CDN responded with an error');
         }
 
         return Media::create([
@@ -47,7 +48,7 @@ class MediaService implements MediaServiceContract
 
     public function update(Media $media, MediaUpdateDto $dto): Media
     {
-        if (!($dto->getSlug() instanceof Missing)) {
+        if (!($dto->getSlug() instanceof Missing) && $media->slug !== $dto->getSlug()) {
             $media->url = $this->updateSlug($media, $dto->getSlug());
             $media->slug = $dto->getSlug();
         }
@@ -74,7 +75,7 @@ class MediaService implements MediaServiceContract
     {
         return match ($extension) {
             'jpeg', 'jpg', 'png', 'gif', 'bmp', 'svg', 'webp' => MediaType::PHOTO,
-            'mp4', 'webm', 'ogg', 'avi', 'mov', 'wmv' => MediaType::VIDEO,
+            'mp4', 'webm', 'ogg', 'ogv', 'mov', 'wmv' => MediaType::VIDEO,
             default => MediaType::OTHER,
         };
     }
@@ -89,7 +90,7 @@ class MediaService implements MediaServiceContract
             ]);
 
         if ($response->failed() || !isset($response['path'])) {
-            throw new AppAccessException('CDN responded with an error');
+            throw new AppAccessException('CDN responded with an error', 500);
         }
 
         return Config::get('silverbox.host') . '/' . $response['path'];
