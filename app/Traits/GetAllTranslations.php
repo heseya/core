@@ -2,6 +2,8 @@
 
 namespace App\Traits;
 
+use Illuminate\Support\Facades\Gate;
+
 trait GetAllTranslations
 {
     /**
@@ -9,12 +11,15 @@ trait GetAllTranslations
      *
      * @return array
      * */
-    protected function getAllTranslations(): array
+    protected function getAllTranslations(?string $permissions = null): array
     {
         $allTranslations = [];
         $languages = $this->published;
+        $dataTranslations = $this->getTranslations(
+            allowedLocales: $permissions !== null && Gate::allows($permissions) ? $languages : null
+        );
 
-        foreach ($this->getTranslations(allowedLocales: $languages) as $field => $translations) {
+        foreach ($dataTranslations as $field => $translations) {
             foreach ($translations as $locale => $translation) {
                 if (!array_key_exists($locale, $allTranslations)) {
                     $allTranslations[$locale] = [];
