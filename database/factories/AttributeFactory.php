@@ -24,8 +24,9 @@ class AttributeFactory extends Factory
         return [
             'name' => $this->faker->word,
             'description' => $this->faker->sentence,
-            'type' => $this->faker->sentence,
+            'type' => rand(0, 1),
             'searchable' => $this->faker->boolean,
+            'options' => []
         ];
     }
 }

@@ -4,10 +4,12 @@ namespace App\Providers;
 
 use App\Services\AnalyticsService;
 use App\Services\AppService;
+use App\Services\AttributeService;
 use App\Services\AuditService;
 use App\Services\AuthService;
 use App\Services\Contracts\AnalyticsServiceContract;
 use App\Services\Contracts\AppServiceContract;
+use App\Services\Contracts\AttributeServiceContract;
 use App\Services\Contracts\AuditServiceContract;
 use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
@@ -86,6 +88,7 @@ class AppServiceProvider extends ServiceProvider
         UrlServiceContract::class => UrlService::class,
         ItemServiceContract::class => ItemService::class,
         OneTimeSecurityCodeContract::class => OneTimeSecurityCodeService::class,
+        AttributeServiceContract::class => AttributeService::class,
     ];
 
     /**
