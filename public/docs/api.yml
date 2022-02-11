@@ -844,6 +844,8 @@ paths:
                 type: object
       security:
         - oauth: [ ]
+  '/attributes':
+    $ref: './paths/Attributes.yml#Attributes'
 components:
   schemas:
     Error:
@@ -1225,6 +1227,8 @@ components:
       $ref: './schemas/Seo.yml#SeoView'
     SeoKeywordsResponse:
       $ref: './schemas/Seo.yml#SeoKeywordsResponse'
+    Attribute:
+      $ref: './schemas/Attributes.yml#Attribute'
   requestBodies:
     AppStore:
       $ref: './requests/Apps.yml#/AppStore'
