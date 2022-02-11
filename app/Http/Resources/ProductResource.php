@@ -29,7 +29,7 @@ class ProductResource extends Resource
 
         return array_merge(
             $data,
-            array_key_exists('translations', $request->toArray()) ? $this->getAllTranslations() : []
+            $request->has('translations') ? $this->getAllTranslations('products.show_hidden') : []
         );
     }
 
