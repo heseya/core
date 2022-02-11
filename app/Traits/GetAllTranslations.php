@@ -16,7 +16,7 @@ trait GetAllTranslations
         $allTranslations = [];
         $languages = $this->published;
         $dataTranslations = $this->getTranslations(
-            allowedLocales: $permissions !== null && Gate::allows($permissions) ? $languages : null
+            allowedLocales: $permissions !== null && Gate::allows($permissions) ? null : $languages
         );
 
         foreach ($dataTranslations as $field => $translations) {
