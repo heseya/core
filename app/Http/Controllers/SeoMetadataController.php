@@ -8,7 +8,6 @@ use App\Http\Requests\SeoKeywordsRequest;
 use App\Http\Requests\SeoMetadataRequest;
 use App\Http\Resources\SeoKeywordsResource;
 use App\Http\Resources\SeoMetadataResource;
-use App\Models\SeoMetadata;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\SeoMetadataService;
 use Illuminate\Http\Resources\Json\JsonResource;

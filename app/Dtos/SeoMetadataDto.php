@@ -12,7 +12,7 @@ class SeoMetadataDto extends Dto
 {
     /** @var array<string, SeoMetadataTranslationDto> */
     private array $translations;
-    /** @var string[] */
+    /** @var array<string> */
     private array $published;
     private string|null|Missing $twitter_card;
     private string|null|Missing $og_image;
@@ -24,11 +24,9 @@ class SeoMetadataDto extends Dto
         $seo = $request->has('seo') ? 'seo.' : '';
 
         $translations = array_map(
-            fn ($data) => new SeoMetadataTranslationDto($data),
+            fn ($data) => SeoMetadataTranslationDto::fromDataArray($data),
             $request->input($seo . 'translations', []),
         );
-
-//        dd($translations);
 
         return new self(
             translations: $translations,
@@ -41,7 +39,7 @@ class SeoMetadataDto extends Dto
     }
 
     /**
-     * @return SeoMetadataTranslationDto[]
+     * @return array<SeoMetadataTranslationDto>
      */
     public function getTranslations(): array
     {
@@ -49,7 +47,7 @@ class SeoMetadataDto extends Dto
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      */
     public function getPublished(): array
     {

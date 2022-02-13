@@ -40,7 +40,7 @@ class SchemaController extends Controller
     {
         $schema = Schema::make($request->validated());
 
-        foreach($request->input('translations') as $lang => $translations) {
+        foreach ($request->input('translations') as $lang => $translations) {
             $schema->setLocale($lang)->fill($translations);
         }
 
@@ -80,7 +80,7 @@ class SchemaController extends Controller
     {
         $schema->fill($request->validated());
 
-        foreach($request->input('translations', []) as $lang => $translations) {
+        foreach ($request->input('translations', []) as $lang => $translations) {
             $schema->setLocale($lang)->fill($translations);
         }
 

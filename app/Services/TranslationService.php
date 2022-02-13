@@ -34,11 +34,13 @@ class TranslationService implements TranslationServiceContract
                 $model->loadMissing($relation);
                 foreach ($model->getRelation($relation) as $relatedModel) {
                     foreach ($keys as $key) {
-                        if (!$relatedModel->hasTranslation($key, $lang)) {
-                            throw new PublishingException(
-                                "Model's relation {$relation} doesn't have all required translations to be published in {$lang}",
-                            );
+                        if ($relatedModel->hasTranslation($key, $lang)) {
+                            continue;
                         }
+
+                        throw new PublishingException(
+                            "Relation {$relation} doesn't have all required translations to be published in {$lang}",
+                        );
                     }
                 }
             }

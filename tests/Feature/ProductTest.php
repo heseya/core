@@ -1010,10 +1010,15 @@ class ProductTest extends TestCase
             'price' => 100.00,
             'public' => true,
             'seo' => [
-                'title' => 'seo title',
-                'description' => 'seo description',
                 'og_image_id' => $media->getKey(),
-                'no_index' => true,
+                'translations' => [
+                    $this->lang => [
+                        'title' => 'seo title',
+                        'description' => 'seo description',
+                        'no_index' => true,
+                    ],
+                ],
+                'published' => [$this->lang],
             ],
             'translations' => [
                 $this->lang => [
@@ -1073,8 +1078,13 @@ class ProductTest extends TestCase
             'price' => 100.00,
             'public' => true,
             'seo' => [
-                'title' => 'seo title',
-                'description' => 'seo description',
+                'translations' => [
+                    $this->lang => [
+                        'title' => 'seo title',
+                        'description' => 'seo description',
+                    ],
+                ],
+                'published' => [$this->lang],
             ],
             'translations' => [
                 $this->lang => [
@@ -1467,8 +1477,12 @@ class ProductTest extends TestCase
                 'price' => 150,
                 'public' => false,
                 'seo' => [
-                    'title' => 'seo title',
-                    'description' => 'seo description',
+                    'translations' => [
+                        $this->lang => [
+                            'title' => 'seo title',
+                            'description' => 'seo description',
+                        ],
+                    ],
                 ],
                 'translations' => [
                     $this->lang => [

@@ -33,7 +33,7 @@ class OptionService implements OptionServiceContract
                 $option = $schema->options()->make($input);
             }
 
-            foreach($input['translations'] ?? [] as $lang => $translations) {
+            foreach ($input['translations'] ?? [] as $lang => $translations) {
                 $option->setLocale($lang)->fill($translations);
             }
 

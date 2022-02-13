@@ -10,6 +10,7 @@ class PageStoreRequest extends SeoMetadataRulesRequest
     {
         return $this->rulesWithSeo([
             'translations' => [
+                'required',
                 new Translations(['name', 'content_html']),
             ],
 //            'name' => ['required', 'string', 'max:255'],

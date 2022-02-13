@@ -2,9 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\TwitterCardType;
 use App\Rules\Translations;
-use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SeoMetadataRequest extends FormRequest

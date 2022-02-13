@@ -10,7 +10,7 @@ class PageDto extends Dto
 {
     /** @var array<string, PageTranslationDto> */
     private array $translations;
-    /** @var string[] */
+    /** @var array<string> */
     private array $published;
     private string $slug;
     private bool $public;
@@ -33,7 +33,7 @@ class PageDto extends Dto
     }
 
     /**
-     * @return PageTranslationDto[]
+     * @return array<PageTranslationDto>
      */
     public function getTranslations(): array
     {
@@ -41,7 +41,7 @@ class PageDto extends Dto
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      */
     public function getPublished(): array
     {

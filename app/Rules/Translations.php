@@ -2,11 +2,8 @@
 
 namespace App\Rules;
 
-use App\Models\App;
 use App\Models\Language;
-use App\Services\Contracts\UrlServiceContract;
 use Illuminate\Contracts\Validation\Rule;
-use Illuminate\Support\Facades\App as AppFacade;
 
 class Translations implements Rule
 {
@@ -46,15 +43,15 @@ class Translations implements Rule
         return true;
     }
 
+    public function message(): string
+    {
+        return $this->error;
+    }
+
     private function failWithError(string $error): bool
     {
         $this->error = $error;
 
         return false;
-    }
-
-    public function message(): string
-    {
-        return $this->error;
     }
 }

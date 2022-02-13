@@ -604,9 +604,14 @@ class ProductSetCreateTest extends TestCase
                 'slug_suffix' => 'test',
                 'slug_override' => false,
                 'seo' => [
-                    'title' => 'seo title',
-                    'description' => 'seo description',
                     'og_image_id' => $media->getKey(),
+                    'translations' => [
+                        $this->lang => [
+                            'title' => 'seo title',
+                            'description' => 'seo description',
+                        ],
+                    ],
+                    'published' => [$this->lang],
                 ]
             ]);
         $response

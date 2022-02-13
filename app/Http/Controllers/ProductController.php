@@ -12,8 +12,6 @@ use App\Http\Requests\ProductIndexRequest;
 use App\Http\Requests\ProductShowRequest;
 use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Resources\ProductResource;
-use App\Models\Interfaces\Translatable;
-use App\Models\Model;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Services\Contracts\MediaServiceContract;
@@ -110,7 +108,7 @@ class ProductController extends Controller
         /** @var Product $product */
         $product = Product::make($request->validated());
 
-        foreach($request->input('translations') as $lang => $translations) {
+        foreach ($request->input('translations') as $lang => $translations) {
             $product->setLocale($lang)->fill($translations);
         }
 
@@ -157,7 +155,7 @@ class ProductController extends Controller
     {
         $product->fill($request->validated());
 
-        foreach($request->input('translations', []) as $lang => $translations) {
+        foreach ($request->input('translations', []) as $lang => $translations) {
             $product->setLocale($lang)->fill($translations);
         }
 

@@ -35,18 +35,21 @@ class SeoMetadataService implements SeoMetadataServiceContract
         $seo = SeoMetadata::where('global', true)->first();
 
         if (!$seo) {
+            /** @var SeoMetadata $seo */
             $seo = SeoMetadata::make($dto->toArray() + [
                 'global' => true,
-//                'no_index' => $dto->getNoIndex() instanceof Missing ? true : $dto->getNoIndex(),
             ]);
 
-            foreach($dto->getTranslations() as $lang => $translations) {
-                dd($translations->toArray());
-                $seo->setLocale($lang)->fill($translations->toArray() + [
+            foreach ($dto->getTranslations() as $lang => $translations) {
+                $translationArray = $translations->toArray() + [
                     'no_index' => $translations->getNoIndex() instanceof Missing
-                        ? true
-                        : $dto->getNoIndex(),
-                ]);
+                        ? false
+                        : $translations->getNoIndex(),
+                ];
+
+                foreach ($translationArray as $key => $translation) {
+                    $seo->setTranslation($key, $lang, $translation);
+                }
             }
 
             $this->translationService->checkPublished($seo, []);
@@ -57,8 +60,10 @@ class SeoMetadataService implements SeoMetadataServiceContract
         if (!$seo->wasRecentlyCreated) {
             $seo->fill($dto->toArray());
 
-            foreach($dto->getTranslations() as $lang => $translations) {
-                $seo->setLocale($lang)->fill($translations->toArray());
+            foreach ($dto->getTranslations() as $lang => $translations) {
+                foreach ($translations->toArray() as $key => $translation) {
+                    $seo->setTranslation($key, $lang, $translation);
+                }
             }
 
             $this->translationService->checkPublished($seo, []);
@@ -74,16 +79,20 @@ class SeoMetadataService implements SeoMetadataServiceContract
     public function create(SeoMetadataDto $dto): SeoMetadata
     {
         /** @var SeoMetadata $seo */
-        $seo = SeoMetadata::make($dto->toArray() + [
-//            'no_index' => $dto->getNoIndex() instanceof Missing ? false : $dto->getNoIndex(),
-        ]);
+        $seo = SeoMetadata::make($dto->toArray());
 
-        foreach($dto->getTranslations() as $lang => $translations) {
-            $seo->setLocale($lang)->fill($translations->toArray() + [
+        $seo->setAttribute('no_index', '{}');
+
+        foreach ($dto->getTranslations() as $lang => $translations) {
+            $translationArray = $translations->toArray() + [
                 'no_index' => $translations->getNoIndex() instanceof Missing
-                    ? true
-                    : $dto->getNoIndex(),
-            ]);
+                        ? false
+                        : $translations->getNoIndex(),
+            ];
+
+            foreach ($translationArray as $key => $translation) {
+                $seo->setTranslation($key, $lang, $translation);
+            }
         }
 
         $this->translationService->checkPublished($seo, []);
@@ -97,8 +106,10 @@ class SeoMetadataService implements SeoMetadataServiceContract
     {
         $seoMetadata->fill($dto->toArray());
 
-        foreach($dto->getTranslations() as $lang => $translations) {
-            $seoMetadata->setLocale($lang)->fill($translations->toArray());
+        foreach ($dto->getTranslations() as $lang => $translations) {
+            foreach ($translations->toArray() as $key => $translation) {
+                $seoMetadata->setTranslation($key, $lang, $translation);
+            }
         }
 
         $this->translationService->checkPublished($seoMetadata, []);

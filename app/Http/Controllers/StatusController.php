@@ -28,7 +28,7 @@ class StatusController extends Controller
     {
         $status = Status::make($request->validated());
 
-        foreach($request->input('translations') as $lang => $translations) {
+        foreach ($request->input('translations') as $lang => $translations) {
             $status->setLocale($lang)->fill($translations);
         }
 
@@ -43,7 +43,7 @@ class StatusController extends Controller
     {
         $status->fill($request->validated());
 
-        foreach($request->input('translations', []) as $lang => $translations) {
+        foreach ($request->input('translations', []) as $lang => $translations) {
             $status->setLocale($lang)->fill($translations);
         }
 

@@ -310,8 +310,13 @@ class PageTest extends TestCase
             'slug' => 'test-test',
             'public' => true,
             'seo' => [
-                'title' => 'seo title',
-                'description' => 'seo description',
+                'translations' => [
+                    $this->lang => [
+                        'title' => 'seo title',
+                        'description' => 'seo description',
+                    ],
+                ],
+                'published' => [$this->lang],
             ],
             'translations' => [
                 $this->lang => [
@@ -542,8 +547,13 @@ class PageTest extends TestCase
                 'slug' => 'test-2',
                 'public' => false,
                 'seo' => [
-                    'title' => 'seo title',
-                    'description' => 'seo description',
+                    'translations' => [
+                        $this->lang => [
+                            'title' => 'seo title',
+                            'description' => 'seo description',
+                        ],
+                    ],
+                    'published' => [$this->lang],
                 ],
                 'translations' => [
                     $this->lang => [

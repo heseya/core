@@ -51,7 +51,7 @@ class PageService implements PageServiceContract
 
         $page = Page::make($attributes);
 
-        foreach($dto->getTranslations() as $lang => $translations) {
+        foreach ($dto->getTranslations() as $lang => $translations) {
             $page->setLocale($lang)->fill($translations->toArray());
         }
 
@@ -70,7 +70,7 @@ class PageService implements PageServiceContract
     {
         $page->fill($dto->toArray());
 
-        foreach($dto->getTranslations() as $lang => $translations) {
+        foreach ($dto->getTranslations() as $lang => $translations) {
             $page->setLocale($lang)->fill($translations->toArray());
         }
 

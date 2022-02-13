@@ -12,6 +12,16 @@ class SeoMetadataTranslationDto extends Dto
     private array|null|Missing $keywords;
     private bool|Missing $no_index;
 
+    public static function fromDataArray(array $data): SeoMetadataTranslationDto
+    {
+        return new self(
+            title: array_key_exists('title', $data) ? $data['title'] : new Missing(),
+            description: array_key_exists('description', $data) ? $data['description'] : new Missing(),
+            keywords: array_key_exists('keywords', $data) ? $data['keywords'] : new Missing(),
+            no_index: array_key_exists('no_index', $data) ? $data['no_index'] : new Missing(),
+        );
+    }
+
     public function getTitle(): Missing|string|null
     {
         return $this->title;
