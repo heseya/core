@@ -40,6 +40,28 @@ Attributes:
       - oauth: [ ]
 
 AttributesParams:
+  get:
+    tags:
+      - Attributes
+    summary: 'get attribute'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Attributes.yml#/Attribute'
+              type: object
+    security:
+      - oauth: [ ]
   delete:
     tags:
       - Attributes

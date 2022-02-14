@@ -19,6 +19,20 @@ Attribute:
       description: 'Possibility to use attribute in search'
       type: boolean
       example: 'true'
+    options:
+      description: 'List of attribute options'
+      type: array
+      items:
+        type: object
+        properties:
+          value_text:
+            description: 'Text of attribute option'
+            type: string
+            example: 'inch'
+          value:
+            description: 'Value of attribute option'
+            type: float
+            example: '27'
   type: object
 
 AttributeOption:
@@ -35,7 +49,7 @@ AttributeOption:
             value_text:
               description: 'Text of attribute option'
               type: string
-              example: 'Red'
+              example: 'inch'
             value:
               description: 'Value of attribute option'
               type: float

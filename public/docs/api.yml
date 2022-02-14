@@ -846,6 +846,8 @@ paths:
         - oauth: [ ]
   '/attributes':
     $ref: './paths/Attributes.yml#Attributes'
+  '/attributes/id:{id}':
+    $ref: './paths/Attributes.yml#AttributesParams'
 components:
   schemas:
     Error:
