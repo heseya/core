@@ -73,8 +73,6 @@ class SeoMetadataTest extends TestCase
      */
     public function testShowWithTranslationsFlag($user): void
     {
-        $this->$user->givePermissionTo('seo.show');
-
         $seo = SeoMetadata::where('global', 1)->first();
 
         $response = $this->actingAs($this->$user)->json('GET', '/seo?translations');

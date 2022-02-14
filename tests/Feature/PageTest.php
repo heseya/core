@@ -100,7 +100,7 @@ class PageTest extends TestCase
         $this->assertArrayHasKey('translations', $firstElement);
         $this->assertIsArray($firstElement['translations']);
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     /**
