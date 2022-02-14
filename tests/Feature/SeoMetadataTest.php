@@ -68,6 +68,34 @@ class SeoMetadataTest extends TestCase
             ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWithTranslationsFlag($user): void
+    {
+        $this->$user->givePermissionTo('seo.show');
+
+        $seo = SeoMetadata::where('global', 1)->first();
+
+        $response = $this->actingAs($this->$user)->json('GET', '/seo?translations');
+
+        $expected_structure = array_merge($this->expected_structure, ['translations']);
+
+        $response->assertOk()
+            ->assertJson(fn (AssertableJson $json) =>
+            $json->has('meta', fn ($json) =>
+            $json->has('seo')
+                ->etc())
+                ->has('data', fn ($json) =>
+                $json->where('title', $seo->title)
+                    ->where('description', $seo->description)
+                    ->etc())
+                ->etc())
+            ->assertJsonStructure([
+                'data' => $expected_structure
+            ]);
+    }
+
     public function testCreateUnauthorized(): void
     {
         $seo = [

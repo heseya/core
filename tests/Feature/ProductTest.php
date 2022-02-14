@@ -7,6 +7,7 @@ use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
 use App\Listeners\WebHookEventListener;
+use App\Models\Language;
 use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductSet;
@@ -172,6 +173,39 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexWithTranslationsFlag($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+        $set = ProductSet::factory()->create([
+            'public' => true,
+            'hide_on_index' => true,
+        ]);
+        $product->sets()->sync([$set->getKey()]);
+
+        $response = $this->actingAs($this->$user)->getJson('/products?limit=100&translations');
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJson(['data' => [
+                0 => $this->expected_short,
+            ]]);
+
+        $firstElement = $response['data'][0];
+
+        $this->assertArrayHasKey('translations', $firstElement);
+        $this->assertIsArray($firstElement['translations']);
+
+        $this->assertQueryCountLessThan(20);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexHidden($user): void
     {
         $this->$user->givePermissionTo(['products.show', 'products.show_hidden']);
@@ -261,6 +295,39 @@ class ProductTest extends TestCase
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWithTranslationsFlagHidden($user): void
+    {
+        $this->$user->givePermissionTo(['products.show_details', 'products.show_hidden']);
+
+        $product = Product::factory()->create([
+            'name' => 'Test product with translations',
+            'public' => true,
+        ]);
+
+        $language = Language::create([
+            'iso' => 'fr',
+            'name' => 'France',
+            'default' => false,
+            'hidden' => true,
+        ]);
+
+        $product->setLocale($language->getKey())->update([
+            'name' => 'Test FR translation'
+        ]);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/' . $product->slug . '?translations');
+
+        $response
+            ->assertOk();
+
+        $this->arrayHasKey('translations', $response['data']);
+        $this->arrayHasKey($language->getKey(), $response['data']['translations']);
     }
 
     /**

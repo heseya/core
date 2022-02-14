@@ -45,6 +45,27 @@ class SchemaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexProductsWithTranslationsFlag($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        Schema::factory()->count(5)->create();
+
+        $response = $this->actingAs($this->$user)->getJson('/schemas?translations');
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(5, 'data');
+
+        $firstElement = $response['data'][0];
+
+        $this->assertArrayHasKey('translations', $firstElement);
+        $this->assertIsArray($firstElement['translations']);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexWithPagination($user): void
     {
         $this->$user->givePermissionTo('products.add');

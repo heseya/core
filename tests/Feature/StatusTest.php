@@ -53,6 +53,23 @@ class StatusTest extends TestCase
             ->assertJsonCount(4, 'data') // domyślne statusy z migracji + ten utworzony teraz
             ->assertJsonFragment([$this->expected]);
     }
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexWithTranslationsFlag($user): void
+    {
+        $this->$user->givePermissionTo('statuses.show');
+
+        $response = $this->actingAs($this->$user)->getJson('/statuses?translations');
+        $response
+            ->assertOk()
+            ->assertJsonCount(4, 'data');
+
+        $firstElement = $response['data'][0];
+
+        $this->assertArrayHasKey('translations', $firstElement);
+        $this->assertIsArray($firstElement['translations']);
+    }
 
     public function testCreateUnauthorized(): void
     {

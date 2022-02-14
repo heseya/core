@@ -2,19 +2,27 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\GetAllTranslations;
 use Illuminate\Http\Request;
 
 class PageResource extends Resource
 {
+    use GetAllTranslations;
+
     public function base(Request $request): array
     {
-        return [
+        $data = [
             'id' => $this->getKey(),
             'slug' => $this->slug,
             'name' => $this->name,
             'public' => $this->public,
             'order' => $this->order,
         ];
+
+        return array_merge(
+            $data,
+            $request->has('translations') ? $this->getAllTranslations('pages.show_hidden') : []
+        );
     }
 
     public function view(Request $request): array
