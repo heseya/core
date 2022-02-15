@@ -47,4 +47,38 @@ return [
         'public' => false,
     ],
 
+    'sender_name' => [
+        'value' => 'Imie nazwisko',
+        'public' => false,
+    ],
+
+    'sender_email' => [
+        'value' => 'name@name.pl',
+        'public' => false,
+    ],
+
+    'sender_street' => [
+        'value' => 'Street 2',
+        'public' => false,
+    ],
+
+    'sender_postcode' => [
+        'value' => '62-800',
+        'public' => false,
+    ],
+
+    'sender_city' => [
+        'value' => 'City',
+        'public' => false,
+    ],
+
+    'sender_phone' => [
+        'value' => '732054143',
+        'public' => false,
+    ],
+
+    'sender_company' => [
+        'value' => null,
+        'public' => false,
+    ],
 ];
