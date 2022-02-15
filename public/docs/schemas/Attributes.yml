@@ -20,7 +20,7 @@ Attribute:
       type: boolean
       example: 'true'
     options:
-      description: 'List of attribute options'
+      description: 'Array options of attribute'
       type: array
       items:
         type: object
@@ -37,20 +37,12 @@ Attribute:
 
 AttributeOption:
   type: object
-  allOf:
-    - $ref: '#/Attribute'
-    - properties:
-      options:
-        description: 'List of attribute options'
-        type: array
-        items:
-          type: object
-          properties:
-            value_text:
-              description: 'Text of attribute option'
-              type: string
-              example: 'inch'
-            value:
-              description: 'Value of attribute option'
-              type: float
-              example: '27'
+  properties:
+    value_text:
+      description: 'Text of attribute option'
+      type: string
+      example: 'inch'
+    value:
+      description: 'Value of attribute option'
+      type: float
+      example: '27'
