@@ -15,7 +15,7 @@ class AttributeResource extends Resource
             'description' => $this->description,
             'type' => Str::lower($this->type->key),
             'searchable' => $this->searchable,
-            'options' => $this->options ? AttributeOptionResource::make($this->options) : null,
+            'options' => $this->options,
         ];
     }
 }

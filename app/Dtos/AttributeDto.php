@@ -13,14 +13,17 @@ class AttributeDto extends Dto
     private bool $searchable;
     private array $options;
 
-    public static function fromFormRequest(AttributeRequest $request)
+    public static function fromFormRequest(AttributeRequest $request): self
     {
         return new self(
             name: $request->input('name'),
             description: $request->input('description'),
             type: $request->input('type'),
             searchable: $request->input('searchable'),
-            options: $request->input('options'),
+            options: array_map(
+                fn ($data) => AttributeOptionDto::fromDataArray($data),
+                $request->input('options')
+            ),
         );
     }
 
