@@ -15,14 +15,14 @@ class AttributeOptionService implements AttributeOptionServiceContract
             $attributeOption->update($dto->toArray());
 
             return $attributeOption;
-        } else {
-            $data = array_merge(
-                ['attribute_id' => $attributeId],
-                $dto->toArray(),
-            );
-
-            return AttributeOption::create($data);
         }
+
+        $data = array_merge(
+            ['attribute_id' => $attributeId],
+            $dto->toArray(),
+        );
+
+        return AttributeOption::create($data);
     }
 
     public function deleteAttributeOptions(string $attributeId): void

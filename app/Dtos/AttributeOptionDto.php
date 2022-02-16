@@ -4,7 +4,6 @@ namespace App\Dtos;
 
 use App\Http\Requests\AttributeOptionRequest;
 use Heseya\Dto\Dto;
-use Heseya\Dto\Missing;
 
 class AttributeOptionDto extends Dto
 {
