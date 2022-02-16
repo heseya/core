@@ -13,14 +13,12 @@ class Attribute extends Model
         'name',
         'description',
         'type',
-        'searchable',
-        'options',
+        'global',
     ];
 
     protected $casts = [
         'type' => AttributeType::class,
-        'searchable' => 'boolean',
-        'options' => 'array',
+        'global' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\AttributeType;
 use App\Models\Attribute;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -24,8 +25,8 @@ class AttributeFactory extends Factory
         return [
             'name' => $this->faker->word,
             'description' => $this->faker->sentence,
-            'type' => $this->faker->sentence,
-            'searchable' => $this->faker->boolean,
+            'type' => AttributeType::getRandomValue(),
+            'global' => $this->faker->boolean,
         ];
     }
 }
