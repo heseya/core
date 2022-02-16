@@ -27,7 +27,6 @@ class AttributeFactory extends Factory
             'description' => $this->faker->sentence,
             'type' => AttributeType::getRandomValue(),
             'global' => $this->faker->boolean,
-            'options' => [],
         ];
     }
 }

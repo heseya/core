@@ -26,7 +26,7 @@ class AttributeRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:255'],
             'type' => ['required', new EnumValue(AttributeType::class, false)],
-            'searchable' => ['required', 'boolean'],
+            'global' => ['required', 'boolean'],
             'options' => ['required', 'array'],
         ], $optionRules);
     }
