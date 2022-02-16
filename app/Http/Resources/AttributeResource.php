@@ -14,8 +14,8 @@ class AttributeResource extends Resource
             'name' => $this->name,
             'description' => $this->description,
             'type' => Str::lower($this->type->key),
-            'searchable' => $this->searchable,
-            'options' => $this->options,
+            'global' => $this->global,
+            'options' => AttributeOptionResource::collection($this->options),
         ];
     }
 }
