@@ -20,7 +20,12 @@ class AttributeOptionService implements AttributeOptionServiceContract
 
     public function updateOrCreate(string $attributeId, AttributeOptionDto $dto): AttributeOption
     {
-        $this->deleteAttributeOptions($attributeId);
+        if ($dto->getId() !== null) {
+            $attributeOption = AttributeOption::findOrFail($dto->getId());
+            $attributeOption->update($dto->toArray());
+
+            return $attributeOption;
+        }
 
         return $this->create($attributeId, $dto);
     }

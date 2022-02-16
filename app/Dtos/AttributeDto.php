@@ -10,7 +10,7 @@ class AttributeDto extends Dto
     private string $name;
     private string $description;
     private int $type;
-    private bool $searchable;
+    private bool $global;
     private array $options;
 
     public static function fromFormRequest(AttributeRequest $request): self
@@ -19,7 +19,7 @@ class AttributeDto extends Dto
             name: $request->input('name'),
             description: $request->input('description'),
             type: $request->input('type'),
-            searchable: $request->input('searchable'),
+            global: $request->input('global'),
             options: array_map(
                 fn ($data) => AttributeOptionDto::fromDataArray($data),
                 $request->input('options')
@@ -54,9 +54,9 @@ class AttributeDto extends Dto
     /**
      * @return bool
      */
-    public function isSearchable(): bool
+    public function isGlobal(): bool
     {
-        return $this->searchable;
+        return $this->global;
     }
 
     /**

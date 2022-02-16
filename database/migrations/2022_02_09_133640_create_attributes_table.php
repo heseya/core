@@ -18,8 +18,7 @@ class CreateAttributesTable extends Migration
             $table->string('name');
             $table->string('description');
             $table->unsignedTinyInteger('type');
-            $table->boolean('searchable');
-            $table->json('options');
+            $table->boolean('global');
             $table->timestamps();
         });
     }

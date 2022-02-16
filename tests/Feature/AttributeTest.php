@@ -11,7 +11,9 @@ use Tests\TestCase;
 class AttributeTest extends TestCase
 {
     private Attribute $attribute;
+    private AttributeOption $option;
     private array $newAttribute;
+    private array $expectedStructure;
     private array $newOption;
 
     public function setUp(): void
@@ -24,14 +26,25 @@ class AttributeTest extends TestCase
             'attribute_id' => $this->attribute->getKey()
         ]);
 
-        $this->attribute->options = [$this->option];
+        $this->attribute->refresh();
 
         $this->newAttribute = Attribute::factory()->definition();
         $this->newAttribute['options'] = [
             AttributeOption::factory()->definition(),
             AttributeOption::factory()->definition(),
         ];
+
         $this->newOption = AttributeOption::factory()->definition();
+
+        $this->expectedStructure = [
+            'data' => [
+                'name',
+                'description',
+                'type',
+                'global',
+                'options'
+            ]
+        ];
     }
 
     public function testIndexUnauthorized()
@@ -47,13 +60,21 @@ class AttributeTest extends TestCase
     {
         $this->$user->givePermissionTo('attributes.show');
 
-        $response = $this
+        $this
             ->actingAs($this->$user)
-            ->getJson('/attributes');
-
-        $response
+            ->getJson('/attributes')
             ->assertOk()
-            ->assertJsonCount(1, 'data');
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'name' => $this->attribute->name,
+                'description' => $this->attribute->description,
+                'type' => Str::lower($this->attribute->type->key),
+                'global' => $this->attribute->global,
+            ])
+            ->assertJsonFragment([
+                'value_text' => $this->option->value_text,
+                'value' => $this->option->value
+            ]);
     }
 
     /**
@@ -63,21 +84,25 @@ class AttributeTest extends TestCase
     {
         $this->$user->givePermissionTo('attributes.add');
 
-        $response = $this
+        $this
             ->actingAs($this->$user)
             ->postJson('/attributes', $this->newAttribute)
             ->assertCreated()
+            ->assertJsonStructure($this->expectedStructure)
             ->assertJsonFragment([
                 'name' => $this->newAttribute['name'],
                 'description' => $this->newAttribute['description'],
                 'type' => Str::lower(AttributeType::getKey($this->newAttribute['type'])),
-                'searchable' => $this->newAttribute['searchable'],
+                'global' => $this->newAttribute['global'],
+            ])
+            ->assertJsonFragment([
+                'value_text' => $this->newAttribute['options'][0]['value_text'],
+                'value' => $this->newAttribute['options'][0]['value']
+            ])
+            ->assertJsonFragment([
+                'value_text' => $this->newAttribute['options'][1]['value_text'],
+                'value' => $this->newAttribute['options'][1]['value']
             ]);
-
-        $this->assertIsArray($response['data']['options']);
-        $this->assertIsArray($response['data']['options'][0]);
-        $this->assertArrayHasKey('value_text', $response['data']['options'][0]);
-        $this->assertArrayHasKey('value', $response['data']['options'][0]);
     }
 
     /**
@@ -113,34 +138,35 @@ class AttributeTest extends TestCase
     {
         $this->$user->givePermissionTo('attributes.edit');
 
-        $attribute = Attribute::factory()->create();
-
-        $option = AttributeOption::factory()->create([
-            'attribute_id' => $attribute->getKey()
-        ]);
-
         $attributeUpdate = [
-            'name' => 'Test update attribute name',
-            'description' => 'Test update attribute decription',
+            'name' => 'Test ' . $this->attribute->name,
+            'description' => 'Test ' . $this->attribute->description,
             'type' => AttributeType::NUMBER,
-            'searchable' => true,
+            'global' => true,
             'options' => [
                 [
-                    'value_text' => 'Test ' . $option->value_text,
-                    'value' => $option->value,
+                    'id' => $this->option->id,
+                    'value_text' => 'Test ' . $this->option->value_text,
+                    'value' => $this->option->value,
                 ],
             ]
         ];
 
-        $response = $this
+        $this
             ->actingAs($this->$user)
-            ->patchJson('/attributes/id:' . $attribute->getKey(), $attributeUpdate)
-            ->assertOk();
-
-        $this->assertIsArray($response['data']['options']);
-        $this->assertIsArray($response['data']['options'][0]);
-        $this->assertArrayHasKey('value_text', $response['data']['options'][0]);
-        $this->assertArrayHasKey('value', $response['data']['options'][0]);
+            ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
+            ->assertOk()
+            ->assertJsonStructure($this->expectedStructure)
+            ->assertJsonFragment([
+                'name' => $attributeUpdate['name'],
+                'description' => $attributeUpdate['description'],
+                'type' => Str::lower(AttributeType::getKey($attributeUpdate['type'])),
+                'global' => $attributeUpdate['global'],
+            ])
+            ->assertJsonFragment([
+                'value_text' => $attributeUpdate['options'][0]['value_text'],
+                'value' => $attributeUpdate['options'][0]['value']
+            ]);
     }
 
     /**
@@ -184,18 +210,23 @@ class AttributeTest extends TestCase
      */
     public function testUpdateUnauthorized($user)
     {
-        $attribute = Attribute::factory()->create();
-
         $attributeUpdate = [
-            'name' => 'Test update attribute name',
-            'description' => 'Test update attribute decription',
+            'name' => 'Test ' . $this->attribute->name,
+            'description' => 'Test ' . $this->attribute->description,
             'type' => AttributeType::NUMBER,
-            'searchable' => true,
+            'global' => true,
+            'options' => [
+                [
+                    'id' => $this->option->id,
+                    'value_text' => 'Test ' . $this->option->value_text,
+                    'value' => $this->option->value,
+                ],
+            ]
         ];
 
         $this
             ->actingAs($this->$user)
-            ->patchJson('/attributes/id:' . $attribute->getKey(), $attributeUpdate)
+            ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
             ->assertForbidden();
     }
 
@@ -236,11 +267,9 @@ class AttributeTest extends TestCase
      */
     public function testDeleteUnauthorized($user)
     {
-        $attribute = Attribute::factory()->create();
-
         $this
             ->actingAs($this->$user)
-            ->deleteJson('/attributes/id:' . $attribute->getKey())
+            ->deleteJson('/attributes/id:' . $this->attribute->getKey())
             ->assertForbidden();
     }
 
@@ -249,7 +278,7 @@ class AttributeTest extends TestCase
      */
     public function testAddOption($user)
     {
-        $this->$user->givePermissionTo('attributes.add');
+        $this->$user->givePermissionTo('attributes.edit');
 
         $this
             ->actingAs($this->$user)
@@ -268,7 +297,7 @@ class AttributeTest extends TestCase
      */
     public function testAddOptionIncompleteData($user)
     {
-        $this->$user->givePermissionTo('attributes.add');
+        $this->$user->givePermissionTo('attributes.edit');
 
         unset($this->newOption['value_text']);
 
@@ -283,7 +312,7 @@ class AttributeTest extends TestCase
      */
     public function testAddOptionToDeletedAttribute($user)
     {
-        $this->$user->givePermissionTo('attributes.add');
+        $this->$user->givePermissionTo('attributes.edit');
 
         Attribute::destroy($this->attribute->getKey());
 
