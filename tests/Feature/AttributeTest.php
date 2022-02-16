@@ -11,6 +11,7 @@ use Tests\TestCase;
 class AttributeTest extends TestCase
 {
     private Attribute $attribute;
+    private AttributeOption $option;
     private array $newAttribute;
     private array $expectedStructure;
     private array $newOption;
@@ -59,13 +60,21 @@ class AttributeTest extends TestCase
     {
         $this->$user->givePermissionTo('attributes.show');
 
-        $response = $this
+        $this
             ->actingAs($this->$user)
-            ->getJson('/attributes');
-
-        $response
+            ->getJson('/attributes')
             ->assertOk()
-            ->assertJsonCount(1, 'data');
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'name' => $this->attribute->name,
+                'description' => $this->attribute->description,
+                'type' => Str::lower($this->attribute->type->key),
+                'global' => $this->attribute->global,
+            ])
+            ->assertJsonFragment([
+                'value_text' => $this->option->value_text,
+                'value' => $this->option->value
+            ]);
     }
 
     /**
@@ -269,7 +278,7 @@ class AttributeTest extends TestCase
      */
     public function testAddOption($user)
     {
-        $this->$user->givePermissionTo('attributes.add');
+        $this->$user->givePermissionTo('attributes.edit');
 
         $this
             ->actingAs($this->$user)
@@ -288,7 +297,7 @@ class AttributeTest extends TestCase
      */
     public function testAddOptionIncompleteData($user)
     {
-        $this->$user->givePermissionTo('attributes.add');
+        $this->$user->givePermissionTo('attributes.edit');
 
         unset($this->newOption['value_text']);
 
@@ -303,7 +312,7 @@ class AttributeTest extends TestCase
      */
     public function testAddOptionToDeletedAttribute($user)
     {
-        $this->$user->givePermissionTo('attributes.add');
+        $this->$user->givePermissionTo('attributes.edit');
 
         Attribute::destroy($this->attribute->getKey());
 

@@ -16,5 +16,5 @@ Route::prefix('attributes')->group(function (): void {
     Route::delete('id:{attribute:id}', [AttributeController::class, 'destroy'])
         ->middleware('can:attributes.remove');
     Route::post('id:{attribute:id}/options', [AttributeOptionController::class, 'store'])
-        ->middleware('permission:attributes.add|attributes.edit');
+        ->middleware('permission:attributes.edit');
 });
