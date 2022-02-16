@@ -13,8 +13,8 @@ class PageUpdateRequest extends SeoMetadataRulesRequest
             'translations' => [
                 new Translations(['name', 'content_html']),
             ],
-//            'name' => ['string', 'max:255'],
-//            'content_html' => ['string', 'min:1'],
+            'translations.*.name' => ['string', 'max:255'],
+            'translations.*.content_html' => ['string', 'min:1'],
 
             'published' => ['array', 'min:1'],
             'published.*' => ['nullable', 'uuid', 'exists:languages,id'],

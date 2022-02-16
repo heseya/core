@@ -13,6 +13,9 @@ class PageStoreRequest extends SeoMetadataRulesRequest
                 'required',
                 new Translations(['name', 'content_html']),
             ],
+            'translations.*.name' => ['string', 'max:255'],
+            'translations.*.content_html' => ['string', 'min:1'],
+
 //            'name' => ['required', 'string', 'max:255'],
 //            'content_html' => ['required', 'string', 'min:1'],
 
