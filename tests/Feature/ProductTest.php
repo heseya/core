@@ -577,12 +577,17 @@ class ProductTest extends TestCase
         Queue::fake();
 
         $response = $this->actingAs($this->$user)->postJson('/products', [
-            'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
-            'description_short' => 'So called short description...',
             'public' => true,
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'description_html' => '<h1>Description</h1>',
+                    'description_short' => 'So called short description...',
+                ],
+            ],
+            'published' => [$this->lang],
         ]);
 
         $response
@@ -641,11 +646,17 @@ class ProductTest extends TestCase
         Queue::fake();
 
         $response = $this->actingAs($this->$user)->postJson('/products', [
-            'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
             'description_html' => '<h1>Description</h1>',
             'public' => true,
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'description_html' => '<h1>Description</h1>',
+                ],
+            ],
+            'published' => [$this->lang],
         ]);
 
         $response
@@ -709,11 +720,16 @@ class ProductTest extends TestCase
         Bus::fake();
 
         $response = $this->actingAs($this->$user)->postJson('/products', [
-            'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
             'public' => true,
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'description_html' => '<h1>Description</h1>',
+                ],
+            ],
+            'published' => [$this->lang],
         ]);
 
         $response
@@ -777,11 +793,16 @@ class ProductTest extends TestCase
         Queue::fake();
 
         $response = $this->actingAs($this->$user)->postJson('/products', [
-            'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
             'public' => false,
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'description_html' => '<h1>Description</h1>',
+                ],
+            ],
+            'published' => [$this->lang],
         ]);
 
         $response
@@ -838,11 +859,16 @@ class ProductTest extends TestCase
         Bus::fake();
 
         $response = $this->actingAs($this->$user)->postJson('/products', [
-            'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
             'public' => false,
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'description_html' => '<h1>Description</h1>',
+                ],
+            ],
+            'published' => [$this->lang],
         ]);
 
         $response
@@ -895,10 +921,15 @@ class ProductTest extends TestCase
         $this
             ->actingAs($this->$user)
             ->postJson('/products', [
-                'name' => 'Test',
                 'slug' => 'test',
                 'price' => 0,
                 'public' => true,
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                    ],
+                ],
+                'published' => [$this->lang],
             ])
             ->assertCreated();
 
@@ -919,10 +950,15 @@ class ProductTest extends TestCase
         $this
             ->actingAs($this->$user)
             ->postJson('/products', [
-                'name' => 'Test',
                 'slug' => 'test',
                 'price' => -100,
                 'public' => true,
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                    ],
+                ],
+                'published' => [$this->lang],
             ])
             ->assertUnprocessable();
     }
@@ -939,13 +975,18 @@ class ProductTest extends TestCase
         $schema = Schema::factory()->create();
 
         $response = $this->actingAs($this->$user)->postJson('/products', [
-            'name' => 'Test',
             'slug' => 'test',
             'price' => 150,
             'public' => false,
             'schemas' => [
                 $schema->getKey(),
             ],
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
         ]);
 
         $response->assertCreated();
@@ -980,7 +1021,6 @@ class ProductTest extends TestCase
         $set2 = ProductSet::factory()->create();
 
         $response = $this->actingAs($this->$user)->postJson('/products', [
-            'name' => 'Test',
             'slug' => 'test',
             'price' => 150,
             'public' => false,
@@ -988,6 +1028,12 @@ class ProductTest extends TestCase
                 $set1->getKey(),
                 $set2->getKey(),
             ],
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
         ]);
 
         $response->assertCreated();
@@ -1027,27 +1073,35 @@ class ProductTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->$user)->json('POST', '/products', [
-            'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
             'public' => true,
             'seo' => [
-                'title' => 'seo title',
-                'description' => 'seo description',
                 'og_image_id' => $media->getKey(),
-                'no_index' => true,
-            ]
+                'translations' => [
+                    $this->lang => [
+                        'title' => 'seo title',
+                        'description' => 'seo description',
+                        'no_index' => true,
+                    ],
+                ],
+                'published' => [$this->lang],
+            ],
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'description_html' => '<h1>Description</h1>',
+                ],
+            ],
+            'published' => [$this->lang],
         ]);
 
         $response
             ->assertCreated()
             ->assertJson(['data' => [
-                'slug' => 'test',
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
-                'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
                 'seo' => [
@@ -1057,7 +1111,7 @@ class ProductTest extends TestCase
                         'id' => $media->getKey(),
                     ],
                     'no_index' => true,
-                ]
+                ],
             ]]);
 
         $this->assertDatabaseHas('products', [
@@ -1087,15 +1141,25 @@ class ProductTest extends TestCase
         $this->$user->givePermissionTo('products.add');
 
         $response = $this->actingAs($this->$user)->json('POST', '/products', [
-            'name' => 'Test',
             'slug' => 'test',
             'price' => 100.00,
-            'description_html' => '<h1>Description</h1>',
             'public' => true,
             'seo' => [
-                'title' => 'seo title',
-                'description' => 'seo description',
-            ]
+                'translations' => [
+                    $this->lang => [
+                        'title' => 'seo title',
+                        'description' => 'seo description',
+                    ],
+                ],
+                'published' => [$this->lang],
+            ],
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'description_html' => '<h1>Description</h1>',
+                ],
+            ],
+            'published' => [$this->lang],
         ]);
 
         $response
@@ -1150,7 +1214,6 @@ class ProductTest extends TestCase
 
         $productPrice = 150;
         $response = $this->actingAs($this->$user)->postJson('/products', [
-            'name' => 'Test',
             'slug' => 'test',
             'price' => $productPrice,
             'public' => false,
@@ -1158,6 +1221,12 @@ class ProductTest extends TestCase
             'schemas' => [
                 $schema->getKey(),
             ],
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                ],
+            ],
+            'published' => [$this->lang],
         ]);
 
         $response->assertCreated();
@@ -1191,12 +1260,16 @@ class ProductTest extends TestCase
         Queue::fake();
 
         $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
-            'name' => 'Updated',
             'slug' => 'updated',
             'price' => 150,
-            'description_html' => '<h1>New description</h1>',
-            'description_short' => 'New so called short description',
             'public' => false,
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Updated',
+                    'description_html' => '<h1>New description</h1>',
+                    'description_short' => 'New so called short description',
+                ],
+            ],
         ]);
 
         $response->assertOk();
@@ -1244,15 +1317,20 @@ class ProductTest extends TestCase
 
         Queue::fake();
 
-        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
-            'name' => 'Updated',
-            'slug' => 'updated',
-            'price' => 150,
-            'description_html' => '<h1>New description</h1>',
-            'public' => false,
-        ]);
-
-        $response->assertOk();
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/products/id:' . $this->product->getKey(), [
+                'slug' => 'updated',
+                'price' => 150,
+                'public' => false,
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Updated',
+                        'description_html' => '<h1>New description</h1>',
+                    ],
+                ],
+            ])
+            ->assertOk();
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
@@ -1303,15 +1381,20 @@ class ProductTest extends TestCase
 
         Bus::fake();
 
-        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
-            'name' => 'Updated',
-            'slug' => 'updated',
-            'price' => 150,
-            'description_html' => '<h1>New description</h1>',
-            'public' => false,
-        ]);
-
-        $response->assertOk();
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/products/id:' . $this->product->getKey(), [
+                'slug' => 'updated',
+                'price' => 150,
+                'public' => false,
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Updated',
+                        'description_html' => '<h1>New description</h1>',
+                    ],
+                ],
+            ])
+            ->assertOk();
 
         $this->assertDatabaseHas('products', [
             'id' => $this->product->getKey(),
@@ -1360,18 +1443,24 @@ class ProductTest extends TestCase
 
         $product->sets()->sync([$set1->getKey(), $set2->getKey()]);
 
-        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $product->getKey(), [
-            'name' => $product->name,
-            'slug' => $product->slug,
-            'price' => $product->price,
-            'public' => $product->public,
-            'sets' => [
-                $set2->getKey(),
-                $set3->getKey(),
-            ],
-        ]);
-
-        $response->assertOk();
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/products/id:' . $product->getKey(), [
+                'name' => $product->name,
+                'slug' => $product->slug,
+                'price' => $product->price,
+                'public' => $product->public,
+                'sets' => [
+                    $set2->getKey(),
+                    $set3->getKey(),
+                ],
+                'translations' => [
+                    $this->lang => [
+                        'name' => $product->name,
+                    ],
+                ],
+            ])
+            ->assertOk();
 
         $this->assertDatabaseHas('product_set_product', [
             'product_id' => $product->getKey(),
@@ -1407,15 +1496,20 @@ class ProductTest extends TestCase
 
         $product->sets()->sync([$set1->getKey(), $set2->getKey()]);
 
-        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $product->getKey(), [
-            'name' => $product->name,
-            'slug' => $product->slug,
-            'price' => $product->price,
-            'public' => $product->public,
-            'sets' => [],
-        ]);
-
-        $response->assertOk();
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/products/id:' . $product->getKey(), [
+                'slug' => $product->slug,
+                'price' => $product->price,
+                'public' => $product->public,
+                'sets' => [],
+                'translations' => [
+                    $this->lang => [
+                        'name' => $product->name,
+                    ],
+                ],
+            ])
+            ->assertOk();
 
         $this->assertDatabaseMissing('product_set_product', [
             'product_id' => $product->getKey(),
@@ -1443,19 +1537,28 @@ class ProductTest extends TestCase
         $seo = SeoMetadata::factory()->create();
         $product->seo()->save($seo);
 
-        $response = $this->actingAs($this->$user)->json('PATCH', '/products/id:' . $product->getKey(), [
-            'name' => 'Updated',
-            'slug' => 'updated',
-            'price' => 150,
-            'description_html' => '<h1>New description</h1>',
-            'public' => false,
-            'seo' => [
-                'title' => 'seo title',
-                'description' => 'seo description',
-            ],
-        ]);
-
-        $response->assertOk();
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', '/products/id:' . $product->getKey(), [
+                'slug' => 'updated',
+                'price' => 150,
+                'public' => false,
+                'seo' => [
+                    'translations' => [
+                        $this->lang => [
+                            'title' => 'seo title',
+                            'description' => 'seo description',
+                        ],
+                    ],
+                ],
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Updated',
+                        'description_html' => '<h1>New description</h1>',
+                    ],
+                ],
+            ])
+            ->assertOk();
 
         $this->assertDatabaseHas('products', [
             'id' => $product->getKey(),
@@ -1495,19 +1598,25 @@ class ProductTest extends TestCase
         $this->productService->updateMinMaxPrices($product);
 
         $productNewPrice = 250;
-        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $product->getKey(), [
-            'name' => $product->name,
-            'slug' => $product->slug,
-            'price' => $product->price,
-            'public' => $product->public,
-            'price' => $productNewPrice,
-            'sets' => [],
-            'schemas' => [
-                $schema->getKey(),
-            ],
-        ]);
-
-        $response->assertOk();
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/products/id:' . $product->getKey(), [
+                'name' => $product->name,
+                'slug' => $product->slug,
+                'price' => $product->price,
+                'public' => $product->public,
+                'price' => $productNewPrice,
+                'sets' => [],
+                'schemas' => [
+                    $schema->getKey(),
+                ],
+                'translations' => [
+                    $this->lang => [
+                        'name' => $product->name,
+                    ],
+                ],
+            ])
+            ->assertOk();
 
         $this->assertDatabaseHas('products', [
             $product->getKeyName() => $product->getKey(),
@@ -1540,14 +1649,20 @@ class ProductTest extends TestCase
         $this->productService->updateMinMaxPrices($product);
 
         $schemaNewPrice = 75;
-        $response = $this->actingAs($this->$user)->patchJson('/schemas/id:' . $schema->getKey() , [
-            'name' => 'Test Updated',
-            'price' => $schemaNewPrice,
-            'type' => 'string',
-            'required' => false,
-        ]);
-
-        $response->assertOk();
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/schemas/id:' . $schema->getKey() , [
+                'price' => $schemaNewPrice,
+                'type' => 'string',
+                'required' => false,
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Updated',
+                    ],
+                ],
+                'published' => [$this->lang],
+            ])
+            ->assertOk();
 
         $this->assertDatabaseHas('products', [
             $product->getKeyName() => $product->getKey(),
@@ -1579,9 +1694,10 @@ class ProductTest extends TestCase
         $product->schemas()->attach($schema->getKey());
         $this->productService->updateMinMaxPrices($product);
 
-        $response = $this->actingAs($this->$user)->deleteJson('/schemas/id:' . $schema->getKey());
-
-        $response->assertNoContent();
+        $this
+            ->actingAs($this->$user)
+            ->deleteJson('/schemas/id:' . $schema->getKey())
+            ->assertNoContent();
 
         $this->assertDatabaseHas('products', [
             $product->getKeyName() => $product->getKey(),
@@ -1619,9 +1735,10 @@ class ProductTest extends TestCase
         $seo = SeoMetadata::factory()->create();
         $product->seo()->save($seo);
 
-        $response = $this->actingAs($this->$user)
-            ->deleteJson('/products/id:' . $product->getKey());
-        $response->assertNoContent();
+        $this->actingAs($this->$user)
+            ->deleteJson('/products/id:' . $product->getKey())
+            ->assertNoContent();
+
         $this->assertSoftDeleted($product);
         $this->assertSoftDeleted($seo);
 
@@ -1657,15 +1774,15 @@ class ProductTest extends TestCase
 
         Queue::fake();
 
-        $response = $this->actingAs($this->$user)
-            ->deleteJson('/products/id:' . $this->product->getKey());
+        $this->actingAs($this->$user)
+            ->deleteJson('/products/id:' . $this->product->getKey())
+            ->assertNoContent();
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
             return $job->class === WebHookEventListener::class
                 && $job->data[0] instanceof ProductDeleted;
         });
 
-        $response->assertNoContent();
         $this->assertSoftDeleted($this->product);
 
         $product = $this->product;
@@ -1703,15 +1820,15 @@ class ProductTest extends TestCase
 
         Bus::fake();
 
-        $response = $this->actingAs($this->$user)
-            ->deleteJson('/products/id:' . $this->product->getKey());
+        $this->actingAs($this->$user)
+            ->deleteJson('/products/id:' . $this->product->getKey())
+            ->assertNoContent();
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
             return $job->class === WebHookEventListener::class
                 && $job->data[0] instanceof ProductDeleted;
         });
 
-        $response->assertNoContent();
         $this->assertSoftDeleted($this->product);
 
         $product = $this->product;
@@ -1737,8 +1854,9 @@ class ProductTest extends TestCase
     {
         $this->$user->givePermissionTo('products.show');
 
-        $response = $this->actingAs($this->$user)->json('GET', '/products?full=1&sets=');
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products?full=1&sets=')
             ->assertOk()
             ->assertJsonCount(0, 'data')
             ->assertJson(['data' => []]);

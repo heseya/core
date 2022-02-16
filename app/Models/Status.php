@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Interfaces\Translatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use OwenIt\Auditing\Auditable;
@@ -11,7 +12,7 @@ use Spatie\Translatable\HasTranslations;
 /**
  * @mixin IdeHelperStatus
  */
-class Status extends Model implements AuditableContract
+class Status extends Model implements AuditableContract, Translatable
 {
     use HasFactory, Auditable, HasTranslations;
 

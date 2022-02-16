@@ -215,17 +215,28 @@ class PageTest extends TestCase
         Event::fake([PageCreated::class]);
 
         $html = '<h1>hello world</h1>';
-        $page = [
-            'name' => 'Test',
-            'slug' => 'test-test',
-            'public' => true,
-            'content_html' => $html,
-        ];
 
-        $response = $this->actingAs($this->$user)->postJson('/pages', $page);
-        $response->assertJson([
-            'data' => $page,
-        ])->assertCreated();
+        $this->actingAs($this->$user)
+            ->postJson('/pages', [
+                'slug' => 'test-test',
+                'public' => true,
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                        'content_html' => $html,
+                    ],
+                ],
+                'published' => [$this->lang],
+            ])
+            ->assertJson([
+                'data' => [
+                    'name' => 'Test',
+                    'slug' => 'test-test',
+                    'public' => true,
+                    'content_html' => $html,
+                ],
+            ])
+            ->assertCreated();
 
         $this->assertDatabaseHas('pages', [
             "name->{$this->lang}" => 'Test',
@@ -257,17 +268,28 @@ class PageTest extends TestCase
         Bus::fake();
 
         $html = '<h1>hello world</h1>';
-        $page = [
-            'name' => 'Test',
-            'slug' => 'test-test',
-            'public' => true,
-            'content_html' => $html,
-        ];
 
-        $response = $this->actingAs($this->$user)->postJson('/pages', $page);
-        $response->assertJson([
-            'data' => $page,
-        ])->assertCreated();
+        $response = $this->actingAs($this->$user)
+            ->postJson('/pages', [
+                'slug' => 'test-test',
+                'public' => true,
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test',
+                        'content_html' => $html,
+                    ],
+                ],
+                'published' => [$this->lang],
+            ])
+            ->assertJson([
+                'data' => [
+                    'name' => 'Test',
+                    'slug' => 'test-test',
+                    'public' => true,
+                    'content_html' => $html,
+                ],
+            ])
+            ->assertCreated();
 
         $this->assertDatabaseHas('pages', [
             "name->{$this->lang}" => 'Test',
@@ -305,20 +327,38 @@ class PageTest extends TestCase
         $this->$user->givePermissionTo('pages.add');
 
         $html = '<h1>hello world</h1>';
-        $page = [
-            'name' => 'Test',
+
+        $response = $this->actingAs($this->$user)->json('POST', '/pages', [
             'slug' => 'test-test',
             'public' => true,
-            'content_html' => $html,
             'seo' => [
-                'title' => 'seo title',
-                'description' => 'seo description',
-            ]
-        ];
-
-        $response = $this->actingAs($this->$user)->json('POST', '/pages', $page);
+                'translations' => [
+                    $this->lang => [
+                        'title' => 'seo title',
+                        'description' => 'seo description',
+                    ],
+                ],
+                'published' => [$this->lang],
+            ],
+            'translations' => [
+                $this->lang => [
+                    'name' => 'Test',
+                    'content_html' => $html,
+                ],
+            ],
+            'published' => [$this->lang],
+        ]);
         $response->assertJson([
-            'data' => $page,
+            'data' => [
+                'name' => 'Test',
+                'slug' => 'test-test',
+                'public' => true,
+                'content_html' => $html,
+                'seo' => [
+                    'title' => 'seo title',
+                    'description' => 'seo description',
+                ],
+            ],
         ])->assertCreated();
 
         $this->assertDatabaseHas('pages', [
@@ -346,15 +386,20 @@ class PageTest extends TestCase
 
         for ($i = 0; $i < 3; $i++) {
             $name = ' order test ' . $this->faker->sentence(rand(1, 3));
-            $page = [
-                'name' => $name,
-                'slug' => Str::slug($name),
-                'public' => $this->faker->boolean,
-                'content_html' => '<p>' . $this->faker->sentence(rand(10, 30)) . '</p>',
-            ];
 
-            $response = $this->actingAs($this->$user)->postJson('/pages', $page);
-            $response->assertCreated();
+            $response = $this->actingAs($this->$user)
+                ->postJson('/pages', [
+                    'slug' => Str::slug($name),
+                    'public' => $this->faker->boolean,
+                    'translations' => [
+                        $this->lang => [
+                            'name' => $name,
+                            'content_html' => '<p>' . $this->faker->sentence(rand(10, 30)) . '</p>',
+                        ],
+                    ],
+                    'published' => [$this->lang],
+                ])
+                ->assertCreated();
 
             $uuids[] = $response->getData()->data->id;
         }
@@ -395,21 +440,27 @@ class PageTest extends TestCase
         Event::fake(PageUpdated::class);
 
         $html = '<h1>hello world 2</h1>';
-        $page = [
-            'name' => 'Test 2',
-            'slug' => 'test-2',
-            'public' => false,
-            'content_html' => $html,
-        ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
-            '/pages/id:' . $this->page->getKey(),
-            $page,
-        );
-
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/pages/id:' . $this->page->getKey(), [
+                'slug' => 'test-2',
+                'public' => false,
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test 2',
+                        'content_html' => $html,
+                    ],
+                ],
+                'published' => [$this->lang],
+            ])
             ->assertOk()
-            ->assertJson(['data' => $page]);
+            ->assertJson(['data' => [
+                'name' => 'Test 2',
+                'slug' => 'test-2',
+                'public' => false,
+                'content_html' => $html,
+            ]]);
 
         $this->assertDatabaseHas('pages', [
             'id' => $this->page->getKey(),
@@ -442,21 +493,27 @@ class PageTest extends TestCase
         Bus::fake();
 
         $html = '<h1>hello world 2</h1>';
-        $page = [
-            'name' => 'Test 2',
-            'slug' => 'test-2',
-            'public' => false,
-            'content_html' => $html,
-        ];
 
-        $response = $this->actingAs($this->$user)->patchJson(
-            '/pages/id:' . $this->page->getKey(),
-            $page,
-        );
-
-        $response
+        $response = $this
+            ->actingAs($this->$user)
+            ->patchJson('/pages/id:' . $this->page->getKey(), [
+                'slug' => 'test-2',
+                'public' => false,
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test 2',
+                        'content_html' => $html,
+                    ],
+                ],
+                'published' => [$this->lang],
+            ])
             ->assertOk()
-            ->assertJson(['data' => $page]);
+            ->assertJson(['data' => [
+                'name' => 'Test 2',
+                'slug' => 'test-2',
+                'public' => false,
+                'content_html' => $html,
+            ]]);
 
         $this->assertDatabaseHas('pages', [
             'id' => $this->page->getKey(),
@@ -502,28 +559,43 @@ class PageTest extends TestCase
         $this->$user->givePermissionTo('pages.edit');
 
         $html = '<h1>hello world 2</h1>';
-        $page = [
-            'name' => 'Test 2',
-            'slug' => 'test-2',
-            'public' => false,
-            'content_html' => $html,
-            'seo' => [
-                'title' => 'seo title',
-                'description' => 'seo description',
-            ],
-        ];
 
         $seo = SeoMetadata::factory()->create();
         $this->page->seo()->save($seo);
 
-        $response = $this->actingAs($this->$user)->json('PATCH',
-            '/pages/id:' . $this->page->getKey(),
-            $page
-        );
-
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', '/pages/id:' . $this->page->getKey(), [
+                'slug' => 'test-2',
+                'public' => false,
+                'seo' => [
+                    'translations' => [
+                        $this->lang => [
+                            'title' => 'seo title',
+                            'description' => 'seo description',
+                        ],
+                    ],
+                    'published' => [$this->lang],
+                ],
+                'translations' => [
+                    $this->lang => [
+                        'name' => 'Test 2',
+                        'content_html' => $html,
+                    ],
+                ],
+                'published' => [$this->lang],
+            ])
             ->assertOk()
-            ->assertJson(['data' => $page]);
+            ->assertJson(['data' => [
+                'name' => 'Test 2',
+                'slug' => 'test-2',
+                'public' => false,
+                'content_html' => $html,
+                'seo' => [
+                    'title' => 'seo title',
+                    'description' => 'seo description',
+                ],
+            ]]);
 
         $this->assertDatabaseHas('pages', [
             'id' => $this->page->getKey(),

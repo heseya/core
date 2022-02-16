@@ -628,7 +628,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Schema'
+              required:
+                - translations
+                - published
+                - type
+              allOf:
+                - $ref: '#/components/schemas/Schema'
+              type: object
       responses:
         201:
           description: Created
@@ -688,7 +694,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Schema'
+              required:
+                - translations
+                - published
+                - type
+              allOf:
+                - $ref: '#/components/schemas/Schema'
+              type: object
       responses:
         201:
           description: Created
@@ -1089,12 +1101,18 @@ components:
       $ref: './schemas/Media.yml#Media'
     Option:
       properties:
+        translations:
+          type: object
+          properties:
+            language-uuid:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: XL
         id:
           type: string
           example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        name:
-          type: string
-          example: XL
         price:
           description: 'Additional price the customer will have to pay after selecting this option (can be negative)'
           type: float
@@ -1127,13 +1145,29 @@ components:
     PriceRange:
       $ref: './schemas/PriceRanges.yml#/PriceRange'
     Schema:
-      description: "Schema allows a product to take on new optional characteristics that can be\n *   chosen by the userand influences the price based on said choices. Schemas can use other\n *   schemas for their price calculation e.g. multiply_schema multiplies price of different\n *   schema based on it's own value. SCHEMAS USED BY OTHERS SHOULD NOT AFFECT THE PRICE\n *   (schema multiplied by multiply_schema adds 0 to the price while multiply_schema adds\n *   the multiplied value)"
+      description: "Schema allows a product to take on new optional characteristics that can be chosen by the userand influences the price based on said choices. Schemas can use other schemas for their price calculation e.g. multiply_schema multiplies price of different schema based on it's own value. SCHEMAS USED BY OTHERS SHOULD NOT AFFECT THE PRICE (schema multiplied by multiply_schema adds 0 to the price while multiply_schema adds the multiplied value)"
       properties:
+        translations:
+          type: object
+          properties:
+            language-uuid:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+        published:
+          type: array
+          description: 'Array of published language ids'
+          items:
+            type: string
+            example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
         id:
           type: string
           example: 026bc5f6-8373-4aeb-972e-e78d72a67121
         type:
-          description: "multiply_schema(min, max, step) type uses one schema and multiplies\n     *     it's price by own numeric value"
+          description: "multiply_schema(min, max, step) type uses one schema and multiplies it's price by own numeric value"
           type: string
           enum:
             - string
@@ -1151,7 +1185,7 @@ components:
           description: 'Short description, no html or md allowed'
           type: string
         price:
-          description: "Additional price the customer will have to pay after selecting the option\n     *     (can be negative)"
+          description: "Additional price the customer will have to pay after selecting the option (can be negative)"
           type: float
           example: 9.99
         hidden:
@@ -1177,7 +1211,7 @@ components:
           items:
             $ref: '#/components/schemas/Option'
         used_schemas:
-          description: "Array of schema id's given schema uses e.g.\n     *   multiply_schema type uses one schema of which price it miltiplies"
+          description: "Array of schema id's given schema uses e.g. multiply_schema type uses one schema of which price it miltiplies"
           type: array
           items:
             type: string
@@ -1270,14 +1304,30 @@ components:
         application/json:
           schema:
             required:
-              - name
+              - translations
+              - published
               - slug
-              - content_html
             properties:
-              name:
-                description: 'Name displayed as a page header'
-                type: string
-                example: 'Terms & Conditions'
+              translations:
+                type: object
+                properties:
+                  language-uuid:
+                    type: object
+                    properties:
+                      name:
+                        description: 'Name displayed as a page header'
+                        type: string
+                        example: 'Terms & Conditions'
+                      content_html:
+                        description: 'HTML formated text to be displayed as a main content under the page header'
+                        type: string
+                        example: '<h1>Lorem ipsum dolor sit amet</h1>'
+              published:
+                type: array
+                description: 'Array of published language ids'
+                items:
+                  type: string
+                  example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
               slug:
                 description: 'Name used in the URL path'
                 type: string
@@ -1286,10 +1336,6 @@ components:
                 description: 'Whether page is visible to unauthorized users'
                 type: boolean
                 example: true
-              content_html:
-                description: 'HTML formated text to be displayed as a main content under the page header'
-                type: string
-                example: '<h1>Lorem ipsum dolor sit amet</h1>'
               seo:
                 $ref: '#/components/schemas/SeoStore'
             type: object
@@ -1298,10 +1344,26 @@ components:
         application/json:
           schema:
             properties:
-              name:
-                description: 'Name displayed as a page header'
-                type: string
-                example: 'Terms & Conditions'
+              translations:
+                type: object
+                properties:
+                  language-uuid:
+                    type: object
+                    properties:
+                      name:
+                        description: 'Name displayed as a page header'
+                        type: string
+                        example: 'Terms & Conditions'
+                      content_html:
+                        description: 'HTML formated text to be displayed as a main content under the page header'
+                        type: string
+                        example: '<h1>Lorem ipsum dolor sit amet</h1>'
+              published:
+                type: array
+                description: 'Array of published language ids'
+                items:
+                  type: string
+                  example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
               slug:
                 description: 'Name used in the URL path'
                 type: string
@@ -1310,10 +1372,6 @@ components:
                 description: 'Whether page is visible to unauthorized users'
                 type: boolean
                 example: true
-              content_html:
-                description: 'HTML formated text to be displayed as a main content under the page header'
-                type: string
-                example: '<h1>Lorem ipsum dolor sit amet</h1>'
               seo:
                 $ref: '#/components/schemas/SeoStore'
             type: object

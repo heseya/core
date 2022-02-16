@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Interfaces\Translatable;
 use App\Traits\HasSeoMetadata;
 use Heseya\Sortable\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,7 +14,7 @@ use Spatie\Translatable\HasTranslations;
 /**
  * @mixin IdeHelperPage
  */
-class Page extends Model implements AuditableContract
+class Page extends Model implements AuditableContract, Translatable
 {
     use HasFactory, Sortable, Auditable, SoftDeletes, HasSeoMetadata, HasTranslations;
 

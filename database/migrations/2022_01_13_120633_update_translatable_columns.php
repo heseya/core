@@ -61,14 +61,12 @@ class UpdateTranslatableColumns extends Migration
 
         DbSchema::table('options', function (Blueprint $table) {
             $table->text('name')->change();
-            $table->text('published')->nullable();
         });
 
         Option::chunk(100, fn ($options) => $options->each(
             function (Option $option) use ($lang) {
                 $attr = $option->getAttributes();
                 $option
-                    ->setAttribute('published', [$lang])
                     ->setTranslation('name', $lang, $attr['name'])
                     ->save();
             },

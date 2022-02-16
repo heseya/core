@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\PublishingException;
 use App\Http\Requests\IndexSchemaRequest;
 use App\Http\Requests\SchemaStoreRequest;
 use App\Http\Resources\SchemaResource;
@@ -9,6 +10,7 @@ use App\Models\Product;
 use App\Models\Schema;
 use App\Services\Contracts\OptionServiceContract;
 use App\Services\Contracts\ProductServiceContract;
+use App\Services\Contracts\TranslationServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
@@ -18,6 +20,7 @@ class SchemaController extends Controller
     public function __construct(
         protected OptionServiceContract $optionService,
         protected ProductServiceContract $productService,
+        protected TranslationServiceContract $translationService,
     ) {
     }
 
@@ -30,14 +33,27 @@ class SchemaController extends Controller
         );
     }
 
+    /**
+     * @throws PublishingException
+     */
     public function store(SchemaStoreRequest $request): JsonResource
     {
-        $schema = Schema::create($request->validated());
+        $schema = Schema::make($request->validated());
+
+        foreach ($request->input('translations') as $lang => $translations) {
+            $schema->setLocale($lang)->fill($translations);
+        }
+
+        $this->translationService->checkPublished($schema, ['name']);
+
+        $schema->save();
 
         if ($request->has('options')) {
             $this->optionService->sync($schema, $request->input('options'));
             $schema->refresh();
         }
+
+        $this->translationService->checkPublishedRelations($schema, ['options' => ['name']]);
 
         if ($request->has('used_schemas')) {
             foreach ($request->input('used_schemas') as $input) {
@@ -57,14 +73,27 @@ class SchemaController extends Controller
         return SchemaResource::make($schema);
     }
 
+    /**
+     * @throws PublishingException
+     */
     public function update(SchemaStoreRequest $request, Schema $schema): JsonResource
     {
-        $schema->update($request->validated());
+        $schema->fill($request->validated());
+
+        foreach ($request->input('translations', []) as $lang => $translations) {
+            $schema->setLocale($lang)->fill($translations);
+        }
+
+        $this->translationService->checkPublished($schema, ['name']);
+
+        $schema->save();
 
         if ($request->has('options')) {
             $this->optionService->sync($schema, $request->input('options'));
             $schema->refresh();
         }
+
+        $this->translationService->checkPublishedRelations($schema, ['options' => ['name']]);
 
         if ($request->has('used_schemas')) {
             $schema->usedSchemas()->detach();

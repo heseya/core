@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Interfaces\Translatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Spatie\Translatable\HasTranslations;
@@ -9,7 +10,7 @@ use Spatie\Translatable\HasTranslations;
 /**
  * @mixin IdeHelperOption
  */
-class Option extends Model
+class Option extends Model implements Translatable
 {
     use HasFactory, HasTranslations;
 
@@ -19,7 +20,6 @@ class Option extends Model
         'disabled',
         'schema_id',
         'order',
-        'published',
     ];
 
     protected $translatable = [
@@ -30,7 +30,6 @@ class Option extends Model
         'price' => 'float',
         'disabled' => 'bool',
         'available' => 'bool',
-        'published' => 'array',
     ];
 
     public function getAvailableAttribute($quantity = 1): bool

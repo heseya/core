@@ -9,6 +9,7 @@ use App\Events\PageUpdated;
 use App\Models\Page;
 use App\Services\Contracts\PageServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
+use App\Services\Contracts\TranslationServiceContract;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -18,6 +19,7 @@ class PageService implements PageServiceContract
 {
     public function __construct(
         protected SeoMetadataServiceContract $seoMetadataService,
+        protected TranslationServiceContract $translationService,
     ) {
     }
 
@@ -47,7 +49,15 @@ class PageService implements PageServiceContract
             $attributes = array_merge($attributes, ['order' => $pageCurrentOrder + 1]);
         }
 
-        $page = Page::create($attributes);
+        $page = Page::make($attributes);
+
+        foreach ($dto->getTranslations() as $lang => $translations) {
+            $page->setLocale($lang)->fill($translations->toArray());
+        }
+
+        $this->translationService->checkPublished($page, ['name', 'content_html']);
+
+        $page->save();
 
         $page->seo()->save($this->seoMetadataService->create($dto->getSeo()));
 
@@ -58,7 +68,15 @@ class PageService implements PageServiceContract
 
     public function update(Page $page, PageDto $dto): Page
     {
-        $page->update($dto->toArray());
+        $page->fill($dto->toArray());
+
+        foreach ($dto->getTranslations() as $lang => $translations) {
+            $page->setLocale($lang)->fill($translations->toArray());
+        }
+
+        $this->translationService->checkPublished($page, ['name', 'content_html']);
+
+        $page->save();
 
         $seo = $page->seo;
         if ($seo !== null) {

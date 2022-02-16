@@ -30,6 +30,7 @@ use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
 use App\Services\Contracts\ShippingMethodServiceContract;
 use App\Services\Contracts\TokenServiceContract;
+use App\Services\Contracts\TranslationServiceContract;
 use App\Services\Contracts\UrlServiceContract;
 use App\Services\Contracts\UserServiceContract;
 use App\Services\Contracts\WebHookServiceContract;
@@ -53,6 +54,7 @@ use App\Services\SeoMetadataService;
 use App\Services\SettingsService;
 use App\Services\ShippingMethodService;
 use App\Services\TokenService;
+use App\Services\TranslationService;
 use App\Services\UrlService;
 use App\Services\UserService;
 use App\Services\WebHookService;
@@ -89,6 +91,7 @@ class AppServiceProvider extends ServiceProvider
         ItemServiceContract::class => ItemService::class,
         LanguageServiceContract::class => LanguageService::class,
         OneTimeSecurityCodeContract::class => OneTimeSecurityCodeService::class,
+        TranslationServiceContract::class => TranslationService::class,
     ];
 
     /**

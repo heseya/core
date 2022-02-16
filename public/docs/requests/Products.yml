@@ -1,14 +1,28 @@
 Product:
   type: object
   properties:
-    name:
-      type: string
+    translations:
+      type: object
+      properties:
+        language-uuid:
+          type: object
+          properties:
+            name:
+              type: string
+            description_html:
+              type: string
+            description_short:
+              type: string
+    published:
+      type: array
+      description: 'Array of published language ids'
+      items:
+        type: string
+        example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
     slug:
       type: string
     price:
       type: number
-    description_html:
-      type: string
     public:
       type: boolean
     media:
@@ -39,15 +53,13 @@ ProductStore:
     application/json:
       schema:
         required:
-          - name
+          - translations
+          - published
           - slug
           - price
           - public
         allOf:
           - $ref: '#Product'
-        properties:
-          description_short:
-            type: string
         type: object
 
 ProductUpdate:
@@ -55,7 +67,6 @@ ProductUpdate:
     application/json:
       schema:
         required:
-          - name
           - slug
           - price
           - public

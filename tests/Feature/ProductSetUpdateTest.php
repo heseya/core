@@ -368,8 +368,13 @@ class ProductSetUpdateTest extends TestCase
                 'slug_suffix' => 'test-edit',
                 'slug_override' => false,
                 'seo' => [
-                    'title' => 'seo title',
-                    'description' => 'seo description',
+                    'translations' => [
+                        $this->lang => [
+                            'title' => 'seo title',
+                            'description' => 'seo description',
+                        ],
+                    ],
+                    'published' => [$this->lang],
                 ],
             ],
         );
