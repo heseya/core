@@ -12,7 +12,7 @@ class OrderPublicResource extends Resource
             'id' => $this->getKey(),
             'code' => $this->code,
             'status' => StatusResource::make($this->status),
-            'paid' => $this->isPaid(),
+            'paid' => $this->paid,
             'payable' => $this->payable,
             'summary' => $this->summary,
             'shipping_method_id' => $this->shipping_method_id,

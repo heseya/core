@@ -198,10 +198,12 @@ class OrderController extends Controller
         # Calculate shipping price for complete order
         $summary = max($summary, 0);
         $shippingPrice = $shippingMethod->getPrice($summary);
+        $summary = round($summary + $shippingPrice, 2);
 
         $order->update([
             'shipping_price' => $shippingPrice,
-            'summary' => round($summary + $shippingPrice, 2),
+            'summary' => $summary,
+            'paid' => $summary <= 0,
         ]);
 
         OrderCreated::dispatch($order);
