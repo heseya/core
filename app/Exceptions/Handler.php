@@ -67,6 +67,12 @@ final class Handler extends ExceptionHandler
         ItemException::class => [
             'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
         ],
+        PackageException::class => [
+            'code' => Response::HTTP_BAD_GATEWAY,
+        ],
+        PackageAuthException::class => [
+            'code' => Response::HTTP_BAD_GATEWAY,
+        ],
     ];
 
     /**
