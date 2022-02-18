@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Dtos\AttributeDto;
 use App\Models\Attribute;
+use App\Models\Product;
 use App\Services\Contracts\AttributeOptionServiceContract;
 use App\Services\Contracts\AttributeServiceContract;
 
@@ -36,6 +37,20 @@ class AttributeService implements AttributeServiceContract
         $this->attributeOptionService->deleteAttributeOptions($attribute->getKey());
 
         $attribute->delete();
+    }
+
+    public function sync(Product $product, array $data): void
+    {
+        $attributes = array_map(function ($row) {
+            $explode = explode(',', $row);
+
+            return [
+                'attribute_id' => $explode[0],
+                'option_id' => $explode[1],
+            ];
+        }, $data);
+
+        $product->attributes()->sync($attributes);
     }
 
     protected function processAttributeOptions(Attribute &$attribute, AttributeDto $dto): Attribute

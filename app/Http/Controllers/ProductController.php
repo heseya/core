@@ -13,6 +13,7 @@ use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Models\ProductSet;
+use App\Services\Contracts\AttributeServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\ProductSetServiceContract;
@@ -33,7 +34,8 @@ class ProductController extends Controller
         private SchemaServiceContract $schemaService,
         private ProductServiceContract $productService,
         private ProductSetServiceContract $productSetService,
-        private SeoMetadataServiceContract $seoMetadataService
+        private SeoMetadataServiceContract $seoMetadataService,
+        private AttributeServiceContract $attributeService
     ) {
     }
 
@@ -41,7 +43,7 @@ class ProductController extends Controller
     {
         $query = Product::search($request->validated())
             ->sort($request->input('sort', 'order'))
-            ->with(['media', 'tags', 'schemas', 'sets', 'seo']);
+            ->with(['media', 'tags', 'schemas', 'sets', 'seo', 'options', 'options.attribute']);
 
         if (Gate::denies('products.show_hidden')) {
             $query->public();
@@ -130,6 +132,10 @@ class ProductController extends Controller
 
         if ($request->has('sets')) {
             $product->sets()->sync($request->input('sets'));
+        }
+
+        if ($request->has('attributes')) {
+            $this->attributeService->sync($product, $request->input('attributes'));
         }
     }
 
