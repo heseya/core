@@ -22,6 +22,11 @@ interface FurgonetkaControllerSwagger
      *         property="package_template_id",
      *         type="integer",
      *       ),
+     *       @OA\Property(
+     *         property="provider",
+     *         type="string",
+     *         example="dpd",
+     *       ),
      *     ),
      *   ),
      *   @OA\Response(
