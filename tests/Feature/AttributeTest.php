@@ -68,7 +68,7 @@ class AttributeTest extends TestCase
             ->assertJsonFragment([
                 'name' => $this->attribute->name,
                 'description' => $this->attribute->description,
-                'type' => Str::lower($this->attribute->type->key),
+                'type' => $this->attribute->type,
                 'global' => $this->attribute->global,
             ])
             ->assertJsonFragment([
