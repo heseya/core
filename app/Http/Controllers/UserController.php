@@ -29,7 +29,7 @@ class UserController extends Controller
             $request->input('pagination_limit', 12)
         );
 
-        return UserResource::collection($paginator);
+        return UserResource::collection($paginator)->full($request->has('full'));
     }
 
     public function show(User $user): JsonResource
