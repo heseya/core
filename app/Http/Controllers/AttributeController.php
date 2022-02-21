@@ -20,11 +20,16 @@ class AttributeController extends Controller
 
     public function index(): JsonResource
     {
-        return AttributeResource::collection(Attribute::paginate(Config::get('pagination.per_page')));
+        $attributes = Attribute::with('options')
+            ->paginate(Config::get('pagination.per_page'));
+
+        return AttributeResource::collection($attributes);
     }
 
     public function show(Attribute $attribute): JsonResource
     {
+        $attribute->load('options');
+
         return AttributeResource::make($attribute);
     }
 
