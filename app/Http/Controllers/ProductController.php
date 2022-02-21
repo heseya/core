@@ -151,6 +151,8 @@ class ProductController extends Controller
 
     public function destroy(Product $product): JsonResponse
     {
+        $this->mediaService->sync($product);
+
         if ($product->delete()) {
             ProductDeleted::dispatch($product);
             if ($product->seo !== null) {
