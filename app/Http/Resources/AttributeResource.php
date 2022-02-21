@@ -3,7 +3,6 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class AttributeResource extends Resource
 {
@@ -13,7 +12,7 @@ class AttributeResource extends Resource
             'id' => $this->getKey(),
             'name' => $this->name,
             'description' => $this->description,
-            'type' => Str::lower($this->type->key),
+            'type' => $this->type,
             'global' => $this->global,
             'options' => AttributeOptionResource::collection($this->options),
         ];
