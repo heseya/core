@@ -236,7 +236,7 @@ class FurgonetkaController extends Controller implements FurgonetkaControllerSwa
         $package = $client->createPackage($packageData)->createPackageResult;
 
         if ($package->errors) {
-            throw new PackageException('The package cannot be shipped.', 502, $validate->errors->item);
+            throw new PackageException('The package cannot be shipped.', 502, $package->errors->item);
         }
 
         $order->update([
