@@ -17,7 +17,6 @@ use App\Models\SeoMetadata;
 use App\Models\WebHook;
 use App\Services\Contracts\ProductServiceContract;
 use Illuminate\Events\CallQueuedListener;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
@@ -94,9 +93,9 @@ class ProductTest extends TestCase
             'attribute_id' => $attribute->getKey()
         ]);
 
-        $this->product->options()->sync([[
-            'option_id' => $option->getKey(),
-            'attribute_id' => $attribute->getKey()
+        $this->product->attributes()->sync([[
+            'attribute_id' => $attribute->getKey(),
+            'option_id' => $option->getKey()
         ]]);
 
         /**
@@ -129,7 +128,7 @@ class ProductTest extends TestCase
         $this->expected_attribute['attributes'][0] += [
             'id' => $attribute->getKey(),
             'description' => $attribute->description,
-            'type' => Str::lower($attribute->type->key),
+            'type' => $attribute->type,
             'global' => $attribute->global,
         ];
 
@@ -184,6 +183,15 @@ class ProductTest extends TestCase
     public function testIndex($user): void
     {
         $this->$user->givePermissionTo('products.show');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+        $set = ProductSet::factory()->create([
+            'public' => true,
+            'hide_on_index' => true,
+        ]);
+        $product->sets()->sync([$set->getKey()]);
 
         $response = $this->actingAs($this->$user)->getJson('/products?limit=100');
         $response
@@ -450,7 +458,7 @@ class ProductTest extends TestCase
                 'id' => $attribute->getKey(),
                 'name' => $attribute->name,
                 'description' => $attribute->description,
-                'type' => Str::lower($attribute->type->key),
+                'type' => $attribute->type,
                 'global' => $attribute->global
             ])
             ->assertJsonFragment([
@@ -459,11 +467,6 @@ class ProductTest extends TestCase
                 'value' => $option->value,
                 'attribute_id' => $attribute->getKey(),
             ]);
-
-        $this->assertDatabaseHas('product_attribute', [
-            'product_id' => $product->getKey(),
-            'attribute_id' => $attribute->getKey(),
-        ]);
     }
 
     /**
@@ -1213,7 +1216,7 @@ class ProductTest extends TestCase
                 'id' => $attribute->getKey(),
                 'name' => $attribute->name,
                 'description' => $attribute->description,
-                'type' => Str::lower($attribute->type->key),
+                'type' => $attribute->type,
                 'global' => $attribute->global
             ])
             ->assertJsonFragment([
@@ -1226,7 +1229,7 @@ class ProductTest extends TestCase
                 'id' => $attribute2->getKey(),
                 'name' => $attribute2->name,
                 'description' => $attribute2->description,
-                'type' => Str::lower($attribute2->type->key),
+                'type' => $attribute2->type,
                 'global' => $attribute2->global
             ])
             ->assertJsonFragment([
