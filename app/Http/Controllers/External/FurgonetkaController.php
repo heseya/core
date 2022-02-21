@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use SoapClient;
 
 class FurgonetkaController extends Controller
@@ -74,10 +73,12 @@ class FurgonetkaController extends Controller
         $validated = $request->validate([
             'order_id' => ['required', 'uuid'],
             'package_template_id' => ['required', 'uuid'],
+            'provider' => ['required', 'string'],
         ]);
 
         $order = Order::findOrFail($validated['order_id']);
         $packageTemplate = PackageTemplate::findOrFail($validated['package_template_id']);
+        $service_type = $validated['provider'];
 
         $validator = Validator::make($order->deliveryAddress->toArray(), [
             'country' => ['required', 'in:PL'],
@@ -136,8 +137,6 @@ class FurgonetkaController extends Controller
         }
 
         $services = $services->services->item;
-
-        $service_type = Str::slug($order->shippingMethod->name);
 
         foreach ($services as $service) {
             if ($service->type === $service_type) {
