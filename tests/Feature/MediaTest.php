@@ -122,6 +122,7 @@ class MediaTest extends TestCase
     {
         $this->$user->givePermissionTo('pages.add');
 
+        Http::fake(['*' => Http::response(status: 204)]);
         $response = $this->actingAs($this->$user)->deleteJson('/media/id:' . $this->media->getKey());
         $response->assertNoContent();
         $this->assertDatabaseMissing('media', ['id' => $this->media->getKey()]);
@@ -134,6 +135,7 @@ class MediaTest extends TestCase
     {
         $this->$user->givePermissionTo('pages.edit');
 
+        Http::fake(['*' => Http::response(status: 204)]);
         $response = $this->actingAs($this->$user)->deleteJson('/media/id:' . $this->media->getKey());
         $response->assertNoContent();
         $this->assertDatabaseMissing('media', ['id' => $this->media->getKey()]);
@@ -146,6 +148,7 @@ class MediaTest extends TestCase
     {
         $this->$user->givePermissionTo('products.add');
 
+        Http::fake(['*' => Http::response(status: 204)]);
         $response = $this->actingAs($this->$user)->deleteJson('/media/id:' . $this->media->getKey());
         $response->assertNoContent();
         $this->assertDatabaseMissing('media', ['id' => $this->media->getKey()]);
@@ -181,6 +184,7 @@ class MediaTest extends TestCase
         ]);
         $product->media()->sync($media);
 
+        Http::fake(['*' => Http::response(status: 204)]);
         $this->actingAs($this->$user)->deleteJson('/media/id:' . $media->getKey())
             ->assertNoContent();
         $this->assertDatabaseMissing('media', ['id' => $media->getKey()]);
