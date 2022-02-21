@@ -127,11 +127,8 @@ class Product extends Model implements AuditableContract
 
     public function attributes(): BelongsToMany
     {
-        return $this->belongsToMany(Attribute::class, 'product_attribute');
-    }
-
-    public function options(): BelongsToMany
-    {
-        return $this->belongsToMany(AttributeOption::class, 'product_attribute', relatedPivotKey: 'option_id');
+        return $this->belongsToMany(Attribute::class, 'product_attribute')
+            ->withPivot('option_id')
+            ->using(ProductAttribute::class);
     }
 }
