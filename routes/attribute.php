@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AttributeController;
+use App\Http\Controllers\AttributeOptionController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('attributes')->group(function (): void {
@@ -14,6 +15,6 @@ Route::prefix('attributes')->group(function (): void {
         ->middleware('permission:attributes.edit');
     Route::delete('id:{attribute:id}', [AttributeController::class, 'destroy'])
         ->middleware('can:attributes.remove');
-    /*Route::post('id:{attribute:id}/options', [AttributeOptionController::class, 'store'])
-        ->middleware('permission:attributes.add');*/
+    Route::post('id:{attribute:id}/options', [AttributeOptionController::class, 'store'])
+        ->middleware('permission:attributes.edit');
 });

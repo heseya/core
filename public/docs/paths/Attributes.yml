@@ -104,3 +104,20 @@ AttributesParams:
               type: object
     security:
       - oauth: [ ]
+
+AttributeOption:
+  post:
+    tags:
+      - Attributes
+    summary: 'add new option to attribute'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: './../schemas/Attributes.yml#/AttributeOption'

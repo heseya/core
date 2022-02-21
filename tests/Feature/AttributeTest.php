@@ -11,8 +11,10 @@ use Tests\TestCase;
 class AttributeTest extends TestCase
 {
     private Attribute $attribute;
+    private AttributeOption $option;
     private array $newAttribute;
     private array $expectedStructure;
+    private array $newOption;
 
     public function setUp(): void
     {
@@ -31,6 +33,8 @@ class AttributeTest extends TestCase
             AttributeOption::factory()->definition(),
             AttributeOption::factory()->definition(),
         ];
+
+        $this->newOption = AttributeOption::factory()->definition();
 
         $this->expectedStructure = [
             'data' => [
@@ -56,13 +60,21 @@ class AttributeTest extends TestCase
     {
         $this->$user->givePermissionTo('attributes.show');
 
-        $response = $this
+        $this
             ->actingAs($this->$user)
-            ->getJson('/attributes');
-
-        $response
+            ->getJson('/attributes')
             ->assertOk()
-            ->assertJsonCount(1, 'data');
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'name' => $this->attribute->name,
+                'description' => $this->attribute->description,
+                'type' => $this->attribute->type,
+                'global' => $this->attribute->global,
+            ])
+            ->assertJsonFragment([
+                'value_text' => $this->option->value_text,
+                'value' => $this->option->value
+            ]);
     }
 
     /**
@@ -91,6 +103,21 @@ class AttributeTest extends TestCase
                 'value_text' => $this->newAttribute['options'][1]['value_text'],
                 'value' => $this->newAttribute['options'][1]['value']
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateIncompleteData($user)
+    {
+        $this->$user->givePermissionTo('attributes.add');
+
+        unset($this->newAttribute['options']);
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/attributes', $this->newAttribute)
+            ->assertStatus(422);
     }
 
     /**
@@ -145,6 +172,42 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateIncompleteData($user)
+    {
+        $this->$user->givePermissionTo('attributes.edit');
+
+        $attributeUpdate = [
+            'name' => 'Test update attribute name',
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
+            ->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateNotExistingAttribute($user)
+    {
+        $this->$user->givePermissionTo('attributes.edit');
+
+        Attribute::destroy($this->attribute->getKey());
+
+        $attributeUpdate = [
+            'name' => 'Test update attribute name',
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
+            ->assertStatus(404);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateUnauthorized($user)
     {
         $attributeUpdate = [
@@ -187,11 +250,86 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testDeleteNotExistingAttribute($user)
+    {
+        $this->$user->givePermissionTo('attributes.remove');
+
+        Attribute::destroy($this->attribute->getKey());
+
+        $this
+            ->actingAs($this->$user)
+            ->deleteJson('/attributes/id:' . $this->attribute->getKey())
+            ->assertStatus(404);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testDeleteUnauthorized($user)
     {
         $this
             ->actingAs($this->$user)
             ->deleteJson('/attributes/id:' . $this->attribute->getKey())
+            ->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAddOption($user)
+    {
+        $this->$user->givePermissionTo('attributes.edit');
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption)
+            ->assertCreated()
+            ->assertJsonFragment([
+                'value_text' => $this->newOption['value_text'],
+                'value' => $this->newOption['value'],
+            ]);
+
+        $this->assertDatabaseHas('attribute_options', $this->newOption);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAddOptionIncompleteData($user)
+    {
+        $this->$user->givePermissionTo('attributes.edit');
+
+        unset($this->newOption['value_text']);
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption)
+            ->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAddOptionToDeletedAttribute($user)
+    {
+        $this->$user->givePermissionTo('attributes.edit');
+
+        Attribute::destroy($this->attribute->getKey());
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption)
+            ->assertStatus(404);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAddOptionUnauthorized($user)
+    {
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption)
             ->assertForbidden();
     }
 }
