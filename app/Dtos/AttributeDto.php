@@ -9,7 +9,7 @@ class AttributeDto extends Dto
 {
     private string $name;
     private string $description;
-    private int $type;
+    private string $type;
     private bool $global;
     private array $options;
 
@@ -44,9 +44,9 @@ class AttributeDto extends Dto
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getType(): int
+    public function getType(): string
     {
         return $this->type;
     }
