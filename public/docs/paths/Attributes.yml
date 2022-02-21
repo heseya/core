@@ -1,0 +1,106 @@
+Attributes:
+  get:
+    tags:
+      - Attributes
+    summary: 'list attributes'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Attributes.yml#/Attribute'
+              type: object
+    security:
+      - oauth: [ ]
+  post:
+    tags:
+      - Attributes
+    summary: 'add new attribute'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: './../schemas/Attributes.yml#/Attribute'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Attributes.yml#/Attribute'
+              type: object
+    security:
+      - oauth: [ ]
+
+AttributesParams:
+  get:
+    tags:
+      - Attributes
+    summary: 'get attribute'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Attributes.yml#/Attribute'
+              type: object
+    security:
+      - oauth: [ ]
+  delete:
+    tags:
+      - Attributes
+    summary: 'delete attribute'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      204:
+        description: Success
+    security:
+      - oauth: [ ]
+  patch:
+    tags:
+      - Attributes
+    summary: 'update attribute'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: './../schemas/Attributes.yml#/Attribute'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Attributes.yml#/Attribute'
+              type: object
+    security:
+      - oauth: [ ]

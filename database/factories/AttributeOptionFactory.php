@@ -23,7 +23,7 @@ class AttributeOptionFactory extends Factory
     {
         return [
             'value_text' => $this->faker->sentence,
-            'value' => $this->faker->randomNumber(),
+            'value' => rand(0, 1) === 1 ? $this->faker->randomNumber(5) : null,
         ];
     }
 }
