@@ -92,7 +92,7 @@ class AttributeTest extends TestCase
             ->assertJsonFragment([
                 'name' => $this->newAttribute['name'],
                 'description' => $this->newAttribute['description'],
-                'type' => Str::lower(AttributeType::getKey($this->newAttribute['type'])),
+                'type' => $this->newAttribute['type'],
                 'global' => $this->newAttribute['global'],
             ])
             ->assertJsonFragment([
@@ -160,7 +160,7 @@ class AttributeTest extends TestCase
             ->assertJsonFragment([
                 'name' => $attributeUpdate['name'],
                 'description' => $attributeUpdate['description'],
-                'type' => Str::lower(AttributeType::getKey($attributeUpdate['type'])),
+                'type' => $attributeUpdate['type'],
                 'global' => $attributeUpdate['global'],
             ])
             ->assertJsonFragment([

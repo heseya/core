@@ -6,6 +6,6 @@ use BenSampo\Enum\Enum;
 
 final class AttributeType extends Enum
 {
-    public const TEXT = 0;
-    public const NUMBER = 1;
+    public const TEXT = 'text';
+    public const NUMBER = 'number';
 }
