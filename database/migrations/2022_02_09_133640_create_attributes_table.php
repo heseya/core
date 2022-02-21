@@ -17,7 +17,7 @@ class CreateAttributesTable extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('description');
-            $table->unsignedTinyInteger('type');
+            $table->string('type');
             $table->boolean('global');
             $table->timestamps();
         });

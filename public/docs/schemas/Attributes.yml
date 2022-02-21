@@ -15,7 +15,7 @@ Attribute:
       description: 'Type of attribute'
       type: integer
       example: 1
-    searchable:
+    global:
       description: 'Possibility to use attribute in search'
       type: boolean
       example: 'true'
