@@ -92,7 +92,6 @@ class UserTest extends TestCase
                     'name' => $otherUser->name,
                     'avatar' => $otherUser->avatar,
                     'roles' => [],
-                    'permissions' => []
                 ],
             ]]);
     }
@@ -123,6 +122,7 @@ class UserTest extends TestCase
                     'name' => $otherUser->name,
                     'avatar' => $otherUser->avatar,
                     'roles' => [],
+                    'permissions' => [],
                 ],
             ]]);
     }
