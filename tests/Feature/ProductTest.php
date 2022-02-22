@@ -18,6 +18,7 @@ use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Spatie\WebhookServer\CallWebhookJob;
@@ -1569,6 +1570,38 @@ class ProductTest extends TestCase
         $listener->handle($event);
 
         Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWithMedia($user): void
+    {
+        $this->$user->givePermissionTo('products.remove');
+
+        $media = Media::factory()->create([
+            'type' => MediaType::PHOTO,
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ]);
+
+        $product = Product::factory([
+            'name' => 'Delete with media',
+            'slug' => 'Delete-with-media',
+            'price' => 100,
+            'description_html' => '<h1>Description</h1>',
+            'public' => false,
+            'order' => 1,
+        ])->create();
+
+        $product->media()->sync($media);
+
+        Http::fake(['*' => Http::response(status: 204)]);
+
+        $response = $this->actingAs($this->$user)
+            ->deleteJson('/products/id:' . $product->getKey());
+        $response->assertNoContent();
+        $this->assertSoftDeleted($product);
+        $this->assertDeleted($media);
     }
 
     /**
