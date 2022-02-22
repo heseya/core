@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @mixin IdeHelperAttributeOption
@@ -22,9 +21,4 @@ class AttributeOption extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
-
-    public function attribute(): BelongsTo
-    {
-        return $this->belongsTo(Attribute::class);
-    }
 }

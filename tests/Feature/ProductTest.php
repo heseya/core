@@ -7,6 +7,8 @@ use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
 use App\Listeners\WebHookEventListener;
+use App\Models\Attribute;
+use App\Models\AttributeOption;
 use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductSet;
@@ -393,6 +395,37 @@ class ProductTest extends TestCase
                     ],
                 ],
             ]]);
+    }
+
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowAttributes($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $attribute = Attribute::factory()->create();
+
+        $option = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey()
+        ]);
+
+        $product->attributes()->attach($attribute->getKey(), ['option_id' => $option->getKey()]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/products/' . $product->slug)
+            ->assertOk();
+
+        $this->assertDatabaseHas('product_attribute', [
+            'product_id' => $product->getKey(),
+            'attribute_id' => $attribute->getKey(),
+        ]);
     }
 
     /**

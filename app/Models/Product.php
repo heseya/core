@@ -124,4 +124,11 @@ class Product extends Model implements AuditableContract
     {
         return $query->where('public', true);
     }
+
+    public function attributes(): BelongsToMany
+    {
+        return $this->belongsToMany(Attribute::class, 'product_attribute')
+            ->withPivot('option_id')
+            ->using(ProductAttribute::class);
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\AttributeType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -30,5 +31,12 @@ class Attribute extends Model
     public function options(): HasMany
     {
         return $this->hasMany(AttributeOption::class);
+    }
+
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'product_attribute')
+            ->withPivot('option_id')
+            ->using(ProductAttribute::class);
     }
 }
