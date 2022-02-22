@@ -24,10 +24,12 @@ class AttributeRequest extends FormRequest
 
         return array_merge([
             'name' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255', 'unique:attributes'],
             'description' => ['required', 'string', 'max:255'],
             'type' => ['required', new EnumValue(AttributeType::class, false)],
             'global' => ['required', 'boolean'],
-            'options' => ['required', 'array'],
+            'sortable' => ['required', 'boolean'],
+            'options' => ['nullable', 'array'],
         ], $optionRules);
     }
 }

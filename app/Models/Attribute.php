@@ -16,14 +16,17 @@ class Attribute extends Model
 
     protected $fillable = [
         'name',
+        'slug',
         'description',
         'type',
         'global',
+        'sortable',
     ];
 
     protected $casts = [
         'type' => AttributeType::class,
         'global' => 'boolean',
+        'sortable' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

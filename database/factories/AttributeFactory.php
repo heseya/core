@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Enums\AttributeType;
 use App\Models\Attribute;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 class AttributeFactory extends Factory
 {
@@ -22,11 +23,15 @@ class AttributeFactory extends Factory
      */
     public function definition()
     {
+        $name = $this->faker->unique()->word;
+
         return [
-            'name' => $this->faker->word,
+            'name' => $name,
+            'slug' => Str::slug($name),
             'description' => $this->faker->sentence,
             'type' => AttributeType::getRandomValue(),
             'global' => $this->faker->boolean,
+            'sortable' => $this->faker->boolean,
         ];
     }
 }
