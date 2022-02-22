@@ -77,12 +77,12 @@ OrdersParams:
       - Orders
     summary: 'order view'
     parameters:
-      - name: code
+      - name: id
         in: path
         required: true
         schema:
           type: string
-          example: D3PT88
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
     responses:
       200:
         description: Success

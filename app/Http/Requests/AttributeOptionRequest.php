@@ -14,8 +14,9 @@ class AttributeOptionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'value_text' => ['required', 'string', 'max:255'],
-            'value' => ['nullable', 'numeric'],
+            'name' => ['required', 'string', 'max:255'],
+            'value_number' => ['nullable', 'numeric'],
+            'value_date' => ['nullable', 'date'],
         ];
     }
 }

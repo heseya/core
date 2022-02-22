@@ -10,6 +10,7 @@ use App\Exceptions\AuthException;
 use App\Models\App;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\User;
 use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UrlServiceContract;
@@ -189,7 +190,9 @@ class AppService implements AppServiceContract
         $owner->givePermissionTo($internalPermissions);
 
         if ($internalPermissions->isNotEmpty()) {
-            $this->createAppOwnerRole($app, $internalPermissions);
+            if (Auth::user() instanceof User) {
+                $this->createAppOwnerRole($app, $internalPermissions);
+            }
 
             $this->makePermissionsPublic(
                 $app,

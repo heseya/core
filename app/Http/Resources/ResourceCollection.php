@@ -2,9 +2,9 @@
 
 namespace App\Http\Resources;
 
+use App\Services\Contracts\SeoMetadataServiceContract;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Cache;
 
 class ResourceCollection extends \Heseya\Resource\ResourceCollection
 {
@@ -15,6 +15,9 @@ class ResourceCollection extends \Heseya\Resource\ResourceCollection
      */
     public function with($request): array
     {
+        /** @var SeoMetadataServiceContract $seoMetadataService */
+        $seoMetadataService = App::make(SeoMetadataServiceContract::class);
+
         return [
             'meta' => [
                 'currency' => [
@@ -25,9 +28,7 @@ class ResourceCollection extends \Heseya\Resource\ResourceCollection
                 'language' => [
                     'symbol' => App::currentLocale(),
                 ],
-                'seo' => [
-                    SeoMetadataResource::make(Cache::get('seo.global')),
-                ],
+                'seo' => SeoMetadataResource::make($seoMetadataService->getGlobalSeo()),
             ],
         ];
     }

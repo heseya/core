@@ -7,6 +7,8 @@ use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
 use App\Listeners\WebHookEventListener;
+use App\Models\Attribute;
+use App\Models\AttributeOption;
 use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductSet;
@@ -30,6 +32,8 @@ class ProductTest extends TestCase
 
     private array $expected;
     private array $expected_short;
+    private array $expected_attribute;
+    private array $expected_attribute_short;
 
     private ProductServiceContract $productService;
 
@@ -83,6 +87,18 @@ class ProductTest extends TestCase
             'public' => false,
         ]);
 
+        $attribute = Attribute::factory()->create();
+
+        $option = AttributeOption::factory()->create([
+            'index' => 1,
+            'attribute_id' => $attribute->getKey()
+        ]);
+
+        $this->product->attributes()->sync([[
+            'attribute_id' => $attribute->getKey(),
+            'option_id' => $option->getKey()
+        ]]);
+
         /**
          * Expected short response
          */
@@ -97,10 +113,34 @@ class ProductTest extends TestCase
             'cover' => null,
         ];
 
+        $this->expected_attribute_short = [
+            'attributes' => [[
+                'name' => $attribute->name,
+                'selected_option' => [
+                    'id' => $option->getKey(),
+                    'name' => $option->name,
+                    'index' => $option->index,
+                    'value_number' => $option->value_number,
+                    'value_date' => $option->value_date,
+                    'attribute_id' => $attribute->getKey(),
+                ]
+            ]],
+        ];
+
+        $this->expected_attribute = $this->expected_attribute_short;
+        $this->expected_attribute['attributes'][0] += [
+            'id' => $attribute->getKey(),
+            'slug' => $attribute->slug,
+            'description' => $attribute->description,
+            'type' => $attribute->type,
+            'global' => $attribute->global,
+            'sortable' => $attribute->sortable,
+        ];
+
         /**
          * Expected full response
          */
-        $this->expected = array_merge($this->expected_short, [
+        $this->expected = array_merge($this->expected_short, $this->expected_attribute, [
             'description_html' => $this->product->description_html,
             'description_short' => $this->product->description_short,
             'meta_description' => strip_tags($this->product->description_html),
@@ -163,7 +203,7 @@ class ProductTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public products.
             ->assertJson(['data' => [
-                0 => $this->expected_short,
+                0 => array_merge($this->expected_short, $this->expected_attribute_short),
             ]]);
 
         $this->assertQueryCountLessThan(20);
@@ -393,6 +433,48 @@ class ProductTest extends TestCase
                     ],
                 ],
             ]]);
+    }
+
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowAttributes($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $attribute = Attribute::factory()->create();
+
+        $option = AttributeOption::factory()->create([
+            'index' => 1,
+            'attribute_id' => $attribute->getKey()
+        ]);
+
+        $product->attributes()->attach($attribute->getKey(), ['option_id' => $option->getKey()]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/products/' . $product->slug)
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $attribute->getKey(),
+                'name' => $attribute->name,
+                'description' => $attribute->description,
+                'type' => $attribute->type,
+                'global' => $attribute->global
+            ])
+            ->assertJsonFragment([
+                'id' => $option->getKey(),
+                'name' => $option->name,
+                'index' => $option->index,
+                'value_number' => $option->value_number,
+                'value_date' => $option->value_date,
+                'attribute_id' => $attribute->getKey(),
+            ]);
     }
 
     /**
@@ -1103,6 +1185,91 @@ class ProductTest extends TestCase
             'price_max' => $productPrice + $schemaPrice,
             'public' => false,
             'description_html' => null,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithAttribute($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $attribute = Attribute::factory()->create();
+
+        $option = AttributeOption::factory()->create([
+            'index' => 1,
+            'attribute_id' => $attribute->getKey()
+        ]);
+
+        $attribute2 = Attribute::factory()->create();
+
+        $option2 = AttributeOption::factory()->create([
+            'index' => 2,
+            'attribute_id' => $attribute2->getKey()
+        ]);
+
+        $res = $this
+            ->actingAs($this->$user)
+            ->postJson('/products', [
+                'name' => 'Test',
+                'slug' => 'test',
+                'price' => 0,
+                'public' => true,
+                'attributes' => [
+                    $attribute->getKey().','.$option->getKey(),
+                    $attribute2->getKey().','.$option2->getKey(),
+                ]
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'id' => $attribute->getKey(),
+                'name' => $attribute->name,
+                'slug' => $attribute->slug,
+                'description' => $attribute->description,
+                'type' => $attribute->type,
+                'global' => $attribute->global,
+                'sortable' => $attribute->sortable,
+            ])
+            ->assertJsonFragment([
+                'id' => $option->getKey(),
+                'name' => $option->name,
+                'index' => $option->index,
+                'value_number' => $option->value_number,
+                'value_date' => $option->value_date,
+                'attribute_id' => $attribute->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $attribute2->getKey(),
+                'name' => $attribute2->name,
+                'slug' => $attribute2->slug,
+                'description' => $attribute2->description,
+                'type' => $attribute2->type,
+                'global' => $attribute2->global,
+                'sortable' => $attribute2->sortable,
+            ])
+            ->assertJsonFragment([
+                'id' => $option2->getKey(),
+                'name' => $option2->name,
+                'index' => $option2->index,
+                'value_number' => $option2->value_number,
+                'value_date' => $option2->value_date,
+                'attribute_id' => $attribute2->getKey(),
+            ]);
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 0,
+        ]);
+
+        $this->assertDatabaseHas('product_attribute', [
+            'attribute_id' => $attribute->getKey(),
+            'option_id' => $option->getKey()
+        ]);
+        $this->assertDatabaseHas('product_attribute', [
+            'attribute_id' => $attribute2->getKey(),
+            'option_id' => $option2->getKey()
         ]);
     }
 

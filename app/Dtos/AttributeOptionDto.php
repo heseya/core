@@ -8,15 +8,17 @@ use Heseya\Dto\Dto;
 class AttributeOptionDto extends Dto
 {
     private string|null $id;
-    private string $value_text;
-    private float|null $value;
+    private string $name;
+    private float|null $value_number;
+    private string|null $value_date;
 
     public static function fromFormRequest(AttributeOptionRequest $request): self
     {
         return new self(
             id: $request->input('id'),
-            value_text: $request->input('value_text'),
-            value: $request->input('value'),
+            name: $request->input('name'),
+            value_number: $request->input('value_number'),
+            value_date: $request->input('value_date'),
         );
     }
 
@@ -24,23 +26,41 @@ class AttributeOptionDto extends Dto
     {
         return new self(
             id: array_key_exists('id', $data) ? $data['id'] : null,
-            value_text: $data['value_text'],
-            value: array_key_exists('value', $data) ? $data['value'] : null,
+            name: $data['name'],
+            value_number: array_key_exists('value_number', $data) ? $data['value_number'] : null,
+            value_date: array_key_exists('value_date', $data) ? $data['value_date'] : null,
         );
     }
 
+    /**
+     * @return string|null
+     */
     public function getId(): string|null
     {
         return $this->id;
     }
 
-    public function getValueText(): string
+    /**
+     * @return string
+     */
+    public function getName(): string
     {
-        return $this->value_text;
+        return $this->name;
     }
 
-    public function getValue(): float|null
+    /**
+     * @return float|null
+     */
+    public function getValueNumber(): float|null
     {
-        return $this->value;
+        return $this->value_number;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getValueDate(): string|null
+    {
+        return $this->value_date;
     }
 }
