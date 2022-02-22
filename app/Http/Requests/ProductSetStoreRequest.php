@@ -23,7 +23,7 @@ class ProductSetStoreRequest extends SeoMetadataRulesRequest
             'description_html' => ['nullable', 'string'],
             'cover_id' => ['uuid', 'uuid', 'exists:media,id'],
             'attributes' => ['array'],
-            'attributes.*' => ['uuid', 'exists:attributes,id']
+            'attributes.*' => ['uuid', 'exists:attributes,id'],
         ]);
     }
 }
