@@ -130,7 +130,7 @@ class AttributeTest extends TestCase
         $this
             ->actingAs($this->$user)
             ->postJson('/attributes', $this->newAttribute)
-            ->assertStatus(422);
+            ->assertUnprocessable();
     }
 
     /**
@@ -202,7 +202,7 @@ class AttributeTest extends TestCase
         $this
             ->actingAs($this->$user)
             ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
-            ->assertStatus(422);
+            ->assertUnprocessable();
     }
 
     /**
@@ -221,7 +221,7 @@ class AttributeTest extends TestCase
         $this
             ->actingAs($this->$user)
             ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
-            ->assertStatus(404);
+            ->assertNotFound();
     }
 
     /**
@@ -281,7 +281,7 @@ class AttributeTest extends TestCase
         $this
             ->actingAs($this->$user)
             ->deleteJson('/attributes/id:' . $this->attribute->getKey())
-            ->assertStatus(404);
+            ->assertNotFound();
     }
 
     /**
@@ -327,7 +327,7 @@ class AttributeTest extends TestCase
         $this
             ->actingAs($this->$user)
             ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption)
-            ->assertStatus(422);
+            ->assertUnprocessable();
     }
 
     /**
@@ -342,7 +342,7 @@ class AttributeTest extends TestCase
         $this
             ->actingAs($this->$user)
             ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption)
-            ->assertStatus(404);
+            ->assertNotFound();
     }
 
     /**
@@ -353,6 +353,62 @@ class AttributeTest extends TestCase
         $this
             ->actingAs($this->$user)
             ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption)
+            ->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteOption($user)
+    {
+        $this->$user->givePermissionTo('attributes.remove');
+
+        $this
+            ->actingAs($this->$user)
+            ->deleteJson('/attributes/id:' . $this->attribute->getKey() . '/options/id:'. $this->option->getKey())
+            ->assertNoContent();
+
+        $this->assertSoftDeleted($this->option);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteOptionNotExisting($user)
+    {
+        $this->$user->givePermissionTo('attributes.remove');
+
+        $this->option->delete();
+
+        $this
+            ->actingAs($this->$user)
+            ->deleteJson('/attributes/id:' . $this->attribute->getKey() . '/options/id:'. $this->option->getKey())
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteOptionNotRelatedOption($user)
+    {
+        $this->$user->givePermissionTo('attributes.remove');
+
+        $attribute = Attribute::factory()->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->deleteJson('/attributes/id:' . $attribute->getKey() . '/options/id:'. $this->option->getKey())
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteOptionUnauthorized($user)
+    {
+        $this
+            ->actingAs($this->$user)
+            ->deleteJson('/attributes/id:' . $this->attribute->getKey() . '/options/id:'. $this->option->getKey())
             ->assertForbidden();
     }
 }
