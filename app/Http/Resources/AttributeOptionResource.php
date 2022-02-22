@@ -10,8 +10,10 @@ class AttributeOptionResource extends Resource
     {
         return [
             'id' => $this->getKey(),
-            'value_text' => $this->value_text,
-            'value' => $this->value,
+            'name' => $this->name,
+            'index' => $this->index,
+            'value_number' => $this->value_number,
+            'value_date' => $this->value_date,
             'attribute_id' => $this->attribute_id,
         ];
     }
