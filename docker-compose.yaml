@@ -20,6 +20,9 @@ services:
         touch /usr/src/init
       fi
       exec apache2-foreground
+    depends_on:
+      - mysql_service
+      - elasticsearch
   mysql_service:
     image: mariadb:10.5
     restart: unless-stopped
@@ -42,7 +45,7 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.0.0
     restart: unless-stopped
     ports:
-      - ${ELASTIC_PORT:-9200}:9200
+      - ${ELASTICSEARCH_PORT:-9200}:9200
     environment:
       - xpack.security.enabled=false
       - discovery.type=single-node
@@ -50,10 +53,14 @@ services:
       - ./database/elasticsearch:/usr/share/elasticsearch/data
   kibana:
     image: docker.elastic.co/kibana/kibana:8.0.0
-    ports:
-      - ${KIBANA_PASSWORD:-5601}:5601
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:${ELASTIC_PORT:-9200}
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:${ELASTICSEARCH_PORT:-9200}
+    depends_on:
+      - elasticsearch
+  elastichq:
+    image: elastichq/elasticsearch-hq:latest
+    environment:
+      - HQ_DEFAULT_URL=http://elasticsearch:${ELASTICSEARCH_PORT:-9200}
     depends_on:
       - elasticsearch
   nginx:
@@ -66,3 +73,8 @@ services:
     environment:
       - ADMINER_PREFIX=${DOCKER_ADMINER_PREFIX:-adminer}
       - KIBANA_PREFIX=${DOCKER_KIBANA_PREFIX:-kibana}
+    depends_on:
+      - app
+      - adminer
+      - kibana
+      - elastichq
