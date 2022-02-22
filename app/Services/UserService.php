@@ -25,11 +25,9 @@ class UserService implements UserServiceContract
             $result = $result->whereIn('id', explode(',', $search['ids']));
         }
 
-        $result = $result
+        return $result
             ->sort($sort)
             ->paginate($limit);
-
-        return $result;
     }
 
     public function create(string $name, string $email, string $password, array $roles): User
