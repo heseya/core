@@ -90,6 +90,7 @@ class ProductTest extends TestCase
         $attribute = Attribute::factory()->create();
 
         $option = AttributeOption::factory()->create([
+            'index' => 1,
             'attribute_id' => $attribute->getKey()
         ]);
 
@@ -117,8 +118,10 @@ class ProductTest extends TestCase
                 'name' => $attribute->name,
                 'selected_option' => [
                     'id' => $option->getKey(),
-                    'value_text' => $option->value_text,
-                    'value' => $option->value,
+                    'name' => $option->name,
+                    'index' => $option->index,
+                    'value_number' => $option->value_number,
+                    'value_date' => $option->value_date,
                     'attribute_id' => $attribute->getKey(),
                 ]
             ]],
@@ -447,6 +450,7 @@ class ProductTest extends TestCase
         $attribute = Attribute::factory()->create();
 
         $option = AttributeOption::factory()->create([
+            'index' => 1,
             'attribute_id' => $attribute->getKey()
         ]);
 
@@ -465,8 +469,10 @@ class ProductTest extends TestCase
             ])
             ->assertJsonFragment([
                 'id' => $option->getKey(),
-                'value_text' => $option->value_text,
-                'value' => $option->value,
+                'name' => $option->name,
+                'index' => $option->index,
+                'value_number' => $option->value_number,
+                'value_date' => $option->value_date,
                 'attribute_id' => $attribute->getKey(),
             ]);
     }
@@ -1192,12 +1198,14 @@ class ProductTest extends TestCase
         $attribute = Attribute::factory()->create();
 
         $option = AttributeOption::factory()->create([
+            'index' => 1,
             'attribute_id' => $attribute->getKey()
         ]);
 
         $attribute2 = Attribute::factory()->create();
 
         $option2 = AttributeOption::factory()->create([
+            'index' => 2,
             'attribute_id' => $attribute2->getKey()
         ]);
 
@@ -1225,8 +1233,10 @@ class ProductTest extends TestCase
             ])
             ->assertJsonFragment([
                 'id' => $option->getKey(),
-                'value_text' => $option->value_text,
-                'value' => $option->value,
+                'name' => $option->name,
+                'index' => $option->index,
+                'value_number' => $option->value_number,
+                'value_date' => $option->value_date,
                 'attribute_id' => $attribute->getKey(),
             ])
             ->assertJsonFragment([
@@ -1240,8 +1250,10 @@ class ProductTest extends TestCase
             ])
             ->assertJsonFragment([
                 'id' => $option2->getKey(),
-                'value_text' => $option2->value_text,
-                'value' => $option2->value,
+                'name' => $option2->name,
+                'index' => $option2->index,
+                'value_number' => $option2->value_number,
+                'value_date' => $option2->value_date,
                 'attribute_id' => $attribute2->getKey(),
             ]);
 

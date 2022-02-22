@@ -23,6 +23,7 @@ class AttributeTest extends TestCase
         $this->attribute = Attribute::factory()->create();
 
         $this->option = AttributeOption::factory()->create([
+            'index' => 1,
             'attribute_id' => $this->attribute->getKey()
         ]);
 
@@ -76,8 +77,10 @@ class AttributeTest extends TestCase
                 'sortable' => $this->attribute->sortable,
             ])
             ->assertJsonFragment([
-                'value_text' => $this->option->value_text,
-                'value' => $this->option->value
+                'index' => $this->option->index,
+                'name' => $this->option->name,
+                'value_number' => $this->option->value_number,
+                'value_date' => $this->option->value_date
             ]);
     }
 
@@ -102,12 +105,16 @@ class AttributeTest extends TestCase
                 'sortable' => $this->newAttribute['sortable'],
             ])
             ->assertJsonFragment([
-                'value_text' => $this->newAttribute['options'][0]['value_text'],
-                'value' => $this->newAttribute['options'][0]['value']
+                'index' => 1,
+                'name' => $this->newAttribute['options'][0]['name'],
+                'value_number' => $this->newAttribute['options'][0]['value_number'],
+                'value_date' => $this->newAttribute['options'][0]['value_date']
             ])
             ->assertJsonFragment([
-                'value_text' => $this->newAttribute['options'][1]['value_text'],
-                'value' => $this->newAttribute['options'][1]['value']
+                'index' => 2,
+                'name' => $this->newAttribute['options'][1]['name'],
+                'value_number' => $this->newAttribute['options'][1]['value_number'],
+                'value_date' => $this->newAttribute['options'][1]['value_date']
             ]);
     }
 
@@ -154,8 +161,9 @@ class AttributeTest extends TestCase
             'options' => [
                 [
                     'id' => $this->option->id,
-                    'value_text' => 'Test ' . $this->option->value_text,
-                    'value' => $this->option->value,
+                    'name' => 'Test ' . $this->option->name,
+                    'value_number' => $this->option->value_number,
+                    'value_date' => $this->option->value_date,
                 ],
             ]
         ];
@@ -174,8 +182,9 @@ class AttributeTest extends TestCase
                 'sortable' => $attributeUpdate['sortable'],
             ])
             ->assertJsonFragment([
-                'value_text' => $attributeUpdate['options'][0]['value_text'],
-                'value' => $attributeUpdate['options'][0]['value']
+                'name' => $attributeUpdate['options'][0]['name'],
+                'value_number' => $attributeUpdate['options'][0]['value_number'],
+                'value_date' => $attributeUpdate['options'][0]['value_date']
             ]);
     }
 
@@ -230,8 +239,9 @@ class AttributeTest extends TestCase
             'options' => [
                 [
                     'id' => $this->option->id,
-                    'value_text' => 'Test ' . $this->option->value_text,
-                    'value' => $this->option->value,
+                    'name' => 'Test ' . $this->option->name,
+                    'value_number' => $this->option->value_number,
+                    'value_date' => $this->option->value_date,
                 ],
             ]
         ];
@@ -297,8 +307,9 @@ class AttributeTest extends TestCase
             ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption)
             ->assertCreated()
             ->assertJsonFragment([
-                'value_text' => $this->newOption['value_text'],
-                'value' => $this->newOption['value'],
+                'name' => $this->newOption['name'],
+                'value_number' => $this->newOption['value_number'],
+                'value_date' => $this->newOption['value_date'],
             ]);
 
         $this->assertDatabaseHas('attribute_options', $this->newOption);
@@ -311,7 +322,7 @@ class AttributeTest extends TestCase
     {
         $this->$user->givePermissionTo('attributes.edit');
 
-        unset($this->newOption['value_text']);
+        unset($this->newOption['name']);
 
         $this
             ->actingAs($this->$user)
