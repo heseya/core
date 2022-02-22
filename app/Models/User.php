@@ -15,6 +15,7 @@ use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
@@ -97,9 +98,9 @@ class User extends Model implements
         return [];
     }
 
-    public function orders(): HasMany
+    public function orders(): MorphMany
     {
-        return $this->hasMany(Order::class);
+        return $this->morphMany(Order::class, 'user');
     }
 
     public function securityCodes(): HasMany

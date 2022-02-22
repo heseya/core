@@ -24,7 +24,6 @@ use App\Models\Product;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
-use App\Models\User;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\NameServiceContract;
@@ -121,7 +120,8 @@ class OrderController extends Controller
             'status_id' => Status::select('id')->orderBy('order')->first()->getKey(),
             'delivery_address_id' => $deliveryAddress->getKey(),
             'invoice_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
-            'user_id' => Auth::user() instanceof User ? Auth::user()->getKey() : null,
+            'user_id' => Auth::user()->getKey(),
+            'user_type' => Auth::user()::class,
         ]);
 
         # Add products to order
@@ -198,10 +198,12 @@ class OrderController extends Controller
         # Calculate shipping price for complete order
         $summary = max($summary, 0);
         $shippingPrice = $shippingMethod->getPrice($summary);
+        $summary = round($summary + $shippingPrice, 2);
 
         $order->update([
             'shipping_price' => $shippingPrice,
-            'summary' => round($summary + $shippingPrice, 2),
+            'summary' => $summary,
+            'paid' => $summary <= 0,
         ]);
 
         OrderCreated::dispatch($order);
