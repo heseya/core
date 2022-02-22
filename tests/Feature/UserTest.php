@@ -142,23 +142,7 @@ class UserTest extends TestCase
             ->getJson('/users?ids=' . $firstUser->getKey() . ',' . $secondUser->getKey());
         $response
             ->assertOk()
-            ->assertJsonCount(2, 'data')
-            ->assertJson(['data' => [
-                [
-                    'id' => $secondUser->getKey(),
-                    'email' => $secondUser->email,
-                    'name' => $secondUser->name,
-                    'avatar' => $secondUser->avatar,
-                    'roles' => [],
-                ],
-                [
-                    'id' => $firstUser->getKey(),
-                    'email' => $firstUser->email,
-                    'name' => $firstUser->name,
-                    'avatar' => $firstUser->avatar,
-                    'roles' => [],
-                ],
-            ]]);
+            ->assertJsonCount(2, 'data');
     }
 
     /**
