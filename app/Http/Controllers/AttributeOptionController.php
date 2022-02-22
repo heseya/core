@@ -6,8 +6,11 @@ use App\Dtos\AttributeOptionDto;
 use App\Http\Requests\AttributeOptionRequest;
 use App\Http\Resources\AttributeOptionResource;
 use App\Models\Attribute;
+use App\Models\AttributeOption;
 use App\Services\Contracts\AttributeOptionServiceContract;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Response;
 
 class AttributeOptionController extends Controller
 {
@@ -23,5 +26,12 @@ class AttributeOptionController extends Controller
         );
 
         return AttributeOptionResource::make($attributeOption);
+    }
+
+    public function destroy(Attribute $attribute, AttributeOption $option): JsonResponse
+    {
+        $this->attributeOptionService->delete($option);
+
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

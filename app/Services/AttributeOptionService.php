@@ -33,6 +33,11 @@ class AttributeOptionService implements AttributeOptionServiceContract
         return $this->create($attributeId, $dto);
     }
 
+    public function delete(AttributeOption $attributeOption): void
+    {
+        $attributeOption->delete();
+    }
+
     public function deleteAttributeOptions(string $attributeId): void
     {
         AttributeOption::query()
