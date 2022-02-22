@@ -39,6 +39,14 @@ class ProductResource extends Resource
             'schemas' => SchemaResource::collection($this->schemas),
             'sets' => ProductSetResource::collection($sets),
             'seo' => SeoMetadataResource::make($this->seo),
+            'attributes' => ProductAttributeResource::collection($this->attributes),
+        ];
+    }
+
+    public function index(Request $request): array
+    {
+        return [
+            'attributes' => ProductAttributeShortResource::collection($this->attributes),
         ];
     }
 }

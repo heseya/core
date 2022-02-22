@@ -1,4 +1,5 @@
 Attribute:
+  type: object
   properties:
     id:
       type: string
@@ -33,11 +34,13 @@ Attribute:
             description: 'Value of attribute option'
             type: float
             example: '27'
-  type: object
 
 AttributeOption:
   type: object
   properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
     value_text:
       description: 'Text of attribute option'
       type: string
@@ -46,3 +49,38 @@ AttributeOption:
       description: 'Value of attribute option'
       type: float
       example: '27'
+    attribute_id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+
+AttributeProductList:
+  type: object
+  properties:
+    name:
+      description: 'Name of attribute'
+      type: string
+      example: 'Screen size'
+    selected_options:
+      description: 'Array options of attribute'
+      $ref: '#AttributeOption'
+
+AttributeProduct:
+  type: object
+  allOf:
+    - $ref: '#AttributeProductList'
+    - properties:
+        id:
+          type: string
+          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+        description:
+          description: 'Description of attribute'
+          type: string
+          example: 'Presented number is size of screen monitor'
+        type:
+          description: 'Type of attribute'
+          type: integer
+          example: 1
+        global:
+          description: 'Possibility to use attribute in search'
+          type: boolean
+          example: 'true'
