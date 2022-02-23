@@ -104,18 +104,8 @@ class AttributeTest extends TestCase
                 'global' => $this->newAttribute['global'],
                 'sortable' => $this->newAttribute['sortable'],
             ])
-            ->assertJsonFragment([
-                'index' => 1,
-                'name' => $this->newAttribute['options'][0]['name'],
-                'value_number' => $this->newAttribute['options'][0]['value_number'],
-                'value_date' => $this->newAttribute['options'][0]['value_date']
-            ])
-            ->assertJsonFragment([
-                'index' => 2,
-                'name' => $this->newAttribute['options'][1]['name'],
-                'value_number' => $this->newAttribute['options'][1]['value_number'],
-                'value_date' => $this->newAttribute['options'][1]['value_date']
-            ]);
+            ->assertJsonFragment(['index' => 1] + $this->newAttribute['options'][0])
+            ->assertJsonFragment(['index' => 2] + $this->newAttribute['options'][1]);
     }
 
     /**
