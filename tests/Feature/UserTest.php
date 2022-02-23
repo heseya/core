@@ -109,8 +109,6 @@ class UserTest extends TestCase
 
         $response = $this->actingAs($this->$user)->getJson('/users?full');
 
-        var_dump($response->getData()->data);
-
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data')
