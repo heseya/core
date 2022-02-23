@@ -12,7 +12,7 @@ class AttributeOptionService implements AttributeOptionServiceContract
     {
         $data = array_merge(
             [
-                'index' => AttributeOption::where('attribute_id', '=', $attributeId)->count() + 1,
+                'index' => AttributeOption::withTrashed()->where('attribute_id', '=', $attributeId)->count() + 1,
                 'attribute_id' => $attributeId,
             ],
             $dto->toArray(),
