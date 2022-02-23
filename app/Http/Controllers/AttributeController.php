@@ -70,7 +70,7 @@ class AttributeController extends Controller
             Attribute::whereHas(
                 'productSets',
                 fn ($query) => $query->whereIn('product_set_id', $request->sets)
-            )->orWhere('global', 1)->get()
+            )->orWhere('global', 1)->with('options')->get()
         );
     }
 }

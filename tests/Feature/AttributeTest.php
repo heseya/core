@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Enums\AttributeType;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
-use Illuminate\Support\Str;
+use App\Models\ProductSet;
 use Tests\TestCase;
 
 class AttributeTest extends TestCase
@@ -343,5 +343,80 @@ class AttributeTest extends TestCase
             ->actingAs($this->$user)
             ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption)
             ->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testFilterGlobal($user): void
+    {
+        Attribute::query()->delete();
+
+        Attribute::factory()->count(3)->create(['global' => 1]);
+        Attribute::factory()->create(['global' => 0]);
+
+        $this->actingAs($this->$user)->getJson('/filters')
+            ->assertJsonCount(3, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testFilterWithSetsIds($user): void
+    {
+        Attribute::query()->delete();
+
+        $firstProductSet = ProductSet::factory()->create()->attributes()->attach([
+            Attribute::factory()->create([
+                'global' => 0,
+                'type' => 'number',
+            ])->getKey(),
+            Attribute::factory()->create([
+                'global' => 0,
+                'type' => 'date',
+            ])->getKey(),
+        ]);
+
+        $secondProductSet = ProductSet::factory()->create()->attributes()->attach([
+            Attribute::factory()->create([
+                'global' => 0,
+                'type' => 'number',
+            ])->getKey(),
+            Attribute::factory()->create([
+                'global' => 0,
+                'type' => 'single-option',
+            ])->options()->create([
+                AttributeOption::factory()->create([
+                    'value_text' => 'test',
+                ])
+            ])->getKey(),
+            Attribute::factory()->create([
+                'global' => 0,
+                'type' => 'date',
+            ])->getKey(),
+        ]);
+
+        ProductSet::factory()->create()->attributes()->attach([
+            Attribute::factory()->create([
+                'global' => 0,
+                'type' => 'number',
+            ])->getKey(),
+            Attribute::factory()->create([
+                'global' => 0,
+                'type' => 'date',
+            ])->getKey(),
+            Attribute::factory()->create([
+                'global' => 0,
+                'type' => 'single-option',
+            ])->options()->create([
+                AttributeOption::factory()->create([
+                    'value_text' => 'test',
+                ])
+            ])->getKey(),
+        ]);
+
+        $this->actingAs($this->$user)
+            ->getJson('/filters?sets[]=' . $firstProductSet->getKey() . 'sets[]=' . $secondProductSet->getKey())
+            ->assertJsonCount(20, 'data');
     }
 }
