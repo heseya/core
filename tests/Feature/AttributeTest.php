@@ -171,11 +171,7 @@ class AttributeTest extends TestCase
                 'global' => $attributeUpdate['global'],
                 'sortable' => $attributeUpdate['sortable'],
             ])
-            ->assertJsonFragment([
-                'name' => $attributeUpdate['options'][0]['name'],
-                'value_number' => $attributeUpdate['options'][0]['value_number'],
-                'value_date' => $attributeUpdate['options'][0]['value_date']
-            ]);
+            ->assertJsonFragment($attributeUpdate['options'][0]);
     }
 
     /**
