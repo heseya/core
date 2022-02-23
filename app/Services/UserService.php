@@ -19,13 +19,7 @@ class UserService implements UserServiceContract
 {
     public function index(array $search, ?string $sort, int $limit): LengthAwarePaginator
     {
-        $result = User::search($search);
-
-        if (isset($search['ids'])) {
-            $result = $result->whereIn('id', explode(',', $search['ids']));
-        }
-
-        return $result
+        return User::search($search)
             ->sort($sort)
             ->paginate($limit);
     }

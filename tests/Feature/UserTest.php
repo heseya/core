@@ -138,6 +138,9 @@ class UserTest extends TestCase
         $secondUser->created_at = Carbon::now()->addHour();
         $secondUser->save();
 
+        // Dummy user to check if response will return only 2 users created above
+        User::factory()->create();
+
         $response = $this->actingAs($this->$user)
             ->getJson('/users?ids=' . $firstUser->getKey() . ',' . $secondUser->getKey());
         $response
