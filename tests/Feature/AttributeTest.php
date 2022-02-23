@@ -337,4 +337,60 @@ class AttributeTest extends TestCase
             ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption)
             ->assertForbidden();
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIncrementIndex($user)
+    {
+        $this->$user->givePermissionTo(['attributes.show', 'attributes.edit', 'attributes.add']);
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->postJson('/attributes', $this->newAttribute)
+            ->assertCreated()
+            ->assertJsonStructure($this->expectedStructure)
+            ->assertJsonFragment([
+                'name' => $this->newAttribute['name'],
+                'slug' => $this->newAttribute['slug'],
+                'description' => $this->newAttribute['description'],
+                'type' => $this->newAttribute['type'],
+                'global' => $this->newAttribute['global'],
+                'sortable' => $this->newAttribute['sortable'],
+            ])
+            ->assertJsonFragment(['index' => 1] + $this->newAttribute['options'][0])
+            ->assertJsonFragment(['index' => 2] + $this->newAttribute['options'][1]);
+
+        AttributeOption::query()
+            ->where('attribute_id', '=', $response['data']['id'])
+            ->where('index', '=', 2)
+            ->delete();
+
+        $this->assertSoftDeleted('attribute_options', [
+                'attribute_id' => $response['data']['id'],
+                'index' => 2,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/attributes/id:' . $response['data']['id'] . '/options', $this->newOption)
+            ->assertCreated()
+            ->assertJsonFragment(['index' => 3] + $this->newOption);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes/id:' . $response['data']['id'])
+            ->assertOk()
+        ->assertJsonFragment([
+            'name' => $this->newAttribute['name'],
+            'slug' => $this->newAttribute['slug'],
+            'description' => $this->newAttribute['description'],
+            'type' => $this->newAttribute['type'],
+            'global' => $this->newAttribute['global'],
+            'sortable' => $this->newAttribute['sortable'],
+        ])
+        ->assertJsonFragment(['index' => 1])
+        ->assertJsonMissing(['index' => 2])
+        ->assertJsonFragment(['index' => 3]);
+    }
 }
