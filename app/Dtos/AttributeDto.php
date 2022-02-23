@@ -4,12 +4,13 @@ namespace App\Dtos;
 
 use App\Http\Requests\AttributeRequest;
 use Heseya\Dto\Dto;
+use Heseya\Dto\Missing;
 
 class AttributeDto extends Dto
 {
     private string $name;
     private string $slug;
-    private string $description;
+    private string|null|Missing $description;
     private string $type;
     private bool $global;
     private bool $sortable;
@@ -20,7 +21,7 @@ class AttributeDto extends Dto
         return new self(
             name: $request->input('name'),
             slug: $request->input('slug'),
-            description: $request->input('description'),
+            description: $request->input('description', new Missing()),
             type: $request->input('type'),
             global: $request->input('global'),
             sortable: $request->input('sortable'),
@@ -48,9 +49,9 @@ class AttributeDto extends Dto
     }
 
     /**
-     * @return string
+     * @return string|null|Missing
      */
-    public function getDescription(): string
+    public function getDescription(): string|null|Missing
     {
         return $this->description;
     }

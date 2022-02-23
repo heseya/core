@@ -17,7 +17,7 @@ class CreateAttributesTable extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('slug')->unique()->index();
-            $table->string('description');
+            $table->string('description')->nullable();
             $table->string('type');
             $table->boolean('global');
             $table->boolean('sortable');
