@@ -39,9 +39,7 @@ class ProductController extends Controller
 
     public function index(ProductIndexRequest $request): JsonResource
     {
-        $query = Product::search(
-            array_merge($request->validated(), $request->only('ids'))
-        );
+        $query = Product::search($request->validated());
 
         $query
             ->sort($request->input('sort', 'order'))
