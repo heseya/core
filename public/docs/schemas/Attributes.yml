@@ -8,6 +8,10 @@ Attribute:
       description: 'Name of attribute'
       type: string
       example: 'Screen size'
+    slug:
+      description: 'Slug of name attribute'
+      type: string
+      example: 'screen-size'
     description:
       description: 'Description of attribute'
       type: string
@@ -18,6 +22,10 @@ Attribute:
       example: 1
     global:
       description: 'Possibility to use attribute in search'
+      type: boolean
+      example: 'true'
+    sortable:
+      description: 'Parameter for storefront'
       type: boolean
       example: 'true'
     options:
@@ -72,6 +80,10 @@ AttributeProduct:
         id:
           type: string
           example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+        slug:
+          description: 'Slug of name attribute'
+          type: string
+          example: 'screen-size'
         description:
           description: 'Description of attribute'
           type: string
@@ -82,5 +94,9 @@ AttributeProduct:
           example: 1
         global:
           description: 'Possibility to use attribute in search'
+          type: boolean
+          example: 'true'
+        sortable:
+          description: 'Parameter for storefront'
           type: boolean
           example: 'true'
