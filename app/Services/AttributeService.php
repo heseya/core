@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Dtos\AttributeDto;
+use App\Enums\AttributeType;
 use App\Models\Attribute;
 use App\Models\Product;
 use App\Services\Contracts\AttributeOptionServiceContract;
@@ -51,6 +52,38 @@ class AttributeService implements AttributeServiceContract
         }, $data);
 
         $product->attributes()->sync($attributes);
+    }
+
+    public function updateMinMax(Attribute $attribute, ?float $number, ?string $date): void
+    {
+        switch ($attribute->type) {
+            case AttributeType::NUMBER:
+                if ($number < $attribute->min_number || $attribute->min_number === null) {
+                    $attribute->min_number = $number;
+                }
+
+                if ($number > $attribute->max_number || $attribute->max_number === null) {
+                    $attribute->max_number = $number;
+                }
+
+                break;
+
+            case AttributeType::DATE:
+                if ($date < $attribute->min_date || $attribute->min_date === null) {
+                    $attribute->min_date = $date;
+                }
+
+                if ($date > $attribute->max_date || $attribute->max_date === null) {
+                    $attribute->max_date = $date;
+                }
+
+                break;
+
+            default:
+                return;
+        }
+
+        $attribute->update();
     }
 
     protected function processAttributeOptions(Attribute &$attribute, AttributeDto $dto): Attribute
