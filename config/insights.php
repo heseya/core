@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Heseya\Insights\Sniffs\NotSpaceAfterNot;
 use NunoMaduro\PhpInsights\Domain\Insights\Composer\ComposerMustBeValid;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenDefineFunctions;
+use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenGlobals;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenPrivateMethods;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenTraits;
@@ -85,6 +86,7 @@ return [
         // replaced with own
         SpaceAfterNotSniff::class,
         DisallowShortTernaryOperatorSniff::class,
+        ForbiddenGlobals::class,
     ],
 
     'config' => [

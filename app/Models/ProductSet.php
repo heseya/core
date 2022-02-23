@@ -97,6 +97,11 @@ class ProductSet extends Model
         return $this->children()->with('allChildren');
     }
 
+    public function attributes(): BelongsToMany
+    {
+        return $this->belongsToMany(Attribute::class);
+    }
+
     public function allChildrenPublic(): HasMany
     {
         return $this->childrenPublic()->with('allChildrenPublic');

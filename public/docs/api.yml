@@ -844,6 +844,12 @@ paths:
                 type: object
       security:
         - oauth: [ ]
+  '/attributes':
+    $ref: './paths/Attributes.yml#Attributes'
+  '/attributes/id:{id}':
+    $ref: './paths/Attributes.yml#AttributesParams'
+  '/attributes/id:{id}/options':
+    $ref: './paths/Attributes.yml#AttributeOption'
 components:
   schemas:
     Error:
@@ -1225,6 +1231,10 @@ components:
       $ref: './schemas/Seo.yml#SeoView'
     SeoKeywordsResponse:
       $ref: './schemas/Seo.yml#SeoKeywordsResponse'
+    Attribute:
+      $ref: './schemas/Attributes.yml#Attribute'
+    AttributeOption:
+      $ref: './schemas/Attributes.yml#AttributeOption'
   requestBodies:
     AppStore:
       $ref: './requests/Apps.yml#/AppStore'
