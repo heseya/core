@@ -292,11 +292,7 @@ class AttributeTest extends TestCase
             ->actingAs($this->$user)
             ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption)
             ->assertCreated()
-            ->assertJsonFragment([
-                'name' => $this->newOption['name'],
-                'value_number' => $this->newOption['value_number'],
-                'value_date' => $this->newOption['value_date'],
-            ]);
+            ->assertJsonFragment($this->newOption);
 
         $this->assertDatabaseHas('attribute_options', $this->newOption);
     }
