@@ -6,7 +6,7 @@ use App\Enums\AttributeType;
 use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Foundation\Http\FormRequest;
 
-class AttributeRequest extends FormRequest
+class AttributeStoreRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.

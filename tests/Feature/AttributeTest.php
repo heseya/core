@@ -177,6 +177,46 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateWithoutSlug($user)
+    {
+        $this->$user->givePermissionTo('attributes.edit');
+
+        $attributeUpdate = [
+            'name' => 'Test ' . $this->attribute->name,
+            'slug' => $this->attribute->slug,
+            'description' => 'Test ' . $this->attribute->description,
+            'type' => AttributeType::NUMBER,
+            'global' => true,
+            'sortable' => true,
+            'options' => [
+                [
+                    'id' => $this->option->id,
+                    'name' => 'Test ' . $this->option->name,
+                    'value_number' => $this->option->value_number,
+                    'value_date' => $this->option->value_date,
+                ],
+            ]
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
+            ->assertOk()
+            ->assertJsonStructure($this->expectedStructure)
+            ->assertJsonFragment([
+                'name' => $attributeUpdate['name'],
+                'slug' => $attributeUpdate['slug'],
+                'description' => $attributeUpdate['description'],
+                'type' => $attributeUpdate['type'],
+                'global' => $attributeUpdate['global'],
+                'sortable' => $attributeUpdate['sortable'],
+            ])
+            ->assertJsonFragment($attributeUpdate['options'][0]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateIncompleteData($user)
     {
         $this->$user->givePermissionTo('attributes.edit');

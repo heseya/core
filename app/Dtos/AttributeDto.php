@@ -2,7 +2,8 @@
 
 namespace App\Dtos;
 
-use App\Http\Requests\AttributeRequest;
+use App\Http\Requests\AttributeStoreRequest;
+use App\Http\Requests\AttributeUpdateRequest;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
 
@@ -16,7 +17,7 @@ class AttributeDto extends Dto
     private bool $sortable;
     private array $options;
 
-    public static function fromFormRequest(AttributeRequest $request): self
+    public static function fromFormRequest(AttributeStoreRequest|AttributeUpdateRequest $request): self
     {
         return new self(
             name: $request->input('name'),
