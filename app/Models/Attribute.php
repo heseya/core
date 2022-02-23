@@ -39,4 +39,9 @@ class Attribute extends Model
             ->withPivot('option_id')
             ->using(ProductAttribute::class);
     }
+
+    public function productSets(): BelongsToMany
+    {
+        return $this->belongsToMany(ProductSet::class);
+    }
 }

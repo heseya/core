@@ -18,3 +18,5 @@ Route::prefix('attributes')->group(function (): void {
     Route::post('id:{attribute:id}/options', [AttributeOptionController::class, 'store'])
         ->middleware('permission:attributes.edit');
 });
+
+Route::get('filters', [AttributeController::class, 'getFilters']);
