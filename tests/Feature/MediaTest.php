@@ -309,6 +309,25 @@ class MediaTest extends TestCase
         ])->assertCreated();
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUploadWithError($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+        $file = UploadedFile::fake()->image('video.mp4');
+
+        Http::fake(['*' => Http::response(['message' => 'Bad key'], 500)]);
+
+        $response = $this->actingAs($this->$user)->postJson('/media', [
+            'file' => $file,
+        ]);
+
+        $response
+            ->assertJsonFragment(['message' => 'CDN responded with an error'])
+            ->assertStatus(500);
+    }
+
 //    // Uncomment when Pages and media will be related
 //
 //    public function testDeleteFromPagUnauthorizede(): void

@@ -11,9 +11,11 @@ class AttributeResource extends Resource
         return [
             'id' => $this->getKey(),
             'name' => $this->name,
+            'slug' => $this->slug,
             'description' => $this->description,
             'type' => $this->type,
             'global' => $this->global,
+            'sortable' => $this->sortable,
             'options' => AttributeOptionResource::collection($this->options),
         ];
     }

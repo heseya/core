@@ -39,9 +39,11 @@ class AttributeTest extends TestCase
         $this->expectedStructure = [
             'data' => [
                 'name',
+                'slug',
                 'description',
                 'type',
                 'global',
+                'sortable',
                 'options'
             ]
         ];
@@ -67,9 +69,11 @@ class AttributeTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment([
                 'name' => $this->attribute->name,
+                'slug' => $this->attribute->slug,
                 'description' => $this->attribute->description,
                 'type' => $this->attribute->type,
                 'global' => $this->attribute->global,
+                'sortable' => $this->attribute->sortable,
             ])
             ->assertJsonFragment([
                 'value_text' => $this->option->value_text,
@@ -91,9 +95,11 @@ class AttributeTest extends TestCase
             ->assertJsonStructure($this->expectedStructure)
             ->assertJsonFragment([
                 'name' => $this->newAttribute['name'],
+                'slug' => $this->newAttribute['slug'],
                 'description' => $this->newAttribute['description'],
                 'type' => $this->newAttribute['type'],
                 'global' => $this->newAttribute['global'],
+                'sortable' => $this->newAttribute['sortable'],
             ])
             ->assertJsonFragment([
                 'value_text' => $this->newAttribute['options'][0]['value_text'],
@@ -112,7 +118,7 @@ class AttributeTest extends TestCase
     {
         $this->$user->givePermissionTo('attributes.add');
 
-        unset($this->newAttribute['options']);
+        unset($this->newAttribute['name']);
 
         $this
             ->actingAs($this->$user)
@@ -140,9 +146,11 @@ class AttributeTest extends TestCase
 
         $attributeUpdate = [
             'name' => 'Test ' . $this->attribute->name,
+            'slug' => 'test-' . $this->attribute->slug,
             'description' => 'Test ' . $this->attribute->description,
             'type' => AttributeType::NUMBER,
             'global' => true,
+            'sortable' => true,
             'options' => [
                 [
                     'id' => $this->option->id,
@@ -159,9 +167,11 @@ class AttributeTest extends TestCase
             ->assertJsonStructure($this->expectedStructure)
             ->assertJsonFragment([
                 'name' => $attributeUpdate['name'],
+                'slug' => $attributeUpdate['slug'],
                 'description' => $attributeUpdate['description'],
                 'type' => $attributeUpdate['type'],
                 'global' => $attributeUpdate['global'],
+                'sortable' => $attributeUpdate['sortable'],
             ])
             ->assertJsonFragment([
                 'value_text' => $attributeUpdate['options'][0]['value_text'],
@@ -212,9 +222,11 @@ class AttributeTest extends TestCase
     {
         $attributeUpdate = [
             'name' => 'Test ' . $this->attribute->name,
+            'slug' => 'test-' . $this->attribute->slug,
             'description' => 'Test ' . $this->attribute->description,
             'type' => AttributeType::NUMBER,
             'global' => true,
+            'sortable' => true,
             'options' => [
                 [
                     'id' => $this->option->id,

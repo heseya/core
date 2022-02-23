@@ -3,7 +3,6 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class ProductAttributeResource extends ProductAttributeShortResource
 {
@@ -13,9 +12,11 @@ class ProductAttributeResource extends ProductAttributeShortResource
             parent::base($request),
             [
                 'id' => $this->getKey(),
+                'slug' => $this->slug,
                 'description' => $this->description,
-                'type' => Str::lower($this->type->key),
+                'type' => $this->type->value,
                 'global' => $this->global,
+                'sortable' => $this->sortable,
             ]
         );
     }

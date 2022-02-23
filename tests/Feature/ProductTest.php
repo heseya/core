@@ -127,9 +127,11 @@ class ProductTest extends TestCase
         $this->expected_attribute = $this->expected_attribute_short;
         $this->expected_attribute['attributes'][0] += [
             'id' => $attribute->getKey(),
+            'slug' => $attribute->slug,
             'description' => $attribute->description,
             'type' => $attribute->type,
             'global' => $attribute->global,
+            'sortable' => $attribute->sortable,
         ];
 
         /**
@@ -1215,9 +1217,11 @@ class ProductTest extends TestCase
             ->assertJsonFragment([
                 'id' => $attribute->getKey(),
                 'name' => $attribute->name,
+                'slug' => $attribute->slug,
                 'description' => $attribute->description,
                 'type' => $attribute->type,
-                'global' => $attribute->global
+                'global' => $attribute->global,
+                'sortable' => $attribute->sortable,
             ])
             ->assertJsonFragment([
                 'id' => $option->getKey(),
@@ -1228,9 +1232,11 @@ class ProductTest extends TestCase
             ->assertJsonFragment([
                 'id' => $attribute2->getKey(),
                 'name' => $attribute2->name,
+                'slug' => $attribute2->slug,
                 'description' => $attribute2->description,
                 'type' => $attribute2->type,
-                'global' => $attribute2->global
+                'global' => $attribute2->global,
+                'sortable' => $attribute2->sortable,
             ])
             ->assertJsonFragment([
                 'id' => $option2->getKey(),

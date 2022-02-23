@@ -20,4 +20,6 @@ interface SeoMetadataServiceContract
     public function delete(SeoMetadata $seoMetadata): void;
 
     public function checkKeywords(SeoKeywordsDto $dto): Collection;
+
+    public function getGlobalSeo(): SeoMetadata | null;
 }
