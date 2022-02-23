@@ -18,6 +18,10 @@ class CreateAttributesTable extends Migration
             $table->string('name');
             $table->string('slug')->unique()->index();
             $table->string('description');
+            $table->float('min_number')->nullable();
+            $table->float('max_number')->nullable();
+            $table->date('min_date')->nullable();
+            $table->date('max_date')->nullable();
             $table->string('type');
             $table->boolean('global');
             $table->boolean('sortable');
