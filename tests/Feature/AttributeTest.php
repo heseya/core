@@ -171,11 +171,7 @@ class AttributeTest extends TestCase
                 'global' => $attributeUpdate['global'],
                 'sortable' => $attributeUpdate['sortable'],
             ])
-            ->assertJsonFragment([
-                'name' => $attributeUpdate['options'][0]['name'],
-                'value_number' => $attributeUpdate['options'][0]['value_number'],
-                'value_date' => $attributeUpdate['options'][0]['value_date']
-            ]);
+            ->assertJsonFragment($attributeUpdate['options'][0]);
     }
 
     /**
@@ -296,11 +292,7 @@ class AttributeTest extends TestCase
             ->actingAs($this->$user)
             ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption)
             ->assertCreated()
-            ->assertJsonFragment([
-                'name' => $this->newOption['name'],
-                'value_number' => $this->newOption['value_number'],
-                'value_date' => $this->newOption['value_date'],
-            ]);
+            ->assertJsonFragment($this->newOption);
 
         $this->assertDatabaseHas('attribute_options', $this->newOption);
     }
