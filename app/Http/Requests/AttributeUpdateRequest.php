@@ -19,7 +19,7 @@ class AttributeUpdateRequest extends AttributeStoreRequest
             'required',
             'string',
             'max:255',
-            Rule::unique('attributes')->ignore($this->attribute, 'slug')
+            Rule::unique('attributes')->ignore($this->attribute, 'slug'),
         ];
 
         return $rules;

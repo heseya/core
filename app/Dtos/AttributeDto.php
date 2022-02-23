@@ -50,7 +50,7 @@ class AttributeDto extends Dto
     }
 
     /**
-     * @return string|null|Missing
+     * @return string|Missing|null
      */
     public function getDescription(): string|null|Missing
     {

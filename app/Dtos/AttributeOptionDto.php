@@ -34,7 +34,7 @@ class AttributeOptionDto extends Dto
     }
 
     /**
-     * @return string|null|Missing
+     * @return string|Missing|null
      */
     public function getId(): string|null|Missing
     {
@@ -50,7 +50,7 @@ class AttributeOptionDto extends Dto
     }
 
     /**
-     * @return float|null|Missing
+     * @return float|Missing|null
      */
     public function getValueNumber(): float|null|Missing
     {
@@ -58,7 +58,7 @@ class AttributeOptionDto extends Dto
     }
 
     /**
-     * @return string|null|Missing
+     * @return string|Missing|null
      */
     public function getValueDate(): string|null|Missing
     {
