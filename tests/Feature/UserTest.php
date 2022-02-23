@@ -100,6 +100,35 @@ class UserTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexFull($user): void
+    {
+        $this->$user->givePermissionTo('users.show');
+
+        $otherUser = User::factory()->create();
+        $otherUser->created_at = Carbon::now()->addHour();
+        $otherUser->save();
+
+        $response = $this->actingAs($this->$user)->getJson('/users?full');
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJson(['data' => [
+                $this->expected,
+                [
+                    'id' => $otherUser->getKey(),
+                    'email' => $otherUser->email,
+                    'name' => $otherUser->name,
+                    'avatar' => $otherUser->avatar,
+                    'roles' => [],
+                    'permissions' => [],
+                ],
+            ]]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexSorted($user): void
     {
         $this->$user->givePermissionTo('users.show');
