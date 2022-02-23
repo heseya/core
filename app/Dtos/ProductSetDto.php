@@ -2,62 +2,37 @@
 
 namespace App\Dtos;
 
-use App\Dtos\Contracts\DtoContract;
-use App\Dtos\Contracts\InstantiateFromRequest;
-use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
+use App\Http\Requests\ProductSetStoreRequest;
+use App\Http\Requests\ProductSetUpdateRequest;
+use Heseya\Dto\Dto;
+use Heseya\Dto\Missing;
 
-class ProductSetDto implements DtoContract, InstantiateFromRequest
+class ProductSetDto extends Dto
 {
     private string $name;
-    private ?string $slug_suffix;
+    private string|null|Missing $slug_suffix;
     private bool $slug_override;
     private bool $public;
     private bool $hide_on_index;
-    private ?string $parent_id;
-    private Collection $children_ids;
+    private string|null|Missing $parent_id;
+    private array $children_ids;
+    private SeoMetadataDto $seo;
+    private string|null|Missing $description_html;
+    private string|null|Missing $cover_id;
 
-    public function __construct(
-        string $name,
-        ?string $slug_suffix,
-        bool $slug_override,
-        bool $public,
-        bool $hide_on_index,
-        ?string $parent_id,
-        array $children_ids
-    ) {
-        $this->name = $name;
-        $this->slug_suffix = $slug_suffix;
-        $this->slug_override = $slug_override;
-        $this->public = $public;
-        $this->hide_on_index = $hide_on_index;
-        $this->parent_id = $parent_id;
-        $this->children_ids = Collection::make($children_ids);
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'name' => $this->getName(),
-            'slug_suffix' => $this->getSlugSuffix(),
-            'slug_override' => $this->isSlugOverridden(),
-            'public' => $this->isPublic(),
-            'hide_on_index' => $this->isHiddenOnIndex(),
-            'parent_id' => $this->getParentId(),
-            'children_ids' => $this->getChildrenIds(),
-        ];
-    }
-
-    public static function instantiateFromRequest(Request $request): self
+    public static function fromFormRequest(ProductSetStoreRequest|ProductSetUpdateRequest $request): self
     {
         return new self(
-            $request->input('name'),
-            $request->input('slug_suffix'),
-            $request->boolean('slug_override', false),
-            $request->boolean('public', true),
-            $request->boolean('hide_on_index', false),
-            $request->input('parent_id', null),
-            $request->input('children_ids', []),
+            name: $request->input('name'),
+            slug_suffix: $request->input('slug_suffix'),
+            slug_override: $request->boolean('slug_override', false),
+            public: $request->boolean('public', true),
+            hide_on_index: $request->boolean('hide_on_index', false),
+            parent_id: $request->input('parent_id', null),
+            children_ids: $request->input('children_ids', []),
+            seo: SeoMetadataDto::fromFormRequest($request),
+            description_html: $request->input('description_html'),
+            cover_id: $request->input('cover_id'),
         );
     }
 
@@ -66,7 +41,7 @@ class ProductSetDto implements DtoContract, InstantiateFromRequest
         return $this->name;
     }
 
-    public function getSlugSuffix(): ?string
+    public function getSlugSuffix(): Missing|string|null
     {
         return $this->slug_suffix;
     }
@@ -86,13 +61,28 @@ class ProductSetDto implements DtoContract, InstantiateFromRequest
         return $this->hide_on_index;
     }
 
-    public function getParentId(): ?string
+    public function getParentId(): Missing|string|null
     {
         return $this->parent_id;
     }
 
-    public function getChildrenIds(): Collection
+    public function getChildrenIds(): array
     {
         return $this->children_ids;
+    }
+
+    public function getSeo(): SeoMetadataDto
+    {
+        return $this->seo;
+    }
+
+    public function getDescriptionHtml(): Missing|string|null
+    {
+        return $this->description_html;
+    }
+
+    public function getCoverId(): Missing|string|null
+    {
+        return $this->cover_id;
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Swagger\DiscountControllerSwagger;
+use App\Events\DiscountCreated;
+use App\Events\DiscountDeleted;
+use App\Events\DiscountUpdated;
 use App\Http\Requests\DiscountCreateRequest;
 use App\Http\Requests\DiscountIndexRequest;
 use App\Http\Requests\DiscountUpdateRequest;
@@ -13,7 +15,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 
-class DiscountController extends Controller implements DiscountControllerSwagger
+class DiscountController extends Controller
 {
     public function index(DiscountIndexRequest $request): JsonResource
     {
@@ -35,6 +37,8 @@ class DiscountController extends Controller implements DiscountControllerSwagger
     {
         $discount = Discount::create($request->validated());
 
+        DiscountCreated::dispatch($discount);
+
         return DiscountResource::make($discount);
     }
 
@@ -42,12 +46,16 @@ class DiscountController extends Controller implements DiscountControllerSwagger
     {
         $discount->update($request->validated());
 
+        DiscountUpdated::dispatch($discount);
+
         return DiscountResource::make($discount);
     }
 
     public function destroy(Discount $discount): JsonResponse
     {
-        $discount->delete();
+        if ($discount->delete()) {
+            DiscountDeleted::dispatch($discount);
+        }
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }

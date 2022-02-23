@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\SearchTypes\ItemSearch;
+use App\SearchTypes\WhereCreatedBefore;
+use App\SearchTypes\WhereSoldOut;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Heseya\Sortable\Sortable;
@@ -13,49 +15,24 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
- * @OA\Schema ()
- *
  * @mixin IdeHelperItem
  */
 class Item extends Model implements AuditableContract
 {
     use SoftDeletes, HasFactory, Searchable, Sortable, Auditable;
 
-    /**
-     * @OA\Property(
-     *   property="id",
-     *   type="string",
-     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
-     * )
-     *
-     * @OA\Property(
-     *   property="name",
-     *   type="string",
-     *   example="Chain",
-     * )
-     *
-     * @OA\Property(
-     *   property="sku",
-     *   type="string",
-     *   example="K121"
-     * )
-     *
-     * @OA\Property(
-     *   property="quantity",
-     *   type="float",
-     *   example="20",
-     * )
-     */
-
     protected $fillable = [
         'name',
         'sku',
+        'quantity',
     ];
 
     protected array $searchable = [
         'name' => Like::class,
         'sku' => Like::class,
         'search' => ItemSearch::class,
+        'sold_out' => WhereSoldOut::class,
+        'day' => WhereCreatedBefore::class,
     ];
 
     protected array $sortable = [
@@ -63,15 +40,25 @@ class Item extends Model implements AuditableContract
         'sku',
         'created_at',
         'updated_at',
+        'quantity',
     ];
 
-    public function getQuantityAttribute(): float
-    {
-        return $this->deposits->sum('quantity');
-    }
+    protected $casts = [
+        'quantity' => 'float',
+    ];
 
     public function deposits(): HasMany
     {
         return $this->hasMany(Deposit::class);
+    }
+
+    public function getQuantity(string|null $day): float
+    {
+        if ($day) {
+            return $this->deposits
+                ->where('created_at', '<=', $day)
+                ->sum('quantity');
+        }
+        return $this->quantity ?? 0;
     }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Swagger\SettingControllerSwagger;
 use App\Http\Requests\SettingCreateRequest;
 use App\Http\Requests\SettingUpdateRequest;
 use App\Http\Resources\SettingResource;
@@ -14,7 +13,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class SettingController extends Controller implements SettingControllerSwagger
+class SettingController extends Controller
 {
     private SettingsServiceContract $settingsService;
 
@@ -64,17 +63,15 @@ class SettingController extends Controller implements SettingControllerSwagger
             $setting = Setting::where('name', $name)->first();
 
             if ($setting === null) {
-                // Coppy setting from config to db
-
-                $setting = Setting::create($config + [
-                    'name' => $name,
-                ]);
+                $config = array_replace($config, $request->validated());
+                $setting = Setting::create($config);
+            } else {
+                $setting->update($request->validated());
             }
         } else {
             $setting = Setting::where('name', $name)->firstOrFail();
+            $setting->update($request->validated());
         }
-
-        $setting->update($request->validated());
 
         return SettingResource::make($setting);
     }

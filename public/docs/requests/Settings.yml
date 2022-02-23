@@ -1,0 +1,22 @@
+Setting:
+  content:
+    application/json:
+      schema:
+        required:
+          - name
+          - value
+          - public
+        type: object
+        properties:
+          name:
+            description: 'Setting name'
+            type: string
+            example: store_name
+          value:
+            description: 'Setting value'
+            type: string
+            example: Heseya
+          public:
+            description: 'Whether setting is public'
+            type: boolean
+            example: true

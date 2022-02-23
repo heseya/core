@@ -15,13 +15,21 @@ trait Sortable
             foreach ($sort as $option) {
                 $option = explode(':', $option);
 
-                Validator::make($option, [
-                    '0' => ['required', 'in:' . implode(',', $this->getSortable())],
-                    '1' => ['in:asc,desc'],
-                ])->validate();
+                $field = $option[0];
+                Validator::make(
+                    $option,
+                    [
+                        '0' => ['required', 'in:' . implode(',', $this->getSortable())],
+                        '1' => ['in:asc,desc'],
+                    ],
+                    [
+                        'required' => 'You must specify sort field.',
+                        '0.in' => 'You can\'t sort by ' . $field . ' field.',
+                        '1.in' => 'Only asc|desc sorting directions are allowed on field ' . $field . '.',
+                    ])->validate();
 
                 $order = count($option) > 1 ? $option[1] : 'asc';
-                $query->orderBy($option[0], $order);
+                $query->orderBy($field, $order);
             }
         }
 

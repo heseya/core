@@ -1,0 +1,265 @@
+ProductSets:
+  get:
+    tags:
+      - 'Product Sets'
+    parameters:
+      - name: root
+        in: query
+        description: 'Return only root lists'
+        allowEmptyValue: true
+        schema:
+          type: boolean
+      - name: tree
+        in: query
+        description: 'Return sets starting from root with recursively nested children instead of id''s'
+        allowEmptyValue: true
+        schema:
+          type: boolean
+      - name: search
+        in: query
+        description: 'Full text search'
+        schema:
+          type: string
+      - name: name
+        in: query
+        description: 'Name search'
+        schema:
+          type: string
+      - name: slug
+        in: query
+        description: 'Slug search'
+        schema:
+          type: string
+      - name: public
+        in: query
+        description: 'Is public search'
+        schema:
+          type: boolean
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    oneOf:
+                      - $ref: './../schemas/ProductSets.yml#/ProductSet'
+                      - $ref: './../schemas/ProductSets.yml#/ProductSetChildren'
+              type: object
+  post:
+    tags:
+      - 'Product Sets'
+    parameters:
+      - name: tree
+        in: query
+        description: 'Return set with recursively nested children instead of id''s'
+        allowEmptyValue: true
+        schema:
+          type: boolean
+    requestBody:
+      $ref: './../requests/ProductSets.yml#ProductSetStore'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: object
+                  oneOf:
+                    - $ref: './../schemas/ProductSets.yml#ProductSetParent'
+                    - $ref: './../schemas/ProductSets.yml#ProductSetParentChildren'
+              type: object
+    security:
+      - oauth: [ ]
+ProductSetsSlug:
+  get:
+    tags:
+      - 'Product Sets'
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: tree
+        in: query
+        description: 'Return set with recursively nested children instead of id''s'
+        allowEmptyValue: true
+        schema:
+          type: boolean
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: object
+                  oneOf:
+                    - $ref: './../schemas/ProductSets.yml#ProductSetParent'
+                    - $ref: './../schemas/ProductSets.yml#ProductSetParentChildren'
+              type: object
+ProductSetsParams:
+  get:
+    tags:
+      - 'Product Sets'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: tree
+        in: query
+        description: 'Return set with recursively nested children instead of id''s'
+        allowEmptyValue: true
+        schema:
+          type: boolean
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: object
+                  oneOf:
+                    - $ref: './../schemas/ProductSets.yml#ProductSetParent'
+                    - $ref: './../schemas/ProductSets.yml#ProductSetParentChildren'
+              type: object
+  delete:
+    tags:
+      - 'Product Sets'
+    description: 'Delete set with all of it''s subsets'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+    responses:
+      204:
+        description: Success
+    security:
+      - oauth: [ ]
+  patch:
+    tags:
+      - 'Product Sets'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+      - name: tree
+        in: query
+        description: 'Return set with recursively nested children instead of id''s'
+        allowEmptyValue: true
+        schema:
+          type: boolean
+    requestBody:
+      $ref: './../requests/ProductSets.yml#ProductSetUpdate'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: object
+                  oneOf:
+                    - $ref: './../schemas/ProductSets.yml#ProductSetParent'
+                    - $ref: './../schemas/ProductSets.yml#ProductSetParentChildren'
+              type: object
+    security:
+      - oauth: [ ]
+ProductSetsReorder:
+  post:
+    tags:
+      - 'Product Sets'
+    requestBody:
+      $ref: './../requests/ProductSets.yml#ProductSetReorder'
+    responses:
+      204:
+        description: Success
+    security:
+      - oauth: [ ]
+ProductSetsReorderParams:
+  post:
+    tags:
+      - 'Product Sets'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+    requestBody:
+      $ref: './../requests/ProductSets.yml#ProductSetReorder'
+    responses:
+      204:
+        description: Success
+    security:
+      - oauth: [ ]
+ProductSetsProducts:
+  get:
+    tags:
+      - 'Product Sets'
+    parameters:
+      - name: limit
+        in: query
+        description: 'Pagination limit'
+        schema:
+          type: number
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Products.yml#Product'
+              type: object
+    security:
+      - oauth: [ ]
+  post:
+    tags:
+      - 'Product Sets'
+    parameters:
+      - name: id
+        in: path
+        description: 'List of product id''s'
+        required: true
+        schema:
+          type: string
+          example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+    requestBody:
+      $ref: './../requests/ProductSets.yml#ProductSetAttach'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Products.yml#Product'
+              type: object
+    security:
+      - oauth: [ ]

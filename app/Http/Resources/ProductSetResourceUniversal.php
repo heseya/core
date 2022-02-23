@@ -2,11 +2,10 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\Swagger\ProductSetResourceSwagger;
 use Illuminate\Http\Request;
 
 // Universal class can't work because methods are not coppied to collections
-class ProductSetResourceUniversal extends Resource implements ProductSetResourceSwagger
+class ProductSetResourceUniversal extends Resource
 {
     private bool $showParent = false;
     private bool $showChildren = false;
@@ -59,6 +58,7 @@ class ProductSetResourceUniversal extends Resource implements ProductSetResource
             'visible' => $this->public_parent && $this->public,
             'hide_on_index' => $this->hide_on_index,
             'seo' => SeoMetadataResource::make($this->seo),
+            'description_html' => $this->description_html,
         ] + $parentResource + $childrenResource;
     }
 }

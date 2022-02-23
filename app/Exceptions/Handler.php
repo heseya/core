@@ -12,6 +12,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 
 final class Handler extends ExceptionHandler
 {
@@ -64,14 +65,27 @@ final class Handler extends ExceptionHandler
             'message' => 'Unauthorized',
             'code' => Response::HTTP_FORBIDDEN,
         ],
-        ItemException::class => [
+        WebHookCreatorException::class => [
+            'code' => Response::HTTP_FORBIDDEN,
+        ],
+        WebHookEventException::class => [
             'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+        ],
+        TokenExpiredException::class => [
+            'message' => 'Unauthorized',
+            'code' => Response::HTTP_UNAUTHORIZED,
         ],
         PackageException::class => [
             'code' => Response::HTTP_BAD_GATEWAY,
         ],
         PackageAuthException::class => [
             'code' => Response::HTTP_BAD_GATEWAY,
+        ],
+        ItemException::class => [
+            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+        ],
+        TFAException::class => [
+            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
         ],
     ];
 
@@ -94,6 +108,11 @@ final class Handler extends ExceptionHandler
         $class = $exception::class;
 
         if (array_key_exists($class, self::ERRORS)) {
+            if (method_exists($exception, 'isTypeSet') && $exception->isTypeSet()) {
+                return TFAExceptionResource::make($exception->toArray())
+                    ->response()
+                    ->setStatusCode($exception->getCode());
+            }
             $error = new Error(
                 self::ERRORS[$class]['message'] ?? $exception->getMessage(),
                 self::ERRORS[$class]['code'] ?? 500,

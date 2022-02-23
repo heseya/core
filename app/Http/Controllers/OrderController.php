@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\OrderIndexDto;
 use App\Dtos\OrderUpdateDto;
 use App\Enums\SchemaType;
+use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
-use App\Events\OrderStatusUpdated;
+use App\Events\OrderUpdatedStatus;
 use App\Exceptions\OrderException;
-use App\Http\Controllers\Swagger\OrderControllerSwagger;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderIndexRequest;
 use App\Http\Requests\OrderItemsRequest;
-use App\Http\Requests\OrderSyncRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Resources\OrderPublicResource;
@@ -33,9 +33,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Gate;
 use Throwable;
 
-class OrderController extends Controller implements OrderControllerSwagger
+class OrderController extends Controller
 {
     public function __construct(
         private NameServiceContract $nameService,
@@ -47,7 +48,10 @@ class OrderController extends Controller implements OrderControllerSwagger
 
     public function index(OrderIndexRequest $request): JsonResource
     {
-        $query = Order::search($request->validated())
+        $search_data = !$request->has('status_id')
+            ? $request->validated() + ['status.hidden' => 0] : $request->validated();
+
+        $query = Order::search($search_data)
             ->sort($request->input('sort'))
             ->with(['products', 'discounts', 'payments']);
 
@@ -121,6 +125,8 @@ class OrderController extends Controller implements OrderControllerSwagger
         ]);
 
         # Add products to order
+        $summary = 0;
+
         try {
             foreach ($request->input('items', []) as $item) {
                 $product = Product::findOrFail($item['product_id']);
@@ -133,6 +139,7 @@ class OrderController extends Controller implements OrderControllerSwagger
                 ]);
 
                 $order->products()->save($orderProduct);
+                $summary += $product->price * $item['quantity'];
 
                 # Add schemas to products
                 foreach ($product->schemas as $schema) {
@@ -148,11 +155,13 @@ class OrderController extends Controller implements OrderControllerSwagger
                         $option = $schema->options()->findOrFail($value);
                         $value = $option->name;
 
+                        # Remove items from warehouse
                         foreach ($option->items as $optionItem) {
                             $orderProduct->deposits()->create([
                                 'item_id' => $optionItem->getKey(),
                                 'quantity' => -1 * $item['quantity'],
                             ]);
+                            ItemUpdatedQuantity::dispatch($optionItem);
                         }
                     }
 
@@ -161,92 +170,43 @@ class OrderController extends Controller implements OrderControllerSwagger
                         'value' => $value,
                         'price' => $price,
                     ]);
+
+                    $summary += $price;
                 }
             }
-
-            $discounts = [];
-            foreach ($request->input('discounts', []) as $discount) {
-                $discount = Discount::where('code', $discount)->firstOrFail();
-                $discounts[$discount->getKey()] = [
-                    'type' => $discount->type,
-                    'discount' => $discount->discount,
-                ];
-            }
-            $order->discounts()->sync($discounts);
-
-            $order->update([
-                'shipping_price' => $shippingMethod->getPrice($order->summary),
-            ]);
         } catch (Throwable $exception) {
             $order->delete();
 
             throw $exception;
         }
 
+        # Apply discounts to order
+        $discounts = [];
+        $cartValue = $summary;
+        foreach ($request->input('discounts', []) as $discount) {
+            $discount = Discount::where('code', $discount)->first();
+
+            $discounts[$discount->getKey()] = [
+                'type' => $discount->type,
+                'discount' => $discount->discount,
+            ];
+
+            $summary -= $this->discountService->calc($cartValue, $discount);
+        }
+        $order->discounts()->sync($discounts);
+
+        # Calculate shipping price for complete order
+        $summary = max($summary, 0);
+        $shippingPrice = $shippingMethod->getPrice($summary);
+
+        $order->update([
+            'shipping_price' => $shippingPrice,
+            'summary' => round($summary + $shippingPrice, 2),
+        ]);
+
         OrderCreated::dispatch($order);
 
         return OrderPublicResource::make($order);
-    }
-
-    public function sync(OrderSyncRequest $request): JsonResponse
-    {
-        foreach ($request->input('items', []) as $item) {
-            Product::findOrFail($item['product_id']);
-        }
-
-        $deliveryAddress = Address::firstOrCreate($request->input('delivery_address'));
-
-        if ($request->filled('invoice_address.name')) {
-            $invoiceAddress = Address::firstOrCreate($request->input('invoice_address'));
-        }
-
-        $order = Order::updateOrCreate(['code' => $request->input('code')], [
-            'email' => $request->input('email'),
-            'comment' => $request->input('comment'),
-            'currency' => 'PLN',
-            'shipping_method_id' => $request->input('shipping_method_id'),
-            'shipping_price' => $request->input('shipping_price'),
-            'shipping_number' => $request->input('shipping_number'),
-            'status_id' => $request->input('status_id'),
-            'delivery_address_id' => $deliveryAddress->getKey(),
-            'invoice_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
-            'created_at' => $request->input('created_at'),
-        ]);
-
-        $order->products()->delete();
-
-        foreach ($request->input('items', []) as $item) {
-            $product = Product::findOrFail($item['product_id']);
-
-            $order_product = new OrderProduct([
-                'product_id' => $product->getKey(),
-                'quantity' => $item['quantity'],
-                'price' => $item['price'],
-            ]);
-
-            $order->products()->save($order_product);
-
-            foreach ($item['schemas'] ?? [] as $schema) {
-                $order_product->schemas()->create([
-                    'name' => $schema['name'],
-                    'value' => $schema['value'],
-                    'price' => $schema['price'],
-                ]);
-            }
-        }
-
-        $order->payments()->delete();
-
-        foreach ($request->input('payments') as $payment) {
-            $order->payments()->create([
-                'method' => $payment['name'],
-                'amount' => $payment['amount'],
-                'paid' => $payment['paid'],
-                'created_at' => $request->input('created_at'),
-            ]);
-        }
-
-        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function verify(OrderItemsRequest $request): JsonResponse
@@ -278,10 +238,16 @@ class OrderController extends Controller implements OrderControllerSwagger
         ]);
 
         if ($status->cancel) {
+            $deposits = $order->deposits()->with('item')->get();
             $order->deposits()->delete();
+            foreach ($deposits as $deposit) {
+                $item = $deposit->item;
+                $item->decrement('quantity', $deposit->quantity);
+                ItemUpdatedQuantity::dispatch($item);
+            }
         }
 
-        OrderStatusUpdated::dispatch($order);
+        OrderUpdatedStatus::dispatch($order);
 
         return OrderResource::make($order)->response();
     }
@@ -291,5 +257,21 @@ class OrderController extends Controller implements OrderControllerSwagger
         $orderUpdateDto = OrderUpdateDto::instantiateFromRequest($request);
 
         return $this->orderService->update($orderUpdateDto, $order);
+    }
+
+    public function indexUserOrder(OrderIndexRequest $request): JsonResource
+    {
+        Gate::inspect('indexUserOrder', [Order::class]);
+
+        return OrderResource::collection(
+            $this->orderService->indexUserOrder(OrderIndexDto::instantiateFromRequest($request))
+        );
+    }
+
+    public function showUserOrder(Order $order): JsonResource
+    {
+        Gate::inspect('showUserOrder', [Order::class, $order]);
+
+        return OrderResource::make($order);
     }
 }

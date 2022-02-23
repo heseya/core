@@ -9,6 +9,7 @@ use App\Models\Media;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
+use App\Models\SeoMetadata;
 use App\Services\Contracts\ProductServiceContract;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
@@ -34,17 +35,23 @@ class ProductSeeder extends Seeder
             'name' => 'Brands',
             'slug' => 'brands',
         ])->create();
+        $this->seo($brands);
         $brands = ProductSet::factory([
             'parent_id' => $brands->getKey(),
         ])->count(4)->create();
+
+        $brands->each(fn ($set) => $this->seo($set));
 
         $categories = ProductSet::factory([
             'name' => 'Categories',
             'slug' => 'categories',
         ])->create();
+        $this->seo($categories);
         $categories = ProductSet::factory([
             'parent_id' => $categories->getKey(),
         ])->count(4)->create();
+
+        $categories->each(fn ($set) => $this->seo($set));
 
         $products->each(function ($product, $index) use ($sets, $brands, $categories, $productService) {
             if (rand(0, 1)) {
@@ -53,6 +60,7 @@ class ProductSeeder extends Seeder
 
             $this->media($product);
             $this->sets($product, $sets);
+            $this->seo($product);
 
             if ($index >= 75) {
                 $this->brands($product, $brands);
@@ -101,5 +109,11 @@ class ProductSeeder extends Seeder
     private function brands(Product $product, Collection $brands): void
     {
         $product->sets()->syncWithoutDetaching($brands->random());
+    }
+
+    private function seo(Product|ProductSet $product): void
+    {
+        $seo = SeoMetadata::factory()->create();
+        $product->seo()->save($seo);
     }
 }

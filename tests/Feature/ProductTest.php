@@ -2,11 +2,25 @@
 
 namespace Tests\Feature;
 
+use App\Enums\MediaType;
+use App\Events\ProductCreated;
+use App\Events\ProductDeleted;
+use App\Events\ProductUpdated;
+use App\Listeners\WebHookEventListener;
+use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Schema;
+use App\Models\SeoMetadata;
+use App\Models\WebHook;
 use App\Services\Contracts\ProductServiceContract;
+use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
+use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
 class ProductTest extends TestCase
@@ -77,7 +91,7 @@ class ProductTest extends TestCase
             'name' => $this->product->name,
             'slug' => $this->product->slug,
             'price' => (int) $this->product->price,
-            'visible' => $this->product->isPublic(),
+            'visible' => $this->product->public,
             'public' => (bool) $this->product->public,
             'available' => true,
             'cover' => null,
@@ -135,6 +149,15 @@ class ProductTest extends TestCase
     {
         $this->$user->givePermissionTo('products.show');
 
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+        $set = ProductSet::factory()->create([
+            'public' => true,
+            'hide_on_index' => true,
+        ]);
+        $product->sets()->sync([$set->getKey()]);
+
         $response = $this->actingAs($this->$user)->getJson('/products?limit=100');
         $response
             ->assertOk()
@@ -143,7 +166,7 @@ class ProductTest extends TestCase
                 0 => $this->expected_short,
             ]]);
 
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(20);
     }
 
     /**
@@ -153,10 +176,20 @@ class ProductTest extends TestCase
     {
         $this->$user->givePermissionTo(['products.show', 'products.show_hidden']);
 
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+        $set = ProductSet::factory()->create([
+            'public' => true,
+            'hide_on_index' => true,
+        ]);
+
+        $product->sets()->sync([$set->getKey()]);
+
         $response = $this->actingAs($this->$user)->getJson('/products');
         $response
             ->assertOk()
-            ->assertJsonCount(2, 'data'); // Should show all products.
+            ->assertJsonCount(3, 'data'); // Should show all products.
     }
 
     /**
@@ -177,7 +210,7 @@ class ProductTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(20);
     }
 
     /**
@@ -250,6 +283,72 @@ class ProductTest extends TestCase
 
         $product->sets()->sync([$set1->getKey(), $set2->getKey()]);
 
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/products/' . $product->slug)
+            ->assertOk()
+            ->assertJsonFragment(['sets' => [
+                [
+                    'id' => $set1->getKey(),
+                    'name' => $set1->name,
+                    'slug' => $set1->slug,
+                    'slug_suffix' => $set1->slugSuffix,
+                    'slug_override' => $set1->slugOverride,
+                    'public' => $set1->public,
+                    'visible' => $set1->public_parent && $set1->public,
+                    'hide_on_index' => $set1->hide_on_index,
+                    'parent_id' => $set1->parent_id,
+                    'children_ids' => [],
+                    'cover' => null,
+                ],
+                [
+                    'id' => $set2->getKey(),
+                    'name' => $set2->name,
+                    'slug' => $set2->slug,
+                    'slug_suffix' => $set2->slugSuffix,
+                    'slug_override' => $set2->slugOverride,
+                    'public' => $set2->public,
+                    'visible' => $set2->public_parent && $set2->public,
+                    'hide_on_index' => $set2->hide_on_index,
+                    'parent_id' => $set2->parent_id,
+                    'children_ids' => [],
+                    'cover' => null,
+                ],
+            ]]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowSetsWithCover($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $media1 = Media::factory()->create([
+            'type' => MediaType::PHOTO,
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ]);
+
+        $media2 = Media::factory()->create([
+            'type' => MediaType::PHOTO,
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ]);
+
+        $set1 = ProductSet::factory()->create([
+            'public' => true,
+            'cover_id' => $media1->getKey(),
+        ]);
+        $set2 = ProductSet::factory()->create([
+            'public' => true,
+            'cover_id' => $media2->getKey(),
+        ]);
+
+        $product->sets()->sync([$set1->getKey(), $set2->getKey()]);
+
         $response = $this->actingAs($this->$user)
             ->getJson('/products/' . $product->slug);
         $response
@@ -266,6 +365,13 @@ class ProductTest extends TestCase
                     'hide_on_index' => $set1->hide_on_index,
                     'parent_id' => $set1->parent_id,
                     'children_ids' => [],
+                    'cover' => [
+                        'id' => $media1->getKey(),
+                        'type' => Str::lower($media1->type->key),
+                        'url' => $media1->url,
+                        'slug' => $media1->slug,
+                        'alt' => $media1->alt,
+                    ],
                 ],
                 [
                     'id' => $set2->getKey(),
@@ -278,6 +384,13 @@ class ProductTest extends TestCase
                     'hide_on_index' => $set2->hide_on_index,
                     'parent_id' => $set2->parent_id,
                     'children_ids' => [],
+                    'cover' => [
+                        'id' => $media2->getKey(),
+                        'type' => Str::lower($media2->type->key),
+                        'url' => $media2->url,
+                        'slug' => $media2->slug,
+                        'alt' => $media2->alt,
+                    ],
                 ],
             ]]);
     }
@@ -288,6 +401,31 @@ class ProductTest extends TestCase
     public function testShowHiddenUnauthorized($user): void
     {
         $this->$user->givePermissionTo('products.show_details');
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/' . $this->hidden_product->slug);
+        $response->assertNotFound();
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $this->hidden_product->getKey());
+        $response->assertNotFound();
+    }
+
+    /**
+     * Sets shouldn't affect product visibility
+     *
+     * @dataProvider authProvider
+     */
+    public function testShowHiddenWithPublicSetUnauthorized($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        /** @var ProductSet $publicSet */
+        $publicSet = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $publicSet->products()->attach($this->hidden_product);
 
         $response = $this->actingAs($this->$user)
             ->getJson('/products/' . $this->hidden_product->slug);
@@ -314,9 +452,52 @@ class ProductTest extends TestCase
         $response->assertOk();
     }
 
+    public function noIndexProvider(): array
+    {
+        return [
+            'as user no index' => ['user', true],
+            'as application no index' => ['application', true],
+            'as user index' => ['user', false],
+            'as application index' => ['application', false],
+        ];
+    }
+
+    /**
+     * @dataProvider noIndexProvider
+     */
+    public function testShowSeoNoIndex($user, $noIndex): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory([
+            'public' => true
+        ])->create();
+
+        $seo = SeoMetadata::factory([
+            'no_index' => $noIndex,
+        ])->create();
+
+        $product->seo()->save($seo);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $product->getKey());
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['seo' => [
+                'title' => $seo->title,
+                'no_index' => $noIndex,
+                'description' => $seo->description,
+                'og_image' => null,
+                'twitter_card' => $seo->twitter_card,
+                'keywords' => $seo->keywords,
+            ]]);
+    }
+
     public function testCreateUnauthorized(): void
     {
+        Event::fake([ProductCreated::class]);
         $this->postJson('/products')->assertForbidden();
+        Event::assertNotDispatched(ProductCreated::class);
     }
 
     /**
@@ -325,6 +506,8 @@ class ProductTest extends TestCase
     public function testCreate($user): void
     {
         $this->$user->givePermissionTo('products.add');
+
+        Queue::fake();
 
         $response = $this->actingAs($this->$user)->postJson('/products', [
             'name' => 'Test',
@@ -356,14 +539,294 @@ class ProductTest extends TestCase
             'description_html' => '<h1>Description</h1>',
             'description_short' => 'So called short description...',
         ]);
+
+        Queue::assertPushed(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductCreated;
+        });
+
+        $product = Product::find($response->getData()->data->id);
+        $event = new ProductCreated($product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertNotPushed(CallWebhookJob::class);
     }
 
-    public function testCreateWithZeroPrice(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithWebHookQueue($user): void
     {
-        $this->user->givePermissionTo('products.add');
+        $this->$user->givePermissionTo('products.add');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ProductCreated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Queue::fake();
+
+        $response = $this->actingAs($this->$user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'description_html' => '<h1>Description</h1>',
+            'public' => true,
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'slug' => 'test',
+                'name' => 'Test',
+                'price' => 100,
+                'public' => true,
+                'description_html' => '<h1>Description</h1>',
+                'cover' => null,
+                'gallery' => [],
+            ]]);
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'public' => true,
+            'description_html' => '<h1>Description</h1>',
+        ]);
+
+        Queue::assertPushed(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductCreated;
+        });
+
+        $product = Product::find($response->getData()->data->id);
+        $event = new ProductCreated($product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $product) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $product->getKey()
+                && $payload['data_type'] === 'Product'
+                && $payload['event'] === 'ProductCreated';
+        });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithWebHookDispatched($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ProductCreated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Bus::fake();
+
+        $response = $this->actingAs($this->$user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'description_html' => '<h1>Description</h1>',
+            'public' => true,
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'slug' => 'test',
+                'name' => 'Test',
+                'price' => 100,
+                'public' => true,
+                'description_html' => '<h1>Description</h1>',
+                'cover' => null,
+                'gallery' => [],
+            ]]);
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'public' => true,
+            'description_html' => '<h1>Description</h1>',
+        ]);
+
+        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductCreated;
+        });
+
+        $product = Product::find($response->getData()->data->id);
+        $event = new ProductCreated($product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $product->getKey()
+                && $payload['data_type'] === 'Product'
+                && $payload['event'] === 'ProductCreated';
+        });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateHiddenWithWebHookWithoutHidden($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ProductCreated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Queue::fake();
+
+        $response = $this->actingAs($this->$user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'description_html' => '<h1>Description</h1>',
+            'public' => false,
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'slug' => 'test',
+                'name' => 'Test',
+                'price' => 100,
+                'public' => false,
+                'description_html' => '<h1>Description</h1>',
+                'cover' => null,
+                'gallery' => [],
+            ]]);
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'public' => false,
+            'description_html' => '<h1>Description</h1>',
+        ]);
+
+        Queue::assertPushed(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductCreated;
+        });
+
+        $product = Product::find($response->getData()->data->id);
+        $event = new ProductCreated($product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateHiddenWithWebHook($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ProductCreated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => true,
+        ]);
+
+        Bus::fake();
+
+        $response = $this->actingAs($this->$user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'description_html' => '<h1>Description</h1>',
+            'public' => false,
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'slug' => 'test',
+                'name' => 'Test',
+                'price' => 100,
+                'public' => false,
+                'description_html' => '<h1>Description</h1>',
+                'cover' => null,
+                'gallery' => [],
+            ]]);
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'public' => false,
+            'description_html' => '<h1>Description</h1>',
+        ]);
+
+        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
+            return $job->class = WebHookEventListener::class;
+        });
+
+        $product = Product::find($response->getData()->data->id);
+        $event = new ProductCreated($product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $product->getKey()
+                && $payload['data_type'] === 'Product'
+                && $payload['event'] === 'ProductCreated';
+        });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithZeroPrice($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
 
         $this
-            ->actingAs($this->user)
+            ->actingAs($this->$user)
             ->postJson('/products', [
                 'name' => 'Test',
                 'slug' => 'test',
@@ -379,12 +842,15 @@ class ProductTest extends TestCase
         ]);
     }
 
-    public function testCreateWithNegativePrice(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithNegativePrice($user): void
     {
-        $this->user->givePermissionTo('products.add');
+        $this->$user->givePermissionTo('products.add');
 
         $this
-            ->actingAs($this->user)
+            ->actingAs($this->$user)
             ->postJson('/products', [
                 'name' => 'Test',
                 'slug' => 'test',
@@ -400,6 +866,8 @@ class ProductTest extends TestCase
     public function testCreateWithSchemas($user): void
     {
         $this->$user->givePermissionTo('products.add');
+
+        Event::fake([ProductCreated::class]);
 
         $schema = Schema::factory()->create();
 
@@ -428,6 +896,8 @@ class ProductTest extends TestCase
             'product_id' => $product->id,
             'schema_id' => $schema->id,
         ]);
+
+        Event::assertDispatched(ProductCreated::class);
     }
 
     /**
@@ -436,6 +906,8 @@ class ProductTest extends TestCase
     public function testCreateWithSets($user): void
     {
         $this->$user->givePermissionTo('products.add');
+
+        Event::fake([ProductCreated::class]);
 
         $set1 = ProductSet::factory()->create();
         $set2 = ProductSet::factory()->create();
@@ -471,6 +943,128 @@ class ProductTest extends TestCase
             'product_id' => $product->id,
             'product_set_id' => $set2->getKey(),
         ]);
+
+        Event::assertDispatched(ProductCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithSeo($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $media = Media::factory()->create([
+            'type' => MediaType::PHOTO,
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ]);
+
+        $response = $this->actingAs($this->$user)->json('POST', '/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'description_html' => '<h1>Description</h1>',
+            'public' => true,
+            'seo' => [
+                'title' => 'seo title',
+                'description' => 'seo description',
+                'og_image_id' => $media->getKey(),
+                'no_index' => true,
+            ]
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'slug' => 'test',
+                'name' => 'Test',
+                'price' => 100,
+                'public' => true,
+                'description_html' => '<h1>Description</h1>',
+                'cover' => null,
+                'gallery' => [],
+                'seo' => [
+                    'title' => 'seo title',
+                    'description' => 'seo description',
+                    'og_image' => [
+                        'id' => $media->getKey(),
+                    ],
+                    'no_index' => true,
+                ]
+            ]]);
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'public' => true,
+            'description_html' => '<h1>Description</h1>',
+        ]);
+
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => 'seo title',
+            'description' => 'seo description',
+            'model_id' => $response->getData()->data->id,
+            'model_type' => Product::class,
+            'no_index' => true,
+        ]);
+
+        $this->assertDatabaseCount('seo_metadata', 2);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithSeoDefaultIndex($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $response = $this->actingAs($this->$user)->json('POST', '/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'description_html' => '<h1>Description</h1>',
+            'public' => true,
+            'seo' => [
+                'title' => 'seo title',
+                'description' => 'seo description',
+            ]
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => [
+                'slug' => 'test',
+                'name' => 'Test',
+                'price' => 100,
+                'public' => true,
+                'description_html' => '<h1>Description</h1>',
+                'cover' => null,
+                'gallery' => [],
+                'seo' => [
+                    'title' => 'seo title',
+                    'description' => 'seo description',
+                    'no_index' => false,
+                ]
+            ]]);
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 100,
+            'public' => true,
+            'description_html' => '<h1>Description</h1>',
+        ]);
+
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => 'seo title',
+            'description' => 'seo description',
+            'model_id' => $response->getData()->data->id,
+            'model_type' => Product::class,
+            'no_index' => false,
+        ]);
+
+        $this->assertDatabaseCount('seo_metadata', 2);
     }
 
     /**
@@ -514,8 +1108,10 @@ class ProductTest extends TestCase
 
     public function testUpdateUnauthorized(): void
     {
+        Event::fake([ProductUpdated::class]);
         $this->patchJson('/products/id:' . $this->product->getKey())
             ->assertForbidden();
+        Event::assertNotDispatched(ProductUpdated::class);
     }
 
     /**
@@ -524,6 +1120,8 @@ class ProductTest extends TestCase
     public function testUpdate($user): void
     {
         $this->$user->givePermissionTo('products.edit');
+
+        Queue::fake();
 
         $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'Updated',
@@ -545,6 +1143,137 @@ class ProductTest extends TestCase
             'description_short' => 'New so called short description',
             'public' => false,
         ]);
+
+        Queue::assertPushed(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductUpdated;
+        });
+
+        $product = Product::find($this->product->getKey());
+        $event = new ProductUpdated($product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithWebHookQueue($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ProductUpdated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => true,
+        ]);
+
+        Queue::fake();
+
+        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150,
+            'description_html' => '<h1>New description</h1>',
+            'public' => false,
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $this->product->getKey(),
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150,
+            'description_html' => '<h1>New description</h1>',
+            'public' => false,
+        ]);
+
+        Queue::assertPushed(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductUpdated;
+        });
+
+        $product = Product::find($this->product->getKey());
+        $event = new ProductUpdated($product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $product) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $product->getKey()
+                && $payload['data_type'] === 'Product'
+                && $payload['event'] === 'ProductUpdated';
+        });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithWebHookDispatched($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ProductUpdated'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => true,
+        ]);
+
+        Bus::fake();
+
+        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150,
+            'description_html' => '<h1>New description</h1>',
+            'public' => false,
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $this->product->getKey(),
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150,
+            'description_html' => '<h1>New description</h1>',
+            'public' => false,
+        ]);
+
+        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductUpdated;
+        });
+
+        $product = Product::find($this->product->getKey());
+        $event = new ProductUpdated($product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $product->getKey()
+                && $payload['data_type'] === 'Product'
+                && $payload['event'] === 'ProductUpdated';
+        });
     }
 
     /**
@@ -553,6 +1282,8 @@ class ProductTest extends TestCase
     public function testUpdateChangeSets($user): void
     {
         $this->$user->givePermissionTo('products.edit');
+
+        Event::fake([ProductUpdated::class]);
 
         $product = Product::factory()->create();
 
@@ -589,6 +1320,8 @@ class ProductTest extends TestCase
             'product_id' => $product->getKey(),
             'product_set_id' => $set1->getKey(),
         ]);
+
+        Event::assertDispatched(ProductUpdated::class);
     }
 
     /**
@@ -597,6 +1330,8 @@ class ProductTest extends TestCase
     public function testUpdateDeleteSets($user): void
     {
         $this->$user->givePermissionTo('products.edit');
+
+        Event::fake([ProductUpdated::class]);
 
         $product = Product::factory()->create();
 
@@ -617,6 +1352,56 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseMissing('product_set_product', [
             'product_id' => $product->getKey(),
+        ]);
+
+        Event::assertDispatched(ProductUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithSeo($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $product = Product::factory([
+            'name' => 'Created',
+            'slug' => 'created',
+            'price' => 100,
+            'description_html' => '<h1>Description</h1>',
+            'public' => false,
+            'order' => 1,
+        ])->create();
+
+        $seo = SeoMetadata::factory()->create();
+        $product->seo()->save($seo);
+
+        $response = $this->actingAs($this->$user)->json('PATCH', '/products/id:' . $product->getKey(), [
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150,
+            'description_html' => '<h1>New description</h1>',
+            'public' => false,
+            'seo' => [
+                'title' => 'seo title',
+                'description' => 'seo description',
+            ],
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150,
+            'description_html' => '<h1>New description</h1>',
+            'public' => false,
+        ]);
+
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => 'seo title',
+            'description' => 'seo description',
         ]);
     }
 
@@ -741,8 +1526,10 @@ class ProductTest extends TestCase
 
     public function testDeleteUnauthorized(): void
     {
+        Event::fake(ProductDeleted::class);
         $this->deleteJson('/products/id:' . $this->product->getKey())
             ->assertForbidden();
+        Event::assertNotDispatched(ProductDeleted::class);
     }
 
     /**
@@ -752,10 +1539,128 @@ class ProductTest extends TestCase
     {
         $this->$user->givePermissionTo('products.remove');
 
+        Queue::fake();
+        $product = Product::factory([
+            'name' => 'Created',
+            'slug' => 'created',
+            'price' => 100,
+            'description_html' => '<h1>Description</h1>',
+            'public' => false,
+            'order' => 1,
+        ])->create();
+
+        $seo = SeoMetadata::factory()->create();
+        $product->seo()->save($seo);
+
+        $response = $this->actingAs($this->$user)
+            ->deleteJson('/products/id:' . $product->getKey());
+        $response->assertNoContent();
+        $this->assertSoftDeleted($product);
+        $this->assertSoftDeleted($seo);
+
+        Queue::assertPushed(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductDeleted;
+        });
+
+        $event = new ProductDeleted($this->product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWithWebHookQueue($user): void
+    {
+        $this->$user->givePermissionTo('products.remove');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ProductDeleted'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Queue::fake();
+
         $response = $this->actingAs($this->$user)
             ->deleteJson('/products/id:' . $this->product->getKey());
+
+        Queue::assertPushed(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductDeleted;
+        });
+
         $response->assertNoContent();
         $this->assertSoftDeleted($this->product);
+
+        $product = $this->product;
+        $event = new ProductDeleted($product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $product) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $product->getKey()
+                && $payload['data_type'] === 'Product'
+                && $payload['event'] === 'ProductDeleted';
+        });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWithWebHookDispatched($user): void
+    {
+        $this->$user->givePermissionTo('products.remove');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ProductDeleted'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Bus::fake();
+
+        $response = $this->actingAs($this->$user)
+            ->deleteJson('/products/id:' . $this->product->getKey());
+
+        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
+            return $job->class === WebHookEventListener::class
+                && $job->data[0] instanceof ProductDeleted;
+        });
+
+        $response->assertNoContent();
+        $this->assertSoftDeleted($this->product);
+
+        $product = $this->product;
+        $event = new ProductDeleted($product);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $product) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $product->getKey()
+                && $payload['data_type'] === 'Product'
+                && $payload['event'] === 'ProductDeleted';
+        });
     }
 
     /**

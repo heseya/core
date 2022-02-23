@@ -12,6 +12,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\TokenServiceContract;
+use App\Services\Contracts\UrlServiceContract;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -22,8 +23,10 @@ use Throwable;
 
 class AppService implements AppServiceContract
 {
-    public function __construct(protected TokenServiceContract $tokenService)
-    {
+    public function __construct(
+        protected TokenServiceContract $tokenService,
+        protected UrlServiceContract $urlService,
+    ) {
     }
 
     public function install(AppInstallDto $dto): App
@@ -48,11 +51,26 @@ class AppService implements AppServiceContract
         }
 
         if ($response->failed()) {
-            throw new AppException('Failed to connect with application');
+            throw new AppException(
+                'Application info responded with invalid status code',
+                0,
+                null,
+                [
+                    "Status code: {$response->status()}",
+                    "Body: {$response->body()}",
+                ],
+            );
         }
 
         if (!$this->isAppRootValid($response)) {
-            throw new AppException('App responded with invalid info');
+            throw new AppException(
+                'App responded with invalid info',
+                0,
+                null,
+                [
+                    "Body: {$response->body()}",
+                ],
+            );
         }
 
         $appConfig = $response->json();
@@ -112,9 +130,7 @@ class AppService implements AppServiceContract
             $uuid,
         );
 
-        $url = Str::endsWith($dto->getUrl(), '/')
-            ? "{$dto->getUrl()}install"
-            : "{$dto->getUrl()}/install";
+        $url = $this->urlService->urlAppendPath($dto->getUrl(), '/install');
 
         try {
             $response = Http::post($url, [
@@ -132,7 +148,15 @@ class AppService implements AppServiceContract
         if ($response->failed()) {
             $app->delete();
 
-            throw new AppException('Failed to install the application');
+            throw new AppException(
+                'App installation responded with an invalid status code',
+                0,
+                null,
+                [
+                    "Status code: {$response->status()}",
+                    "Body: {$response->body()}",
+                ],
+            );
         }
 
         if (!$this->isResponseValid($response, [
@@ -140,7 +164,14 @@ class AppService implements AppServiceContract
         ])) {
             $app->delete();
 
-            throw new AppException('App has invalid installation response');
+            throw new AppException(
+                'App has invalid installation response',
+                0,
+                null,
+                [
+                    "Body: {$response->body()}",
+                ],
+            );
         }
 
         $app->update([
@@ -190,6 +221,7 @@ class AppService implements AppServiceContract
 
         Permission::where('name', 'like', 'app.' . $app->slug . '%')->delete();
         $app->role()->delete();
+        $app->webhooks()->delete();
         $app->delete();
     }
 

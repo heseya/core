@@ -1,0 +1,147 @@
+Users:
+  get:
+    tags:
+      - Users
+    summary: 'user list'
+    parameters:
+      - name: search
+        in: query
+        description: 'Full text search'
+        schema:
+          type: string
+      - name: name
+        in: query
+        description: 'Name search'
+        schema:
+          type: string
+      - name: name
+        in: query
+        description: 'Email search'
+        schema:
+          type: string
+      - name: sort
+        in: query
+        description: 'Sorting string'
+        schema:
+          type: string
+        example: 'name:desc'
+      - name: pagination_limit
+        in: query
+        description: 'Number of elements per page'
+        schema:
+          type: number
+        example: 12
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Users.yml#/User'
+              type: object
+    security:
+      - oauth: [ ]
+  post:
+    tags:
+      - Users
+    summary: 'add new user'
+    requestBody:
+      $ref: './../requests/Users.yml#/UserCreate'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Users.yml#/User'
+              type: object
+    security:
+      - oauth: [ ]
+
+UsersParams:
+  get:
+    tags:
+      - Users
+    summary: 'user view'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Users.yml#/User'
+              type: object
+    security:
+      - oauth: [ ]
+  delete:
+    tags:
+      - Users
+    summary: 'delete user'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+    responses:
+      204:
+        description: Success
+    security:
+      - oauth: [ ]
+  patch:
+    tags:
+      - Users
+    summary: 'update user'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+    requestBody:
+      $ref: './../requests/Users.yml#/UserUpdate'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Users.yml#/User'
+              type: object
+    security:
+      - oauth: [ ]
+
+UserTFARemove:
+  post:
+    tags:
+      - Auth
+    summary: User 2FA Remove
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+  responses:
+    204:
+      description: Success

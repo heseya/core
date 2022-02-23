@@ -26,6 +26,8 @@ class ShippingMethodTest extends TestCase
         $this->shipping_method = ShippingMethod::factory()->create([
             'public' => true,
             'black_list' => true,
+            'shipping_time_min' => 1,
+            'shipping_time_max' => 2,
         ]);
 
         $lowRange = PriceRange::create(['start' => 0]);
@@ -60,6 +62,8 @@ class ShippingMethodTest extends TestCase
             'id' => $this->shipping_method->getKey(),
             'name' => $this->shipping_method->name,
             'public' => $this->shipping_method->public,
+            'shipping_time_min' => $this->shipping_method->shipping_time_min,
+            'shipping_time_max' => $this->shipping_method->shipping_time_max,
         ];
 
         $this->priceRangesWithNoInitialStart = [
@@ -321,6 +325,8 @@ class ShippingMethodTest extends TestCase
             'name' => 'Test',
             'public' => true,
             'black_list' => false,
+            'shipping_time_min' => 2,
+            'shipping_time_max' => 3,
         ];
 
         $response = $this->actingAs($this->$user)
@@ -352,6 +358,75 @@ class ShippingMethodTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateShippingTime($user): void
+    {
+        $this->$user->givePermissionTo('shipping_methods.add');
+
+        ShippingMethod::query()->delete();
+
+        $shipping_method = [
+            'name' => 'Test Shipping Time',
+            'public' => true,
+            'black_list' => false,
+            'shipping_time_min' => 2,
+            'shipping_time_max' => 3,
+        ];
+
+        $response = $this->actingAs($this->$user)
+            ->json('POST', '/shipping-methods', $shipping_method + [
+                'price_ranges' => [
+                    [
+                        'start' => 0,
+                        'value' => 10.37,
+                    ],
+                    [
+                        'start' => 200,
+                        'value' => 0,
+                    ],
+                ],
+            ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $shipping_method]);
+
+        $this->assertDatabaseHas('shipping_methods', $shipping_method);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateShippingTimeMaxLessThanMin($user): void
+    {
+        $this->$user->givePermissionTo('shipping_methods.add');
+
+        ShippingMethod::query()->delete();
+
+        $response = $this->actingAs($this->$user)
+            ->json('POST', '/shipping-methods', [
+                'name' => 'Test Shipping Time',
+                'public' => true,
+                'black_list' => false,
+                'shipping_time_min' => 3,
+                'shipping_time_max' => 2,
+                'price_ranges' => [
+                    [
+                        'start' => 0,
+                        'value' => 10.37,
+                    ],
+                    [
+                        'start' => 200,
+                        'value' => 0,
+                    ],
+                ],
+            ]);
+
+        $response->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateBlacklist($user): void
     {
         $this->$user->givePermissionTo('shipping_methods.add');
@@ -360,6 +435,8 @@ class ShippingMethodTest extends TestCase
             'name' => 'Test',
             'public' => true,
             'black_list' => true,
+            'shipping_time_min' => 2,
+            'shipping_time_max' => 2,
         ];
 
         $response = $this->actingAs($this->$user)

@@ -2,11 +2,10 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\Swagger\ProductSetResourceSwagger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
-class ProductSetParentChildrenResource extends Resource implements ProductSetResourceSwagger
+class ProductSetParentChildrenResource extends Resource
 {
     public function base(Request $request): array
     {
@@ -25,6 +24,9 @@ class ProductSetParentChildrenResource extends Resource implements ProductSetRes
             'hide_on_index' => $this->hide_on_index,
             'parent' => ProductSetResource::make($this->parent),
             'children' => ProductSetChildrenResource::collection($children),
+            'seo' => SeoMetadataResource::make($this->seo),
+            'description_html' => $this->description_html,
+            'cover' => MediaResource::make($this->media),
         ];
     }
 }

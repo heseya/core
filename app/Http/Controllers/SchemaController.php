@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Swagger\SchemaControllerSwagger;
 use App\Http\Requests\IndexSchemaRequest;
 use App\Http\Requests\SchemaStoreRequest;
 use App\Http\Resources\SchemaResource;
@@ -14,7 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
 
-class SchemaController extends Controller implements SchemaControllerSwagger
+class SchemaController extends Controller
 {
     public function __construct(
         protected OptionServiceContract $optionService,

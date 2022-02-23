@@ -1,0 +1,381 @@
+Login:
+  post:
+    tags:
+      - Auth
+    summary: Login
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              email:
+                type: string
+                example: admin@example.com
+                required: true
+              password:
+                type: string
+                example: secret
+                required: true
+              code:
+                type: string
+                example: XyDZR-M9GWZ
+                required: false
+            type: object
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  properties:
+                    token:
+                      type: string
+                    identity_token:
+                      type: string
+                    refresh_token:
+                      type: string
+                    user:
+                      $ref: './../schemas/Users.yml#/User'
+                  type: object
+              type: object
+      403:
+        description: 2FA code not provided
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  properties:
+                    code:
+                      type: number
+                      example: 403
+                    message:
+                      type: string
+                      example: Two-Factor Authentication is required
+                    type:
+                      type: string
+                      example: email
+                  type: object
+              type: object
+      422:
+        description: Error
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Error.yml#/Error'
+              type: object
+            example:
+              code: 422
+              name: "Invalid Two-Factor Authentication token"
+
+Logout:
+  post:
+    tags:
+      - Auth
+    summary: Logout
+    responses:
+      204:
+        description: 'Success no content'
+
+ResetPassword:
+  post:
+    tags:
+      - Auth
+    summary: 'Reset password'
+    requestBody:
+      $ref: './../requests/Auth.yml#/PasswordReset'
+    responses:
+      204:
+        description: Success
+    security:
+      - oauth: [ ]
+
+ResetPasswordParams:
+  get:
+    tags:
+      - Auth
+    summary: 'Show reset password form'
+    responses:
+      200:
+        description: Success
+    security:
+      - oauth: [ ]
+
+SaveResetPassword:
+  patch:
+    tags:
+      - Auth
+    summary: 'save the reset password'
+    requestBody:
+      $ref: './../requests/Auth.yml#/PasswordResetSave'
+    responses:
+      204:
+        description: Success
+    security:
+      - oauth: [ ]
+
+Password:
+  patch:
+    tags:
+      - Auth
+    summary: 'Change password'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              password:
+                type: string
+                example: secret
+              password_new:
+                type: string
+                example: xsw@!QAZ34
+            type: object
+    responses:
+      204:
+        description: Success
+    security:
+      - oauth: [ ]
+
+Refresh:
+  post:
+    tags:
+      - Auth
+    summary: 'Refresh access and identity tokens'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              refresh_token:
+                type: string
+            type: object
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  properties:
+                    token:
+                      type: string
+                    identity_token:
+                      type: string
+                    refresh_token:
+                      type: string
+                    user:
+                      $ref: './../schemas/Users.yml#/User'
+                  type: object
+              type: object
+
+LoginHistory:
+  get:
+    tags:
+      - Auth
+    summary: 'Get login history'
+    responses:
+      200:
+        description: Success
+    deprecated: true
+    security:
+      - oauth: [ ]
+
+KillSessionParams:
+  get:
+    tags:
+      - Auth
+    summary: 'Allow to ''kill'' active session'
+    parameters:
+      - name: id
+        in: path
+        description: 'token id from the table ''oauth_access_tokens'''
+        required: true
+        schema:
+          type: string
+          example: 47e380b746d6cacb20473b82d911b2701a3c05422c65cbc4872045a100fcb72be554ad1680aef2bf
+    responses:
+      200:
+        description: Success
+    deprecated: true
+    security:
+      - oauth: [ ]
+
+KillSession:
+  get:
+    tags:
+      - Auth
+    summary: 'Allow to ''kill'' all old sessions'
+    responses:
+      200:
+        description: Success
+    deprecated: true
+    security:
+      - oauth: [ ]
+
+Profile:
+  get:
+    tags:
+      - Auth
+    summary: 'get your own user or app resource'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: object
+                  oneOf:
+                    - $ref: './../schemas/Users.yml#/UserView'
+                    - $ref: './../schemas/Apps.yml#/AppView'
+              type: object
+    security:
+      - oauth: [ ]
+
+Check:
+  get:
+    tags:
+      - Auth
+    summary: 'get profile resource of unauthenticated user'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Auth.yml#/ProfileView'
+              type: object
+
+CheckParams:
+  get:
+    tags:
+      - Auth
+    summary: 'get profile resource from identity token'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Auth.yml#/ProfileView'
+              type: object
+
+TFASetup:
+  post:
+    tags:
+      - Auth
+    summary: 2FA Setup
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              type:
+                type: string
+                description: app | email
+                example: app
+            type: object
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: object
+                  oneOf:
+                    - $ref: './../schemas/Auth.yml#/TFASetupApp'
+                    - $ref: './../schemas/Auth.yml#/TFASetupEmail'
+              type: object
+
+TFAConfirm:
+  post:
+    tags:
+      - Auth
+    summary: 2FA Confirm
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              code:
+                type: string
+                example: 123456
+            type: object
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: object
+                  properties:
+                    recovery_codes:
+                      type: array
+                      items:
+                        type: string
+                        example: XyDZR-M9GWZ
+              type: object
+
+TFARecoveryCreate:
+  post:
+    tags:
+      - Auth
+    summary: 2FA Create recovery codes
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              password:
+                type: string
+                example: secret
+            type: object
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: object
+                  properties:
+                    recovery_codes:
+                      type: array
+                      items:
+                        type: string
+                        example: XyDZR-M9GWZ
+              type: object
+
+TFARemove:
+  post:
+    tags:
+      - Auth
+    summary: 2FA Remove
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              password:
+                type: string
+                example: secret
+            type: object
+  responses:
+    204:
+      description: Success

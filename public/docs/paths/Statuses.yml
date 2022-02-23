@@ -1,0 +1,97 @@
+Statuses:
+  get:
+    tags:
+      - Statuses
+    summary: 'list statuses'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Statuses.yml#/Status'
+              type: object
+    security:
+      - oauth: [ ]
+  post:
+    tags:
+      - Statuses
+    summary: 'add new status'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: './../schemas/Statuses.yml#/Status'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Statuses.yml#/Status'
+              type: object
+    security:
+      - oauth: [ ]
+
+StatusesParams:
+  delete:
+    tags:
+      - Statuses
+    summary: 'delete status'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      204:
+        description: Success
+    security:
+      - oauth: [ ]
+  patch:
+    tags:
+      - Statuses
+    summary: 'update status'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: './../schemas/Statuses.yml#/Status'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Statuses.yml#/Status'
+              type: object
+    security:
+      - oauth: [ ]
+
+StatusesReorder:
+  post:
+    tags:
+      - Statuses
+    summary: 'Reorder statuses'
+    requestBody:
+      $ref: './../requests/Statuses.yml#/StatusReorderRequest'
+    responses:
+      204:
+        description: Success
+    security:
+      - oauth: [ ]

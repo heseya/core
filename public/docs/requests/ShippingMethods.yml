@@ -1,0 +1,85 @@
+ShippingMethod:
+  type: object
+  properties:
+    name:
+      type: string
+      example: dpd
+    public:
+      type: boolean
+      example: 'true'
+    black_list:
+      type: boolean
+      example: 'false'
+    payment_methods:
+      type: array
+      items:
+        type: string
+        example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    countries:
+      type: array
+      items:
+        type: string
+        example: PL
+    price_ranges:
+      type: array
+      items:
+        properties:
+          start:
+            description: "start of the range (min = 0);\n *             range goes from start to start of next range or infinity"
+            type: number
+            example: 0
+          value:
+            description: 'price in this range'
+            type: number
+            example: 18.7
+        type: object
+    shipping_time_min:
+      type: number
+      example: 2
+    shipping_time_max:
+      type: number
+      example: 3
+
+ShippingMethodIndex:
+  content:
+    application/json:
+      schema:
+        properties:
+          country:
+            type: string
+          cart_value:
+            type: float
+        type: object
+
+ShippingMethodReorder:
+  content:
+    application/json:
+      schema:
+        properties:
+          shipping_methods:
+            type: array
+            items:
+              type: string
+              example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+        type: object
+
+ShippingMethodStore:
+  content:
+    application/json:
+      schema:
+        required:
+          - name
+          - price_ranges
+          - shipping_time_min
+          - shipping_time_max
+        allOf:
+          - $ref: '#ShippingMethod'
+        type: object
+
+ShippingMethodUpdate:
+  content:
+    application/json:
+      schema:
+        allOf:
+          - $ref: '#ShippingMethod'
+        type: object

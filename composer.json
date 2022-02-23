@@ -7,16 +7,16 @@
         "php": "^8.0",
         "barryvdh/laravel-ide-helper": "^2.10",
         "bensampo/laravel-enum": "^3.3",
-        "darkaonline/l5-swagger": "^8.0",
         "doctrine/dbal": "^3.1",
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.3",
-        "heseya/demo": "dev-master",
+        "heseya/2fa": "^2.0",
+        "heseya/demo": "*",
+        "heseya/dto": "^1.0",
         "heseya/laravel-searchable": "^1.0",
-        "heseya/resource": "*",
         "heseya/pagination": "*",
-        "heseya/dto": "*",
+        "heseya/resource": "*",
         "heseya/sortable": "*",
         "jenssegers/agent": "^2.6",
         "laravel/framework": "^8.44",
@@ -29,6 +29,7 @@
         "propaganistas/laravel-phone": "^4.3",
         "sentry/sentry-laravel": "^2.6",
         "spatie/laravel-permission": "^4.2",
+        "spatie/laravel-webhook-server": "^3.0",
         "srmklive/paypal": "^3.0",
         "tymon/jwt-auth": "^1.0.2"
     },
@@ -36,19 +37,23 @@
         "brianium/paratest": "^6.3",
         "facade/ignition": "^2.9",
         "fakerphp/faker": "^v1.15",
-        "heseya/insights": "*",
+        "heseya/insights": "^1.0",
         "laravel/tinker": "^2.6",
         "mattiasgeniar/phpunit-query-count-assertions": "^1.1",
         "mbezhanov/faker-provider-collection": "^2.0",
         "mockery/mockery": "^1.4",
         "nunomaduro/collision": "^5.3",
         "nunomaduro/phpinsights": "^2.0",
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit": "^9.5",
+        "timacdonald/log-fake": "^1.9"
     },
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     },
     "extra": {
         "laravel": {
@@ -90,9 +95,6 @@
             "@ide-helper",
             "@php artisan insights --fix --no-interaction"
         ],
-        "docs": [
-            "@php artisan l5-swagger:generate"
-        ],
         "pre-commit": [
             "@composer style"
         ],
@@ -101,10 +103,6 @@
         ]
     },
     "repositories": [
-        {
-            "type": "path",
-            "url": "./heseya/insights"
-        },
         {
             "type": "path",
             "url": "./heseya/demo"
@@ -116,10 +114,6 @@
         {
             "type": "path",
             "url": "./heseya/pagination"
-        },
-        {
-            "type": "path",
-            "url": "./heseya/dto"
         },
         {
             "type": "path",

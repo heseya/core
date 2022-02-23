@@ -2,31 +2,56 @@
 
 namespace Tests\Feature;
 
+use App\Enums\TFAType;
 use App\Enums\TokenType;
 use App\Models\App;
+use App\Models\OneTimeSecurityCode;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use App\Notifications\TFAInitialization;
+use App\Notifications\TFARecoveryCodes;
+use App\Notifications\TFASecurityCode;
+use App\Services\Contracts\OneTimeSecurityCodeContract;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use PHPGangsta_GoogleAuthenticator;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
+use TiMacDonald\Log\LogFake;
 
 class AuthTest extends TestCase
 {
     use WithFaker;
 
     private string $expectedLog;
+    private OneTimeSecurityCodeContract $oneTimeSecurityCodeService;
+    private array $expected;
 
     public function setUp(): void
     {
         parent::setUp();
 
         $this->expectedLog = 'AuthException(code: 0): Invalid credentials at';
+        $this->oneTimeSecurityCodeService = \Illuminate\Support\Facades\App::make(OneTimeSecurityCodeContract::class);
+
+        $this->expected = [
+            'token',
+            'identity_token',
+            'refresh_token',
+            'user' => [
+                'id',
+                'email',
+                'name',
+                'avatar',
+            ],
+        ];
     }
 
     public function testLoginUnauthorized(): void
@@ -50,35 +75,198 @@ class AuthTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonStructure(['data' => [
-                'token',
-                'identity_token',
-                'refresh_token',
-                'user' => [
-                    'id',
-                    'email',
-                    'name',
-                    'avatar',
-                ],
-            ]]);
+            ->assertJsonStructure(['data' => $this->expected]);
     }
 
     public function testLoginInvalidCredential(): void
     {
         $this->user->givePermissionTo('auth.login');
 
-        Log::shouldReceive('error')
-            ->once()
-            ->withArgs(function ($message) {
-                return str_contains($message, $this->expectedLog);
-            });
+        Log::swap(new LogFake());
 
         $response = $this->actingAs($this->user)->postJson('/login', [
             'email' => $this->user->email,
             'password' => 'bad-password',
         ]);
 
+        Log::assertLogged('error', function ($message, $context) {
+            return str_contains($message, $this->expectedLog);
+        });
+
         $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    public function testLoginDisabledTfaCode(): void
+    {
+        $this->user->givePermissionTo('auth.login');
+
+        $response = $this->actingAs($this->user)->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+            'code' => 'code',
+        ]);
+
+        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+            ->assertJsonFragment([
+                'message' => 'Two-Factor Authentication is not setup.'
+            ]);
+    }
+
+    /**
+     * @dataProvider tfaMethodProvider
+     */
+    public function testLoginEnabledTfaNoCode($method, $secret): void
+    {
+        $this->user->givePermissionTo('auth.login');
+
+        Notification::fake();
+
+        $this->user->update([
+            'tfa_type' => $method,
+            'tfa_secret' => $secret,
+            'is_tfa_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+        ]);
+
+        if ($method === TFAType::EMAIL) {
+            Notification::assertSentTo([$this->user], TFASecurityCode::class);
+        }
+
+        $response->assertStatus(Response::HTTP_FORBIDDEN)
+            ->assertJsonFragment([
+                'message' => 'Two-Factor Authentication is required'
+            ]);
+    }
+
+    /**
+     * @dataProvider tfaMethodProvider
+     */
+    public function testLoginEnabledTfaCode($method, $secret): void
+    {
+        $this->user->givePermissionTo('auth.login');
+
+        Notification::fake();
+
+        $this->user->update([
+            'tfa_type' => $method,
+            'tfa_secret' => $secret,
+            'is_tfa_active' => true,
+        ]);
+        $code = '';
+
+        if ($method === TFAType::EMAIL) {
+            $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user, Config::get('tfa.code_expires_time'));
+        } elseif ($method === TFAType::APP) {
+            $google_authenticator = new PHPGangsta_GoogleAuthenticator();
+            $code = $google_authenticator->getCode($secret);
+        }
+
+        $response = $this->actingAs($this->user)->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+            'code' => $code,
+        ]);
+
+        $response->assertOk()
+            ->assertJsonStructure(['data' => $this->expected]);
+
+        $this->assertDatabaseCount('one_time_security_codes', 0);
+    }
+
+    public function testLoginEnabledTfaOldCode(): void
+    {
+        $this->user->givePermissionTo('auth.login');
+
+        Notification::fake();
+
+        $this->user->update([
+            'tfa_type' => 'email',
+            'tfa_secret' => null,
+            'is_tfa_active' => true,
+        ]);
+
+        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user, Config::get('tfa.code_expires_time'));
+
+        // Wygenerowanie nowego kodu
+        $this->actingAs($this->user)->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+            'code' => $code,
+        ]);
+
+        $response
+            ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+            ->assertJsonFragment([
+                'message' => 'Invalid Two-Factor Authentication token.'
+            ]);
+
+        $this->assertDatabaseCount('one_time_security_codes', 1);
+    }
+
+    /**
+     * @dataProvider tfaMethodProvider
+     */
+    public function testLoginEnabledTfaRecoveryCode($method, $secret): void
+    {
+        $this->user->givePermissionTo('auth.login');
+
+        Notification::fake();
+
+        $this->user->update([
+            'tfa_type' => $method,
+            'tfa_secret' => $secret,
+            'is_tfa_active' => true,
+        ]);
+
+        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user);
+
+        $response = $this->actingAs($this->user)->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+            'code' => $code,
+        ]);
+
+        $response->assertOk()
+            ->assertJsonStructure(['data' => $this->expected]);
+
+        $this->assertDatabaseCount('one_time_security_codes', 0);
+    }
+
+    /**
+     * @dataProvider tfaMethodProvider
+     */
+    public function testLoginEnabledTfaInvalidCode($method, $secret): void
+    {
+        $this->user->givePermissionTo('auth.login');
+
+        Notification::fake();
+
+        $this->user->update([
+            'tfa_type' => $method,
+            'tfa_secret' => $secret,
+            'is_tfa_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+            'code' => 'INVALID',
+        ]);
+
+        $response
+            ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+            ->assertJsonFragment([
+                'message' => 'Invalid Two-Factor Authentication token.'
+            ]);
     }
 
     /**
@@ -220,6 +408,38 @@ class AuthTest extends TestCase
         ]);
     }
 
+    public function testLogoutWithInvalidatedTokenAfterRefreshToken(): void
+    {
+        $this->user->givePermissionTo('auth.login');
+
+        $response = $this->actingAs($this->user)->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+        ]);
+
+        $token = $response->getData()->data->token;
+        $refreshToken = $response->getData()->data->refresh_token;
+
+        $this
+            ->json(
+                'POST',
+                '/auth/refresh',
+                [
+                    'refresh_token' => $refreshToken,
+                ],
+                $this->defaultHeaders + ['Authorization' => 'Bearer ' . $token]
+            );
+
+        $this
+            ->json(
+                'POST',
+                '/auth/logout',
+                [],
+                $this->defaultHeaders + ['Authorization' => 'Bearer ' . $token]
+            )
+            ->assertStatus(422);
+    }
+
     public function testResetPasswordUnauthorized(): void
     {
         $email = $this->faker->unique()->safeEmail;
@@ -260,6 +480,31 @@ class AuthTest extends TestCase
         $response = $this->actingAs($this->user)->postJson('/users/reset-password', [
             'email' => $user->email,
         ]);
+
+        $response->assertNoContent();
+    }
+
+    public function testResetPasswordDifferentEmail(): void
+    {
+        $this->user->givePermissionTo('auth.password_reset');
+
+        $email = $this->faker->unique()->safeEmail;
+        $password = 'Passwd###111';
+
+        $user = User::factory()->create([
+            'name' => $this->faker->firstName() . ' '  . $this->faker->lastName(),
+            'email' => $email,
+            'password' => Hash::make($password),
+        ]);
+
+        Mail::fake();
+        Mail::assertNothingSent();
+
+        $response = $this->actingAs($this->user)->postJson('/users/reset-password', [
+            'email' => $this->faker->unique()->safeEmail,
+        ]);
+
+        Mail::assertNothingSent();
 
         $response->assertNoContent();
     }
@@ -326,21 +571,18 @@ class AuthTest extends TestCase
         $token = Password::createToken($user);
         $this->assertTrue(Password::tokenExists($user, $token));
 
-        Log::shouldReceive('error')
-            ->once()
-            ->withArgs(function ($message) {
-                return str_contains(
-                    $message,
-                    'AuthException(code: 0): The token is invalid or inactive. '
-                    . 'Try to reset your password again. at'
-                );
-            });
+        Log::swap(new LogFake());
 
         $response = $this->actingAs($this->user)->json('PATCH', '/users/save-reset-password', [
             'email' => $email,
             'password' => $newPassword,
             'token' => 'token',
         ]);
+
+        Log::assertLogged('error', function ($message, $context) {
+            return str_contains($message, 'AuthException(code: 0): The token is invalid or inactive. '
+                . 'Try to reset your password again. at');
+        });
 
         $user->refresh();
         $response->assertStatus(422);
@@ -387,16 +629,16 @@ class AuthTest extends TestCase
 
         $user->givePermissionTo('auth.password_change');
 
-        Log::shouldReceive('error')
-            ->once()
-            ->withArgs(function ($message) {
-                return str_contains($message, $this->expectedLog);
-            });
+        Log::swap(new LogFake());
 
         $response = $this->actingAs($user)->json('PATCH', '/users/password', [
             'password' => 'tests',
             'password_new' => 'Test1@3456',
         ]);
+
+        Log::assertLogged('error', function ($message, $context) {
+            return str_contains($message, $this->expectedLog);
+        });
 
         $response->assertStatus(422);
     }
@@ -565,7 +807,7 @@ class AuthTest extends TestCase
             ]);
     }
 
-    public function testProfile(): void
+    public function testProfileUser(): void
     {
         $user = User::factory()->create();
         $role1 = Role::create(['name' => 'Role 1']);
@@ -637,26 +879,32 @@ class AuthTest extends TestCase
             ->assertForbidden();
     }
 
-    public function testCheckIdentityInvalidToken(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCheckIdentityInvalidToken($user): void
     {
-        $this->user->givePermissionTo('auth.check_identity');
+        $this->$user->givePermissionTo('auth.check_identity');
 
-        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
 
         $token = $this->tokenService->createToken(
-                $user,
+                $otherUser,
                 new TokenType(TokenType::IDENTITY),
             ) . 'invalid_hash';
 
-        $this->actingAs($this->user)->getJson("/auth/check/$token")
+        $this->actingAs($this->$user)->getJson("/auth/check/$token")
             ->assertStatus(422);
     }
 
-    public function testCheckIdentityNoToken(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCheckIdentityNoToken($user): void
     {
-        $this->user->givePermissionTo('auth.check_identity');
+        $this->$user->givePermissionTo('auth.check_identity');
 
-        $this->actingAs($this->user)->getJson("/auth/check")
+        $this->actingAs($this->$user)->getJson("/auth/check")
             ->assertOk()
             ->assertJsonFragment([
                 'id' => null,
@@ -664,31 +912,74 @@ class AuthTest extends TestCase
             ]);
     }
 
-    public function testCheckIdentity(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCheckIdentity($user): void
     {
-        $this->user->givePermissionTo('auth.check_identity');
+        $this->$user->givePermissionTo('auth.check_identity');
 
-        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
         $role1 = Role::create(['name' => 'Role 1']);
 
         $permission1 = Permission::create(['name' => 'permission.1']);
         $permission2 = Permission::create(['name' => 'permission.2']);
 
         $role1->syncPermissions([$permission1, $permission2]);
-        $user->syncRoles([$role1]);
+        $otherUser->syncRoles([$role1]);
 
         $token = $this->tokenService->createToken(
-            $user,
+            $otherUser,
             new TokenType(TokenType::IDENTITY),
         );
 
-        $this->actingAs($this->user)->getJson("/auth/check/$token")
+        $this->actingAs($this->$user)->getJson("/auth/check/$token")
             ->assertOk()
             ->assertJson(['data' => [
-                'id' => $user->getKey(),
-                'name' => $user->name,
-                'avatar' => $user->avatar,
+                'id' => $otherUser->getKey(),
+                'name' => $otherUser->name,
+                'avatar' => $otherUser->avatar,
                 'permissions' => [
+                    'permission.1',
+                    'permission.2',
+                ],
+            ]]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCheckIdentityNoAppMapping($user): void
+    {
+        App::factory()->create([
+            'slug' => 'app_slug',
+        ]);
+
+        $this->$user->givePermissionTo('auth.check_identity');
+
+        $otherUser = User::factory()->create();
+        $role1 = Role::create(['name' => 'Role 1']);
+
+        $permission1 = Permission::create(['name' => 'permission.1']);
+        $permission2 = Permission::create(['name' => 'permission.2']);
+        $permission3 = Permission::create(['name' => 'app.app_slug.raw_name']);
+
+        $role1->syncPermissions([$permission1, $permission2, $permission3]);
+        $otherUser->syncRoles([$role1]);
+
+        $token = $this->tokenService->createToken(
+            $otherUser,
+            new TokenType(TokenType::IDENTITY),
+        );
+
+        $this->actingAs($this->$user)->getJson("/auth/check/$token")
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $otherUser->getKey(),
+                'name' => $otherUser->name,
+                'avatar' => $otherUser->avatar,
+                'permissions' => [
+                    'app.app_slug.raw_name',
                     'permission.1',
                     'permission.2',
                 ],
@@ -730,6 +1021,383 @@ class AuthTest extends TestCase
                     'raw_name',
                 ],
             ]]);
+    }
+
+    public function testSetupTfaUnauthorized(): void
+    {
+        $this->json('POST', '/auth/2fa/setup', [
+            'type' => TFAType::APP,
+        ])->assertForbidden();
+    }
+
+    public function testConfirmTfaUnauthorized(): void
+    {
+        $this->json('POST', '/auth/2fa/confirm', [
+            'code' => '123456',
+        ])->assertForbidden();
+    }
+
+    public function tfaMethodProvider(): array
+    {
+        return [
+            'as app 2fa' => [TFAType::APP, 'secret'],
+            'as email 2fa' => [TFAType::EMAIL, null],
+        ];
+    }
+
+    /**
+     * @dataProvider tfaMethodProvider
+     */
+    public function testAlreadySetupTfa($method, $secret): void
+    {
+        $this->user->update([
+            'tfa_type' => $method,
+            'tfa_secret' => $secret,
+            'is_tfa_active' => true,
+        ]);
+
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/setup', [
+            'type' => $method,
+        ])
+            ->assertStatus(422)
+            ->assertJsonFragment(['message' => 'Two-Factor Authentication is already setup.']);
+    }
+
+    /**
+     * @dataProvider tfaMethodProvider
+     */
+    public function confirmAlreadySetupTfa($method, $secret): void
+    {
+        $this->user->update([
+            'tfa_type' => $method,
+            'tfa_secret' => $secret,
+            'is_tfa_active' => true,
+        ]);
+
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
+            'code' => '123456',
+        ])
+            ->assertStatus(422)
+            ->assertJsonFragment(['message' => 'Two-Factor Authentication is already setup.']);
+    }
+
+    public function confirmNoSetupTfa(): void
+    {
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
+            'code' => '123456',
+        ])
+            ->assertStatus(422)
+            ->assertJsonFragment(['message' => 'First select Two-Factor Authentication type.']);
+    }
+
+    /**
+     * @dataProvider tfaMethodProvider
+     */
+    public function confirmInvalidToken($method, $secret): void
+    {
+        $this->user->update([
+            'tfa_type' => $method,
+            'tfa_secret' => $secret,
+            'is_tfa_active' => false,
+        ]);
+
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
+            'code' => 'INVALID',
+        ])
+            ->assertStatus(422)
+            ->assertJsonFragment(['message' => 'Invalid Two-Factor Authentication token.']);
+    }
+
+    public function confirmExpiredToken(): void
+    {
+        $this->user->update([
+            'tfa_type' => TFAType::EMAIL,
+            'is_tfa_active' => false,
+        ]);
+
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
+            'code' => $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user, 1),
+        ])
+            ->assertStatus(422)
+            ->assertJsonFragment(['message' => 'Invalid Two-Factor Authentication token.']);
+    }
+
+    public function testSetupAppTfa(): void
+    {
+        $response = $this->actingAs($this->user)->json('POST', '/auth/2fa/setup', [
+            'type' => TFAType::APP,
+        ]);
+
+        $secret = $response->getData()->data->secret;
+
+        $this->assertDatabaseHas('users', [
+            'id' => $this->user->getKey(),
+            'tfa_type' => TFAType::APP,
+            'tfa_secret' => $secret,
+            'is_tfa_active' => false,
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonStructure(['data' => [
+                'type',
+                'secret',
+                'qr_code_url',
+            ]]);
+    }
+
+    public function testConfirmAppTfa(): void
+    {
+        Notification::fake();
+
+        $google_authenticator = new PHPGangsta_GoogleAuthenticator();
+
+        $secret = $google_authenticator->createSecret();
+        $code = $google_authenticator->getCode($secret);
+
+        $this->user->update([
+            'tfa_type' => TFAType::APP,
+            'tfa_secret' => $secret,
+        ]);
+
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
+            'code' => $code,
+        ])->assertOk()->assertJsonStructure(['data' => [
+            'recovery_codes'
+        ]]);
+
+        Notification::assertSentTo(
+            [$this->user], TFARecoveryCodes::class
+        );
+
+        $this->assertDatabaseHas('users', [
+            'id' => $this->user->getKey(),
+            'is_tfa_active' => true,
+        ]);
+
+        $this->assertDatabaseCount('one_time_security_codes', 3);
+    }
+
+    public function testSetupEmailTfa(): void
+    {
+        Notification::fake();
+
+        $response = $this->actingAs($this->user)->json('POST', '/auth/2fa/setup', [
+            'type' => TFAType::EMAIL,
+        ]);
+
+        Notification::assertSentTo(
+            [$this->user], TFAInitialization::class
+        );
+
+        $this->assertDatabaseHas('users', [
+            'id' => $this->user->getKey(),
+            'tfa_type' => TFAType::EMAIL,
+            'tfa_secret' => null,
+            'is_tfa_active' => false,
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonStructure(['data' => [
+                'type',
+            ]]);
+    }
+
+    public function testConfirmEmailTfa(): void
+    {
+        Notification::fake();
+
+        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user, Config::get('tfa.code_expires_time'));
+
+        $this->user->update([
+            'tfa_type' => TFAType::EMAIL,
+        ]);
+
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
+            'code' => $code,
+        ])->assertOk()->assertJsonStructure(['data' => [
+            'recovery_codes'
+        ]]);
+
+        Notification::assertSentTo(
+            [$this->user], TFARecoveryCodes::class
+        );
+
+        $this->assertDatabaseHas('users', [
+            'id' => $this->user->getKey(),
+            'is_tfa_active' => true,
+        ]);
+
+        $this->assertDatabaseCount('one_time_security_codes', 3);
+    }
+
+    public function testRecoveryCodesCreateUnauthorized(): void
+    {
+        $this->json('POST', '/auth/2fa/recovery/create', [
+            'password' => $this->password,
+        ])->assertForbidden();
+    }
+
+    public function testRecoveryCodesCreateInvalidPassword(): void
+    {
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/recovery/create', [
+            'password' => 'invalid',
+        ])
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'message' => 'Invalid credentials',
+            ]);
+    }
+
+    public function testRecoveryCodesCreateNoTfa(): void
+    {
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/recovery/create', [
+            'password' => $this->password,
+        ])
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'message' => 'Two-Factor Authentication is not setup.',
+            ]);
+    }
+
+    /**
+     * @dataProvider tfaMethodProvider
+     */
+    public function testRecoveryCodesCreate($method, $secret): void
+    {
+        Notification::fake();
+
+        $this->user->update([
+            'tfa_type' => $method,
+            'tfa_secret' => $secret,
+            'is_tfa_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->user)->json('POST', '/auth/2fa/recovery/create', [
+            'password' => $this->password,
+        ])->assertOk();
+
+        Notification::assertSentTo(
+            [$this->user], TFARecoveryCodes::class
+        );
+
+        $recovery_codes = OneTimeSecurityCode::where('user_id', '=', $this->user->getKey())
+            ->whereNull('expires_at')
+            ->get();
+
+        $response->assertJsonStructure(['data' => [
+            'recovery_codes',
+        ]]);
+
+        $this->assertDatabaseCount('one_time_security_codes', count($recovery_codes));
+    }
+
+    public function testRemoveTfaUnauthorized(): void
+    {
+        $this->json('POST', '/auth/2fa/remove', [
+            'password' => $this->password,
+        ])->assertForbidden();
+    }
+
+    public function testRemoveTfaNoTfa(): void
+    {
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/remove', [
+            'password' => $this->password,
+        ])
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'message' => 'Two-Factor Authentication is not setup.',
+            ]);
+    }
+
+    /**
+     * @dataProvider tfaMethodProvider
+     */
+    public function testRemoveTfa($method, $secret): void
+    {
+        $this->user->update([
+            'tfa_type' => $method,
+            'tfa_secret' => $secret,
+            'is_tfa_active' => true,
+        ]);
+
+        OneTimeSecurityCode::factory([
+            'user_id' => $this->user->getKey(),
+        ])->create();
+
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/remove', [
+            'password' => $this->password,
+        ])->assertNoContent();
+
+        $this->assertDatabaseCount('one_time_security_codes', 0);
+        $this->assertDatabaseHas('users', [
+            'id' => $this->user->getKey(),
+            'tfa_type' => null,
+            'tfa_secret' => null,
+            'is_tfa_active' => false,
+        ]);
+    }
+
+    public function testRemoveUserTfaUnauthorized(): void
+    {
+        $otherUser = User::factory()->create();
+
+        $this->actingAs($this->user)->json('POST', '/users/id:' . $otherUser->getKey() . '/2fa/remove')
+            ->assertForbidden();
+    }
+
+    public function testRemoveUserTfaNoTfa(): void
+    {
+        $this->user->givePermissionTo('users.2fa_remove');
+
+        $otherUser = User::factory()->create();
+
+        $this->actingAs($this->user)->json('POST', '/users/id:' . $otherUser->getKey() . '/2fa/remove')
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'message' => 'Two-Factor Authentication is not setup.',
+            ]);
+    }
+
+    public function testRemoveUserTfaYourself(): void
+    {
+        $this->user->givePermissionTo('users.2fa_remove');
+
+        $this->actingAs($this->user)->json('POST', '/users/id:' . $this->user->getKey() . '/2fa/remove')
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'message' => 'You cannot remove 2FA yourself in this way.',
+            ]);
+    }
+
+    /**
+     * @dataProvider tfaMethodProvider
+     */
+    public function testRemoveUserTfa($method, $secret): void
+    {
+        $this->user->givePermissionTo('users.2fa_remove');
+
+        $otherUser = User::factory([
+            'tfa_type' => $method,
+            'tfa_secret' => $secret,
+            'is_tfa_active' => true,
+        ])->create();
+
+        OneTimeSecurityCode::factory([
+            'user_id' => $otherUser->getKey(),
+        ])->create();
+
+        $this->actingAs($this->user)->json('POST', '/users/id:' . $otherUser->getKey() . '/2fa/remove')
+            ->assertNoContent();
+
+        $this->assertDatabaseCount('one_time_security_codes', 0);
+        $this->assertDatabaseHas('users', [
+            'id' => $otherUser->getKey(),
+            'tfa_type' => null,
+            'tfa_secret' => null,
+            'is_tfa_active' => false,
+        ]);
     }
 
 //    public function testAuthWithReokedToken(): void

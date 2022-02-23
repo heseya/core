@@ -1,0 +1,31 @@
+ShippingMethod:
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    name:
+      type: string
+      example: 'Next Day Courier'
+    public:
+      type: boolean
+    black_list:
+      type: boolean
+    payment_methods:
+      type: array
+      items:
+        $ref: './PaymentMethods.yml#/PaymentMethod'
+    countries:
+      type: array
+      items:
+        $ref: './Countries.yml#/Country'
+    price_ranges:
+      type: array
+      items:
+        $ref: './PriceRanges.yml#/PriceRange'
+    shipping_time_min:
+      type: number
+      example: 2
+    shipping_time_max:
+      type: number
+      example: 2
+  type: object

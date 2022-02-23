@@ -9,37 +9,11 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
- * @OA\Schema ()
- *
  * @mixin IdeHelperShippingMethod
  */
 class ShippingMethod extends Model implements AuditableContract
 {
     use HasFactory, Auditable;
-
-    /**
-     * @OA\Property(
-     *   property="id",
-     *   type="string",
-     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
-     * )
-     *
-     * @OA\Property(
-     *   property="name",
-     *   type="string",
-     *   example="Next Day Courier",
-     * )
-     *
-     * @OA\Property(
-     *   property="public",
-     *   type="boolean",
-     * )
-     *
-     * @OA\Property(
-     *   property="black_list",
-     *   type="boolean",
-     * )
-     */
 
     /**
      * The attributes that are mass assignable.
@@ -49,6 +23,8 @@ class ShippingMethod extends Model implements AuditableContract
         'public',
         'order',
         'black_list',
+        'shipping_time_min',
+        'shipping_time_max',
     ];
 
     /**
@@ -71,52 +47,15 @@ class ShippingMethod extends Model implements AuditableContract
         return $this->paymentMethods()->where('public', true);
     }
 
-    /**
-     * @OA\Property(
-     *   property="payment_methods",
-     *   type="array",
-     *   @OA\Items(ref="#/components/schemas/PaymentMethod"),
-     * )
-     */
     public function paymentMethods(): BelongsToMany
     {
         return $this->belongsToMany(PaymentMethod::class, 'shipping_method_payment_method');
     }
 
-    /**
-     * @OA\Property(
-     *   property="countries",
-     *   type="array",
-     *   @OA\Items(ref="#/components/schemas/Country"),
-     * )
-     */
     public function countries(): BelongsToMany
     {
         return $this->belongsToMany(Country::class, 'shipping_method_country');
     }
-
-    /**
-     * @OA\Property(
-     *   property="price_ranges (request)",
-     *   type="array",
-     *   @OA\Items(
-     *     type="object",
-     *     @OA\Property(
-     *       property="start",
-     *       description="start of the range (min = 0);
-     *         range goes from start to start of next range or infinity",
-     *       type="number",
-     *       example=0.0
-     *     ),
-     *     @OA\Property(
-     *       property="value",
-     *       description="price in this range",
-     *       type="number",
-     *       example=18.70
-     *     ),
-     *   ),
-     * )
-     */
 
     public function getPrice(float $orderTotal): float
     {
@@ -128,13 +67,6 @@ class ShippingMethod extends Model implements AuditableContract
         return $priceRange ? $priceRange->prices()->first()->value : 0;
     }
 
-    /**
-     * @OA\Property(
-     *   property="price_ranges (response)",
-     *   type="array",
-     *   @OA\Items(ref="#/components/schemas/PriceRange"),
-     * )
-     */
     public function priceRanges(): HasMany
     {
         return $this->hasMany(PriceRange::class, 'shipping_method_id');

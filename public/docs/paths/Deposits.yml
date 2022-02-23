@@ -1,0 +1,70 @@
+Deposits:
+  get:
+    tags:
+      - Deposits
+    summary: 'list deposits'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Deposits.yml#/Deposit'
+              type: object
+    security:
+      - oauth: [ ]
+
+ItemDeposits:
+  get:
+    tags:
+      - Deposits
+    summary: 'list item deposits'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Deposits.yml#/Deposit'
+              type: object
+    security:
+      - oauth: [ ]
+  post:
+    tags:
+      - Deposits
+    summary: 'add new deposit'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: './../requests/Deposits.yml#/DepositCreate'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Deposits.yml#/Deposit'
+              type: object
+    security:
+      - oauth: [ ]

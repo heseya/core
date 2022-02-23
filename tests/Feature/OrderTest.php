@@ -3,13 +3,25 @@
 namespace Tests\Feature;
 
 use App\Events\OrderCreated;
-use App\Events\OrderStatusUpdated;
+use App\Events\ItemUpdatedQuantity;
+use App\Events\OrderUpdatedStatus;
+use App\Listeners\WebHookEventListener;
+use App\Models\Item;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use App\Models\WebHook;
+use App\Services\Contracts\OrderServiceContract;
+use App\Services\OrderService;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Queue;
+use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
 class OrderTest extends TestCase
@@ -36,16 +48,23 @@ class OrderTest extends TestCase
             'status_id' => $status->getKey(),
         ]);
 
-        $item = $this->order->products()->create([
+        $item_product = $this->order->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 10,
             'price' => 247.47,
         ]);
 
-        $item->schemas()->create([
+        $item_product->schemas()->create([
             'name' => 'Grawer',
             'value' => 'HESEYA',
             'price' => 49.99,
+        ]);
+
+        /** @var OrderService $orderService */
+        $orderService = App::make(OrderServiceContract::class);
+
+        $this->order->update([
+            'summary' => $orderService->calcSummary($this->order),
         ]);
 
         /**
@@ -58,8 +77,10 @@ class OrderTest extends TestCase
                 'name' => $status->name,
                 'color' => $status->color,
                 'description' => $status->description,
+                'hidden' => $status->hidden,
+                'no_notifications' => $status->no_notifications,
             ],
-            'paid' => $this->order->isPaid(),
+            'paid' => $this->order->paid,
         ];
 
         $this->expected_summary_structure = [
@@ -124,6 +145,316 @@ class OrderTest extends TestCase
             ->assertJsonCount(500, 'data');
 
         $this->assertQueryCountLessThan(20);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSorted($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        Order::factory()->count(30)->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders?limit=30&sort=created_at:desc')
+            ->assertOk()
+            ->assertJsonCount(30, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSortedInvalid($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        Order::factory()->count(30)->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders?limit=30&sort=currency:desssc')
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'errors' => [
+                    ['You can\'t sort by currency field.'],
+                    ['Only asc|desc sorting directions are allowed on field currency.'],
+                ],
+            ]);
+    }
+
+    public function testIndexUser(): void
+    {
+        $shipping_method = ShippingMethod::factory()->create();
+        $status = Status::factory()->create();
+
+        $order = Order::factory()->create([
+            'shipping_method_id' => $shipping_method->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+
+        $this->user->orders()->save($order);
+
+        $this
+            ->actingAs($this->user)
+            ->json('GET', '/orders/my')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonStructure(['data' => [
+                0 => $this->expected_full_structure,
+            ]])
+            ->assertJson(['data' => [
+                0 => [
+                    'id' => $order->getKey()
+                ],
+            ]]);
+
+        $this->assertQueryCountLessThan(20);
+    }
+
+    public function testIndexUserPerformance(): void
+    {
+        $orders = Order::factory()->count(500)->create();
+
+        $this->user->orders()->saveMany($orders);
+
+        $this
+            ->actingAs($this->user)
+            ->json('GET', '/orders/my', ['limit' => '500'])
+            ->assertOk()
+            ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(20);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexWithHiddenStatus($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        $status = Status::factory([
+            'hidden' => true,
+        ])->create();
+
+        $order = Order::factory([
+            'status_id' => $status->getKey(),
+        ])->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/orders')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonStructure(['data' => [
+                0 => $this->expected_full_structure,
+            ]])
+            ->assertJson(['data' => [
+                0 => $this->expected,
+            ]]);
+
+        $this->assertQueryCountLessThan(20);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexFilterByHiddenStatus($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        $status = Status::factory([
+            'hidden' => true,
+        ])->create();
+
+        $order = Order::factory([
+            'status_id' => $status->getKey(),
+        ])->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/orders', ['status_id' => $status->getKey()])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonStructure(['data' => [
+                0 => $this->expected_full_structure,
+            ]])
+            ->assertJson(['data' => [
+                0 => [
+                    'code' => $order->code,
+                    'status' => [
+                        'id' => $status->getKey(),
+                        'name' => $status->name,
+                        'color' => $status->color,
+                        'description' => $status->description,
+                        'hidden' => $status->hidden,
+                        'no_notifications' => $status->no_notifications,
+                    ],
+            ]]]);
+
+        $this->assertQueryCountLessThan(20);
+    }
+
+    public function testIndexUserUnauthenticated(): void
+    {
+        $order = Order::factory()->create();
+
+        $this->user->orders()->save($order);
+
+        $this
+            ->json('GET', '/orders/my')
+            ->assertStatus(404);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByPaid($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+        $status = Status::factory()->create();
+
+        $order1 = Order::factory([
+            'status_id' => $status->getKey(),
+        ])->create();
+
+        $order1->products()->create([
+            'product_id' => $product->getKey(),
+            'quantity' => 10,
+            'price' => 247.47,
+        ]);
+
+        $order1->refresh();
+        $order1->payments()->create([
+            'method' => 'payu',
+            'amount' => $order1->summary,
+            'paid' => true,
+        ]);
+
+        $order2 = Order::factory([
+            'status_id' => $status->getKey(),
+        ])->create();
+
+        $order2->products()->create([
+            'product_id' => $product->getKey(),
+            'quantity' => 10,
+            'price' => 247.47,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders?paid=1')
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByFrom($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        $status = Status::factory()->create();
+
+        $from = $this->order->created_at;
+
+        Order::factory([
+            'status_id' => $status->getKey(),
+            'created_at' => Carbon::yesterday(),
+        ])->create();
+
+        $order2 = Order::factory([
+            'status_id' => $status->getKey(),
+            'created_at' => Carbon::tomorrow(),
+        ])->create();
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('GET', '/orders', [
+                'from' => $from,
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment(['id' => $this->order->getKey()])
+            ->assertJsonFragment(['id' => $order2->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByTo($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        $status = Status::factory()->create();
+
+        $to = $this->order->created_at;
+
+        $order1 = Order::factory([
+            'status_id' => $status->getKey(),
+            'created_at' => Carbon::yesterday(),
+        ])->create();
+
+        Order::factory([
+            'status_id' => $status->getKey(),
+            'created_at' => Carbon::tomorrow(),
+        ])->create();
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('GET', '/orders', [
+                'to' => $to,
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment(['id' => $this->order->getKey()])
+            ->assertJsonFragment(['id' => $order1->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchByFromTo($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        $status = Status::factory()->create();
+
+        $from = Carbon::yesterday()->addHour();
+        $to = Carbon::tomorrow()->subHour();
+
+        Order::factory([
+            'status_id' => $status->getKey(),
+            'created_at' => Carbon::yesterday(),
+        ])->create();
+
+        Order::factory([
+            'status_id' => $status->getKey(),
+            'created_at' => Carbon::tomorrow(),
+        ])->create();
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('GET', '/orders', [
+                'from' => $from,
+                'to' => $to,
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $this->order->getKey()]);
     }
 
     public function testViewUnauthorized(): void
@@ -211,9 +542,39 @@ class OrderTest extends TestCase
             ->assertJsonFragment(['paid' => true]);
     }
 
+    public function testViewUser(): void
+    {
+        $shipping_method = ShippingMethod::factory()->create();
+        $status = Status::factory()->create();
+
+        $order = Order::factory()->create([
+            'shipping_method_id' => $shipping_method->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+
+        $this->user->orders()->save($order);
+
+        $this->actingAs($this->user)
+            ->json('GET', '/orders/my/id:' . $order->getKey())
+            ->assertOk()
+            ->assertJsonFragment(['code' => $order->code])
+            ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
+    }
+
+    public function testViewUserUnauthenticated(): void
+    {
+        $order = Order::factory()->create();
+
+        $this->user->orders()->save($order);
+
+        $this
+            ->json('GET', '/orders/my/id:' . $order->getKey())
+            ->assertStatus(404);
+    }
+
     public function testUpdateOrderStatusUnauthorized(): void
     {
-        Event::fake([OrderStatusUpdated::class]);
+        Event::fake([OrderUpdatedStatus::class]);
 
         $status = Status::factory()->create();
 
@@ -222,7 +583,7 @@ class OrderTest extends TestCase
         ]);
 
         $response->assertForbidden();
-        Event::assertNotDispatched(OrderStatusUpdated::class);
+        Event::assertNotDispatched(OrderUpdatedStatus::class);
     }
 
     /**
@@ -232,7 +593,7 @@ class OrderTest extends TestCase
     {
         $this->$user->givePermissionTo('orders.edit.status');
 
-        Event::fake([OrderStatusUpdated::class]);
+        Event::fake([OrderUpdatedStatus::class]);
 
         $status = Status::factory()->create();
 
@@ -248,7 +609,199 @@ class OrderTest extends TestCase
             'status_id' => $status->getKey(),
         ]);
 
-        Event::assertDispatched(OrderStatusUpdated::class);
+        Event::assertDispatched(OrderUpdatedStatus::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderStatusNoNotifications($user): void
+    {
+        $this->$user->givePermissionTo('orders.edit.status');
+
+        Notification::fake();
+
+        $status = Status::factory([
+            'no_notifications' => true,
+        ])->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+                'status_id' => $status->getKey(),
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+
+        Notification::assertNothingSent();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderStatusCancel($user): void
+    {
+        $this->$user->givePermissionTo('orders.edit.status');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'ItemUpdatedQuantity'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Event::fake([OrderUpdatedStatus::class, ItemUpdatedQuantity::class]);
+
+        $item = Item::factory()->create();
+
+        $item_product = $this->order->products[0];
+
+        $item_product->deposits()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => -1 * $item_product->quantity,
+        ]);
+
+        $status = Status::factory()->create([
+            'cancel' => true,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+            'status_id' => $status->getKey(),
+        ]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+
+        Event::assertDispatched(OrderUpdatedStatus::class);
+        Event::assertDispatched(ItemUpdatedQuantity::class);
+
+        Bus::fake();
+
+        $item = Item::find($item->getKey());
+        $event = new ItemUpdatedQuantity($item);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $item) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $item->getKey()
+                && $payload['data_type'] === 'Item'
+                && $payload['event'] === 'ItemUpdatedQuantity';
+        });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderStatusWithWebHookQueue($user): void
+    {
+        $this->$user->givePermissionTo('orders.edit.status');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderUpdatedStatus'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Event::fake([OrderUpdatedStatus::class]);
+
+        $status = Status::factory()->create();
+
+        $response = $this->actingAs($this->$user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+            'status_id' => $status->getKey(),
+        ]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+        Event::assertDispatched(OrderUpdatedStatus::class);
+
+        Queue::fake();
+
+        $order = Order::find($this->order->getKey());
+        $event = new OrderUpdatedStatus($order);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertPushed(CallWebhookJob::class, function ($job) use ($webHook, $order) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $order->getKey()
+                && $payload['data_type'] === 'Order'
+                && $payload['event'] === 'OrderUpdatedStatus';
+        });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderStatusWithWebHookDispatched($user): void
+    {
+        $this->$user->givePermissionTo('orders.edit.status');
+
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'OrderUpdatedStatus'
+            ],
+            'model_type' => $this->$user::class,
+            'creator_id' => $this->$user->getKey(),
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        Event::fake([OrderUpdatedStatus::class]);
+
+        $status = Status::factory()->create();
+
+        $response = $this->actingAs($this->$user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+            'status_id' => $status->getKey(),
+        ]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+
+        Event::assertDispatched(OrderUpdatedStatus::class);
+
+        Bus::fake();
+
+        $order = Order::find($this->order->getKey());
+        $event = new OrderUpdatedStatus($order);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $order) {
+            $payload = $job->payload;
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $payload['data']['id'] === $order->getKey()
+                && $payload['data_type'] === 'Order'
+                && $payload['event'] === 'OrderUpdatedStatus';
+        });
     }
 
     /**

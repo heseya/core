@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Swagger\PackageTemplateControllerSwagger;
 use App\Http\Resources\PackageTemplateResource;
 use App\Models\PackageTemplate;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class PackageTemplateController extends Controller implements PackageTemplateControllerSwagger
+class PackageTemplateController extends Controller
 {
     public function index(): JsonResource
     {

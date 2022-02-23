@@ -3,45 +3,31 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\Error;
-use App\Http\Controllers\Swagger\StatusControllerSwagger;
+use App\Http\Requests\StatusCreateRequest;
 use App\Http\Requests\StatusReorderRequest;
+use App\Http\Requests\StatusUpdateRequest;
 use App\Http\Resources\StatusResource;
 use App\Models\Status;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class StatusController extends Controller implements StatusControllerSwagger
+class StatusController extends Controller
 {
     public function index(): JsonResource
     {
         return StatusResource::collection(Status::orderBy('order')->get());
     }
 
-    public function store(Request $request): JsonResource
+    public function store(StatusCreateRequest $request): JsonResource
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:60',
-            'color' => 'required|string|size:6',
-            'cancel' => 'boolean',
-            'description' => 'string|max:255|nullable',
-        ]);
-
-        $status = Status::create($validated);
+        $status = Status::create($request->validated());
 
         return StatusResource::make($status);
     }
 
-    public function update(Status $status, Request $request): JsonResource
+    public function update(Status $status, StatusUpdateRequest $request): JsonResource
     {
-        $validated = $request->validate([
-            'name' => 'string|max:60',
-            'color' => 'string|size:6',
-            'cancel' => 'boolean',
-            'description' => 'string|max:255|nullable',
-        ]);
-
-        $status->update($validated);
+        $status->update($request->validated());
 
         return StatusResource::make($status);
     }

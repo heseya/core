@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Events\OrderCreated;
-use App\Events\OrderStatusUpdated;
+use App\Events\OrderUpdatedStatus;
 use App\Models\Address;
 use App\Models\Item;
 use App\Models\Option;
@@ -33,7 +33,7 @@ class OrderDepositTest extends TestCase
 
         $this->createShippingMethod();
 
-        Event::fake([OrderCreated::class, OrderStatusUpdated::class]);
+        Event::fake([OrderCreated::class, OrderUpdatedStatus::class]);
 
         $this->product = Product::factory()->create([
             'price' => 100,
@@ -120,6 +120,10 @@ class OrderDepositTest extends TestCase
             'item_id' => $this->item->getKey(),
             'order_product_id' => $order->products->first()->getKey(),
         ]);
+        $this->assertDatabaseHas('items', [
+            'id' => $this->item->getKey(),
+            'quantity' => 0,
+        ]);
 
         Event::assertDispatched(OrderCreated::class);
     }
@@ -174,11 +178,15 @@ class OrderDepositTest extends TestCase
             'id' => $deposit->getKey(),
             'quantity' => -2,
         ]);
+        $this->assertDatabaseHas('items', [
+            'id' => $this->item->getKey(),
+            'quantity' => 2,
+        ]);
 
         $this->item->refresh();
         $this->assertEquals(2, $this->item->quantity);
 
-        Event::assertDispatched(OrderStatusUpdated::class);
+        Event::assertDispatched(OrderUpdatedStatus::class);
     }
 
     /**

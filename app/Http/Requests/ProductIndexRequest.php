@@ -30,6 +30,11 @@ class ProductIndexRequest extends FormRequest
             'search' => ['nullable', 'string', 'max:255'],
             'sort' => ['nullable', 'string', 'max:255'],
             'available' => ['nullable'],
+            'tags' => ['nullable', 'array'],
+            'tags.*' => [
+                'string',
+                'uuid',
+            ],
         ];
     }
 }

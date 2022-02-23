@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\SearchTypes\UserSearch;
+use App\Traits\HasWebHooks;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Heseya\Sortable\Sortable;
@@ -42,12 +43,16 @@ class User extends Model implements
         SoftDeletes,
         Searchable,
         Sortable,
-        Auditable;
+        Auditable,
+        HasWebHooks;
 
     protected $fillable = [
         'name',
         'email',
         'password',
+        'tfa_type',
+        'tfa_secret',
+        'is_tfa_active',
     ];
 
     protected $hidden = [
@@ -65,6 +70,10 @@ class User extends Model implements
         'name',
         'created_at',
         'updated_at',
+    ];
+
+    protected $casts = [
+        'is_tfa_active' => 'bool',
     ];
 
     /**
@@ -88,5 +97,10 @@ class User extends Model implements
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function securityCodes(): HasMany
+    {
+        return $this->hasMany(OneTimeSecurityCode::class, 'user_id', 'id');
     }
 }

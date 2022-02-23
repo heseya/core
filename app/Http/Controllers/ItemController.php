@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Swagger\ItemControllerSwagger;
+use App\Events\ItemCreated;
+use App\Events\ItemDeleted;
+use App\Events\ItemUpdated;
 use App\Http\Requests\ItemCreateRequest;
 use App\Http\Requests\ItemIndexRequest;
 use App\Http\Requests\ItemUpdateRequest;
@@ -12,7 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
 
-class ItemController extends Controller implements ItemControllerSwagger
+class ItemController extends Controller
 {
     public function index(ItemIndexRequest $request): JsonResource
     {
@@ -34,6 +36,8 @@ class ItemController extends Controller implements ItemControllerSwagger
     {
         $item = Item::create($request->validated());
 
+        ItemCreated::dispatch($item);
+
         return ItemResource::make($item);
     }
 
@@ -41,12 +45,16 @@ class ItemController extends Controller implements ItemControllerSwagger
     {
         $item->update($request->validated());
 
+        ItemUpdated::dispatch($item);
+
         return ItemResource::make($item);
     }
 
     public function destroy(Item $item): JsonResponse
     {
-        $item->delete();
+        if ($item->delete()) {
+            ItemDeleted::dispatch($item);
+        }
 
         return response()->json(null, 204);
     }

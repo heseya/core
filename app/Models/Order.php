@@ -6,8 +6,9 @@ use App\Audits\Redactors\AddressRedactor;
 use App\Audits\Redactors\ShippingMethodRedactor;
 use App\Audits\Redactors\StatusRedactor;
 use App\SearchTypes\OrderSearch;
-use App\Services\Contracts\OrderServiceContract;
-use App\Services\OrderService;
+use App\SearchTypes\WhereCreatedAfter;
+use App\SearchTypes\WhereCreatedBefore;
+use App\SearchTypes\WhereHasStatusHidden;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Heseya\Sortable\Sortable;
@@ -23,45 +24,11 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
- * @OA\Schema ()
- *
  * @mixin IdeHelperOrder
  */
 class Order extends Model implements AuditableContract
 {
     use HasFactory, Searchable, Sortable, Notifiable, Auditable;
-
-    /**
-     * @OA\Property(
-     *   property="id",
-     *   type="string",
-     *   example="026bc5f6-8373-4aeb-972e-e78d72a67121",
-     * )
-     *
-     * @OA\Property(
-     *   property="email",
-     *   type="string",
-     *   example="admin@example.com",
-     * )
-     *
-     * @OA\Property(
-     *   property="comment",
-     *   type="string",
-     *   example="asap plz",
-     * )
-     *
-     * @OA\Property(
-     *   property="shipping_number",
-     *   type="string",
-     *   example="630552359128340015809770",
-     * )
-     *
-     * @OA\Property(
-     *   property="shipping_price",
-     *   type="float",
-     *   example=18.70
-     * )
-     */
 
     protected $fillable = [
         'code',
@@ -76,6 +43,8 @@ class Order extends Model implements AuditableContract
         'invoice_address_id',
         'created_at',
         'user_id',
+        'summary',
+        'paid',
     ];
 
     protected $auditInclude = [
@@ -104,30 +73,27 @@ class Order extends Model implements AuditableContract
         'shipping_method_id',
         'code' => Like::class,
         'email' => Like::class,
+        'user_id',
+        'status.hidden' => WhereHasStatusHidden::class,
+        'paid',
+        'from' => WhereCreatedAfter::class,
+        'to' => WhereCreatedBefore::class,
     ];
 
     protected array $sortable = [
         'id',
         'code',
         'created_at',
+        'email',
+        'summary',
     ];
 
     protected string $defaultSortBy = 'created_at';
     protected string $defaultSortDirection = 'desc';
 
-    /**
-     * @OA\Property(
-     *   property="summary",
-     *   type="number",
-     * )
-     */
-    public function getSummaryAttribute(): float
-    {
-        /** @var OrderService $orderService */
-        $orderService = app(OrderServiceContract::class);
-
-        return $orderService->calcSummary($this);
-    }
+    protected $casts = [
+        'paid' => 'boolean',
+    ];
 
     /**
      * Summary amount of paid.
@@ -168,17 +134,11 @@ class Order extends Model implements AuditableContract
      */
     public function getPayableAttribute(): bool
     {
-        return !$this->isPaid() &&
+        return !$this->paid &&
             !$this->status->cancel &&
             $this->shippingMethod->paymentMethods()->count() > 0;
     }
 
-    /**
-     * @OA\Property(
-     *   property="paid",
-     *   type="boolean",
-     * )
-     */
     public function isPaid(): bool
     {
         return $this->paid_amount >= $this->summary;

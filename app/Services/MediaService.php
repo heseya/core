@@ -2,13 +2,16 @@
 
 namespace App\Services;
 
+use App\Dtos\MediaUpdateDto;
 use App\Enums\MediaType;
 use App\Exceptions\AppAccessException;
 use App\Models\Media;
 use App\Models\Product;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
+use Heseya\Dto\Missing;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
 
@@ -29,8 +32,8 @@ class MediaService implements MediaServiceContract
     public function store(UploadedFile $file): Media
     {
         $response = Http::attach('file', $file->getContent(), 'file')
-            ->withHeaders(['x-api-key' => config('silverbox.key')])
-            ->post(config('silverbox.host') . '/' . config('silverbox.client'));
+            ->withHeaders(['x-api-key' => Config::get('silverbox.key')])
+            ->post(Config::get('silverbox.host') . '/' . Config::get('silverbox.client'));
 
         if ($response->failed()) {
             throw new AppAccessException('CDN responded with an error');
@@ -38,8 +41,24 @@ class MediaService implements MediaServiceContract
 
         return Media::create([
             'type' => $this->getMediaType($file->extension()),
-            'url' => config('silverbox.host') . '/' . $response[0]['path'],
+            'url' => Config::get('silverbox.host') . '/' . $response[0]['path'],
         ]);
+    }
+
+    public function update(Media $media, MediaUpdateDto $dto): Media
+    {
+        if (!($dto->getSlug() instanceof Missing) && $media->slug !== $dto->getSlug()) {
+            $media->url = $this->updateSlug($media, $dto->getSlug());
+            $media->slug = $dto->getSlug();
+        }
+
+        if (!($dto->getAlt() instanceof Missing)) {
+            $media->alt = $dto->getAlt();
+        }
+
+        $media->save();
+
+        return $media;
     }
 
     public function destroy(Media $media): void
@@ -54,9 +73,25 @@ class MediaService implements MediaServiceContract
     private function getMediaType(string $extension): int
     {
         return match ($extension) {
-            'jpeg', 'jpg', 'png', 'gif', 'bmp', 'svg' => MediaType::PHOTO,
-            'mp4', 'webm' => MediaType::VIDEO,
+            'jpeg', 'jpg', 'png', 'gif', 'bmp', 'svg', 'webp' => MediaType::PHOTO,
+            'mp4', 'webm', 'ogg', 'ogv', 'mov', 'wmv' => MediaType::VIDEO,
             default => MediaType::OTHER,
         };
+    }
+
+    private function updateSlug(Media $media, string $slug): string
+    {
+        $response = Http::asJson()
+            ->acceptJson()
+            ->withHeaders(['x-api-key' => Config::get('silverbox.key')])
+            ->patch($media->url, [
+                'slug' => $slug,
+            ]);
+
+        if ($response->failed() || !isset($response['path'])) {
+            throw new AppAccessException('CDN responded with an error');
+        }
+
+        return Config::get('silverbox.host') . '/' . $response['path'];
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\StoreException;
-use App\Http\Controllers\Swagger\PaymentControllerSwagger;
 use App\Http\Requests\Payments\PaymentStoreRequest;
 use App\Http\Resources\PaymentResource;
 use App\Models\Order;
@@ -11,11 +10,11 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Throwable;
 
-class PaymentController extends Controller implements PaymentControllerSwagger
+class PaymentController extends Controller
 {
     public function store(Order $order, string $method, PaymentStoreRequest $request): JsonResource
     {
-        if ($order->isPaid()) {
+        if ($order->paid) {
             throw new StoreException('Order is already paid.');
         }
 

@@ -305,6 +305,9 @@ class SchemaTest extends TestCase
         $this->createRelation($user);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
     public function createRelation($user): void
     {
         $usedSchema = Schema::factory()->create();

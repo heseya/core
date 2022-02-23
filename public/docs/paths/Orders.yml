@@ -1,0 +1,352 @@
+Orders:
+  get:
+    tags:
+      - Orders
+    summary: 'orders list'
+    parameters:
+      - name: search
+        in: query
+        description: 'Full text search.'
+        schema:
+          type: string
+      - name: sort
+        in: query
+        description: 'Sorting string.'
+        schema:
+          type: string
+          example: 'code:asc,created_at:desc,id:asc,email:desc,summary:desc'
+      - name: status_id
+        in: query
+        description: 'Status UUID'
+        schema:
+          type: string
+      - name: shipping_method_id
+        in: query
+        description: 'Shipping Method UUID'
+        schema:
+          type: string
+      - name: paid
+        in: query
+        description: 'Is order paid'
+        schema:
+          type: boolean
+      - name: from
+        in: query
+        description: 'Date datetime from'
+        schema:
+          type: datetime
+      - name: to
+        in: query
+        description: 'Date datetime to'
+        schema:
+          type: datetime
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Orders.yml#/Order'
+              type: object
+    security:
+      - oauth: [ ]
+  post:
+    tags:
+      - Orders
+    summary: 'add new order'
+    requestBody:
+      $ref: './../requests/Orders.yml#/OrderCreate'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Orders.yml#/Order'
+              type: object
+
+OrdersParams:
+  get:
+    tags:
+      - Orders
+    summary: 'order view'
+    parameters:
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+          example: D3PT88
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Orders.yml#/OrderView'
+              type: object
+    security:
+      - oauth: [ ]
+  patch:
+    tags:
+      - Orders
+    summary: 'update order'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+    requestBody:
+      $ref: './../requests/Orders.yml#/OrderUpdate'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Orders.yml#/Order'
+              type: object
+    security:
+      - oauth: [ ]
+
+OrdersCode:
+  get:
+    tags:
+      - Orders
+    summary: 'public order view'
+    parameters:
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+          example: D3PT88
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Orders.yml#/OrderSummary'
+              type: object
+
+OrdersVerify:
+  post:
+    tags:
+      - Orders
+    summary: 'verify cart'
+    requestBody:
+      request: OrderCreate
+      content:
+        application/json:
+          schema:
+            properties:
+              items:
+                type: array
+                items:
+                  properties:
+                    product_id:
+                      type: string
+                      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+                    quantity:
+                      type: number
+                    schemas:
+                      properties:
+                        119c0a63-1ea1-4769-8d5f-169f68de5598:
+                          type: string
+                          example: 123459fb-39a4-4dd0-8240-14793aa1f73b
+                        02b97693-857c-4fb9-9999-47400ac5fbef:
+                          type: string
+                          example: 'HE + YA'
+                      type: object
+                  type: object
+            type: object
+    responses:
+      204:
+        description: Success
+
+OrdersStatus:
+  post:
+    tags:
+      - Orders
+    summary: 'change order status'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+    requestBody:
+      request: OrderCreate
+      content:
+        application/json:
+          schema:
+            properties:
+              status_id:
+                type: integer
+            type: object
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Orders.yml#/Order'
+              type: object
+    security:
+      - oauth: [ ]
+
+OrdersMy:
+  get:
+    tags:
+      - Orders
+    summary: 'user orders list'
+    parameters:
+      - name: search
+        in: query
+        description: 'Full text search.'
+        schema:
+          type: string
+      - name: sort
+        in: query
+        description: 'Sorting string.'
+        schema:
+          type: string
+          example: 'code:asc,created_at:desc,id:asc,email:desc,summary:desc'
+      - name: status_id
+        in: query
+        description: 'Status UUID'
+        schema:
+          type: string
+      - name: shipping_method_id
+        in: query
+        description: 'Shipping Method UUID'
+        schema:
+          type: string
+      - name: from
+        in: query
+        description: 'Date datetime from'
+        schema:
+          type: datetime
+      - name: to
+        in: query
+        description: 'Date datetime to'
+        schema:
+          type: datetime
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Orders.yml#/Order'
+              type: object
+    security:
+      - oauth: [ ]
+
+OrdersMyId:
+  get:
+    tags:
+      - Orders
+    summary: 'user order view'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Orders.yml#/OrderView'
+              type: object
+    security:
+      - oauth: [ ]
+
+OrdersCodePay:
+  post:
+    tags:
+      - Orders
+    summary: 'redirect to payment'
+    parameters:
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: payment_method
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      request: OrderCreate
+      content:
+        application/json:
+          schema:
+            properties:
+              continue_url:
+                description: 'URL that the buyer will be redirected to, after making payment'
+                type: string
+            type: object
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Payments.yml#/Payment'
+              type: object
+
+OrdersCodePayOffline:
+  post:
+    tags:
+      - Orders
+    summary: 'manualy create fulfilled order payment'
+    parameters:
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Payments.yml#/Payment'
+              type: object
