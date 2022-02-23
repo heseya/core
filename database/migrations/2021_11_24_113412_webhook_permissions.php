@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\RoleType;
 use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Database\Migrations\Migration;
@@ -23,7 +24,7 @@ class WebhookPermissions extends Migration
         // Events
         Permission::create(['name' => 'events.show', 'display_name' => 'Dostęp do listy eventów']);
 
-        $owner = Role::findByName('Owner');
+        $owner = Role::where('type', RoleType::OWNER)->first();
         $owner->givePermissionTo([
             'webhooks.show',
             'webhooks.show_details',
@@ -42,7 +43,7 @@ class WebhookPermissions extends Migration
      */
     public function down()
     {
-        $owner = Role::findByName('Owner');
+        $owner = Role::where('type', RoleType::OWNER)->first();
         $owner->revokePermissionTo([
             'webhooks.show',
             'webhooks.show_details',
