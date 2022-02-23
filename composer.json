@@ -12,13 +12,15 @@
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.3",
         "heseya/2fa": "^2.0",
-        "heseya/demo": "dev-master",
+        "heseya/demo": "*",
         "heseya/dto": "^1.0",
         "heseya/laravel-searchable": "^1.0",
         "heseya/pagination": "*",
         "heseya/resource": "*",
         "heseya/sortable": "*",
+        "jeroen-g/explorer": "^2.5",
         "laravel/framework": "^8.44",
+        "laravel/scout": "^9.4",
         "league/html-to-markdown": "^5.0",
         "league/omnipay": "^3.1",
         "omnipay/common": "^3",
@@ -44,12 +46,16 @@
         "mockery/mockery": "^1.4",
         "nunomaduro/collision": "^5.3",
         "nunomaduro/phpinsights": "^2.0",
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit": "^9.5",
+        "timacdonald/log-fake": "^1.9"
     },
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     },
     "extra": {
         "laravel": {
