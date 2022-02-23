@@ -186,6 +186,12 @@ class ProductTest extends TestCase
             'created_at' => Carbon::now()->addHour(),
         ]);
 
+        // Dummy product to check if response will return only 2 products created above
+        Product::factory()->create([
+            'public' => true,
+            'created_at' => Carbon::now()->addHour(),
+        ]);
+
         $response = $this->actingAs($this->$user)
             ->getJson('/products?ids=' . $firstProduct->getKey() . ',' . $secondProduct->getKey());
 
