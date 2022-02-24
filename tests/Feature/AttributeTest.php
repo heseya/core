@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\AttributeType;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
+use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -636,6 +637,133 @@ class AttributeTest extends TestCase
         $this
             ->actingAs($this->$user)
             ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption)
+            ->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOption($user)
+    {
+        $this->$user->givePermissionTo('attributes.edit');
+
+        $optionUpdate = [
+            'id' => $this->option->id,
+            'name' => 'Test ' . $this->option->name,
+            'value_number' => $this->option->value_number + 1,
+            'value_date' => Carbon::now()->toDateString(),
+            'attribute_id' => $this->option->attribute_id,
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/attributes/id:' . $this->attribute->getKey() . '/options/id:'. $this->option->getKey(), $optionUpdate)
+            ->assertOk()
+            ->assertJsonFragment($optionUpdate);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOptionWithoutId($user)
+    {
+        $this->$user->givePermissionTo('attributes.edit');
+
+        $optionUpdate = [
+            'name' => 'Test ' . $this->option->name,
+            'value_number' => $this->option->value_number + 1,
+            'value_date' => Carbon::now()->toDateString(),
+            'attribute_id' => $this->option->attribute_id,
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/attributes/id:' . $this->attribute->getKey() . '/options/id:'. $this->option->getKey(), $optionUpdate)
+            ->assertOk()
+            ->assertJsonFragment($optionUpdate);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOptionIncompleteData($user)
+    {
+        $this->$user->givePermissionTo('attributes.edit');
+
+        $optionUpdate = [
+            'value_number' => $this->option->value_number + 1,
+            'value_date' => Carbon::now()->toDateString(),
+            'attribute_id' => $this->option->attribute_id,
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/attributes/id:' . $this->attribute->getKey() . '/options/id:'. $this->option->getKey(), $optionUpdate)
+            ->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOptionNotExisting($user)
+    {
+        $this->$user->givePermissionTo('attributes.edit');
+
+        $optionUpdate = [
+            'id' => $this->option->id,
+            'name' => 'Test ' . $this->option->name,
+            'value_number' => $this->option->value_number + 1,
+            'value_date' => Carbon::now()->toDateString(),
+            'attribute_id' => $this->option->attribute_id,
+        ];
+
+        $this->option->delete();
+
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/attributes/id:' . $this->attribute->getKey() . '/options/id:'. $this->option->getKey(), $optionUpdate)
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOptionNotRelatedOption($user)
+    {
+        $this->$user->givePermissionTo('attributes.edit');
+
+        $attribute = Attribute::factory()->create();
+
+        $optionUpdate = [
+            'id' => $this->option->id,
+            'name' => 'Test ' . $this->option->name,
+            'value_number' => $this->option->value_number + 1,
+            'value_date' => Carbon::now()->toDateString(),
+            'attribute_id' => $this->option->attribute_id,
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/attributes/id:' . $attribute->getKey() . '/options/id:'. $this->option->getKey(), $optionUpdate)
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOptionUnauthorized($user)
+    {
+        $optionUpdate = [
+            'id' => $this->option->id,
+            'name' => 'Test ' . $this->option->name,
+            'value_number' => $this->option->value_number + 1,
+            'value_date' => Carbon::now()->toDateString(),
+            'attribute_id' => $this->option->attribute_id,
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/attributes/id:' . $this->attribute->getKey() . '/options/id:'. $this->option->getKey(), $optionUpdate)
             ->assertForbidden();
     }
 
