@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\AttributeDto;
+use App\Http\Requests\AttributeIndexRequest;
 use App\Http\Requests\AttributeStoreRequest;
 use App\Http\Requests\AttributeUpdateRequest;
 use App\Http\Resources\AttributeResource;
 use App\Models\Attribute;
 use App\Services\Contracts\AttributeServiceContract;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
@@ -20,17 +20,14 @@ class AttributeController extends Controller
     {
     }
 
-    public function index(Request $request): JsonResource
+    public function index(AttributeIndexRequest $request): JsonResource
     {
-        $query = Attribute::with('options');
+        $query = Attribute::search($request->validated())
+            ->with('options');
 
-        if ($request->has('global')) {
-            $query->where('global', '=', $request->boolean('global'));
-        }
-
-        $attributes = $query->paginate(Config::get('pagination.per_page'));
-
-        return AttributeResource::collection($attributes);
+        return AttributeResource::collection(
+            $query->paginate(Config::get('pagination.per_page'))
+        );
     }
 
     public function show(Attribute $attribute): JsonResource
