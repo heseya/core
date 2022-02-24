@@ -20,7 +20,6 @@ use Illuminate\Support\Facades\Hash;
 use Spatie\WebhookServer\CallWebhookJob;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
-use TiMacDonald\Log\LogFake;
 
 class UserTest extends TestCase
 {
@@ -458,15 +457,18 @@ class UserTest extends TestCase
             ],
         ];
 
-        Log::swap(new LogFake());
+        Log::shouldReceive('error')
+            ->once()
+            ->withArgs(function ($message) {
+                return str_contains(
+                    $message,
+                    "AuthException(code: 0): "
+                    . "Can't give a role with permissions you don't have to the user at"
+                );
+            });
 
         $response = $this->actingAs($this->$user)->postJson('/users', $data);
         $response->assertStatus(422);
-
-        Log::assertLogged('error', function ($message, $context) {
-            return str_contains($message, 'AuthException(code: 0): '
-                . "Can't give a role with permissions you don't have to the user at");
-        });
 
         $this->assertDatabaseMissing('users', [
             'email' => $data['email'],

@@ -64,7 +64,7 @@ class Schema extends Model
 
     public function getAvailableAttribute(): bool
     {
-        if (!$this->type->is(SchemaType::SELECT)) {
+        if (!$this->type->is(SchemaType::select)) {
             return true;
         }
 
@@ -104,15 +104,15 @@ class Schema extends Model
             $validation->push('min:' . $this->min);
         }
 
-        if ($this->type->is(SchemaType::SELECT)) {
+        if ($this->type->is(SchemaType::select)) {
             $validation->push('uuid');
             $validation->push(new OptionAvailable($this, $quantity));
         }
 
         if (
-            $this->type->is(SchemaType::NUMERIC) ||
-            $this->type->is(SchemaType::MULTIPLY) ||
-            $this->type->is(SchemaType::MULTIPLY_SCHEMA)
+            $this->type->is(SchemaType::numeric) ||
+            $this->type->is(SchemaType::multiply) ||
+            $this->type->is(SchemaType::multiply_schema)
         ) {
             $validation->push('numeric');
         }
@@ -144,7 +144,7 @@ class Schema extends Model
     {
         $items = [];
 
-        if ($value === null || !$this->type->is(SchemaType::SELECT)) {
+        if ($value === null || !$this->type->is(SchemaType::select)) {
             return $items;
         }
 
@@ -222,27 +222,27 @@ class Schema extends Model
         }
 
         if (
-            ($this->type->is(SchemaType::STRING) || $this->type->is(SchemaType::NUMERIC)) &&
+            ($this->type->is(SchemaType::string) || $this->type->is(SchemaType::numeric)) &&
             Str::length(trim($value)) === 0
         ) {
             return 0;
         }
 
-        if ($this->type->is(SchemaType::BOOLEAN) && ((bool) $value) === false) {
+        if ($this->type->is(SchemaType::boolean) && ((bool) $value) === false) {
             return 0;
         }
 
-        if ($this->type->is(SchemaType::SELECT)) {
+        if ($this->type->is(SchemaType::select)) {
             $option = $this->options()->findOrFail($value);
 
             $price += $option->price;
         }
 
-        if ($this->type->is(SchemaType::MULTIPLY)) {
+        if ($this->type->is(SchemaType::multiply)) {
             $price *= (float) $value;
         }
 
-        if ($this->type->is(SchemaType::MULTIPLY_SCHEMA)) {
+        if ($this->type->is(SchemaType::multiply_schema)) {
             $usedSchema = $this->usedSchemas()->firstOrFail();
             $price = $value * $usedSchema->getUsedPrice($schemas[$usedSchema->getKey()], $schemas);
         }

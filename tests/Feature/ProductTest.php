@@ -1601,7 +1601,7 @@ class ProductTest extends TestCase
             ->deleteJson('/products/id:' . $product->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($product);
-        $this->assertDeleted($media);
+        $this->assertModelMissing($media);
     }
 
     /**

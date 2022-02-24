@@ -60,11 +60,11 @@ class ProductService implements ProductServiceContract
                 default => $getBestSchemasPrices(
                     $required ? ['filled'] : [null, 'filled'],
                 ),
-                SchemaType::BOOLEAN => $getBestSchemasPrices([true, false]),
-                SchemaType::SELECT => $getBestSchemasPrices(
+                SchemaType::boolean => $getBestSchemasPrices([true, false]),
+                SchemaType::select => $getBestSchemasPrices(
                     $required ? $options : array_merge($options, [null]),
                 ),
-                SchemaType::MULTIPLY, SchemaType::MULTIPLY_SCHEMA => $getBestSchemasPrices(
+                SchemaType::multiply, SchemaType::multiply_schema => $getBestSchemasPrices(
                     $required ? $valueMinMax : array_merge($valueMinMax, [null]),
                 ),
             };

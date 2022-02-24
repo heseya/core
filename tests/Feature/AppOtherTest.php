@@ -111,7 +111,7 @@ class AppOtherTest extends TestCase
 
         $response->assertNoContent();
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
-        $this->assertDeleted($app);
+        $this->assertModelMissing($app);
     }
 
     public function testUninstallConnectionRefused(): void
@@ -146,7 +146,7 @@ class AppOtherTest extends TestCase
 
         $response->assertNoContent();
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
-        $this->assertDeleted($app);
+        $this->assertModelMissing($app);
     }
 
     public function testUninstall(): void
@@ -164,7 +164,7 @@ class AppOtherTest extends TestCase
 
         $response->assertNoContent();
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
-        $this->assertDeleted($app);
+        $this->assertModelMissing($app);
     }
 
     public function testUninstallRole(): void
@@ -193,9 +193,9 @@ class AppOtherTest extends TestCase
         $response->assertNoContent();
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
 
-        $this->assertDeleted($app);
-        $this->assertDeleted($role);
-        $this->assertDeleted($permission);
+        $this->assertModelMissing($app);
+        $this->assertModelMissing($role);
+        $this->assertModelMissing($permission);
 
         $this->user->refresh();
         $this->assertFalse($this->user->hasRole($role));
@@ -229,7 +229,7 @@ class AppOtherTest extends TestCase
 
         $response->assertNoContent();
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
-        $this->assertDeleted($app);
+        $this->assertModelMissing($app);
         $this->assertSoftDeleted($webhook);
     }
 
@@ -245,7 +245,7 @@ class AppOtherTest extends TestCase
         $this->artisan('apps:remove')->assertExitCode(0);
 
         $this->assertDatabaseCount('apps', 0); // +1 from TestCase
-        $this->assertDeleted($app);
-        $this->assertDeleted($this->application);
+        $this->assertModelMissing($app);
+        $this->assertModelMissing($this->application);
     }
 }

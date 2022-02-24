@@ -15,7 +15,7 @@ class SchemaValidationTest extends TestCase
     {
         /** @var Schema $schema */
         $schema = Schema::factory()->create([
-            'type' => SchemaType::SELECT,
+            'type' => SchemaType::select,
             'required' => false,
         ]);
 
