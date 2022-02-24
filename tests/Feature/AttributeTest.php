@@ -383,7 +383,7 @@ class AttributeTest extends TestCase
      */
     public function testDeleteOption($user)
     {
-        $this->$user->givePermissionTo('attributes.remove');
+        $this->$user->givePermissionTo('attributes.edit');
 
         $this
             ->actingAs($this->$user)
@@ -398,7 +398,7 @@ class AttributeTest extends TestCase
      */
     public function testDeleteOptionNotExisting($user)
     {
-        $this->$user->givePermissionTo('attributes.remove');
+        $this->$user->givePermissionTo('attributes.edit');
 
         $this->option->delete();
 
@@ -413,7 +413,7 @@ class AttributeTest extends TestCase
      */
     public function testDeleteOptionNotRelatedOption($user)
     {
-        $this->$user->givePermissionTo('attributes.remove');
+        $this->$user->givePermissionTo('attributes.edit');
 
         $attribute = Attribute::factory()->create();
 
