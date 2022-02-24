@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\AttributeDto;
-use App\Http\Requests\AttributeRequest;
+use App\Http\Requests\AttributeStoreRequest;
+use App\Http\Requests\AttributeUpdateRequest;
 use App\Http\Resources\AttributeResource;
 use App\Models\Attribute;
 use App\Services\Contracts\AttributeServiceContract;
@@ -33,7 +34,7 @@ class AttributeController extends Controller
         return AttributeResource::make($attribute);
     }
 
-    public function store(AttributeRequest $request): JsonResource
+    public function store(AttributeStoreRequest $request): JsonResource
     {
         $attribute = $this->attributeService->create(
             AttributeDto::fromFormRequest($request)
@@ -42,7 +43,7 @@ class AttributeController extends Controller
         return AttributeResource::make($attribute);
     }
 
-    public function update(Attribute $attribute, AttributeRequest $request): JsonResource
+    public function update(Attribute $attribute, AttributeUpdateRequest $request): JsonResource
     {
         $attribute = $this->attributeService->update(
             $attribute,

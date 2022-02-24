@@ -6,7 +6,7 @@ use App\Enums\AttributeType;
 use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Foundation\Http\FormRequest;
 
-class AttributeRequest extends FormRequest
+class AttributeStoreRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -25,7 +25,7 @@ class AttributeRequest extends FormRequest
         return array_merge([
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'unique:attributes'],
-            'description' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:255'],
             'type' => ['required', new EnumValue(AttributeType::class, false)],
             'global' => ['required', 'boolean'],
             'sortable' => ['required', 'boolean'],

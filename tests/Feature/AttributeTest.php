@@ -104,18 +104,8 @@ class AttributeTest extends TestCase
                 'global' => $this->newAttribute['global'],
                 'sortable' => $this->newAttribute['sortable'],
             ])
-            ->assertJsonFragment([
-                'index' => 1,
-                'name' => $this->newAttribute['options'][0]['name'],
-                'value_number' => $this->newAttribute['options'][0]['value_number'],
-                'value_date' => $this->newAttribute['options'][0]['value_date']
-            ])
-            ->assertJsonFragment([
-                'index' => 2,
-                'name' => $this->newAttribute['options'][1]['name'],
-                'value_number' => $this->newAttribute['options'][1]['value_number'],
-                'value_date' => $this->newAttribute['options'][1]['value_date']
-            ]);
+            ->assertJsonFragment(['index' => 1] + $this->newAttribute['options'][0])
+            ->assertJsonFragment(['index' => 2] + $this->newAttribute['options'][1]);
     }
 
     /**
@@ -181,11 +171,47 @@ class AttributeTest extends TestCase
                 'global' => $attributeUpdate['global'],
                 'sortable' => $attributeUpdate['sortable'],
             ])
+            ->assertJsonFragment($attributeUpdate['options'][0]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithoutSlug($user)
+    {
+        $this->$user->givePermissionTo('attributes.edit');
+
+        $attributeUpdate = [
+            'name' => 'Test ' . $this->attribute->name,
+            'slug' => $this->attribute->slug,
+            'description' => 'Test ' . $this->attribute->description,
+            'type' => AttributeType::NUMBER,
+            'global' => true,
+            'sortable' => true,
+            'options' => [
+                [
+                    'id' => $this->option->id,
+                    'name' => 'Test ' . $this->option->name,
+                    'value_number' => $this->option->value_number,
+                    'value_date' => $this->option->value_date,
+                ],
+            ]
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
+            ->assertOk()
+            ->assertJsonStructure($this->expectedStructure)
             ->assertJsonFragment([
-                'name' => $attributeUpdate['options'][0]['name'],
-                'value_number' => $attributeUpdate['options'][0]['value_number'],
-                'value_date' => $attributeUpdate['options'][0]['value_date']
-            ]);
+                'name' => $attributeUpdate['name'],
+                'slug' => $attributeUpdate['slug'],
+                'description' => $attributeUpdate['description'],
+                'type' => $attributeUpdate['type'],
+                'global' => $attributeUpdate['global'],
+                'sortable' => $attributeUpdate['sortable'],
+            ])
+            ->assertJsonFragment($attributeUpdate['options'][0]);
     }
 
     /**
@@ -306,11 +332,7 @@ class AttributeTest extends TestCase
             ->actingAs($this->$user)
             ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption)
             ->assertCreated()
-            ->assertJsonFragment([
-                'name' => $this->newOption['name'],
-                'value_number' => $this->newOption['value_number'],
-                'value_date' => $this->newOption['value_date'],
-            ]);
+            ->assertJsonFragment($this->newOption);
 
         $this->assertDatabaseHas('attribute_options', $this->newOption);
     }
@@ -410,5 +432,61 @@ class AttributeTest extends TestCase
             ->actingAs($this->$user)
             ->deleteJson('/attributes/id:' . $this->attribute->getKey() . '/options/id:'. $this->option->getKey())
             ->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIncrementIndex($user)
+    {
+        $this->$user->givePermissionTo(['attributes.show', 'attributes.edit', 'attributes.add']);
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->postJson('/attributes', $this->newAttribute)
+            ->assertCreated()
+            ->assertJsonStructure($this->expectedStructure)
+            ->assertJsonFragment([
+                'name' => $this->newAttribute['name'],
+                'slug' => $this->newAttribute['slug'],
+                'description' => $this->newAttribute['description'],
+                'type' => $this->newAttribute['type'],
+                'global' => $this->newAttribute['global'],
+                'sortable' => $this->newAttribute['sortable'],
+            ])
+            ->assertJsonFragment(['index' => 1] + $this->newAttribute['options'][0])
+            ->assertJsonFragment(['index' => 2] + $this->newAttribute['options'][1]);
+
+        AttributeOption::query()
+            ->where('attribute_id', '=', $response['data']['id'])
+            ->where('index', '=', 2)
+            ->delete();
+
+        $this->assertSoftDeleted('attribute_options', [
+                'attribute_id' => $response['data']['id'],
+                'index' => 2,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/attributes/id:' . $response['data']['id'] . '/options', $this->newOption)
+            ->assertCreated()
+            ->assertJsonFragment(['index' => 3] + $this->newOption);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes/id:' . $response['data']['id'])
+            ->assertOk()
+        ->assertJsonFragment([
+            'name' => $this->newAttribute['name'],
+            'slug' => $this->newAttribute['slug'],
+            'description' => $this->newAttribute['description'],
+            'type' => $this->newAttribute['type'],
+            'global' => $this->newAttribute['global'],
+            'sortable' => $this->newAttribute['sortable'],
+        ])
+        ->assertJsonFragment(['index' => 1])
+        ->assertJsonMissing(['index' => 2])
+        ->assertJsonFragment(['index' => 3]);
     }
 }
