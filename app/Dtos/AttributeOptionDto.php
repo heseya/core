@@ -4,21 +4,22 @@ namespace App\Dtos;
 
 use App\Http\Requests\AttributeOptionRequest;
 use Heseya\Dto\Dto;
+use Heseya\Dto\Missing;
 
 class AttributeOptionDto extends Dto
 {
-    private string|null $id;
+    private string|null|Missing $id;
     private string $name;
-    private float|null $value_number;
-    private string|null $value_date;
+    private float|null|Missing $value_number;
+    private string|null|Missing $value_date;
 
     public static function fromFormRequest(AttributeOptionRequest $request): self
     {
         return new self(
-            id: $request->input('id'),
+            id: $request->input('id', new Missing()),
             name: $request->input('name'),
-            value_number: $request->input('value_number'),
-            value_date: $request->input('value_date'),
+            value_number: $request->input('value_number', new Missing()),
+            value_date: $request->input('value_date', new Missing()),
         );
     }
 
@@ -33,9 +34,9 @@ class AttributeOptionDto extends Dto
     }
 
     /**
-     * @return string|null
+     * @return string|Missing|null
      */
-    public function getId(): string|null
+    public function getId(): string|null|Missing
     {
         return $this->id;
     }
@@ -49,17 +50,17 @@ class AttributeOptionDto extends Dto
     }
 
     /**
-     * @return float|null
+     * @return float|Missing|null
      */
-    public function getValueNumber(): float|null
+    public function getValueNumber(): float|null|Missing
     {
         return $this->value_number;
     }
 
     /**
-     * @return string|null
+     * @return string|Missing|null
      */
-    public function getValueDate(): string|null
+    public function getValueDate(): string|null|Missing
     {
         return $this->value_date;
     }
