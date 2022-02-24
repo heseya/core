@@ -42,6 +42,8 @@ class AttributeTest extends TestCase
                 'name',
                 'slug',
                 'description',
+                'min',
+                'max',
                 'type',
                 'global',
                 'sortable',
@@ -82,6 +84,185 @@ class AttributeTest extends TestCase
                 'value_number' => $this->option->value_number,
                 'value_date' => $this->option->value_date
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShow($user)
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes/id:'. $this->attribute->getKey())
+            ->assertOk()
+            ->assertJsonFragment([
+                'name' => $this->attribute->name,
+                'slug' => $this->attribute->slug,
+                'description' => $this->attribute->description,
+                'type' => $this->attribute->type,
+                'global' => $this->attribute->global,
+                'sortable' => $this->attribute->sortable,
+            ])
+            ->assertJsonFragment([
+                'index' => $this->option->index,
+                'name' => $this->option->name,
+                'value_number' => $this->option->value_number,
+                'value_date' => $this->option->value_date
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowMinMaxNumber($user)
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $attribute = Attribute::create([
+            'name' => 'Monitor screen size',
+            'slug' => 'monitor-screen-size',
+            'description' => 'MinMax attribute number description',
+            'type' => AttributeType::NUMBER,
+            'global' => true,
+            'sortable' => true,
+        ]);
+
+        $option1 = AttributeOption::create([
+            'index' => 1,
+            'name' => 'Modern screen size',
+            'value_number' => 27,
+            'value_date' => null,
+            'attribute_id' => $attribute->getKey(),
+        ]);
+
+        $option2 = AttributeOption::create([
+            'index' => 2,
+            'name' => 'Old screen size',
+            'value_number' => 15,
+            'value_date' => null,
+            'attribute_id' => $attribute->getKey(),
+        ]);
+
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes/id:'. $attribute->getKey())
+            ->assertOk()
+            ->assertJsonFragment([
+                'name' => $attribute->name,
+                'slug' => $attribute->slug,
+                'description' => $attribute->description,
+                'min' => $option2->value_number,
+                'max' => $option1->value_number,
+                'type' => $attribute->type,
+                'global' => $attribute->global,
+                'sortable' => $attribute->sortable,
+            ])
+            ->assertJsonFragment([
+                'index' => $option1->index,
+                'name' => $option1->name,
+                'value_number' => $option1->value_number,
+                'value_date' => $option1->value_date,
+                'attribute_id' => $option1->attribute_id,
+            ])
+            ->assertJsonFragment([
+                'index' => $option2->index,
+                'name' => $option2->name,
+                'value_number' => $option2->value_number,
+                'value_date' => $option2->value_date,
+                'attribute_id' => $option2->attribute_id,
+            ]);
+
+        //checking rest of min/max fields in attribute
+        $this->assertDatabaseHas('attributes', [
+            'id' => $attribute->getKey(),
+            'min_date' => null,
+            'max_date' => null,
+        ]);
+        //making sure to other attributes was not updated by this one
+        $this->assertDatabaseMissing('attributes', [
+            'id' => $this->attribute->getKey(),
+            'min_number' => $option2->value_number,
+            'max_number' => $option1->value_number,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowMinMaxDate($user)
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $attribute = Attribute::create([
+            'name' => 'Release date',
+            'slug' => 'release-date',
+            'description' => 'MinMax attribute date description',
+            'type' => AttributeType::DATE,
+            'global' => true,
+            'sortable' => true,
+        ]);
+
+        $option1 = AttributeOption::create([
+            'index' => 1,
+            'name' => 'Book #1',
+            'value_number' => null,
+            'value_date' => '2000-03-25',
+            'attribute_id' => $attribute->getKey(),
+        ]);
+
+        $option2 = AttributeOption::create([
+            'index' => 2,
+            'name' => 'Book #2',
+            'value_number' => null,
+            'value_date' => '1999-02-01',
+            'attribute_id' => $attribute->getKey(),
+        ]);
+
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes/id:'. $attribute->getKey())
+            ->assertOk()
+            ->assertJsonFragment([
+                'name' => $attribute->name,
+                'slug' => $attribute->slug,
+                'description' => $attribute->description,
+                'min' => $option2->value_date,
+                'max' => $option1->value_date,
+                'type' => $attribute->type,
+                'global' => $attribute->global,
+                'sortable' => $attribute->sortable,
+            ])
+            ->assertJsonFragment([
+                'index' => $option1->index,
+                'name' => $option1->name,
+                'value_number' => $option1->value_number,
+                'value_date' => $option1->value_date,
+                'attribute_id' => $option1->attribute_id,
+            ])
+            ->assertJsonFragment([
+                'index' => $option2->index,
+                'name' => $option2->name,
+                'value_number' => $option2->value_number,
+                'value_date' => $option2->value_date,
+                'attribute_id' => $option2->attribute_id,
+            ]);
+
+        //checking rest of min/max fields in attribute
+        $this->assertDatabaseHas('attributes', [
+            'id' => $attribute->getKey(),
+            'min_number' => null,
+            'max_number' => null,
+        ]);
+        //making sure to other attributes was not updated by this one
+        $this->assertDatabaseMissing('attributes', [
+            'id' => $this->attribute->getKey(),
+            'min_date' => $option2->value_date,
+            'max_date' => $option1->value_date,
+        ]);
     }
 
     /**

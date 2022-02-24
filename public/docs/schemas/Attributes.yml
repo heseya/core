@@ -16,6 +16,14 @@ Attribute:
       description: 'Description of attribute'
       type: string
       example: 'Presented number is size of screen monitor'
+    min:
+      description: 'Lowest value from options'
+      type: integer
+      example: '22'
+    max:
+      description: 'Highest value from options'
+      type: integer
+      example: '27'
     type:
       description: 'Type of attribute'
       type: integer
