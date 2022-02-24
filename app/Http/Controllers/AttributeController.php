@@ -9,6 +9,7 @@ use App\Http\Resources\AttributeResource;
 use App\Models\Attribute;
 use App\Services\Contracts\AttributeServiceContract;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
@@ -19,10 +20,15 @@ class AttributeController extends Controller
     {
     }
 
-    public function index(): JsonResource
+    public function index(Request $request): JsonResource
     {
-        $attributes = Attribute::with('options')
-            ->paginate(Config::get('pagination.per_page'));
+        $query = Attribute::with('options');
+
+        if ($request->has('global')) {
+            $query->where('global', '=', $request->boolean('global'));
+        }
+
+        $attributes = $query->paginate(Config::get('pagination.per_page'));
 
         return AttributeResource::collection($attributes);
     }

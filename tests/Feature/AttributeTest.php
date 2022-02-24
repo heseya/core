@@ -65,11 +65,15 @@ class AttributeTest extends TestCase
     {
         $this->$user->givePermissionTo('attributes.show');
 
+        $this->newAttribute['global'] = !$this->attribute->global;
+        unset($this->newAttribute['options']);
+        Attribute::create($this->newAttribute);
+
         $this
             ->actingAs($this->$user)
             ->getJson('/attributes')
             ->assertOk()
-            ->assertJsonCount(1, 'data')
+            ->assertJsonCount(2, 'data')
             ->assertJsonFragment([
                 'name' => $this->attribute->name,
                 'slug' => $this->attribute->slug,
@@ -83,7 +87,46 @@ class AttributeTest extends TestCase
                 'name' => $this->option->name,
                 'value_number' => $this->option->value_number,
                 'value_date' => $this->option->value_date
-            ]);
+            ])
+            ->assertJsonFragment($this->newAttribute);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexGlobalFlagTrue($user)
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $this->newAttribute['global'] = true;
+        unset($this->newAttribute['options']);
+        Attribute::create($this->newAttribute);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes?global=1')
+            ->assertOk()
+            ->assertJsonMissing(['global' => false])
+            ->assertJsonFragment($this->newAttribute);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexGlobalFlagFalse($user)
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $this->newAttribute['global'] = false;
+        unset($this->newAttribute['options']);
+        Attribute::create($this->newAttribute);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes?global=0')
+            ->assertOk()
+            ->assertJsonMissing(['global' => true])
+            ->assertJsonFragment($this->newAttribute);
     }
 
     /**
