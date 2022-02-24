@@ -16,6 +16,7 @@ use App\Models\Schema;
 use App\Models\SeoMetadata;
 use App\Models\WebHook;
 use App\Services\Contracts\ProductServiceContract;
+use Carbon\Carbon;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
@@ -203,6 +204,36 @@ class ProductTest extends TestCase
             ]]);
 
         $this->assertQueryCountLessThan(20);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexIdsSearch($user)
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $firstProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $secondProduct = Product::factory()->create([
+            'public' => true,
+            'created_at' => Carbon::now()->addHour(),
+        ]);
+
+        // Dummy product to check if response will return only 2 products created above
+        Product::factory()->create([
+            'public' => true,
+            'created_at' => Carbon::now()->addHour(),
+        ]);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products?ids=' . $firstProduct->getKey() . ',' . $secondProduct->getKey());
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data');
     }
 
     /**

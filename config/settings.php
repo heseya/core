@@ -48,37 +48,37 @@ return [
     ],
 
     'sender_name' => [
-        'value' => null,
+        'value' => '',
         'public' => false,
     ],
 
     'sender_email' => [
-        'value' => null,
+        'value' => '',
         'public' => false,
     ],
 
     'sender_street' => [
-        'value' => null,
+        'value' => '',
         'public' => false,
     ],
 
     'sender_postcode' => [
-        'value' => null,
+        'value' => '',
         'public' => false,
     ],
 
     'sender_city' => [
-        'value' => null,
+        'value' => '',
         'public' => false,
     ],
 
     'sender_phone' => [
-        'value' => null,
+        'value' => '',
         'public' => false,
     ],
 
     'sender_company' => [
-        'value' => null,
+        'value' => '',
         'public' => false,
     ],
 ];
