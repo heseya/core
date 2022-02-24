@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\AttributeDto;
+use App\Http\Requests\AttributeIndexRequest;
 use App\Http\Requests\AttributeStoreRequest;
 use App\Http\Requests\AttributeUpdateRequest;
 use App\Http\Resources\AttributeResource;
@@ -19,12 +20,14 @@ class AttributeController extends Controller
     {
     }
 
-    public function index(): JsonResource
+    public function index(AttributeIndexRequest $request): JsonResource
     {
-        $attributes = Attribute::with('options')
-            ->paginate(Config::get('pagination.per_page'));
+        $query = Attribute::search($request->validated())
+            ->with('options');
 
-        return AttributeResource::collection($attributes);
+        return AttributeResource::collection(
+            $query->paginate(Config::get('pagination.per_page'))
+        );
     }
 
     public function show(Attribute $attribute): JsonResource
