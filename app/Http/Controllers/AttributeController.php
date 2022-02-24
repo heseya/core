@@ -8,7 +8,6 @@ use App\Http\Resources\AttributeResource;
 use App\Models\Attribute;
 use App\Services\Contracts\AttributeServiceContract;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
@@ -58,19 +57,5 @@ class AttributeController extends Controller
         $this->attributeService->delete($attribute);
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
-    }
-
-    public function getFilters(Request $request): JsonResource
-    {
-        if (!$request->has('sets')) {
-            return AttributeResource::collection(Attribute::where('global', 1)->get());
-        }
-
-        return AttributeResource::collection(
-            Attribute::whereHas(
-                'productSets',
-                fn ($query) => $query->whereIn('product_set_id', $request->sets)
-            )->orWhere('global', 1)->with('options')->get()
-        );
     }
 }

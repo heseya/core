@@ -19,4 +19,3 @@ Route::prefix('attributes')->group(function (): void {
         ->middleware('permission:attributes.edit');
 });
 
-Route::get('filters', [AttributeController::class, 'getFilters']);
