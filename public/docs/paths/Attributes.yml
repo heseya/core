@@ -121,3 +121,24 @@ AttributeOption:
         application/json:
           schema:
             $ref: './../schemas/Attributes.yml#/AttributeOption'
+AttributeOptionParams:
+  delete:
+    tags:
+      - Attributes
+    summary: 'remove option'
+    parameters:
+      - name: attribute_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: option_id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      204:
+        description: Success
+    security:
+      - oauth: [ ]
