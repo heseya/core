@@ -15,10 +15,13 @@ class CreateAttributeOptionsTable extends Migration
     {
         Schema::create('attribute_options', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('value_text');
-            $table->float('value')->nullable()->default(null);
+            $table->string('name');
+            $table->integer('index');
+            $table->float('value_number')->nullable()->default(null);
+            $table->date('value_date')->nullable()->default(null);
             $table->foreignUuid('attribute_id')->references('id')->on('attributes')->onDelete('cascade')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

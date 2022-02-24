@@ -22,8 +22,9 @@ class AttributeOptionFactory extends Factory
     public function definition()
     {
         return [
-            'value_text' => $this->faker->sentence,
-            'value' => rand(0, 1) === 1 ? $this->faker->randomNumber(5) : null,
+            'name' => $this->faker->word,
+            'value_number' => rand(0, 1) === 1 ? $this->faker->randomNumber(5) : null,
+            'value_date' => $this->faker->date,
         ];
     }
 }

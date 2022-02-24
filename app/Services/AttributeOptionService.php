@@ -11,7 +11,10 @@ class AttributeOptionService implements AttributeOptionServiceContract
     public function create(string $attributeId, AttributeOptionDto $dto): AttributeOption
     {
         $data = array_merge(
-            ['attribute_id' => $attributeId],
+            [
+                'index' => AttributeOption::withTrashed()->where('attribute_id', '=', $attributeId)->count() + 1,
+                'attribute_id' => $attributeId,
+            ],
             $dto->toArray(),
         );
 

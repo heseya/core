@@ -49,14 +49,22 @@ AttributeOption:
     id:
       type: string
       example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-    value_text:
-      description: 'Text of attribute option'
+    name:
+      description: 'Name of attribute option'
       type: string
-      example: 'inch'
-    value:
-      description: 'Value of attribute option'
+      example: 'Screen size'
+    index:
+      description: 'Index of attribute option'
+      type: integer
+      example: 1
+    value_number:
+      description: 'Number value attribute option'
       type: float
       example: '27'
+    value_date:
+      description: 'Date value attribute option'
+      type: date
+      example: '2022-02-22'
     attribute_id:
       type: string
       example: 026bc5f6-8373-4aeb-972e-e78d72a67121
