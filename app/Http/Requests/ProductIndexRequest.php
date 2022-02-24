@@ -19,6 +19,7 @@ class ProductIndexRequest extends FormRequest
         }
 
         return [
+            'ids' => ['string'],
             'name' => ['nullable', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
             'public' => ['nullable', 'boolean'],

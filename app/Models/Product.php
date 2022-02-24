@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\SearchTypes\ProductSearch;
 use App\SearchTypes\WhereBelongsToManyById;
+use App\SearchTypes\WhereInIds;
 use App\Traits\HasSeoMetadata;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
@@ -53,6 +54,7 @@ class Product extends Model implements AuditableContract
     ];
 
     protected array $searchable = [
+        'ids' => WhereInIds::class,
         'name' => Like::class,
         'slug' => Like::class,
         'public',
