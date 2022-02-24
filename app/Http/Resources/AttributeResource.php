@@ -9,21 +9,11 @@ class AttributeResource extends Resource
 {
     public function base(Request $request): array
     {
-        switch ($this->type) {
-            case AttributeType::NUMBER:
-                $min = $this->min_number;
-                $max = $this->max_number;
-                break;
-
-            case AttributeType::DATE:
-                $min = $this->min_date;
-                $max = $this->max_date;
-                break;
-
-            default:
-                $min = null;
-                $max = null;
-        }
+        [$min, $max] = match ($this->type->value) {
+            AttributeType::NUMBER => [$this->min_number, $this->max_number],
+            AttributeType::DATE => [$this->min_date, $this->max_date],
+            default => [null, null],
+        };
 
         return [
             'id' => $this->getKey(),

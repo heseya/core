@@ -56,31 +56,24 @@ class AttributeService implements AttributeServiceContract
 
     public function updateMinMax(Attribute $attribute, ?float $number, ?string $date): void
     {
-        switch ($attribute->type) {
-            case AttributeType::NUMBER:
-                if ($number < $attribute->min_number || $attribute->min_number === null) {
-                    $attribute->min_number = $number;
-                }
+        if ($attribute->type->value === AttributeType::NUMBER) {
+            if ($number < $attribute->min_number || $attribute->min_number === null) {
+                $attribute->min_number = $number;
+            }
 
-                if ($number > $attribute->max_number || $attribute->max_number === null) {
-                    $attribute->max_number = $number;
-                }
+            if ($number > $attribute->max_number || $attribute->max_number === null) {
+                $attribute->max_number = $number;
+            }
+        }
 
-                break;
+        if ($attribute->type->value === AttributeType::DATE) {
+            if ($date < $attribute->min_date || $attribute->min_date === null) {
+                $attribute->min_date = $date;
+            }
 
-            case AttributeType::DATE:
-                if ($date < $attribute->min_date || $attribute->min_date === null) {
-                    $attribute->min_date = $date;
-                }
-
-                if ($date > $attribute->max_date || $attribute->max_date === null) {
-                    $attribute->max_date = $date;
-                }
-
-                break;
-
-            default:
-                return;
+            if ($date > $attribute->max_date || $attribute->max_date === null) {
+                $attribute->max_date = $date;
+            }
         }
 
         $attribute->update();
