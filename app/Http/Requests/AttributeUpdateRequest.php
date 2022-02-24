@@ -22,6 +22,11 @@ class AttributeUpdateRequest extends AttributeStoreRequest
             Rule::unique('attributes')->ignore($this->attribute, 'slug'),
         ];
 
+        $rules['type'] = [
+            'required',
+            Rule::in($this->attribute->type),
+        ];
+
         return $rules;
     }
 }

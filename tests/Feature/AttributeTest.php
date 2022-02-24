@@ -326,7 +326,7 @@ class AttributeTest extends TestCase
             'name' => 'Test ' . $this->attribute->name,
             'slug' => 'test-' . $this->attribute->slug,
             'description' => 'Test ' . $this->attribute->description,
-            'type' => AttributeType::NUMBER,
+            'type' => $this->attribute->type,
             'global' => true,
             'sortable' => true,
             'options' => [
@@ -366,7 +366,7 @@ class AttributeTest extends TestCase
             'name' => 'Test ' . $this->attribute->name,
             'slug' => $this->attribute->slug,
             'description' => 'Test ' . $this->attribute->description,
-            'type' => AttributeType::NUMBER,
+            'type' => $this->attribute->type,
             'global' => true,
             'sortable' => true,
             'options' => [
@@ -393,6 +393,43 @@ class AttributeTest extends TestCase
                 'sortable' => $attributeUpdate['sortable'],
             ])
             ->assertJsonFragment($attributeUpdate['options'][0]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateChangeType($user)
+    {
+        $this->$user->givePermissionTo('attributes.edit');
+
+        while (true) {
+            if (($randomType = AttributeType::getRandomValue()) !== $this->attribute->type->value) {
+                $this->attribute->type = $randomType;
+                break;
+            }
+        }
+
+        $attributeUpdate = [
+            'name' => 'Test ' . $this->attribute->name,
+            'slug' => $this->attribute->slug,
+            'description' => 'Test ' . $this->attribute->description,
+            'type' => $this->attribute->type,
+            'global' => true,
+            'sortable' => true,
+            'options' => [
+                [
+                    'id' => $this->option->id,
+                    'name' => 'Test ' . $this->option->name,
+                    'value_number' => $this->option->value_number,
+                    'value_date' => $this->option->value_date,
+                ],
+            ]
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
+            ->assertUnprocessable();
     }
 
     /**
