@@ -366,7 +366,26 @@ class AttributeTest extends TestCase
     {
         Attribute::query()->delete();
 
-        $firstProductSet = ProductSet::factory()->create()->attributes()->attach([
+        $optionOne = AttributeOption::create([
+            'value_text' => 'test',
+            'value' => 1,
+        ]);
+        $optionTwo = AttributeOption::create([
+            'value_text' => 'test2',
+            'value' => 99,
+        ]);
+
+        $singleOptionAttribute = Attribute::factory()->create([
+            'global' => 0,
+            'type' => 'single-option',
+        ]);
+        $singleOptionAttribute->options()->saveMany([
+           $optionOne,
+           $optionTwo,
+        ]);
+
+        $firstProductSet = ProductSet::factory()->create();
+        $firstProductSet->attributes()->attach([
             Attribute::factory()->create([
                 'global' => 0,
                 'type' => 'number',
@@ -377,19 +396,13 @@ class AttributeTest extends TestCase
             ])->getKey(),
         ]);
 
-        $secondProductSet = ProductSet::factory()->create()->attributes()->attach([
+        $secondProductSet = ProductSet::factory()->create();
+        $secondProductSet->attributes()->attach([
             Attribute::factory()->create([
                 'global' => 0,
                 'type' => 'number',
             ])->getKey(),
-            Attribute::factory()->create([
-                'global' => 0,
-                'type' => 'single-option',
-            ])->options()->create([
-                AttributeOption::factory()->create([
-                    'value_text' => 'test',
-                ])
-            ])->getKey(),
+            $singleOptionAttribute->getKey(),
             Attribute::factory()->create([
                 'global' => 0,
                 'type' => 'date',
@@ -402,21 +415,27 @@ class AttributeTest extends TestCase
                 'type' => 'number',
             ])->getKey(),
             Attribute::factory()->create([
-                'global' => 0,
+                'global' => 1,
                 'type' => 'date',
             ])->getKey(),
             Attribute::factory()->create([
                 'global' => 0,
                 'type' => 'single-option',
-            ])->options()->create([
-                AttributeOption::factory()->create([
-                    'value_text' => 'test',
-                ])
             ])->getKey(),
         ]);
 
-        $this->actingAs($this->$user)
-            ->getJson('/filters?sets[]=' . $firstProductSet->getKey() . 'sets[]=' . $secondProductSet->getKey())
-            ->assertJsonCount(20, 'data');
+        $response = $this->actingAs($this->$user)
+            ->getJson('/filters?sets[]=' . $firstProductSet->getKey() . '&sets[]=' . $secondProductSet->getKey());
+
+        $response
+            ->assertJsonFragment([
+                'value_text' => 'test',
+                'value' => 1,
+            ])
+            ->assertJsonFragment([
+                'value_text' => 'test2',
+                'value' => 99,
+            ])
+            ->assertJsonCount(6, 'data');
     }
 }
