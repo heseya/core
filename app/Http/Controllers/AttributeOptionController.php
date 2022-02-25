@@ -28,6 +28,20 @@ class AttributeOptionController extends Controller
         return AttributeOptionResource::make($attributeOption);
     }
 
+    public function update(Attribute $attribute, AttributeOption $option, AttributeOptionRequest $request): JsonResource
+    {
+        if (!$request->has('id')) {
+            $request->merge(['id' => $option->getKey()]);
+        }
+
+        $attributeOption = $this->attributeOptionService->updateOrCreate(
+            $attribute->getKey(),
+            AttributeOptionDto::fromFormRequest($request)
+        );
+
+        return AttributeOptionResource::make($attributeOption);
+    }
+
     public function destroy(Attribute $attribute, AttributeOption $option): JsonResponse
     {
         $this->attributeOptionService->delete($option);

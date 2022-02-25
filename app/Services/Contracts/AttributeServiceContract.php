@@ -15,4 +15,6 @@ interface AttributeServiceContract
     public function delete(Attribute $attribute): void;
 
     public function sync(Product $product, array $data): void;
+
+    public function updateMinMax(Attribute $attribute, ?float $number, ?string $date): void;
 }
