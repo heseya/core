@@ -969,4 +969,74 @@ class AttributeTest extends TestCase
         ->assertJsonMissing(['index' => 2])
         ->assertJsonFragment(['index' => 3]);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateMinMaxOnUpdateOption($user)
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $attribute = Attribute::factory([
+            'type' => AttributeType::NUMBER
+        ])->create();
+
+        $option1 = AttributeOption::factory()->create([
+            'index' => 1,
+            'value_number' => 100,
+            'attribute_id' => $attribute->getKey()
+        ]);
+
+        $option2 = AttributeOption::factory()->create([
+            'index' => 1,
+            'value_number' => 200,
+            'attribute_id' => $attribute->getKey()
+        ]);
+
+        $option1->update(['value_number' => 110]);
+        $option2->update(['value_number' => 190]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes/id:'. $attribute->getKey())
+            ->assertOk()
+            ->assertJsonFragment([
+                'min' => 110,
+                'max' => 190
+            ]);
+    }
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateMinMaxOnDeleteOption($user)
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $attribute = Attribute::factory([
+            'type' => AttributeType::NUMBER
+        ])->create();
+
+        AttributeOption::factory()->create([
+            'index' => 1,
+            'value_number' => 100,
+            'attribute_id' => $attribute->getKey()
+        ]);
+
+        $option2 = AttributeOption::factory()->create([
+            'index' => 1,
+            'value_number' => 200,
+            'attribute_id' => $attribute->getKey()
+        ]);
+
+        $option2->delete();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes/id:'. $attribute->getKey())
+            ->assertOk()
+            ->assertJsonFragment([
+                'min' => 100,
+                'max' => 100
+            ]);
+    }
 }
