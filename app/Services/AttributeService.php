@@ -35,7 +35,7 @@ class AttributeService implements AttributeServiceContract
 
     public function delete(Attribute $attribute): void
     {
-        $this->attributeOptionService->deleteAttributeOptions($attribute->getKey());
+        $this->attributeOptionService->deleteAll($attribute->getKey());
 
         $attribute->delete();
     }
@@ -81,10 +81,16 @@ class AttributeService implements AttributeServiceContract
 
     protected function processAttributeOptions(Attribute &$attribute, AttributeDto $dto): Attribute
     {
+        $attribute->options
+            ->whereNotIn('id', array_map(fn ($option) => $option->getId(), $dto->getOptions()))
+            ->each(
+                fn ($missingOption) => $this->attributeOptionService->delete($missingOption)
+            );
+
         foreach ($dto->getOptions() as $option) {
             $this->attributeOptionService->updateOrCreate($attribute->getKey(), $option);
         }
 
-        return $attribute;
+        return $attribute->refresh();
     }
 }

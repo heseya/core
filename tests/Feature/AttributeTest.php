@@ -375,7 +375,7 @@ class AttributeTest extends TestCase
             'sortable' => true,
             'options' => [
                 [
-                    'id' => $this->option->id,
+                    'id' => $this->option->getKey(),
                     'name' => 'Test ' . $this->option->name,
                     'value_number' => $this->option->value_number,
                     'value_date' => $this->option->value_date,
@@ -415,7 +415,7 @@ class AttributeTest extends TestCase
             'sortable' => true,
             'options' => [
                 [
-                    'id' => $this->option->id,
+                    'id' => $this->option->getKey(),
                     'name' => 'Test ' . $this->option->name,
                     'value_number' => $this->option->value_number,
                     'value_date' => $this->option->value_date,
@@ -462,7 +462,7 @@ class AttributeTest extends TestCase
             'sortable' => true,
             'options' => [
                 [
-                    'id' => $this->option->id,
+                    'id' => $this->option->getKey(),
                     'name' => 'Test ' . $this->option->name,
                     'value_number' => $this->option->value_number,
                     'value_date' => $this->option->value_date,
@@ -510,6 +510,46 @@ class AttributeTest extends TestCase
             ->actingAs($this->$user)
             ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
             ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithoutAssignedOption($user)
+    {
+        $this->$user->givePermissionTo('attributes.edit');
+
+        $attributeUpdate = [
+            'name' => 'Test ' . $this->attribute->name,
+            'slug' => 'test-' . $this->attribute->slug,
+            'description' => 'Test ' . $this->attribute->description,
+            'type' => $this->attribute->type,
+            'global' => true,
+            'sortable' => true,
+            'options' => [
+                [
+                    'name' => 'Totally different option',
+                    'value_number' => $this->option->value_number,
+                    'value_date' => $this->option->value_date,
+                ],
+            ]
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
+            ->assertOk()
+            ->assertJsonStructure($this->expectedStructure)
+            ->assertJsonFragment([
+                'name' => $attributeUpdate['name'],
+                'slug' => $attributeUpdate['slug'],
+                'description' => $attributeUpdate['description'],
+                'type' => $attributeUpdate['type'],
+                'global' => $attributeUpdate['global'],
+                'sortable' => $attributeUpdate['sortable'],
+            ])
+            ->assertJsonFragment($attributeUpdate['options'][0])
+            ->assertJsonMissing(['id' => $this->option->getKey()]);
     }
 
     /**

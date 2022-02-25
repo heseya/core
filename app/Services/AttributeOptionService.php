@@ -39,7 +39,7 @@ class AttributeOptionService implements AttributeOptionServiceContract
         $attributeOption->delete();
     }
 
-    public function deleteAttributeOptions(string $attributeId): void
+    public function deleteAll(string $attributeId): void
     {
         AttributeOption::query()
             ->where('attribute_id', '=', $attributeId)
