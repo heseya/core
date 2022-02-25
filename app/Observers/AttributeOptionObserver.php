@@ -20,11 +20,7 @@ class AttributeOptionObserver
      */
     public function created(AttributeOption $attributeOption): void
     {
-        $this->attributeService->updateMinMax(
-            $attributeOption->attribute,
-            $attributeOption->value_number,
-            $attributeOption->value_date
-        );
+        $this->attributeService->updateMinMax($attributeOption->attribute);
     }
 
     /**
@@ -36,11 +32,7 @@ class AttributeOptionObserver
      */
     public function updated(AttributeOption $attributeOption): void
     {
-        $this->attributeService->updateMinMax(
-            $attributeOption->attribute,
-            $attributeOption->value_number,
-            $attributeOption->value_date
-        );
+        $this->attributeService->updateMinMax($attributeOption->attribute);
     }
 
     /**
@@ -52,11 +44,7 @@ class AttributeOptionObserver
      */
     public function deleted(AttributeOption $attributeOption): void
     {
-        $this->attributeService->updateMinMax(
-            $attributeOption->attribute,
-            $attributeOption->value_number,
-            $attributeOption->value_date
-        );
+        $this->attributeService->updateMinMax($attributeOption->attribute);
     }
 
     /**
@@ -68,10 +56,6 @@ class AttributeOptionObserver
      */
     public function restored(AttributeOption $attributeOption): void
     {
-        $this->attributeService->updateMinMax(
-            $attributeOption->attribute,
-            $attributeOption->value_number,
-            $attributeOption->value_date
-        );
+        $this->attributeService->updateMinMax($attributeOption->attribute);
     }
 }
