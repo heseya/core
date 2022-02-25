@@ -15,7 +15,7 @@ class AttributeStoreRequest extends FormRequest
      */
     public function rules(): array
     {
-        $attributeOptionRequest = new AttributeOptionRequest();
+        $attributeOptionRequest = new AttributeOptionRequest($this->all());
         $optionRules = [];
 
         foreach ($attributeOptionRequest->rules() as $field => $rules) {

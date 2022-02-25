@@ -9,7 +9,7 @@ use Heseya\Dto\Missing;
 class AttributeOptionDto extends Dto
 {
     private string|null|Missing $id;
-    private string $name;
+    private string|null|Missing $name;
     private float|null|Missing $value_number;
     private string|null|Missing $value_date;
 
@@ -17,7 +17,7 @@ class AttributeOptionDto extends Dto
     {
         return new self(
             id: $request->input('id', new Missing()),
-            name: $request->input('name'),
+            name: $request->input('name', new Missing()),
             value_number: $request->input('value_number', new Missing()),
             value_date: $request->input('value_date', new Missing()),
         );
@@ -27,7 +27,7 @@ class AttributeOptionDto extends Dto
     {
         return new self(
             id: array_key_exists('id', $data) ? $data['id'] : null,
-            name: $data['name'],
+            name: array_key_exists('name', $data) ? $data['name'] : null,
             value_number: array_key_exists('value_number', $data) ? $data['value_number'] : null,
             value_date: array_key_exists('value_date', $data) ? $data['value_date'] : null,
         );
@@ -42,9 +42,9 @@ class AttributeOptionDto extends Dto
     }
 
     /**
-     * @return string
+     * @return string|Missing|null
      */
-    public function getName(): string
+    public function getName(): string|null|Missing
     {
         return $this->name;
     }
