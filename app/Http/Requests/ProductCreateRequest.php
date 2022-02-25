@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-
 class ProductCreateRequest extends SeoMetadataRulesRequest
 {
     public function rules(): array

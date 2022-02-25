@@ -43,7 +43,7 @@ class AttributeService implements AttributeServiceContract
     public function sync(Product $product, array $data): void
     {
         $attributes = collect($data)->map(
-            fn($option, $attribute) => [
+            fn ($option, $attribute) => [
                 'attribute_id' => $attribute,
                 'option_id' => $option,
             ]
