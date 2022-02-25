@@ -973,7 +973,7 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateMinMaxOnUpdateOption($user)
+    public function testUpdateMinMaxNumberOnUpdateOption($user)
     {
         $this->$user->givePermissionTo('attributes.show');
 
@@ -1005,10 +1005,11 @@ class AttributeTest extends TestCase
                 'max' => 190
             ]);
     }
+
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateMinMaxOnDeleteOption($user)
+    public function testUpdateMinMaxNumberOnDeleteOption($user)
     {
         $this->$user->givePermissionTo('attributes.show');
 
@@ -1037,6 +1038,77 @@ class AttributeTest extends TestCase
             ->assertJsonFragment([
                 'min' => 100,
                 'max' => 100
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateMinMaxDateOnUpdateOption($user)
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $attribute = Attribute::factory([
+            'type' => AttributeType::DATE
+        ])->create();
+
+        $option1 = AttributeOption::factory()->create([
+            'index' => 1,
+            'value_date' => '2010-03-15',
+            'attribute_id' => $attribute->getKey()
+        ]);
+
+        $option2 = AttributeOption::factory()->create([
+            'index' => 1,
+            'value_date' => '2020-03-15',
+            'attribute_id' => $attribute->getKey()
+        ]);
+
+        $option1->update(['value_date' => '2012-08-10']);
+        $option2->update(['value_date' => '2019-01-01']);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes/id:'. $attribute->getKey())
+            ->assertOk()
+            ->assertJsonFragment([
+                'min' => '2012-08-10',
+                'max' => '2019-01-01'
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateMinMaxDateOnDeleteOption($user)
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $attribute = Attribute::factory([
+            'type' => AttributeType::DATE
+        ])->create();
+
+        AttributeOption::factory()->create([
+            'index' => 1,
+            'value_date' => '2010-03-15',
+            'attribute_id' => $attribute->getKey()
+        ]);
+
+        $option2 = AttributeOption::factory()->create([
+            'index' => 1,
+            'value_date' => '2020-03-15',
+            'attribute_id' => $attribute->getKey()
+        ]);
+
+        $option2->delete();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes/id:'. $attribute->getKey())
+            ->assertOk()
+            ->assertJsonFragment([
+                'min' => '2010-03-15',
+                'max' => '2010-03-15'
             ]);
     }
 }
