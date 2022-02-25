@@ -1209,7 +1209,7 @@ class ProductTest extends TestCase
             'attribute_id' => $attribute2->getKey()
         ]);
 
-        $res = $this
+        $this
             ->actingAs($this->$user)
             ->postJson('/products', [
                 'name' => 'Test',
@@ -1217,8 +1217,8 @@ class ProductTest extends TestCase
                 'price' => 0,
                 'public' => true,
                 'attributes' => [
-                    $attribute->getKey().','.$option->getKey(),
-                    $attribute2->getKey().','.$option2->getKey(),
+                    $attribute->getKey() => $option->getKey(),
+                    $attribute2->getKey() => $option2->getKey(),
                 ]
             ])
             ->assertCreated()

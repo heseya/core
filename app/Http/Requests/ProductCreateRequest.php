@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\CommaSeparatedUuids;
 
 class ProductCreateRequest extends SeoMetadataRulesRequest
 {
@@ -30,7 +29,7 @@ class ProductCreateRequest extends SeoMetadataRulesRequest
             'sets.*' => ['uuid', 'exists:product_sets,id'],
 
             'attributes' => ['nullable', 'array'],
-            'attributes.*' => [new CommaSeparatedUuids(['attributes,id', 'attribute_options,id'])],
+            'attributes.*' => ['uuid', 'exists:attribute_options,id'],
         ]);
     }
 }
