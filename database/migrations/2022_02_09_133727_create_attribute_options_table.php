@@ -15,7 +15,7 @@ class CreateAttributeOptionsTable extends Migration
     {
         Schema::create('attribute_options', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('name');
+            $table->string('name')->nullable();
             $table->integer('index');
             $table->float('value_number')->nullable()->default(null);
             $table->date('value_date')->nullable()->default(null);

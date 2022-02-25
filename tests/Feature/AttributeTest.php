@@ -336,6 +336,24 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateSingleOptionAndOptionWithoutName($user)
+    {
+        $this->$user->givePermissionTo('attributes.add');
+
+        $this->newAttribute['type'] = AttributeType::SINGLE_OPTION;
+        unset($this->newAttribute['options']);
+        unset($this->newOption['name']);
+        $this->newAttribute['options'] = [$this->newOption];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/attributes', $this->newAttribute)
+            ->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateIncompleteData($user)
     {
         $this->$user->givePermissionTo('attributes.add');
@@ -602,15 +620,39 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testAddOptionIncompleteData($user)
+    public function testAddOptionNumberWithoutName($user)
     {
         $this->$user->givePermissionTo('attributes.edit');
 
+        $attribute = Attribute::factory([
+            'type' => AttributeType::NUMBER
+        ])->create();
         unset($this->newOption['name']);
 
         $this
             ->actingAs($this->$user)
-            ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption)
+            ->postJson('/attributes/id:' . $attribute->getKey() . '/options', $this->newOption)
+            ->assertCreated()
+            ->assertJsonFragment($this->newOption);
+
+        $this->assertDatabaseHas('attribute_options', $this->newOption);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAddOptionIncompleteData($user)
+    {
+        $this->$user->givePermissionTo('attributes.edit');
+
+        $attribute = Attribute::factory([
+            'type' => AttributeType::SINGLE_OPTION
+        ])->create();
+        unset($this->newOption['name']);
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/attributes/id:' . $attribute->getKey() . '/options', $this->newOption)
             ->assertUnprocessable();
     }
 
@@ -690,15 +732,24 @@ class AttributeTest extends TestCase
     {
         $this->$user->givePermissionTo('attributes.edit');
 
+        $attribute = Attribute::factory([
+            'type' => AttributeType::SINGLE_OPTION
+        ])->create();
+
+        $option = AttributeOption::factory()->create([
+            'index' => 1,
+            'attribute_id' => $attribute->getKey()
+        ]);
+
         $optionUpdate = [
-            'value_number' => $this->option->value_number + 1,
+            'value_number' => $option->value_number + 1,
             'value_date' => Carbon::now()->toDateString(),
-            'attribute_id' => $this->option->attribute_id,
+            'attribute_id' => $option->attribute_id,
         ];
 
         $this
             ->actingAs($this->$user)
-            ->patchJson('/attributes/id:' . $this->attribute->getKey() . '/options/id:'. $this->option->getKey(), $optionUpdate)
+            ->patchJson('/attributes/id:' . $attribute->getKey() . '/options/id:'. $option->getKey(), $optionUpdate)
             ->assertUnprocessable();
     }
 
