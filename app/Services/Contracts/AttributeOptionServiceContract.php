@@ -13,5 +13,5 @@ interface AttributeOptionServiceContract
 
     public function delete(AttributeOption $attributeOption): void;
 
-    public function deleteAttributeOptions(string $attributeId): void;
+    public function deleteAll(string $attributeId): void;
 }

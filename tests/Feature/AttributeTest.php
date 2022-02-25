@@ -393,7 +393,7 @@ class AttributeTest extends TestCase
             'sortable' => true,
             'options' => [
                 [
-                    'id' => $this->option->id,
+                    'id' => $this->option->getKey(),
                     'name' => 'Test ' . $this->option->name,
                     'value_number' => $this->option->value_number,
                     'value_date' => $this->option->value_date,
@@ -433,7 +433,7 @@ class AttributeTest extends TestCase
             'sortable' => true,
             'options' => [
                 [
-                    'id' => $this->option->id,
+                    'id' => $this->option->getKey(),
                     'name' => 'Test ' . $this->option->name,
                     'value_number' => $this->option->value_number,
                     'value_date' => $this->option->value_date,
@@ -480,7 +480,7 @@ class AttributeTest extends TestCase
             'sortable' => true,
             'options' => [
                 [
-                    'id' => $this->option->id,
+                    'id' => $this->option->getKey(),
                     'name' => 'Test ' . $this->option->name,
                     'value_number' => $this->option->value_number,
                     'value_date' => $this->option->value_date,
@@ -528,6 +528,46 @@ class AttributeTest extends TestCase
             ->actingAs($this->$user)
             ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
             ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithoutAssignedOption($user)
+    {
+        $this->$user->givePermissionTo('attributes.edit');
+
+        $attributeUpdate = [
+            'name' => 'Test ' . $this->attribute->name,
+            'slug' => 'test-' . $this->attribute->slug,
+            'description' => 'Test ' . $this->attribute->description,
+            'type' => $this->attribute->type,
+            'global' => true,
+            'sortable' => true,
+            'options' => [
+                [
+                    'name' => 'Totally different option',
+                    'value_number' => $this->option->value_number,
+                    'value_date' => $this->option->value_date,
+                ],
+            ]
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
+            ->assertOk()
+            ->assertJsonStructure($this->expectedStructure)
+            ->assertJsonFragment([
+                'name' => $attributeUpdate['name'],
+                'slug' => $attributeUpdate['slug'],
+                'description' => $attributeUpdate['description'],
+                'type' => $attributeUpdate['type'],
+                'global' => $attributeUpdate['global'],
+                'sortable' => $attributeUpdate['sortable'],
+            ])
+            ->assertJsonFragment($attributeUpdate['options'][0])
+            ->assertJsonMissing(['id' => $this->option->getKey()]);
     }
 
     /**
@@ -928,5 +968,147 @@ class AttributeTest extends TestCase
         ->assertJsonFragment(['index' => 1])
         ->assertJsonMissing(['index' => 2])
         ->assertJsonFragment(['index' => 3]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateMinMaxNumberOnUpdateOption($user)
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $attribute = Attribute::factory([
+            'type' => AttributeType::NUMBER
+        ])->create();
+
+        $option1 = AttributeOption::factory()->create([
+            'index' => 1,
+            'value_number' => 100,
+            'attribute_id' => $attribute->getKey()
+        ]);
+
+        $option2 = AttributeOption::factory()->create([
+            'index' => 1,
+            'value_number' => 200,
+            'attribute_id' => $attribute->getKey()
+        ]);
+
+        $option1->update(['value_number' => 110]);
+        $option2->update(['value_number' => 190]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes/id:'. $attribute->getKey())
+            ->assertOk()
+            ->assertJsonFragment([
+                'min' => 110,
+                'max' => 190
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateMinMaxNumberOnDeleteOption($user)
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $attribute = Attribute::factory([
+            'type' => AttributeType::NUMBER
+        ])->create();
+
+        AttributeOption::factory()->create([
+            'index' => 1,
+            'value_number' => 100,
+            'attribute_id' => $attribute->getKey()
+        ]);
+
+        $option2 = AttributeOption::factory()->create([
+            'index' => 1,
+            'value_number' => 200,
+            'attribute_id' => $attribute->getKey()
+        ]);
+
+        $option2->delete();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes/id:'. $attribute->getKey())
+            ->assertOk()
+            ->assertJsonFragment([
+                'min' => 100,
+                'max' => 100
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateMinMaxDateOnUpdateOption($user)
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $attribute = Attribute::factory([
+            'type' => AttributeType::DATE
+        ])->create();
+
+        $option1 = AttributeOption::factory()->create([
+            'index' => 1,
+            'value_date' => '2010-03-15',
+            'attribute_id' => $attribute->getKey()
+        ]);
+
+        $option2 = AttributeOption::factory()->create([
+            'index' => 1,
+            'value_date' => '2020-03-15',
+            'attribute_id' => $attribute->getKey()
+        ]);
+
+        $option1->update(['value_date' => '2012-08-10']);
+        $option2->update(['value_date' => '2019-01-01']);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes/id:'. $attribute->getKey())
+            ->assertOk()
+            ->assertJsonFragment([
+                'min' => '2012-08-10',
+                'max' => '2019-01-01'
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateMinMaxDateOnDeleteOption($user)
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $attribute = Attribute::factory([
+            'type' => AttributeType::DATE
+        ])->create();
+
+        AttributeOption::factory()->create([
+            'index' => 1,
+            'value_date' => '2010-03-15',
+            'attribute_id' => $attribute->getKey()
+        ]);
+
+        $option2 = AttributeOption::factory()->create([
+            'index' => 1,
+            'value_date' => '2020-03-15',
+            'attribute_id' => $attribute->getKey()
+        ]);
+
+        $option2->delete();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes/id:'. $attribute->getKey())
+            ->assertOk()
+            ->assertJsonFragment([
+                'min' => '2010-03-15',
+                'max' => '2010-03-15'
+            ]);
     }
 }
