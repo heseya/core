@@ -42,16 +42,14 @@ class AttributeService implements AttributeServiceContract
 
     public function sync(Product $product, array $data): void
     {
-        $attributes = array_map(function ($row) {
-            $explode = explode(',', $row);
+        $attributes = collect($data)->map(
+            fn ($option, $attribute) => [
+                'attribute_id' => $attribute,
+                'option_id' => $option,
+            ]
+        );
 
-            return [
-                'attribute_id' => $explode[0],
-                'option_id' => $explode[1],
-            ];
-        }, $data);
-
-        $product->attributes()->sync($attributes);
+        $product->attributes()->sync($attributes->values()->toArray());
     }
 
     public function updateMinMax(Attribute $attribute): void
