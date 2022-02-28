@@ -30,6 +30,7 @@ class ProductResource extends Resource
         $sets = Auth::check() ? $this->sets : $this->sets()->public()->get();
 
         return [
+            'order' => $this->order,
             'user_id' => $this->user_id,
             'original_id' => $this->original_id,
             'description_html' => $this->description_html,
