@@ -175,3 +175,4 @@ To process queued jobs start a queue worker.
 php artisan queue:work
 ```
 It will continue to run until it is manually stopped.
+.
