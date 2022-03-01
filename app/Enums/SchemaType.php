@@ -3,7 +3,6 @@
 namespace App\Enums;
 
 use BenSampo\Enum\Enum;
-use Illuminate\Support\Str;
 
 class SchemaType extends Enum
 {
