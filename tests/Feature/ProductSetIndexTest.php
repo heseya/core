@@ -270,6 +270,7 @@ class ProductSetIndexTest extends TestCase
                     'visible' => $this->set->public && $this->set->public_parent,
                     'hide_on_index' => $this->set->hide_on_index,
                     'parent_id' => $this->set->parent_id,
+                    'cover' => [],
                     'children' => [
                         [
                             'id' => $this->childSet->getKey(),
@@ -280,6 +281,7 @@ class ProductSetIndexTest extends TestCase
                             'visible' => $this->childSet->public && $this->childSet->public_parent,
                             'hide_on_index' => $this->childSet->hide_on_index,
                             'parent_id' => $this->childSet->parent_id,
+                            'cover' => [],
                             'children' => [],
                         ],
                     ],
