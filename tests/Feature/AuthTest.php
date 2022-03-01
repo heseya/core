@@ -26,6 +26,7 @@ use Illuminate\Support\Str;
 use PHPGangsta_GoogleAuthenticator;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
+use TiMacDonald\Log\LogFake;
 
 class AuthTest extends TestCase
 {
@@ -83,16 +84,16 @@ class AuthTest extends TestCase
     {
         $this->user->givePermissionTo('auth.login');
 
-        Log::shouldReceive('error')
-            ->once()
-            ->withArgs(function ($message) {
-                return str_contains($message, $this->expectedLog);
-            });
+        Log::swap(new LogFake());
 
         $response = $this->actingAs($this->user)->postJson('/login', [
             'email' => $this->user->email,
             'password' => 'bad-password',
         ]);
+
+        Log::assertLogged('error', function ($message, $context) {
+            return str_contains($message, $this->expectedLog);
+        });
 
         $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
     }
@@ -572,21 +573,18 @@ class AuthTest extends TestCase
         $token = Password::createToken($user);
         $this->assertTrue(Password::tokenExists($user, $token));
 
-        Log::shouldReceive('error')
-            ->once()
-            ->withArgs(function ($message) {
-                return str_contains(
-                    $message,
-                    'AuthException(code: 0): The token is invalid or inactive. '
-                    . 'Try to reset your password again. at'
-                );
-            });
+        Log::swap(new LogFake());
 
         $response = $this->actingAs($this->user)->json('PATCH', '/users/save-reset-password', [
             'email' => $email,
             'password' => $newPassword,
             'token' => 'token',
         ]);
+
+        Log::assertLogged('error', function ($message, $context) {
+            return str_contains($message, 'AuthException(code: 0): The token is invalid or inactive. '
+                . 'Try to reset your password again. at');
+        });
 
         $user->refresh();
         $response->assertStatus(422);
@@ -633,16 +631,16 @@ class AuthTest extends TestCase
 
         $user->givePermissionTo('auth.password_change');
 
-        Log::shouldReceive('error')
-            ->once()
-            ->withArgs(function ($message) {
-                return str_contains($message, $this->expectedLog);
-            });
+        Log::swap(new LogFake());
 
         $response = $this->actingAs($user)->json('PATCH', '/users/password', [
             'password' => 'tests',
             'password_new' => 'Test1@3456',
         ]);
+
+        Log::assertLogged('error', function ($message, $context) {
+            return str_contains($message, $this->expectedLog);
+        });
 
         $response->assertStatus(422);
     }

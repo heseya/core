@@ -27,7 +27,14 @@ class MediaService implements MediaServiceContract
 
     public function sync(Product $product, array $media = []): void
     {
-        $product->media()->sync($this->reorderService->reorder($media));
+        $operations = $product->media()->sync($this->reorderService->reorder($media));
+
+        if (array_key_exists('detached', $operations) && $operations['detached']) {
+            Media::whereIn('id', $operations['detached'])
+                ->each(function ($object): void {
+                    $this->destroy($object);
+                });
+        }
     }
 
     public function store(UploadedFile $file): Media
@@ -66,6 +73,13 @@ class MediaService implements MediaServiceContract
     {
         if ($media->products()->exists()) {
             Gate::authorize('products.edit');
+        }
+
+        $response = Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
+            ->delete($media->url);
+
+        if ($response->failed()) {
+            throw new MediaCriticalException('CDN responded with an error');
         }
 
         $media->forceDelete();

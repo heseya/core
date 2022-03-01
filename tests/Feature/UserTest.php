@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Hash;
 use Spatie\WebhookServer\CallWebhookJob;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
+use TiMacDonald\Log\LogFake;
 
 class UserTest extends TestCase
 {
@@ -99,6 +100,35 @@ class UserTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexFull($user): void
+    {
+        $this->$user->givePermissionTo('users.show');
+
+        $otherUser = User::factory()->create();
+        $otherUser->created_at = Carbon::now()->addHour();
+        $otherUser->save();
+
+        $response = $this->actingAs($this->$user)->getJson('/users?full');
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJson(['data' => [
+                $this->expected,
+                [
+                    'id' => $otherUser->getKey(),
+                    'email' => $otherUser->email,
+                    'name' => $otherUser->name,
+                    'avatar' => $otherUser->avatar,
+                    'roles' => [],
+                    'permissions' => [],
+                ],
+            ]]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexSorted($user): void
     {
         $this->$user->givePermissionTo('users.show');
@@ -121,6 +151,31 @@ class UserTest extends TestCase
                 ],
                 $this->expected,
             ]]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexIdsSearch($user): void
+    {
+        $this->$user->givePermissionTo('users.show');
+
+        $firstUser = User::factory()->create();
+        $firstUser->created_at = Carbon::now()->addHour();
+        $firstUser->save();
+
+        $secondUser = User::factory()->create();
+        $secondUser->created_at = Carbon::now()->addHour();
+        $secondUser->save();
+
+        // Dummy user to check if response will return only 2 users created above
+        User::factory()->create();
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/users?ids=' . $firstUser->getKey() . ',' . $secondUser->getKey());
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data');
     }
 
     /**
@@ -264,8 +319,8 @@ class UserTest extends TestCase
         Event::fake([UserCreated::class]);
 
         $data = User::factory()->raw() + [
-            'password' => $this->validPassword,
-        ];
+                'password' => $this->validPassword,
+            ];
 
         $response = $this->actingAs($this->$user)->postJson('/users', $data);
         $response
@@ -298,7 +353,7 @@ class UserTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'UserCreated'
+                'UserCreated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -340,6 +395,7 @@ class UserTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $foundUser) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $foundUser->getKey()
@@ -420,26 +476,23 @@ class UserTest extends TestCase
         $this->$user->givePermissionTo($permission2);
 
         $data = User::factory()->raw() + [
-            'password' => $this->validPassword,
-            'roles' => [
-                $role1->getKey(),
-                $role2->getKey(),
-                $role3->getKey(),
-            ],
-        ];
+                'password' => $this->validPassword,
+                'roles' => [
+                    $role1->getKey(),
+                    $role2->getKey(),
+                    $role3->getKey(),
+                ],
+            ];
 
-        Log::shouldReceive('error')
-            ->once()
-            ->withArgs(function ($message) {
-                return str_contains(
-                    $message,
-                    "AuthException(code: 0): "
-                    . "Can't give a role with permissions you don't have to the user at"
-                );
-            });
+        Log::swap(new LogFake());
 
         $response = $this->actingAs($this->$user)->postJson('/users', $data);
         $response->assertStatus(422);
+
+        Log::assertLogged('error', function ($message, $context) {
+            return str_contains($message, 'AuthException(code: 0): '
+                . "Can't give a role with permissions you don't have to the user at");
+        });
 
         $this->assertDatabaseMissing('users', [
             'email' => $data['email'],
@@ -551,10 +604,10 @@ class UserTest extends TestCase
         $data = User::factory()->raw() + [
                 'password' => $this->validPassword,
                 'roles' => [
-                    match($role) {
+                    match ($role) {
                         RoleType::AUTHENTICATED => $this->authenticated->getKey(),
                         RoleType::UNAUTHENTICATED => $this->unauthenticated->getKey(),
-                    }
+                    },
                 ],
             ];
 
@@ -612,7 +665,7 @@ class UserTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'UserUpdated'
+                'UserUpdated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -655,6 +708,7 @@ class UserTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $foundUser) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $foundUser->getKey()
@@ -801,10 +855,10 @@ class UserTest extends TestCase
 
         $data = [
             'roles' => [
-                match($role) {
+                match ($role) {
                     RoleType::AUTHENTICATED => $this->authenticated->getKey(),
                     RoleType::UNAUTHENTICATED => $this->unauthenticated->getKey(),
-                }
+                },
             ],
         ];
 
@@ -892,7 +946,7 @@ class UserTest extends TestCase
                     'description' => $this->authenticated->description,
                     'assignable' => false,
                     'deletable' => false,
-                ]
+                ],
             ])
             ->assertJsonPath('data.permissions', $this->authenticatedPermissions->toArray());
         $otherUser->refresh();
@@ -1048,7 +1102,7 @@ class UserTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'UserDeleted'
+                'UserDeleted',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -1075,6 +1129,7 @@ class UserTest extends TestCase
 
         Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $otherUser) {
             $payload = $job->payload;
+
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
                 && $payload['data']['id'] === $otherUser->getKey()

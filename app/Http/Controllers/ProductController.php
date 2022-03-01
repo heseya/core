@@ -41,7 +41,9 @@ class ProductController extends Controller
 
     public function index(ProductIndexRequest $request): JsonResource
     {
-        $query = Product::search($request->validated())
+        $query = Product::search($request->validated());
+
+        $query
             ->sort($request->input('sort', 'order'))
             ->with(['media', 'tags', 'schemas', 'sets', 'seo', 'attributes']);
 
@@ -157,6 +159,8 @@ class ProductController extends Controller
 
     public function destroy(Product $product): JsonResponse
     {
+        $this->mediaService->sync($product);
+
         if ($product->delete()) {
             ProductDeleted::dispatch($product);
             if ($product->seo !== null) {

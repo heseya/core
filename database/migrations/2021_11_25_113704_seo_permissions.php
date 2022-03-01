@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\RoleType;
 use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Database\Migrations\Migration;
@@ -21,7 +22,7 @@ class SeoPermissions extends Migration
         $events->display_name = 'Dostęp do listy wydarzeń';
         $events->save();
 
-        $owner = Role::findByName('Owner');
+        $owner = Role::where('type', RoleType::OWNER)->first();
         $owner->givePermissionTo([
             'seo.show',
             'seo.edit',
@@ -36,7 +37,7 @@ class SeoPermissions extends Migration
      */
     public function down()
     {
-        $owner = Role::findByName('Owner');
+        $owner = Role::where('type', RoleType::OWNER)->first();
         $owner->givePermissionTo([
             'seo.show',
             'seo.edit',
