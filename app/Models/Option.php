@@ -27,7 +27,7 @@ class Option extends Model
         'disabled' => 'bool',
         'available' => 'bool',
     ];
-    
+
     /**
      * @OA\Property(
      *   property="items",

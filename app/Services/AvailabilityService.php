@@ -58,7 +58,7 @@ class AvailabilityService implements AvailabilityServiceContract
 
     public function calculateProductAvailability(Product $product, Item $item): void
     {
-        if (!$product->schemas()->exists()){
+        if (!$product->schemas()->exists()) {
             $product->update([
                 'available' => true,
             ]);
@@ -81,12 +81,11 @@ class AvailabilityService implements AvailabilityServiceContract
 
         if ($isProductAvailable) {
             $product->update([
-                'available' => true
+                'available' => true,
             ]);
-        }
-        else {
+        } else {
             $product->update([
-                'available' => false
+                'available' => false,
             ]);
         }
     }
