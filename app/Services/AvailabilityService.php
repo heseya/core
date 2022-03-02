@@ -65,10 +65,6 @@ class AvailabilityService implements AvailabilityServiceContract
             return;
         }
 
-        if ($product->getKey() === '0002') {
-            dd(123);
-        }
-
         $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
 
         $items = new Collection();
