@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Item;
+use App\Models\Product;
 use App\Services\AvailabilityService;
 use App\Services\Contracts\AvailabilityServiceContract;
 use Illuminate\Database\Migrations\Migration;
@@ -30,8 +31,13 @@ class AddAvailableColumnToOptionsSchemasAndProducts extends Migration
         $availabilityService = app(AvailabilityServiceContract::class);
 
         $items = Item::all();
-
         $items->each(fn ($item) => $availabilityService->calculateAvailabilityOnOrderAndRestock($item));
+
+        $products = Product::doesntHave('schemas')->get();
+        $products->update([
+            'available' => 1,
+        ]);
+
     }
 
     /**

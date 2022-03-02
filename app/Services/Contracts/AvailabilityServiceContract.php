@@ -15,5 +15,5 @@ interface AvailabilityServiceContract
 
     public function calculateSchemaAvailability(Schema $schema): void;
 
-    public function calculateProductAvailability(Product $product): void;
+    public function calculateProductAvailability(Product $product, Item $item): void;
 }

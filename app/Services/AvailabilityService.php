@@ -8,6 +8,7 @@ use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Services\Contracts\AvailabilityServiceContract;
+use Illuminate\Support\Collection;
 
 class AvailabilityService implements AvailabilityServiceContract
 {
@@ -22,23 +23,22 @@ class AvailabilityService implements AvailabilityServiceContract
 
         $schemas = Schema::where('type', SchemaType::SELECT)
             ->whereIn('id', $options->pluck('schema_id'))
-            ->with('products')
             ->get();
         $schemas->each(fn ($schema) => $this->calculateSchemaAvailability($schema));
 
         $products = $schemas->pluck('products')->flatten();
-        $products->each(fn ($product) => $this->calculateProductAvailability($product));
+        $products->each(fn ($product) => $this->calculateProductAvailability($product, $item));
     }
 
     public function calculateOptionAvailability(Option $option): void
     {
         if ($option->available && $option->items->every(fn ($item) => $item->quantity <= 0)) {
             $option->update([
-                'available' => 0,
+                'available' => false,
             ]);
         } elseif (!$option->available && $option->items->some(fn ($item) => $item->quantity > 0)) {
             $option->update([
-                'available' => 1,
+                'available' => true,
             ]);
         }
     }
@@ -47,29 +47,50 @@ class AvailabilityService implements AvailabilityServiceContract
     {
         if ($schema->available && $schema->options->every(fn ($option) => !$option->available)) {
             $schema->update([
-                'available' => 0,
+                'available' => false,
             ]);
         } elseif (!$schema->available && $schema->options->some(fn ($option) => $option->available)) {
             $schema->update([
-                'available' => 1,
+                'available' => true,
             ]);
         }
     }
 
-    public function calculateProductAvailability(Product $product): void
+    public function calculateProductAvailability(Product $product, Item $item): void
     {
-        if ($product->available
-            && $product->schemas()->exists()
-            && ($product->requiredSchemas->some(fn ($schema) => !$schema->available)
-                || $product->schemas->every(fn ($schema) => !$schema->available))) {
+        if (!$product->schemas()->exists()){
             $product->update([
-                'available' => 0,
+                'available' => true,
             ]);
-        } elseif (!$product->available
-            && (!$product->schemas()->exists()
-                || $product->requiredSchemas->every(fn ($schema) => $schema->available))) {
+            return;
+        }
+
+        if ($product->getKey() === '0002') {
+            dd(123);
+        }
+
+        $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
+
+        $items = new Collection();
+
+        $requiredSelectSchemas->each(function ($schema) use ($items) {
+           $schema->options->each(function ($option) use ($items) {
+               $items->push($option->items);
+           });
+        });
+
+        $items = $items->flatten()->groupBy('id');
+
+        $isProductAvailable = $items->get($item->getKey())->count() <= $item->quantity;
+
+        if ($isProductAvailable) {
             $product->update([
-                'available' => 1,
+                'available' => true
+            ]);
+        }
+        else {
+            $product->update([
+                'available' => false
             ]);
         }
     }
