@@ -26,7 +26,7 @@ class AvailabilityService implements AvailabilityServiceContract
             ->get();
         $schemas->each(fn ($schema) => $this->calculateSchemaAvailability($schema));
 
-        $products = $schemas->pluck('products')->flatten();
+        $products = $schemas->pluck('products')->flatten()->unique();
         $products->each(fn ($product) => $this->calculateProductAvailability($product, $item));
     }
 
@@ -45,6 +45,11 @@ class AvailabilityService implements AvailabilityServiceContract
 
     public function calculateSchemaAvailability(Schema $schema): void
     {
+        if (!$schema->required) {
+            $schema->update([
+                'available' => true,
+            ]);
+        }
         if ($schema->available && $schema->options->every(fn ($option) => !$option->available)) {
             $schema->update([
                 'available' => false,
@@ -56,30 +61,21 @@ class AvailabilityService implements AvailabilityServiceContract
         }
     }
 
-    public function calculateProductAvailability(Product $product, Item $item): void
+    public function calculateProductAvailability(Product $product): void
     {
         if (!$product->schemas()->exists()) {
             $product->update([
                 'available' => true,
             ]);
+
             return;
         }
 
         $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
 
-        $items = new Collection();
+        $hasAvailablePermutations = $this->checkPermutations($requiredSelectSchemas);
 
-        $requiredSelectSchemas->each(function ($schema) use ($items) {
-           $schema->options->each(function ($option) use ($items) {
-               $items->push($option->items);
-           });
-        });
-
-        $items = $items->flatten()->groupBy('id');
-
-        $isProductAvailable = $items->get($item->getKey())->count() <= $item->quantity;
-
-        if ($isProductAvailable) {
+        if ($hasAvailablePermutations) {
             $product->update([
                 'available' => true,
             ]);
@@ -88,5 +84,37 @@ class AvailabilityService implements AvailabilityServiceContract
                 'available' => false,
             ]);
         }
+    }
+
+    public function checkPermutations(Collection $schemas): bool
+    {
+        $max = $schemas->count();
+        $options = new Collection();
+        return $this->getSchemaOptions($schemas->get(1)->first(), $schemas, $options, $max);
+    }
+
+    public function getSchemaOptions(Schema $schema, Collection $schemas, Collection $options, int $max, int $index = 0): bool
+    {
+        for ($i = 0; $i < $schema->options->count(); $i++) {
+            $options->put($schema->getKey(), $schema->options->get($i));
+            if ($index < $max - 1) {
+                $newIndex = $index + 1;
+
+                return $this->getSchemaOptions($schemas->get($newIndex), $schemas, $options, $max, $newIndex);
+            }
+            if ($index === $max - 1) {
+                if ($this->checkIfOptionsItemsAreAvailable($options)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public function checkIfOptionsItemsAreAvailable(Collection $options): bool
+    {
+        $items = $options->pluck('items')->flatten()->groupBy('id');
+        return $items->every(fn ($item) => $item->first()->quantity >= $items->get($item->first()->getKey())->count());
     }
 }

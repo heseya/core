@@ -6,6 +6,7 @@ use App\Models\Item;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
+use Illuminate\Support\Collection;
 
 interface AvailabilityServiceContract
 {
@@ -15,5 +16,11 @@ interface AvailabilityServiceContract
 
     public function calculateSchemaAvailability(Schema $schema): void;
 
-    public function calculateProductAvailability(Product $product, Item $item): void;
+    public function calculateProductAvailability(Product $product): void;
+
+    public function checkPermutations(Collection $schemas): bool;
+
+    public function getSchemaOptions(Schema $schema, Collection $schemas, Collection $options, int $max, int $index = 0): bool;
+
+    public function checkIfOptionsItemsAreAvailable(Collection $options): bool;
 }
