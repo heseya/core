@@ -13,7 +13,7 @@ trait HasMetadata
             ->public();
     }
 
-    public function metadata_private()
+    public function metadataPrivate()
     {
         return $this
             ->morphMany(Metadata::class, 'model', 'model_type', 'model_id')
