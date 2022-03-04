@@ -1,9 +1,13 @@
 NAME=$(echo $2 | sed -e 's/\//_/g')
-DOMAIN=$(echo $2 | sed -e 's/\//-/g').***REMOVED***
+DOMAIN1=$(echo $2 | sed -e 's/\//-/g')
+DOMAIN2=$(echo $DOMAIN1 | sed -e 's/\./-/g')
+DOMAIN=$(echo $DOMAIN2 | tr '[:upper:]' '[:lower:]').***REMOVED***
 devil www add $DOMAIN
 devil www options $DOMAIN php_openbasedir /usr/home/heseya-dev/domains/$DOMAIN
 devil mysql db add $NAME --collate=utf8_unicode_ci
 devil mysql privileges dev $NAME +ALL
+devil ssl www add 128.204.216.222 le le $DOMAIN
+devil www options $DOMAIN sslonly on
 cd ./domains/$DOMAIN
 rm -r public_html
 rm -r logs
