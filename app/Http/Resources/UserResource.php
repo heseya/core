@@ -2,10 +2,13 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
 class UserResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
         return [
@@ -20,11 +23,11 @@ class UserResource extends Resource
 
     public function view(Request $request): array
     {
-        return [
+        return array_merge([
             'permissions' => $this->getAllPermissions()
                 ->map(fn ($perm) => $perm->name)
                 ->sort()
                 ->values(),
-        ];
+        ], $this->metadataResource('users'));
     }
 }

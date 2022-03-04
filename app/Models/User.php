@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\SearchTypes\UserSearch;
 use App\SearchTypes\WhereInIds;
+use App\Traits\HasMetadata;
 use App\Traits\HasWebHooks;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
@@ -46,7 +47,8 @@ class User extends Model implements
         Searchable,
         Sortable,
         Auditable,
-        HasWebHooks;
+        HasWebHooks,
+        HasMetadata;
 
     // Bez tego nie działały testy, w których jako aplikacja tworzy się użytkownika z określoną rolą
     protected $guard_name = 'api';

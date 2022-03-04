@@ -3,11 +3,14 @@
 namespace App\Http\Resources;
 
 use App\Enums\RoleType;
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class RoleResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
         return [
@@ -26,9 +29,9 @@ class RoleResource extends Resource
 
     public function view(Request $request): array
     {
-        return [
+        return array_merge([
             'permissions' => $this->getPermissionNames()->sort()->values(),
             'locked_permissions' => $this->type->is(RoleType::OWNER),
-        ];
+        ], $this->metadataResource('roles'));
     }
 }

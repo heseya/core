@@ -2,11 +2,14 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 class ProductSetParentResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
         $children = Gate::denies('product_sets.show_hidden')
@@ -30,5 +33,10 @@ class ProductSetParentResource extends Resource
             'description_html' => $this->description_html,
             'cover' => MediaResource::make($this->media),
         ];
+    }
+
+    public function view(Request $request): array
+    {
+        return $this->metadataResource('product_sets');
     }
 }

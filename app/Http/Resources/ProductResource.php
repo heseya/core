@@ -2,11 +2,14 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ProductResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
         return [
@@ -29,7 +32,7 @@ class ProductResource extends Resource
     {
         $sets = Auth::check() ? $this->sets : $this->sets()->public()->get();
 
-        return [
+        return array_merge([
             'order' => $this->order,
             'user_id' => $this->user_id,
             'original_id' => $this->original_id,
@@ -40,6 +43,6 @@ class ProductResource extends Resource
             'schemas' => SchemaResource::collection($this->schemas),
             'sets' => ProductSetResource::collection($sets),
             'seo' => SeoMetadataResource::make($this->seo),
-        ];
+        ], $this->metadataResource('products'));
     }
 }

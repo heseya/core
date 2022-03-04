@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\MediaType;
+use App\Enums\MetadataType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
@@ -81,6 +82,13 @@ class ProductTest extends TestCase
             'quantity' => 10,
         ]);
 
+        $metadata = $this->product->metadata()->create([
+            'name' => 'testMetadata',
+            'value' => 'value metadata',
+            'value_type' => MetadataType::STRING,
+            'public' => true
+        ]);
+
         $this->hidden_product = Product::factory()->create([
             'public' => false,
         ]);
@@ -136,6 +144,9 @@ class ProductTest extends TestCase
                     ],
                 ],
             ]],
+            'metadata' => [
+                $metadata->name => $metadata->value
+            ],
         ]);
     }
 
@@ -424,6 +435,30 @@ class ProductTest extends TestCase
                         'alt' => $media2->alt,
                     ],
                 ],
+            ]]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowPrivateMetadata($user): void
+    {
+        $this->$user->givePermissionTo(['products.show_details', 'products.show_metadata_private']);
+
+        $privateMetadata = $this->product->metadataPrivate()->create([
+            'name' => 'hiddenMetadata',
+            'value' => 'hidden metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => false,
+        ]);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $this->product->getKey());
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['metadata_private' => [
+                $privateMetadata->name => $privateMetadata->value,
             ]]);
     }
 

@@ -3,10 +3,13 @@
 namespace App\Http\Resources;
 
 use App\Models\User;
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
 class OrderResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
         return [
@@ -28,7 +31,7 @@ class OrderResource extends Resource
 
     public function view(Request $request): array
     {
-        return [
+        return array_merge([
             'invoice_address' => AddressResource::make($this->invoiceAddress),
             'shipping_method' => ShippingMethodResource::make($this->shippingMethod),
             'products' => OrderProductResource::collection($this->products),
@@ -38,6 +41,6 @@ class OrderResource extends Resource
             'discounts' => DiscountResource::collection($this->discounts),
             'user' => $this->user instanceof User
                 ? UserResource::make($this->user)->baseOnly() : AppResource::make($this->user),
-        ];
+        ], $this->metadataResource('orders'));
     }
 }

@@ -2,10 +2,13 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
 class AppResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
         return [
@@ -23,8 +26,8 @@ class AppResource extends Resource
 
     public function view(Request $request): array
     {
-        return [
+        return array_merge([
             'permissions' => $this->getPermissionNames()->sort()->values(),
-        ];
+        ], $this->metadataResource('apps'));
     }
 }

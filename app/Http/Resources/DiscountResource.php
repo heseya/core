@@ -2,10 +2,13 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
 class DiscountResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
         if (isset($this->resource->pivot)) {
@@ -25,5 +28,10 @@ class DiscountResource extends Resource
             'starts_at' => $this->starts_at,
             'expires_at' => $this->expires_at,
         ];
+    }
+
+    public function view(Request $request): array
+    {
+        return $this->metadataResource('coupons');
     }
 }

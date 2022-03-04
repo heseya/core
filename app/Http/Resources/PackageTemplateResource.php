@@ -2,10 +2,13 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
 class PackageTemplateResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
         return [
@@ -16,5 +19,10 @@ class PackageTemplateResource extends Resource
             'height' => $this->height,
             'depth' => $this->depth,
         ];
+    }
+
+    public function view(Request $request): array
+    {
+        return $this->metadataResource();
     }
 }

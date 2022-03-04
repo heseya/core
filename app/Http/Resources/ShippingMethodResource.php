@@ -2,10 +2,13 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
 class ShippingMethodResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
         return [
@@ -20,5 +23,10 @@ class ShippingMethodResource extends Resource
             'shipping_time_min' => $this->shipping_time_min,
             'shipping_time_max' => $this->shipping_time_max,
         ];
+    }
+
+    public function view(Request $request): array
+    {
+        return $this->metadataResource('shipping_methods');
     }
 }
