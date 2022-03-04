@@ -24,6 +24,7 @@ class ProductSetChildrenResource extends Resource
             'hide_on_index' => $this->hide_on_index,
             'parent_id' => $this->parent_id,
             'children' => ProductSetChildrenResource::collection($children),
+            'cover' => MediaResource::make($this->media),
         ];
     }
 }
