@@ -72,7 +72,7 @@ class AvailabilityService implements AvailabilityServiceContract
         }
 
         $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
-        if($requiredSelectSchemas->count() > 0) {
+        if ($requiredSelectSchemas->count() > 0) {
             $hasAvailablePermutations = $this->checkPermutations($requiredSelectSchemas);
 
             if ($hasAvailablePermutations) {
