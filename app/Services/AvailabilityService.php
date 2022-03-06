@@ -101,8 +101,8 @@ class AvailabilityService implements AvailabilityServiceContract
         int $max,
         int $index = 0
     ): bool {
-        for ($i = 0; $i < $schema->options->count(); $i++) {
-            $options->put($schema->getKey(), $schema->options->get($i));
+        foreach ($schema->options as $option) {
+            $options->put($schema->getKey(), $option);
             if ($index < $max - 1) {
                 $newIndex = $index + 1;
 
