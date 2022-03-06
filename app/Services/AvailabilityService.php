@@ -26,7 +26,7 @@ class AvailabilityService implements AvailabilityServiceContract
             ->get();
         $schemas->each(fn ($schema) => $this->calculateSchemaAvailability($schema));
 
-        $products = $schemas->pluck('products')->flatten()->unique();
+        $products = $schemas->pluck('products')->flatten()->unique('id');
         $products->each(fn ($product) => $this->calculateProductAvailability($product));
     }
 
@@ -88,9 +88,10 @@ class AvailabilityService implements AvailabilityServiceContract
 
     public function checkPermutations(Collection $schemas): bool
     {
+
         $max = $schemas->count();
         $options = new Collection();
-        return $this->getSchemaOptions($schemas->get(0)->first(), $schemas, $options, $max);
+        return $this->getSchemaOptions($schemas->first(), $schemas, $options, $max);
     }
 
     public function getSchemaOptions(Schema $schema, Collection $schemas, Collection $options, int $max, int $index = 0): bool
@@ -115,10 +116,6 @@ class AvailabilityService implements AvailabilityServiceContract
     public function checkIfOptionsItemsAreAvailable(Collection $options): bool
     {
         $items = $options->pluck('items')->flatten()->groupBy('id');
-        $items->each(function ($item) use ($items) {
-           var_dump('item quantity ' . $item->first()->quantity);
-           var_dump('number of dupes ' . $items->get($item->first()->getKey())->count());
-        });
         return $items->every(fn ($item) => $item->first()->quantity >= $items->get($item->first()->getKey())->count());
     }
 }

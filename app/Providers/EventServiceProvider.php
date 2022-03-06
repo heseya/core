@@ -24,6 +24,7 @@ use App\Events\ProductUpdated;
 use App\Events\UserCreated;
 use App\Events\UserDeleted;
 use App\Events\UserUpdated;
+use App\Listeners\ItemUpdatedQuantityListener;
 use App\Listeners\OrderCreatedListener;
 use App\Listeners\OrderUpdatedStatusListener;
 use App\Listeners\WebHookEventListener;
@@ -70,6 +71,7 @@ class EventServiceProvider extends ServiceProvider
         ],
         ItemUpdatedQuantity::class => [
             WebHookEventListener::class,
+            ItemUpdatedQuantityListener::class,
         ],
         OrderUpdated::class => [
             WebHookEventListener::class,
