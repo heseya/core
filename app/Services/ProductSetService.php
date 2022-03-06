@@ -75,6 +75,11 @@ class ProductSetService implements ProductSetServiceContract
             'public_parent' => $publicParent,
         ]);
 
+        $attributes = collect($dto->getAttributesIds());
+        if ($attributes->isNotEmpty()) {
+            $set->attributes()->sync($attributes);
+        }
+
         $children = collect($dto->getChildrenIds());
         if ($children->isNotEmpty()) {
             $children = $children->map(fn ($id) => ProductSet::findOrFail($id));
@@ -169,6 +174,11 @@ class ProductSetService implements ProductSetServiceContract
             'slug' => $slug,
             'public_parent' => $publicParent,
         ]);
+
+        $attributes = collect($dto->getAttributesIds());
+        if ($attributes->isNotEmpty()) {
+            $set->attributes()->sync($attributes);
+        }
 
         $seo = $set->seo;
         if ($seo !== null) {
