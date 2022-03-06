@@ -20,7 +20,13 @@ interface AvailabilityServiceContract
 
     public function checkPermutations(Collection $schemas): bool;
 
-    public function getSchemaOptions(Schema $schema, Collection $schemas, Collection $options, int $max, int $index = 0): bool;
+    public function getSchemaOptions(
+        Schema $schema,
+        Collection $schemas,
+        Collection $options,
+        int $max,
+        int $index = 0
+    ): bool;
 
     public function checkIfOptionsItemsAreAvailable(Collection $options): bool;
 }
