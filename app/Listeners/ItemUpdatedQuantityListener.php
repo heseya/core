@@ -14,7 +14,6 @@ class ItemUpdatedQuantityListener
         $this->availabilityService = $availabilityService;
     }
 
-
     public function handle(ItemUpdatedQuantity $event)
     {
         $this->availabilityService->calculateAvailabilityOnOrderAndRestock($event->getItem());

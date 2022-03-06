@@ -88,13 +88,18 @@ class AvailabilityService implements AvailabilityServiceContract
 
     public function checkPermutations(Collection $schemas): bool
     {
-
         $max = $schemas->count();
         $options = new Collection();
         return $this->getSchemaOptions($schemas->first(), $schemas, $options, $max);
     }
 
-    public function getSchemaOptions(Schema $schema, Collection $schemas, Collection $options, int $max, int $index = 0): bool
+    public function getSchemaOptions(
+        Schema $schema,
+        Collection $schemas,
+        Collection $options,
+        int $max,
+        int $index = 0
+    ): bool
     {
         for ($i = 0; $i < $schema->options->count(); $i++) {
             $options->put($schema->getKey(), $schema->options->get($i));
