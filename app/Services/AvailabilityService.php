@@ -72,17 +72,18 @@ class AvailabilityService implements AvailabilityServiceContract
         }
 
         $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
+        if($requiredSelectSchemas->count() > 0){
+            $hasAvailablePermutations = $this->checkPermutations($requiredSelectSchemas);
 
-        $hasAvailablePermutations = $this->checkPermutations($requiredSelectSchemas);
-
-        if ($hasAvailablePermutations) {
-            $product->update([
-                'available' => true,
-            ]);
-        } else {
-            $product->update([
-                'available' => false,
-            ]);
+            if ($hasAvailablePermutations) {
+                $product->update([
+                    'available' => true,
+                ]);
+            } else {
+                $product->update([
+                    'available' => false,
+                ]);
+            }
         }
     }
 
@@ -99,8 +100,7 @@ class AvailabilityService implements AvailabilityServiceContract
         Collection $options,
         int $max,
         int $index = 0
-    ): bool
-    {
+    ): bool {
         for ($i = 0; $i < $schema->options->count(); $i++) {
             $options->put($schema->getKey(), $schema->options->get($i));
             if ($index < $max - 1) {
