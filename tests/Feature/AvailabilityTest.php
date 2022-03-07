@@ -29,7 +29,7 @@ class AvailabilityTest extends TestCase
         parent::setUp();
         $this->product = Product::factory()->create([
             'available' => false,
-            'public' => 1,
+            'public' => true,
         ]);
     }
 
