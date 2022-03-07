@@ -81,6 +81,8 @@ class AvailabilityTest extends TestCase
                 'available' => true,
             ]);
 
+        Event::assertDispatched(ProductUpdated::class);
+
         $this->assertTrue($item->options->every(fn ($option) => $option->available));
         $this->assertTrue($item->options->pluck('schema')->every(fn ($schema) => $schema->available));
         $this->assertTrue($this->product->refresh()->available);

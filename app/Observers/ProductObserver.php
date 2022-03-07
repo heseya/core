@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Events\ProductUpdated;
 use App\Models\Product;
 use App\Services\Contracts\AvailabilityServiceContract;
 
@@ -17,5 +18,12 @@ class ProductObserver
     public function created(Product $product)
     {
         $this->availabilityService->calculateProductAvailability($product);
+    }
+
+    public function updating(Product $product)
+    {
+        if ($product->isDirty('available')) {
+            ProductUpdated::dispatch($product);
+        }
     }
 }

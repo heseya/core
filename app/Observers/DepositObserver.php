@@ -3,7 +3,6 @@
 namespace App\Observers;
 
 use App\Models\Deposit;
-use App\Services\Contracts\AvailabilityServiceContract;
 
 class DepositObserver
 {
