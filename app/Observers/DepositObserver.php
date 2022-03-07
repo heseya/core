@@ -10,4 +10,5 @@ class DepositObserver
     {
         $deposit->item->increment('quantity', $deposit->quantity);
     }
+
 }
