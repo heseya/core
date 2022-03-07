@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\SchemaType;
+use App\Events\ProductUpdated;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Product;
@@ -74,7 +75,6 @@ class AvailabilityService implements AvailabilityServiceContract
         $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
         if ($requiredSelectSchemas->count() > 0) {
             $hasAvailablePermutations = $this->checkPermutations($requiredSelectSchemas);
-
             if ($hasAvailablePermutations) {
                 $product->update([
                     'available' => true,
@@ -84,6 +84,11 @@ class AvailabilityService implements AvailabilityServiceContract
                     'available' => false,
                 ]);
             }
+
+            if ($product->wasChanged('available')) {
+                ProductUpdated::dispatch($product);
+            }
+
         }
     }
 
