@@ -18,13 +18,13 @@ class AddAvailableColumnToOptionsSchemasAndProducts extends Migration
     public function up()
     {
         Schema::table('options', function (Blueprint $table) {
-            $table->boolean('available')->nullable();
+            $table->boolean('available')->default(false);
         });
         Schema::table('schemas', function (Blueprint $table) {
-            $table->boolean('available')->nullable();
+            $table->boolean('available')->default(false);
         });
         Schema::table('products', function (Blueprint $table) {
-            $table->boolean('available')->nullable();
+            $table->boolean('available')->default(false);
         });
 
         /** @var AvailabilityService $availabilityService */
@@ -34,7 +34,7 @@ class AddAvailableColumnToOptionsSchemasAndProducts extends Migration
         $items->each(fn ($item) => $availabilityService->calculateAvailabilityOnOrderAndRestock($item));
 
         $products = Product::doesntHave('schemas')->get();
-        $products->each(fn ($product) => $product->update(['available' => 1]));
+        $products->each(fn ($product) => $product->update(['available' => true]));
     }
 
     /**
