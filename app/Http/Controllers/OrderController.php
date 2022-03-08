@@ -151,7 +151,7 @@ class OrderController extends Controller
 
                     $price = $schema->getPrice($value, $schemas);
 
-                    if ($schema->type->is(SchemaType::select)) {
+                    if ($schema->type->is(SchemaType::SELECT)) {
                         $option = $schema->options()->findOrFail($value);
                         $value = $option->name;
 

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\SearchTypes\UserSearch;
+use App\SearchTypes\WhereInIds;
 use App\Traits\HasWebHooks;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
@@ -68,6 +69,7 @@ class User extends Model implements
         'name' => Like::class,
         'email' => Like::class,
         'search' => UserSearch::class,
+        'ids' => WhereInIds::class,
     ];
 
     protected array $sortable = [

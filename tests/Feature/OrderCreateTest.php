@@ -620,7 +620,7 @@ class OrderCreateTest extends TestCase
 
         $schemaPrice = 10;
         $schema = Schema::factory()->create([
-            'type' => SchemaType::getKey(SchemaType::string),
+            'type' => SchemaType::getKey(SchemaType::STRING),
             'price' => $schemaPrice,
             'required' => false, // Important!
         ]);

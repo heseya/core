@@ -11,6 +11,15 @@ use Illuminate\Support\Collection;
 
 class ProductService implements ProductServiceContract
 {
+    public function updateMinMaxPrices(Product $product)
+    {
+        $productMinMaxPrices = $this->getMinMaxPrices($product);
+        $product->update([
+            'price_min' => $productMinMaxPrices[0],
+            'price_max' => $productMinMaxPrices[1],
+        ]);
+    }
+
     public function getMinMaxPrices(Product $product): array
     {
         $schemaMinMax = $this->getSchemasPrices(
@@ -22,15 +31,6 @@ class ProductService implements ProductServiceContract
             $product->price + $schemaMinMax[0],
             $product->price + $schemaMinMax[1],
         ];
-    }
-
-    public function updateMinMaxPrices(Product $product)
-    {
-        $productMinMaxPrices = $this->getMinMaxPrices($product);
-        $product->update([
-            'price_min' => $productMinMaxPrices[0],
-            'price_max' => $productMinMaxPrices[1],
-        ]);
     }
 
     private function getSchemasPrices(
@@ -60,11 +60,11 @@ class ProductService implements ProductServiceContract
                 default => $getBestSchemasPrices(
                     $required ? ['filled'] : [null, 'filled'],
                 ),
-                SchemaType::boolean => $getBestSchemasPrices([true, false]),
-                SchemaType::select => $getBestSchemasPrices(
+                SchemaType::BOOLEAN => $getBestSchemasPrices([true, false]),
+                SchemaType::SELECT => $getBestSchemasPrices(
                     $required ? $options : array_merge($options, [null]),
                 ),
-                SchemaType::multiply, SchemaType::multiply_schema => $getBestSchemasPrices(
+                SchemaType::MULTIPLY, SchemaType::MULTIPLY_SCHEMA => $getBestSchemasPrices(
                     $required ? $valueMinMax : array_merge($valueMinMax, [null]),
                 ),
             };

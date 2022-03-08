@@ -64,7 +64,7 @@ class Schema extends Model
 
     public function getAvailableAttribute(): bool
     {
-        if (!$this->type->is(SchemaType::select)) {
+        if (!$this->type->is(SchemaType::SELECT)) {
             return true;
         }
 
@@ -104,15 +104,15 @@ class Schema extends Model
             $validation->push('min:' . $this->min);
         }
 
-        if ($this->type->is(SchemaType::select)) {
+        if ($this->type->is(SchemaType::SELECT)) {
             $validation->push('uuid');
             $validation->push(new OptionAvailable($this, $quantity));
         }
 
         if (
-            $this->type->is(SchemaType::numeric) ||
-            $this->type->is(SchemaType::multiply) ||
-            $this->type->is(SchemaType::multiply_schema)
+            $this->type->is(SchemaType::NUMERIC) ||
+            $this->type->is(SchemaType::MULTIPLY) ||
+            $this->type->is(SchemaType::MULTIPLY_SCHEMA)
         ) {
             $validation->push('numeric');
         }
@@ -144,7 +144,7 @@ class Schema extends Model
     {
         $items = [];
 
-        if ($value === null || !$this->type->is(SchemaType::select)) {
+        if ($value === null || !$this->type->is(SchemaType::SELECT)) {
             return $items;
         }
 
@@ -157,13 +157,21 @@ class Schema extends Model
         return $items;
     }
 
+    public function options(): HasMany
+    {
+        return $this->hasMany(Option::class)
+            ->orderBy('order')
+            ->orderBy('created_at')
+            ->orderBy('name', 'DESC');
+    }
+
     /**
      * @throws InvalidEnumKeyException
      */
     public function setTypeAttribute($value): void
     {
         if (!is_integer($value)) {
-            $value = SchemaType::fromKey($value);
+            $value = SchemaType::fromKey(Str::upper($value));
         }
 
         $this->attributes['type'] = $value;
@@ -195,12 +203,41 @@ class Schema extends Model
         );
     }
 
-    public function options(): HasMany
+    private function getUsedPrice($value, $schemas): float
     {
-        return $this->hasMany(Option::class)
-            ->orderBy('order')
-            ->orderBy('created_at')
-            ->orderBy('name', 'DESC');
+        $price = $this->price;
+
+        if (!$this->required && $value === null) {
+            return 0;
+        }
+
+        if (
+            ($this->type->is(SchemaType::STRING) || $this->type->is(SchemaType::NUMERIC)) &&
+            Str::length(trim($value)) === 0
+        ) {
+            return 0;
+        }
+
+        if ($this->type->is(SchemaType::BOOLEAN) && ((bool) $value) === false) {
+            return 0;
+        }
+
+        if ($this->type->is(SchemaType::SELECT)) {
+            $option = $this->options()->findOrFail($value);
+
+            $price += $option->price;
+        }
+
+        if ($this->type->is(SchemaType::MULTIPLY)) {
+            $price *= (float) $value;
+        }
+
+        if ($this->type->is(SchemaType::MULTIPLY_SCHEMA)) {
+            $usedSchema = $this->usedSchemas()->firstOrFail();
+            $price = $value * $usedSchema->getUsedPrice($schemas[$usedSchema->getKey()], $schemas);
+        }
+
+        return $price;
     }
 
     public function usedSchemas(): BelongsToMany
@@ -211,42 +248,5 @@ class Schema extends Model
             'schema_id',
             'used_schema_id',
         );
-    }
-
-    private function getUsedPrice($value, $schemas): float
-    {
-        $price = $this->price;
-
-        if (!$this->required && $value === null) {
-            return 0;
-        }
-
-        if (
-            ($this->type->is(SchemaType::string) || $this->type->is(SchemaType::numeric)) &&
-            Str::length(trim($value)) === 0
-        ) {
-            return 0;
-        }
-
-        if ($this->type->is(SchemaType::boolean) && ((bool) $value) === false) {
-            return 0;
-        }
-
-        if ($this->type->is(SchemaType::select)) {
-            $option = $this->options()->findOrFail($value);
-
-            $price += $option->price;
-        }
-
-        if ($this->type->is(SchemaType::multiply)) {
-            $price *= (float) $value;
-        }
-
-        if ($this->type->is(SchemaType::multiply_schema)) {
-            $usedSchema = $this->usedSchemas()->firstOrFail();
-            $price = $value * $usedSchema->getUsedPrice($schemas[$usedSchema->getKey()], $schemas);
-        }
-
-        return $price;
     }
 }

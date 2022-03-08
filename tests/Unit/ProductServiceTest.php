@@ -46,15 +46,15 @@ class ProductServiceTest extends TestCase
         return [
             'optional schema' => array_merge(
                 $base,
-                [SchemaType::string, false, [$price, $price + $schemaPrice]]
+                [SchemaType::STRING, false, [$price, $price + $schemaPrice]]
             ),
             'boolean schema' => array_merge(
                 $base,
-                [SchemaType::boolean, true, [$price, $price + $schemaPrice]],
+                [SchemaType::BOOLEAN, true, [$price, $price + $schemaPrice]],
             ),
             'required schema' => array_merge(
                 $base,
-                [SchemaType::string, true, [$price + $schemaPrice, $price + $schemaPrice]],
+                [SchemaType::STRING, true, [$price + $schemaPrice, $price + $schemaPrice]],
             ),
         ];
     }
@@ -135,7 +135,7 @@ class ProductServiceTest extends TestCase
         /** @var Schema $schema */
         $schema = $product->schemas()->create([
             'name' => 'Test',
-            'type' => SchemaType::select,
+            'type' => SchemaType::SELECT,
             'price' => $schemaPrice,
             'required' => $required,
         ]);
@@ -201,7 +201,7 @@ class ProductServiceTest extends TestCase
 
         $product->schemas()->create([
             'name' => 'Test',
-            'type' => SchemaType::multiply,
+            'type' => SchemaType::MULTIPLY,
             'price' => $schemaPrice,
             'min' => $schemaMin,
             'max' => $schemaMax,
@@ -260,7 +260,7 @@ class ProductServiceTest extends TestCase
         /** @var Schema $baseSchema */
         $baseSchema = $product->schemas()->create([
             'name' => 'Test',
-            'type' => SchemaType::string,
+            'type' => SchemaType::STRING,
             'price' => $schemaBasePrice,
             'required' => true,
         ]);;
@@ -268,7 +268,7 @@ class ProductServiceTest extends TestCase
         /** @var Schema $multiplySchema */
         $multiplySchema = $product->schemas()->create([
             'name' => 'Test2',
-            'type' => SchemaType::multiply_schema,
+            'type' => SchemaType::MULTIPLY_SCHEMA,
             'min' => $schemaMin,
             'max' => $schemaMax,
             'required' => $required,
@@ -293,7 +293,7 @@ class ProductServiceTest extends TestCase
         $schema1Price = 5;
         $product->schemas()->create([
             'name' => 'Test',
-            'type' => SchemaType::string,
+            'type' => SchemaType::STRING,
             'price' => $schema1Price,
             'required' => true,
         ]);
@@ -301,7 +301,7 @@ class ProductServiceTest extends TestCase
         $schema2Price = 7;
         $product->schemas()->create([
             'name' => 'Test2',
-            'type' => SchemaType::numeric,
+            'type' => SchemaType::NUMERIC,
             'price' => $schema2Price,
             'required' => false,
         ]);
@@ -309,7 +309,7 @@ class ProductServiceTest extends TestCase
         $schema3Price = 10;
         $product->schemas()->create([
             'name' => 'Test3',
-            'type' => SchemaType::boolean,
+            'type' => SchemaType::BOOLEAN,
             'price' => $schema3Price,
             'required' => false,
         ]);
