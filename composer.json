@@ -34,12 +34,11 @@
         "heseya/demo": "*",
         "spatie/laravel-ignition": "^1.0",
         "fakerphp/faker": "^v1.19",
-        "heseya/insights": "^1.0",
         "laravel/tinker": "^2.7",
         "mattiasgeniar/phpunit-query-count-assertions": "^1.1",
         "mockery/mockery": "^1.5",
         "nunomaduro/collision": "^6.1",
-        "nunomaduro/phpinsights": "^2.1",
+        "nunomaduro/phpinsights": "dev-master#fb676aa",
         "phpunit/phpunit": "^9.5",
         "barryvdh/laravel-ide-helper": "^2.12"
     },
@@ -85,7 +84,8 @@
         ],
         "ide-helper": [
             "@php artisan ide-helper:generate -M",
-            "@php artisan ide-helper:models -M"
+            "@php artisan ide-helper:models -M",
+            "@php artisan ide-helper:meta"
         ],
         "style": [
             "@ide-helper",

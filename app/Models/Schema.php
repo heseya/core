@@ -203,6 +203,16 @@ class Schema extends Model
         );
     }
 
+    public function usedSchemas(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Schema::class,
+            'schema_used_schemas',
+            'schema_id',
+            'used_schema_id',
+        );
+    }
+
     private function getUsedPrice($value, $schemas): float
     {
         $price = $this->price;
@@ -238,15 +248,5 @@ class Schema extends Model
         }
 
         return $price;
-    }
-
-    public function usedSchemas(): BelongsToMany
-    {
-        return $this->belongsToMany(
-            Schema::class,
-            'schema_used_schemas',
-            'schema_id',
-            'used_schema_id',
-        );
     }
 }
