@@ -14,6 +14,7 @@ use App\Models\ShippingMethod;
 use App\Models\Status;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Collection;
 use Tests\TestCase;
 
 class AvailabilityTest extends TestCase
@@ -33,13 +34,50 @@ class AvailabilityTest extends TestCase
             'available' => false,
             'public' => true,
         ]);
-
-        $this->user->givePermissionTo('deposits.add');
     }
 
-    public function testRestockAvailable()
+    public function createDataPatternOne(): Collection
+    {
+        $schemaOne = Schema::factory()->create([
+            'type' => SchemaType::SELECT,
+            'required' => true,
+        ]);
+        $schemaTwo = Schema::factory()->create([
+            'type' => SchemaType::SELECT,
+            'required' => true,
+        ]);
+
+        $optionOne = Option::factory()->create([
+            'schema_id' => $schemaOne->getKey(),
+            'disabled' => false,
+        ]);
+
+        $optionTwo = Option::factory()->create([
+            'schema_id' => $schemaTwo->getKey(),
+            'disabled' => false,
+        ]);
+
+        $item = Item::factory()->create([
+            'quantity' => 0,
+        ]);
+
+        return collect([
+            'schemaOne' => $schemaOne,
+            'schemaTwo' => $schemaTwo,
+            'optionOne' => $optionOne,
+            'optionTwo' => $optionTwo,
+            'item' => $item,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testRestockAvailable($user)
     {
         Event::fake(ProductUpdated::class);
+
+        $this->$user->givePermissionTo('deposits.add');
 
         $schema = Schema::factory()->create([
             'required' => true,
@@ -64,7 +102,7 @@ class AvailabilityTest extends TestCase
             'available' => false,
         ]);
 
-        $this->actingAs($this->user)->postJson('/items/id:' . $item->getKey() . '/deposits', [
+        $this->actingAs($this->$user)->postJson('/items/id:' . $item->getKey() . '/deposits', [
             'quantity' => 6,
         ]);
 
@@ -91,10 +129,14 @@ class AvailabilityTest extends TestCase
     }
 
     /**
+     * @dataProvider authProvider
      * Case when options' permutations require both items' quantity to be greater than 0, restocking only 1 item.
      */
-    public function testRestockUnavailable()
+    public function testRestockUnavailable($user)
     {
+        $this->$user->givePermissionTo('deposits.add');
+
+
         Event::fake(ProductUpdated::class);
 
         $schemaOne = Schema::factory()->create([
@@ -143,7 +185,7 @@ class AvailabilityTest extends TestCase
             'available' => false,
         ]);
 
-        $this->actingAs($this->user)->postJson('/items/id:' . $itemTwo->getKey() . '/deposits', [
+        $this->actingAs($this->$user)->postJson('/items/id:' . $itemTwo->getKey() . '/deposits', [
             'quantity' => 20,
         ]);
 
@@ -179,37 +221,20 @@ class AvailabilityTest extends TestCase
     }
 
     /**
+     * @dataProvider authProvider
      * Case when permutation requires single item with greater quantity.
      */
-    public function testProductRequiresSingleItemWithGreaterQuantity()
+    public function testProductRequiresSingleItemWithGreaterQuantity($user)
     {
-        $schemaOne = Schema::factory()->create([
-            'type' => SchemaType::SELECT,
-            'required' => true,
-        ]);
-        $schemaTwo = Schema::factory()->create([
-            'type' => SchemaType::SELECT,
-            'required' => true,
-        ]);
+        $this->$user->givePermissionTo('deposits.add');
 
-        $optionOne = Option::factory()->create([
-            'schema_id' => $schemaOne->getKey(),
-            'disabled' => false,
-        ]);
+        $data = $this->createDataPatternOne();
 
-        $optionTwo = Option::factory()->create([
-            'schema_id' => $schemaTwo->getKey(),
-            'disabled' => false,
-        ]);
+        $data->get('item')->options()->saveMany([$data->get('optionOne'), $data->get('optionTwo')]);
 
-        $item = Item::factory()->create([
-            'quantity' => 0,
-        ]);
-        $item->options()->saveMany([$optionOne, $optionTwo]);
+        $this->product->schemas()->saveMany([$data->get('schemaOne'), $data->get('schemaTwo')]);
 
-        $this->product->schemas()->saveMany([$schemaOne, $schemaTwo]);
-
-        $this->actingAs($this->user)->postJson('/items/id:' . $item->getKey() . '/deposits', [
+        $this->actingAs($this->$user)->postJson('/items/id:' . $data->get('item')->getKey() . '/deposits', [
             'quantity' => 2,
         ]);
 
@@ -219,55 +244,38 @@ class AvailabilityTest extends TestCase
             'available' => true,
         ])
             ->assertDatabaseHas('schemas', [
-                'id' => $schemaOne->getKey(),
+                'id' => $data->get('schemaOne')->getKey(),
                 'available' => true,
             ])
             ->assertDatabaseHas('schemas', [
-                'id' => $schemaTwo->getKey(),
+                'id' => $data->get('schemaTwo')->getKey(),
                 'available' => true,
             ])
             ->assertDatabaseHas('options', [
-                'id' => $optionOne->getKey(),
+                'id' => $data->get('optionOne')->getKey(),
                 'available' => true,
             ])
             ->assertDatabaseHas('options', [
-                'id' => $optionTwo->getKey(),
+                'id' => $data->get('optionTwo')->getKey(),
                 'available' => true,
             ]);
     }
 
     /**
+     * @dataProvider authProvider
      * Case when permutation requires single item with greater quantity failed due to too small deposit.
      */
-    public function testProductRequiresSingleItemWithGreaterQuantityFailed()
+    public function testProductRequiresSingleItemWithGreaterQuantityFailed($user)
     {
-        $schemaOne = Schema::factory()->create([
-            'type' => SchemaType::SELECT,
-            'required' => true,
-        ]);
-        $schemaTwo = Schema::factory()->create([
-            'type' => SchemaType::SELECT,
-            'required' => true,
-        ]);
+        $this->$user->givePermissionTo('deposits.add');
 
-        $optionOne = Option::factory()->create([
-            'schema_id' => $schemaOne->getKey(),
-            'disabled' => false,
-        ]);
+        $data = $this->createDataPatternOne();
 
-        $optionTwo = Option::factory()->create([
-            'schema_id' => $schemaTwo->getKey(),
-            'disabled' => false,
-        ]);
+        $data->get('item')->options()->saveMany([$data->get('optionOne'), $data->get('optionTwo')]);
 
-        $item = Item::factory()->create([
-            'quantity' => 0,
-        ]);
-        $item->options()->saveMany([$optionOne, $optionTwo]);
+        $this->product->schemas()->saveMany([$data->get('schemaOne'), $data->get('schemaTwo')]);
 
-        $this->product->schemas()->saveMany([$schemaOne, $schemaTwo]);
-
-        $this->actingAs($this->user)->postJson('/items/id:' . $item->getKey() . '/deposits', [
+        $this->actingAs($this->$user)->postJson('/items/id:' . $data->get('item')->getKey() . '/deposits', [
             'quantity' => 1,
         ]);
 
@@ -277,58 +285,45 @@ class AvailabilityTest extends TestCase
             'available' => false,
         ])
             ->assertDatabaseHas('schemas', [
-                'id' => $schemaOne->getKey(),
+                'id' => $data->get('schemaOne')->getKey(),
                 'available' => true,
             ])
             ->assertDatabaseHas('schemas', [
-                'id' => $schemaTwo->getKey(),
+                'id' => $data->get('schemaTwo')->getKey(),
                 'available' => true,
             ])
             ->assertDatabaseHas('options', [
-                'id' => $optionOne->getKey(),
+                'id' => $data->get('optionOne')->getKey(),
                 'available' => true,
             ])
             ->assertDatabaseHas('options', [
-                'id' => $optionTwo->getKey(),
+                'id' => $data->get('optionTwo')->getKey(),
                 'available' => true,
             ]);
     }
 
-    public function testUnavailableAfterOrder()
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUnavailableAfterOrder($user)
     {
-        $this->user->givePermissionTo('orders.add');
+        $this->$user->givePermissionTo('orders.add');
 
-        $schemaOne = Schema::factory()->create([
-            'type' => SchemaType::SELECT,
-            'required' => true,
-        ]);
-        $schemaTwo = Schema::factory()->create([
-            'type' => SchemaType::SELECT,
-            'required' => true,
-        ]);
+        $data = $this->createDataPatternOne();
 
-        $optionOne = Option::factory()->create([
-            'schema_id' => $schemaOne->getKey(),
-            'disabled' => false,
-        ]);
-
-        $optionTwo = Option::factory()->create([
-            'schema_id' => $schemaTwo->getKey(),
-            'disabled' => false,
-        ]);
-
-        $item = Item::factory()->create([
+        $data->get('item')->update([
             'quantity' => 2,
         ]);
-        $item->options()->saveMany([$optionOne, $optionTwo]);
 
-        $this->product->schemas()->saveMany([$schemaOne, $schemaTwo]);
+        $data->get('item')->options()->saveMany([$data->get('optionOne'), $data->get('optionTwo')]);
+
+        $this->product->schemas()->saveMany([$data->get('schemaOne'), $data->get('schemaTwo')]);
 
         $this->product->update([
             'available' => true,
         ]);
 
-        $this->actingAs($this->user)->postJson('/orders', [
+        $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'test@test.test',
             'shipping_method_id' => ShippingMethod::factory()->create()->getKey(),
             'delivery_address' => Address::factory()->create()->toArray(),
@@ -337,8 +332,8 @@ class AvailabilityTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => 1,
                     'schemas' => [
-                        $schemaOne->getKey() => $optionOne->getKey(),
-                        $schemaTwo->getKey() => $optionTwo->getKey(),
+                        $data->get('schemaOne')->getKey() => $data->get('optionOne')->getKey(),
+                        $data->get('schemaTwo')->getKey() => $data->get('optionTwo')->getKey(),
                     ],
                 ],
             ],
@@ -350,64 +345,47 @@ class AvailabilityTest extends TestCase
             'available' => false,
         ])
             ->assertDatabaseHas('schemas', [
-                'id' => $schemaOne->getKey(),
+                'id' => $data->get('schemaOne')->getKey(),
                 'available' => false,
             ])
             ->assertDatabaseHas('schemas', [
-                'id' => $schemaTwo->getKey(),
+                'id' => $data->get('schemaTwo')->getKey(),
                 'available' => false,
             ])
             ->assertDatabaseHas('options', [
-                'id' => $optionOne->getKey(),
+                'id' => $data->get('optionOne')->getKey(),
                 'available' => false,
             ])
             ->assertDatabaseHas('options', [
-                'id' => $optionTwo->getKey(),
+                'id' => $data->get('optionTwo')->getKey(),
                 'available' => false,
             ]);
     }
 
-    public function testAvailableAfterOrderCancel()
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAvailableAfterOrderCancel($user)
     {
-        $schemaOne = Schema::factory()->create([
-            'type' => SchemaType::SELECT,
-            'required' => true,
-        ]);
-        $schemaTwo = Schema::factory()->create([
-            'type' => SchemaType::SELECT,
-            'required' => true,
-        ]);
+        $data = $this->createDataPatternOne();
 
-        $optionOne = Option::factory()->create([
-            'schema_id' => $schemaOne->getKey(),
-            'disabled' => false,
-        ]);
-
-        $optionTwo = Option::factory()->create([
-            'schema_id' => $schemaTwo->getKey(),
-            'disabled' => false,
-        ]);
-
-        $item = Item::factory()->create([
+        $data->get('item')->update([
             'quantity' => 2,
         ]);
-        $item->options()->saveMany([$optionOne, $optionTwo]);
 
-        $this->product->schemas()->saveMany([$schemaOne, $schemaTwo]);
+        $data->get('item')->options()->saveMany([$data->get('optionOne'), $data->get('optionTwo')]);
+
+        $this->product->schemas()->saveMany([$data->get('schemaOne'), $data->get('schemaTwo')]);
 
         $this->product->update([
             'available' => true,
             'price' => 0,
         ]);
 
-        $this->user->givePermissionTo('orders.add');
-        $this->user->givePermissionTo('orders.edit.status');
+        $this->$user->givePermissionTo('orders.add');
+        $this->$user->givePermissionTo('orders.edit.status');
 
-        $status = Status::factory()->create([
-            'cancel' => false,
-        ]);
-
-        $response = $this->actingAs($this->user)->postJson('/orders', [
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'test@test.test',
             'shipping_method_id' => ShippingMethod::factory()->create()->getKey(),
             'delivery_address' => Address::factory()->create()->toArray(),
@@ -416,8 +394,8 @@ class AvailabilityTest extends TestCase
                     'product_id' => $this->product->getKey(),
                     'quantity' => 1,
                     'schemas' => [
-                        $schemaOne->getKey() => $optionOne->getKey(),
-                        $schemaTwo->getKey() => $optionTwo->getKey(),
+                        $data->get('schemaOne')->getKey() => $data->get('optionOne')->getKey(),
+                        $data->get('schemaTwo')->getKey() => $data->get('optionTwo')->getKey(),
                     ],
                 ],
             ],
@@ -429,7 +407,7 @@ class AvailabilityTest extends TestCase
             'cancel' => true,
         ]);
 
-        $this->actingAs($this->user)->postJson("/orders/id:{$order->getKey()}/status", [
+        $this->actingAs($this->$user)->postJson("/orders/id:{$order->getKey()}/status", [
             'status_id' => $statusCancel->getKey(),
         ]);
 
@@ -438,19 +416,19 @@ class AvailabilityTest extends TestCase
             'available' => true,
         ])
             ->assertDatabaseHas('schemas', [
-                'id' => $schemaOne->getKey(),
+                'id' => $data->get('schemaOne')->getKey(),
                 'available' => true,
             ])
             ->assertDatabaseHas('schemas', [
-                'id' => $schemaTwo->getKey(),
+                'id' => $data->get('schemaTwo')->getKey(),
                 'available' => true,
             ])
             ->assertDatabaseHas('options', [
-                'id' => $optionOne->getKey(),
+                'id' => $data->get('optionOne')->getKey(),
                 'available' => true,
             ])
             ->assertDatabaseHas('options', [
-                'id' => $optionTwo->getKey(),
+                'id' => $data->get('optionTwo')->getKey(),
                 'available' => true,
             ]);
     }

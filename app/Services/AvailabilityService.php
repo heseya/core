@@ -73,21 +73,25 @@ class AvailabilityService implements AvailabilityServiceContract
         }
 
         $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
-        if ($requiredSelectSchemas->count() > 0) {
-            $hasAvailablePermutations = $this->checkPermutations($requiredSelectSchemas);
-            if ($hasAvailablePermutations) {
-                $product->update([
-                    'available' => true,
-                ]);
-            } else {
-                $product->update([
-                    'available' => false,
-                ]);
-            }
 
-            if ($product->wasChanged('available')) {
-                ProductUpdated::dispatch($product);
-            }
+        if ($requiredSelectSchemas->isEmpty()) {
+            $product->update([
+                'available' => true,
+            ]);
+
+            return;
+        }
+
+        $hasAvailablePermutations = $this->checkPermutations($requiredSelectSchemas);
+
+        if ($hasAvailablePermutations) {
+            $product->update([
+                'available' => true,
+            ]);
+        } else {
+            $product->update([
+                'available' => false,
+            ]);
         }
     }
 
@@ -95,6 +99,7 @@ class AvailabilityService implements AvailabilityServiceContract
     {
         $max = $schemas->count();
         $options = new Collection();
+
         return $this->getSchemaOptions($schemas->first(), $schemas, $options, $max);
     }
 
@@ -125,6 +130,7 @@ class AvailabilityService implements AvailabilityServiceContract
     public function checkIfOptionsItemsAreAvailable(Collection $options): bool
     {
         $items = $options->pluck('items')->flatten()->groupBy('id');
+
         return $items->every(fn ($item) => $item->first()->quantity >= $items->get($item->first()->getKey())->count());
     }
 }
