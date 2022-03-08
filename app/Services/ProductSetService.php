@@ -175,8 +175,8 @@ class ProductSetService implements ProductSetServiceContract
             'public_parent' => $publicParent,
         ]);
 
-        $attributes = collect($dto->getAttributesIds());
-        if ($attributes->isNotEmpty()) {
+        if ($dto->getAttributesIds() !== null) {
+            $attributes = collect($dto->getAttributesIds());
             $set->attributes()->sync($attributes);
         }
 
