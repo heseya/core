@@ -50,7 +50,7 @@ class SeoMetadata extends Model
         return json_decode($value);
     }
 
-    public function setKeywordsAttribute($value)
+    public function setKeywordsAttribute($value): void
     {
         $this->attributes['keywords'] = json_encode($value);
     }

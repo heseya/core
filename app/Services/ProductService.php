@@ -11,7 +11,7 @@ use Illuminate\Support\Collection;
 
 class ProductService implements ProductServiceContract
 {
-    public function updateMinMaxPrices(Product $product)
+    public function updateMinMaxPrices(Product $product): void
     {
         $productMinMaxPrices = $this->getMinMaxPrices($product);
         $product->update([

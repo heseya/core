@@ -116,7 +116,7 @@ class ProductController extends Controller
     public function productSetup(
         Product $product,
         ProductCreateRequest|ProductUpdateRequest $request,
-    ) {
+    ): void {
         $this->mediaService->sync($product, $request->input('media', []));
         $product->tags()->sync($request->input('tags', []));
 
