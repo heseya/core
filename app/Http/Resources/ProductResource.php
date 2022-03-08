@@ -22,6 +22,7 @@ class ProductResource extends Resource
             'quantity_step' => $this->quantity_step,
             'cover' => MediaResource::make($this->media->first()),
             'tags' => TagResource::collection($this->tags),
+            'items' => ItemResource::collection($this->items),
         ];
     }
 

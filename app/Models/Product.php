@@ -76,6 +76,11 @@ class Product extends Model implements AuditableContract
     protected string $defaultSortBy = 'created_at';
     protected string $defaultSortDirection = 'desc';
 
+    public function items(): BelongsToMany
+    {
+        return $this->belongsToMany(Item::class)->withPivot('quantity');
+    }
+
     public function media(): BelongsToMany
     {
         return $this
