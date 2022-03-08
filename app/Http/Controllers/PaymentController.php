@@ -40,8 +40,6 @@ class PaymentController extends Controller
         return PaymentResource::make($payment);
     }
 
-    /**
-     */
     public function update(string $method, Request $request): mixed
     {
         if (!array_key_exists($method, config('payable.aliases'))) {

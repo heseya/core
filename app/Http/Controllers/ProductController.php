@@ -113,10 +113,6 @@ class ProductController extends Controller
         return ProductResource::make($product);
     }
 
-    /**
-     * @param Product $product
-     * @param ProductCreateRequest|ProductUpdateRequest $request
-     */
     public function productSetup(
         Product $product,
         ProductCreateRequest|ProductUpdateRequest $request,
