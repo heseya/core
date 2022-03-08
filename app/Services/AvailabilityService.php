@@ -97,7 +97,6 @@ class AvailabilityService implements AvailabilityServiceContract
         if ($product->wasChanged('available')) {
             ProductUpdated::dispatch($product);
         }
-
     }
 
     public function checkPermutations(Collection $schemas): bool
