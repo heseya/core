@@ -10,6 +10,7 @@ use App\Http\Resources\StatusResource;
 use App\Models\Status;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Response;
 
 class StatusController extends Controller
 {
@@ -38,7 +39,7 @@ class StatusController extends Controller
             Status::where('id', $id)->update(['order' => $key]);
         }
 
-        return response()->json(null, 204);
+        return Response::json(null, 204);
     }
 
     public function destroy(Status $status): JsonResponse
@@ -59,6 +60,6 @@ class StatusController extends Controller
 
         $status->delete();
 
-        return response()->json(null, 204);
+        return Response::json(null, 204);
     }
 }

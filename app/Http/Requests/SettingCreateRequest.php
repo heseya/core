@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Validation\Rule;
 
 class SettingCreateRequest extends FormRequest
@@ -15,7 +16,7 @@ class SettingCreateRequest extends FormRequest
                 'string',
                 'max:255',
                 'unique:settings',
-                Rule::notIn(array_keys(config('settings'))),
+                Rule::notIn(array_keys(Config::get('settings'))),
             ],
             'value' => ['required', 'string', 'max:1000'],
             'public' => ['required', 'boolean'],

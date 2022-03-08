@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Response;
 
 class PaymentMethodController extends Controller
 {
@@ -59,6 +60,6 @@ class PaymentMethodController extends Controller
     {
         $payment_method->delete();
 
-        return response()->json(null, 204);
+        return Response::json(null, 204);
     }
 }

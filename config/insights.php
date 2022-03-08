@@ -14,6 +14,7 @@ use PHP_CodeSniffer\Standards\Generic\Sniffs\Commenting\TodoSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineEndingsSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
+use PHP_CodeSniffer\Standards\Generic\Sniffs\PHP\ForbiddenFunctionsSniff;
 use PhpCsFixer\Fixer\FunctionNotation\VoidReturnFixer;
 use SlevomatCodingStandard\Sniffs\Classes\ForbiddenPublicPropertySniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
@@ -97,6 +98,19 @@ return [
         UselessOverridingMethodSniff::class => [
             'exclude' => [
                 'app/Exceptions',
+            ],
+        ],
+        ForbiddenFunctionsSniff::class => [
+            'forbiddenFunctions' => [
+                'dd' => null,
+                'dump' => null,
+                'ddd' => null,
+                'tinker' => null,
+                'collect' => 'Collection::make',
+                'cache' => 'Cache::get',
+                'config' => 'Config::get',
+                'redirect' => 'Redirect::to',
+                'response' => 'Response::json',
             ],
         ],
     ],

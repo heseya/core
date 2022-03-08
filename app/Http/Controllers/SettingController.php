@@ -11,6 +11,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class SettingController extends Controller
@@ -29,7 +31,7 @@ class SettingController extends Controller
         );
 
         if ($request->has('array')) {
-            return response()->json($settings->mapWithKeys(function ($setting) {
+            return Response::json($settings->mapWithKeys(function ($setting) {
                 return [$setting->name => $setting->value];
             }));
         }
@@ -57,7 +59,7 @@ class SettingController extends Controller
 
     public function update(string $name, SettingUpdateRequest $request): JsonResource
     {
-        $config = config('settings.' . $name);
+        $config = Config::get('settings.' . $name);
 
         if ($config !== null) {
             $setting = Setting::where('name', $name)->first();
@@ -80,6 +82,6 @@ class SettingController extends Controller
     {
         $setting->delete();
 
-        return response()->json(null, 204);
+        return Response::json(null, 204);
     }
 }

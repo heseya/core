@@ -184,7 +184,7 @@ class Schema extends Model
 
     public function getPrice($value, $schemas): float
     {
-        $schemaKeys = collect($schemas)->keys();
+        $schemaKeys = Collection::make($schemas)->keys();
 
         if ($this->usedBySchemas()->whereIn($this->getKeyName(), $schemaKeys)->exists()) {
             return 0.0;

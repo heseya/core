@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b57e937274196362f885a5ce51063d22",
+    "content-hash": "05a0f8d06b953115cae5ad3318bbac65",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -6553,70 +6553,6 @@
                 }
             ],
             "time": "2022-01-11T18:57:04+00:00"
-        },
-        {
-            "name": "srmklive/paypal",
-            "version": "3.0.13",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/srmklive/laravel-paypal.git",
-                "reference": "064208e94c9997e42668230c1019d7ff85f77794"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/srmklive/laravel-paypal/zipball/064208e94c9997e42668230c1019d7ff85f77794",
-                "reference": "064208e94c9997e42668230c1019d7ff85f77794",
-                "shasum": ""
-            },
-            "require": {
-                "guzzlehttp/guzzle": "~7.0",
-                "illuminate/support": "~6.0|~7.0|~8.0|~9.0",
-                "nesbot/carbon": "~2.0",
-                "php": ">=7.2|^8.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^8.0|^9.0",
-                "symfony/var-dumper": "~5.0"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Srmklive\\PayPal\\Providers\\PayPalServiceProvider"
-                    ],
-                    "aliases": {
-                        "PayPal": "Srmklive\\PayPal\\Facades\\PayPal"
-                    }
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Srmklive\\PayPal\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Raza Mehdi",
-                    "email": "srmk@outlook.com"
-                }
-            ],
-            "description": "Laravel plugin For Processing Payments Through Paypal Express Checkout. Can Be Used Independently With Other Applications.",
-            "keywords": [
-                "http",
-                "laravel paypal",
-                "paypal",
-                "rest",
-                "web service"
-            ],
-            "support": {
-                "issues": "https://github.com/srmklive/laravel-paypal/issues",
-                "source": "https://github.com/srmklive/laravel-paypal/tree/3.0.13"
-            },
-            "time": "2022-01-24T12:32:32+00:00"
         },
         {
             "name": "symfony/console",

@@ -6,6 +6,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Validation\ValidationException;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException;
 use Symfony\Component\HttpFoundation\Response;
@@ -126,7 +127,7 @@ final class Handler extends ExceptionHandler
                 app('sentry')->captureException($exception);
             }
 
-            if (config('app.debug') === true) {
+            if (Config::get('app.debug') === true) {
                 return parent::render($request, $exception);
             }
 
