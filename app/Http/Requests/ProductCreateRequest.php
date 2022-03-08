@@ -27,6 +27,9 @@ class ProductCreateRequest extends SeoMetadataRulesRequest
 
             'sets' => ['nullable', 'array'],
             'sets.*' => ['uuid', 'exists:product_sets,id'],
+
+            'items' => ['nullable', 'array'],
+            'items.*' => ['uuid'],
         ]);
     }
 }
