@@ -63,9 +63,17 @@ class AvailabilityService implements AvailabilityServiceContract
 
     public function calculateProductAvailability(Product $product): void
     {
+        if (!$product->schemas()->exists()) {
+            $product->update([
+                'available' => true,
+            ]);
+
+            return;
+        }
+
         $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
 
-        if ($requiredSelectSchemas->count() <= 0) {
+        if ($requiredSelectSchemas->isEmpty()) {
             $product->update([
                 'available' => true,
             ]);
@@ -95,13 +103,12 @@ class AvailabilityService implements AvailabilityServiceContract
     }
 
     public function getSchemaOptions(
-        Schema     $schema,
+        Schema $schema,
         Collection $schemas,
         Collection $options,
-        int        $max,
-        int        $index = 0
-    ): bool
-    {
+        int $max,
+        int $index = 0
+    ): bool {
         foreach ($schema->options as $option) {
             $options->put($schema->getKey(), $option);
             if ($index < $max - 1) {
