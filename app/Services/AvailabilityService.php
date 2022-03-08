@@ -63,7 +63,9 @@ class AvailabilityService implements AvailabilityServiceContract
 
     public function calculateProductAvailability(Product $product): void
     {
-        if (!$product->schemas()->exists()) {
+        $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
+
+        if ($requiredSelectSchemas->count() <= 0) {
             $product->update([
                 'available' => true,
             ]);
@@ -71,19 +73,16 @@ class AvailabilityService implements AvailabilityServiceContract
             return;
         }
 
-        $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
-        if ($requiredSelectSchemas->count() > 0) {
-            $hasAvailablePermutations = $this->checkPermutations($requiredSelectSchemas);
+        $hasAvailablePermutations = $this->checkPermutations($requiredSelectSchemas);
 
-            if ($hasAvailablePermutations) {
-                $product->update([
-                    'available' => true,
-                ]);
-            } else {
-                $product->update([
-                    'available' => false,
-                ]);
-            }
+        if ($hasAvailablePermutations) {
+            $product->update([
+                'available' => true,
+            ]);
+        } else {
+            $product->update([
+                'available' => false,
+            ]);
         }
     }
 
@@ -91,16 +90,18 @@ class AvailabilityService implements AvailabilityServiceContract
     {
         $max = $schemas->count();
         $options = new Collection();
+
         return $this->getSchemaOptions($schemas->first(), $schemas, $options, $max);
     }
 
     public function getSchemaOptions(
-        Schema $schema,
+        Schema     $schema,
         Collection $schemas,
         Collection $options,
-        int $max,
-        int $index = 0
-    ): bool {
+        int        $max,
+        int        $index = 0
+    ): bool
+    {
         foreach ($schema->options as $option) {
             $options->put($schema->getKey(), $option);
             if ($index < $max - 1) {
@@ -121,6 +122,7 @@ class AvailabilityService implements AvailabilityServiceContract
     public function checkIfOptionsItemsAreAvailable(Collection $options): bool
     {
         $items = $options->pluck('items')->flatten()->groupBy('id');
+
         return $items->every(fn ($item) => $item->first()->quantity >= $items->get($item->first()->getKey())->count());
     }
 }
