@@ -93,6 +93,11 @@ class AvailabilityService implements AvailabilityServiceContract
                 'available' => false,
             ]);
         }
+
+        if ($product->wasChanged('available')) {
+            ProductUpdated::dispatch($product);
+        }
+
     }
 
     public function checkPermutations(Collection $schemas): bool

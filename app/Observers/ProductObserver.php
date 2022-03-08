@@ -19,11 +19,4 @@ class ProductObserver
     {
         $this->availabilityService->calculateProductAvailability($product);
     }
-
-    public function updating(Product $product)
-    {
-        if ($product->isDirty('available')) {
-            ProductUpdated::dispatch($product);
-        }
-    }
 }
