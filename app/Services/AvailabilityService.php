@@ -88,7 +88,6 @@ class AvailabilityService implements AvailabilityServiceContract
             if ($product->wasChanged('available')) {
                 ProductUpdated::dispatch($product);
             }
-
         }
     }
 
