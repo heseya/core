@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Traits\HasMetadata;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
@@ -10,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class OrderSchema extends Model
 {
-    use HasFactory, HasMetadata;
+    use HasFactory;
 
     protected $fillable = [
         'name',
