@@ -39,11 +39,11 @@ class ProductController extends Controller
 
     public function index(ProductIndexRequest $request): JsonResource
     {
-        $query = Product::with('items')->search($request->validated());
+        $query = Product::search($request->validated());
 
         $query
             ->sort($request->input('sort', 'order'))
-            ->with(['media', 'tags', 'schemas', 'sets', 'seo']);
+            ->with(['media', 'tags', 'schemas', 'sets', 'seo', 'items']);
 
         if (Gate::denies('products.show_hidden')) {
             $query->public();
