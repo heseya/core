@@ -5,6 +5,7 @@ namespace App\Models;
 use App\SearchTypes\ProductSearch;
 use App\SearchTypes\WhereBelongsToManyById;
 use App\SearchTypes\WhereInIds;
+use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
@@ -21,7 +22,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Product extends Model implements AuditableContract
 {
-    use HasFactory, SoftDeletes, Searchable, Sortable, Auditable, HasSeoMetadata;
+    use HasFactory, SoftDeletes, Searchable, Sortable, Auditable, HasSeoMetadata, HasMetadata;
 
     protected $fillable = [
         'name',

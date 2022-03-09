@@ -43,7 +43,7 @@ class ProductController extends Controller
 
         $query
             ->sort($request->input('sort', 'order'))
-            ->with(['media', 'tags', 'schemas', 'sets', 'seo']);
+            ->with(['media', 'tags', 'schemas', 'sets', 'seo', 'metadata']);
 
         if (Gate::denies('products.show_hidden')) {
             $query->public();

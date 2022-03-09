@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\RoleType;
 use App\SearchTypes\RoleAssignableSearch;
 use App\SearchTypes\RoleSearch;
+use App\Traits\HasMetadata;
 use App\Traits\HasUuid;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
@@ -18,7 +19,7 @@ use Spatie\Permission\Models\Role as SpatieRole;
  */
 class Role extends SpatieRole implements AuditableContract
 {
-    use Searchable, HasUuid, HasFactory, Auditable;
+    use Searchable, HasUuid, HasFactory, Auditable, HasMetadata;
 
     protected $fillable = [
         'name',

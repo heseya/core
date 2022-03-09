@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasMetadata;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class PackageTemplate extends Model
 {
-    use HasFactory;
+    use HasFactory, HasMetadata;
 
     protected $fillable = [
         'name',

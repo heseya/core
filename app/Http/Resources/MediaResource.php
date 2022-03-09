@@ -2,11 +2,14 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class MediaResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
         return [
@@ -16,5 +19,10 @@ class MediaResource extends Resource
             'slug' => $this->slug,
             'alt' => $this->alt,
         ];
+    }
+
+    public function view(Request $request): array
+    {
+        return $this->metadataResource();
     }
 }

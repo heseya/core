@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\MetadataType;
 use App\Events\PageCreated;
 use App\Events\PageDeleted;
 use App\Events\PageUpdated;
@@ -41,6 +42,13 @@ class PageTest extends TestCase
             'public' => false,
         ]);
 
+        $metadata = $this->page->metadata()->create([
+            'name' => 'Metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
         /**
          * Expected response
          */
@@ -53,6 +61,9 @@ class PageTest extends TestCase
 
         $this->expected_view = array_merge($this->expected, [
             'content_html' => $this->page->content_html,
+            'metadata' => [
+                $metadata->name => $metadata->value,
+            ]
         ]);
     }
 
@@ -139,6 +150,37 @@ class PageTest extends TestCase
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected_view]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewPrivateMetadata($user): void
+    {
+        $this->$user->givePermissionTo(['pages.show_details', 'pages.show_metadata_private']);
+
+        $privateMetadata = $this->page->metadataPrivate()->create([
+            'name' => 'hiddenMetadata',
+            'value' => 'hidden metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => false,
+        ]);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/pages/' . $this->page->slug);
+        $response
+            ->assertOk()
+            ->assertJson(['data' => $this->expected_view]);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/pages/id:' . $this->page->getKey());
+        $response
+            ->assertOk()
+            ->assertJson(['data' => $this->expected_view +
+                ['metadata_private' => [
+                    $privateMetadata->name => $privateMetadata->value
+                ]]
+            ]);
     }
 
     /**

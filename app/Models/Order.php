@@ -9,6 +9,7 @@ use App\SearchTypes\OrderSearch;
 use App\SearchTypes\WhereCreatedAfter;
 use App\SearchTypes\WhereCreatedBefore;
 use App\SearchTypes\WhereHasStatusHidden;
+use App\Traits\HasMetadata;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Heseya\Sortable\Sortable;
@@ -29,7 +30,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Order extends Model implements AuditableContract
 {
-    use HasFactory, Searchable, Sortable, Notifiable, Auditable;
+    use HasFactory, Searchable, Sortable, Notifiable, Auditable, HasMetadata;
 
     protected $fillable = [
         'code',

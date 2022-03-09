@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasMetadata;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use OwenIt\Auditing\Auditable;
@@ -12,7 +13,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Status extends Model implements AuditableContract
 {
-    use HasFactory, Auditable;
+    use HasFactory, Auditable, HasMetadata;
 
     protected $fillable = [
         'name',

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\SchemaType;
 use App\Rules\OptionAvailable;
 use App\SearchTypes\SchemaSearch;
+use App\Traits\HasMetadata;
 use BenSampo\Enum\Exceptions\InvalidEnumKeyException;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
@@ -23,7 +24,7 @@ use Illuminate\Validation\ValidationException;
  */
 class Schema extends Model
 {
-    use HasFactory, Searchable, Sortable;
+    use HasFactory, Searchable, Sortable, HasMetadata;
 
     protected $fillable = [
         'type',

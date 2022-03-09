@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasMetadata;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,7 +14,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class ShippingMethod extends Model implements AuditableContract
 {
-    use HasFactory, Auditable;
+    use HasFactory, Auditable, HasMetadata;
 
     /**
      * The attributes that are mass assignable.

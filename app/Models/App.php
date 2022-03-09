@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\Contracts\UrlServiceContract;
+use App\Traits\HasMetadata;
 use App\Traits\HasWebHooks;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
@@ -28,7 +29,8 @@ class App extends Model implements
         Authorizable,
         Authenticatable,
         HasPermissions,
-        HasWebHooks;
+        HasWebHooks,
+        HasMetadata;
 
     protected $guard_name = 'api';
 

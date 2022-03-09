@@ -2,10 +2,13 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
 class SchemaResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
         return [
@@ -30,8 +33,8 @@ class SchemaResource extends Resource
 
     public function view(Request $request): array
     {
-        return [
+        return array_merge([
             'products' => ProductResource::collection($this->products),
-        ];
+        ], $this->metadataResource('schemas'));
     }
 }

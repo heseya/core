@@ -5,6 +5,7 @@ namespace App\Models;
 use App\SearchTypes\ItemSearch;
 use App\SearchTypes\WhereCreatedBefore;
 use App\SearchTypes\WhereSoldOut;
+use App\Traits\HasMetadata;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Heseya\Sortable\Sortable;
@@ -20,7 +21,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Item extends Model implements AuditableContract
 {
-    use SoftDeletes, HasFactory, Searchable, Sortable, Auditable;
+    use SoftDeletes, HasFactory, Searchable, Sortable, Auditable, HasMetadata;
 
     protected $fillable = [
         'name',

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\DiscountType;
 use App\SearchTypes\DiscountSearch;
+use App\Traits\HasMetadata;
 use Carbon\Carbon;
 use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
@@ -18,7 +19,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Discount extends Model implements AuditableContract
 {
-    use HasFactory, Searchable, SoftDeletes, Auditable;
+    use HasFactory, Searchable, SoftDeletes, Auditable, HasMetadata;
 
     protected $fillable = [
         'description',
