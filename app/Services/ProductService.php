@@ -84,9 +84,9 @@ class ProductService implements ProductServiceContract
         } else {
             $price = $allSchemas->reduce(
                 fn (float $carry, Schema $current) => $carry + $current->getPrice(
-                        $values[$current->getKey()],
-                        $values,
-                    ),
+                    $values[$current->getKey()],
+                    $values,
+                ),
                 0,
             );
 
