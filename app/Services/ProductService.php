@@ -105,8 +105,7 @@ class ProductService implements ProductServiceContract
         array $currentValues,
         Schema $schema,
         array $values,
-    ): array
-    {
+    ): array {
         return $this->bestMinMax(Collection::make($values)->map(
             fn ($value) => $this->getSchemasPrices(
                 $allSchemas,

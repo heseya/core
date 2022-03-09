@@ -16,14 +16,7 @@ class UniqueIdInRequest implements Rule
     {
     }
 
-    /**
-     * Determine if the validation rule passes.
-     *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @return bool
-     */
-    public function passes($attribute, $value)
+    public function passes($attribute, $value): bool
     {
         $items = new Collection($value);
         $items = $items->pluck('id')->duplicates();
