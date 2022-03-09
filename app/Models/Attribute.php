@@ -16,14 +16,17 @@ class Attribute extends Model
 
     protected $fillable = [
         'name',
+        'slug',
         'description',
         'type',
         'global',
+        'sortable',
     ];
 
     protected $casts = [
         'type' => AttributeType::class,
         'global' => 'boolean',
+        'sortable' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -38,5 +41,10 @@ class Attribute extends Model
         return $this->belongsToMany(Product::class, 'product_attribute')
             ->withPivot('option_id')
             ->using(ProductAttribute::class);
+    }
+
+    public function productSets(): BelongsToMany
+    {
+        return $this->belongsToMany(ProductSet::class);
     }
 }
