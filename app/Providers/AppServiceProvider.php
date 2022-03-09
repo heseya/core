@@ -14,6 +14,7 @@ use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\EventServiceContract;
 use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MediaServiceContract;
+use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\OptionServiceContract;
@@ -36,6 +37,7 @@ use App\Services\DiscountService;
 use App\Services\EventService;
 use App\Services\ItemService;
 use App\Services\MediaService;
+use App\Services\MetadataService;
 use App\Services\NameService;
 use App\Services\OneTimeSecurityCodeService;
 use App\Services\OptionService;
@@ -86,6 +88,7 @@ class AppServiceProvider extends ServiceProvider
         UrlServiceContract::class => UrlService::class,
         ItemServiceContract::class => ItemService::class,
         OneTimeSecurityCodeContract::class => OneTimeSecurityCodeService::class,
+        MetadataServiceContract::class => MetadataService::class,
     ];
 
     /**
