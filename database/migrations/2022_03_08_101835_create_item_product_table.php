@@ -14,8 +14,8 @@ class CreateItemProductTable extends Migration
     public function up()
     {
         Schema::create('item_product', function (Blueprint $table) {
-            $table->uuid('item_id')->index();
-            $table->uuid('product_id')->index();
+            $table->foreignUuid('item_id')->index()->references('id')->on('items')->onDelete('cascade');
+            $table->foreignUuid('product_id')->index()->references('id')->on('products')->onDelete('cascade');
             $table->decimal('quantity', 16, 4)->default(0);
         });
     }

@@ -11,6 +11,19 @@ use Illuminate\Support\Collection;
 
 class ProductService implements ProductServiceContract
 {
+    public function assignItems(Product $product, array|null $itemsIds): Product
+    {
+        if ($itemsIds !== null) {
+            $product->items()->detach();
+            $items = new Collection($itemsIds);
+
+            $items->each(
+                fn ($item) => $product->items()->attach($item['id'], ['quantity' => $item['quantity']])
+            );
+        }
+        return $product;
+    }
+
     public function getMinMaxPrices(Product $product): array
     {
         $schemaMinMax = $this->getSchemasPrices(
@@ -36,8 +49,9 @@ class ProductService implements ProductServiceContract
     private function getSchemasPrices(
         Collection $allSchemas,
         Collection $remainingSchemas,
-        array $values = [],
-    ): array {
+        array      $values = [],
+    ): array
+    {
         if ($remainingSchemas->isNotEmpty()) {
             /** @var Schema $schema */
             $schema = $remainingSchemas->pop();
@@ -71,9 +85,9 @@ class ProductService implements ProductServiceContract
         } else {
             $price = $allSchemas->reduce(
                 fn (float $carry, Schema $current) => $carry + $current->getPrice(
-                    $values[$current->getKey()],
-                    $values,
-                ),
+                        $values[$current->getKey()],
+                        $values,
+                    ),
                 0,
             );
 
@@ -89,10 +103,11 @@ class ProductService implements ProductServiceContract
     private function getBestSchemasPrices(
         Collection $allSchemas,
         Collection $remainingSchemas,
-        array $currentValues,
-        Schema $schema,
-        array $values,
-    ): array {
+        array      $currentValues,
+        Schema     $schema,
+        array      $values,
+    ): array
+    {
         return $this->bestMinMax(Collection::make($values)->map(
             fn ($value) => $this->getSchemasPrices(
                 $allSchemas,

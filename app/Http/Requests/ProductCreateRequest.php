@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\UniqueIdInRequest;
+
 class ProductCreateRequest extends SeoMetadataRulesRequest
 {
     public function rules(): array
@@ -28,8 +30,9 @@ class ProductCreateRequest extends SeoMetadataRulesRequest
             'sets' => ['nullable', 'array'],
             'sets.*' => ['uuid', 'exists:product_sets,id'],
 
-            'items' => ['nullable', 'array'],
-            'items.*' => ['uuid'],
+            'items' => ['nullable', 'array', new UniqueIdInRequest()],
+            'items.*.id' => ['uuid'],
+            'items.*.quantity' => ['numeric'],
         ]);
     }
 }

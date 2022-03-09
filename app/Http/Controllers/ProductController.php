@@ -103,6 +103,8 @@ class ProductController extends Controller
     {
         $product = Product::create($request->validated());
 
+        $this->productService->assignItems($product, $request->items);
+
         $this->productSetup($product, $request);
 
         $seo_dto = SeoMetadataDto::fromFormRequest($request);
@@ -138,6 +140,8 @@ class ProductController extends Controller
     public function update(ProductUpdateRequest $request, Product $product): JsonResource
     {
         $product->update($request->validated());
+
+        $this->productService->assignItems($product, $request->items);
 
         $this->productSetup($product, $request);
 

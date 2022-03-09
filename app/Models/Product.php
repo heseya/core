@@ -78,7 +78,9 @@ class Product extends Model implements AuditableContract
 
     public function items(): BelongsToMany
     {
-        return $this->belongsToMany(Item::class)->withPivot('quantity');
+        return $this
+            ->belongsToMany(Item::class, 'item_product')
+            ->withPivot('quantity');
     }
 
     public function media(): BelongsToMany
