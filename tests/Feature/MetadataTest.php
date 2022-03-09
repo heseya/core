@@ -37,8 +37,8 @@ class MetadataTest extends TestCase
             'schemas as user' => ['user', ['model' => Schema::class, 'prefix_url' => 'schemas', 'role' => 'products.edit']],
             'schemas as application' => ['application', ['model' => Schema::class, 'prefix_url' => 'schemas', 'role' => 'products.edit']],
 
-            //'options as user' => ['user', ['model' => Option::class, 'prefix_url' => 'options', 'role' => .edit'options']], //endpoints not exists
-            //'options as application' => ['application', ['model' => Option::class, 'prefix_url' => 'options', 'role' => .edit'options']],
+            'options as user' => ['user', ['model' => Option::class, 'prefix_url' => 'options', 'role' => 'products.edit']],
+            'options as application' => ['application', ['model' => Option::class, 'prefix_url' => 'options', 'role' => 'products.edit']],
 
             'product sets as user' => ['user', ['model' => ProductSet::class, 'prefix_url' => 'product-sets', 'role' => 'product_sets.edit']],
             'product sets as application' => ['application', ['model' => ProductSet::class, 'prefix_url' => 'product-sets', 'role' => 'product_sets.edit']],
@@ -85,7 +85,15 @@ class MetadataTest extends TestCase
     {
         $this->$user->givePermissionTo($data['role']);
 
-        $object = ($data['model'])::factory()->create();
+        $related = [];
+
+        if ($data['model'] === Option::class) {
+            $related = [
+                'schema_id' => (Schema::factory()->create())->getKey()
+            ];
+        }
+
+        $object = ($data['model'])::factory()->create($related);
 
         $metadata = [
             'sample text metadata' => 'Lorem ipsum dolor sit amet',
@@ -106,7 +114,15 @@ class MetadataTest extends TestCase
     {
         $this->$user->givePermissionTo($data['role']);
 
-        $object = ($data['model'])::factory()->create();
+        $related = [];
+
+        if ($data['model'] === Option::class) {
+            $related = [
+                'schema_id' => (Schema::factory()->create())->getKey()
+            ];
+        }
+
+        $object = ($data['model'])::factory()->create($related);
 
         $metadata = [
             'sample text metadata private' => 'Aliquam porta viverra tortor non faucibus',
@@ -127,7 +143,15 @@ class MetadataTest extends TestCase
     {
         $this->$user->givePermissionTo($data['role']);
 
-        $object = ($data['model'])::factory()->create();
+        $related = [];
+
+        if ($data['model'] === Option::class) {
+            $related = [
+                'schema_id' => (Schema::factory()->create())->getKey()
+            ];
+        }
+
+        $object = ($data['model'])::factory()->create($related);
 
         $metadata = $object->metadata()->create([
             'name' => 'Metadata',
@@ -153,7 +177,15 @@ class MetadataTest extends TestCase
     {
         $this->$user->givePermissionTo($data['role']);
 
-        $object = ($data['model'])::factory()->create();
+        $related = [];
+
+        if ($data['model'] === Option::class) {
+            $related = [
+                'schema_id' => (Schema::factory()->create())->getKey()
+            ];
+        }
+
+        $object = ($data['model'])::factory()->create($related);
 
         $metadata = $object->metadataPrivate()->create([
             'name' => 'Metadata',
@@ -179,7 +211,15 @@ class MetadataTest extends TestCase
     {
         $this->$user->givePermissionTo($data['role']);
 
-        $object = ($data['model'])::factory()->create();
+        $related = [];
+
+        if ($data['model'] === Option::class) {
+            $related = [
+                'schema_id' => (Schema::factory()->create())->getKey()
+            ];
+        }
+
+        $object = ($data['model'])::factory()->create($related);
 
         $metadata1 = $object->metadata()->create([
             'name' => 'Metadata',
@@ -217,7 +257,15 @@ class MetadataTest extends TestCase
     {
         $this->$user->givePermissionTo($data['role']);
 
-        $object = ($data['model'])::factory()->create();
+        $related = [];
+
+        if ($data['model'] === Option::class) {
+            $related = [
+                'schema_id' => (Schema::factory()->create())->getKey()
+            ];
+        }
+
+        $object = ($data['model'])::factory()->create($related);
 
         $metadata1 = $object->metadataPrivate()->create([
             'name' => 'Metadata',
