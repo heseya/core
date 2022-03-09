@@ -12,7 +12,7 @@ class FilterController extends Controller
     public function indexBySetsIds(FilterIndexRequest $request): JsonResource
     {
         if (!$request->has('sets')) {
-            return AttributeResource::collection(Attribute::where('global', 1)->get());
+            return AttributeResource::collection(Attribute::where('global', true)->get());
         }
 
         return AttributeResource::collection(
