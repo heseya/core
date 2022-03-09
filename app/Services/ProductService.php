@@ -49,9 +49,8 @@ class ProductService implements ProductServiceContract
     private function getSchemasPrices(
         Collection $allSchemas,
         Collection $remainingSchemas,
-        array      $values = [],
-    ): array
-    {
+        array $values = [],
+    ): array {
         if ($remainingSchemas->isNotEmpty()) {
             /** @var Schema $schema */
             $schema = $remainingSchemas->pop();
@@ -103,9 +102,9 @@ class ProductService implements ProductServiceContract
     private function getBestSchemasPrices(
         Collection $allSchemas,
         Collection $remainingSchemas,
-        array      $currentValues,
-        Schema     $schema,
-        array      $values,
+        array $currentValues,
+        Schema $schema,
+        array $values,
     ): array
     {
         return $this->bestMinMax(Collection::make($values)->map(

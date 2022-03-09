@@ -14,7 +14,6 @@ class UniqueIdInRequest implements Rule
      */
     public function __construct()
     {
-        //
     }
 
     /**
