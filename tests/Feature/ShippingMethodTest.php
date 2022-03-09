@@ -621,7 +621,7 @@ class ShippingMethodTest extends TestCase
         $response = $this->actingAs($this->$user)
             ->deleteJson('/shipping-methods/id:' . $this->shipping_method->getKey());
         $response->assertNoContent();
-        $this->assertDeleted($this->shipping_method);
+        $this->assertModelMissing($this->shipping_method);
     }
 
     /**

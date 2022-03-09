@@ -11,6 +11,6 @@ class EventService implements EventServiceContract
     public function index(): Collection
     {
         $events = EventType::getEventList();
-        return collect($events);
+        return Collection::make($events);
     }
 }

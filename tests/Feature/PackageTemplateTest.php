@@ -133,6 +133,6 @@ class PackageTemplateTest extends TestCase
         $response = $this->actingAs($this->$user)
             ->deleteJson('/package-templates/id:' . $this->package->getKey());
         $response->assertNoContent();
-        $this->assertDeleted($this->package);
+        $this->assertModelMissing($this->package);
     }
 }

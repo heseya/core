@@ -6,6 +6,7 @@ use App\Exceptions\StoreException;
 use App\Models\Payment;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 
 class Przelewy24 implements PaymentMethod
@@ -16,27 +17,27 @@ class Przelewy24 implements PaymentMethod
     {
         $fields = [
             'sessionId' => (string) $payment->id,
-            'merchantId' => (int) config('przelewy24.merchant_id'),
+            'merchantId' => (int) Config::get('przelewy24.merchant_id'),
             'amount' => (int) ($payment->amount * 100),
             'currency' => (string) $payment->order->currency,
-            'crc' => (string) config('przelewy24.crc'),
+            'crc' => (string) Config::get('przelewy24.crc'),
         ];
 
         $sign = self::sign($fields);
 
         $response = Http::withBasicAuth(
-            config('przelewy24.pos_id'),
-            config('przelewy24.secret_id'),
+            Config::get('przelewy24.pos_id'),
+            Config::get('przelewy24.secret_id'),
         )->post(
-            config('przelewy24.url') . '/api/' . self::API_VER . '/transaction/register',
+            Config::get('przelewy24.url') . '/api/' . self::API_VER . '/transaction/register',
             array_merge($fields, [
-                'posId' => config('przelewy24.pos_id'),
+                'posId' => Config::get('przelewy24.pos_id'),
                 'description' => 'Zamowienie ' . $payment->order->code,
                 'email' => $payment->order->email,
                 'country' => 'PL',
                 'language' => 'pl',
                 'urlReturn' => $payment->continue_url,
-                'urlStatus' => config('app.url') . '/payments/przelewy24',
+                'urlStatus' => Config::get('app.url') . '/payments/przelewy24',
                 'timeLimit' => 0,
                 'transferLabel' => 'Zamowienie ' . $payment->order->code,
                 'sign' => $sign,
@@ -48,7 +49,7 @@ class Przelewy24 implements PaymentMethod
         }
 
         return [
-            'redirect_url' => config('przelewy24.url') . '/trnRequest/' .
+            'redirect_url' => Config::get('przelewy24.url') . '/trnRequest/' .
                 $response['data']['token'],
         ];
     }
@@ -64,8 +65,8 @@ class Przelewy24 implements PaymentMethod
         $amount = (int) ($payment->amount * 100);
 
         $validated = $request->validate([
-            'merchantId' => 'required|integer|in:' . config('przelewy24.merchant_id'),
-            'posId' => 'required|integer|in:' . config('przelewy24.pos_id'),
+            'merchantId' => 'required|integer|in:' . Config::get('przelewy24.merchant_id'),
+            'posId' => 'required|integer|in:' . Config::get('przelewy24.pos_id'),
             'sessionId' => 'required',
             'amount' => 'required|integer|in:' . $amount,
             'originAmount' => 'required|integer|in:' . $amount,
@@ -86,7 +87,7 @@ class Przelewy24 implements PaymentMethod
             'orderId' => $validated['orderId'],
             'methodId' => $validated['methodId'],
             'statement' => $validated['statement'],
-            'crc' => config('przelewy24.crc'),
+            'crc' => Config::get('przelewy24.crc'),
         ]);
 
         if ($validated['sign'] !== $sign) {
@@ -98,13 +99,13 @@ class Przelewy24 implements PaymentMethod
             'orderId' => $validated['orderId'],
             'amount' => $validated['amount'],
             'currency' => $validated['currency'],
-            'crc' => config('przelewy24.crc'),
+            'crc' => Config::get('przelewy24.crc'),
         ]);
 
         $response = Http::withBasicAuth(
-            config('przelewy24.pos_id'),
-            config('przelewy24.secret_id'),
-        )->post(config('przelewy24.url') . '/api/' . self::API_VER . '/transaction/verify', [
+            Config::get('przelewy24.pos_id'),
+            Config::get('przelewy24.secret_id'),
+        )->post(Config::get('przelewy24.url') . '/api/' . self::API_VER . '/transaction/verify', [
             'merchantId' => $validated['merchantId'],
             'posId' => $validated['posId'],
             'sessionId' => $validated['sessionId'],

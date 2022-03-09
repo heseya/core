@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Notification;
 
 class WebHookEventListener implements ShouldQueue
 {
-    public function handle(WebHookEvent $event)
+    public function handle(WebHookEvent $event): void
     {
         $event_data = $event->getData();
         $issuer = $event->getIssuer();

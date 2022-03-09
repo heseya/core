@@ -13,6 +13,7 @@ use App\Models\Item;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Response;
 
 class ItemController extends Controller
 {
@@ -56,6 +57,6 @@ class ItemController extends Controller
             ItemDeleted::dispatch($item);
         }
 
-        return response()->json(null, 204);
+        return Response::json(null, 204);
     }
 }

@@ -26,7 +26,8 @@ trait Sortable
                         'required' => 'You must specify sort field.',
                         '0.in' => 'You can\'t sort by ' . $field . ' field.',
                         '1.in' => 'Only asc|desc sorting directions are allowed on field ' . $field . '.',
-                    ])->validate();
+                    ]
+                )->validate();
 
                 $order = count($option) > 1 ? $option[1] : 'asc';
                 $query->orderBy($field, $order);

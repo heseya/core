@@ -12,6 +12,7 @@ use App\Services\Contracts\ProductServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Response;
 
 class SchemaController extends Controller
 {
@@ -92,6 +93,6 @@ class SchemaController extends Controller
             fn (Product $product) => $this->productService->updateMinMaxPrices($product),
         );
 
-        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

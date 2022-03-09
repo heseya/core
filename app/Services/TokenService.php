@@ -14,11 +14,11 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
-use Tymon\JWTAuth\Contracts\JWTSubject;
-use Tymon\JWTAuth\Http\Parser\Parser;
-use Tymon\JWTAuth\JWT;
-use Tymon\JWTAuth\Manager;
-use Tymon\JWTAuth\Payload;
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+use PHPOpenSourceSaver\JWTAuth\Http\Parser\Parser;
+use PHPOpenSourceSaver\JWTAuth\JWT;
+use PHPOpenSourceSaver\JWTAuth\Manager;
+use PHPOpenSourceSaver\JWTAuth\Payload;
 
 class TokenService implements TokenServiceContract
 {

@@ -524,7 +524,7 @@ class SchemaTest extends TestCase
             ->deleteJson('/schemas/id:' . $schema->getKey());
 
         $response->assertNoContent();
-        $this->assertDeleted($schema);
+        $this->assertModelMissing($schema);
     }
 
     public function testPrice(): void
