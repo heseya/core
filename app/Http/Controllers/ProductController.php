@@ -43,7 +43,7 @@ class ProductController extends Controller
 
         $query
             ->sort($request->input('sort', 'order'))
-            ->with(['media', 'tags', 'schemas', 'sets', 'seo']);
+            ->with(['media', 'tags', 'schemas', 'sets', 'seo', 'items']);
 
         if (Gate::denies('products.show_hidden')) {
             $query->public();
@@ -103,6 +103,8 @@ class ProductController extends Controller
     {
         $product = Product::create($request->validated());
 
+        $this->productService->assignItems($product, $request->items);
+
         $this->productSetup($product, $request);
 
         $seo_dto = SeoMetadataDto::fromFormRequest($request);
@@ -134,6 +136,8 @@ class ProductController extends Controller
     public function update(ProductUpdateRequest $request, Product $product): JsonResource
     {
         $product->update($request->validated());
+
+        $this->productService->assignItems($product, $request->items);
 
         $this->productSetup($product, $request);
 
