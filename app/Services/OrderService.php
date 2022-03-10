@@ -59,7 +59,7 @@ class OrderService implements OrderServiceContract
 
             $invoiceAddress = $this->modifyAddress(
                 $order,
-                'invoice_address_id',
+                'billing_address_id',
                 $dto->getInvoiceAddress(),
             );
 
@@ -69,8 +69,8 @@ class OrderService implements OrderServiceContract
                 'delivery_address_id' => $deliveryAddress === null ?
                     (is_object($dto->getDeliveryAddress()) ? null : $order->delivery_address_id) :
                     $deliveryAddress->getKey(),
-                'invoice_address_id' => $invoiceAddress === null ?
-                    (is_object($dto->getInvoiceAddress()) ? null : $order->invoice_address_id) :
+                'billing_address_id' => $invoiceAddress === null ?
+                    (is_object($dto->getInvoiceAddress()) ? null : $order->billing_address_id) :
                     $invoiceAddress->getKey(),
             ]);
 

@@ -29,7 +29,7 @@ class OrderResource extends Resource
     public function view(Request $request): array
     {
         return [
-            'invoice_address' => AddressResource::make($this->invoiceAddress),
+            'billing_address' => AddressResource::make($this->invoiceAddress),
             'shipping_method' => ShippingMethodResource::make($this->shippingMethod),
             'products' => OrderProductResource::collection($this->products),
             'payments' => PaymentResource::collection($this->payments),
