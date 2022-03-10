@@ -126,7 +126,7 @@ class AvailabilityService implements AvailabilityServiceContract
         return false;
     }
 
-    public function checkIfOptionsItemsAreAvailable(Collection $options): bool
+    public function isOptionsItemsAvailable(Collection $options): bool
     {
         $items = $options->pluck('items')->flatten()->groupBy('id');
 
