@@ -6,10 +6,12 @@ use App\Services\AnalyticsService;
 use App\Services\AppService;
 use App\Services\AuditService;
 use App\Services\AuthService;
+use App\Services\AvailabilityService;
 use App\Services\Contracts\AnalyticsServiceContract;
 use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\AuditServiceContract;
 use App\Services\Contracts\AuthServiceContract;
+use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\EventServiceContract;
 use App\Services\Contracts\ItemServiceContract;
@@ -85,6 +87,7 @@ class AppServiceProvider extends ServiceProvider
         UrlServiceContract::class => UrlService::class,
         ItemServiceContract::class => ItemService::class,
         OneTimeSecurityCodeContract::class => OneTimeSecurityCodeService::class,
+        AvailabilityServiceContract::class => AvailabilityService::class,
     ];
 
     /**

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Product;
 use App\Models\Tag;
+use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
 class AuditTest extends TestCase
@@ -12,7 +13,7 @@ class AuditTest extends TestCase
     {
         parent::setUp();
 
-        config()->set('audit.console', true);
+        Config::set('audit.console', true);
     }
 
     public function testViewUnauthorized(): void
