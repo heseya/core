@@ -105,7 +105,7 @@ class Product extends Model implements AuditableContract
 
     public function getRequiredSchemasAttribute(): Collection
     {
-        return $this->schemas->where('required', true);
+        return $this->schemas()->where('required', true)->get();
     }
 
     public function sets(): BelongsToMany

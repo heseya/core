@@ -16,6 +16,15 @@ class AvailabilityService implements AvailabilityServiceContract
     {
     }
 
+    /**
+     * Function used to calculate "available" field for Options, Schemas and Products related to Item step by step
+     * used after changing Item's quantity, usually after including Item in Order or creating Deposit
+     * containing this item.
+     *
+     * @param Item $item
+     *
+     * @return void
+     */
     public function calculateAvailabilityOnOrderAndRestock(Item $item): void
     {
         $options = $item->options;
@@ -117,7 +126,7 @@ class AvailabilityService implements AvailabilityServiceContract
                 return $this->getSchemaOptions($schemas->get($newIndex), $schemas, $options, $max, $newIndex);
             }
             if ($index === $max - 1) {
-                if ($this->checkIfOptionsItemsAreAvailable($options)) {
+                if ($this->isOptionsItemsAvailable($options)) {
                     return true;
                 }
             }
