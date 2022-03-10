@@ -440,7 +440,7 @@ class ProductSetShowTest extends TestCase
             'name' => 'test',
             'description' => 'test',
             'type' => 'text',
-            'global' => 0,
+            'global' => false,
         ]);
         $secondAttr = Attribute::create([
             'name' => 'test2',
