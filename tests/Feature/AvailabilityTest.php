@@ -11,6 +11,8 @@ use App\Models\Product;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use App\Services\AvailabilityService;
+use App\Services\Contracts\AvailabilityServiceContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Tests\TestCase;
@@ -33,7 +35,7 @@ class AvailabilityTest extends TestCase
         ]);
     }
 
-    public function createDataPatternOne(): Collection
+    private function createDataPatternOne(): Collection
     {
         $schemaOne = Schema::factory()->create([
             'type' => SchemaType::SELECT,
@@ -65,6 +67,29 @@ class AvailabilityTest extends TestCase
             'optionTwo' => $optionTwo,
             'item' => $item,
         ]);
+    }
+
+    private function prepareToCheckAvailabilityWithDirectProductItemRelation(int $itemQuantity): void
+    {
+        /** @var AvailabilityService $availabilityService */
+        $availabilityService = app(AvailabilityServiceContract::class);
+
+        $this->product->update(['available' => false]);
+        $schema = Schema::factory()->create([
+            'name' => 'schemaOne',
+            'type' => SchemaType::SELECT,
+            'required' => true,
+            'available' => false,
+        ]);
+        $this->product->schemas()->attach($schema->getKey());
+
+        $item = Item::factory()->create([
+            'quantity' => $itemQuantity,
+        ]);
+
+        $this->product->items()->attach($item->getKey(), ['quantity' => 10]);
+
+        $availabilityService->calculateProductAvailability($this->product->refresh());
     }
 
     /**
@@ -410,6 +435,24 @@ class AvailabilityTest extends TestCase
                 'id' => $data->get('optionTwo')->getKey(),
                 'available' => true,
             ]);
+    }
+
+    public function testAvailabilityWhenProductHasDirectItems() {
+        $this->prepareToCheckAvailabilityWithDirectProductItemRelation(10);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $this->product->getKey(),
+            'available' => true,
+        ]);
+    }
+
+    public function testAvailabilityWhenProductHasDirectItemsFailed() {
+        $this->prepareToCheckAvailabilityWithDirectProductItemRelation(9);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $this->product->getKey(),
+            'available' => false,
+        ]);
     }
 }
 
