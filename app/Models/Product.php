@@ -36,6 +36,7 @@ class Product extends Model implements AuditableContract
         'price_min',
         'price_max',
         'available',
+        'order',
     ];
 
     protected $auditInclude = [

@@ -14,6 +14,7 @@ class ProductCreateRequest extends SeoMetadataRulesRequest
             'description_short' => ['nullable', 'string', 'between:30,5000'],
             'public' => ['required', 'boolean'],
             'quantity_step' => ['numeric'],
+            'order' => ['nullable', 'numeric'],
 
             'media' => ['nullable', 'array'],
             'media.*' => ['uuid', 'exists:media,id'],
