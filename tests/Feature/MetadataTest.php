@@ -171,6 +171,46 @@ class MetadataTest extends TestCase
     }
 
     /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateMetadataSameKeys($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $product = Product::factory()->create();
+
+        $metadata = $product->metadata()->create([
+            'name' => 'Metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
+        $product2 = Product::factory()->create();
+
+        $metadata2 = $product2->metadata()->create([
+            'name' => 'Metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
+        $this->actingAs($this->$user)->patchJson("/products/id:{$product->getKey()}/metadata",
+            [
+                $metadata->name => 'new super value',
+            ])
+            ->assertOk()
+            ->assertJsonFragment(['data' => [
+                $metadata->name => 'new super value',
+            ]]);
+
+        $this->assertDatabaseHas('metadata', array_merge($metadata2->toArray(), [
+            'model_id' => $product2->getKey(),
+            'model_type' => Product::class,
+        ]));
+    }
+
+    /**
      * @dataProvider dataProvider
      */
     public function testUpdateMetadataPrivate($user, $data): void
