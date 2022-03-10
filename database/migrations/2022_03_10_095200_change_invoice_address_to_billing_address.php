@@ -20,13 +20,10 @@ return new class extends Migration
                 $order->invoice_address_id = $order->delivery_address_id;
                 $order->update();
             });
-        //
+
         Schema::table('orders', function (Blueprint $table) {
             $table->renameColumn('invoice_address_id', 'billing_address_id');
         });
-        /*Schema::table('orders', function (Blueprint $table) {
-            $table->uuid('billing_address_id')->nullable(false)->change();
-        });*/
     }
 
     /**
@@ -39,10 +36,7 @@ return new class extends Migration
         Schema::table('orders', function (Blueprint $table) {
             $table->renameColumn('billing_address_id', 'invoice_address_id');
         });
-        /*Schema::table('orders', function (Blueprint $table) {
-            $table->uuid('invoice_address_id')->nullable(true)->change();
-        });*/
-        //
+
         Order::query()
             ->whereColumn('invoice_address_id', 'delivery_address_id')
             ->each(function ($order) {
