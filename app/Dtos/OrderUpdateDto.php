@@ -17,7 +17,7 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
     private ?string $statusId;
     private ?string $shippingMethodId;
     private ?AddressDto $deliveryAddress;
-    private ?AddressDto $invoiceAddress;
+    private ?AddressDto $billingAddress;
 
     public function __construct(
         ?string $code,
@@ -29,7 +29,7 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
         ?string $statusId,
         ?string $shippingMethodId,
         ?AddressDto $deliveryAddress,
-        ?AddressDto $invoiceAddress
+        ?AddressDto $billingAddress
     ) {
         $this->code = $code;
         $this->email = $email;
@@ -40,7 +40,7 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
         $this->statusId = $statusId;
         $this->shippingMethodId = $shippingMethodId;
         $this->deliveryAddress = $deliveryAddress;
-        $this->invoiceAddress = $invoiceAddress;
+        $this->billingAddress = $billingAddress;
     }
 
     public function toArray(): array
@@ -55,7 +55,7 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
             'status_id' => $this->getStatusId(),
             'shipping_method_id' => $this->getShippingMethodId(),
             'delivery_address' => $this->getDeliveryAddress(),
-            'billing_address' => $this->getInvoiceAddress(),
+            'billing_address' => $this->getBillingAddress(),
         ];
     }
 
@@ -72,7 +72,7 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
                 $request->input('delivery_address.country'),
             ) : null;
 
-        $invoiceAddress = $request->exists('billing_address') ?
+        $billingAddress = $request->exists('billing_address') ?
             new AddressDto(
                 $request->input('billing_address.name'),
                 $request->input('billing_address.phone'),
@@ -93,7 +93,7 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
             $request->input('status_id'),
             $request->input('shipping_method'),
             $deliveryAddress,
-            $invoiceAddress,
+            $billingAddress,
         );
     }
 
@@ -142,8 +142,8 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
         return $this->deliveryAddress;
     }
 
-    public function getInvoiceAddress(): ?AddressDto
+    public function getBillingAddress(): ?AddressDto
     {
-        return $this->invoiceAddress;
+        return $this->billingAddress;
     }
 }
