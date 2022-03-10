@@ -13,6 +13,7 @@ use App\Services\Contracts\SettingsServiceContract;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
@@ -41,11 +42,11 @@ class FurgonetkaController extends Controller
             $request->tracking['description'] .
             $request->tracking['datetime'] .
             $request->tracking['branch'] .
-            config('furgonetka.webhook_salt')
+            Config::get('furgonetka.webhook_salt')
         );
 
         if ($control !== $request->control) {
-            return response()->json([
+            return Response::json([
                 'status' => 'ERROR',
                 'message' => 'control value not match',
             ], 400);
@@ -93,7 +94,7 @@ class FurgonetkaController extends Controller
         }
 
         try {
-            $client = new SoapClient(config('furgonetka.api_url'), [
+            $client = new SoapClient(Config::get('furgonetka.api_url'), [
                 'trace' => true,
                 'cache_wsdl' => false,
             ]);
@@ -242,7 +243,7 @@ class FurgonetkaController extends Controller
             'shipping_number' => $package->parcels->item->package_no,
         ]);
 
-        return response()->json([
+        return Response::json([
             'shipping_number' => $package->parcels->item->package_no,
         ], 201);
     }
@@ -251,13 +252,13 @@ class FurgonetkaController extends Controller
     {
         if (Storage::missing('furgonetka.key') || $refresh) {
             $response = Http::withBasicAuth(
-                config('furgonetka.client_id'),
-                config('furgonetka.client_secret'),
-            )->asForm()->post(config('furgonetka.auth_url') . '/oauth/token', [
+                Config::get('furgonetka.client_id'),
+                Config::get('furgonetka.client_secret'),
+            )->asForm()->post(Config::get('furgonetka.auth_url') . '/oauth/token', [
                 'grant_type' => 'password',
                 'scope' => 'api',
-                'username' => config('furgonetka.login'),
-                'password' => config('furgonetka.password'),
+                'username' => Config::get('furgonetka.login'),
+                'password' => Config::get('furgonetka.password'),
             ]);
 
             Storage::put('furgonetka.key', $response->json()['access_token'], 'private');

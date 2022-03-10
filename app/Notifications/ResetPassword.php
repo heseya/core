@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Lang;
 
 /**
@@ -42,7 +43,7 @@ class ResetPassword extends Notification
             'token' => $this->token,
             'email' => $notifiable->getEmailForPasswordReset(),
         ]);
-        $url = config('app.admin_url') . '/new-password?' . $param;
+        $url = Config::get('app.admin_url') . '/new-password?' . $param;
 
         return $this->buildMailMessage($url);
     }
@@ -60,7 +61,7 @@ class ResetPassword extends Notification
             ->action(Lang::get('Reset Password'), $url)
             ->line(
                 Lang::get('This password reset link will expire in :count minutes.', [
-                    'count' => config('auth.passwords.' . config('auth.defaults.passwords') . '.expire'),
+                    'count' => Config::get('auth.passwords.' . Config::get('auth.defaults.passwords') . '.expire'),
                 ])
             )
             ->line(

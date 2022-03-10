@@ -37,7 +37,7 @@ class RemoveApps extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): void
     {
         try {
             $apps = App::all();

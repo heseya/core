@@ -65,7 +65,7 @@ class WebHook extends Model implements AuditableContract
         return json_decode($value);
     }
 
-    public function setEventsAttribute($value)
+    public function setEventsAttribute($value): void
     {
         $this->attributes['events'] = json_encode($value);
     }

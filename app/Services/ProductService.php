@@ -21,7 +21,18 @@ class ProductService implements ProductServiceContract
                 fn ($item) => $product->items()->attach($item['id'], ['quantity' => $item['quantity']])
             );
         }
+        
         return $product;
+    }
+
+    public function updateMinMaxPrices(Product $product): void
+    {
+        $productMinMaxPrices = $this->getMinMaxPrices($product);
+        $product->update([
+            'price_min' => $productMinMaxPrices[0],
+            'price_max' => $productMinMaxPrices[1],
+        ]);
+
     }
 
     public function getMinMaxPrices(Product $product): array
@@ -35,15 +46,6 @@ class ProductService implements ProductServiceContract
             $product->price + $schemaMinMax[0],
             $product->price + $schemaMinMax[1],
         ];
-    }
-
-    public function updateMinMaxPrices(Product $product)
-    {
-        $productMinMaxPrices = $this->getMinMaxPrices($product);
-        $product->update([
-            'price_min' => $productMinMaxPrices[0],
-            'price_max' => $productMinMaxPrices[1],
-        ]);
     }
 
     private function getSchemasPrices(

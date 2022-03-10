@@ -2,13 +2,14 @@
 
 namespace App\Channels;
 
+use Illuminate\Support\Facades\Config;
 use Spatie\WebhookServer\Signer\Signer;
 
 class WebHookSigner implements Signer
 {
     public function signatureHeaderName(): string
     {
-        return config('webhook-server.signature_header_name');
+        return Config::get('webhook-server.signature_header_name');
     }
 
     public function calculateSignature(string $webhookUrl, array $payload, string $secret): string

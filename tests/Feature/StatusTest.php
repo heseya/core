@@ -157,7 +157,7 @@ class StatusTest extends TestCase
             ->deleteJson('/statuses/id:' . $this->status_model->getKey())
             ->assertNoContent();
 
-        $this->assertDeleted($this->status_model);
+        $this->assertModelMissing($this->status_model);
     }
 
     /**
