@@ -1,0 +1,9 @@
+Metadata:
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          faktura:
+            type: string
+            example: 'FV/2022/03/10/005'
