@@ -104,9 +104,9 @@ class Product extends Model implements AuditableContract
             ->orderByPivot('order');
     }
 
-    public function getRequiredSchemasAttribute(): Collection
+    public function requiredSchemas(): BelongsToMany
     {
-        return $this->schemas()->where('required', true)->get();
+        return $this->schemas()->where('required', true);
     }
 
     public function sets(): BelongsToMany
