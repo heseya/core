@@ -943,6 +943,14 @@ class OrderTest extends TestCase
                 'city' => 'Bydgoszcz',
                 'country' => 'PL',
             ],
+            'billing_address' => [
+                'name' => 'Wojtek Testowy',
+                'phone' => '+48123321123',
+                'address' => 'Gdańska 89/1',
+                'zip' => '12-123',
+                'city' => 'Bydgoszcz',
+                'country' => 'PL',
+            ],
             'items' => [
                 [
                     'product_id' => $product->getKey(),
@@ -984,6 +992,14 @@ class OrderTest extends TestCase
             'email' => 'test@example.com',
             'shipping_method_id' => $shippingMethod->getKey(),
             'delivery_address' => [
+                'name' => 'Wojtek Testowy',
+                'phone' => '+48123321123',
+                'address' => 'Gdańska 89/1',
+                'zip' => '12-123',
+                'city' => 'Bydgoszcz',
+                'country' => 'PL',
+            ],
+            'billing_address' => [
                 'name' => 'Wojtek Testowy',
                 'phone' => '+48123321123',
                 'address' => 'Gdańska 89/1',

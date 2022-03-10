@@ -65,6 +65,7 @@ class DiscountOrderTest extends TestCase
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address,
+            'billing_address' => $this->address,
             'items' => $this->items,
             'discounts' => [
                 $discount->code,
@@ -99,6 +100,7 @@ class DiscountOrderTest extends TestCase
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address,
+            'billing_address' => $this->address,
             'items' => $this->items,
             'discounts' => [
                 $discount->code,
@@ -126,6 +128,7 @@ class DiscountOrderTest extends TestCase
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address,
+            'billing_address' => $this->address,
             'items' => $this->items,
             'discounts' => [
                 $discount->code,
