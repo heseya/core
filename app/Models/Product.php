@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Collection;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
@@ -104,9 +103,9 @@ class Product extends Model implements AuditableContract
             ->orderByPivot('order');
     }
 
-    public function getRequiredSchemasAttribute(): Collection
+    public function requiredSchemas(): BelongsToMany
     {
-        return $this->schemas->where('required', true);
+        return $this->schemas()->where('required', true);
     }
 
     public function sets(): BelongsToMany

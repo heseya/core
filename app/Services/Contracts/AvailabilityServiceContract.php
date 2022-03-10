@@ -28,5 +28,5 @@ interface AvailabilityServiceContract
         int $index = 0
     ): bool;
 
-    public function checkIfOptionsItemsAreAvailable(Collection $options): bool;
+    public function isOptionsItemsAvailable(Collection $options): bool;
 }
