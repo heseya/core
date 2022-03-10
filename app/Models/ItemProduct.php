@@ -7,6 +7,6 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 class ItemProduct extends Pivot
 {
     protected $casts = [
-        'quantity' => 'float'
+        'quantity' => 'float',
     ];
 }

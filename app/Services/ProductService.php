@@ -16,13 +16,12 @@ class ProductService implements ProductServiceContract
         if ($itemsIds !== null) {
             $product->items()->detach();
             $items = new Collection($itemsIds);
-
             $items->each(
                 fn ($item) => $product->items()->attach($item['id'], ['quantity' => $item['quantity']])
             );
         }
 
-        return $product;
+        return $product->refresh();
     }
 
     public function getMinMaxPrices(Product $product): array
