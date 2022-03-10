@@ -176,7 +176,7 @@ class ProductSetService implements ProductSetServiceContract
         ]);
 
         if ($dto->getAttributesIds() !== null) {
-        $attributes = Collection::make($dto->getAttributesIds());
+            $attributes = Collection::make($dto->getAttributesIds());
             $set->attributes()->sync($attributes);
         }
 
