@@ -21,7 +21,7 @@ class Token extends Model
         'expires_at',
     ];
 
-    public function invalidate()
+    public function invalidate(): void
     {
         $this->update(['invalidated' => true]);
     }

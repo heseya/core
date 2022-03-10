@@ -58,7 +58,6 @@ use App\Services\TokenService;
 use App\Services\UrlService;
 use App\Services\UserService;
 use App\Services\WebHookService;
-use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -103,8 +102,12 @@ class AppServiceProvider extends ServiceProvider
             $this->app->bind($abstract, $concrete);
         }
 
-        if (class_exists(IdeHelperServiceProvider::class)) {
-            $this->app->register(IdeHelperServiceProvider::class);
+        /**
+         * Local register of ide helper.
+         * Needs to be full path.
+         */
+        if ($this->app->isLocal()) {
+            $this->app->register('\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider');
         }
     }
 

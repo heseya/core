@@ -3,7 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\SchemaType;
-use BenSampo\Enum\Rules\EnumKey;
+use App\Rules\EnumKey;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SchemaStoreRequest extends FormRequest

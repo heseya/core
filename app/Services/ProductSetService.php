@@ -75,7 +75,7 @@ class ProductSetService implements ProductSetServiceContract
             'public_parent' => $publicParent,
         ]);
 
-        $children = collect($dto->getChildrenIds());
+        $children = Collection::make($dto->getChildrenIds());
         if ($children->isNotEmpty()) {
             $children = $children->map(fn ($id) => ProductSet::findOrFail($id));
             $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->isPublic());
@@ -95,7 +95,7 @@ class ProductSetService implements ProductSetServiceContract
         bool $publicParent
     ): void {
         $children->each(
-            function ($child, $order) use ($parentId, $parentSlug, $publicParent) {
+            function ($child, $order) use ($parentId, $parentSlug, $publicParent): void {
                 if ($child->slugOverride) {
                     $childSlug = $child->slug;
                 } else {
@@ -153,7 +153,7 @@ class ProductSetService implements ProductSetServiceContract
             'slug' => Rule::unique('product_sets', 'slug')->ignoreModel($set),
         ])->validate();
 
-        $children = collect($dto->getChildrenIds())->map(fn ($id) => ProductSet::findOrFail($id));
+        $children = Collection::make($dto->getChildrenIds())->map(fn ($id) => ProductSet::findOrFail($id));
         $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->isPublic());
 
         $rootOrder = ProductSet::reversed()->first()->order + 1;

@@ -8,6 +8,7 @@ use App\Http\Resources\PaymentResource;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Config;
 use Throwable;
 
 class PaymentController extends Controller
@@ -18,11 +19,11 @@ class PaymentController extends Controller
             throw new StoreException('Order is already paid.');
         }
 
-        if (!array_key_exists($method, config('payable.aliases'))) {
+        if (!array_key_exists($method, Config::get('payable.aliases'))) {
             throw new StoreException('Unknown payment method.');
         }
 
-        $method_class = config('payable.aliases')[$method];
+        $method_class = Config::get('payable.aliases')[$method];
 
         $payment = $order->payments()->create([
             'method' => $method,
@@ -40,15 +41,13 @@ class PaymentController extends Controller
         return PaymentResource::make($payment);
     }
 
-    /**
-     */
     public function update(string $method, Request $request): mixed
     {
-        if (!array_key_exists($method, config('payable.aliases'))) {
+        if (!array_key_exists($method, Config::get('payable.aliases'))) {
             throw new StoreException('Unknown payment method.');
         }
 
-        $method_class = config('payable.aliases')[$method];
+        $method_class = Config::get('payable.aliases')[$method];
 
         return $method_class::translateNotification($request);
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class SchemaResource extends Resource
 {
@@ -10,7 +11,7 @@ class SchemaResource extends Resource
     {
         return [
             'id' => $this->getKey(),
-            'type' => $this->type->key,
+            'type' => Str::lower($this->type->key),
             'name' => $this->name,
             'description' => $this->description,
             'price' => $this->price,

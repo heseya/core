@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\MediaType;
+use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
@@ -52,7 +53,7 @@ class ProductTest extends TestCase
 
         $schema = $this->product->schemas()->create([
             'name' => 'Rozmiar',
-            'type' => 'select',
+            'type' => SchemaType::SELECT,
             'price' => 0,
             'required' => true,
         ]);
@@ -231,7 +232,7 @@ class ProductTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->$user)
-            ->getJson('/products?ids=' . $firstProduct->getKey() . ',' . $secondProduct->getKey());
+            ->json('GET', "/products?ids={$firstProduct->getKey()},{$secondProduct->getKey()}");
 
         $response
             ->assertOk()
@@ -1787,7 +1788,7 @@ class ProductTest extends TestCase
             ->deleteJson('/products/id:' . $product->getKey());
         $response->assertNoContent();
         $this->assertSoftDeleted($product);
-        $this->assertDeleted($media);
+        $this->assertModelMissing($media);
     }
 
     /**

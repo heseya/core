@@ -6,13 +6,14 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Validation\ValidationException;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
-use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 
 final class Handler extends ExceptionHandler
 {
@@ -126,7 +127,7 @@ final class Handler extends ExceptionHandler
                 app('sentry')->captureException($exception);
             }
 
-            if (config('app.debug') === true) {
+            if (Config::get('app.debug') === true) {
                 return parent::render($request, $exception);
             }
 

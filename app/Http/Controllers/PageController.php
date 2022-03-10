@@ -63,6 +63,6 @@ class PageController extends Controller
     {
         $this->pageService->reorder($request->input('pages'));
 
-        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

@@ -22,7 +22,7 @@ class StoreException extends Exception
         return $this->simpleLogs;
     }
 
-    public function logException()
+    public function logException(): void
     {
         Log::error(
             $this::class

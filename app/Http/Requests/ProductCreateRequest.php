@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Rules\CommaSeparatedUuids;
+use App\Rules\UniqueIdInRequest;
 
 class ProductCreateRequest extends SeoMetadataRulesRequest
 {
@@ -16,6 +17,7 @@ class ProductCreateRequest extends SeoMetadataRulesRequest
             'description_short' => ['nullable', 'string', 'between:30,5000'],
             'public' => ['required', 'boolean'],
             'quantity_step' => ['numeric'],
+            'order' => ['nullable', 'numeric'],
 
             'media' => ['nullable', 'array'],
             'media.*' => ['uuid', 'exists:media,id'],
@@ -31,6 +33,10 @@ class ProductCreateRequest extends SeoMetadataRulesRequest
 
             'attributes' => ['nullable', 'array'],
             'attributes.*' => [new CommaSeparatedUuids(['attributes,id', 'attribute_options,id'])],
+
+            'items' => ['nullable', 'array', new UniqueIdInRequest()],
+            'items.*.id' => ['uuid'],
+            'items.*.quantity' => ['numeric'],
         ]);
     }
 }

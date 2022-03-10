@@ -34,6 +34,7 @@ class Product extends Model implements AuditableContract
         'quantity_step',
         'price_min',
         'price_max',
+        'order',
     ];
 
     protected $auditInclude = [
@@ -74,6 +75,13 @@ class Product extends Model implements AuditableContract
 
     protected string $defaultSortBy = 'created_at';
     protected string $defaultSortDirection = 'desc';
+
+    public function items(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(Item::class, 'item_product')
+            ->withPivot('quantity');
+    }
 
     public function media(): BelongsToMany
     {
