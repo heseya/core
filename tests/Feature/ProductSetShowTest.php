@@ -446,7 +446,7 @@ class ProductSetShowTest extends TestCase
             'name' => 'test2',
             'description' => 'test2',
             'type' => 'text',
-            'global' => 0,
+            'global' => false,
         ]);
 
         $this->set->attributes()->attach([
