@@ -24,4 +24,9 @@ abstract class ItemEvent extends WebHookEvent
     {
         return $this->getModelClass($this->item);
     }
+
+    public function getItem(): Item
+    {
+        return $this->item;
+    }
 }

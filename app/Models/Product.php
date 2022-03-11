@@ -34,6 +34,7 @@ class Product extends Model implements AuditableContract
         'quantity_step',
         'price_min',
         'price_max',
+        'available',
         'order',
     ];
 
@@ -95,27 +96,16 @@ class Product extends Model implements AuditableContract
         return $this->belongsToMany(Tag::class, 'product_tags');
     }
 
-    public function getAvailableAttribute(): bool
-    {
-        if ($this->schemas->count() <= 0) {
-            return true;
-        }
-
-        // a product is available if all required schematics are available
-        foreach ($this->schemas as $schema) {
-            if ($schema->required && !$schema->available) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     public function schemas(): BelongsToMany
     {
         return $this
             ->belongsToMany(Schema::class, 'product_schemas')
             ->orderByPivot('order');
+    }
+
+    public function requiredSchemas(): BelongsToMany
+    {
+        return $this->schemas()->where('required', true);
     }
 
     public function sets(): BelongsToMany

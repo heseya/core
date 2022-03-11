@@ -13,6 +13,7 @@ use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Models\SeoMetadata;
 use App\Models\WebHook;
+use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use Carbon\Carbon;
 use Illuminate\Events\CallQueuedListener;
@@ -34,12 +35,14 @@ class ProductTest extends TestCase
     private array $expected_short;
 
     private ProductServiceContract $productService;
+    private AvailabilityServiceContract $availabilityService;
 
     public function setUp(): void
     {
         parent::setUp();
 
         $this->productService = App::make(ProductServiceContract::class);
+        $this->availabilityService = App::make(AvailabilityServiceContract::class);
 
         $this->product = Product::factory()->create([
             'public' => true,
@@ -84,6 +87,8 @@ class ProductTest extends TestCase
         $this->hidden_product = Product::factory()->create([
             'public' => false,
         ]);
+
+        $this->availabilityService->calculateAvailabilityOnOrderAndRestock($item);
 
         /**
          * Expected short response
