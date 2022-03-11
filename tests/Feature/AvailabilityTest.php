@@ -338,10 +338,6 @@ class AvailabilityTest extends TestCase
 
         $this->product->schemas()->saveMany([$data->get('schemaOne'), $data->get('schemaTwo')]);
 
-        $this->product->update([
-            'available' => true,
-        ]);
-
         $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'test@test.test',
             'shipping_method_id' => ShippingMethod::factory()->create()->getKey(),
@@ -380,7 +376,7 @@ class AvailabilityTest extends TestCase
                 'available' => false,
             ]);
 
-        Event::assertNotDispatched(ProductUpdated::class);
+        Event::assertDispatched(ProductUpdated::class);
     }
 
     /**
