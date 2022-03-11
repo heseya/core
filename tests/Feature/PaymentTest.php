@@ -87,12 +87,15 @@ class PaymentTest extends TestCase
                 'continue_url' => 'continue_url',
             ]);
 
+        $payment = Payment::find($response->getData()->data->id);
+
         $response
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'payu',
                 'paid' => false,
                 'amount' => $this->order->summary,
+                'date' => $payment->created_at,
                 'redirect_url' => 'payment_url',
                 'continue_url' => 'continue_url',
             ]);
@@ -177,12 +180,15 @@ class PaymentTest extends TestCase
         $response = $this->actingAs($this->$user)
             ->postJson("/orders/$code/pay/offline");
 
+        $payment = Payment::find($response->getData()->data->id);
+
         $response
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'offline',
                 'paid' => true,
                 'amount' => $this->order->summary,
+                'date' => $payment->created_at,
                 'redirect_url' => null,
                 'continue_url' => null,
             ]);
@@ -222,12 +228,15 @@ class PaymentTest extends TestCase
         $response = $this->actingAs($this->$user)
             ->postJson("/orders/$code/pay/offline");
 
+        $payment = Payment::find($response->getData()->data->id);
+
         $response
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'offline',
                 'paid' => true,
                 'amount' => $amount,
+                'date' => $payment->created_at,
                 'redirect_url' => null,
                 'continue_url' => null,
             ]);

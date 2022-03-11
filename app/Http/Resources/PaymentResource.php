@@ -13,6 +13,7 @@ class PaymentResource extends Resource
             'method' => $this->method,
             'paid' => $this->paid,
             'amount' => $this->amount,
+            'date' => $this->created_at,
             'redirect_url' => $this->redirect_url,
             'continue_url' => $this->continue_url,
         ];
