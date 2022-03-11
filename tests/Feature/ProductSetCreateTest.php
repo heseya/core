@@ -684,11 +684,13 @@ class ProductSetCreateTest extends TestCase
         $this->assertDatabaseHas('product_sets', $set + $defaults + [
                 'parent_id' => null,
             ])
-            ->assertDatabaseHas('attributes', [
-                'id' => $attrOne->getKey(),
+            ->assertDatabaseHas('attribute_product_set', [
+                'attribute_id' => $attrOne->getKey(),
+                'product_set_id' => $productSet->getKey(),
             ])
-            ->assertDatabaseHas('attributes', [
-                'id' => $attrTwo->getKey(),
+            ->assertDatabaseHas('attribute_product_set', [
+                'attribute_id' => $attrTwo->getKey(),
+                'product_set_id' => $productSet->getKey(),
             ]);
 
         $this->assertTrue($productSet->attributes->contains($attrOne));
