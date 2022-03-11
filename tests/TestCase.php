@@ -68,4 +68,10 @@ abstract class TestCase extends BaseTestCase
         return $this;
     }
 
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        app()->forgetInstances();
+    }
 }
