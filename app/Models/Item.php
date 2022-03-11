@@ -54,6 +54,11 @@ class Item extends Model implements AuditableContract
         return $this->hasMany(Deposit::class);
     }
 
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class);
+    }
+
     public function getQuantity(string|null $day): float
     {
         if ($day) {
