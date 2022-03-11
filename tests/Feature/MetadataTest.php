@@ -28,7 +28,7 @@ class MetadataTest extends TestCase
         parent::setUp();
     }
 
-    public function dataProvider(): array
+    public function dataFirstPartProvider(): array
     {
         return [
             'products as user' => ['user', ['model' => Product::class, 'prefix_url' => 'products', 'role' => 'products.edit']],
@@ -51,7 +51,12 @@ class MetadataTest extends TestCase
 
             'orders as user' => ['user', ['model' => Order::class, 'prefix_url' => 'orders', 'role' => 'orders.edit']],
             'orders as application' => ['application', ['model' => Order::class, 'prefix_url' => 'orders', 'role' => 'orders.edit']],
+        ];
+    }
 
+    public function dataSecondPartProvider(): array
+    {
+        return [
             'statuses as user' => ['user', ['model' => Status::class, 'prefix_url' => 'statuses', 'role' => 'statuses.edit']],
             'statuses as application' => ['application', ['model' => Status::class, 'prefix_url' => 'statuses', 'role' => 'statuses.edit']],
 
@@ -79,7 +84,7 @@ class MetadataTest extends TestCase
     }
 
     /**
-     * @dataProvider dataProvider
+     * @dataProvider dataFirstPartProvider
      */
     public function testAddMetadata($user, $data): void
     {
@@ -108,7 +113,7 @@ class MetadataTest extends TestCase
     }
 
     /**
-     * @dataProvider dataProvider
+     * @dataProvider dataFirstPartProvider
      */
     public function testAddMetadataPrivate($user, $data): void
     {
@@ -137,7 +142,7 @@ class MetadataTest extends TestCase
     }
 
     /**
-     * @dataProvider dataProvider
+     * @dataProvider dataFirstPartProvider
      */
     public function testUpdateMetadata($user, $data): void
     {
@@ -211,7 +216,7 @@ class MetadataTest extends TestCase
     }
 
     /**
-     * @dataProvider dataProvider
+     * @dataProvider dataFirstPartProvider
      */
     public function testUpdateMetadataPrivate($user, $data): void
     {
@@ -245,7 +250,7 @@ class MetadataTest extends TestCase
     }
 
     /**
-     * @dataProvider dataProvider
+     * @dataProvider dataFirstPartProvider
      */
     public function testDeleteMetadata($user, $data): void
     {
@@ -291,7 +296,7 @@ class MetadataTest extends TestCase
     }
 
     /**
-     * @dataProvider dataProvider
+     * @dataProvider dataFirstPartProvider
      */
     public function testDeleteMetadataPrivate($user, $data): void
     {
@@ -334,5 +339,53 @@ class MetadataTest extends TestCase
             ->assertJsonMissing([
                 $metadata2->name => $metadata2->value
             ]);
+    }
+
+    /**
+     * @dataProvider dataSecondPartProvider
+     */
+    public function testAddMetadataSecondPart($user, $data): void
+    {
+        $this->testAddMetadata($user, $data);
+    }
+
+    /**
+     * @dataProvider dataSecondPartProvider
+     */
+    public function testAddMetadataPrivateSecondPart($user, $data): void
+    {
+        $this->testAddMetadataPrivate($user, $data);
+    }
+
+    /**
+     * @dataProvider dataSecondPartProvider
+     */
+    public function testUpdateMetadataSecondPart($user, $data): void
+    {
+        $this->testUpdateMetadata($user, $data);
+    }
+
+    /**
+     * @dataProvider dataSecondPartProvider
+     */
+    public function testUpdateMetadataPrivateSecondPart($user, $data): void
+    {
+        $this->testUpdateMetadataPrivate($user, $data);
+    }
+
+    /**
+     * @dataProvider dataSecondPartProvider
+     */
+    public function testDeleteMetadataSecondPart($user, $data): void
+    {
+        $this->testDeleteMetadata($user, $data);
+    }
+
+    /**
+     * @dataProvider dataSecondPartProvider
+     */
+    public function testDeleteMetadataPrivateSecondPart($user, $data): void
+    {
+        $this->testDeleteMetadataPrivate($user, $data);
     }
 }
