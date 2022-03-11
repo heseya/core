@@ -71,4 +71,9 @@ class Item extends Model implements AuditableContract
         }
         return $this->quantity ?? 0;
     }
+
+    public function options(): BelongsToMany
+    {
+        return $this->belongsToMany(Option::class, 'option_items');
+    }
 }
