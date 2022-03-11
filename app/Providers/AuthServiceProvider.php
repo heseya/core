@@ -36,11 +36,7 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('authenticated', [AuthenticatedPolicy::class, 'authenticated']);
 
         Password::defaults(function () {
-            return Password::min(10)
-                ->letters()
-                ->mixedCase()
-                ->numbers()
-                ->symbols()
+            return Password::min(12)
                 ->uncompromised();
         });
     }
