@@ -119,8 +119,6 @@ class AvailabilityTest extends TestCase
                 'available' => true,
             ]);
 
-        Event::assertDispatched(ProductUpdated::class);
-
         $this->assertTrue($item->options->every(fn ($option) => $option->available));
         $this->assertTrue($item->options->pluck('schema')->every(fn ($schema) => $schema->available));
         $this->assertTrue($this->product->refresh()->available);
@@ -135,7 +133,6 @@ class AvailabilityTest extends TestCase
     public function testRestockUnavailable($user)
     {
         $this->$user->givePermissionTo('deposits.add');
-
 
         Event::fake(ProductUpdated::class);
 
@@ -226,6 +223,12 @@ class AvailabilityTest extends TestCase
      */
     public function testProductRequiresSingleItemWithGreaterQuantity($user)
     {
+        Event::fake(ProductUpdated::class);
+
+        $this->product->update([
+            'available' => false,
+        ]);
+
         $this->$user->givePermissionTo('deposits.add');
 
         $data = $this->createDataPatternOne();
@@ -259,6 +262,8 @@ class AvailabilityTest extends TestCase
                 'id' => $data->get('optionTwo')->getKey(),
                 'available' => true,
             ]);
+
+        Event::assertDispatched(ProductUpdated::class);
     }
 
     /**
@@ -267,6 +272,12 @@ class AvailabilityTest extends TestCase
      */
     public function testProductRequiresSingleItemWithGreaterQuantityFailed($user)
     {
+        Event::fake(ProductUpdated::class);
+
+        $this->product->update([
+            'available' => false,
+        ]);
+
         $this->$user->givePermissionTo('deposits.add');
 
         $data = $this->createDataPatternOne();
@@ -300,6 +311,8 @@ class AvailabilityTest extends TestCase
                 'id' => $data->get('optionTwo')->getKey(),
                 'available' => true,
             ]);
+
+        Event::assertNotDispatched(ProductUpdated::class);
     }
 
     /**
@@ -307,6 +320,8 @@ class AvailabilityTest extends TestCase
      */
     public function testUnavailableAfterOrder($user)
     {
+        Event::fake(ProductUpdated::class);
+
         $this->$user->givePermissionTo('orders.add');
 
         $data = $this->createDataPatternOne();
@@ -360,6 +375,8 @@ class AvailabilityTest extends TestCase
                 'id' => $data->get('optionTwo')->getKey(),
                 'available' => false,
             ]);
+
+        Event::assertNotDispatched(ProductUpdated::class);
     }
 
     /**
@@ -367,6 +384,8 @@ class AvailabilityTest extends TestCase
      */
     public function testAvailableAfterOrderCancel($user)
     {
+        Event::fake(ProductUpdated::class);
+
         $data = $this->createDataPatternOne();
 
         $data->get('item')->update([
@@ -431,6 +450,8 @@ class AvailabilityTest extends TestCase
                 'id' => $data->get('optionTwo')->getKey(),
                 'available' => true,
             ]);
+
+        Event::assertDispatched(ProductUpdated::class);
     }
 }
 
