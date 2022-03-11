@@ -134,6 +134,10 @@ class AvailabilityTest extends TestCase
     {
         $this->$user->givePermissionTo('deposits.add');
 
+        $this->product->update([
+            'available' => false,
+        ]);
+
         Event::fake(ProductUpdated::class);
 
         $schemaOne = Schema::factory()->create([
