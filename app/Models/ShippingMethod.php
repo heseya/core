@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use OwenIt\Auditing\Auditable;
@@ -25,8 +26,12 @@ class ShippingMethod extends Model implements AuditableContract
         'black_list',
         'shipping_time_min',
         'shipping_time_max',
+        'shipping_type',
+        'integration_key',
+        'app_id',
+        'deletable',
+        'shipping_type',
     ];
-
     /**
      * The attributes that should be cast to native types.
      *
@@ -36,6 +41,11 @@ class ShippingMethod extends Model implements AuditableContract
         'public' => 'boolean',
         'black_list' => 'boolean',
     ];
+
+    public function app(): BelongsTo
+    {
+        return $this->belongsTo(App::class);
+    }
 
     public function orders(): HasMany
     {
@@ -56,6 +66,12 @@ class ShippingMethod extends Model implements AuditableContract
     {
         return $this->belongsToMany(Country::class, 'shipping_method_country');
     }
+
+    //TODO
+//    public function shippingPoints(): BelongsToMany
+//    {
+//        return $this->belongsToMany(ShippingPoints:: class, 'shipping_method_shipping_point');
+//    }
 
     public function getPrice(float $orderTotal): float
     {
