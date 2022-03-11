@@ -21,14 +21,14 @@ use App\Models\Status;
 use App\Models\User;
 use Tests\TestCase;
 
-class MetadataTest extends TestCase
+class MetadataFirstPartTest extends TestCase
 {
     public function setUp(): void
     {
         parent::setUp();
     }
 
-    public function dataFirstPartProvider(): array
+    public function dataProvider(): array
     {
         return [
             'products as user' => ['user', ['model' => Product::class, 'prefix_url' => 'products', 'role' => 'products.edit']],
@@ -54,37 +54,8 @@ class MetadataTest extends TestCase
         ];
     }
 
-    public function dataSecondPartProvider(): array
-    {
-        return [
-            'statuses as user' => ['user', ['model' => Status::class, 'prefix_url' => 'statuses', 'role' => 'statuses.edit']],
-            'statuses as application' => ['application', ['model' => Status::class, 'prefix_url' => 'statuses', 'role' => 'statuses.edit']],
-
-            'shipping methods as user' => ['user', ['model' => ShippingMethod::class, 'prefix_url' => 'shipping-methods', 'role' => 'shipping_methods.edit']],
-            'shipping methods as application' => ['application', ['model' => ShippingMethod::class, 'prefix_url' => 'shipping-methods', 'role' => 'shipping_methods.edit']],
-
-            'package templates as user' => ['user', ['model' => PackageTemplate::class, 'prefix_url' => 'package-templates', 'role' => 'packages.edit']],
-            'package templates as application' => ['application', ['model' => PackageTemplate::class, 'prefix_url' => 'package-templates', 'role' => 'packages.edit']],
-
-            'users as user' => ['user', ['model' => User::class, 'prefix_url' => 'users', 'role' => 'users.edit']],
-            'users as application' => ['application', ['model' => User::class, 'prefix_url' => 'users', 'role' => 'users.edit']],
-
-            'roles as user' => ['user', ['model' => Role::class, 'prefix_url' => 'roles', 'role' => 'roles.edit']],
-            'roles as application' => ['application', ['model' => Role::class, 'prefix_url' => 'roles', 'role' => 'roles.edit']],
-
-            'pages as user' => ['user', ['model' => Page::class, 'prefix_url' => 'pages', 'role' => 'pages.edit']],
-            'pages as application' => ['application', ['model' => Page::class, 'prefix_url' => 'pages', 'role' => 'pages.edit']],
-
-            'apps as user' => ['user', ['model' => App::class, 'prefix_url' => 'apps', 'role' => 'apps.install']],
-            'apps as application' => ['application', ['model' => App::class, 'prefix_url' => 'apps', 'role' => 'apps.install']],
-
-            'media as user' => ['user', ['model' => Media::class, 'prefix_url' => 'media', 'role' => 'products.edit']],
-            'media as application' => ['application', ['model' => Media::class, 'prefix_url' => 'media', 'role' => 'products.edit']],
-        ];
-    }
-
     /**
-     * @dataProvider dataFirstPartProvider
+     * @dataProvider dataProvider
      */
     public function testAddMetadata($user, $data): void
     {
@@ -113,7 +84,7 @@ class MetadataTest extends TestCase
     }
 
     /**
-     * @dataProvider dataFirstPartProvider
+     * @dataProvider dataProvider
      */
     public function testAddMetadataPrivate($user, $data): void
     {
@@ -142,7 +113,7 @@ class MetadataTest extends TestCase
     }
 
     /**
-     * @dataProvider dataFirstPartProvider
+     * @dataProvider dataProvider
      */
     public function testUpdateMetadata($user, $data): void
     {
@@ -216,7 +187,7 @@ class MetadataTest extends TestCase
     }
 
     /**
-     * @dataProvider dataFirstPartProvider
+     * @dataProvider dataProvider
      */
     public function testUpdateMetadataPrivate($user, $data): void
     {
@@ -250,7 +221,7 @@ class MetadataTest extends TestCase
     }
 
     /**
-     * @dataProvider dataFirstPartProvider
+     * @dataProvider dataProvider
      */
     public function testDeleteMetadata($user, $data): void
     {
@@ -296,7 +267,7 @@ class MetadataTest extends TestCase
     }
 
     /**
-     * @dataProvider dataFirstPartProvider
+     * @dataProvider dataProvider
      */
     public function testDeleteMetadataPrivate($user, $data): void
     {
@@ -339,53 +310,5 @@ class MetadataTest extends TestCase
             ->assertJsonMissing([
                 $metadata2->name => $metadata2->value
             ]);
-    }
-
-    /**
-     * @dataProvider dataSecondPartProvider
-     */
-    public function testAddMetadataSecondPart($user, $data): void
-    {
-        $this->testAddMetadata($user, $data);
-    }
-
-    /**
-     * @dataProvider dataSecondPartProvider
-     */
-    public function testAddMetadataPrivateSecondPart($user, $data): void
-    {
-        $this->testAddMetadataPrivate($user, $data);
-    }
-
-    /**
-     * @dataProvider dataSecondPartProvider
-     */
-    public function testUpdateMetadataSecondPart($user, $data): void
-    {
-        $this->testUpdateMetadata($user, $data);
-    }
-
-    /**
-     * @dataProvider dataSecondPartProvider
-     */
-    public function testUpdateMetadataPrivateSecondPart($user, $data): void
-    {
-        $this->testUpdateMetadataPrivate($user, $data);
-    }
-
-    /**
-     * @dataProvider dataSecondPartProvider
-     */
-    public function testDeleteMetadataSecondPart($user, $data): void
-    {
-        $this->testDeleteMetadata($user, $data);
-    }
-
-    /**
-     * @dataProvider dataSecondPartProvider
-     */
-    public function testDeleteMetadataPrivateSecondPart($user, $data): void
-    {
-        $this->testDeleteMetadataPrivate($user, $data);
     }
 }
