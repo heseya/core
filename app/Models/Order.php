@@ -41,7 +41,7 @@ class Order extends Model implements AuditableContract
         'shipping_price',
         'shipping_number',
         'delivery_address_id',
-        'invoice_address_id',
+        'billing_address_id',
         'created_at',
         'user_id',
         'user_type',
@@ -59,14 +59,14 @@ class Order extends Model implements AuditableContract
         'shipping_price',
         'shipping_number',
         'delivery_address_id',
-        'invoice_address_id',
+        'billing_address_id',
     ];
 
     protected $attributeModifiers = [
         'status_id' => StatusRedactor::class,
         'shipping_method_id' => ShippingMethodRedactor::class,
         'delivery_address_id' => AddressRedactor::class,
-        'invoice_address_id' => AddressRedactor::class,
+        'billing_address_id' => AddressRedactor::class,
     ];
 
     protected array $searchable = [
@@ -181,13 +181,13 @@ class Order extends Model implements AuditableContract
 
     /**
      * @OA\Property(
-     *   property="invoice_address",
+     *   property="billing_address",
      *   ref="#/components/schemas/Address",
      * )
      */
     public function invoiceAddress(): HasOne
     {
-        return $this->hasOne(Address::class, 'id', 'invoice_address_id');
+        return $this->hasOne(Address::class, 'id', 'billing_address_id');
     }
 
     public function deposits(): HasManyThrough

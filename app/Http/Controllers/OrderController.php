@@ -107,8 +107,8 @@ class OrderController extends Controller
         $shippingMethod = ShippingMethod::findOrFail($request->input('shipping_method_id'));
         $deliveryAddress = Address::firstOrCreate($validated['delivery_address']);
 
-        if ($request->filled('invoice_address.name')) {
-            $invoiceAddress = Address::firstOrCreate($validated['invoice_address']);
+        if ($request->filled('billing_address.name')) {
+            $invoiceAddress = Address::firstOrCreate($validated['billing_address']);
         }
 
         $order = Order::create([
@@ -120,7 +120,7 @@ class OrderController extends Controller
             'shipping_price' => 0.0,
             'status_id' => Status::select('id')->orderBy('order')->first()->getKey(),
             'delivery_address_id' => $deliveryAddress->getKey(),
-            'invoice_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
+            'billing_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
             'user_id' => Auth::user()->getKey(),
             'user_type' => Auth::user()::class,
         ]);

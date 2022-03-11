@@ -55,7 +55,7 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
             'status_id' => $this->getStatusId(),
             'shipping_method_id' => $this->getShippingMethodId(),
             'delivery_address' => $this->getDeliveryAddress(),
-            'invoice_address' => $this->getInvoiceAddress(),
+            'billing_address' => $this->getInvoiceAddress(),
         ];
     }
 
@@ -72,15 +72,15 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
                 $request->input('delivery_address.country'),
             ) : null;
 
-        $invoiceAddress = $request->exists('invoice_address') ?
+        $invoiceAddress = $request->exists('billing_address') ?
             new AddressDto(
-                $request->input('invoice_address.name'),
-                $request->input('invoice_address.phone'),
-                $request->input('invoice_address.address'),
-                $request->input('invoice_address.vat'),
-                $request->input('invoice_address.zip'),
-                $request->input('invoice_address.city'),
-                $request->input('invoice_address.country'),
+                $request->input('billing_address.name'),
+                $request->input('billing_address.phone'),
+                $request->input('billing_address.address'),
+                $request->input('billing_address.vat'),
+                $request->input('billing_address.zip'),
+                $request->input('billing_address.city'),
+                $request->input('billing_address.country'),
             ) : null;
 
         return new self(
