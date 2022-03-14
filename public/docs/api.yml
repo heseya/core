@@ -277,6 +277,8 @@ paths:
                     items:
                       $ref: '#/components/schemas/Event'
                 type: object
+  /filters:
+    $ref: './paths/Filters.yml#/Filters'
   /furgonetka/create-package:
     $ref: './paths/Furgonetka.yml#/FurgonetkaCreatePackage'
   /items:
