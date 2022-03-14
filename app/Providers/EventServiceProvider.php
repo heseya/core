@@ -10,6 +10,7 @@ use App\Events\ItemDeleted;
 use App\Events\ItemUpdated;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
+use App\Events\OrderRequestedShipping;
 use App\Events\OrderUpdated;
 use App\Events\OrderUpdatedStatus;
 use App\Events\PageCreated;
@@ -72,6 +73,9 @@ class EventServiceProvider extends ServiceProvider
             WebHookEventListener::class,
         ],
         OrderUpdated::class => [
+            WebHookEventListener::class,
+        ],
+        OrderRequestedShipping::class => [
             WebHookEventListener::class,
         ],
         PageCreated::class => [

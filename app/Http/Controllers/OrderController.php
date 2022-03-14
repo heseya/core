@@ -12,6 +12,7 @@ use App\Exceptions\OrderException;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderIndexRequest;
 use App\Http\Requests\OrderItemsRequest;
+use App\Http\Requests\OrderShippingListRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Resources\OrderPublicResource;
@@ -276,5 +277,12 @@ class OrderController extends Controller
         Gate::inspect('showUserOrder', [Order::class, $order]);
 
         return OrderResource::make($order);
+    }
+
+    public function shippingLists(Order $order, OrderShippingListRequest $request): JsonResource
+    {
+        return OrderResource::make(
+            $this->orderService->shippingList($order, $request->package_template_id)
+        );
     }
 }
