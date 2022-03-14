@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('shipping_type')->default('none');
             $table->string('integration_key')->nullable();
             $table->string('app_id')->nullable()->default(null);
-            $table->boolean('deletable')->default(false);
         });
     }
 

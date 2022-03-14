@@ -24,7 +24,6 @@ class ShippingMethodDto extends Dto
     protected ?array $shipping_points;
     protected string|null $app_id;
 
-
     public static function instantiateFromRequest(
         ShippingMethodStoreRequest|ShippingMethodUpdateRequest $request,
     ): self {

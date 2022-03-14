@@ -60,7 +60,6 @@ class ShippingMethodService implements ShippingMethodServiceContract
         $attributes = array_merge(
             $shippingMethodDto->toArray(),
             ['order' => ShippingMethod::count()],
-            ['deletable' => $shippingMethodDto->getAppId() === null],
         );
 
         $shippingMethod = ShippingMethod::create($attributes);
@@ -92,7 +91,7 @@ class ShippingMethodService implements ShippingMethodServiceContract
     public function update(ShippingMethod $shippingMethod, ShippingMethodDto $shippingMethodDto): ShippingMethod
     {
         $shippingMethod->update(
-            $shippingMethodDto->toArray() + ['deletable' => $shippingMethodDto->getAppId() === null],
+            $shippingMethodDto->toArray(),
         );
 
         if ($shippingMethodDto->getShippingPoints() !== null) {
@@ -135,7 +134,7 @@ class ShippingMethodService implements ShippingMethodServiceContract
         if ($shippingMethod->orders()->count() > 0) {
             throw new StoreException(__('admin.error.delete_with_relations'));
         }
-        if($shippingMethod->deletable === false && $shippingMethod->app_id !== Auth::id()) {
+        if (!$shippingMethod->deletable) {
             throw new StoreException('This shipping method belongs to other application');
         }
 
@@ -144,16 +143,16 @@ class ShippingMethodService implements ShippingMethodServiceContract
 
     private function syncShippingPoints(ShippingMethodDto $shippingMethodDto, ShippingMethod $shippingMethod): void
     {
-            $addresses = new Collection();
-            foreach ($shippingMethodDto->getShippingPoints() as $shippingPoint) {
-                if (array_key_exists('id', $shippingPoint)) {
-                    Address::where('id', $shippingPoint['id'])->update($shippingPoint);
-                    $address = Address::find($shippingPoint['id']);
-                } else {
-                    $address = Address::create($shippingPoint);
-                }
-                $addresses->push($address);
+        $addresses = new Collection();
+        foreach ($shippingMethodDto->getShippingPoints() as $shippingPoint) {
+            if (array_key_exists('id', $shippingPoint)) {
+                Address::where('id', $shippingPoint['id'])->update($shippingPoint);
+                $address = Address::find($shippingPoint['id']);
+            } else {
+                $address = Address::create($shippingPoint);
             }
-            $shippingMethod->shippingPoints()->sync($addresses);
+            $addresses->push($address);
+        }
+        $shippingMethod->shippingPoints()->sync($addresses);
     }
 }

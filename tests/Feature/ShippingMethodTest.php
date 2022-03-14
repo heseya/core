@@ -9,7 +9,6 @@ use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\PriceRange;
 use App\Models\ShippingMethod;
-use App\Models\User;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
@@ -520,7 +519,6 @@ class ShippingMethodTest extends TestCase
             ->assertJsonFragment(['shipping_type' => ShippingType::NONE]);
 
         $this->assertDatabaseHas('shipping_methods', $shipping_method + [
-                'deletable' => $this->$user instanceof User,
                 'app_id' => $this->$user instanceof App ? $this->$user->getKey() : null,
             ])
             ->assertDatabaseHas('address_shipping_method', [
@@ -756,7 +754,6 @@ class ShippingMethodTest extends TestCase
     {
         $app = App::factory()->create();
         $shippingMethod = ShippingMethod::factory()->create([
-            'deletable' => false,
             'app_id' => $app->getKey(),
         ]);
         $this->$user->givePermissionTo('shipping_methods.remove');
