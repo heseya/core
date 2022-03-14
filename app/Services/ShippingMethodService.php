@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Dtos\ShippingMethodDto;
 use App\Exceptions\StoreException;
+use App\Models\Address;
 use App\Models\ShippingMethod;
 use App\Services\Contracts\ShippingMethodServiceContract;
 use Illuminate\Database\Eloquent\Builder;
@@ -59,9 +60,14 @@ class ShippingMethodService implements ShippingMethodServiceContract
         $attributes = array_merge(
             $shippingMethodDto->toArray(),
             ['order' => ShippingMethod::count()],
+            ['deletable' => $shippingMethodDto->getAppId() === null],
         );
 
         $shippingMethod = ShippingMethod::create($attributes);
+
+        if ($shippingMethodDto->getShippingPoints() !== null) {
+            $this->syncShippingPoints($shippingMethodDto, $shippingMethod);
+        }
 
         if ($shippingMethodDto->getPaymentMethods() !== null) {
             $shippingMethod->paymentMethods()->sync($shippingMethodDto->getPaymentMethods());
@@ -85,7 +91,13 @@ class ShippingMethodService implements ShippingMethodServiceContract
 
     public function update(ShippingMethod $shippingMethod, ShippingMethodDto $shippingMethodDto): ShippingMethod
     {
-        $shippingMethod->update($shippingMethodDto->toArray());
+        $shippingMethod->update(
+            $shippingMethodDto->toArray() + ['deletable' => $shippingMethodDto->getAppId() === null],
+        );
+
+        if ($shippingMethodDto->getShippingPoints() !== null) {
+            $this->syncShippingPoints($shippingMethodDto, $shippingMethod);
+        }
 
         if ($shippingMethodDto->getPaymentMethods() !== null) {
             $shippingMethod->paymentMethods()->sync($shippingMethodDto->getPaymentMethods());
@@ -123,7 +135,25 @@ class ShippingMethodService implements ShippingMethodServiceContract
         if ($shippingMethod->orders()->count() > 0) {
             throw new StoreException(__('admin.error.delete_with_relations'));
         }
+        if($shippingMethod->deletable === false && $shippingMethod->app_id !== Auth::id()) {
+            throw new StoreException('This shipping method belongs to other application');
+        }
 
         $shippingMethod->delete();
+    }
+
+    private function syncShippingPoints(ShippingMethodDto $shippingMethodDto, ShippingMethod $shippingMethod): void
+    {
+            $addresses = new Collection();
+            foreach ($shippingMethodDto->getShippingPoints() as $shippingPoint) {
+                if (array_key_exists('id', $shippingPoint)) {
+                    Address::where('id', $shippingPoint['id'])->update($shippingPoint);
+                    $address = Address::find($shippingPoint['id']);
+                } else {
+                    $address = Address::create($shippingPoint);
+                }
+                $addresses->push($address);
+            }
+            $shippingMethod->shippingPoints()->sync($addresses);
     }
 }

@@ -40,6 +40,7 @@ class ShippingMethod extends Model implements AuditableContract
     protected $casts = [
         'public' => 'boolean',
         'black_list' => 'boolean',
+        'deletable' => 'boolean',
     ];
 
     public function app(): BelongsTo
@@ -67,11 +68,10 @@ class ShippingMethod extends Model implements AuditableContract
         return $this->belongsToMany(Country::class, 'shipping_method_country');
     }
 
-    //TODO
-//    public function shippingPoints(): BelongsToMany
-//    {
-//        return $this->belongsToMany(ShippingPoints:: class, 'shipping_method_shipping_point');
-//    }
+    public function shippingPoints(): BelongsToMany
+    {
+        return $this->belongsToMany(Address:: class, 'address_shipping_method');
+    }
 
     public function getPrice(float $orderTotal): float
     {
