@@ -935,7 +935,7 @@ class OrderTest extends TestCase
         $response = $this->actingAs($this->user)->json('POST', '/orders', [
             'email' => 'test@example.com',
             'shipping_method_id' => $shippingMethod->getKey(),
-            'delivery_address' => [
+            'shipping_address' => [
                 'name' => 'Wojtek Testowy',
                 'phone' => '+48123321123',
                 'address' => 'Gdańska 89/1',
@@ -983,7 +983,7 @@ class OrderTest extends TestCase
         $this->actingAs($this->$user)->json('POST', '/orders', [
             'email' => 'test@example.com',
             'shipping_method_id' => $shippingMethod->getKey(),
-            'delivery_address' => [
+            'shipping_address' => [
                 'name' => 'Wojtek Testowy',
                 'phone' => '+48123321123',
                 'address' => 'Gdańska 89/1',

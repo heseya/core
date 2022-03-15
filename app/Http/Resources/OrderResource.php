@@ -21,7 +21,7 @@ class OrderResource extends Resource
             'comment' => $this->comment,
             'created_at' => $this->created_at,
             'status' => $this->status ? StatusResource::make($this->status) : null,
-            'delivery_address' => $this->deliveryAddress ? AddressResource::make($this->deliveryAddress) : null,
+            'shipping_address' => $this->shippingAddress ? AddressResource::make($this->shippingAddress) : null,
             'shipping_method' => $this->shippingMethod ? ShippingMethodResource::make($this->shippingMethod) : null,
         ];
     }

@@ -305,7 +305,7 @@ class AvailabilityTest extends TestCase
         $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'test@test.test',
             'shipping_method_id' => ShippingMethod::factory()->create()->getKey(),
-            'delivery_address' => Address::factory()->create()->toArray(),
+            'shipping_address' => Address::factory()->create()->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -367,7 +367,7 @@ class AvailabilityTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'test@test.test',
             'shipping_method_id' => ShippingMethod::factory()->create()->getKey(),
-            'delivery_address' => Address::factory()->create()->toArray(),
+            'shipping_address' => Address::factory()->create()->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),

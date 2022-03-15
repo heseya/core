@@ -51,10 +51,10 @@ class OrderService implements OrderServiceContract
         DB::beginTransaction();
 
         try {
-            $deliveryAddress = $this->modifyAddress(
+            $shippingAddress = $this->modifyAddress(
                 $order,
-                'delivery_address_id',
-                $dto->getDeliveryAddress(),
+                'shipping_address_id',
+                $dto->getshippingAddress(),
             );
 
             $invoiceAddress = $this->modifyAddress(
@@ -66,9 +66,9 @@ class OrderService implements OrderServiceContract
             $order->update([
                 'email' => $dto->getEmail() ?? $order->email,
                 'comment' => $dto->getComment() ?? $order->comment,
-                'delivery_address_id' => $deliveryAddress === null ?
-                    (is_object($dto->getDeliveryAddress()) ? null : $order->delivery_address_id) :
-                    $deliveryAddress->getKey(),
+                'shipping_address_id' => $shippingAddress === null ?
+                    (is_object($dto->getshippingAddress()) ? null : $order->shipping_address_id) :
+                    $shippingAddress->getKey(),
                 'invoice_address_id' => $invoiceAddress === null ?
                     (is_object($dto->getInvoiceAddress()) ? null : $order->invoice_address_id) :
                     $invoiceAddress->getKey(),

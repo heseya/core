@@ -44,7 +44,7 @@ class OrderUpdateTest extends TestCase
             'comment' => $this->comment,
             'status_id' => $this->status->getKey(),
             'shipping_method_id' => $shippingMethod->getKey(),
-            'delivery_address_id' => $this->addressDelivery->getKey(),
+            'shipping_address_id' => $this->addressDelivery->getKey(),
             'invoice_address_id' => $this->addressInvoice->getKey(),
         ]);
     }
@@ -75,7 +75,7 @@ class OrderUpdateTest extends TestCase
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'email' => $email,
             'comment' => $comment,
-            'delivery_address' => $address->toArray(),
+            'shipping_address' => $address->toArray(),
             'invoice_address' => $address->toArray(),
         ]);
 
@@ -93,12 +93,12 @@ class OrderUpdateTest extends TestCase
                     "hidden" => $this->status->hidden,
                     "no_notifications" => $this->status->no_notifications,
                 ],
-                'delivery_address' => [
-                    "id" => $responseData->delivery_address->id,
+                'shipping_address' => [
+                    "id" => $responseData->shipping_address->id,
                     "address" => $address->address,
                     "city" => $address->city,
                     "country" => $address->country ?? null,
-                    "country_name" => $responseData->delivery_address->country_name,
+                    "country_name" => $responseData->shipping_address->country_name,
                     "name" => $address->name,
                     "phone" => $address->phone,
                     "vat" => $address->vat,
@@ -121,7 +121,7 @@ class OrderUpdateTest extends TestCase
             'id' => $this->order->getKey(),
             'email' => $email,
             'comment' => $comment,
-            'delivery_address_id' => $responseData->delivery_address->id,
+            'shipping_address_id' => $responseData->shipping_address->id,
             'invoice_address_id' => $responseData->invoice_address->id,
         ]);
 
@@ -164,7 +164,7 @@ class OrderUpdateTest extends TestCase
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'email' => $email,
             'comment' => $comment,
-            'delivery_address' => $address->toArray(),
+            'shipping_address' => $address->toArray(),
             'invoice_address' => $address->toArray(),
         ]);
 
@@ -182,12 +182,12 @@ class OrderUpdateTest extends TestCase
                     "hidden" => $this->status->hidden,
                     "no_notifications" => $this->status->no_notifications,
                 ],
-                'delivery_address' => [
-                    "id" => $responseData->delivery_address->id,
+                'shipping_address' => [
+                    "id" => $responseData->shipping_address->id,
                     "address" => $address->address,
                     "city" => $address->city,
                     "country" => $address->country ?? null,
-                    "country_name" => $responseData->delivery_address->country_name,
+                    "country_name" => $responseData->shipping_address->country_name,
                     "name" => $address->name,
                     "phone" => $address->phone,
                     "vat" => $address->vat,
@@ -210,7 +210,7 @@ class OrderUpdateTest extends TestCase
             'id' => $this->order->getKey(),
             'email' => $email,
             'comment' => $comment,
-            'delivery_address_id' => $responseData->delivery_address->id,
+            'shipping_address_id' => $responseData->shipping_address->id,
             'invoice_address_id' => $responseData->invoice_address->id,
         ]);
 
@@ -253,7 +253,7 @@ class OrderUpdateTest extends TestCase
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'email' => $email,
             'comment' => $comment,
-            'delivery_address' => $address->toArray(),
+            'shipping_address' => $address->toArray(),
             'invoice_address' => $address->toArray(),
         ]);
 
@@ -271,12 +271,12 @@ class OrderUpdateTest extends TestCase
                     "hidden" => $this->status->hidden,
                     "no_notifications" => $this->status->no_notifications,
                 ],
-                'delivery_address' => [
-                    "id" => $responseData->delivery_address->id,
+                'shipping_address' => [
+                    "id" => $responseData->shipping_address->id,
                     "address" => $address->address,
                     "city" => $address->city,
                     "country" => $address->country ?? null,
-                    "country_name" => $responseData->delivery_address->country_name,
+                    "country_name" => $responseData->shipping_address->country_name,
                     "name" => $address->name,
                     "phone" => $address->phone,
                     "vat" => $address->vat,
@@ -299,7 +299,7 @@ class OrderUpdateTest extends TestCase
             'id' => $this->order->getKey(),
             'email' => $email,
             'comment' => $comment,
-            'delivery_address_id' => $responseData->delivery_address->id,
+            'shipping_address_id' => $responseData->shipping_address->id,
             'invoice_address_id' => $responseData->invoice_address->id,
         ]);
 
@@ -360,7 +360,7 @@ class OrderUpdateTest extends TestCase
 
             // should remain the same
             'comment' => $this->comment,
-            'delivery_address_id' => $this->addressDelivery->getKey(),
+            'shipping_address_id' => $this->addressDelivery->getKey(),
             'invoice_address_id' => $this->addressInvoice->getKey(),
         ]);
 
@@ -404,7 +404,7 @@ class OrderUpdateTest extends TestCase
 
             // should remain the same
             'email' => self::EMAIL,
-            'delivery_address_id' => $this->addressDelivery->getKey(),
+            'shipping_address_id' => $this->addressDelivery->getKey(),
             'invoice_address_id' => $this->addressInvoice->getKey(),
         ]);
 
@@ -442,7 +442,7 @@ class OrderUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateOrderWithDeliveryAddress($user): void
+    public function testUpdateOrderWithshippingAddress($user): void
     {
         $this->$user->givePermissionTo('orders.edit');
 
@@ -450,7 +450,7 @@ class OrderUpdateTest extends TestCase
 
         $this->addressDelivery = Address::factory()->create();
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
-            'delivery_address' => $this->addressDelivery->toArray()
+            'shipping_address' => $this->addressDelivery->toArray()
         ]);
         $responseData = $response->getData()->data;
 
@@ -469,12 +469,12 @@ class OrderUpdateTest extends TestCase
                      "hidden" => $this->status->hidden,
                      "no_notifications" => $this->status->no_notifications,
                  ],
-                 'delivery_address' => [
+                 'shipping_address' => [
                      "address" => $this->addressDelivery->address,
                      "city" => $this->addressDelivery->city,
                      "country" => $this->addressDelivery->country ?? null,
-                     "country_name" => $responseData->delivery_address->country_name,
-                     "id" => $responseData->delivery_address->id,
+                     "country_name" => $responseData->shipping_address->country_name,
+                     "id" => $responseData->shipping_address->id,
                      "name" => $this->addressDelivery->name,
                      "phone" => $this->addressDelivery->phone,
                      "vat" => $this->addressDelivery->vat,
@@ -484,7 +484,7 @@ class OrderUpdateTest extends TestCase
 
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
-            'delivery_address_id' => $responseData->delivery_address->id,
+            'shipping_address_id' => $responseData->shipping_address->id,
 
             // should remain the same
             'email' => self::EMAIL,
@@ -498,7 +498,7 @@ class OrderUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateOrderWithMissingDeliveryAddress($user): void
+    public function testUpdateOrderWithMissingshippingAddress($user): void
     {
         $this->$user->givePermissionTo('orders.edit');
 
@@ -512,12 +512,12 @@ class OrderUpdateTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                  // should remain the same
-                 'delivery_address' => [
+                 'shipping_address' => [
                      "address" => $this->addressDelivery->address,
                      "city" => $this->addressDelivery->city,
                      "country" => $this->addressDelivery->country ?? null,
-                     "country_name" => $response->getData()->data->delivery_address->country_name,
-                     "id" => $response->getData()->data->delivery_address->id,
+                     "country_name" => $response->getData()->data->shipping_address->country_name,
+                     "id" => $response->getData()->data->shipping_address->id,
                      "name" => $this->addressDelivery->name,
                      "phone" => $this->addressDelivery->phone,
                      "vat" => $this->addressDelivery->vat,
@@ -527,7 +527,7 @@ class OrderUpdateTest extends TestCase
 
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
-            'delivery_address_id' => $this->addressDelivery->getKey(),
+            'shipping_address_id' => $this->addressDelivery->getKey(),
             'invoice_address_id' =>  $response->getData()->data->invoice_address->id,
         ]);
 
@@ -553,24 +553,24 @@ class OrderUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateOrderWithEmptyDeliveryAddress($user): void
+    public function testUpdateOrderWithEmptyshippingAddress($user): void
     {
         $this->$user->givePermissionTo('orders.edit');
 
         Event::fake([OrderUpdated::class]);
 
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
-            'delivery_address' => null
+            'shipping_address' => null
         ]);
 
         $response
             ->assertOk()
-            ->assertJsonFragment(['delivery_address' => null]);
+            ->assertJsonFragment(['shipping_address' => null]);
 
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
             'invoice_address_id' => $this->addressInvoice->getKey(),
-            'delivery_address_id' => null,
+            'shipping_address_id' => null,
         ]);
 
         Event::assertDispatched(OrderUpdated::class);
@@ -626,7 +626,7 @@ class OrderUpdateTest extends TestCase
             // should remain the same
             'email' => self::EMAIL,
             'comment' => $this->comment,
-            'delivery_address_id' => $this->addressDelivery->getKey(),
+            'shipping_address_id' => $this->addressDelivery->getKey(),
         ]);
 
         Event::assertDispatched(OrderUpdated::class);
@@ -642,7 +642,7 @@ class OrderUpdateTest extends TestCase
         Event::fake([OrderUpdated::class]);
 
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
-            'delivery_address' => $this->addressInvoice->toArray()
+            'shipping_address' => $this->addressInvoice->toArray()
         ]);
 
         $response
@@ -665,7 +665,7 @@ class OrderUpdateTest extends TestCase
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
             'invoice_address_id' => $this->addressInvoice->getKey(),
-            'delivery_address_id' => $response->getData()->data->delivery_address->id,
+            'shipping_address_id' => $response->getData()->data->shipping_address->id,
         ]);
 
         $this->checkAddress($this->addressInvoice);
@@ -692,7 +692,7 @@ class OrderUpdateTest extends TestCase
 
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
-            'delivery_address_id' => $this->addressDelivery->getKey(),
+            'shipping_address_id' => $this->addressDelivery->getKey(),
             'invoice_address_id' => null,
         ]);
 

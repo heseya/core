@@ -31,7 +31,7 @@ OrderCreate:
                       example: 'HE + YA'
                   type: object
               type: object
-          delivery_address:
+          shipping_address:
             $ref: './../schemas/Addresses.yml#/Address'
           invoice_address:
             $ref: './../schemas/Addresses.yml#/Address'
@@ -51,7 +51,7 @@ OrderUpdate:
           comment:
             type: string
             example: 'asap plz'
-          delivery_address:
+          shipping_address:
             $ref: './../schemas/Addresses.yml#/Address'
           invoice_address:
             $ref: './../schemas/Addresses.yml#/Address'

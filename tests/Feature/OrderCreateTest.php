@@ -71,7 +71,7 @@ class OrderCreateTest extends TestCase
         $response = $this->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -103,7 +103,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -168,7 +168,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $freeShipping->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -226,7 +226,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -274,7 +274,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -299,7 +299,7 @@ class OrderCreateTest extends TestCase
         $response = $this->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -388,7 +388,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -483,7 +483,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -568,7 +568,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -634,7 +634,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -681,7 +681,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->json('POST', '/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -719,7 +719,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->json('POST', '/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
-            'delivery_address' => [
+            'shipping_address' => [
                 'name' => 'Wojtek Testowy',
                 'phone' => '+48123321123',
                 'address' => 'Gdańska 89/1',
@@ -754,7 +754,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->json('POST', '/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -790,7 +790,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->json('POST', '/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'shipping_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),

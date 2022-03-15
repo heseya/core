@@ -33,7 +33,7 @@ Order:
       $ref: './Statuses.yml#/Status'
     shipping_method:
       $ref: './ShippingMethods.yml#/ShippingMethod'
-    delivery_address:
+    shipping_address:
       $ref: './Addresses.yml#/Address'
     invoice_address:
       $ref: './Addresses.yml#/Address'
