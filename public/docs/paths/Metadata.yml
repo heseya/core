@@ -1,0 +1,17 @@
+Metadata:
+  patch:
+    tags:
+      - Metadata
+    summary: 'Create/update/delete metadata'
+    requestBody:
+      $ref: './../requests/Metadata.yml#Metadata'
+    responses:
+      200:
+        description: 'Returned list has whole metadata attached to requested object'
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Metadata.yml#Metadata'
+              type: object

@@ -30,7 +30,7 @@ abstract class TestCase extends BaseTestCase
     public function setUp(): void
     {
         parent::setUp();
-        ini_set('memory_limit', '1024M');
+        ini_set('memory_limit', '4096M');
 
         $this->tokenService = App::make(TokenServiceContract::class);
 
@@ -68,4 +68,10 @@ abstract class TestCase extends BaseTestCase
         return $this;
     }
 
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        app()->forgetInstances();
+    }
 }

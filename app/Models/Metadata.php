@@ -36,4 +36,20 @@ class Metadata extends Model
     {
         return $query->where('public', false);
     }
+
+    /**
+     * Cast value attribute by data
+     *
+     * @param string $value
+     *
+     * @return bool|float|int|string
+     */
+    public function getValueAttribute(string $value): float|bool|int|string
+    {
+        return match ($this->value_type->value) {
+            'boolean' => (bool) $value,
+            'number' => (float) $value,
+            default => $value,
+        };
+    }
 }
