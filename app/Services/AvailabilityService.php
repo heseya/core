@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\SchemaType;
+use App\Events\ProductUpdated;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Product;
@@ -100,6 +101,10 @@ class AvailabilityService implements AvailabilityServiceContract
             $product->update([
                 'available' => false,
             ]);
+        }
+
+        if ($product->wasChanged('available')) {
+            ProductUpdated::dispatch($product);
         }
     }
 

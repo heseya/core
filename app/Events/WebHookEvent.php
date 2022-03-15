@@ -21,7 +21,7 @@ abstract class WebHookEvent
     public function __construct()
     {
         $this->triggered_at = Carbon::now()->format('c');
-        $this->issuer = Auth::user()->getAuthIdentifier() ? Auth::user() : null;
+        $this->issuer = Auth::user()?->getAuthIdentifier() ? Auth::user() : null;
     }
 
     public function getData(): array

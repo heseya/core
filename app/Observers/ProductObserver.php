@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Events\ProductUpdated;
 use App\Models\Product;
 use App\Services\Contracts\AvailabilityServiceContract;
 
