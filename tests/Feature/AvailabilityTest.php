@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\SchemaType;
+use App\Events\ProductUpdated;
 use App\Models\Address;
 use App\Models\Item;
 use App\Models\Option;
@@ -11,8 +12,11 @@ use App\Models\Product;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use App\Services\AvailabilityService;
+use App\Services\Contracts\AvailabilityServiceContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
 class AvailabilityTest extends TestCase
@@ -33,7 +37,7 @@ class AvailabilityTest extends TestCase
         ]);
     }
 
-    public function createDataPatternOne(): Collection
+    private function createDataPatternOne(): Collection
     {
         $schemaOne = Schema::factory()->create([
             'type' => SchemaType::SELECT,
@@ -65,6 +69,50 @@ class AvailabilityTest extends TestCase
             'optionTwo' => $optionTwo,
             'item' => $item,
         ]);
+    }
+
+    private function prepareToCheckAvailabilityWithDirectProductItemRelation(int $itemQuantity): void
+    {
+        /** @var AvailabilityService $availabilityService */
+        $availabilityService = app(AvailabilityServiceContract::class);
+
+        $this->product->update(['available' => false]);
+
+        $schema = Schema::factory()->create([
+            'name' => 'schemaOne',
+            'type' => SchemaType::SELECT,
+            'required' => true,
+            'available' => false,
+        ]);
+
+        $this->product->schemas()->attach($schema->getKey());
+
+        $item = Item::factory()->create([
+            'quantity' => $itemQuantity,
+        ]);
+
+        $this->product->items()->attach($item->getKey(), ['quantity' => 10]);
+
+        $availabilityService->calculateProductAvailability($this->product->refresh());
+    }
+
+    private function createProductForAvailabilityCheckWithDirectItems(): Product
+    {
+        $product = Product::factory()->create();
+
+        $product->update([
+            'available' => false,
+        ]);
+
+        $schema = Schema::factory()->create([
+            'name' => 'schemaOne',
+            'type' => SchemaType::SELECT,
+            'required' => true,
+            'available' => false,
+        ]);
+
+        $product->schemas()->attach($schema->getKey());
+        return $product->refresh();
     }
 
     /**
@@ -410,6 +458,102 @@ class AvailabilityTest extends TestCase
                 'id' => $data->get('optionTwo')->getKey(),
                 'available' => true,
             ]);
+    }
+
+    public function testAvailabilityWhenProductHasDirectItems() {
+        $this->prepareToCheckAvailabilityWithDirectProductItemRelation(10);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $this->product->getKey(),
+            'available' => true,
+        ]);
+    }
+
+    public function testAvailabilityWhenProductHasDirectItemsFailed() {
+        $this->prepareToCheckAvailabilityWithDirectProductItemRelation(9);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $this->product->getKey(),
+            'available' => false,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductAvailabilityAfterProductUpdate($user) {
+        Event::fake(ProductUpdated::class);
+
+        $product = $this->createProductForAvailabilityCheckWithDirectItems();
+
+        $item = Item::factory()->create([
+            'quantity' => 5,
+        ]);
+
+        $this->$user->givePermissionTo('products.edit');
+        $this->actingAs($this->$user)->patchJson('/products/id:' . $product->getKey(), [
+            'name' => 'test',
+            'slug' => 'test',
+            'price' => 10,
+            'public' => true,
+            'items' => [
+                [
+                    'id' => $item->getKey(),
+                    'quantity' => 2,
+                ],
+            ],
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'available' => true,
+        ])
+            ->assertDatabaseHas('item_product', [
+                'product_id' => $product->getKey(),
+                'item_id' => $item->getKey(),
+                'quantity'=> 2,
+            ]);
+
+        Event::assertDispatched(ProductUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductAvailabilityAfterProductUpdateFailed($user) {
+        Event::fake(ProductUpdated::class);
+
+        $product = $this->createProductForAvailabilityCheckWithDirectItems();
+
+        $item = Item::factory()->create([
+            'quantity' => 5,
+        ]);
+
+        $this->$user->givePermissionTo('products.edit');
+        $this->actingAs($this->$user)->patchJson('/products/id:' . $product->getKey(), [
+            'name' => 'test',
+            'slug' => 'test',
+            'price' => 10,
+            'public' => true,
+            'items' => [
+                [
+                    'id' => $item->getKey(),
+                    'quantity' => 20,
+                ],
+            ],
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'available' => false,
+        ])
+            ->assertDatabaseHas('item_product', [
+                'product_id' => $product->getKey(),
+                'item_id' => $item->getKey(),
+                'quantity' => 20
+            ]);
+
+        Event::assertDispatched(ProductUpdated::class);
     }
 }
 

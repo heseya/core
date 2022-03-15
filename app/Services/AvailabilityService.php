@@ -72,11 +72,15 @@ class AvailabilityService implements AvailabilityServiceContract
 
     public function calculateProductAvailability(Product $product): void
     {
-        if (!$product->schemas()->exists()) {
+        //If every product's item quantity is greater or equal to pivot quantity or product has no schemas
+        //then product is available
+        if (
+            ($product->items->isNotEmpty()
+                && $product->items->every(fn ($item) => $item->pivot->quantity <= $item->quantity))
+            || !$product->schemas()->exists()) {
             $product->update([
                 'available' => true,
             ]);
-
             return;
         }
 
