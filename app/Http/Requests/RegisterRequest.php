@@ -18,7 +18,7 @@ class RegisterRequest extends FormRequest
                 'max:255',
                 Rule::unique('users')->whereNull('deleted_at'),
             ],
-            'password' => ['required', 'string', 'min:12', Password::defaults()],
+            'password' => ['required', 'string', Password::defaults()],
         ];
     }
 }
