@@ -57,6 +57,7 @@ class OrderDepositTest extends TestCase
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),

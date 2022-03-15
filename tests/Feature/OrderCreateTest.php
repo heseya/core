@@ -72,6 +72,7 @@ class OrderCreateTest extends TestCase
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -104,6 +105,7 @@ class OrderCreateTest extends TestCase
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -169,6 +171,7 @@ class OrderCreateTest extends TestCase
             'email' => $this->email,
             'shipping_method_id' => $freeShipping->getKey(),
             'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -227,6 +230,7 @@ class OrderCreateTest extends TestCase
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -275,6 +279,7 @@ class OrderCreateTest extends TestCase
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -300,6 +305,7 @@ class OrderCreateTest extends TestCase
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -389,6 +395,7 @@ class OrderCreateTest extends TestCase
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -484,6 +491,7 @@ class OrderCreateTest extends TestCase
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -569,6 +577,7 @@ class OrderCreateTest extends TestCase
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -635,6 +644,7 @@ class OrderCreateTest extends TestCase
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -682,6 +692,7 @@ class OrderCreateTest extends TestCase
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -736,6 +747,36 @@ class OrderCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCantCreateOrderWithoutBillingAddress($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $this->product->update([
+            'price' => 10,
+        ]);
+
+        $this->actingAs($this->$user)->postJson('/orders',
+            [
+                'email' => $this->email,
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'delivery_address' => $this->address->toArray(),
+                'items' => [
+                    [
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => 20,
+                    ],
+                ],
+            ])
+            ->assertUnprocessable();
+
+        Event::assertNotDispatched(OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCantCreateOrderWithExpiredDiscount($user):void
     {
         $this->$user->givePermissionTo('orders.add');
@@ -755,6 +796,7 @@ class OrderCreateTest extends TestCase
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -791,6 +833,7 @@ class OrderCreateTest extends TestCase
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),

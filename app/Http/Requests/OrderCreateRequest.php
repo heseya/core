@@ -21,12 +21,12 @@ class OrderCreateRequest extends OrderItemsRequest
             'delivery_address.country' => ['required', 'string', 'size:2'],
             'delivery_address.vat' => ['nullable', 'string', 'max:15'],
 
-            'billing_address.name' => ['nullable', 'string', 'max:255'],
-            'billing_address.phone' => ['nullable', 'string', 'max:20'],
-            'billing_address.address' => ['nullable', 'string', 'max:255'],
-            'billing_address.zip' => ['nullable', 'string', 'max:16'],
-            'billing_address.city' => ['nullable', 'string', 'max:255'],
-            'billing_address.country' => ['nullable', 'string', 'size:2'],
+            'billing_address.name' => ['required', 'string', 'max:255'],
+            'billing_address.phone' => ['required', 'string', 'max:20'],
+            'billing_address.address' => ['required', 'string', 'max:255'],
+            'billing_address.zip' => ['required', 'string', 'max:16'],
+            'billing_address.city' => ['required', 'string', 'max:255'],
+            'billing_address.country' => ['required', 'string', 'size:2'],
             'billing_address.vat' => ['nullable', 'string', 'max:15'],
 
             'discounts' => ['nullable', 'array'],
