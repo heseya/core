@@ -95,11 +95,12 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
 
         $shippingMethod = ShippingMethod::find($request->input('shipping_method_id'));
 
-        $shippingPlace = match ($shippingMethod->shipping_type) {
+        $shippingPlace = $shippingMethod !== null ?
+            match ($shippingMethod->shipping_type) {
             ShippingType::ADDRESS, ShippingType::POINT => $shippingAddress,
             ShippingType::POINT_EXTERNAL => $request->input('shipping_place'),
             default => null,
-        };
+        } : null;
 
         return new self(
             $request->input('code'),
@@ -113,7 +114,7 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
             $shippingAddress,
             $invoiceAddress,
             $request->input('invoice_requested'),
-            $shippingPlace
+            $shippingPlace ?? null
         );
     }
 

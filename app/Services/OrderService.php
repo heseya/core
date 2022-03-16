@@ -81,8 +81,8 @@ class OrderService implements OrderServiceContract
                     (is_object($dto->getInvoiceAddress()) ? null : $order->billing_address_id) :
                     $invoiceAddress->getKey(),
                 'invoice_requested' => $dto->getInvoiceRequested(),
-                'shipping_place' => $shippingPlace,
-                'shipping_type' => ShippingMethod::find($dto->getShippingMethodId())->shipping_type,
+                'shipping_place' => $shippingPlace ?? $order->shipping_place,
+                'shipping_type' => ShippingMethod::find($dto->getShippingMethodId())->shipping_type ?? $order->shipping_type,
             ]);
 
             DB::commit();

@@ -20,6 +20,9 @@ class ShippingPlaceValidation implements ImplicitRule, DataAwareRule
      */
     public function passes($attribute, $value): bool
     {
+        if (!array_key_exists('shipping_method_id', $this->data)) {
+            return true;
+        }
         $shippingMethod = ShippingMethod::find($this->data['shipping_method_id']);
         return match ($shippingMethod->shipping_type) {
             ShippingType::POINT, ShippingType::ADDRESS => array_key_exists('shipping_address', $this->data),
