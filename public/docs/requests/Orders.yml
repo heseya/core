@@ -2,6 +2,12 @@ OrderCreate:
   content:
     application/json:
       schema:
+        required:
+          - email
+          - shipping_method_id
+          - items
+          - delivery_address
+          - billing_address
         properties:
           email:
             type: string
