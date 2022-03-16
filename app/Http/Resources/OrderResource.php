@@ -23,13 +23,15 @@ class OrderResource extends Resource
             'status' => $this->status ? StatusResource::make($this->status) : null,
             'shipping_address' => $this->shippingAddress ? AddressResource::make($this->shippingAddress) : null,
             'shipping_method' => $this->shippingMethod ? ShippingMethodResource::make($this->shippingMethod) : null,
+            'invoice_requested' => $this->invoice_requested,
+            'shipping_place' => $this->shipping_place,
         ];
     }
 
     public function view(Request $request): array
     {
         return [
-            'invoice_address' => AddressResource::make($this->invoiceAddress),
+            'billing_address' => AddressResource::make($this->invoiceAddress),
             'shipping_method' => ShippingMethodResource::make($this->shippingMethod),
             'products' => OrderProductResource::collection($this->products),
             'payments' => PaymentResource::collection($this->payments),

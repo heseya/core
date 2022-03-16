@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Auth;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
@@ -25,8 +27,11 @@ class ShippingMethod extends Model implements AuditableContract
         'black_list',
         'shipping_time_min',
         'shipping_time_max',
+        'shipping_type',
+        'integration_key',
+        'app_id',
+        'shipping_type',
     ];
-
     /**
      * The attributes that should be cast to native types.
      *
@@ -36,6 +41,11 @@ class ShippingMethod extends Model implements AuditableContract
         'public' => 'boolean',
         'black_list' => 'boolean',
     ];
+
+    public function app(): BelongsTo
+    {
+        return $this->belongsTo(App::class);
+    }
 
     public function orders(): HasMany
     {
@@ -57,6 +67,11 @@ class ShippingMethod extends Model implements AuditableContract
         return $this->belongsToMany(Country::class, 'shipping_method_country');
     }
 
+    public function shippingPoints(): BelongsToMany
+    {
+        return $this->belongsToMany(Address::class, 'address_shipping_method');
+    }
+
     public function getPrice(float $orderTotal): float
     {
         $priceRange = $this->priceRanges()
@@ -70,5 +85,10 @@ class ShippingMethod extends Model implements AuditableContract
     public function priceRanges(): HasMany
     {
         return $this->hasMany(PriceRange::class, 'shipping_method_id');
+    }
+
+    public function getDeletableAttribute(): bool
+    {
+        return $this->app_id === null || $this->app_id === Auth::id();
     }
 }

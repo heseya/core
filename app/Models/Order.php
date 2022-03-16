@@ -40,14 +40,16 @@ class Order extends Model implements AuditableContract
         'shipping_method_id',
         'shipping_price',
         'shipping_number',
+        'billing_address_id',
         'shipping_address_id',
-        'invoice_address_id',
         'created_at',
         'user_id',
         'user_type',
         'summary',
         'paid',
-        'shipping_place_id',
+        'shipping_place',
+        'invoice_requested',
+        'shipping_type',
     ];
 
     protected $auditInclude = [
@@ -59,15 +61,15 @@ class Order extends Model implements AuditableContract
         'shipping_method_id',
         'shipping_price',
         'shipping_number',
+        'billing_address_id',
         'shipping_address_id',
-        'invoice_address_id',
     ];
 
     protected $attributeModifiers = [
         'status_id' => StatusRedactor::class,
         'shipping_method_id' => ShippingMethodRedactor::class,
+        'billing_address_id' => AddressRedactor::class,
         'shipping_address_id' => AddressRedactor::class,
-        'invoice_address_id' => AddressRedactor::class,
     ];
 
     protected array $searchable = [
@@ -96,6 +98,7 @@ class Order extends Model implements AuditableContract
 
     protected $casts = [
         'paid' => 'boolean',
+        'invoice_request' => 'boolean',
     ];
 
     /**
@@ -182,13 +185,13 @@ class Order extends Model implements AuditableContract
 
     /**
      * @OA\Property(
-     *   property="invoice_address",
+     *   property="billing_address",
      *   ref="#/components/schemas/Address",
      * )
      */
     public function invoiceAddress(): HasOne
     {
-        return $this->hasOne(Address::class, 'id', 'invoice_address_id');
+        return $this->hasOne(Address::class, 'id', 'billing_address_id');
     }
 
     public function deposits(): HasManyThrough

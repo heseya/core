@@ -6,6 +6,7 @@ use App\Enums\DiscountType;
 use App\Enums\IssuerType;
 use App\Enums\RoleType;
 use App\Enums\SchemaType;
+use App\Enums\ShippingType;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Listeners\WebHookEventListener;
@@ -803,5 +804,333 @@ class OrderCreateTest extends TestCase
         ]);
 
         $response->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderWithShippingMethodTypeNone($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $schema = Schema::factory()->create([
+            'type' => 'string',
+            'price' => 10,
+            'hidden' => false,
+        ]);
+
+        $this->product->schemas()->sync([$schema->getKey()]);
+        $this->product->update([
+            'price' => 100,
+        ]);
+
+        $productQuantity = 2;
+
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::NONE,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'invoice_requested' => true,
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                    'schemas' => [
+                        $schema->getKey() => 'Test',
+                    ]
+                ],
+            ],
+        ]);
+
+        $response->assertCreated();
+
+        $order = Order::find($response->getData()->data->id);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->getKey(),
+            'invoice_requested' => true,
+            'shipping_place' => null,
+            'shipping_address_id' => null,
+            'shipping_type' => ShippingType::NONE,
+        ]);
+
+        Event::assertDispatched(OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderWithShippingMethodTypeAddress($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $schema = Schema::factory()->create([
+            'type' => 'string',
+            'price' => 10,
+            'hidden' => false,
+        ]);
+
+        $this->product->schemas()->sync([$schema->getKey()]);
+        $this->product->update([
+            'price' => 100,
+        ]);
+
+        $productQuantity = 2;
+
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'invoice_requested' => true,
+            'shipping_address' => $this->address,
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                    'schemas' => [
+                        $schema->getKey() => 'Test',
+                    ]
+                ],
+            ],
+        ]);
+
+        $response->assertCreated();
+        $order = Order::find($response->getData()->data->id);
+
+        $schemaPrice = $schema->getPrice('Test', [
+            $schema->getKey() => 'Test',
+        ]);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->getKey(),
+            'invoice_requested' => true,
+            'shipping_place' => $order->shippingAddress->getKey(),
+            'shipping_address_id' => $order->shippingAddress->getKey(),
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
+
+        Event::assertDispatched(OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderWithShippingMethodTypePoint($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $schema = Schema::factory()->create([
+            'type' => 'string',
+            'price' => 10,
+            'hidden' => false,
+        ]);
+
+        $this->product->schemas()->sync([$schema->getKey()]);
+        $this->product->update([
+            'price' => 100,
+        ]);
+
+        $productQuantity = 2;
+
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::POINT,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'invoice_requested' => true,
+            'shipping_address' => $this->address,
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                    'schemas' => [
+                        $schema->getKey() => 'Test',
+                    ]
+                ],
+            ],
+        ]);
+
+        $response->assertCreated();
+        $order = Order::find($response->getData()->data->id);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->getKey(),
+            'invoice_requested' => true,
+            'shipping_place' => $order->shippingAddress->getKey(),
+            'shipping_address_id' => $order->shippingAddress->getKey(),
+            'shipping_type' => ShippingType::POINT,
+        ]);
+
+        Event::assertDispatched(OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderWithShippingMethodTypePointExternal($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $schema = Schema::factory()->create([
+            'type' => 'string',
+            'price' => 10,
+            'hidden' => false,
+        ]);
+
+        $this->product->schemas()->sync([$schema->getKey()]);
+        $this->product->update([
+            'price' => 100,
+        ]);
+
+        $productQuantity = 2;
+
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::POINT_EXTERNAL,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'invoice_requested' => true,
+            'shipping_place' => 'Testowy numer domu w testowym mieście',
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                    'schemas' => [
+                        $schema->getKey() => 'Test',
+                    ]
+                ],
+            ],
+        ]);
+
+        $response->assertCreated();
+        $order = Order::find($response->getData()->data->id);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->getKey(),
+            'invoice_requested' => true,
+            'shipping_address_id' => null,
+            'shipping_place' => 'Testowy numer domu w testowym mieście',
+            'shipping_type' => ShippingType::POINT_EXTERNAL,
+        ]);
+
+        Event::assertDispatched(OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderWithMissingShippingAddress($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $schema = Schema::factory()->create([
+            'type' => 'string',
+            'price' => 10,
+            'hidden' => false,
+        ]);
+
+        $this->product->schemas()->sync([$schema->getKey()]);
+        $this->product->update([
+            'price' => 100,
+        ]);
+
+        $productQuantity = 2;
+
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::POINT,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'invoice_requested' => true,
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                    'schemas' => [
+                        $schema->getKey() => 'Test',
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonFragment(['shipping_address' => ['Shipping address is required with this shipping method type.']]);
+
+        Event::assertNotDispatched(OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderWithMissingShippingPlace($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $schema = Schema::factory()->create([
+            'type' => 'string',
+            'price' => 10,
+            'hidden' => false,
+        ]);
+
+        $this->product->schemas()->sync([$schema->getKey()]);
+        $this->product->update([
+            'price' => 100,
+        ]);
+
+        $productQuantity = 2;
+
+        $shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::POINT_EXTERNAL,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'invoice_requested' => true,
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                    'schemas' => [
+                        $schema->getKey() => 'Test',
+                    ],
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonFragment(['shipping_place' => ['Shipping place data is incorrect.']]);
+
+        Event::assertNotDispatched(OrderCreated::class);
     }
 }

@@ -33,7 +33,7 @@ OrderCreate:
               type: object
           shipping_address:
             $ref: './../schemas/Addresses.yml#/Address'
-          invoice_address:
+          billing_address:
             $ref: './../schemas/Addresses.yml#/Address'
           discounts:
             type: array
@@ -53,6 +53,6 @@ OrderUpdate:
             example: 'asap plz'
           shipping_address:
             $ref: './../schemas/Addresses.yml#/Address'
-          invoice_address:
+          billing_address:
             $ref: './../schemas/Addresses.yml#/Address'
         type: object

@@ -13,10 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->string('shipping_place')->nullable();
-            $table->boolean('invoice_requested')->nullable()->default(0);
+        Schema::table('shipping_methods', function (Blueprint $table) {
             $table->string('shipping_type')->default('none');
+            $table->string('integration_key')->nullable();
+            $table->string('app_id')->nullable()->default(null);
         });
     }
 
@@ -27,10 +27,10 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->dropColumn('shipping_place');
-            $table->dropColumn('invoice_requested');
+        Schema::table('shipping_methods', function (Blueprint $table) {
             $table->dropColumn('shipping_type');
+            $table->dropColumn('integration_key');
+            $table->dropColumn('app_id');
         });
     }
 };

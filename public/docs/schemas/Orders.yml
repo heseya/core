@@ -35,7 +35,7 @@ Order:
       $ref: './ShippingMethods.yml#/ShippingMethod'
     shipping_address:
       $ref: './Addresses.yml#/Address'
-    invoice_address:
+    billing_address:
       $ref: './Addresses.yml#/Address'
     products:
       type: array

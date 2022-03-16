@@ -19,6 +19,10 @@ class ShippingMethodResource extends Resource
             'price_ranges' => PriceRangeResource::collection($this->priceRanges->sortBy('start')),
             'shipping_time_min' => $this->shipping_time_min,
             'shipping_time_max' => $this->shipping_time_max,
+            'shipping_type' => $this->shipping_type,
+            'integration_key' => $this->integration_key,
+            'deletable' => $this->deletable,
+            'shipping_points' => AddressResource::collection($this->shippingPoints),
         ];
     }
 }

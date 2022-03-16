@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Dtos\OrderIndexDto;
 use App\Dtos\OrderUpdateDto;
 use App\Enums\SchemaType;
+use App\Enums\ShippingType;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
@@ -74,7 +75,6 @@ class OrderController extends Controller
     {
         # Schema values and warehouse items validation
         $items = [];
-
         foreach ($request->input('items', []) as $item) {
             $product = Product::findOrFail($item['product_id']);
             $schemas = $item['schemas'] ?? [];
@@ -105,11 +105,20 @@ class OrderController extends Controller
         $validated = $request->validated();
 
         $shippingMethod = ShippingMethod::findOrFail($request->input('shipping_method_id'));
-        $shippingAddress = Address::firstOrCreate($validated['shipping_address']);
 
-        if ($request->filled('invoice_address.name')) {
-            $invoiceAddress = Address::firstOrCreate($validated['invoice_address']);
+        if (array_key_exists('shipping_address', $validated)) {
+            $shippingAddress = Address::firstOrCreate($validated['shipping_address']);
         }
+
+        if ($request->filled('billing_address.name')) {
+            $invoiceAddress = Address::firstOrCreate($validated['billing_address']);
+        }
+
+        $shippingPlace = match($shippingMethod->shipping_type) {
+            ShippingType::ADDRESS, ShippingType::POINT => $shippingAddress->getKey(),
+            ShippingType::POINT_EXTERNAL => $request->input('shipping_place'),
+            default => null,
+        };
 
         $order = Order::create([
             'code' => $this->nameService->generate(),
@@ -119,10 +128,13 @@ class OrderController extends Controller
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_price' => 0.0,
             'status_id' => Status::select('id')->orderBy('order')->first()->getKey(),
-            'shipping_address_id' => $shippingAddress->getKey(),
-            'invoice_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
+            'billing_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
+            'shipping_address_id' => isset($shippingAddress) ? $shippingAddress->getKey() : null,
             'user_id' => Auth::user()->getKey(),
             'user_type' => Auth::user()::class,
+            'invoice_requested' => $request->input('invoice_requested'),
+            'shipping_place' => $shippingPlace,
+            'shipping_type' => $shippingMethod->shipping_type,
         ]);
 
         # Add products to order
