@@ -21,14 +21,10 @@ abstract class ShippingRequest extends WebHookEvent
 
     public function getDataContent(): array
     {
-        $packageTemplate = PackageTemplateResource::make($this->packageTemplate)->resolve();
-        $packageTemplate['package_template_id'] = $packageTemplate['id'];
-        unset($packageTemplate['id']);
-
-        return array_merge(
-            OrderResource::make($this->order)->resolve(),
-            $packageTemplate
-        );
+        return [
+            'order' => OrderResource::make($this->order)->resolve(),
+            'package' => PackageTemplateResource::make($this->packageTemplate)->resolve(),
+        ];
     }
 
     public function getDataType(): string

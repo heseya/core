@@ -745,8 +745,8 @@ class OrderUpdateTest extends TestCase
             $payload = $job->payload;
             return $job->webhookUrl === $webHook->url
                 && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $this->order->getKey()
-                && $payload['data']['package_template_id'] === $package->getKey()
+                && $payload['data']['order']['id'] === $this->order->getKey()
+                && $payload['data']['package']['id'] === $package->getKey()
                 && $payload['data_type'] === 'ShippingRequest'
                 && $payload['event'] === 'OrderRequestedShipping';
         });
