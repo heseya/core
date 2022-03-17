@@ -13,7 +13,7 @@ class RoleResource extends Resource
 
     public function base(Request $request): array
     {
-        return [
+        return array_merge([
             'id' => $this->getKey(),
             'name' => $this->name,
             'description' => $this->description,
@@ -24,14 +24,14 @@ class RoleResource extends Resource
                     $this->getAllPermissions(),
                 ) : false,
             'deletable' => $this->type->is(RoleType::REGULAR),
-        ];
+        ], $this->metadataResource('roles'));
     }
 
     public function view(Request $request): array
     {
-        return array_merge([
+        return [
             'permissions' => $this->getPermissionNames()->sort()->values(),
             'locked_permissions' => $this->type->is(RoleType::OWNER),
-        ], $this->metadataResource('roles'));
+        ];
     }
 }
