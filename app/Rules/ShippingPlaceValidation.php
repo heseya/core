@@ -41,7 +41,7 @@ class ShippingPlaceValidation implements ImplicitRule, DataAwareRule
         return 'Shipping place data is incorrect.';
     }
 
-    public function setData($data)
+    public function setData($data): void
     {
         $this->data = $data;
     }

@@ -114,7 +114,7 @@ class OrderController extends Controller
             $invoiceAddress = Address::firstOrCreate($validated['billing_address']);
         }
 
-        $shippingPlace = match($shippingMethod->shipping_type) {
+        $shippingPlace = match ($shippingMethod->shipping_type) {
             ShippingType::ADDRESS, ShippingType::POINT => $shippingAddress->getKey(),
             ShippingType::POINT_EXTERNAL => $request->input('shipping_place'),
             default => null,

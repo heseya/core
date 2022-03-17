@@ -12,16 +12,6 @@ class ShippingAddressRequired implements ImplicitRule, DataAwareRule
     protected array $data = [];
 
     /**
-     * Create a new rule instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
      * Determine if the validation rule passes.
      *
      * @param  string  $attribute
@@ -30,7 +20,7 @@ class ShippingAddressRequired implements ImplicitRule, DataAwareRule
      */
     public function passes($attribute, $value)
     {
-        if(!array_key_exists('shipping_method_id', $this->data)) {
+        if (!array_key_exists('shipping_method_id', $this->data)) {
             return true;
         }
 
@@ -55,7 +45,7 @@ class ShippingAddressRequired implements ImplicitRule, DataAwareRule
         return 'Shipping address is required with this shipping method type.';
     }
 
-    public function setData($data)
+    public function setData($data): void
     {
         $this->data = $data;
     }
