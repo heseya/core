@@ -616,13 +616,13 @@ class AuthTest extends TestCase
 
         $response = $this->actingAs($user)->patchJson('/users/password', [
             'password' => 'test',
-            'password_new' => 'Test1@3456',
+            'password_new' => 'Test1@345678',
         ]);
 
         $response->assertNoContent();
 
         $user->refresh();
-        $this->assertTrue(Hash::check('Test1@3456', $user->password));
+        $this->assertTrue(Hash::check('Test1@345678', $user->password));
     }
 
     public function testChangePasswordInvalidPassword(): void
@@ -641,7 +641,7 @@ class AuthTest extends TestCase
 
         $response = $this->actingAs($user)->json('PATCH', '/users/password', [
             'password' => 'tests',
-            'password_new' => 'Test1@3456',
+            'password_new' => 'Test1@345678',
         ]);
 
         $response->assertStatus(422);
