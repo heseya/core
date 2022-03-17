@@ -64,6 +64,7 @@ class ShippingMethodTest extends TestCase
             'public' => $this->shipping_method->public,
             'shipping_time_min' => $this->shipping_method->shipping_time_min,
             'shipping_time_max' => $this->shipping_method->shipping_time_max,
+            'metadata' => [],
         ];
 
         $this->priceRangesWithNoInitialStart = [
