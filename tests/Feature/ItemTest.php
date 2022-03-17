@@ -42,6 +42,7 @@ class ItemTest extends TestCase
             'name' => $this->item->name,
             'sku' => $this->item->sku,
             'quantity' => $this->item->quantity,
+            'metadata' => [],
         ];
     }
 

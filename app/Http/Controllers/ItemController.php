@@ -20,7 +20,7 @@ class ItemController extends Controller
     {
         $items = Item::search($request->validated())
             ->sort($request->input('sort', 'sku'))
-            ->with('deposits');
+            ->with(['deposits', 'metadata']);
 
         return ItemResource::collection(
             $items->paginate(Config::get('pagination.per_page')),
