@@ -13,6 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
+        Schema::table('shipping_methods', function (Blueprint $table) {
+            $table->string('shipping_type')->default('none');
+            $table->string('integration_key')->nullable();
+            $table->string('app_id')->nullable()->default(null);
+        });
+
         Schema::create('address_shipping_method', function (Blueprint $table) {
             $table->uuid('address_id')->index();
             $table->uuid('shipping_method_id')->index();
@@ -31,6 +37,12 @@ return new class extends Migration
      */
     public function down()
     {
+        Schema::table('shipping_methods', function (Blueprint $table) {
+            $table->dropColumn('shipping_type');
+            $table->dropColumn('integration_key');
+            $table->dropColumn('app_id');
+        });
+
         Schema::dropIfExists('address_shipping_method');
     }
 };
