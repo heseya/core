@@ -28,6 +28,7 @@ class PackageTemplateTest extends TestCase
             'width' => $this->package->width,
             'height' => $this->package->height,
             'depth' => $this->package->depth,
+            'metadata' => [],
         ];
     }
 
