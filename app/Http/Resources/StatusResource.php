@@ -11,7 +11,7 @@ class StatusResource extends Resource
 
     public function base(Request $request): array
     {
-        return [
+        return array_merge([
             'id' => $this->getKey(),
             'name' => $this->name,
             'color' => $this->color,
@@ -19,11 +19,6 @@ class StatusResource extends Resource
             'description' => $this->description,
             'hidden' => $this->hidden,
             'no_notifications' => $this->no_notifications,
-        ];
-    }
-
-    public function view(Request $request): array
-    {
-        return $this->metadataResource('statuses');
+        ], $this->metadataResource('statuses'));
     }
 }
