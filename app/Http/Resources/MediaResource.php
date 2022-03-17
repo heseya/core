@@ -12,17 +12,12 @@ class MediaResource extends Resource
 
     public function base(Request $request): array
     {
-        return [
+        return array_merge([
             'id' => $this->getKey(),
             'type' => Str::lower($this->type->key),
             'url' => $this->url,
             'slug' => $this->slug,
             'alt' => $this->alt,
-        ];
-    }
-
-    public function view(Request $request): array
-    {
-        return $this->metadataResource();
+        ], $this->metadataResource());
     }
 }
