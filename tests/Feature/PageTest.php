@@ -57,6 +57,7 @@ class PageTest extends TestCase
             'name' => $this->page->name,
             'slug' => $this->page->slug,
             'public' => $this->page->public,
+            'metadata' => [],
         ];
 
         $this->expected_view = array_merge($this->expected, [
@@ -89,7 +90,7 @@ class PageTest extends TestCase
                 0 => $this->expected,
             ]]);
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     /**
@@ -107,7 +108,7 @@ class PageTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     /**
