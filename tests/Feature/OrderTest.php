@@ -96,7 +96,7 @@ class OrderTest extends TestCase
             'status',
             'paid',
             'created_at',
-            'shipping_method',
+            'shipping_method_id',
         ];
 
         $this->expected_full_view_structure = $this->expected_full_structure + ['user'];
