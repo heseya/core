@@ -276,7 +276,7 @@ class ProductTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(23);
+        $this->assertQueryCountLessThan(24);
     }
 
     public function testShowUnauthorized(): void
