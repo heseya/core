@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Address;
 use App\Models\User;
 use Illuminate\Http\Request;
 
