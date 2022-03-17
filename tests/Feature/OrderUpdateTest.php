@@ -3,12 +3,10 @@
 namespace Tests\Feature;
 
 use App\Enums\ShippingType;
-use App\Events\OrderCreated;
 use App\Events\OrderUpdated;
 use App\Listeners\WebHookEventListener;
 use App\Models\Address;
 use App\Models\Order;
-use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\WebHook;
@@ -86,6 +84,7 @@ class OrderUpdateTest extends TestCase
         ]);
 
         $responseData = $response->getData()->data;
+
         $response
             ->assertOk()
             ->assertJsonFragment([
@@ -99,12 +98,12 @@ class OrderUpdateTest extends TestCase
                     "hidden" => $this->status->hidden,
                     "no_notifications" => $this->status->no_notifications,
                 ],
-                'shipping_address' => [
-                    "id" => $responseData->shipping_address->id,
+                'shipping_place' => [
+                    "id" => $responseData->shipping_place->id,
                     "address" => $address->address,
                     "city" => $address->city,
                     "country" => $address->country ?? null,
-                    "country_name" => $responseData->shipping_address->country_name,
+                    "country_name" => $responseData->shipping_place->country_name,
                     "name" => $address->name,
                     "phone" => $address->phone,
                     "vat" => $address->vat,
@@ -127,7 +126,7 @@ class OrderUpdateTest extends TestCase
             'id' => $this->order->getKey(),
             'email' => $email,
             'comment' => $comment,
-            'shipping_address_id' => $responseData->shipping_address->id,
+            'shipping_address_id' => $responseData->shipping_place->id,
             'billing_address_id' => $responseData->billing_address->id,
         ]);
 
@@ -188,12 +187,12 @@ class OrderUpdateTest extends TestCase
                     "hidden" => $this->status->hidden,
                     "no_notifications" => $this->status->no_notifications,
                 ],
-                'shipping_address' => [
-                    "id" => $responseData->shipping_address->id,
+                'shipping_place' => [
+                    "id" => $responseData->shipping_place->id,
                     "address" => $address->address,
                     "city" => $address->city,
                     "country" => $address->country ?? null,
-                    "country_name" => $responseData->shipping_address->country_name,
+                    "country_name" => $responseData->shipping_place->country_name,
                     "name" => $address->name,
                     "phone" => $address->phone,
                     "vat" => $address->vat,
@@ -217,7 +216,7 @@ class OrderUpdateTest extends TestCase
             'email' => $email,
             'comment' => $comment,
             'billing_address_id' => $responseData->billing_address->id,
-            'shipping_address_id' => $responseData->shipping_address->id,
+            'shipping_address_id' => $responseData->shipping_place->id,
         ]);
 
         Event::assertDispatched(OrderUpdated::class);
@@ -277,12 +276,12 @@ class OrderUpdateTest extends TestCase
                     "hidden" => $this->status->hidden,
                     "no_notifications" => $this->status->no_notifications,
                 ],
-                'shipping_address' => [
-                    "id" => $responseData->shipping_address->id,
+                'shipping_place' => [
+                    "id" => $responseData->shipping_place->id,
                     "address" => $address->address,
                     "city" => $address->city,
                     "country" => $address->country ?? null,
-                    "country_name" => $responseData->shipping_address->country_name,
+                    "country_name" => $responseData->shipping_place->country_name,
                     "name" => $address->name,
                     "phone" => $address->phone,
                     "vat" => $address->vat,
@@ -305,7 +304,7 @@ class OrderUpdateTest extends TestCase
             'id' => $this->order->getKey(),
             'email' => $email,
             'comment' => $comment,
-            'shipping_address_id' => $responseData->shipping_address->id,
+            'shipping_address_id' => $responseData->shipping_place->id,
             'billing_address_id' => $responseData->billing_address->id,
         ]);
 
@@ -475,12 +474,12 @@ class OrderUpdateTest extends TestCase
                      "hidden" => $this->status->hidden,
                      "no_notifications" => $this->status->no_notifications,
                  ],
-                 'shipping_address' => [
+                 'shipping_place' => [
                      "address" => $this->addressDelivery->address,
                      "city" => $this->addressDelivery->city,
                      "country" => $this->addressDelivery->country ?? null,
-                     "country_name" => $responseData->shipping_address->country_name,
-                     "id" => $responseData->shipping_address->id,
+                     "country_name" => $responseData->shipping_place->country_name,
+                     "id" => $responseData->shipping_place->id,
                      "name" => $this->addressDelivery->name,
                      "phone" => $this->addressDelivery->phone,
                      "vat" => $this->addressDelivery->vat,
@@ -490,7 +489,7 @@ class OrderUpdateTest extends TestCase
 
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
-            'shipping_address_id' => $responseData->shipping_address->id,
+            'shipping_address_id' => $responseData->shipping_place->id,
 
             // should remain the same
             'email' => self::EMAIL,
@@ -518,12 +517,12 @@ class OrderUpdateTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                  // should remain the same
-                 'shipping_address' => [
+                 'shipping_place' => [
                      "address" => $this->addressDelivery->address,
                      "city" => $this->addressDelivery->city,
                      "country" => $this->addressDelivery->country ?? null,
-                     "country_name" => $response->getData()->data->shipping_address->country_name,
-                     "id" => $response->getData()->data->shipping_address->id,
+                     "country_name" => $response->getData()->data->shipping_place->country_name,
+                     "id" => $response->getData()->data->shipping_place->id,
                      "name" => $this->addressDelivery->name,
                      "phone" => $this->addressDelivery->phone,
                      "vat" => $this->addressDelivery->vat,
@@ -571,11 +570,11 @@ class OrderUpdateTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonFragment(['shipping_address' => null]);
+            ->assertJsonFragment(['shipping_place' => null]);
 
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
-            'shipping_address_id' => null,
+            'shipping_place' => null,
             'billing_address_id' => $this->addressInvoice->getKey(),
         ]);
 
@@ -671,7 +670,6 @@ class OrderUpdateTest extends TestCase
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
             'billing_address_id' => $this->addressInvoice->getKey(),
-            'shipping_address_id' => $response->getData()->data->shipping_address->id,
         ]);
 
         $this->checkAddress($this->addressInvoice);
@@ -699,7 +697,6 @@ class OrderUpdateTest extends TestCase
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
             'billing_address_id' => null,
-            'shipping_address_id' => $this->addressDelivery->getKey(),
         ]);
 
         Event::assertDispatched(OrderUpdated::class);

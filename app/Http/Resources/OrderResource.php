@@ -22,10 +22,10 @@ class OrderResource extends Resource
             'comment' => $this->comment,
             'created_at' => $this->created_at,
             'status' => $this->status ? StatusResource::make($this->status) : null,
-            'shipping_address' => $this->shippingAddress ? AddressResource::make($this->shippingAddress) : null,
-            'shipping_method' => $this->shippingMethod ? ShippingMethodResource::make($this->shippingMethod) : null,
+            'shipping_method_id' => $this->shippingMethod ? $this->shippingMethod->getKey() : null,
+            'shipping_type' => $this->shippingMethod ? $this->shippingMethod->shipping_type : null,
             'invoice_requested' => $this->invoice_requested,
-            'shipping_place' => $this->shipping_place,
+            'shipping_place' => AddressResource::make($this->shippingAddress) ?? $this->shipping_place,
         ];
     }
 
