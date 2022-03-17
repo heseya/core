@@ -297,6 +297,8 @@ paths:
     $ref: './paths/Orders.yml#/OrdersVerify'
   '/orders/id:{id}/status':
     $ref: './paths/Orders.yml#/OrdersStatus'
+  '/orders/id:{id}/shipping-lists':
+    $ref: './paths/Orders.yml#/OrdersShippingLists'
   /orders/my:
     $ref: './paths/Orders.yml#/OrdersMy'
   '/orders/my/id:{id}':

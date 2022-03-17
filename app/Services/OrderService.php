@@ -5,11 +5,13 @@ namespace App\Services;
 use App\Dtos\AddressDto;
 use App\Dtos\OrderIndexDto;
 use App\Dtos\OrderUpdateDto;
+use App\Events\OrderRequestedShipping;
 use App\Events\OrderUpdated;
 use App\Exceptions\OrderException;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
 use App\Models\Order;
+use App\Models\PackageTemplate;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Exception;
@@ -95,6 +97,14 @@ class OrderService implements OrderServiceContract
             ->sort($dto->getSort())
             ->with(['products', 'discounts', 'payments'])
             ->paginate(Config::get('pagination.per_page'));
+    }
+
+    public function shippingList(Order $order, string $packageTemplateId): Order
+    {
+        $packageTemplate = PackageTemplate::findOrFail($packageTemplateId);
+        OrderRequestedShipping::dispatch($order, $packageTemplate);
+
+        return $order;
     }
 
     private function modifyAddress(Order $order, string $attribute, ?AddressDto $addressDto): ?Address
