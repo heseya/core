@@ -909,10 +909,6 @@ class OrderCreateTest extends TestCase
         $response->assertCreated();
         $order = Order::find($response->getData()->data->id);
 
-        $schemaPrice = $schema->getPrice('Test', [
-            $schema->getKey() => 'Test',
-        ]);
-
         $this->assertDatabaseHas('orders', [
             'id' => $order->getKey(),
             'invoice_requested' => true,
