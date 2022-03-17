@@ -12,7 +12,7 @@ class OrderResource extends Resource
 
     public function base(Request $request): array
     {
-        return [
+        return array_merge([
             'id' => $this->getKey(),
             'code' => $this->code,
             'email' => $this->email,
@@ -26,12 +26,12 @@ class OrderResource extends Resource
             'status' => $this->status ? StatusResource::make($this->status) : null,
             'delivery_address' => $this->deliveryAddress ? AddressResource::make($this->deliveryAddress) : null,
             'shipping_method' => $this->shippingMethod ? ShippingMethodResource::make($this->shippingMethod) : null,
-        ];
+        ], $this->metadataResource('orders'));
     }
 
     public function view(Request $request): array
     {
-        return array_merge([
+        return [
             'invoice_address' => AddressResource::make($this->invoiceAddress),
             'shipping_method' => ShippingMethodResource::make($this->shippingMethod),
             'products' => OrderProductResource::collection($this->products),
@@ -41,6 +41,6 @@ class OrderResource extends Resource
             'discounts' => DiscountResource::collection($this->discounts),
             'user' => $this->user instanceof User
                 ? UserResource::make($this->user)->baseOnly() : AppResource::make($this->user),
-        ], $this->metadataResource('orders'));
+        ];
     }
 }

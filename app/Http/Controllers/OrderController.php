@@ -52,7 +52,7 @@ class OrderController extends Controller
 
         $query = Order::search($search_data)
             ->sort($request->input('sort'))
-            ->with(['products', 'discounts', 'payments']);
+            ->with(['products', 'discounts', 'payments', 'metadata']);
 
         return OrderResource::collection(
             $query->paginate(Config::get('pagination.per_page')),
