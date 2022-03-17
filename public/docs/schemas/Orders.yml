@@ -41,6 +41,13 @@ Order:
       type: array
       items:
         $ref: '#/OrderProduct'
+    invoice_requested:
+      type: boolean
+    shipping_place:
+      oneOf:
+        - type: string
+          example: 'Test 12 11-111 Test'
+        - $ref: './Addresses.yml#/Address'
   type: object
 
 OrderProduct:

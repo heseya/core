@@ -38,6 +38,11 @@ OrderCreate:
           discounts:
             type: array
             items: [ ]
+          invoice_requested:
+            type: boolean
+          shipping_place:
+            type: string
+            example: 'Test 12 11-111 Test'
         type: object
 
 OrderUpdate:
