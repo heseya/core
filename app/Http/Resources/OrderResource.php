@@ -25,7 +25,7 @@ class OrderResource extends Resource
             'shipping_address' => $this->shippingAddress ? AddressResource::make($this->shippingAddress) : null,
             'shipping_method' => $this->shippingMethod ? ShippingMethodResource::make($this->shippingMethod) : null,
             'invoice_requested' => $this->invoice_requested,
-            'shipping_place' => AddressResource::make(Address::find($this->shipping_place)) ?? $this->shipping_place,
+            'shipping_place' => $this->shipping_place,
         ];
     }
 
