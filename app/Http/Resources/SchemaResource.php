@@ -11,7 +11,7 @@ class SchemaResource extends Resource
 
     public function base(Request $request): array
     {
-        return [
+        return array_merge([
             'id' => $this->getKey(),
             'type' => $this->type->key,
             'name' => $this->name,
@@ -28,13 +28,13 @@ class SchemaResource extends Resource
             'validation' => $this->validation,
             'options' => OptionResource::collection($this->options),
             'used_schemas' => $this->usedSchemas->map(fn ($schema) => $schema->getKey()),
-        ];
+        ], $this->metadataResource('schemas'));
     }
 
     public function view(Request $request): array
     {
-        return array_merge([
+        return [
             'products' => ProductResource::collection($this->products),
-        ], $this->metadataResource('schemas'));
+        ];
     }
 }
