@@ -414,6 +414,7 @@ class ProductTest extends TestCase
                         'url' => $media1->url,
                         'slug' => $media1->slug,
                         'alt' => $media1->alt,
+                        'metadata' => [],
                     ],
                 ],
                 [
@@ -433,6 +434,7 @@ class ProductTest extends TestCase
                         'url' => $media2->url,
                         'slug' => $media2->slug,
                         'alt' => $media2->alt,
+                        'metadata' => [],
                     ],
                 ],
             ]]);
