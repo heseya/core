@@ -101,7 +101,7 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
                 ShippingType::POINT_EXTERNAL => $request->input('shipping_place'),
                 default => null,
             }
-            : null;
+        : null;
 
         return new self(
             $request->input('code'),

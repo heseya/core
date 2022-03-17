@@ -16,6 +16,7 @@ class ShippingPlaceValidation implements ImplicitRule, DataAwareRule
      *
      * @param  string  $attribute
      * @param  mixed  $value
+     *
      * @return bool
      */
     public function passes($attribute, $value): bool
