@@ -641,7 +641,7 @@ class AuthTest extends TestCase
 
         $response = $this->actingAs($user)->json('PATCH', '/users/password', [
             'password' => 'tests',
-            'password_new' => 'Test1@345',
+            'password_new' => 'Test1@345678',
         ]);
 
         $response->assertStatus(422);
