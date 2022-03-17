@@ -128,7 +128,8 @@ class DiscountTest extends TestCase
                 'uses' => 0,
                 'available' => true,
                 'starts_at' => Carbon::yesterday(),
-                'expires_at' => Carbon::tomorrow()
+                'expires_at' => Carbon::tomorrow(),
+                'metadata' => [],
             ]);
 
         $this->assertDatabaseHas('discounts', [
@@ -299,7 +300,8 @@ class DiscountTest extends TestCase
                 'discount' => 20,
                 'type' => DiscountType::AMOUNT,
                 'starts_at' => Carbon::yesterday(),
-                'expires_at' => Carbon::tomorrow()
+                'expires_at' => Carbon::tomorrow(),
+                'metadata' => [],
             ]);
 
         $this->assertDatabaseHas('discounts', [
@@ -590,6 +592,7 @@ class DiscountTest extends TestCase
                 'uses' => 0,
                 'starts_at' => '2021-09-20T12:00:00.000000Z',
                 'expires_at' => '2021-09-21T12:00:00.000000Z',
+                'metadata' => [],
             ]);
 
         $this->assertDatabaseHas('discounts', [

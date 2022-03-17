@@ -16,7 +16,7 @@ class DiscountResource extends Resource
             $this->resource->discount = $this->resource->pivot->discount;
         }
 
-        return [
+        return array_merge([
             'id' => $this->getKey(),
             'code' => $this->code,
             'description' => $this->description,
@@ -27,11 +27,6 @@ class DiscountResource extends Resource
             'available' => $this->available,
             'starts_at' => $this->starts_at,
             'expires_at' => $this->expires_at,
-        ];
-    }
-
-    public function view(Request $request): array
-    {
-        return $this->metadataResource('coupons');
+        ], $this->metadataResource('coupons'));
     }
 }

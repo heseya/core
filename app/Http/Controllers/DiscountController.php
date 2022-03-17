@@ -21,7 +21,7 @@ class DiscountController extends Controller
     {
         $query = Discount::search($request->validated())
             ->orderBy('updated_at', 'DESC')
-            ->with('orders');
+            ->with(['orders', 'metadata']);
 
         return DiscountResource::collection(
             $query->paginate(Config::get('pagination.per_page')),
