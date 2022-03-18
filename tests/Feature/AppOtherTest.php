@@ -67,6 +67,7 @@ class AppOtherTest extends TestCase
                 'icon' => $app->icon,
                 'author' => $app->author,
                 'permissions' => [],
+                'metadata' => [],
             ]]);
     }
 

@@ -12,7 +12,7 @@ class ProductResource extends Resource
 
     public function base(Request $request): array
     {
-        return [
+        return array_merge([
             'id' => $this->getKey(),
             'slug' => $this->slug,
             'name' => $this->name,
@@ -25,14 +25,14 @@ class ProductResource extends Resource
             'quantity_step' => $this->quantity_step,
             'cover' => MediaResource::make($this->media->first()),
             'tags' => TagResource::collection($this->tags),
-        ];
+        ], $this->metadataResource('products'));
     }
 
     public function view(Request $request): array
     {
         $sets = Auth::check() ? $this->sets : $this->sets()->public()->get();
 
-        return array_merge([
+        return [
             'order' => $this->order,
             'user_id' => $this->user_id,
             'original_id' => $this->original_id,
@@ -43,6 +43,6 @@ class ProductResource extends Resource
             'schemas' => SchemaResource::collection($this->schemas),
             'sets' => ProductSetResource::collection($sets),
             'seo' => SeoMetadataResource::make($this->seo),
-        ], $this->metadataResource('products'));
+        ];
     }
 }

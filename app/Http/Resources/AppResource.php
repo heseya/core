@@ -11,7 +11,7 @@ class AppResource extends Resource
 
     public function base(Request $request): array
     {
-        return [
+        return array_merge([
             'id' => $this->getKey(),
             'url' => $this->url,
             'microfrontend_url' => $this->microfrontend_url,
@@ -21,13 +21,13 @@ class AppResource extends Resource
             'description' => $this->description,
             'icon' => $this->icon,
             'author' => $this->author,
-        ];
+        ], $this->metadataResource('apps'));
     }
 
     public function view(Request $request): array
     {
-        return array_merge([
+        return [
             'permissions' => $this->getPermissionNames()->sort()->values(),
-        ], $this->metadataResource('apps'));
+        ];
     }
 }

@@ -11,23 +11,23 @@ class UserResource extends Resource
 
     public function base(Request $request): array
     {
-        return [
+        return array_merge([
             'id' => $this->getKey(),
             'email' => $this->email,
             'name' => $this->name,
             'avatar' => $this->avatar,
             'roles' => RoleResource::collection($this->roles),
             'is_tfa_active' => $this->is_tfa_active,
-        ];
+        ], $this->metadataResource('users'));
     }
 
     public function view(Request $request): array
     {
-        return array_merge([
+        return [
             'permissions' => $this->getAllPermissions()
                 ->map(fn ($perm) => $perm->name)
                 ->sort()
                 ->values(),
-        ], $this->metadataResource('users'));
+        ];
     }
 }

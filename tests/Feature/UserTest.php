@@ -40,7 +40,7 @@ class UserTest extends TestCase
             'name' => 'Metadata',
             'value' => 'metadata test',
             'value_type' => MetadataType::STRING,
-            'public' => false,
+            'public' => true,
         ]);
 
         $this->expected = [
@@ -50,9 +50,9 @@ class UserTest extends TestCase
             'avatar' => $this->user->avatar,
             'roles' => [],
             'is_tfa_active' => $this->user->is_tfa_active,
-            /*'metadata' => [
+            'metadata' => [
                 $metadata->name => $metadata->value
-            ]*/
+            ]
         ];
 
         // Owner role needs to exist for user service to function properly
@@ -212,6 +212,7 @@ class UserTest extends TestCase
                 'avatar' => $otherUser->avatar,
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
+                'metadata' => [],
             ]);
     }
 
@@ -238,6 +239,7 @@ class UserTest extends TestCase
                 'avatar' => $otherUser->avatar,
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
+                'metadata' => [],
             ]);
     }
 
@@ -263,6 +265,7 @@ class UserTest extends TestCase
                 'avatar' => $otherUser->avatar,
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
+                'metadata' => [],
             ]);
     }
 
@@ -288,6 +291,7 @@ class UserTest extends TestCase
                 'avatar' => $otherUser->avatar,
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
+                'metadata' => [],
             ]);
     }
 
@@ -583,24 +587,28 @@ class UserTest extends TestCase
                 'description' => $role1->description,
                 'assignable' => true,
                 'deletable' => true,
+                'metadata' => [],
             ]])->assertJsonFragment([[
                 'id' => $role2->getKey(),
                 'name' => $role2->name,
                 'description' => $role2->description,
                 'assignable' => true,
                 'deletable' => true,
+                'metadata' => [],
             ]])->assertJsonFragment([[
                 'id' => $role3->getKey(),
                 'name' => $role3->name,
                 'description' => $role3->description,
                 'assignable' => true,
                 'deletable' => true,
+                'metadata' => [],
             ]])->assertJsonFragment([[
                 'id' => $this->authenticated->getKey(),
                 'name' => $this->authenticated->name,
                 'description' => $this->authenticated->description,
                 'assignable' => false,
                 'deletable' => false,
+                'metadata' => [],
             ]])->assertJsonPath('data.permissions', $permissions);
 
         $user = User::findOrFail($response->getData()->data->id);
@@ -847,24 +855,28 @@ class UserTest extends TestCase
                 'description' => $role1->description,
                 'assignable' => true,
                 'deletable' => true,
+                'metadata' => [],
             ]])->assertJsonFragment([[
                 'id' => $role2->getKey(),
                 'name' => $role2->name,
                 'description' => $role2->description,
                 'assignable' => true,
                 'deletable' => true,
+                'metadata' => [],
             ]])->assertJsonFragment([[
                 'id' => $role3->getKey(),
                 'name' => $role3->name,
                 'description' => $role3->description,
                 'assignable' => true,
                 'deletable' => true,
+                'metadata' => [],
             ]])->assertJsonFragment([[
                 'id' => $this->authenticated->getKey(),
                 'name' => $this->authenticated->name,
                 'description' => $this->authenticated->description,
                 'assignable' => false,
                 'deletable' => false,
+                'metadata' => [],
             ]])->assertJsonPath('data.permissions', $permissions);
 
         $otherUser->refresh();
@@ -982,6 +994,7 @@ class UserTest extends TestCase
                     'description' => $this->authenticated->description,
                     'assignable' => false,
                     'deletable' => false,
+                    'metadata' => [],
                 ],
             ])
             ->assertJsonPath('data.permissions', $this->authenticatedPermissions->toArray());

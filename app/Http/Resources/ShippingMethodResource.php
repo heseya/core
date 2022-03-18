@@ -11,7 +11,7 @@ class ShippingMethodResource extends Resource
 
     public function base(Request $request): array
     {
-        return [
+        return array_merge([
             'id' => $this->getKey(),
             'name' => $this->name,
             'price' => $this->price,
@@ -22,11 +22,6 @@ class ShippingMethodResource extends Resource
             'price_ranges' => PriceRangeResource::collection($this->priceRanges->sortBy('start')),
             'shipping_time_min' => $this->shipping_time_min,
             'shipping_time_max' => $this->shipping_time_max,
-        ];
-    }
-
-    public function view(Request $request): array
-    {
-        return $this->metadataResource('shipping_methods');
+        ], $this->metadataResource('shipping_methods'));
     }
 }

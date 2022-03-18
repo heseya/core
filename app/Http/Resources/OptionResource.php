@@ -11,18 +11,13 @@ class OptionResource extends Resource
 
     public function base(Request $request): array
     {
-        return [
+        return array_merge([
             'id' => $this->getKey(),
             'name' => $this->name,
             'price' => $this->price,
             'disabled' => $this->disabled,
             'available' => $this->available,
             'items' => ItemResource::collection($this->items),
-        ];
-    }
-
-    public function view(Request $request): array
-    {
-        return $this->metadataResource('options');
+        ], $this->metadataResource('options'));
     }
 }

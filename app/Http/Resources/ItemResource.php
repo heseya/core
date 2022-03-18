@@ -11,16 +11,11 @@ class ItemResource extends Resource
 
     public function base(Request $request): array
     {
-        return [
+        return array_merge([
             'id' => $this->getKey(),
             'name' => $this->name,
             'sku' => $this->sku,
             'quantity' => $this->getQuantity($request->input('day')),
-        ];
-    }
-
-    public function view(Request $request): array
-    {
-        return $this->metadataResource('items');
+        ], $this->metadataResource('items'));
     }
 }
