@@ -345,25 +345,6 @@ class SchemaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateHiddenAndRequired($user): void
-    {
-        $this->$user->givePermissionTo('products.add');
-
-        $response = $this->actingAs($this->$user)->postJson('/schemas', [
-            'name' => 'Test',
-            'type' => SchemaType::getKey(SchemaType::SELECT),
-            'price' => 120,
-            'description' => 'test test',
-            'hidden' => true,
-            'required' => true,
-        ]);
-
-        $response->assertStatus(422);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testUpdateUnauthorized($user): void
     {
         $schema = Schema::factory()->create();
