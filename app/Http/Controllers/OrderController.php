@@ -277,4 +277,9 @@ class OrderController extends Controller
 
         return OrderResource::make($order);
     }
+
+    public function sendDocuments(Order $order): JsonResponse
+    {
+
+    }
 }
