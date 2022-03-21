@@ -9,6 +9,7 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Support\Facades\App as AppFacade;
@@ -73,6 +74,11 @@ class App extends Model implements
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function shippingMethods(): HasMany
+    {
+        return $this->hasMany(ShippingMethod::class);
     }
 
     public function hasRole($roles, ?string $guard = null): bool
