@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\App;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\ShippingMethod;
 use App\Models\WebHook;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
@@ -247,5 +248,35 @@ class AppOtherTest extends TestCase
         $this->assertDatabaseCount('apps', 0); // +1 from TestCase
         $this->assertModelMissing($app);
         $this->assertModelMissing($this->application);
+    }
+
+    public function testRemoveIntegrationsWithApp(): void
+    {
+        $this->user->givePermissionTo('apps.remove');
+
+        ShippingMethod::query()->delete();
+        App::query()->delete();
+
+        $app = App::factory()->create(['url' => $this->url]);
+        $shippingMethodOne = ShippingMethod::factory()->create(['app_id' => $app->getKey()]);
+        $shippingMethodTwo = ShippingMethod::factory()->create(['app_id' => $app->getKey()]);
+        $shippingMethodIdOne = $shippingMethodOne->getKey();
+        $shippingMethodIdTwo = $shippingMethodTwo->getKey();
+
+        $this->actingAs($this->user)
+            ->deleteJson('/apps/id:' . $app->getKey() . '?force');
+
+        $this->assertDatabaseMissing('shipping_methods', [
+            'id' => $shippingMethodIdOne
+        ]);
+        $this->assertDatabaseMissing('shipping_methods', [
+            'id' => $shippingMethodIdTwo
+        ]);
+
+        $this->assertDatabaseCount('apps', 0);
+        $this->assertDatabaseCount('shipping_methods', 0);
+        $this->assertModelMissing($app);
+        $this->assertModelMissing($shippingMethodOne);
+        $this->assertModelMissing($shippingMethodTwo);
     }
 }

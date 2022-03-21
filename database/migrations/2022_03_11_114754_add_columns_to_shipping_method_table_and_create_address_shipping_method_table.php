@@ -13,10 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
+        Schema::table('apps', function (Blueprint $table) {
+            $table->uuid('id')->primary()->change();
+        });
+
         Schema::table('shipping_methods', function (Blueprint $table) {
             $table->string('shipping_type')->default('none');
             $table->string('integration_key')->nullable();
-            $table->string('app_id')->nullable()->default(null);
+            $table->foreignUuid('app_id')->nullable()->index()->references('id')->on('apps')->onDelete('cascade');
         });
 
         Schema::create('address_shipping_method', function (Blueprint $table) {
