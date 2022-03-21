@@ -13,3 +13,19 @@ Item:
     quantity:
       type: float
       example: '20'
+
+ItemWithRequiredQuantity:
+  type: object
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    name:
+      type: string
+      example: Chain
+    sku:
+      type: string
+      example: K121
+    required_quantity:
+      type: float
+      example: '5'

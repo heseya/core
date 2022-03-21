@@ -50,7 +50,7 @@ Product:
       description: 'Ids of assigned items'
       type: array
       items:
-        $ref: './Items.yml#/Item'
+        $ref: './Items.yml#/ItemWithRequiredQuantity'
 #    type: object
 
 ProductView:
@@ -90,4 +90,4 @@ ProductView:
         seo:
           $ref: './Seo.yml#/SeoView'
         items:
-          $ref: './Items.yml#/Item'
+          $ref: './Items.yml#/ItemWithRequiredQuantity'
