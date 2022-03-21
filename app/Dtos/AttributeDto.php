@@ -2,25 +2,27 @@
 
 namespace App\Dtos;
 
-use App\Http\Requests\AttributeRequest;
+use App\Http\Requests\AttributeStoreRequest;
+use App\Http\Requests\AttributeUpdateRequest;
 use Heseya\Dto\Dto;
+use Heseya\Dto\Missing;
 
 class AttributeDto extends Dto
 {
     private string $name;
     private string $slug;
-    private string $description;
+    private string|null|Missing $description;
     private string $type;
     private bool $global;
     private bool $sortable;
     private array $options;
 
-    public static function fromFormRequest(AttributeRequest $request): self
+    public static function fromFormRequest(AttributeStoreRequest|AttributeUpdateRequest $request): self
     {
         return new self(
             name: $request->input('name'),
             slug: $request->input('slug'),
-            description: $request->input('description'),
+            description: $request->input('description', new Missing()),
             type: $request->input('type'),
             global: $request->input('global'),
             sortable: $request->input('sortable'),
@@ -41,7 +43,7 @@ class AttributeDto extends Dto
         return $this->slug;
     }
 
-    public function getDescription(): string
+    public function getDescription(): string|null|Missing
     {
         return $this->description;
     }

@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Enums\MediaType;
 use App\Events\ProductSetCreated;
 use App\Listeners\WebHookEventListener;
+use App\Enums\MediaType;
+use App\Models\Attribute;
 use App\Models\Media;
 use App\Models\ProductSet;
 use App\Models\WebHook;
@@ -639,5 +641,64 @@ class ProductSetCreateTest extends TestCase
             'parent_id' => null,
             'slug' => 'test',
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithAttributes($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.add');
+
+        Event::fake([ProductSetCreated::class]);
+
+        $set = [
+            'name' => 'Test',
+        ];
+
+        $defaults = [
+            'public' => true,
+            'hide_on_index' => false,
+            'slug' => 'test',
+        ];
+
+        $attrOne = Attribute::factory()->create();
+        $attrTwo = Attribute::factory()->create();
+
+        $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
+                'slug_suffix' => 'test',
+                'slug_override' => false,
+                'attributes' => [
+                    $attrOne->getKey(),
+                    $attrTwo->getKey(),
+                ]
+            ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $set + $defaults + [
+                    'slug_override' => false,
+                    'slug_suffix' => 'test',
+                    'parent' => null,
+                ]]);
+
+        $productSet = ProductSet::find($response->getData()->data->id);
+
+        $this->assertDatabaseHas('product_sets', $set + $defaults + [
+                'parent_id' => null,
+            ])
+            ->assertDatabaseHas('attribute_product_set', [
+                'attribute_id' => $attrOne->getKey(),
+                'product_set_id' => $productSet->getKey(),
+            ])
+            ->assertDatabaseHas('attribute_product_set', [
+                'attribute_id' => $attrTwo->getKey(),
+                'product_set_id' => $productSet->getKey(),
+            ]);
+
+        $this->assertTrue($productSet->attributes->contains($attrOne));
+        $this->assertTrue($productSet->attributes->contains($attrTwo));
+
+        Event::assertDispatched(ProductSetCreated::class);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Attribute;
 use App\Models\ProductSet;
 use App\Models\SeoMetadata;
 use Tests\TestCase;
@@ -434,5 +435,58 @@ class ProductSetShowTest extends TestCase
             ->assertJsonStructure([
                 'data' => $this->expected_structure,
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductSetHasAttributes($user): void
+    {
+        $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
+
+        $firstAttr = Attribute::factory()->create([
+            'name' => 'test',
+            'description' => 'test',
+            'type' => 'number',
+            'global' => false,
+        ]);
+        $secondAttr = Attribute::factory()->create([
+            'name' => 'test2',
+            'description' => 'test2',
+            'type' => 'number',
+            'global' => false,
+        ]);
+
+        $this->set->attributes()->attach([
+            $firstAttr->getKey(),
+            $secondAttr->getKey()
+        ]);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/product-sets/id:' . $this->set->getKey());
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $this->set->getKey(),
+                'name' => $this->set->name,
+                'slug' => $this->set->slug,
+                'slug_override' => false,
+                'public' => $this->set->public,
+                'visible' => $this->set->public && $this->set->public_parent,
+                'hide_on_index' => $this->set->hide_on_index,
+                'parent' => $this->set->parent,
+                'children_ids' => [
+                    $this->childSet->getKey(),
+                ],
+                'seo' => [
+                    'title' => $this->set->seo->title,
+                    'description' => $this->set->seo->description,
+                ]
+            ]])
+            ->assertJsonStructure([
+                'data' => array_merge($this->expected_structure, ['attributes']),
+            ])
+            ->assertJsonCount(2, 'data.attributes');
     }
 }

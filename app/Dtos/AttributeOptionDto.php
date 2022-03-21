@@ -4,19 +4,22 @@ namespace App\Dtos;
 
 use App\Http\Requests\AttributeOptionRequest;
 use Heseya\Dto\Dto;
+use Heseya\Dto\Missing;
 
 class AttributeOptionDto extends Dto
 {
-    private string|null $id;
-    private string $value_text;
-    private float|null $value;
+    private string|null|Missing $id;
+    private string|null|Missing $name;
+    private float|null|Missing $value_number;
+    private string|null|Missing $value_date;
 
     public static function fromFormRequest(AttributeOptionRequest $request): self
     {
         return new self(
-            id: $request->input('id'),
-            value_text: $request->input('value_text'),
-            value: $request->input('value'),
+            id: $request->input('id', new Missing()),
+            name: $request->input('name', new Missing()),
+            value_number: $request->input('value_number', new Missing()),
+            value_date: $request->input('value_date', new Missing()),
         );
     }
 
@@ -24,23 +27,41 @@ class AttributeOptionDto extends Dto
     {
         return new self(
             id: array_key_exists('id', $data) ? $data['id'] : null,
-            value_text: $data['value_text'],
-            value: array_key_exists('value', $data) ? $data['value'] : null,
+            name: array_key_exists('name', $data) ? $data['name'] : null,
+            value_number: array_key_exists('value_number', $data) ? $data['value_number'] : null,
+            value_date: array_key_exists('value_date', $data) ? $data['value_date'] : null,
         );
     }
 
-    public function getId(): string|null
+    /**
+     * @return string|Missing|null
+     */
+    public function getId(): string|null|Missing
     {
         return $this->id;
     }
 
-    public function getValueText(): string
+    /**
+     * @return string|Missing|null
+     */
+    public function getName(): string|null|Missing
     {
-        return $this->value_text;
+        return $this->name;
     }
 
-    public function getValue(): float|null
+    /**
+     * @return float|Missing|null
+     */
+    public function getValueNumber(): float|null|Missing
     {
-        return $this->value;
+        return $this->value_number;
+    }
+
+    /**
+     * @return string|Missing|null
+     */
+    public function getValueDate(): string|null|Missing
+    {
+        return $this->value_date;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\AttributeType;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AttributeOptionRequest extends FormRequest
@@ -13,9 +14,15 @@ class AttributeOptionRequest extends FormRequest
      */
     public function rules(): array
     {
+        $nameRule = match ($this?->attribute?->type->value ?? $this->input('type')) {
+            AttributeType::SINGLE_OPTION => 'required',
+            default => 'nullable'
+        };
+
         return [
-            'value_text' => ['required', 'string', 'max:255'],
-            'value' => ['nullable', 'numeric'],
+            'name' => [$nameRule, 'string', 'max:255'],
+            'value_number' => ['nullable', 'numeric'],
+            'value_date' => ['nullable', 'date'],
         ];
     }
 }

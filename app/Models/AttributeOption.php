@@ -3,17 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @mixin IdeHelperAttributeOption
  */
 class AttributeOption extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'value_text',
-        'value',
+        'name',
+        'index',
+        'value_number',
+        'value_date',
         'attribute_id',
     ];
 
@@ -21,4 +25,9 @@ class AttributeOption extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    public function attribute(): BelongsTo
+    {
+        return $this->belongsTo(Attribute::class);
+    }
 }

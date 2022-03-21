@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\AttributeDto;
-use App\Http\Requests\AttributeRequest;
+use App\Http\Requests\AttributeIndexRequest;
+use App\Http\Requests\AttributeStoreRequest;
+use App\Http\Requests\AttributeUpdateRequest;
 use App\Http\Resources\AttributeResource;
 use App\Models\Attribute;
 use App\Services\Contracts\AttributeServiceContract;
@@ -18,12 +20,14 @@ class AttributeController extends Controller
     {
     }
 
-    public function index(): JsonResource
+    public function index(AttributeIndexRequest $request): JsonResource
     {
-        $attributes = Attribute::with('options')
-            ->paginate(Config::get('pagination.per_page'));
+        $query = Attribute::search($request->validated())
+            ->with('options');
 
-        return AttributeResource::collection($attributes);
+        return AttributeResource::collection(
+            $query->paginate(Config::get('pagination.per_page'))
+        );
     }
 
     public function show(Attribute $attribute): JsonResource
@@ -33,7 +37,7 @@ class AttributeController extends Controller
         return AttributeResource::make($attribute);
     }
 
-    public function store(AttributeRequest $request): JsonResource
+    public function store(AttributeStoreRequest $request): JsonResource
     {
         $attribute = $this->attributeService->create(
             AttributeDto::fromFormRequest($request)
@@ -42,7 +46,7 @@ class AttributeController extends Controller
         return AttributeResource::make($attribute);
     }
 
-    public function update(Attribute $attribute, AttributeRequest $request): JsonResource
+    public function update(Attribute $attribute, AttributeUpdateRequest $request): JsonResource
     {
         $attribute = $this->attributeService->update(
             $attribute,

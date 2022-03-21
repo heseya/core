@@ -17,12 +17,12 @@ class AttributePermissions extends Migration
     public function up()
     {
         Permission::create(['name' => 'attributes.show', 'display_name' => 'Dostęp do listy cech']);
+        Permission::create(['name' => 'attributes.add', 'display_name' => 'Możliwość tworzenia cech']);
         Permission::create([
-            'name' => 'attributes.add',
-            'display_name' => 'Możliwość tworzenia cech oraz opcji cech',
-            'description' => 'Pozwala na dodanie nowej cechy oraz dodanie nowej opcji cechy do już istniejącej cechy'
+            'name' => 'attributes.edit',
+            'display_name' => 'Możliwość edycji cech oraz modyfikacji ich opcji',
+            'description' => 'Pozwala również na dodawanie nowych i usuwanie opcji cech'
         ]);
-        Permission::create(['name' => 'attributes.edit', 'display_name' => 'Możliwość edycji cech']);
         Permission::create(['name' => 'attributes.remove', 'display_name' => 'Możliwość usuwania cech']);
 
         $owner = Role::query()->where('type', '=', RoleType::OWNER)->firstOrFail();

@@ -11,5 +11,7 @@ interface AttributeOptionServiceContract
 
     public function updateOrCreate(string $attributeId, AttributeOptionDto $dto): AttributeOption;
 
-    public function deleteAttributeOptions(string $attributeId): void;
+    public function delete(AttributeOption $attributeOption): void;
+
+    public function deleteAll(string $attributeId): void;
 }

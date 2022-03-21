@@ -28,10 +28,12 @@ use App\Listeners\ItemUpdatedQuantityListener;
 use App\Listeners\OrderCreatedListener;
 use App\Listeners\OrderUpdatedStatusListener;
 use App\Listeners\WebHookEventListener;
+use App\Models\AttributeOption;
 use App\Models\Deposit;
 use App\Models\ItemProduct;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Observers\AttributeOptionObserver;
 use App\Observers\DepositObserver;
 use App\Observers\ItemProductObserver;
 use App\Observers\PaymentObserver;
@@ -124,6 +126,7 @@ class EventServiceProvider extends ServiceProvider
         parent::boot();
         Payment::observe(PaymentObserver::class);
         Deposit::observe(DepositObserver::class);
+        AttributeOption::observe(AttributeOptionObserver::class);
         Product::observe([ProductObserver::class, AuditableObserver::class]);
         ItemProduct::observe(ItemProductObserver::class);
     }
