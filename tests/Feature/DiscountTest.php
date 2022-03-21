@@ -114,7 +114,7 @@ class DiscountTest extends TestCase
             'type' => DiscountType::PERCENTAGE,
             'max_uses' => 20,
             'starts_at' => Carbon::yesterday()->format('Y-m-d\TH:i'),
-            'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i')
+            'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i'),
         ]);
 
         $response
@@ -128,7 +128,7 @@ class DiscountTest extends TestCase
                 'uses' => 0,
                 'available' => true,
                 'starts_at' => Carbon::yesterday(),
-                'expires_at' => Carbon::tomorrow()
+                'expires_at' => Carbon::tomorrow(),
             ]);
 
         $this->assertDatabaseHas('discounts', [
@@ -138,7 +138,7 @@ class DiscountTest extends TestCase
             'max_uses' => 20,
             'type' => DiscountType::PERCENTAGE,
             'starts_at' => Carbon::yesterday(),
-            'expires_at' => Carbon::tomorrow()
+            'expires_at' => Carbon::tomorrow(),
         ]);
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
@@ -164,7 +164,7 @@ class DiscountTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'DiscountCreated'
+                'DiscountCreated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -181,7 +181,7 @@ class DiscountTest extends TestCase
             'type' => DiscountType::PERCENTAGE,
             'max_uses' => 20,
             'starts_at' => Carbon::yesterday()->format('Y-m-d\TH:i'),
-            'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i')
+            'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i'),
         ]);
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
@@ -214,7 +214,7 @@ class DiscountTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'DiscountCreated'
+                'DiscountCreated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -231,7 +231,7 @@ class DiscountTest extends TestCase
             'type' => DiscountType::PERCENTAGE,
             'max_uses' => 20,
             'starts_at' => Carbon::yesterday()->format('Y-m-d\TH:i'),
-            'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i')
+            'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i'),
         ]);
 
         $response->assertCreated();
@@ -287,7 +287,7 @@ class DiscountTest extends TestCase
                 'type' => DiscountType::AMOUNT,
                 'max_uses' => 40,
                 'starts_at' => Carbon::yesterday()->format('Y-m-d\TH:i'),
-                'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i')
+                'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i'),
             ]);
 
         $response
@@ -299,7 +299,7 @@ class DiscountTest extends TestCase
                 'discount' => 20,
                 'type' => DiscountType::AMOUNT,
                 'starts_at' => Carbon::yesterday(),
-                'expires_at' => Carbon::tomorrow()
+                'expires_at' => Carbon::tomorrow(),
             ]);
 
         $this->assertDatabaseHas('discounts', [
@@ -310,7 +310,7 @@ class DiscountTest extends TestCase
             'type' => DiscountType::AMOUNT,
             'max_uses' => 40,
             'starts_at' => Carbon::yesterday(),
-            'expires_at' => Carbon::tomorrow()
+            'expires_at' => Carbon::tomorrow(),
         ]);
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
@@ -337,7 +337,7 @@ class DiscountTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'DiscountUpdated'
+                'DiscountUpdated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -355,7 +355,7 @@ class DiscountTest extends TestCase
                 'type' => DiscountType::AMOUNT,
                 'max_uses' => 40,
                 'starts_at' => Carbon::yesterday()->format('Y-m-d\TH:i'),
-                'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i')
+                'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i'),
             ]);
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
@@ -389,7 +389,7 @@ class DiscountTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'DiscountUpdated'
+                'DiscountUpdated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -407,7 +407,7 @@ class DiscountTest extends TestCase
                 'type' => DiscountType::AMOUNT,
                 'max_uses' => 40,
                 'starts_at' => Carbon::yesterday()->format('Y-m-d\TH:i'),
-                'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i')
+                'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i'),
             ]);
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
@@ -480,7 +480,7 @@ class DiscountTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'DiscountDeleted'
+                'DiscountDeleted',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -525,7 +525,7 @@ class DiscountTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'DiscountDeleted'
+                'DiscountDeleted',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),

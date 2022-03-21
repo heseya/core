@@ -2,7 +2,6 @@
 
 namespace Tests\Unit;
 
-
 use App\Services\Contracts\UrlServiceContract;
 use Tests\TestCase;
 

@@ -30,6 +30,7 @@
         "spatie/laravel-webhook-server": "^3.1"
     },
     "require-dev": {
+        "heseya/insights": "^1.0",
         "heseya/demo": "*",
         "spatie/laravel-ignition": "^1.1",
         "fakerphp/faker": "^v1.19",

@@ -275,11 +275,11 @@ class TimeFormatTest extends TestCase
         $model->refresh();
 
         Collection::make($fields)->each(fn ($field) => [
-            $this->assertInstanceOf(Carbon::class, $model->$field, "Field $field error:"),
+            $this->assertInstanceOf(Carbon::class, $model->$field, "Field ${field} error:"),
             $this->assertEquals(
                 $model->$field->toIso8601String(),
                 $model->$field . '',
-                "Field $field error:",
+                "Field ${field} error:",
             ),
         ]);
     }

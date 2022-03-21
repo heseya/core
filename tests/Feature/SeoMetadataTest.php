@@ -30,17 +30,14 @@ class SeoMetadataTest extends TestCase
         $response = $this->json('GET', '/seo');
 
         $response->assertOk()
-            ->assertJson(fn (AssertableJson $json) =>
-            $json->has('meta', fn ($json) =>
-            $json->has('seo')
-                ->etc())
-                ->has('data', fn ($json) =>
-                $json->where('title', $seo->title)
-                    ->where('description', $seo->description)
-                    ->etc())
-                ->etc())
+            ->assertJson(fn (AssertableJson $json) => $json->has('meta', fn ($json) => $json->has('seo')
+            ->etc())
+            ->has('data', fn ($json) => $json->where('title', $seo->title)
+            ->where('description', $seo->description)
+            ->etc())
+            ->etc())
             ->assertJsonStructure([
-                'data' => $this->expected_structure
+                'data' => $this->expected_structure,
             ]);
     }
 
@@ -54,17 +51,14 @@ class SeoMetadataTest extends TestCase
         $response = $this->actingAs($this->$user)->json('GET', '/seo');
 
         $response->assertOk()
-            ->assertJson(fn (AssertableJson $json) =>
-                $json->has('meta', fn ($json) =>
-                    $json->has('seo')
-                        ->etc())
-                    ->has('data', fn ($json) =>
-                    $json->where('title', $seo->title)
-                        ->where('description', $seo->description)
-                        ->etc())
-                    ->etc())
+            ->assertJson(fn (AssertableJson $json) => $json->has('meta', fn ($json) => $json->has('seo')
+            ->etc())
+            ->has('data', fn ($json) => $json->where('title', $seo->title)
+            ->where('description', $seo->description)
+            ->etc())
+            ->etc())
             ->assertJsonStructure([
-                'data' => $this->expected_structure
+                'data' => $this->expected_structure,
             ]);
     }
 
@@ -94,14 +88,12 @@ class SeoMetadataTest extends TestCase
         ];
         $response = $this->actingAs($this->$user)->json('PATCH', '/seo', $seo);
 
-        $response->assertCreated()->assertJson(fn (AssertableJson $json) =>
-            $json->has('meta', fn ($json) =>
-                    $json->has('seo')
-                        ->etc())
-                ->has('data', fn ($json) =>
-                    $json->where('title', $seo['title'])
-                        ->where('description', $seo['description'])
-                        ->etc())
+        $response->assertCreated()->assertJson(
+            fn (AssertableJson $json) => $json->has('meta', fn ($json) => $json->has('seo')
+                ->etc())
+                ->has('data', fn ($json) => $json->where('title', $seo['title'])
+                ->where('description', $seo['description'])
+                ->etc())
                 ->etc()
         )->assertJsonStructure([
             'data' => $this->expected_structure,
@@ -164,7 +156,7 @@ class SeoMetadataTest extends TestCase
                 'PHP',
                 'Laravel',
                 'Java',
-            ]
+            ],
         ])->create();
 
         $this->actingAs($this->$user)->json('POST', '/seo/check', [
@@ -198,12 +190,13 @@ class SeoMetadataTest extends TestCase
         ])->assertOk()->assertJsonFragment(['data' => [
             'duplicated' => false,
             'duplicates' => [],
-        ]]);
+        ],
+        ]);
     }
 
     public function noDuplicationsProvider(): array
     {
-        $different = ['Different1', 'Different2', 'Different3',];
+        $different = ['Different1', 'Different2', 'Different3'];
         $less = ['PHP', 'Laravel'];
         return [
             'as user different keywords' => ['user', $different],
@@ -239,7 +232,8 @@ class SeoMetadataTest extends TestCase
         ])->assertOk()->assertJsonFragment(['data' => [
             'duplicated' => false,
             'duplicates' => [],
-        ]]);
+        ],
+        ]);
     }
 
     public function duplicationsProvider(): array
@@ -283,7 +277,8 @@ class SeoMetadataTest extends TestCase
                     'model_type' => Str::afterLast($product::class, '\\'),
                 ],
             ],
-        ]]);
+        ],
+        ]);
     }
 
     /**
@@ -314,7 +309,8 @@ class SeoMetadataTest extends TestCase
         ])->assertOk()->assertJsonFragment(['data' => [
             'duplicated' => false,
             'duplicates' => [],
-        ]]);
+        ],
+        ]);
     }
 
     /**
@@ -358,13 +354,14 @@ class SeoMetadataTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data.duplicates')
             ->assertJsonFragment(['data' => [
-            'duplicated' => true,
-            'duplicates' => [
-                [
-                    'id' => $product2->getKey(),
-                    'model_type' => Str::afterLast($product2::class, '\\'),
+                'duplicated' => true,
+                'duplicates' => [
+                    [
+                        'id' => $product2->getKey(),
+                        'model_type' => Str::afterLast($product2::class, '\\'),
+                    ],
                 ],
             ],
-        ]]);
+            ]);
     }
 }

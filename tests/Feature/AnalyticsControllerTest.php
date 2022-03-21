@@ -35,7 +35,7 @@ class AnalyticsControllerTest extends TestCase
         $to = Carbon::today();
         $from = $to->copy()->subDays(30);
 
-        $this->mock(AnalyticsServiceContract::class, function($mock) {
+        $this->mock(AnalyticsServiceContract::class, function ($mock): void {
             $mock->shouldReceive('getPaymentsOverPeriod')
                 ->andReturn([
                     'total' => [

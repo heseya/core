@@ -97,7 +97,8 @@ class ProductSetShowTest extends TestCase
                     'title' => $this->set->seo->title,
                     'description' => $this->set->seo->description,
                 ],
-            ]])
+            ],
+            ])
             ->assertJsonStructure([
                 'data' => $this->expected_structure,
             ]);
@@ -141,7 +142,8 @@ class ProductSetShowTest extends TestCase
                     'title' => $this->privateSet->seo->title,
                     'description' => $this->privateSet->seo->description,
                 ],
-            ]])
+            ],
+            ])
             ->assertJsonStructure([
                 'data' => $this->expected_structure,
             ]);
@@ -184,7 +186,8 @@ class ProductSetShowTest extends TestCase
                         'children' => null,
                     ],
                 ],
-            ]])
+            ],
+            ])
             ->assertJsonStructure([
                 'data' => $this->expected_structure,
             ]);
@@ -239,7 +242,8 @@ class ProductSetShowTest extends TestCase
                         ],
                     ],
                 ],
-            ]])
+            ],
+            ])
             ->assertJsonStructure([
                 'data' => $this->expected_structure,
             ]);
@@ -282,7 +286,8 @@ class ProductSetShowTest extends TestCase
                     'title' => $this->set->seo->title,
                     'description' => $this->set->seo->description,
                 ],
-            ]])
+            ],
+            ])
             ->assertJsonStructure([
                 'data' => $this->expected_structure,
             ]);
@@ -324,7 +329,8 @@ class ProductSetShowTest extends TestCase
                     'title' => $this->privateSet->seo->title,
                     'description' => $this->privateSet->seo->description,
                 ],
-            ]])
+            ],
+            ])
             ->assertJsonStructure([
                 'data' => $this->expected_structure,
             ]);
@@ -367,7 +373,8 @@ class ProductSetShowTest extends TestCase
                         'children' => null,
                     ],
                 ],
-            ]])
+            ],
+            ])
             ->assertJsonStructure([
                 'data' => $this->expected_structure,
             ]);
@@ -422,7 +429,8 @@ class ProductSetShowTest extends TestCase
                         ],
                     ],
                 ],
-            ]])
+            ],
+            ])
             ->assertJsonStructure([
                 'data' => $this->expected_structure,
             ]);

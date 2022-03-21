@@ -5,12 +5,12 @@ namespace Tests\Feature;
 use App\Events\ProductSetUpdated;
 use App\Listeners\WebHookEventListener;
 use App\Models\ProductSet;
+use App\Models\SeoMetadata;
 use App\Models\WebHook;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Spatie\WebhookServer\CallWebhookJob;
-use App\Models\SeoMetadata;
 use Tests\TestCase;
 
 class ProductSetUpdateTest extends TestCase
@@ -98,7 +98,7 @@ class ProductSetUpdateTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ProductSetUpdated'
+                'ProductSetUpdated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -134,17 +134,17 @@ class ProductSetUpdateTest extends TestCase
         $response
             ->assertOk()
             ->assertJson(['data' => $set + [
-                    'parent' => null,
-                    'children_ids' => [],
-                    'slug' => 'test-edit',
-                    'slug_suffix' => 'test-edit',
-                    'slug_override' => false,
-                ],
+                'parent' => null,
+                'children_ids' => [],
+                'slug' => 'test-edit',
+                'slug_suffix' => 'test-edit',
+                'slug_override' => false,
+            ],
             ]);
 
         $this->assertDatabaseHas('product_sets', $set + $parentId + [
-                'slug' => 'test-edit',
-            ]);
+            'slug' => 'test-edit',
+        ]);
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
             return $job->class === WebHookEventListener::class
@@ -376,24 +376,24 @@ class ProductSetUpdateTest extends TestCase
         $response
             ->assertOk()
             ->assertJson(['data' => $set + [
-                    'parent' => null,
-                    'children_ids' => [],
-                    'slug' => 'test-edit',
-                    'slug_suffix' => 'test-edit',
-                    'slug_override' => false,
-                    'seo' => [
-                        'title' => 'seo title',
-                        'description' => 'seo description',
-                    ],
+                'parent' => null,
+                'children_ids' => [],
+                'slug' => 'test-edit',
+                'slug_suffix' => 'test-edit',
+                'slug_override' => false,
+                'seo' => [
+                    'title' => 'seo title',
+                    'description' => 'seo description',
                 ],
+            ],
             ]);
 
         $this->assertDatabaseHas('product_sets', $set + $parentId + [
-                'slug' => 'test-edit',
-            ]);
+            'slug' => 'test-edit',
+        ]);
         $this->assertDatabaseHas('seo_metadata', [
-           'title' => 'seo title',
-           'description' => 'seo description',
+            'title' => 'seo title',
+            'description' => 'seo description',
         ]);
     }
 }

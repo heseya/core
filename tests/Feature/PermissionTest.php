@@ -55,21 +55,24 @@ class PermissionTest extends TestCase
                 'display_name' => $permission1->display_name,
                 'description' => $permission1->description,
                 'assignable' => false,
-            ]])
+            ],
+            ])
             ->assertJsonFragment([[
                 $permission2->getKeyName() => $permission2->getKey(),
                 'name' => $permission2->name,
                 'display_name' => null,
                 'description' => $permission2->description,
                 'assignable' => false,
-            ]])
+            ],
+            ])
             ->assertJsonFragment([[
                 $permission3->getKeyName() => $permission3->getKey(),
                 'name' => $permission3->name,
                 'display_name' => null,
                 'description' => $permission3->description,
                 'assignable' => true,
-            ]]);
+            ],
+            ]);
     }
 
     /**
@@ -100,14 +103,16 @@ class PermissionTest extends TestCase
                 'display_name' => null,
                 'description' => $permission1->description,
                 'assignable' => true,
-            ]])
+            ],
+            ])
             ->assertJsonMissing([[
                 $permission2->getKeyName() => $permission2->getKey(),
                 'name' => $permission2->name,
                 'display_name' => null,
                 'description' => $permission2->description,
                 'assignable' => false,
-            ]])
+            ],
+            ])
             ->assertJsonMissing([
                 'assignable' => false,
             ]);
@@ -143,14 +148,16 @@ class PermissionTest extends TestCase
                 'display_name' => null,
                 'description' => $permission1->description,
                 'assignable' => false,
-            ]])
+            ],
+            ])
             ->assertJsonMissing([[
                 $permission2->getKeyName() => $permission2->getKey(),
                 'name' => $permission2->name,
                 'display_name' => null,
                 'description' => $permission2->description,
                 'assignable' => true,
-            ]])
+            ],
+            ])
             ->assertJsonMissing([
                 'assignable' => true,
             ]);

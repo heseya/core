@@ -25,19 +25,6 @@ class AuditTest extends TestCase
             ->assertForbidden();
     }
 
-    private function createProduct(): Product
-    {
-        $product = Product::factory()->create([
-            'name' => 'Old name',
-        ]);
-
-        $product->update([
-            'name' => 'New name',
-        ]);
-
-        return $product;
-    }
-
     /**
      * @dataProvider authProvider
      */
@@ -72,4 +59,16 @@ class AuditTest extends TestCase
             ->assertJsonFragment(['message' => 'Model not auditable']);
     }
 
+    private function createProduct(): Product
+    {
+        $product = Product::factory()->create([
+            'name' => 'Old name',
+        ]);
+
+        $product->update([
+            'name' => 'New name',
+        ]);
+
+        return $product;
+    }
 }

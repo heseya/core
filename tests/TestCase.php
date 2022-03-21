@@ -8,7 +8,6 @@ use App\Models\App as Application;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\TokenServiceContract;
-use Database\Seeders\PermissionSeeder;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
@@ -62,10 +61,9 @@ abstract class TestCase extends BaseTestCase
         );
 
         $this->withHeaders(
-            $this->defaultHeaders + ['Authorization' => "Bearer $token"],
+            $this->defaultHeaders + ['Authorization' => "Bearer ${token}"],
         );
 
         return $this;
     }
-
 }

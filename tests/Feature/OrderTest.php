@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Events\OrderCreated;
 use App\Events\ItemUpdatedQuantity;
+use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
 use App\Listeners\WebHookEventListener;
 use App\Models\Item;
@@ -18,7 +18,6 @@ use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
@@ -122,10 +121,12 @@ class OrderTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonStructure(['data' => [
                 0 => $this->expected_full_structure,
-            ]])
+            ],
+            ])
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ]]);
+            ],
+            ]);
 
         $this->assertQueryCountLessThan(20);
     }
@@ -223,12 +224,14 @@ class OrderTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonStructure(['data' => [
                 0 => $this->expected_full_structure,
-            ]])
+            ],
+            ])
             ->assertJson(['data' => [
                 0 => [
                     'id' => $order->getKey(),
                 ],
-            ]])
+            ],
+            ])
             ->assertJsonMissing([
                 'id' => $order_another_user->getKey(),
             ])
@@ -281,10 +284,12 @@ class OrderTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonStructure(['data' => [
                 0 => $this->expected_full_structure,
-            ]])
+            ],
+            ])
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ]]);
+            ],
+            ]);
 
         $this->assertQueryCountLessThan(20);
     }
@@ -311,7 +316,8 @@ class OrderTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonStructure(['data' => [
                 0 => $this->expected_full_structure,
-            ]])
+            ],
+            ])
             ->assertJson(['data' => [
                 0 => [
                     'code' => $order->code,
@@ -323,7 +329,9 @@ class OrderTest extends TestCase
                         'hidden' => $status->hidden,
                         'no_notifications' => $status->no_notifications,
                     ],
-                ]]]);
+                ],
+            ],
+            ]);
 
         $this->assertQueryCountLessThan(20);
     }
@@ -969,7 +977,7 @@ class OrderTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testOrderHasUser($user)
+    public function testOrderHasUser($user): void
     {
         $this->$user->givePermissionTo(['orders.add']);
 

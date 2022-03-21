@@ -36,8 +36,9 @@ class EventTest extends TestCase
                     'description',
                     'required_permissions',
                     'required_hidden_permissions',
-                ]
-            ]])->assertJsonFragment([
+                ],
+            ],
+            ])->assertJsonFragment([
                 'key' => $event->value,
                 'description' => __('enums.' . EventType::class . '.' . $event->value),
                 'required_permissions' => Config::get('events.permissions')[$event->value],

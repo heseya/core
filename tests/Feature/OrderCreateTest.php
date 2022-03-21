@@ -76,7 +76,7 @@ class OrderCreateTest extends TestCase
                 [
                     'product_id' => $this->product->getKey(),
                     'quantity' => 2,
-                    'schemas' => []
+                    'schemas' => [],
                 ],
             ],
         ]);
@@ -207,7 +207,7 @@ class OrderCreateTest extends TestCase
 
         WebHook::factory()->create([
             'events' => [
-                'OrderCreated'
+                'OrderCreated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -316,6 +316,7 @@ class OrderCreateTest extends TestCase
 
     /**
      * @dataProvider authProvider
+     *
      * @depends testCreateSimpleOrderWithWebHookEvent
      * @depends testCreateSimpleOrderUnauthenticatedWithWebHookEvent
      */
@@ -323,7 +324,7 @@ class OrderCreateTest extends TestCase
     {
         $webHook = WebHook::factory()->create([
             'events' => [
-                'OrderCreated'
+                'OrderCreated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -395,7 +396,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                     'schemas' => [
                         $schema->getKey() => 'Test',
-                    ]
+                    ],
                 ],
             ],
         ]);
@@ -438,7 +439,7 @@ class OrderCreateTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ItemUpdatedQuantity'
+                'ItemUpdatedQuantity',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -490,7 +491,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                     'schemas' => [
                         $schema->getKey() => $option->getKey(),
-                    ]
+                    ],
                 ],
             ],
         ]);
@@ -542,7 +543,6 @@ class OrderCreateTest extends TestCase
         });
     }
 
-
     /**
      * @dataProvider authProvider
      */
@@ -575,7 +575,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                     'schemas' => [
                         $schema->getKey() => 'Test',
-                    ]
+                    ],
                 ],
             ],
         ]);
@@ -674,7 +674,7 @@ class OrderCreateTest extends TestCase
             'type' => DiscountType::PERCENTAGE,
             'max_uses' => 20,
             'starts_at' => Carbon::yesterday(),
-            'expires_at' => Carbon::tomorrow()
+            'expires_at' => Carbon::tomorrow(),
         ]);
         $shippingMethod = ShippingMethod::factory()->create();
 
@@ -689,7 +689,7 @@ class OrderCreateTest extends TestCase
                 ],
             ],
             'discounts' => [
-                $discount->code
+                $discount->code,
             ],
         ]);
 
@@ -736,7 +736,7 @@ class OrderCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCantCreateOrderWithExpiredDiscount($user):void
+    public function testCantCreateOrderWithExpiredDiscount($user): void
     {
         $this->$user->givePermissionTo('orders.add');
 
@@ -747,7 +747,7 @@ class OrderCreateTest extends TestCase
             'type' => DiscountType::PERCENTAGE,
             'max_uses' => 20,
             'starts_at' => Carbon::now()->subDay(),
-            'expires_at' => Carbon::now()->subHour()
+            'expires_at' => Carbon::now()->subHour(),
         ]);
         $shippingMethod = ShippingMethod::factory()->create();
 
@@ -762,7 +762,7 @@ class OrderCreateTest extends TestCase
                 ],
             ],
             'discounts' => [
-                $discount->code
+                $discount->code,
             ],
         ]);
 
@@ -772,7 +772,7 @@ class OrderCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCantCreateOrderWithDiscountBeforeStart($user):void
+    public function testCantCreateOrderWithDiscountBeforeStart($user): void
     {
         $this->$user->givePermissionTo('orders.add');
 
@@ -783,7 +783,7 @@ class OrderCreateTest extends TestCase
             'type' => DiscountType::PERCENTAGE,
             'max_uses' => 20,
             'starts_at' => Carbon::now()->addDay(),
-            'expires_at' => Carbon::now()->addDays(2)
+            'expires_at' => Carbon::now()->addDays(2),
         ]);
         $shippingMethod = ShippingMethod::factory()->create();
 
@@ -798,7 +798,7 @@ class OrderCreateTest extends TestCase
                 ],
             ],
             'discounts' => [
-                $discount->code
+                $discount->code,
             ],
         ]);
 
