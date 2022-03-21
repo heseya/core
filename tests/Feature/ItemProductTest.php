@@ -215,4 +215,27 @@ class ItemProductTest extends TestCase
                 'quantity' => 15,
             ]);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductItemsHasRequiredQuantityInsteadOfQuantity($user)
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $this->product->items()->attach($this->items->get(0)->getKey(), ['quantity' => 5]);
+        $this->product->items()->attach($this->items->get(1)->getKey(), ['quantity' => 15]);
+
+        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
+            'name' => 'test',
+            'slug' => 'test',
+            'price' => 50,
+            'public' => true,
+        ]);
+
+        $response
+            ->assertJsonFragment(['required_quantity' => 5])
+            ->assertJsonFragment(['required_quantity' => 15])
+            ->assertJsonMissing(['quantity']);
+    }
 }
