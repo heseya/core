@@ -436,16 +436,16 @@ class ProductSetShowTest extends TestCase
     {
         $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
 
-        $firstAttr = Attribute::create([
+        $firstAttr = Attribute::factory()->create([
             'name' => 'test',
             'description' => 'test',
-            'type' => 'text',
+            'type' => 'number',
             'global' => false,
         ]);
-        $secondAttr = Attribute::create([
+        $secondAttr = Attribute::factory()->create([
             'name' => 'test2',
             'description' => 'test2',
-            'type' => 'text',
+            'type' => 'number',
             'global' => false,
         ]);
 
@@ -456,6 +456,7 @@ class ProductSetShowTest extends TestCase
 
         $response = $this->actingAs($this->$user)
             ->getJson('/product-sets/id:' . $this->set->getKey());
+
         $response
             ->assertOk()
             ->assertJson(['data' => [
