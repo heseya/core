@@ -5,20 +5,24 @@ namespace App\Http\Controllers;
 use App\Dtos\OrderIndexDto;
 use App\Dtos\OrderUpdateDto;
 use App\Enums\SchemaType;
+use App\Events\AddOrderDocument;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
 use App\Exceptions\OrderException;
 use App\Http\Requests\OrderCreateRequest;
+use App\Http\Requests\OrderDocumentRequest;
 use App\Http\Requests\OrderIndexRequest;
 use App\Http\Requests\OrderItemsRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
+use App\Http\Resources\OrderDocumentResource;
 use App\Http\Resources\OrderPublicResource;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
 use App\Models\Discount;
 use App\Models\Order;
+use App\Models\OrderDocument;
 use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\Schema;
@@ -26,6 +30,7 @@ use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\ItemServiceContract;
+use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Illuminate\Http\JsonResponse;
@@ -43,6 +48,7 @@ class OrderController extends Controller
         private OrderServiceContract $orderService,
         private DiscountServiceContract $discountService,
         private ItemServiceContract $itemService,
+        private MediaServiceContract $mediaService,
     ) {
     }
 
@@ -276,5 +282,20 @@ class OrderController extends Controller
         Gate::inspect('showUserOrder', [Order::class, $order]);
 
         return OrderResource::make($order);
+    }
+
+    public function storeDocument(OrderDocumentRequest $request, Order $order)
+    {
+        $media = $this->mediaService->store($request->file);
+        $order->documents()->attach($media, ['type' => $request->type, 'name' => $request->name]);
+
+        AddOrderDocument::dispatch();
+
+        return OrderDocumentResource::collection($order->documents);
+    }
+
+    public function deleteDocument(Order $order)
+    {
+
     }
 }

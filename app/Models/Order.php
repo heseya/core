@@ -226,6 +226,14 @@ class Order extends Model implements AuditableContract
         return $this->hasMany(OrderProduct::class);
     }
 
+    public function documents(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(Media::class, 'order_document')
+            ->withPivot('type', 'name')
+            ->using(OrderDocument::class);
+    }
+
     public function generateCode(): string
     {
         do {
