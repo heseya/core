@@ -296,6 +296,5 @@ class OrderController extends Controller
 
     public function deleteDocument(Order $order)
     {
-
     }
 }
