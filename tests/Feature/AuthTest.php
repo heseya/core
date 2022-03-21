@@ -109,7 +109,7 @@ class AuthTest extends TestCase
 
         $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
             ->assertJsonFragment([
-                'message' => 'Two-Factor Authentication is not setup.'
+                'message' => 'Two-Factor Authentication is not setup.',
             ]);
     }
 
@@ -139,7 +139,7 @@ class AuthTest extends TestCase
 
         $response->assertStatus(Response::HTTP_FORBIDDEN)
             ->assertJsonFragment([
-                'message' => 'Two-Factor Authentication is required'
+                'message' => 'Two-Factor Authentication is required',
             ]);
     }
 
@@ -207,7 +207,7 @@ class AuthTest extends TestCase
         $response
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
             ->assertJsonFragment([
-                'message' => 'Invalid Two-Factor Authentication token.'
+                'message' => 'Invalid Two-Factor Authentication token.',
             ]);
 
         $this->assertDatabaseCount('one_time_security_codes', 1);
@@ -266,7 +266,7 @@ class AuthTest extends TestCase
         $response
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
             ->assertJsonFragment([
-                'message' => 'Invalid Two-Factor Authentication token.'
+                'message' => 'Invalid Two-Factor Authentication token.',
             ]);
     }
 
@@ -326,7 +326,8 @@ class AuthTest extends TestCase
                     'name',
                     'avatar',
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     public function testRefreshTokenApp(): void
@@ -360,7 +361,8 @@ class AuthTest extends TestCase
                     'author',
                     'permissions',
                 ],
-            ]])->assertJsonFragment([
+            ],
+            ])->assertJsonFragment([
                 'identity_token' => null,
             ]);
     }
@@ -531,7 +533,7 @@ class AuthTest extends TestCase
         $response->assertForbidden();
     }
 
-    function testSaveResetPassword(): void
+    public function testSaveResetPassword(): void
     {
         $this->user->givePermissionTo('auth.password_reset');
 
@@ -557,7 +559,7 @@ class AuthTest extends TestCase
         $this->assertFalse(Password::tokenExists($user, $token));
     }
 
-    function testSaveResetPasswordInvalidToken(): void
+    public function testSaveResetPasswordInvalidToken(): void
     {
         $this->user->givePermissionTo('auth.password_reset');
 
@@ -616,13 +618,13 @@ class AuthTest extends TestCase
 
         $response = $this->actingAs($user)->patchJson('/users/password', [
             'password' => 'test',
-            'password_new' => 'Test1@3456',
+            'password_new' => 'Test1@345678',
         ]);
 
         $response->assertNoContent();
 
         $user->refresh();
-        $this->assertTrue(Hash::check('Test1@3456', $user->password));
+        $this->assertTrue(Hash::check('Test1@345678', $user->password));
     }
 
     public function testChangePasswordInvalidPassword(): void
@@ -641,7 +643,7 @@ class AuthTest extends TestCase
 
         $response = $this->actingAs($user)->json('PATCH', '/users/password', [
             'password' => 'tests',
-            'password_new' => 'Test1@3456',
+            'password_new' => 'Test1@345678',
         ]);
 
         $response->assertStatus(422);
@@ -834,12 +836,14 @@ class AuthTest extends TestCase
                     'name' => $role1->name,
                     'description' => $role1->description,
                     'assignable' => true,
-                ]],
+                ],
+                ],
                 'permissions' => [
                     'permission.1',
                     'permission.2',
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     public function testProfileApp(): void
@@ -867,7 +871,8 @@ class AuthTest extends TestCase
                     'permission.1',
                     'permission.2',
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     public function testCheckIdentityUnauthorized(): void
@@ -879,7 +884,7 @@ class AuthTest extends TestCase
             new TokenType(TokenType::IDENTITY),
         );
 
-        $this->actingAs($user)->getJson("/auth/check/$token")
+        $this->actingAs($user)->getJson("/auth/check/${token}")
             ->assertForbidden();
     }
 
@@ -893,11 +898,11 @@ class AuthTest extends TestCase
         $otherUser = User::factory()->create();
 
         $token = $this->tokenService->createToken(
-                $otherUser,
-                new TokenType(TokenType::IDENTITY),
-            ) . 'invalid_hash';
+            $otherUser,
+            new TokenType(TokenType::IDENTITY),
+        ) . 'invalid_hash';
 
-        $this->actingAs($this->$user)->getJson("/auth/check/$token")
+        $this->actingAs($this->$user)->getJson("/auth/check/${token}")
             ->assertStatus(422);
     }
 
@@ -908,7 +913,7 @@ class AuthTest extends TestCase
     {
         $this->$user->givePermissionTo('auth.check_identity');
 
-        $this->actingAs($this->$user)->getJson("/auth/check")
+        $this->actingAs($this->$user)->getJson('/auth/check')
             ->assertOk()
             ->assertJsonFragment([
                 'id' => null,
@@ -937,7 +942,7 @@ class AuthTest extends TestCase
             new TokenType(TokenType::IDENTITY),
         );
 
-        $this->actingAs($this->$user)->getJson("/auth/check/$token")
+        $this->actingAs($this->$user)->getJson("/auth/check/${token}")
             ->assertOk()
             ->assertJson(['data' => [
                 'id' => $otherUser->getKey(),
@@ -947,7 +952,8 @@ class AuthTest extends TestCase
                     'permission.1',
                     'permission.2',
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     /**
@@ -976,7 +982,7 @@ class AuthTest extends TestCase
             new TokenType(TokenType::IDENTITY),
         );
 
-        $this->actingAs($this->$user)->getJson("/auth/check/$token")
+        $this->actingAs($this->$user)->getJson("/auth/check/${token}")
             ->assertOk()
             ->assertJson(['data' => [
                 'id' => $otherUser->getKey(),
@@ -987,13 +993,14 @@ class AuthTest extends TestCase
                     'permission.1',
                     'permission.2',
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     public function testCheckIdentityAppMapping(): void
     {
         $app = App::factory()->create([
-           'slug' => 'app_slug',
+            'slug' => 'app_slug',
         ]);
 
         $app->givePermissionTo('auth.check_identity');
@@ -1013,7 +1020,7 @@ class AuthTest extends TestCase
             new TokenType(TokenType::IDENTITY),
         );
 
-        $this->actingAs($app)->getJson("/auth/check/$token")
+        $this->actingAs($app)->getJson("/auth/check/${token}")
             ->assertOk()
             ->assertJson(['data' => [
                 'id' => $user->getKey(),
@@ -1024,7 +1031,8 @@ class AuthTest extends TestCase
                     'permission.2',
                     'raw_name',
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     public function testSetupTfaUnauthorized(): void
@@ -1147,7 +1155,8 @@ class AuthTest extends TestCase
                 'type',
                 'secret',
                 'qr_code_url',
-            ]]);
+            ],
+            ]);
     }
 
     public function testConfirmAppTfa(): void
@@ -1167,11 +1176,13 @@ class AuthTest extends TestCase
         $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
             'code' => $code,
         ])->assertOk()->assertJsonStructure(['data' => [
-            'recovery_codes'
-        ]]);
+            'recovery_codes',
+        ],
+        ]);
 
         Notification::assertSentTo(
-            [$this->user], TFARecoveryCodes::class
+            [$this->user],
+            TFARecoveryCodes::class
         );
 
         $this->assertDatabaseHas('users', [
@@ -1191,7 +1202,8 @@ class AuthTest extends TestCase
         ]);
 
         Notification::assertSentTo(
-            [$this->user], TFAInitialization::class
+            [$this->user],
+            TFAInitialization::class
         );
 
         $this->assertDatabaseHas('users', [
@@ -1205,7 +1217,8 @@ class AuthTest extends TestCase
             ->assertOk()
             ->assertJsonStructure(['data' => [
                 'type',
-            ]]);
+            ],
+            ]);
     }
 
     public function testConfirmEmailTfa(): void
@@ -1221,11 +1234,13 @@ class AuthTest extends TestCase
         $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
             'code' => $code,
         ])->assertOk()->assertJsonStructure(['data' => [
-            'recovery_codes'
-        ]]);
+            'recovery_codes',
+        ],
+        ]);
 
         Notification::assertSentTo(
-            [$this->user], TFARecoveryCodes::class
+            [$this->user],
+            TFARecoveryCodes::class
         );
 
         $this->assertDatabaseHas('users', [
@@ -1283,7 +1298,8 @@ class AuthTest extends TestCase
         ])->assertOk();
 
         Notification::assertSentTo(
-            [$this->user], TFARecoveryCodes::class
+            [$this->user],
+            TFARecoveryCodes::class
         );
 
         $recovery_codes = OneTimeSecurityCode::where('user_id', '=', $this->user->getKey())
@@ -1292,7 +1308,8 @@ class AuthTest extends TestCase
 
         $response->assertJsonStructure(['data' => [
             'recovery_codes',
-        ]]);
+        ],
+        ]);
 
         $this->assertDatabaseCount('one_time_security_codes', count($recovery_codes));
     }
@@ -1465,7 +1482,8 @@ class AuthTest extends TestCase
         $user = User::where('email', $email)->first();
 
         Notification::assertSentTo(
-            [$user], UserRegistered::class,
+            [$user],
+            UserRegistered::class,
         );
     }
 

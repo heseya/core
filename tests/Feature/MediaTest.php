@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Enums\MediaType;
 use App\Models\Media;
 use App\Models\Product;
-use Illuminate\Http\Testing\File;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -54,7 +53,8 @@ class MediaTest extends TestCase
                 'url',
                 'slug',
                 'alt',
-            ]]);
+            ],
+            ]);
     }
 
     /**
@@ -231,7 +231,8 @@ class MediaTest extends TestCase
                 'id',
                 'type',
                 'url',
-            ]]);
+            ],
+            ]);
     }
 
     public function invalidVideoProvider(): array

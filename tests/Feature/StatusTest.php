@@ -100,9 +100,9 @@ class StatusTest extends TestCase
         $response
             ->assertCreated()
             ->assertJson(['data' => $status + [
-                    'hidden' => false,
-                    'no_notifications' => false
-                ]
+                'hidden' => false,
+                'no_notifications' => false,
+            ],
             ]);
 
         $this->assertDatabaseHas('statuses', $status);
@@ -174,7 +174,7 @@ class StatusTest extends TestCase
                 $status2->getKey(),
                 $status3->getKey(),
                 $status1->getKey(),
-            ]
+            ],
         ])->assertForbidden();
     }
 
@@ -190,11 +190,11 @@ class StatusTest extends TestCase
         $status3 = Status::factory()->create();
 
         $response = $this->actingAs($this->$user)->json('POST', '/statuses/reorder', [
-           'statuses' => [
-               $status2->getKey(),
-               $status3->getKey(),
-               $status1->getKey(),
-           ]
+            'statuses' => [
+                $status2->getKey(),
+                $status3->getKey(),
+                $status1->getKey(),
+            ],
         ]);
         $response->assertNoContent();
 

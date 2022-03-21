@@ -88,7 +88,8 @@ class AppInstallTest extends TestCase
                 'internal_permissions' => [[
                     'name' => 'product_layout',
                     'description' => 'Setup layouts of products page',
-                ]],
+                ],
+                ],
             ]),
             $this->url . '/install' => Http::response([], 404),
         ]);
@@ -296,7 +297,7 @@ class AppInstallTest extends TestCase
             'products.show',
         ]));
 
-        if($this->$user instanceof User) {
+        if ($this->$user instanceof User) {
             $this->assertDatabaseHas('roles', [
                 'id' => $app->role_id,
                 'name' => $name . ' owner',
@@ -346,7 +347,8 @@ class AppInstallTest extends TestCase
                 'internal_permissions' => [[
                     'name' => 'product_layout',
                     'description' => 'Setup layouts of products page',
-                ]],
+                ],
+                ],
             ]),
             $this->url . '/install' => Http::response([
                 'uninstall_token' => $uninstallToken,
@@ -609,7 +611,8 @@ class AppInstallTest extends TestCase
                 'internal_permissions' => [[
                     'name' => 'product_layout',
                     'description' => 'Setup layouts of products page',
-                ]],
+                ],
+                ],
             ]),
         ]);
 
@@ -651,7 +654,8 @@ class AppInstallTest extends TestCase
                 'internal_permissions' => [[
                     'name' => 'product_layout',
                     'description' => 'Setup layouts of products page',
-                ]],
+                ],
+                ],
             ]),
         ]);
 
@@ -696,7 +700,8 @@ class AppInstallTest extends TestCase
                 'internal_permissions' => [[
                     'name' => 'product_layout',
                     'description' => 'Setup layouts of products page',
-                ]],
+                ],
+                ],
             ]),
         ]);
 
@@ -727,7 +732,7 @@ class AppInstallTest extends TestCase
         ]);
 
         Http::fake([
-            $this->url => new ConnectionException("Test", 7),
+            $this->url => new ConnectionException('Test', 7),
         ]);
 
         $response = $this->actingAs($this->$user)->postJson('/apps', [
@@ -774,9 +779,10 @@ class AppInstallTest extends TestCase
                 'internal_permissions' => [[
                     'name' => 'product_layout',
                     'description' => 'Setup layouts of products page',
-                ]],
+                ],
+                ],
             ]),
-            $this->url . '/install' => new ConnectionException("Test", 7),
+            $this->url . '/install' => new ConnectionException('Test', 7),
         ]);
 
         $response = $this->actingAs($this->$user)->postJson('/apps', [

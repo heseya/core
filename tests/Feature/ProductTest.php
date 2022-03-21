@@ -16,6 +16,7 @@ use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Models\SeoMetadata;
 use App\Models\WebHook;
+use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use Carbon\Carbon;
 use Illuminate\Events\CallQueuedListener;
@@ -39,12 +40,14 @@ class ProductTest extends TestCase
     private array $expected_attribute_short;
 
     private ProductServiceContract $productService;
+    private AvailabilityServiceContract $availabilityService;
 
     public function setUp(): void
     {
         parent::setUp();
 
         $this->productService = App::make(ProductServiceContract::class);
+        $this->availabilityService = App::make(AvailabilityServiceContract::class);
 
         $this->product = Product::factory()->create([
             'public' => true,
@@ -100,6 +103,8 @@ class ProductTest extends TestCase
             'attribute_id' => $attribute->getKey(),
             'option_id' => $option->getKey()
         ]]);
+
+        $this->availabilityService->calculateAvailabilityOnOrderAndRestock($item);
 
         /**
          * Expected short response
@@ -160,7 +165,8 @@ class ProductTest extends TestCase
                         'items' => [[
                             'name' => 'Koszulka XL',
                             'sku' => 'K001/XL',
-                        ]],
+                        ],
+                        ],
                     ],
                     [
                         'name' => 'L',
@@ -170,10 +176,12 @@ class ProductTest extends TestCase
                         'items' => [[
                             'name' => 'Koszulka L',
                             'sku' => 'K001/L',
-                        ]],
+                        ],
+                        ],
                     ],
                 ],
-            ]],
+            ],
+            ],
         ]);
     }
 
@@ -203,6 +211,9 @@ class ProductTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public products.
             ->assertJson(['data' => [
+                0 => $this->expected_short,
+            ],
+            ]);
                 0 => array_merge($this->expected_short, $this->expected_attribute_short),
             ]]);
 
@@ -212,7 +223,7 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndexIdsSearch($user)
+    public function testIndexIdsSearch($user): void
     {
         $this->$user->givePermissionTo('products.show');
 
@@ -384,7 +395,8 @@ class ProductTest extends TestCase
                     'children_ids' => [],
                     'cover' => null,
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     /**
@@ -462,7 +474,8 @@ class ProductTest extends TestCase
                         'alt' => $media2->alt,
                     ],
                 ],
-            ]]);
+            ],
+            ]);
     }
 
 
@@ -579,7 +592,7 @@ class ProductTest extends TestCase
         $this->$user->givePermissionTo('products.show_details');
 
         $product = Product::factory([
-            'public' => true
+            'public' => true,
         ])->create();
 
         $seo = SeoMetadata::factory([
@@ -599,7 +612,8 @@ class ProductTest extends TestCase
                 'og_image' => null,
                 'twitter_card' => $seo->twitter_card,
                 'keywords' => $seo->keywords,
-            ]]);
+            ],
+            ]);
     }
 
     public function testCreateUnauthorized(): void
@@ -638,7 +652,8 @@ class ProductTest extends TestCase
                 'description_short' => 'So called short description...',
                 'cover' => null,
                 'gallery' => [],
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
@@ -672,7 +687,7 @@ class ProductTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ProductCreated'
+                'ProductCreated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -700,7 +715,8 @@ class ProductTest extends TestCase
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
@@ -740,7 +756,7 @@ class ProductTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ProductCreated'
+                'ProductCreated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -768,7 +784,8 @@ class ProductTest extends TestCase
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
@@ -808,7 +825,7 @@ class ProductTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ProductCreated'
+                'ProductCreated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -836,7 +853,8 @@ class ProductTest extends TestCase
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
@@ -869,7 +887,7 @@ class ProductTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ProductCreated'
+                'ProductCreated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -897,7 +915,8 @@ class ProductTest extends TestCase
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
@@ -1079,7 +1098,7 @@ class ProductTest extends TestCase
                 'description' => 'seo description',
                 'og_image_id' => $media->getKey(),
                 'no_index' => true,
-            ]
+            ],
         ]);
 
         $response
@@ -1099,8 +1118,9 @@ class ProductTest extends TestCase
                         'id' => $media->getKey(),
                     ],
                     'no_index' => true,
-                ]
-            ]]);
+                ],
+            ],
+            ]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
@@ -1137,7 +1157,7 @@ class ProductTest extends TestCase
             'seo' => [
                 'title' => 'seo title',
                 'description' => 'seo description',
-            ]
+            ],
         ]);
 
         $response
@@ -1154,8 +1174,9 @@ class ProductTest extends TestCase
                     'title' => 'seo title',
                     'description' => 'seo description',
                     'no_index' => false,
-                ]
-            ]]);
+                ],
+            ],
+            ]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
@@ -1355,7 +1376,7 @@ class ProductTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ProductUpdated'
+                'ProductUpdated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -1414,7 +1435,7 @@ class ProductTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ProductUpdated'
+                'ProductUpdated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -1661,7 +1682,7 @@ class ProductTest extends TestCase
         $this->productService->updateMinMaxPrices($product);
 
         $schemaNewPrice = 75;
-        $response = $this->actingAs($this->$user)->patchJson('/schemas/id:' . $schema->getKey() , [
+        $response = $this->actingAs($this->$user)->patchJson('/schemas/id:' . $schema->getKey(), [
             'name' => 'Test Updated',
             'price' => $schemaNewPrice,
             'type' => 'string',
@@ -1800,7 +1821,7 @@ class ProductTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ProductDeleted'
+                'ProductDeleted',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -1846,7 +1867,7 @@ class ProductTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ProductDeleted'
+                'ProductDeleted',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),

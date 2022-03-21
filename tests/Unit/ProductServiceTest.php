@@ -141,8 +141,8 @@ class ProductServiceTest extends TestCase
         ]);
 
         $schema->options()->create([
-           'name' => 'opt1',
-           'price' => $optionPriceLowest,
+            'name' => 'opt1',
+            'price' => $optionPriceLowest,
         ]);
         $schema->options()->create([
             'name' => 'opt2',
@@ -263,7 +263,7 @@ class ProductServiceTest extends TestCase
             'type' => SchemaType::STRING,
             'price' => $schemaBasePrice,
             'required' => true,
-        ]);;
+        ]);
 
         /** @var Schema $multiplySchema */
         $multiplySchema = $product->schemas()->create([

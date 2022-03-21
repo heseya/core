@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Product;
 use App\Models\Tag;
+use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
 class AuditTest extends TestCase
@@ -12,7 +13,7 @@ class AuditTest extends TestCase
     {
         parent::setUp();
 
-        config()->set('audit.console', true);
+        Config::set('audit.console', true);
     }
 
     public function testViewUnauthorized(): void
@@ -22,19 +23,6 @@ class AuditTest extends TestCase
         $this
             ->json('GET', '/audits/products/id:' . $product->getKey())
             ->assertForbidden();
-    }
-
-    private function createProduct(): Product
-    {
-        $product = Product::factory()->create([
-            'name' => 'Old name',
-        ]);
-
-        $product->update([
-            'name' => 'New name',
-        ]);
-
-        return $product;
     }
 
     /**
@@ -71,4 +59,16 @@ class AuditTest extends TestCase
             ->assertJsonFragment(['message' => 'Model not auditable']);
     }
 
+    private function createProduct(): Product
+    {
+        $product = Product::factory()->create([
+            'name' => 'Old name',
+        ]);
+
+        $product->update([
+            'name' => 'New name',
+        ]);
+
+        return $product;
+    }
 }

@@ -43,7 +43,8 @@ class ShippingMethodReorderTest extends TestCase
                 $shippingMethod1->getKey(),
                 $shippingMethod3->getKey(),
                 $shippingMethod2->getKey(),
-            ]])
+            ],
+            ])
             ->assertNoContent();
 
         $this

@@ -345,25 +345,6 @@ class SchemaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateHiddenAndRequired($user): void
-    {
-        $this->$user->givePermissionTo('products.add');
-
-        $response = $this->actingAs($this->$user)->postJson('/schemas', [
-            'name' => 'Test',
-            'type' => SchemaType::getKey(SchemaType::SELECT),
-            'price' => 120,
-            'description' => 'test test',
-            'hidden' => true,
-            'required' => true,
-        ]);
-
-        $response->assertStatus(422);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testUpdateUnauthorized($user): void
     {
         $schema = Schema::factory()->create();
@@ -378,7 +359,7 @@ class SchemaTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->$user)
-            ->patchJson('/schemas/id:' . $schema->getKey() , [
+            ->patchJson('/schemas/id:' . $schema->getKey(), [
                 'name' => 'Test Updated',
                 'price' => 200,
                 'type' => SchemaType::getKey(SchemaType::SELECT),
@@ -436,7 +417,7 @@ class SchemaTest extends TestCase
             'schema_id' => $schema->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)->patchJson('/schemas/id:' . $schema->getKey() , [
+        $response = $this->actingAs($this->$user)->patchJson('/schemas/id:' . $schema->getKey(), [
             'name' => 'Test Updated',
             'price' => 200,
             'type' => SchemaType::getKey(SchemaType::SELECT),
@@ -634,7 +615,7 @@ class SchemaTest extends TestCase
             $item2->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)->json('PATCH', '/schemas/id:' . $schema->getKey() , [
+        $response = $this->actingAs($this->$user)->json('PATCH', '/schemas/id:' . $schema->getKey(), [
             'name' => 'Test Updated',
             'price' => 200,
             'type' => SchemaType::getKey(SchemaType::SELECT),

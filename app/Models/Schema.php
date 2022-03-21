@@ -38,6 +38,7 @@ class Schema extends Model
         'default',
         'pattern',
         'validation',
+        'available',
     ];
 
     protected $casts = [
@@ -61,22 +62,6 @@ class Schema extends Model
         'created_at',
         'updated_at',
     ];
-
-    public function getAvailableAttribute(): bool
-    {
-        if (!$this->type->is(SchemaType::SELECT)) {
-            return true;
-        }
-
-        // schema should be available if any of the options are available
-        foreach ($this->options as $option) {
-            if ($option->available) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 
     /**
      * Check if user input is valid

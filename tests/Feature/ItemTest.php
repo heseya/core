@@ -65,7 +65,8 @@ class ItemTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ]]);
+            ],
+            ]);
 
         $this->assertQueryCountLessThan(10);
     }
@@ -117,7 +118,8 @@ class ItemTest extends TestCase
                     'sku' => $this->item->sku,
                     'quantity' => $this->item->quantity,
                 ],
-            ]]);
+            ],
+            ]);
 
         $this->assertQueryCountLessThan(10);
     }
@@ -149,7 +151,8 @@ class ItemTest extends TestCase
                     'sku' => $item_sold_out->sku,
                     'quantity' => $item_sold_out->quantity,
                 ],
-            ]]);
+            ],
+            ]);
 
         $this->assertQueryCountLessThan(10);
     }
@@ -329,7 +332,7 @@ class ItemTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ItemCreated'
+                'ItemCreated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -418,7 +421,7 @@ class ItemTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ItemUpdated'
+                'ItemUpdated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -508,7 +511,7 @@ class ItemTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ItemDeleted'
+                'ItemDeleted',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),

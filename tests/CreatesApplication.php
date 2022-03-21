@@ -11,7 +11,7 @@ trait CreatesApplication
     /**
      * Commands that are executed before testing.
      *
-     * @var array|string[]
+     * @var array<string>
      */
     private array $commands = [
         'clear-compiled',
@@ -26,7 +26,7 @@ trait CreatesApplication
      */
     public function createApplication(): Application
     {
-        $createApp = function() {
+        $createApp = function () {
             $app = require __DIR__ . '/../bootstrap/app.php';
             $app->make(Kernel::class)->bootstrap();
 

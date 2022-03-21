@@ -9,12 +9,10 @@ trait JsonQueryCounter
 {
     public function json($method, $uri, array $data = [], array $headers = [])
     {
-        $startQuery = (static::getQueryCount());
+        $startQuery = static::getQueryCount();
 
         static::trackQueries();
-        $json = parent::json($method, $uri, $data, $headers);
-
-        return $json;
+        return parent::json($method, $uri, $data, $headers);
     }
 
     public static function getQueryCount(): int
@@ -32,7 +30,7 @@ trait JsonQueryCounter
         DB::enableQueryLog();
     }
 
-    public function assertNoQueriesExecuted(Closure $closure = null): void
+    public function assertNoQueriesExecuted(?Closure $closure = null): void
     {
         if ($closure) {
             self::trackQueries();
@@ -47,7 +45,7 @@ trait JsonQueryCounter
         }
     }
 
-    public function assertQueryCountMatches(int $count, Closure $closure = null): void
+    public function assertQueryCountMatches(int $count, ?Closure $closure = null): void
     {
         if ($closure) {
             self::trackQueries();
@@ -62,7 +60,7 @@ trait JsonQueryCounter
         }
     }
 
-    public function assertQueryCountLessThan(int $count, Closure $closure = null): void
+    public function assertQueryCountLessThan(int $count, ?Closure $closure = null): void
     {
         if ($closure) {
             self::trackQueries();
@@ -77,7 +75,7 @@ trait JsonQueryCounter
         }
     }
 
-    public function assertQueryCountGreaterThan(int $count, Closure $closure = null): void
+    public function assertQueryCountGreaterThan(int $count, ?Closure $closure = null): void
     {
         if ($closure) {
             self::trackQueries();

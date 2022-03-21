@@ -17,8 +17,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
-use Spatie\WebhookServer\CallWebhookJob;
 use Illuminate\Support\Facades\Log;
+use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
 class UserTest extends TestCase
@@ -93,7 +93,8 @@ class UserTest extends TestCase
                     'avatar' => $otherUser->avatar,
                     'roles' => [],
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     /**
@@ -122,7 +123,8 @@ class UserTest extends TestCase
                     'roles' => [],
                     'permissions' => [],
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     /**
@@ -149,7 +151,8 @@ class UserTest extends TestCase
                     'roles' => [],
                 ],
                 $this->expected,
-            ]]);
+            ],
+            ]);
     }
 
     /**
@@ -318,8 +321,8 @@ class UserTest extends TestCase
         Event::fake([UserCreated::class]);
 
         $data = User::factory()->raw() + [
-                'password' => $this->validPassword,
-            ];
+            'password' => $this->validPassword,
+        ];
 
         $response = $this->actingAs($this->$user)->postJson('/users', $data);
         $response
@@ -363,8 +366,8 @@ class UserTest extends TestCase
         Bus::fake();
 
         $data = User::factory()->raw() + [
-                'password' => $this->validPassword,
-            ];
+            'password' => $this->validPassword,
+        ];
 
         $response = $this->actingAs($this->$user)->postJson('/users', $data);
         $response
@@ -475,20 +478,20 @@ class UserTest extends TestCase
         $this->$user->givePermissionTo($permission2);
 
         $data = User::factory()->raw() + [
-                'password' => $this->validPassword,
-                'roles' => [
-                    $role1->getKey(),
-                    $role2->getKey(),
-                    $role3->getKey(),
-                ],
-            ];
+            'password' => $this->validPassword,
+            'roles' => [
+                $role1->getKey(),
+                $role2->getKey(),
+                $role3->getKey(),
+            ],
+        ];
 
         Log::shouldReceive('error')
             ->once()
             ->withArgs(function ($message) {
                 return str_contains(
                     $message,
-                    "AuthException(code: 0): "
+                    'AuthException(code: 0): '
                     . "Can't give a role with permissions you don't have to the user at"
                 );
             });
@@ -524,13 +527,13 @@ class UserTest extends TestCase
         $this->$user->givePermissionTo([$permission1, $permission2]);
 
         $data = User::factory()->raw() + [
-                'password' => $this->validPassword,
-                'roles' => [
-                    $role1->getKey(),
-                    $role2->getKey(),
-                    $role3->getKey(),
-                ],
-            ];
+            'password' => $this->validPassword,
+            'roles' => [
+                $role1->getKey(),
+                $role2->getKey(),
+                $role3->getKey(),
+            ],
+        ];
 
         $permissions = $this->authenticatedPermissions
             ->merge(['permission.1', 'permission.2'])
@@ -549,25 +552,29 @@ class UserTest extends TestCase
                 'description' => $role1->description,
                 'assignable' => true,
                 'deletable' => true,
-            ]])->assertJsonFragment([[
+            ],
+            ])->assertJsonFragment([[
                 'id' => $role2->getKey(),
                 'name' => $role2->name,
                 'description' => $role2->description,
                 'assignable' => true,
                 'deletable' => true,
-            ]])->assertJsonFragment([[
+            ],
+            ])->assertJsonFragment([[
                 'id' => $role3->getKey(),
                 'name' => $role3->name,
                 'description' => $role3->description,
                 'assignable' => true,
                 'deletable' => true,
-            ]])->assertJsonFragment([[
+            ],
+            ])->assertJsonFragment([[
                 'id' => $this->authenticated->getKey(),
                 'name' => $this->authenticated->name,
                 'description' => $this->authenticated->description,
                 'assignable' => false,
                 'deletable' => false,
-            ]])->assertJsonPath('data.permissions', $permissions);
+            ],
+            ])->assertJsonPath('data.permissions', $permissions);
 
         $user = User::findOrFail($response->getData()->data->id);
 
@@ -604,14 +611,14 @@ class UserTest extends TestCase
         $this->$user->givePermissionTo('users.add');
 
         $data = User::factory()->raw() + [
-                'password' => $this->validPassword,
-                'roles' => [
-                    match ($role) {
-                        RoleType::AUTHENTICATED => $this->authenticated->getKey(),
+            'password' => $this->validPassword,
+            'roles' => [
+                match ($role) {
+                    RoleType::AUTHENTICATED => $this->authenticated->getKey(),
                         RoleType::UNAUTHENTICATED => $this->unauthenticated->getKey(),
-                    },
-                ],
-            ];
+                },
+            ],
+        ];
 
         $this->actingAs($this->$user)->postJson('/users', $data)->assertStatus(422);
     }
@@ -813,25 +820,29 @@ class UserTest extends TestCase
                 'description' => $role1->description,
                 'assignable' => true,
                 'deletable' => true,
-            ]])->assertJsonFragment([[
+            ],
+            ])->assertJsonFragment([[
                 'id' => $role2->getKey(),
                 'name' => $role2->name,
                 'description' => $role2->description,
                 'assignable' => true,
                 'deletable' => true,
-            ]])->assertJsonFragment([[
+            ],
+            ])->assertJsonFragment([[
                 'id' => $role3->getKey(),
                 'name' => $role3->name,
                 'description' => $role3->description,
                 'assignable' => true,
                 'deletable' => true,
-            ]])->assertJsonFragment([[
+            ],
+            ])->assertJsonFragment([[
                 'id' => $this->authenticated->getKey(),
                 'name' => $this->authenticated->name,
                 'description' => $this->authenticated->description,
                 'assignable' => false,
                 'deletable' => false,
-            ]])->assertJsonPath('data.permissions', $permissions);
+            ],
+            ])->assertJsonPath('data.permissions', $permissions);
 
         $otherUser->refresh();
 

@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Events\PageCreated;
 use App\Events\PageDeleted;
 use App\Events\PageUpdated;
-use App\Http\Resources\PageResource;
 use App\Listeners\WebHookEventListener;
 use App\Models\Page;
 use App\Models\SeoMetadata;
@@ -76,7 +75,8 @@ class PageTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ]]);
+            ],
+            ]);
 
         $this->assertQueryCountLessThan(10);
     }
@@ -219,7 +219,7 @@ class PageTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'PageCreated'
+                'PageCreated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -281,7 +281,7 @@ class PageTest extends TestCase
             'seo' => [
                 'title' => 'seo title',
                 'description' => 'seo description',
-            ]
+            ],
         ];
 
         $response = $this->actingAs($this->$user)->json('POST', '/pages', $page);
@@ -393,7 +393,7 @@ class PageTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'PageUpdated'
+                'PageUpdated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -472,7 +472,8 @@ class PageTest extends TestCase
         $seo = SeoMetadata::factory()->create();
         $this->page->seo()->save($seo);
 
-        $response = $this->actingAs($this->$user)->json('PATCH',
+        $response = $this->actingAs($this->$user)->json(
+            'PATCH',
             '/pages/id:' . $this->page->getKey(),
             $page
         );
@@ -538,7 +539,7 @@ class PageTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'PageDeleted'
+                'PageDeleted',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
