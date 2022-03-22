@@ -67,7 +67,8 @@ class AppOtherTest extends TestCase
                 'icon' => $app->icon,
                 'author' => $app->author,
                 'permissions' => [],
-            ]]);
+            ],
+            ]);
     }
 
     public function testUninstallUnauthorized(): void
@@ -121,7 +122,7 @@ class AppOtherTest extends TestCase
         $app = App::factory()->create(['url' => $this->url]);
 
         Http::fake([
-            $this->url . '/uninstall' => new ConnectionException("Test", 7),
+            $this->url . '/uninstall' => new ConnectionException('Test', 7),
         ]);
 
         $response = $this->actingAs($this->user)
@@ -138,7 +139,7 @@ class AppOtherTest extends TestCase
         $app = App::factory()->create(['url' => $this->url]);
 
         Http::fake([
-            $this->url . '/uninstall' => new ConnectionException("Test", 7),
+            $this->url . '/uninstall' => new ConnectionException('Test', 7),
         ]);
 
         $response = $this->actingAs($this->user)

@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\PackageTemplate;
-use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class PackageTemplateTest extends TestCase
@@ -49,7 +48,8 @@ class PackageTemplateTest extends TestCase
             ->assertOk()
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ]]);
+            ],
+            ]);
     }
 
     public function testCreateUnauthorized(): void

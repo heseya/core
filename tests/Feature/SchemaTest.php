@@ -359,7 +359,7 @@ class SchemaTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->$user)
-            ->patchJson('/schemas/id:' . $schema->getKey() , [
+            ->patchJson('/schemas/id:' . $schema->getKey(), [
                 'name' => 'Test Updated',
                 'price' => 200,
                 'type' => SchemaType::getKey(SchemaType::SELECT),
@@ -417,7 +417,7 @@ class SchemaTest extends TestCase
             'schema_id' => $schema->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)->patchJson('/schemas/id:' . $schema->getKey() , [
+        $response = $this->actingAs($this->$user)->patchJson('/schemas/id:' . $schema->getKey(), [
             'name' => 'Test Updated',
             'price' => 200,
             'type' => SchemaType::getKey(SchemaType::SELECT),
@@ -615,7 +615,7 @@ class SchemaTest extends TestCase
             $item2->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)->json('PATCH', '/schemas/id:' . $schema->getKey() , [
+        $response = $this->actingAs($this->$user)->json('PATCH', '/schemas/id:' . $schema->getKey(), [
             'name' => 'Test Updated',
             'price' => 200,
             'type' => SchemaType::getKey(SchemaType::SELECT),
