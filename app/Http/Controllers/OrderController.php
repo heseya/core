@@ -32,7 +32,6 @@ use App\Models\Status;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\ItemServiceContract;
-use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Illuminate\Http\JsonResponse;
@@ -61,7 +60,7 @@ class OrderController extends Controller
 
         $query = Order::search($search_data)
             ->sort($request->input('sort'))
-            ->with(['products', 'discounts', 'payments']);
+            ->with(['products', 'discounts', 'payments', 'documents']);
 
         return OrderResource::collection(
             $query->paginate(Config::get('pagination.per_page')),

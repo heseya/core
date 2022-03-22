@@ -49,7 +49,7 @@ class EventServiceProvider extends ServiceProvider
      */
     protected $listen = [
         OrderDocumentEvent::class => [
-            WebHookEventListener::class
+            WebHookEventListener::class,
         ],
         OrderCreated::class => [
             OrderCreatedListener::class,

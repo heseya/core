@@ -6,7 +6,7 @@ use BenSampo\Enum\Enum;
 
 final class OrderDocumentType extends Enum
 {
-    const OTHER = 'other';
-    const RECEIPT = 'receipt';
-    const INVOICE = 'invoice';
+    public const OTHER = 'other';
+    public const RECEIPT = 'receipt';
+    public const INVOICE = 'invoice';
 }
