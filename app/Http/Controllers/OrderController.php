@@ -9,6 +9,7 @@ use App\Events\AddOrderDocument;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
+use App\Events\RemoveOrderDocument;
 use App\Exceptions\OrderException;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderDocumentRequest;
@@ -29,6 +30,7 @@ use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Services\Contracts\DiscountServiceContract;
+use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\NameServiceContract;
@@ -48,7 +50,7 @@ class OrderController extends Controller
         private OrderServiceContract $orderService,
         private DiscountServiceContract $discountService,
         private ItemServiceContract $itemService,
-        private MediaServiceContract $mediaService,
+        private DocumentServiceContract $documentService
     ) {
     }
 
@@ -284,17 +286,21 @@ class OrderController extends Controller
         return OrderResource::make($order);
     }
 
-    public function storeDocument(OrderDocumentRequest $request, Order $order)
+    public function storeDocument(OrderDocumentRequest $request, Order $order): JsonResource
     {
-        $media = $this->mediaService->store($request->file);
-        $order->documents()->attach($media, ['type' => $request->type, 'name' => $request->name]);
-
-        AddOrderDocument::dispatch();
+        $order = $this->documentService->storeDocument($order, $request->only('name', 'type', 'file'));
+        AddOrderDocument::dispatch($order->documents()->latest()->first()->pivot);
 
         return OrderDocumentResource::collection($order->documents);
     }
 
-    public function deleteDocument(Order $order)
+    public function deleteDocument(Order $order, OrderDocument $document): JsonResponse
     {
+        $orderDocument = $order->documents()->latest()->first()->pivot;
+        $this->documentService->removeDocument($document->media_id);
+
+        RemoveOrderDocument::dispatch($orderDocument);
+
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

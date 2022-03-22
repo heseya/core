@@ -2,6 +2,6 @@
 
 namespace App\Events;
 
-class AddOrderDocument
+class AddOrderDocument extends OrderDocumentEvent
 {
 }

@@ -9,9 +9,9 @@ class OrderDocumentResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'type' => $this->type,
-            'name' => $this->name,
+            'id' => $this->pivot->id,
+            'type' => $this->pivot->type,
+            'name' => $this->pivot->name,
         ];
     }
 }
