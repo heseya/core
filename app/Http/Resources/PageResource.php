@@ -17,7 +17,7 @@ class PageResource extends Resource
             'name' => $this->name,
             'public' => $this->public,
             'order' => $this->order,
-        ], $this->metadataResource('pages'));
+        ], $this->metadataResource('pages.show_metadata_private'));
     }
 
     public function view(Request $request): array

@@ -16,6 +16,6 @@ class ItemResource extends Resource
             'name' => $this->name,
             'sku' => $this->sku,
             'quantity' => $this->getQuantity($request->input('day')),
-        ], $this->metadataResource('items'));
+        ], $this->metadataResource('items.show_metadata_private'));
     }
 }

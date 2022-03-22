@@ -6,11 +6,12 @@ use App\Dtos\MetadataDto;
 use App\Models\Model;
 use App\Models\Role;
 use App\Services\Contracts\MetadataServiceContract;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class MetadataService implements MetadataServiceContract
 {
-    public function updateOrCreate(Model|Role $model, MetadataDto $dto)
+    public function updateOrCreate(Model|Role $model, MetadataDto $dto): void
     {
         $model = $dto->isPublic() ? $model->metadata() : $model->metadataPrivate();
 
@@ -29,7 +30,7 @@ class MetadataService implements MetadataServiceContract
 
     public function returnModel(array $routeSegments): Model|Role|null
     {
-        $segment = collect($routeSegments)->first();
+        $segment = Collection::make($routeSegments)->first();
         $className = 'App\\Models\\' . Str::studly(Str::singular($segment));
 
         if (class_exists($className)) {

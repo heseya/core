@@ -26,7 +26,7 @@ class ProductResource extends Resource
             'cover' => MediaResource::make($this->media->first()),
             'tags' => TagResource::collection($this->tags),
             'items' => ProductItemResource::collection($this->items),
-        ], $this->metadataResource('products'));
+        ], $this->metadataResource('products.show_metadata_private'));
     }
 
     public function view(Request $request): array

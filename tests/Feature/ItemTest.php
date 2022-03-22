@@ -69,7 +69,7 @@ class ItemTest extends TestCase
             ],
             ]);
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     /**
@@ -87,7 +87,7 @@ class ItemTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     /**
@@ -122,7 +122,7 @@ class ItemTest extends TestCase
             ],
             ]);
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     /**
@@ -155,7 +155,7 @@ class ItemTest extends TestCase
             ],
             ]);
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     /**
@@ -227,7 +227,7 @@ class ItemTest extends TestCase
                 'quantity' => 5,
             ]);
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     /**
@@ -265,7 +265,7 @@ class ItemTest extends TestCase
                 'quantity' => 5,
             ]);
 
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     public function testViewUnauthorized(): void

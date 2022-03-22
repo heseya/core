@@ -18,6 +18,6 @@ class PackageTemplateResource extends Resource
             'width' => $this->width,
             'height' => $this->height,
             'depth' => $this->depth,
-        ], $this->metadataResource());
+        ], $this->metadataResource('packages.show_metadata_private'));
     }
 }

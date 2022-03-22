@@ -37,6 +37,6 @@ class ProductSetParentResource extends Resource
 
     public function view(Request $request): array
     {
-        return $this->metadataResource('product_sets');
+        return $this->metadataResource('product_sets.show_metadata_private');
     }
 }

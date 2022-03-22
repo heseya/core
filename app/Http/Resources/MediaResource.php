@@ -18,6 +18,6 @@ class MediaResource extends Resource
             'url' => $this->url,
             'slug' => $this->slug,
             'alt' => $this->alt,
-        ], $this->metadataResource());
+        ], $this->metadataResource('media.show_metadata_private'));
     }
 }

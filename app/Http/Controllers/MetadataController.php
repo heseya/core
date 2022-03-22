@@ -8,6 +8,7 @@ use App\Services\Contracts\MetadataServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Response;
 
 class MetadataController extends Controller
@@ -25,7 +26,7 @@ class MetadataController extends Controller
         }
 
         $model = $model->findOrFail($modelId);
-        $public = collect($request->segments())->last() === 'metadata';
+        $public = Collection::make($request->segments())->last() === 'metadata';
 
         foreach ($request->all() as $key => $value) {
             $dto = MetadataDto::manualInit(name: $key, value: $value, public: $public);

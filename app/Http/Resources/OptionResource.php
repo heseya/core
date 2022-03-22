@@ -18,6 +18,6 @@ class OptionResource extends Resource
             'disabled' => $this->disabled,
             'available' => $this->available,
             'items' => ItemPublicResource::collection($this->items),
-        ], $this->metadataResource('options'));
+        ], $this->metadataResource('options.show_metadata_private'));
     }
 }

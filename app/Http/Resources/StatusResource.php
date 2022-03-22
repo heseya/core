@@ -19,6 +19,6 @@ class StatusResource extends Resource
             'description' => $this->description,
             'hidden' => $this->hidden,
             'no_notifications' => $this->no_notifications,
-        ], $this->metadataResource('statuses'));
+        ], $this->metadataResource('statuses.show_metadata_private'));
     }
 }

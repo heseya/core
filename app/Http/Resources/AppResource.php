@@ -21,7 +21,7 @@ class AppResource extends Resource
             'description' => $this->description,
             'icon' => $this->icon,
             'author' => $this->author,
-        ], $this->metadataResource('apps'));
+        ], $this->metadataResource('apps.show_metadata_private'));
     }
 
     public function view(Request $request): array

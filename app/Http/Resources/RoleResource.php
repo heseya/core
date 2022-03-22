@@ -24,7 +24,7 @@ class RoleResource extends Resource
                     $this->getAllPermissions(),
                 ) : false,
             'deletable' => $this->type->is(RoleType::REGULAR),
-        ], $this->metadataResource('roles'));
+        ], $this->metadataResource('roles.show_metadata_private'));
     }
 
     public function view(Request $request): array
