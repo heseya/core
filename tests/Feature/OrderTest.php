@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Enums\MetadataType;
-use App\Events\OrderCreated;
 use App\Events\ItemUpdatedQuantity;
+use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
 use App\Listeners\WebHookEventListener;
 use App\Models\Item;
@@ -19,7 +19,6 @@ use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
@@ -332,7 +331,8 @@ class OrderTest extends TestCase
                         'hidden' => $status->hidden,
                         'no_notifications' => $status->no_notifications,
                     ],
-                ]]]);
+                ],
+            ]]);
 
         $this->assertQueryCountLessThan(20);
     }
@@ -1003,7 +1003,7 @@ class OrderTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testOrderHasUser($user)
+    public function testOrderHasUser($user): void
     {
         $this->$user->givePermissionTo(['orders.add']);
 

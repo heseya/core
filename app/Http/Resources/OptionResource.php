@@ -17,7 +17,7 @@ class OptionResource extends Resource
             'price' => $this->price,
             'disabled' => $this->disabled,
             'available' => $this->available,
-            'items' => ItemResource::collection($this->items),
+            'items' => ItemPublicResource::collection($this->items),
         ], $this->metadataResource('options'));
     }
 }

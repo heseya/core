@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\PackageTemplate;
-use Laravel\Passport\Passport;
 use Tests\TestCase;
 
 class PackageTemplateTest extends TestCase
@@ -50,7 +49,8 @@ class PackageTemplateTest extends TestCase
             ->assertOk()
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ]]);
+            ],
+            ]);
     }
 
     public function testCreateUnauthorized(): void
@@ -134,6 +134,6 @@ class PackageTemplateTest extends TestCase
         $response = $this->actingAs($this->$user)
             ->deleteJson('/package-templates/id:' . $this->package->getKey());
         $response->assertNoContent();
-        $this->assertDeleted($this->package);
+        $this->assertModelMissing($this->package);
     }
 }

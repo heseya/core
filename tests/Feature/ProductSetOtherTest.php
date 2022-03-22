@@ -3,16 +3,15 @@
 namespace Tests\Feature;
 
 use App\Events\ProductSetDeleted;
-use App\Http\Resources\ProductSetResource;
 use App\Listeners\WebHookEventListener;
 use App\Models\Product;
 use App\Models\ProductSet;
+use App\Models\SeoMetadata;
 use App\Models\WebHook;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Spatie\WebhookServer\CallWebhookJob;
-use App\Models\SeoMetadata;
 use Tests\TestCase;
 
 class ProductSetOtherTest extends TestCase
@@ -62,7 +61,7 @@ class ProductSetOtherTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ProductSetDeleted'
+                'ProductSetDeleted',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -416,8 +415,9 @@ class ProductSetOtherTest extends TestCase
                     'id' => $product1->getKey(),
                     'name' => $product1->name,
                     'slug' => $product1->slug,
-                ]
-            ]]);
+                ],
+            ],
+            ]);
     }
 
     /**

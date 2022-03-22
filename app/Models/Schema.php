@@ -39,6 +39,7 @@ class Schema extends Model
         'default',
         'pattern',
         'validation',
+        'available',
     ];
 
     protected $casts = [
@@ -62,22 +63,6 @@ class Schema extends Model
         'created_at',
         'updated_at',
     ];
-
-    public function getAvailableAttribute(): bool
-    {
-        if (!$this->type->is(SchemaType::SELECT)) {
-            return true;
-        }
-
-        // schema should be available if any of the options are available
-        foreach ($this->options as $option) {
-            if ($option->available) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 
     /**
      * Check if user input is valid
@@ -158,13 +143,21 @@ class Schema extends Model
         return $items;
     }
 
+    public function options(): HasMany
+    {
+        return $this->hasMany(Option::class)
+            ->orderBy('order')
+            ->orderBy('created_at')
+            ->orderBy('name', 'DESC');
+    }
+
     /**
      * @throws InvalidEnumKeyException
      */
     public function setTypeAttribute($value): void
     {
         if (!is_integer($value)) {
-            $value = SchemaType::fromKey($value);
+            $value = SchemaType::fromKey(Str::upper($value));
         }
 
         $this->attributes['type'] = $value;
@@ -177,7 +170,7 @@ class Schema extends Model
 
     public function getPrice($value, $schemas): float
     {
-        $schemaKeys = collect($schemas)->keys();
+        $schemaKeys = Collection::make($schemas)->keys();
 
         if ($this->usedBySchemas()->whereIn($this->getKeyName(), $schemaKeys)->exists()) {
             return 0.0;
@@ -194,14 +187,6 @@ class Schema extends Model
             'used_schema_id',
             'schema_id',
         );
-    }
-
-    public function options(): HasMany
-    {
-        return $this->hasMany(Option::class)
-            ->orderBy('order')
-            ->orderBy('created_at')
-            ->orderBy('name', 'DESC');
     }
 
     public function usedSchemas(): BelongsToMany

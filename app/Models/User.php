@@ -23,8 +23,8 @@ use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use Spatie\Permission\Traits\HasRoles;
-use Tymon\JWTAuth\Contracts\JWTSubject;
 
 /**
  * @mixin IdeHelperUser
@@ -92,9 +92,9 @@ class User extends Model implements
         return '//www.gravatar.com/avatar/' . md5(strtolower(trim($this->email))) . '?d=mp&s=50x50';
     }
 
-    public function getJWTIdentifier(): ?string
+    public function getJWTIdentifier(): string
     {
-        return $this->getKey();
+        return $this->getKey() ?? 'null';
     }
 
     public function getJWTCustomClaims(): array

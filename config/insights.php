@@ -8,6 +8,7 @@ use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenDefineFunctions;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenPrivateMethods;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenTraits;
+use NunoMaduro\PhpInsights\Domain\Metrics\Code\Code;
 use NunoMaduro\PhpInsights\Domain\Metrics\Style\Style;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\CodeAnalysis\UselessOverridingMethodSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Commenting\TodoSniff;
@@ -15,9 +16,10 @@ use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineEndingsSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
 use SlevomatCodingStandard\Sniffs\Arrays\DisallowImplicitArrayCreationSniff;
+use PHP_CodeSniffer\Standards\Generic\Sniffs\PHP\ForbiddenFunctionsSniff;
+use PhpCsFixer\Fixer\FunctionNotation\VoidReturnFixer;
 use SlevomatCodingStandard\Sniffs\Classes\ForbiddenPublicPropertySniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
-use SlevomatCodingStandard\Sniffs\Commenting\UselessFunctionDocCommentSniff;
 use SlevomatCodingStandard\Sniffs\ControlStructures\DisallowShortTernaryOperatorSniff;
 use SlevomatCodingStandard\Sniffs\Functions\FunctionLengthSniff;
 use SlevomatCodingStandard\Sniffs\Functions\UnusedParameterSniff;
@@ -55,11 +57,10 @@ return [
     |
     */
 
-    'exclude' => [
-        'heseya',
-    ],
-
     'add' => [
+        Code::class => [
+            VoidReturnFixer::class,
+        ],
         Style::class => [
             NotSpaceAfterNot::class,
         ],
@@ -74,7 +75,6 @@ return [
         ParameterTypeHintSniff::class,
         PropertyTypeHintSniff::class,
         ReturnTypeHintSniff::class,
-        UselessFunctionDocCommentSniff::class,
         SuperfluousExceptionNamingSniff::class,
         UnusedParameterSniff::class,
         ForbiddenPublicPropertySniff::class,
@@ -103,6 +103,19 @@ return [
                 'app/Exceptions',
             ],
         ],
+        ForbiddenFunctionsSniff::class => [
+            'forbiddenFunctions' => [
+                'dd' => null,
+                'dump' => null,
+                'ddd' => null,
+                'tinker' => null,
+                'collect' => 'Collection::make',
+                'cache' => 'Cache::get',
+                'config' => 'Config::get',
+                'redirect' => 'Redirect::to',
+                'response' => 'Response::json',
+            ],
+        ],
     ],
 
     /*
@@ -118,7 +131,7 @@ return [
 
     'requirements' => [
         'min-quality' => 100,
-        'min-complexity' => 75,
+        'min-complexity' => 80,
         'min-architecture' => 100,
         'min-style' => 100,
         'disable-security-check' => false,

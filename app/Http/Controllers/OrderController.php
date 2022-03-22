@@ -33,6 +33,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Response;
 use Throwable;
 
 class OrderController extends Controller
@@ -225,7 +226,7 @@ class OrderController extends Controller
             }
         }
 
-        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResponse

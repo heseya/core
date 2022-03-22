@@ -3,7 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\SchemaType;
-use BenSampo\Enum\Rules\EnumKey;
+use App\Rules\EnumKey;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SchemaStoreRequest extends FormRequest
@@ -31,20 +31,6 @@ class SchemaStoreRequest extends FormRequest
 
             'options.*.items' => ['nullable', 'array'],
             'options.*.items.*' => ['uuid', 'exists:items,id'],
-        ];
-    }
-
-    public function withValidator($validator): void
-    {
-        $validator->sometimes('required', 'different:hidden', function ($input) {
-            return $input->hidden;
-        });
-    }
-
-    public function messages(): array
-    {
-        return [
-            'required.different' => 'The schema cannot be required if hidden',
         ];
     }
 }

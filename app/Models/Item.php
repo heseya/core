@@ -10,6 +10,7 @@ use Heseya\Searchable\Searches\Like;
 use Heseya\Searchable\Traits\Searchable;
 use Heseya\Sortable\Sortable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
@@ -54,6 +55,11 @@ class Item extends Model implements AuditableContract
         return $this->hasMany(Deposit::class);
     }
 
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class);
+    }
+
     public function getQuantity(string|null $day): float
     {
         if ($day) {
@@ -65,5 +71,10 @@ class Item extends Model implements AuditableContract
                 ->sum('quantity');
         }
         return $this->quantity ?? 0;
+    }
+
+    public function options(): BelongsToMany
+    {
+        return $this->belongsToMany(Option::class, 'option_items');
     }
 }

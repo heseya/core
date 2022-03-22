@@ -37,7 +37,8 @@ class DiscountOrderTest extends TestCase
         $this->items = [[
             'product_id' => $this->product->getKey(),
             'quantity' => 1,
-        ]];
+        ],
+        ];
 
         $this->address = [
             'name' => 'Test User',

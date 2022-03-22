@@ -6,10 +6,12 @@ use App\Services\AnalyticsService;
 use App\Services\AppService;
 use App\Services\AuditService;
 use App\Services\AuthService;
+use App\Services\AvailabilityService;
 use App\Services\Contracts\AnalyticsServiceContract;
 use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\AuditServiceContract;
 use App\Services\Contracts\AuthServiceContract;
+use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\EventServiceContract;
 use App\Services\Contracts\ItemServiceContract;
@@ -56,7 +58,6 @@ use App\Services\TokenService;
 use App\Services\UrlService;
 use App\Services\UserService;
 use App\Services\WebHookService;
-use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -88,6 +89,7 @@ class AppServiceProvider extends ServiceProvider
         UrlServiceContract::class => UrlService::class,
         ItemServiceContract::class => ItemService::class,
         OneTimeSecurityCodeContract::class => OneTimeSecurityCodeService::class,
+        AvailabilityServiceContract::class => AvailabilityService::class,
         MetadataServiceContract::class => MetadataService::class,
     ];
 
@@ -100,8 +102,12 @@ class AppServiceProvider extends ServiceProvider
             $this->app->bind($abstract, $concrete);
         }
 
-        if (class_exists(IdeHelperServiceProvider::class)) {
-            $this->app->register(IdeHelperServiceProvider::class);
+        /**
+         * Local register of ide helper.
+         * Needs to be full path.
+         */
+        if ($this->app->isLocal()) {
+            $this->app->register('\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider');
         }
     }
 

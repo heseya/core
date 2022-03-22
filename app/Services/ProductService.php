@@ -11,6 +11,19 @@ use Illuminate\Support\Collection;
 
 class ProductService implements ProductServiceContract
 {
+    public function assignItems(Product $product, array|null $itemsIds): Product
+    {
+        if ($itemsIds !== null) {
+            $product->items()->detach();
+            $items = new Collection($itemsIds);
+            $items->each(
+                fn ($item) => $product->items()->attach($item['id'], ['quantity' => $item['quantity']])
+            );
+        }
+
+        return $product->refresh();
+    }
+
     public function getMinMaxPrices(Product $product): array
     {
         $schemaMinMax = $this->getSchemasPrices(
@@ -24,7 +37,7 @@ class ProductService implements ProductServiceContract
         ];
     }
 
-    public function updateMinMaxPrices(Product $product)
+    public function updateMinMaxPrices(Product $product): void
     {
         $productMinMaxPrices = $this->getMinMaxPrices($product);
         $product->update([

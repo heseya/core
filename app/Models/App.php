@@ -13,9 +13,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Support\Facades\App as AppFacade;
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use Spatie\Permission\Contracts\Permission;
 use Spatie\Permission\Traits\HasPermissions;
-use Tymon\JWTAuth\Contracts\JWTSubject;
 
 /**
  * @mixin IdeHelperApp

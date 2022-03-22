@@ -14,7 +14,7 @@ class JsonResource extends \Illuminate\Http\Resources\Json\JsonResource
      */
     public static function collection($resource)
     {
-        return tap(new ResourceCollection($resource, static::class), function ($collection) {
+        return tap(new ResourceCollection($resource, static::class), function ($collection): void {
             if (property_exists(static::class, 'preserveKeys')) {
                 $collection->preserveKeys = (new static([]))->preserveKeys === true;
             }
@@ -92,7 +92,7 @@ class JsonResource extends \Illuminate\Http\Resources\Json\JsonResource
     /**
      * Display only base parameters
      */
-    public function setIsIndex(bool $isIndex = true): self
+    public function isIndex(bool $isIndex = true): self
     {
         $this->isIndex = $isIndex;
 

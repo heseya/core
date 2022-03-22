@@ -69,11 +69,11 @@ class ShippingMethodTest extends TestCase
 
         $this->priceRangesWithNoInitialStart = [
             [
-                'start' => $this->faker()->randomFloat(2,1, 49),
+                'start' => $this->faker()->randomFloat(2, 1, 49),
                 'value' => $this->faker()->randomFloat(2, 20),
             ],
             [
-                'start' => $this->faker()->randomFloat(2,50, 99),
+                'start' => $this->faker()->randomFloat(2, 50, 99),
                 'value' => $this->faker()->randomFloat(2, 100),
             ],
             [
@@ -101,7 +101,8 @@ class ShippingMethodTest extends TestCase
             ->assertJsonCount(1, 'data') // Should show only public shipping methods.
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ]]);
+            ],
+            ]);
     }
 
     /**
@@ -149,7 +150,8 @@ class ShippingMethodTest extends TestCase
             ->assertJsonCount(1, 'data') // Should show only public shipping methods.
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ]])
+            ],
+            ])
             ->assertJsonCount(1, 'data.0.payment_methods')
             ->assertJsonFragment(['id' => $paymentMethod->getKey()]);
     }
@@ -180,7 +182,8 @@ class ShippingMethodTest extends TestCase
             ->assertJsonCount(1, 'data') // Should show only public shipping methods.
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ]])
+            ],
+            ])
             ->assertJsonCount(2, 'data.0.payment_methods')
             ->assertJsonFragment(['id' => $paymentMethod->getKey()])
             ->assertJsonFragment(['id' => $paymentMethodHidden->getKey()]);
@@ -212,7 +215,8 @@ class ShippingMethodTest extends TestCase
             ->assertJsonCount(1, 'data') // Should show only public shipping methods.
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ]])
+            ],
+            ])
             ->assertJsonCount(2, 'data.0.payment_methods')
             ->assertJsonFragment(['id' => $paymentMethod->getKey()])
             ->assertJsonFragment(['id' => $paymentMethodHidden->getKey()]);
@@ -263,9 +267,10 @@ class ShippingMethodTest extends TestCase
         ];
 
         $response = $this->actingAs($this->$user)->postJson(
-            '/shipping-methods', $shipping_method + [
-               'price_ranges' => $this->priceRangesWithNoInitialStart,
-           ],
+            '/shipping-methods',
+            $shipping_method + [
+                'price_ranges' => $this->priceRangesWithNoInitialStart,
+            ],
         );
 
         $response->assertStatus(422);
@@ -286,22 +291,23 @@ class ShippingMethodTest extends TestCase
         ];
 
         $response = $this->actingAs($this->$user)->postJson(
-            '/shipping-methods', $shipping_method + [
-               'price_ranges' => [
-                   [
-                       'start' => 0,
-                       'value' => 0,
-                   ],
-                   [
-                       'start' => 0,
-                       'value' => 0,
-                   ],
-                   [
-                       'start' => 10,
-                       'value' => 0,
-                   ]
-               ],
-           ],
+            '/shipping-methods',
+            $shipping_method + [
+                'price_ranges' => [
+                    [
+                        'start' => 0,
+                        'value' => 0,
+                    ],
+                    [
+                        'start' => 0,
+                        'value' => 0,
+                    ],
+                    [
+                        'start' => 10,
+                        'value' => 0,
+                    ],
+                ],
+            ],
         );
 
         $response->assertStatus(422);
@@ -442,13 +448,13 @@ class ShippingMethodTest extends TestCase
 
         $response = $this->actingAs($this->$user)
             ->postJson('/shipping-methods', $shipping_method + [
-                    'price_ranges' => [
-                        [
-                            'start' => 0,
-                            'value' => 10.37,
-                        ],
+                'price_ranges' => [
+                    [
+                        'start' => 0,
+                        'value' => 10.37,
                     ],
-                ]);
+                ],
+            ]);
 
         $response
             ->assertCreated()
@@ -510,7 +516,7 @@ class ShippingMethodTest extends TestCase
                     [
                         'start' => 10,
                         'value' => 0,
-                    ]
+                    ],
                 ],
             ],
         );
@@ -622,7 +628,7 @@ class ShippingMethodTest extends TestCase
         $response = $this->actingAs($this->$user)
             ->deleteJson('/shipping-methods/id:' . $this->shipping_method->getKey());
         $response->assertNoContent();
-        $this->assertDeleted($this->shipping_method);
+        $this->assertModelMissing($this->shipping_method);
     }
 
     /**

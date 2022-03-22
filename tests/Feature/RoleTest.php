@@ -51,7 +51,8 @@ class RoleTest extends TestCase
                 'assignable' => true,
                 'deletable' => true,
                 'metadata' => [],
-            ]])
+            ],
+            ])
             ->assertJsonFragment([[
                 $role2->getKeyName() => $role2->getKey(),
                 'name' => $role2->name,
@@ -59,7 +60,8 @@ class RoleTest extends TestCase
                 'assignable' => true,
                 'deletable' => true,
                 'metadata' => [],
-            ]]);
+            ],
+            ]);
     }
 
     /**
@@ -100,7 +102,8 @@ class RoleTest extends TestCase
                 'assignable' => true,
                 'deletable' => true,
                 'metadata' => [],
-            ]])
+            ],
+            ])
             ->assertJsonFragment([[
                 $role2->getKeyName() => $role2->getKey(),
                 'name' => $role2->name,
@@ -108,7 +111,8 @@ class RoleTest extends TestCase
                 'assignable' => true,
                 'deletable' => true,
                 'metadata' => [],
-            ]]);
+            ],
+            ]);
     }
 
     /**
@@ -149,7 +153,8 @@ class RoleTest extends TestCase
                 'assignable' => true,
                 'deletable' => true,
                 'metadata' => [],
-            ]])
+            ],
+            ])
             ->assertJsonFragment([[
                 $role2->getKeyName() => $role2->getKey(),
                 'name' => $role2->name,
@@ -157,7 +162,8 @@ class RoleTest extends TestCase
                 'assignable' => true,
                 'deletable' => true,
                 'metadata' => [],
-            ]]);
+            ],
+            ]);
     }
 
     /**
@@ -221,7 +227,8 @@ class RoleTest extends TestCase
                 'assignable' => true,
                 'deletable' => true,
                 'metadata' => [],
-            ]])
+            ],
+            ])
             ->assertJsonFragment([[
                 $roleHasPermissions->getKeyName() => $roleHasPermissions->getKey(),
                 'name' => $roleHasPermissions->name,
@@ -229,7 +236,8 @@ class RoleTest extends TestCase
                 'assignable' => true,
                 'deletable' => true,
                 'metadata' => [],
-            ]]);
+            ],
+            ]);
     }
 
     /**
@@ -293,7 +301,8 @@ class RoleTest extends TestCase
                 'assignable' => false,
                 'deletable' => true,
                 'metadata' => [],
-            ]])
+            ],
+            ])
             ->assertJsonFragment([[
                 $roleHasNoPermissions->getKeyName() => $roleHasNoPermissions->getKey(),
                 'name' => $roleHasNoPermissions->name,
@@ -301,7 +310,8 @@ class RoleTest extends TestCase
                 'assignable' => false,
                 'deletable' => true,
                 'metadata' => [],
-            ]])
+            ],
+            ])
             ->assertJsonFragment([[
                 $roleUnauthenticated->getKeyName() => $roleUnauthenticated->getKey(),
                 'name' => $roleUnauthenticated->name,
@@ -309,7 +319,8 @@ class RoleTest extends TestCase
                 'assignable' => false,
                 'deletable' => false,
                 'metadata' => [],
-            ]])
+            ],
+            ])
             ->assertJsonFragment([[
                 $roleAuthenticated->getKeyName() => $roleAuthenticated->getKey(),
                 'name' => $roleAuthenticated->name,
@@ -317,7 +328,8 @@ class RoleTest extends TestCase
                 'assignable' => false,
                 'deletable' => false,
                 'metadata' => [],
-            ]]);
+            ],
+            ]);
     }
 
     /**
@@ -358,7 +370,8 @@ class RoleTest extends TestCase
                 'assignable' => true,
                 'deletable' => true,
                 'metadata' => [],
-            ]])
+            ],
+            ])
             ->assertJsonFragment([[
                 $role2->getKeyName() => $role2->getKey(),
                 'name' => $role2->name,
@@ -366,7 +379,8 @@ class RoleTest extends TestCase
                 'assignable' => true,
                 'deletable' => true,
                 'metadata' => [],
-            ]]);
+            ],
+            ]);
     }
 
     public function testShowUnauthorized(): void
@@ -404,7 +418,8 @@ class RoleTest extends TestCase
                 'deletable' => true,
                 'permissions' => [],
                 'metadata' => [],
-            ]]);
+            ],
+            ]);
     }
 
     /**
@@ -438,7 +453,8 @@ class RoleTest extends TestCase
                     'test.custom2',
                 ],
                 'metadata' => [],
-            ]]);
+            ],
+            ]);
     }
 
     /**
@@ -472,7 +488,8 @@ class RoleTest extends TestCase
                     'test.custom2',
                 ],
                 'metadata' => [],
-            ]]);
+            ],
+            ]);
     }
 
     /**
@@ -509,7 +526,8 @@ class RoleTest extends TestCase
                     'test.custom2',
                 ],
                 'metadata' => [],
-            ]]);
+            ],
+            ]);
     }
 
     public function testCreateUnauthorized(): void
@@ -587,7 +605,8 @@ class RoleTest extends TestCase
                     'test.custom2',
                 ],
                 'metadata' => [],
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('roles', [
             'name' => 'test_role',
@@ -608,8 +627,8 @@ class RoleTest extends TestCase
         $this->$user->givePermissionTo('roles.add');
 
         $this->actingAs($this->$user)->postJson('/roles', [
-                'name' => 'test_role',
-            ])
+            'name' => 'test_role',
+        ])
             ->assertCreated()
             ->assertJson(['data' => [
                 'name' => 'test_role',
@@ -618,7 +637,8 @@ class RoleTest extends TestCase
                 'deletable' => true,
                 'permissions' => [],
                 'metadata' => [],
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('roles', [
             'name' => 'test_role',
@@ -788,7 +808,8 @@ class RoleTest extends TestCase
                     'test.custom3',
                 ],
                 'metadata' => [],
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('roles', [
             $role->getKeyName() => $role->getKey(),
@@ -827,7 +848,8 @@ class RoleTest extends TestCase
                 'deletable' => true,
                 'permissions' => [],
                 'metadata' => [],
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('roles', [
             $role->getKeyName() => $role->getKey(),
@@ -860,7 +882,8 @@ class RoleTest extends TestCase
                 'deletable' => true,
                 'permissions' => [],
                 'metadata' => [],
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('roles', [
             $role->getKeyName() => $role->getKey(),
@@ -893,7 +916,8 @@ class RoleTest extends TestCase
                 'deletable' => true,
                 'permissions' => [],
                 'metadata' => [],
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('roles', [
             $role->getKeyName() => $role->getKey(),

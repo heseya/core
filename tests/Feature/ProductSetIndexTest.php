@@ -93,7 +93,8 @@ class ProductSetIndexTest extends TestCase
                     'parent_id' => $this->childSet->parent_id,
                     'children_ids' => [],
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     /**
@@ -287,7 +288,7 @@ class ProductSetIndexTest extends TestCase
                     ],
                 ],
             ],
-        ]);
+            ]);
     }
 
     /**
@@ -349,6 +350,6 @@ class ProductSetIndexTest extends TestCase
                     'children' => [],
                 ],
             ],
-        ]);
+            ]);
     }
 }

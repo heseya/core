@@ -4,8 +4,8 @@ namespace App\Services\Contracts;
 
 use App\Enums\TokenType;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Tymon\JWTAuth\Contracts\JWTSubject;
-use Tymon\JWTAuth\Payload;
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+use PHPOpenSourceSaver\JWTAuth\Payload;
 
 interface TokenServiceContract
 {

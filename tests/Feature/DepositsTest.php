@@ -55,7 +55,8 @@ class DepositsTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ]]);
+            ],
+            ]);
     }
 
     public function testViewUnauthorized(): void
@@ -78,7 +79,8 @@ class DepositsTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ]]);
+            ],
+            ]);
     }
 
     public function testCreateUnauthorized(): void
@@ -123,7 +125,8 @@ class DepositsTest extends TestCase
             ->assertCreated()
             ->assertJson(['data' => $deposit + [
                 'item_id' => $this->item->getKey(),
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('deposits', ['item_id' => $this->item->getKey()] + $deposit);
 
@@ -144,7 +147,7 @@ class DepositsTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ItemUpdatedQuantity'
+                'ItemUpdatedQuantity',
             ],
             'model_type' => $this->user::class,
             'creator_id' => $this->user->getKey(),
@@ -166,8 +169,9 @@ class DepositsTest extends TestCase
         $response
             ->assertCreated()
             ->assertJson(['data' => $deposit + [
-                    'item_id' => $this->item->getKey(),
-                ]]);
+                'item_id' => $this->item->getKey(),
+            ],
+            ]);
 
         $this->assertDatabaseHas('deposits', ['item_id' => $this->item->getKey()] + $deposit);
 

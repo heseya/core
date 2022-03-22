@@ -6,6 +6,7 @@ use App\Models\Product;
 
 interface ProductServiceContract
 {
+    public function assignItems(Product $product, array|null $itemsIds): Product;
     /**
      * Returns minimum and maximum possible product price in
      * array formatted as such: [minimum, maximum]

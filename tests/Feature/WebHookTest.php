@@ -63,10 +63,12 @@ class WebHookTest extends TestCase
             ->assertOk()
             ->assertJsonStructure(['data' => [
                 0 => $this->expected_structure,
-            ]])
+            ],
+            ])
             ->assertJsonFragment(['data' => [
                 0 => $this->expected,
-            ]]);
+            ],
+            ]);
     }
 
     public function testCreateUnauthorized(): void
@@ -87,7 +89,7 @@ class WebHookTest extends TestCase
             'url' => 'https://www.www.www',
             'secret' => 'secret',
             'events' => [
-                'ProductCreated'
+                'ProductCreated',
             ],
             'with_issuer' => false,
             'with_hidden' => true,
@@ -100,7 +102,7 @@ class WebHookTest extends TestCase
                 'url' => 'https://www.www.www',
                 'secret' => 'secret',
                 'events' => [
-                    'ProductCreated'
+                    'ProductCreated',
                 ],
                 'with_issuer' => false,
                 'with_hidden' => true,
@@ -132,7 +134,7 @@ class WebHookTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'OrderCreated'
+                'OrderCreated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -159,7 +161,7 @@ class WebHookTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'TestEvent'
+                'TestEvent',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -192,7 +194,7 @@ class WebHookTest extends TestCase
 
         $webHook = WebHook::factory()->for($this->$user, 'hasWebHooks')->create([
             'events' => [
-                'OrderCreated'
+                'OrderCreated',
             ],
             'with_issuer' => false,
             'with_hidden' => true,
@@ -244,7 +246,7 @@ class WebHookTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'OrderCreated'
+                'OrderCreated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -270,7 +272,7 @@ class WebHookTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'OrderCreated'
+                'OrderCreated',
             ],
             'model_type' => App::class,
             'creator_id' => $app->getKey(),
@@ -296,7 +298,7 @@ class WebHookTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'OrderCreated'
+                'OrderCreated',
             ],
             'model_type' => $this->user::class,
             'creator_id' => $this->user->getKey(),
@@ -329,7 +331,7 @@ class WebHookTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'OrderCreated'
+                'OrderCreated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -350,7 +352,7 @@ class WebHookTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'OrderCreated'
+                'OrderCreated',
             ],
             'model_type' => App::class,
             'creator_id' => $app->getKey(),
@@ -370,7 +372,7 @@ class WebHookTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'OrderCreated'
+                'OrderCreated',
             ],
             'model_type' => $this->user::class,
             'creator_id' => $this->user->getKey(),

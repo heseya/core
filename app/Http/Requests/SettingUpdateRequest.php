@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Validation\Rule;
 
 class SettingUpdateRequest extends FormRequest
@@ -16,7 +18,7 @@ class SettingUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique('settings')->whereNot('name', $this->setting),
                 Rule::notIn(
-                    collect(config('settings'))
+                    Collection::make(Config::get('settings'))
                         ->except($this->setting)->keys()->toArray(),
                 ),
             ],
