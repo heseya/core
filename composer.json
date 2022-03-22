@@ -43,7 +43,7 @@
         "mbezhanov/faker-provider-collection": "^2.0",
         "mockery/mockery": "^1.4",
         "nunomaduro/collision": "^5.3",
-        "nunomaduro/phpinsights": "^2.0",
+        "nunomaduro/phpinsights": "^2.2",
         "phpunit/phpunit": "^9.5",
         "timacdonald/log-fake": "^1.9"
     },

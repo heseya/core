@@ -81,6 +81,7 @@ class Product extends Model implements AuditableContract
     {
         return $this
             ->belongsToMany(Item::class, 'item_product')
+            ->using(ProductItem::class)
             ->withPivot('quantity');
     }
 
