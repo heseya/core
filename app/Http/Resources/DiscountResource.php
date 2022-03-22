@@ -27,6 +27,6 @@ class DiscountResource extends Resource
             'available' => $this->available,
             'starts_at' => $this->starts_at,
             'expires_at' => $this->expires_at,
-        ], $this->metadataResource('coupons'));
+        ], $this->metadataResource('discounts.show_metadata_private'));
     }
 }

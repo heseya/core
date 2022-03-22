@@ -29,7 +29,7 @@ class SchemaResource extends Resource
             'validation' => $this->validation,
             'options' => OptionResource::collection($this->options),
             'used_schemas' => $this->usedSchemas->map(fn ($schema) => $schema->getKey()),
-        ], $this->metadataResource('schemas'));
+        ], $this->metadataResource('schemas.show_metadata_private'));
     }
 
     public function view(Request $request): array

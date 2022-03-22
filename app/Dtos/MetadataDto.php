@@ -22,9 +22,6 @@ class MetadataDto extends Dto
         );
     }
 
-    /**
-     * @return string
-     */
     public function getName(): string
     {
         return $this->name;
@@ -38,17 +35,11 @@ class MetadataDto extends Dto
         return $this->value;
     }
 
-    /**
-     * @return bool
-     */
     public function isPublic(): bool
     {
         return $this->public;
     }
 
-    /**
-     * @return string
-     */
     public function getValueType(): string
     {
         return $this->value_type;

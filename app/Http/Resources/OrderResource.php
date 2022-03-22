@@ -26,7 +26,7 @@ class OrderResource extends Resource
             'status' => $this->status ? StatusResource::make($this->status) : null,
             'delivery_address' => $this->deliveryAddress ? AddressResource::make($this->deliveryAddress) : null,
             'shipping_method' => $this->shippingMethod ? ShippingMethodResource::make($this->shippingMethod) : null,
-        ], $this->metadataResource('orders'));
+        ], $this->metadataResource('orders.show_metadata_private'));
     }
 
     public function view(Request $request): array

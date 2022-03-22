@@ -10,7 +10,7 @@ class MetadataResource extends Resource
     {
         $resource = [];
 
-        $this->resource->map(function ($metadata) use (&$resource) {
+        $this->resource->map(function ($metadata) use (&$resource): void {
             $resource[$metadata->name] = $metadata->value;
         });
 
