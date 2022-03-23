@@ -34,10 +34,7 @@ Product:
     seo:
       $ref: './../schemas/Seo.yml#SeoStore'
     items:
-      type: array
-      items:
-        type: string
-        example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+      $ref: './../schemas/Items.yml#ItemWithRequiredQuantity'
 
 ProductStore:
   content:
