@@ -36,14 +36,15 @@ class ItemProductTest extends TestCase
             'items' => [
                 [
                     'id' => $this->items->first()->getKey(),
-                    'quantity' => 5,
+                    'required_quantity' => 5,
                 ],
                 [
                     'id' => $this->items->last()->getKey(),
-                    'quantity' => 15,
+                    'required_quantity' => 15,
                 ],
             ],
         ]);
+
         $response
             ->assertCreated()
             ->assertJsonCount(2, 'data.items');
@@ -63,11 +64,11 @@ class ItemProductTest extends TestCase
             'items' => [
                 [
                     'id' => $this->items->first()->getKey(),
-                    'quantity' => 5,
+                    'required_quantity' => 5,
                 ],
                 [
                     'id' => $this->items->last()->getKey(),
-                    'quantity' => 15,
+                    'required_quantity' => 15,
                 ],
             ],
         ]);
@@ -129,7 +130,7 @@ class ItemProductTest extends TestCase
             'items' => [
                 [
                     'id' => $this->items->get(2)->getKey(),
-                    'quantity' => 20,
+                    'required_quantity' => 20,
                 ],
             ],
         ]);

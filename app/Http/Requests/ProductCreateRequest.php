@@ -31,8 +31,8 @@ class ProductCreateRequest extends SeoMetadataRulesRequest
             'sets.*' => ['uuid', 'exists:product_sets,id'],
 
             'items' => ['nullable', 'array', new UniqueIdInRequest()],
-            'items.*.id' => ['uuid'],
-            'items.*.quantity' => ['numeric'],
+            'items.*.id' => ['required_with:items', 'uuid', 'exists:items,id'],
+            'items.*.required_quantity' => ['required_with:items', 'numeric'],
         ]);
     }
 }

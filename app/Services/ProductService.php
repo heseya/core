@@ -18,7 +18,7 @@ class ProductService implements ProductServiceContract
             $items = new Collection($itemsIds);
 
             $items->each(
-                fn ($item) => $product->items()->attach($item['id'], ['quantity' => $item['quantity']])
+                fn ($item) => $product->items()->attach($item['id'], ['quantity' => $item['required_quantity']])
             );
         }
 
