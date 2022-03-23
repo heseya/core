@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\RoleType;
+use App\SearchTypes\MetadataPrivateSearch;
+use App\SearchTypes\MetadataSearch;
 use App\SearchTypes\RoleAssignableSearch;
 use App\SearchTypes\RoleSearch;
 use App\Traits\HasMetadata;
@@ -36,5 +38,7 @@ class Role extends SpatieRole implements AuditableContract
         'description' => Like::class,
         'search' => RoleSearch::class,
         'assignable' => RoleAssignableSearch::class,
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 }

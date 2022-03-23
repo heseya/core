@@ -16,7 +16,7 @@ class ProductSetParentResource extends Resource
             ? $this->childrenPublic
             : $this->children;
 
-        return [
+        return array_merge([
             'id' => $this->getKey(),
             'name' => $this->name,
             'slug' => $this->slug,
@@ -32,11 +32,6 @@ class ProductSetParentResource extends Resource
             'seo' => SeoMetadataResource::make($this->seo),
             'description_html' => $this->description_html,
             'cover' => MediaResource::make($this->media),
-        ];
-    }
-
-    public function view(Request $request): array
-    {
-        return $this->metadataResource('product_sets.show_metadata_private');
+        ], $this->metadataResource('product_sets.show_metadata_private'));
     }
 }

@@ -12,9 +12,12 @@ use Illuminate\Support\Facades\Auth;
 
 class ShippingMethodService implements ShippingMethodServiceContract
 {
-    public function index(?string $country, float $cartValue): Collection
+    public function index(?array $search, ?string $country, float $cartValue): Collection
     {
-        $query = ShippingMethod::query()->orderBy('order');
+        $query = ShippingMethod::query()
+            ->search($search)
+            ->with('metadata')
+            ->orderBy('order');
 
         if (!Auth::user()->can('shipping_methods.show_hidden')) {
             $query->where('public', true);

@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use App\SearchTypes\MetadataPrivateSearch;
+use App\SearchTypes\MetadataSearch;
 use App\Services\Contracts\UrlServiceContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasWebHooks;
+use Heseya\Searchable\Traits\Searchable;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
@@ -26,6 +29,7 @@ class App extends Model implements
     JWTSubject
 {
     use HasFactory,
+        Searchable,
         Authorizable,
         Authenticatable,
         HasPermissions,
@@ -47,6 +51,11 @@ class App extends Model implements
         'author',
         'uninstall_token',
         'role_id',
+    ];
+
+    protected array $searchable = [
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     public function setUrlAttribute(string $url): void

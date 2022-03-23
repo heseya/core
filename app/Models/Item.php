@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\SearchTypes\ItemSearch;
+use App\SearchTypes\MetadataPrivateSearch;
+use App\SearchTypes\MetadataSearch;
 use App\SearchTypes\WhereCreatedBefore;
 use App\SearchTypes\WhereSoldOut;
 use App\Traits\HasMetadata;
@@ -36,6 +38,8 @@ class Item extends Model implements AuditableContract
         'search' => ItemSearch::class,
         'sold_out' => WhereSoldOut::class,
         'day' => WhereCreatedBefore::class,
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     protected array $sortable = [

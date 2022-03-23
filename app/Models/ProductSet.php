@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\SearchTypes\MetadataPrivateSearch;
+use App\SearchTypes\MetadataSearch;
 use App\SearchTypes\ProductSetSearch;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
@@ -46,6 +48,8 @@ class ProductSet extends Model
         'slug' => Like::class,
         'search' => ProductSetSearch::class,
         'public',
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     public function getSlugOverrideAttribute(): bool
