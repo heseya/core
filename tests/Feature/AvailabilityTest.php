@@ -306,6 +306,7 @@ class AvailabilityTest extends TestCase
             'email' => 'test@test.test',
             'shipping_method_id' => ShippingMethod::factory()->create()->getKey(),
             'shipping_address' => Address::factory()->create()->toArray(),
+            'billing_address' => Address::factory()->create()->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -368,6 +369,7 @@ class AvailabilityTest extends TestCase
             'email' => 'test@test.test',
             'shipping_method_id' => ShippingMethod::factory()->create()->getKey(),
             'shipping_address' => Address::factory()->create()->toArray(),
+            'billing_address' => Address::factory()->create()->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),

@@ -880,6 +880,7 @@ class OrderCreateTest extends TestCase
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
+            'billing_address' => Address::factory()->create(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -890,6 +891,7 @@ class OrderCreateTest extends TestCase
                 ],
             ],
         ]);
+
 
         $response->assertCreated();
 
@@ -938,6 +940,7 @@ class OrderCreateTest extends TestCase
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
             'shipping_address' => $this->address,
+            'billing_address' => Address::factory()->create(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -995,6 +998,7 @@ class OrderCreateTest extends TestCase
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
             'shipping_address' => $this->address,
+            'billing_address' => Address::factory()->create(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -1052,6 +1056,7 @@ class OrderCreateTest extends TestCase
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
             'shipping_place' => 'Testowy numer domu w testowym mieście',
+            'billing_address' => Address::factory()->create(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -1108,6 +1113,7 @@ class OrderCreateTest extends TestCase
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
+            'billing_address' => Address::factory()->create(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -1156,6 +1162,7 @@ class OrderCreateTest extends TestCase
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
+            'billing_address' => Address::factory()->create(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),

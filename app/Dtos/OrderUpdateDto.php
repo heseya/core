@@ -32,10 +32,10 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
         ?float $shippingPrice,
         ?string $statusId,
         ?string $shippingMethodId,
+        ?AddressDto $billingAddress,
         ?AddressDto $shippingAddress,
         ?bool $invoiceRequested,
         string|AddressDto|null $shippingPlace,
-        ?AddressDto $billingAddress
     ) {
         $this->code = $code;
         $this->email = $email;
@@ -115,7 +115,7 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
             $billingAddress,
             $shippingAddress,
             $request->input('invoice_requested'),
-            $shippingPlace ?? null
+            $shippingPlace ?? null,
         );
     }
 

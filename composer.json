@@ -37,7 +37,7 @@
         "mattiasgeniar/phpunit-query-count-assertions": "^1.1",
         "mockery/mockery": "^1.5",
         "nunomaduro/collision": "^6.1",
-        "nunomaduro/phpinsights": "dev-master#fb676aa",
+        "nunomaduro/phpinsights": "^2.2",
         "phpunit/phpunit": "^9.5",
         "barryvdh/laravel-ide-helper": "^2.12"
     },
