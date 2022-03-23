@@ -130,7 +130,7 @@ class OrderController extends Controller
             'shipping_method_id' => $shippingMethod->getKey(),
             'shipping_price' => 0.0,
             'status_id' => Status::select('id')->orderBy('order')->first()->getKey(),
-            'billing_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
+            'billing_address_id' => isset($billingAddress) ? $billingAddress->getKey() : null,
             'shipping_address_id' => isset($shippingAddress) ? $shippingAddress->getKey() : null,
             'user_id' => Auth::user()->getKey(),
             'user_type' => Auth::user()::class,
