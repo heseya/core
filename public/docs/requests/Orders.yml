@@ -37,13 +37,18 @@ OrderCreate:
                       example: 'HE + YA'
                   type: object
               type: object
-          delivery_address:
+          shipping_address:
             $ref: './../schemas/Addresses.yml#/Address'
           billing_address:
             $ref: './../schemas/Addresses.yml#/Address'
           discounts:
             type: array
             items: [ ]
+          invoice_requested:
+            type: boolean
+          shipping_place:
+            type: string
+            example: 'Test 12 11-111 Test'
         type: object
 
 OrderUpdate:
@@ -57,7 +62,7 @@ OrderUpdate:
           comment:
             type: string
             example: 'asap plz'
-          delivery_address:
+          shipping_address:
             $ref: './../schemas/Addresses.yml#/Address'
           billing_address:
             $ref: './../schemas/Addresses.yml#/Address'

@@ -11,6 +11,7 @@ use App\Exceptions\OrderException;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
 use App\Models\Order;
+use App\Models\ShippingMethod;
 use App\Models\PackageTemplate;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\OrderServiceContract;
@@ -53,10 +54,10 @@ class OrderService implements OrderServiceContract
         DB::beginTransaction();
 
         try {
-            $deliveryAddress = $this->modifyAddress(
+            $shippingAddress = $this->modifyAddress(
                 $order,
-                'delivery_address_id',
-                $dto->getDeliveryAddress(),
+                'shipping_address_id',
+                $dto->getShippingAddress(),
             );
 
             $invoiceAddress = $this->modifyAddress(
@@ -65,15 +66,26 @@ class OrderService implements OrderServiceContract
                 $dto->getBillingAddress(),
             );
 
+            $shippingPlace = $dto->getShippingPlace() instanceof AddressDto ?
+                Address::updateOrCreate(
+                    ['id' => $order->shipping_place],
+                    $dto->getShippingPlace()->toArray()
+                )->getKey() :
+                $dto->getShippingPlace();
+
             $order->update([
                 'email' => $dto->getEmail() ?? $order->email,
                 'comment' => $dto->getComment() ?? $order->comment,
-                'delivery_address_id' => $deliveryAddress === null ?
-                    (is_object($dto->getDeliveryAddress()) ? null : $order->delivery_address_id) :
-                    $deliveryAddress->getKey(),
+                'shipping_address_id' => $shippingAddress === null ?
+                    (is_object($dto->getShippingAddress()) ? null : $order->shipping_address_id) :
+                    $shippingAddress->getKey(),
                 'billing_address_id' => $invoiceAddress === null ?
                     (is_object($dto->getBillingAddress()) ? null : $order->billing_address_id) :
                     $invoiceAddress->getKey(),
+                'invoice_requested' => $dto->getInvoiceRequested(),
+                'shipping_place' => $shippingPlace ?? $order->shipping_place,
+                'shipping_type' => ShippingMethod::find($dto->getShippingMethodId())->shipping_type ??
+                    $order->shipping_type,
             ]);
 
             DB::commit();

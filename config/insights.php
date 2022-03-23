@@ -9,6 +9,7 @@ use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenPrivateMethods;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenTraits;
 use NunoMaduro\PhpInsights\Domain\Metrics\Code\Code;
 use NunoMaduro\PhpInsights\Domain\Metrics\Style\Style;
+use NunoMaduro\PhpInsights\Domain\Sniffs\ForbiddenSetterSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\CodeAnalysis\UselessOverridingMethodSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Commenting\TodoSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineEndingsSniff;
@@ -80,6 +81,8 @@ return [
         LineEndingsSniff::class,
         ComposerMustBeValid::class,
         TodoSniff::class,
+        ForbiddenSetterSniff::class,
+
 
         // replaced with own
         SpaceAfterNotSniff::class,

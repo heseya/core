@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\ShippingAddressRequired;
+use App\Rules\ShippingPlaceValidation;
 use Illuminate\Foundation\Http\FormRequest;
 
 class OrderUpdateRequest extends FormRequest
@@ -12,14 +14,14 @@ class OrderUpdateRequest extends FormRequest
             'email' => ['nullable', 'email'],
             'comment' => ['nullable', 'string', 'max:1000'],
 
-            'delivery_address' => ['nullable', 'array'],
-            'delivery_address.name' => ['required_with_all:delivery_address', 'string', 'max:255'],
-            'delivery_address.phone' => ['required_with_all:delivery_address', 'string', 'max:20'],
-            'delivery_address.address' => ['required_with_all:delivery_address', 'string', 'max:255'],
-            'delivery_address.zip' => ['required_with_all:delivery_address', 'string', 'max:16'],
-            'delivery_address.city' => ['required_with_all:delivery_address', 'string', 'max:255'],
-            'delivery_address.country' => ['required_with_all:delivery_address', 'string', 'size:2'],
-            'delivery_address.vat' => ['nullable', 'string', 'max:15'],
+            'shipping_address' => ['nullable', 'array', new ShippingAddressRequired()],
+            'shipping_address.name' => ['required_with_all:shipping_address', 'string', 'max:255'],
+            'shipping_address.phone' => ['required_with_all:shipping_address', 'string', 'max:20'],
+            'shipping_address.address' => ['required_with_all:shipping_address', 'string', 'max:255'],
+            'shipping_address.zip' => ['required_with_all:shipping_address', 'string', 'max:16'],
+            'shipping_address.city' => ['required_with_all:shipping_address', 'string', 'max:255'],
+            'shipping_address.country' => ['required_with_all:shipping_address', 'string', 'size:2'],
+            'shipping_address.vat' => ['nullable', 'string', 'max:15'],
 
             'billing_address' => ['nullable', 'array'],
             'billing_address.name' => ['required_with_all:billing_address', 'string', 'max:255'],
@@ -31,6 +33,9 @@ class OrderUpdateRequest extends FormRequest
             'billing_address.vat' => ['nullable', 'string', 'max:15'],
 
             'validation' => ['boolean'],
+            'invoice_requested' => ['boolean'],
+            'shipping_place' => ['nullable', new ShippingPlaceValidation()],
+
         ];
     }
 }

@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Rules\DiscountAvailable;
+use App\Rules\ShippingAddressRequired;
+use App\Rules\ShippingPlaceValidation;
 
 class OrderCreateRequest extends OrderItemsRequest
 {
@@ -13,13 +15,14 @@ class OrderCreateRequest extends OrderItemsRequest
             'comment' => ['nullable', 'string', 'max:1000'],
             'shipping_method_id' => ['required', 'uuid', 'exists:shipping_methods,id'],
 
-            'delivery_address.name' => ['required', 'string', 'max:255'],
-            'delivery_address.phone' => ['required', 'string', 'max:20'],
-            'delivery_address.address' => ['required', 'string', 'max:255'],
-            'delivery_address.zip' => ['required', 'string', 'max:16'],
-            'delivery_address.city' => ['required', 'string', 'max:255'],
-            'delivery_address.country' => ['required', 'string', 'size:2'],
-            'delivery_address.vat' => ['nullable', 'string', 'max:15'],
+            'shipping_address' => ['nullable', 'array', new ShippingAddressRequired()],
+            'shipping_address.name' => ['required_with_all:shipping_address', 'string', 'max:255'],
+            'shipping_address.phone' => ['required_with_all:shipping_address', 'string', 'max:20'],
+            'shipping_address.address' => ['required_with_all:shipping_address', 'string', 'max:255'],
+            'shipping_address.zip' => ['required_with_all:shipping_address', 'string', 'max:16'],
+            'shipping_address.city' => ['required_with_all:shipping_address', 'string', 'max:255'],
+            'shipping_address.country' => ['required_with_all:shipping_address', 'string', 'size:2'],
+            'shipping_address.vat' => ['nullable', 'string', 'max:15'],
 
             'billing_address.name' => ['required', 'string', 'max:255'],
             'billing_address.phone' => ['required', 'string', 'max:20'],
@@ -33,6 +36,8 @@ class OrderCreateRequest extends OrderItemsRequest
             'discounts.*' => ['string', 'max:64', 'exists:discounts,code', new DiscountAvailable()],
 
             'validation' => ['boolean'],
+            'invoice_requested' => ['boolean'],
+            'shipping_place' => ['nullable', new ShippingPlaceValidation()],
         ];
     }
 }

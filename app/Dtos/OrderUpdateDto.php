@@ -4,6 +4,8 @@ namespace App\Dtos;
 
 use App\Dtos\Contracts\DtoContract;
 use App\Dtos\Contracts\InstantiateFromRequest;
+use App\Enums\ShippingType;
+use App\Models\ShippingMethod;
 use Illuminate\Http\Request;
 
 class OrderUpdateDto implements DtoContract, InstantiateFromRequest
@@ -16,7 +18,9 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
     private ?float $shippingPrice;
     private ?string $statusId;
     private ?string $shippingMethodId;
-    private ?AddressDto $deliveryAddress;
+    private ?AddressDto $shippingAddress;
+    private ?bool $invoiceRequested;
+    private string|AddressDto|null $shippingPlace;
     private ?AddressDto $billingAddress;
 
     public function __construct(
@@ -28,7 +32,9 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
         ?float $shippingPrice,
         ?string $statusId,
         ?string $shippingMethodId,
-        ?AddressDto $deliveryAddress,
+        ?AddressDto $shippingAddress,
+        ?bool $invoiceRequested,
+        string|AddressDto|null $shippingPlace,
         ?AddressDto $billingAddress
     ) {
         $this->code = $code;
@@ -39,8 +45,10 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
         $this->shippingPrice = $shippingPrice;
         $this->statusId = $statusId;
         $this->shippingMethodId = $shippingMethodId;
-        $this->deliveryAddress = $deliveryAddress;
         $this->billingAddress = $billingAddress;
+        $this->shippingAddress = $shippingAddress;
+        $this->invoiceRequested = $invoiceRequested;
+        $this->shippingPlace = $shippingPlace;
     }
 
     public function toArray(): array
@@ -54,22 +62,24 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
             'shipping_price' => $this->getShippingPrice(),
             'status_id' => $this->getStatusId(),
             'shipping_method_id' => $this->getShippingMethodId(),
-            'delivery_address' => $this->getDeliveryAddress(),
+            'shipping_address' => $this->getShippingAddress(),
+            'invoice_request' => $this->getInvoiceRequested(),
+            'shipping_place' => $this->getShippingPlace(),
             'billing_address' => $this->getBillingAddress(),
         ];
     }
 
     public static function instantiateFromRequest(Request $request): self
     {
-        $deliveryAddress = $request->exists('delivery_address') ?
+        $shippingAddress = $request->exists('shipping_address') ?
             new AddressDto(
-                $request->input('delivery_address.name'),
-                $request->input('delivery_address.phone'),
-                $request->input('delivery_address.address'),
-                $request->input('delivery_address.vat'),
-                $request->input('delivery_address.zip'),
-                $request->input('delivery_address.city'),
-                $request->input('delivery_address.country'),
+                $request->input('shipping_address.name'),
+                $request->input('shipping_address.phone'),
+                $request->input('shipping_address.address'),
+                $request->input('shipping_address.vat'),
+                $request->input('shipping_address.zip'),
+                $request->input('shipping_address.city'),
+                $request->input('shipping_address.country'),
             ) : null;
 
         $billingAddress = $request->exists('billing_address') ?
@@ -83,6 +93,16 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
                 $request->input('billing_address.country'),
             ) : null;
 
+        $shippingMethod = ShippingMethod::find($request->input('shipping_method_id'));
+
+        $shippingPlace = $shippingMethod !== null ?
+            match ($shippingMethod->shipping_type) {
+                ShippingType::ADDRESS, ShippingType::POINT => $shippingAddress,
+                ShippingType::POINT_EXTERNAL => $request->input('shipping_place'),
+                default => null,
+            }
+        : null;
+
         return new self(
             $request->input('code'),
             $request->input('email'),
@@ -91,9 +111,11 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
             $request->input('shipping_number'),
             $request->input('shipping_price'),
             $request->input('status_id'),
-            $request->input('shipping_method'),
-            $deliveryAddress,
+            $request->input('shipping_method_id'),
             $billingAddress,
+            $shippingAddress,
+            $request->input('invoice_requested'),
+            $shippingPlace ?? null
         );
     }
 
@@ -137,13 +159,23 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
         return $this->shippingMethodId;
     }
 
-    public function getDeliveryAddress(): ?AddressDto
+    public function getShippingAddress(): ?AddressDto
     {
-        return $this->deliveryAddress;
+        return $this->shippingAddress;
     }
 
     public function getBillingAddress(): ?AddressDto
     {
         return $this->billingAddress;
+    }
+
+    public function getInvoiceRequested(): ?bool
+    {
+        return $this->invoiceRequested;
+    }
+
+    public function getShippingPlace(): string|AddressDto|null
+    {
+        return $this->shippingPlace;
     }
 }

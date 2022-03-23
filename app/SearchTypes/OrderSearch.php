@@ -24,7 +24,7 @@ class OrderSearch extends Search
                         ->where('id', 'LIKE', '%' . $this->value . '%')
                         ->orWhere('name', 'LIKE', '%' . $this->value . '%');
                 })
-                ->orWhereHas('deliveryAddress', function (Builder $query): void {
+                ->orWhereHas('shippingAddress', function (Builder $query): void {
                     $query
                         ->where('id', 'LIKE', '%' . $this->value . '%')
                         ->orWhere('name', 'LIKE', '%' . $this->value . '%')
