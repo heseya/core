@@ -14,6 +14,8 @@ class UserIndexRequest extends FormRequest
             'email' => ['nullable', 'string'],
             'sort' => ['nullable', 'string'],
             'pagination_limit' => ['nullable', 'integer', 'min:1'],
+            'metadata' => ['nullable', 'array'],
+            'metadata_private' => ['nullable', 'array'],
         ];
     }
 }

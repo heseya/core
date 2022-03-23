@@ -17,6 +17,8 @@ class ItemIndexRequest extends FormRequest
             'sort' => ['nullable', 'string', 'max:255'],
             'sold_out' => ['nullable', 'boolean', 'prohibited_unless:day,null'],
             'day' => ['nullable', 'date', 'before_or_equal:now'],
+            'metadata' => ['nullable', 'array'],
+            'metadata_private' => ['nullable', 'array'],
         ];
     }
 

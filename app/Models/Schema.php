@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\SchemaType;
 use App\Rules\OptionAvailable;
+use App\SearchTypes\MetadataPrivateSearch;
+use App\SearchTypes\MetadataSearch;
 use App\SearchTypes\SchemaSearch;
 use App\Traits\HasMetadata;
 use BenSampo\Enum\Exceptions\InvalidEnumKeyException;
@@ -55,6 +57,8 @@ class Schema extends Model
         'name' => Like::class,
         'hidden',
         'required',
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     protected array $sortable = [

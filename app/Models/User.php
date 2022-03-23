@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\SearchTypes\MetadataPrivateSearch;
+use App\SearchTypes\MetadataSearch;
 use App\SearchTypes\UserSearch;
 use App\SearchTypes\WhereInIds;
 use App\Traits\HasMetadata;
@@ -72,6 +74,8 @@ class User extends Model implements
         'email' => Like::class,
         'search' => UserSearch::class,
         'ids' => WhereInIds::class,
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     protected array $sortable = [

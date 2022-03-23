@@ -127,6 +127,7 @@ class ProductTest extends TestCase
                 'required' => true,
                 'available' => true,
                 'price' => 0,
+                'metadata' => [],
                 'options' => [
                     [
                         'name' => 'XL',
@@ -355,6 +356,7 @@ class ProductTest extends TestCase
                     'parent_id' => $set1->parent_id,
                     'children_ids' => [],
                     'cover' => null,
+                    'metadata' => [],
                 ],
                 [
                     'id' => $set2->getKey(),
@@ -368,6 +370,7 @@ class ProductTest extends TestCase
                     'parent_id' => $set2->parent_id,
                     'children_ids' => [],
                     'cover' => null,
+                    'metadata' => [],
                 ],
             ],
             ]);
@@ -421,6 +424,7 @@ class ProductTest extends TestCase
                     'hide_on_index' => $set1->hide_on_index,
                     'parent_id' => $set1->parent_id,
                     'children_ids' => [],
+                    'metadata' => [],
                     'cover' => [
                         'id' => $media1->getKey(),
                         'type' => Str::lower($media1->type->key),
@@ -441,6 +445,7 @@ class ProductTest extends TestCase
                     'hide_on_index' => $set2->hide_on_index,
                     'parent_id' => $set2->parent_id,
                     'children_ids' => [],
+                    'metadata' => [],
                     'cover' => [
                         'id' => $media2->getKey(),
                         'type' => Str::lower($media2->type->key),

@@ -2,18 +2,21 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 class ProductSetChildrenResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
         $children = Gate::denies('product_sets.show_hidden')
             ? $this->childrenPublic
             : $this->children;
 
-        return [
+        return array_merge([
             'id' => $this->getKey(),
             'name' => $this->name,
             'slug' => $this->slug,
@@ -25,6 +28,6 @@ class ProductSetChildrenResource extends Resource
             'parent_id' => $this->parent_id,
             'children' => ProductSetChildrenResource::collection($children),
             'cover' => MediaResource::make($this->media),
-        ];
+        ], $this->metadataResource('product_sets.show_metadata_private'));
     }
 }

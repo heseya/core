@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\DiscountType;
 use App\SearchTypes\DiscountSearch;
+use App\SearchTypes\MetadataPrivateSearch;
+use App\SearchTypes\MetadataSearch;
 use App\Traits\HasMetadata;
 use Carbon\Carbon;
 use Heseya\Searchable\Searches\Like;
@@ -45,6 +47,8 @@ class Discount extends Model implements AuditableContract
         'description' => Like::class,
         'code' => Like::class,
         'search' => DiscountSearch::class,
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     public function getUsesAttribute(): int

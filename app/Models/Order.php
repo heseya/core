@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Audits\Redactors\AddressRedactor;
 use App\Audits\Redactors\ShippingMethodRedactor;
 use App\Audits\Redactors\StatusRedactor;
+use App\SearchTypes\MetadataPrivateSearch;
+use App\SearchTypes\MetadataSearch;
 use App\SearchTypes\OrderSearch;
 use App\SearchTypes\WhereCreatedAfter;
 use App\SearchTypes\WhereCreatedBefore;
@@ -81,6 +83,8 @@ class Order extends Model implements AuditableContract
         'paid',
         'from' => WhereCreatedAfter::class,
         'to' => WhereCreatedBefore::class,
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     protected array $sortable = [
