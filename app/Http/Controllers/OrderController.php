@@ -295,7 +295,7 @@ class OrderController extends Controller
 
     public function deleteDocument(Order $order, OrderDocument $document): JsonResponse
     {
-        $document = $this->documentService->removeDocument($order ,$document->media_id);
+        $document = $this->documentService->removeDocument($order, $document->media_id);
         RemoveOrderDocument::dispatch($document);
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);

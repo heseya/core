@@ -31,7 +31,7 @@ class DocumentService implements DocumentServiceContract
     {
         $document = OrderDocument::where([
             ['media_id', $mediaId],
-            ['order_id', $order->getKey()]
+            ['order_id', $order->getKey()],
         ])->first();
 
         $this->mediaService->destroy(Media::find($document->media_id));
