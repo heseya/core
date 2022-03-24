@@ -21,7 +21,6 @@ class OrderDocumentTest extends TestCase
     {
         parent::setUp();
 
-        $this->user->givePermissionTo('orders.edit');
 
         Event::fake(AddOrderDocument::class);
         Http::fake(['*' => Http::response([0 => ['path' => 'image.jpeg']])]);
@@ -30,9 +29,14 @@ class OrderDocumentTest extends TestCase
         $this->file = UploadedFile::fake()->image('image.jpeg');
     }
 
-    public function testStoreDocument()
+    /**
+     * @dataProvider authProvider
+     */
+    public function testStoreDocument($user)
     {
-        $response = $this->actingAs($this->user)->postJson('orders/id:' . $this->order->getKey() . '/docs', [
+        $this->$user->givePermissionTo('orders.edit');
+
+        $response = $this->actingAs($this->$user)->postJson('orders/id:' . $this->order->getKey() . '/docs', [
             'file' => $this->file,
             'type' => OrderDocumentType::OTHER,
             'name' => 'test',
@@ -50,14 +54,19 @@ class OrderDocumentTest extends TestCase
         Event::assertDispatched(AddOrderDocument::class);
     }
 
-    public function testDeleteDocument()
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteDocument($user)
     {
-        $this->actingAs($this->user)->postJson('orders/id:' . $this->order->getKey() . '/docs', [
+        $this->$user->givePermissionTo('orders.edit');
+
+        $this->actingAs($this->$user)->postJson('orders/id:' . $this->order->getKey() . '/docs', [
             'file' => $this->file,
             'type' => OrderDocumentType::OTHER
         ]);
 
-        $response = $this->actingAs($this->user)
+        $response = $this->actingAs($this->$user)
             ->deleteJson(
                 'orders/id:' . $this->order->getKey() . '/docs/id:' . $this->order->documents()->latest()->first()->pivot->id
             );

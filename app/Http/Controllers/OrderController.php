@@ -287,18 +287,16 @@ class OrderController extends Controller
 
     public function storeDocument(OrderDocumentRequest $request, Order $order): JsonResource
     {
-        $order = $this->documentService->storeDocument($order, $request->only('name', 'type', 'file'));
-        AddOrderDocument::dispatch($order->documents()->latest()->first()->pivot);
+        $document = $this->documentService->storeDocument($order, $request->only('name', 'type', 'file'));
+        AddOrderDocument::dispatch($document);
 
         return OrderDocumentResource::collection($order->documents);
     }
 
     public function deleteDocument(Order $order, OrderDocument $document): JsonResponse
     {
-        $orderDocument = $order->documents()->latest()->first()->pivot;
-        $this->documentService->removeDocument($document->media_id);
-
-        RemoveOrderDocument::dispatch($orderDocument);
+        $document = $this->documentService->removeDocument($order ,$document->media_id);
+        RemoveOrderDocument::dispatch($document);
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
