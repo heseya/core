@@ -28,6 +28,7 @@ Route::prefix('orders')->group(function (): void {
         ->middleware('can:orders.edit');
     Route::delete('id:{order:id}/docs/id:{document}', [OrderController::class, 'deleteDocument'])
         ->middleware('can:orders.edit');
+    Route::post('id:{order:id}/docs/send', [OrderController::class, 'sendDocuments']);
 
     Route::post('{order:code}/pay/offline', [PaymentController::class, 'offlinePayment'])
         ->middleware('can:payments.offline');

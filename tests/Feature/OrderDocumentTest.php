@@ -7,6 +7,7 @@ use App\Events\AddOrderDocument;
 use App\Models\Media;
 use App\Models\Order;
 use App\Models\OrderDocument;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
@@ -75,5 +76,55 @@ class OrderDocumentTest extends TestCase
 
         $this->assertDatabaseCount('media', 0);
         $this->assertDatabaseCount('order_document', 0);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSendDocuments($user)
+    {
+        $mediaOne = Media::factory()->create();
+        $mediaTwo = Media::factory()->create();
+        $this->order->documents()->attach($mediaOne, ['type' => OrderDocumentType::OTHER, 'name' => 'test']);
+        $this->order->documents()->attach($mediaTwo, ['type' => OrderDocumentType::OTHER, 'name' => 'test']);
+        $response = $this->actingAs($this->$user)->postJson('orders/id:' . $this->order->getKey() . '/docs/send', [
+            'uuid' =>
+                [
+                    $this->order->documents->first()->pivot->id,
+                    $this->order->documents->last()->pivot->id,
+                ],
+        ]);
+
+        $response->assertStatus(JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSendOtherOrderDocument($user)
+    {
+        $order = Order::factory()->create();
+
+        $mediaOne = Media::factory()->create();
+        $mediaTwo = Media::factory()->create();
+
+        $this->order->documents()->attach($mediaOne, ['type' => OrderDocumentType::OTHER, 'name' => 'test']);
+        $order->documents()->attach($mediaTwo, ['type' => OrderDocumentType::OTHER, 'name' => 'test']);
+
+        $wrongDocId = $order->documents->last()->pivot->id;
+
+        $response = $this->actingAs($this->$user)->postJson('orders/id:' . $this->order->getKey() . '/docs/send', [
+            'uuid' =>
+                [
+                    $this->order->documents->first()->pivot->id,
+                    $wrongDocId,
+                ],
+        ]);
+
+        $response
+            ->assertJsonFragment([
+                'message' => 'Document with id '. $wrongDocId . ' doesn\'t belong to this order.'
+            ])
+            ->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
     }
 }

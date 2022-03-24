@@ -17,6 +17,7 @@ use App\Http\Requests\OrderIndexRequest;
 use App\Http\Requests\OrderItemsRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
+use App\Http\Requests\SendDocumentRequest;
 use App\Http\Resources\OrderDocumentResource;
 use App\Http\Resources\OrderPublicResource;
 use App\Http\Resources\OrderResource;
@@ -298,6 +299,11 @@ class OrderController extends Controller
         $document = $this->documentService->removeDocument($order, $document->media_id);
         RemoveOrderDocument::dispatch($document);
 
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    public function sendDocuments(SendDocumentRequest $request, Order $order): JsonResponse
+    {
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }
