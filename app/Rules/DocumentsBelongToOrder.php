@@ -2,7 +2,6 @@
 
 namespace App\Rules;
 
-use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\Rule;
 
 class DocumentsBelongToOrder implements Rule
