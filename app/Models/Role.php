@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
+use App\Criteria\RoleAssignableSearch;
+use App\Criteria\RoleSearch;
 use App\Enums\RoleType;
-use App\SearchTypes\RoleAssignableSearch;
-use App\SearchTypes\RoleSearch;
 use App\Traits\HasUuid;
-use Heseya\Searchable\Searches\Like;
-use Heseya\Searchable\Traits\Searchable;
+use Heseya\Searchable\Criteria\Like;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
@@ -18,7 +18,7 @@ use Spatie\Permission\Models\Role as SpatieRole;
  */
 class Role extends SpatieRole implements AuditableContract
 {
-    use Searchable, HasUuid, HasFactory, Auditable;
+    use HasCriteria, HasUuid, HasFactory, Auditable;
 
     protected $fillable = [
         'name',
@@ -30,7 +30,7 @@ class Role extends SpatieRole implements AuditableContract
         'type' => RoleType::class,
     ];
 
-    protected array $searchable = [
+    protected array $criteria = [
         'name' => Like::class,
         'description' => Like::class,
         'search' => RoleSearch::class,

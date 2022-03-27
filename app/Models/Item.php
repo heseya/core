@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-use App\SearchTypes\ItemSearch;
-use App\SearchTypes\WhereCreatedBefore;
-use App\SearchTypes\WhereSoldOut;
-use Heseya\Searchable\Searches\Like;
-use Heseya\Searchable\Traits\Searchable;
-use Heseya\Sortable\Sortable;
+use App\Criteria\ItemSearch;
+use App\Criteria\WhereCreatedBefore;
+use App\Criteria\WhereSoldOut;
+use App\Traits\Sortable;
+use Heseya\Searchable\Criteria\Like;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -21,7 +21,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Item extends Model implements AuditableContract
 {
-    use SoftDeletes, HasFactory, Searchable, Sortable, Auditable;
+    use SoftDeletes, HasFactory, HasCriteria, Sortable, Auditable;
 
     protected $fillable = [
         'name',
@@ -29,7 +29,7 @@ class Item extends Model implements AuditableContract
         'quantity',
     ];
 
-    protected array $searchable = [
+    protected array $criteria = [
         'name' => Like::class,
         'sku' => Like::class,
         'search' => ItemSearch::class,

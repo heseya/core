@@ -18,7 +18,7 @@ class RoleService implements RoleServiceContract
 {
     public function search(RoleSearchDto $searchDto, int $limit): LengthAwarePaginator
     {
-        return Role::search($searchDto->toArray())->paginate($limit);
+        return Role::searchByCriteria($searchDto->toArray())->paginate($limit);
     }
 
     public function create(RoleCreateDto $dto): Role

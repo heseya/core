@@ -1,11 +1,11 @@
 <?php
 
-namespace App\SearchTypes;
+namespace App\Criteria;
 
-use Heseya\Searchable\Searches\Search;
+use Heseya\Searchable\Criteria\Criterion;
 use Illuminate\Database\Eloquent\Builder;
 
-class WhereSoldOut extends Search
+class WhereSoldOut extends Criterion
 {
     public function query(Builder $query): Builder
     {

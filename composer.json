@@ -11,16 +11,15 @@
         "guzzlehttp/guzzle": "^7.4",
         "heseya/2fa": "^2.0",
         "heseya/dto": "^1.0",
-        "heseya/laravel-searchable": "^1.0",
+        "heseya/laravel-searchable": "^2.0",
         "heseya/pagination": "*",
         "heseya/resource": "*",
-        "heseya/sortable": "*",
+        "bvlinsky/explorer": "*",
         "laravel/framework": "^9.4",
+        "laravel/scout": "^9.4.5",
         "league/html-to-markdown": "^5.1",
         "league/omnipay": "^3.2",
         "omnipay/common": "^3.2",
-        "laravel/scout": "^9.4.5",
-        "jeroen-g/explorer": "dev-master",
         "omnipay/paypal": "^3.0",
         "owen-it/laravel-auditing": "^12.2",
         "php-http/curl-client": "^2.2",
@@ -112,10 +111,6 @@
         {
             "type": "path",
             "url": "./heseya/pagination"
-        },
-        {
-            "type": "path",
-            "url": "./heseya/sortable"
         }
     ]
 }

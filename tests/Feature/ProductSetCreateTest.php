@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Enums\MediaType;
 use App\Events\ProductSetCreated;
 use App\Listeners\WebHookEventListener;
-use App\Enums\MediaType;
 use App\Models\Attribute;
 use App\Models\Media;
 use App\Models\ProductSet;

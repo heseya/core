@@ -11,6 +11,16 @@ use Illuminate\Support\Collection;
 
 class ProductService implements ProductServiceContract
 {
+    public function updateMinMaxPrices(Product $product): void
+    {
+        [$priceMin, $priceMax] = $this->getMinMaxPrices($product);
+        $product->price_min = $priceMin;
+        $product->price_max = $priceMax;
+
+        // Use save instead of update to avoid issues with Scout.
+        $product->save();
+    }
+
     public function assignItems(Product $product, array|null $itemsIds): Product
     {
         if ($itemsIds !== null) {
@@ -26,24 +36,18 @@ class ProductService implements ProductServiceContract
 
     public function getMinMaxPrices(Product $product): array
     {
-        $schemaMinMax = $this->getSchemasPrices(
+        // Refresh to prevent bad data from Scout cache.
+        $product->refresh();
+
+        [$schemaMin, $schemaMax] = $this->getSchemasPrices(
             clone $product->schemas,
             clone $product->schemas,
         );
 
         return [
-            $product->price + $schemaMinMax[0],
-            $product->price + $schemaMinMax[1],
+            $product->price + $schemaMin,
+            $product->price + $schemaMax,
         ];
-    }
-
-    public function updateMinMaxPrices(Product $product): void
-    {
-        $productMinMaxPrices = $this->getMinMaxPrices($product);
-        $product->update([
-            'price_min' => $productMinMaxPrices[0],
-            'price_max' => $productMinMaxPrices[1],
-        ]);
     }
 
     private function getSchemasPrices(

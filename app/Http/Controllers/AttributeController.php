@@ -22,7 +22,7 @@ class AttributeController extends Controller
 
     public function index(AttributeIndexRequest $request): JsonResource
     {
-        $query = Attribute::search($request->validated())
+        $query = Attribute::searchByCriteria($request->validated())
             ->with('options');
 
         return AttributeResource::collection(

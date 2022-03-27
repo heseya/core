@@ -26,7 +26,7 @@ class Pagination
                 throw new StoreException($validator->errors()->first());
             }
 
-            Config::set('pagination.per_page', $request->input(self::LIMIT_NAME));
+            Config::set('pagination.per_page', (int) $request->input(self::LIMIT_NAME));
         }
 
         return $next($request);

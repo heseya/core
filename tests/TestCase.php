@@ -14,11 +14,12 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Tests\Support\ElasticTest;
 use Tests\Traits\JsonQueryCounter;
 
 abstract class TestCase extends BaseTestCase
 {
-    use CreatesApplication, RefreshDatabase, JsonQueryCounter;
+    use CreatesApplication, RefreshDatabase, JsonQueryCounter, ElasticTest;
 
     public User $user;
     public Application $application;
@@ -30,6 +31,8 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
         ini_set('memory_limit', '1024M');
+
+        $this->fakeElastic();
 
         $this->tokenService = App::make(TokenServiceContract::class);
 

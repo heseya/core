@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\ProductSearchDto;
 use App\Dtos\SeoMetadataDto;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
@@ -12,17 +13,14 @@ use App\Http\Requests\ProductShowRequest;
 use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
-use App\Models\ProductSet;
+use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\AttributeServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\ProductServiceContract;
-use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -33,61 +31,17 @@ class ProductController extends Controller
         private MediaServiceContract $mediaService,
         private SchemaServiceContract $schemaService,
         private ProductServiceContract $productService,
-        private ProductSetServiceContract $productSetService,
         private SeoMetadataServiceContract $seoMetadataService,
         private AttributeServiceContract $attributeService,
+        private ProductRepositoryContract $productRepository,
     ) {
     }
 
     public function index(ProductIndexRequest $request): JsonResource
     {
-        $query = Product::search($request->validated());
-
-        $query
-            ->sort($request->input('sort', 'order'))
-            ->with(['media', 'tags', 'schemas', 'sets', 'seo', 'attributes', 'items']);
-
-        if (Gate::denies('products.show_hidden')) {
-            $query->public();
-        }
-
-        if ($request->has('sets')) {
-            $setsFound = ProductSet::whereIn(
-                'slug',
-                $request->input('sets') ?? [],
-            )->with('allChildren')->get();
-
-            $canShowHiddenSets = Gate::allows('product_sets.show_hidden');
-            $relationScope = $canShowHiddenSets ? 'allChildren' : 'allChildrenPublic';
-
-            $setsFlat = $this->productSetService
-                ->flattenSetsTree($setsFound, $relationScope)
-                ->map(fn (ProductSet $set) => $set->slug);
-
-            $query->whereHas('sets', function (Builder $query) use ($setsFlat) {
-                return $query->whereIn(
-                    'slug',
-                    $setsFlat,
-                );
-            });
-        }
-
-        if (
-            Gate::denies('products.show_hidden') &&
-            !$request->hasAny(['sets', 'search', 'name', 'slug', 'public', 'tags'])
-        ) {
-            $query->whereDoesntHave('sets', function (Builder $query) {
-                return $query->where('hide_on_index', true);
-            });
-        }
-
-        $products = $query->paginate(Config::get('pagination.per_page'));
-
-        if ($request->has('available')) {
-            $products = $products->filter(function ($product) use ($request) {
-                return $product->available === $request->boolean('available');
-            });
-        }
+        $products = $this->productRepository->search(
+            ProductSearchDto::instantiateFromRequest($request),
+        );
 
         return ProductResource::collection($products)->full($request->has('full'));
     }
@@ -115,28 +69,6 @@ class ProductController extends Controller
         ProductCreated::dispatch($product);
 
         return ProductResource::make($product);
-    }
-
-    public function productSetup(
-        Product $product,
-        ProductCreateRequest|ProductUpdateRequest $request,
-    ): void {
-        $this->mediaService->sync($product, $request->input('media', []));
-        $product->tags()->sync($request->input('tags', []));
-
-        if ($request->has('schemas')) {
-            $this->schemaService->sync($product, $request->input('schemas'));
-        }
-
-        $this->productService->updateMinMaxPrices($product);
-
-        if ($request->has('sets')) {
-            $product->sets()->sync($request->input('sets'));
-        }
-
-        if ($request->has('attributes')) {
-            $this->attributeService->sync($product, $request->input('attributes'));
-        }
     }
 
     public function update(ProductUpdateRequest $request, Product $product): JsonResource
@@ -169,5 +101,33 @@ class ProductController extends Controller
         }
 
         return Response::json(null, 204);
+    }
+
+    /**
+     * TODO: move this to service
+     *
+     * @param Product $product
+     * @param ProductCreateRequest|ProductUpdateRequest $request
+     */
+    private function productSetup(
+        Product $product,
+        ProductCreateRequest|ProductUpdateRequest $request,
+    ): void {
+        $this->mediaService->sync($product, $request->input('media', []));
+        $product->tags()->sync($request->input('tags', []));
+
+        if ($request->has('schemas')) {
+            $this->schemaService->sync($product, $request->input('schemas'));
+        }
+
+        $this->productService->updateMinMaxPrices($product);
+
+        if ($request->has('sets')) {
+            $product->sets()->sync($request->input('sets'));
+        }
+
+        if ($request->has('attributes')) {
+            $this->attributeService->sync($product, $request->input('attributes'));
+        }
     }
 }

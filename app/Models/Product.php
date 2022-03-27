@@ -2,24 +2,22 @@
 
 namespace App\Models;
 
-use App\SearchTypes\ProductSearch;
-use App\SearchTypes\WhereBelongsToManyById;
-use App\SearchTypes\WhereInIds;
+use App\Services\Contracts\ProductSearchServiceContract;
 use App\Traits\HasSeoMetadata;
-use Heseya\Searchable\Searches\Like;
-use Heseya\Searchable\Traits\Searchable;
-use Heseya\Sortable\Sortable;
+use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use JeroenG\Explorer\Application\Explored;
+use Laravel\Scout\Searchable;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @mixin IdeHelperProduct
  */
-class Product extends Model implements AuditableContract
+class Product extends Model implements AuditableContract, Explored
 {
     use HasFactory, SoftDeletes, Searchable, Sortable, Auditable, HasSeoMetadata;
 
@@ -55,15 +53,6 @@ class Product extends Model implements AuditableContract
         'quantity_step' => 'float',
     ];
 
-    protected array $searchable = [
-        'ids' => WhereInIds::class,
-        'name' => Like::class,
-        'slug' => Like::class,
-        'public',
-        'search' => ProductSearch::class,
-        'tags' => WhereBelongsToManyById::class,
-    ];
-
     protected array $sortable = [
         'id',
         'price',
@@ -72,10 +61,31 @@ class Product extends Model implements AuditableContract
         'updated_at',
         'order',
         'public',
+        'available',
     ];
 
-    protected string $defaultSortBy = 'created_at';
+    protected string $defaultSortBy = 'order';
+
     protected string $defaultSortDirection = 'desc';
+
+    private ProductSearchServiceContract $searchService;
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        $this->searchService = app(ProductSearchServiceContract::class);
+    }
+
+    public function toSearchableArray(): array
+    {
+        return $this->searchService->mapSearchableArray($this);
+    }
+
+    public function sets(): BelongsToMany
+    {
+        return $this->belongsToMany(ProductSet::class, 'product_set_product');
+    }
 
     public function items(): BelongsToMany
     {
@@ -104,21 +114,16 @@ class Product extends Model implements AuditableContract
         return $this->belongsToMany(Tag::class, 'product_tags');
     }
 
-    public function schemas(): BelongsToMany
-    {
-        return $this
-            ->belongsToMany(Schema::class, 'product_schemas')
-            ->orderByPivot('order');
-    }
-
     public function requiredSchemas(): BelongsToMany
     {
         return $this->schemas()->where('required', true);
     }
 
-    public function sets(): BelongsToMany
+    public function schemas(): BelongsToMany
     {
-        return $this->belongsToMany(ProductSet::class, 'product_set_product');
+        return $this
+            ->belongsToMany(Schema::class, 'product_schemas')
+            ->orderByPivot('order');
     }
 
     public function scopePublic($query): Builder
@@ -131,5 +136,28 @@ class Product extends Model implements AuditableContract
         return $this->belongsToMany(Attribute::class, 'product_attribute')
             ->withPivot('option_id')
             ->using(ProductAttribute::class);
+    }
+
+    public function mappableAs(): array
+    {
+        return [];
+    }
+
+    public function indexSettings(): array
+    {
+        return [
+            'analysis' => [
+                'analyzer' => [
+                    'standard_lowercase' => [
+                        'type' => 'custom',
+                        'tokenizer' => 'whitespace',
+                        'filter' => [
+                            'lowercase',
+                            'morfologik_stem',
+                        ],
+                    ],
+                ],
+            ],
+        ];
     }
 }

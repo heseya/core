@@ -42,25 +42,18 @@ services:
     ports:
       - ${REDIS_PORT:-6379}:6379
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.0.0
-    restart: unless-stopped
+    build:
+      context: ./docker
+      dockerfile: Dockerfile-elastic
     ports:
       - ${ELASTICSEARCH_PORT:-9200}:9200
     environment:
       - xpack.security.enabled=false
       - discovery.type=single-node
-    volumes:
-      - ./database/elasticsearch:/usr/share/elasticsearch/data
   kibana:
-    image: docker.elastic.co/kibana/kibana:8.0.0
+    image: docker.elastic.co/kibana/kibana:8.1.0
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:${ELASTICSEARCH_PORT:-9200}
-    depends_on:
-      - elasticsearch
-  elastichq:
-    image: elastichq/elasticsearch-hq:latest
-    environment:
-      - HQ_DEFAULT_URL=http://elasticsearch:${ELASTICSEARCH_PORT:-9200}
     depends_on:
       - elasticsearch
   nginx:
@@ -74,11 +67,10 @@ services:
       - ADMINER_PREFIX=${DOCKER_ADMINER_PREFIX:-adminer}
       - SILVERBOX_PREFIX=${DOCKER_SILVERBOX_PREFIX}
       - KIBANA_PREFIX=${DOCKER_KIBANA_PREFIX:-kibana}
+      - SILVERBOX_PREFIX=${DOCKER_SILVERBOX_PREFIX:-silverbox}
     depends_on:
       - app
       - kibana
-      - adminer
-      - elastichq
   silverbox:
     image: heseya/silverbox:1.2.0
     restart: unless-stopped

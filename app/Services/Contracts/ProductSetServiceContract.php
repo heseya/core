@@ -30,4 +30,6 @@ interface ProductSetServiceContract
     public function products(ProductSet $set): mixed;
 
     public function flattenSetsTree(Collection $sets, string $relation): Collection;
+
+    public function flattenParentsSetsTree(Collection $sets): Collection;
 }

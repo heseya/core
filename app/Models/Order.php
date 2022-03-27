@@ -5,13 +5,13 @@ namespace App\Models;
 use App\Audits\Redactors\AddressRedactor;
 use App\Audits\Redactors\ShippingMethodRedactor;
 use App\Audits\Redactors\StatusRedactor;
-use App\SearchTypes\OrderSearch;
-use App\SearchTypes\WhereCreatedAfter;
-use App\SearchTypes\WhereCreatedBefore;
-use App\SearchTypes\WhereHasStatusHidden;
-use Heseya\Searchable\Searches\Like;
-use Heseya\Searchable\Traits\Searchable;
-use Heseya\Sortable\Sortable;
+use App\Criteria\OrderSearch;
+use App\Criteria\WhereCreatedAfter;
+use App\Criteria\WhereCreatedBefore;
+use App\Criteria\WhereHasStatusHidden;
+use App\Traits\Sortable;
+use Heseya\Searchable\Criteria\Like;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -29,7 +29,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Order extends Model implements AuditableContract
 {
-    use HasFactory, Searchable, Sortable, Notifiable, Auditable;
+    use HasFactory, HasCriteria, Sortable, Notifiable, Auditable;
 
     protected $fillable = [
         'code',
@@ -69,7 +69,7 @@ class Order extends Model implements AuditableContract
         'invoice_address_id' => AddressRedactor::class,
     ];
 
-    protected array $searchable = [
+    protected array $criteria = [
         'search' => OrderSearch::class,
         'status_id',
         'shipping_method_id',

@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use App\Criteria\DiscountSearch;
 use App\Enums\DiscountType;
-use App\SearchTypes\DiscountSearch;
 use Carbon\Carbon;
-use Heseya\Searchable\Searches\Like;
-use Heseya\Searchable\Traits\Searchable;
+use Heseya\Searchable\Criteria\Like;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -18,7 +18,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Discount extends Model implements AuditableContract
 {
-    use HasFactory, Searchable, SoftDeletes, Auditable;
+    use HasFactory, HasCriteria, SoftDeletes, Auditable;
 
     protected $fillable = [
         'description',
@@ -40,7 +40,7 @@ class Discount extends Model implements AuditableContract
         'expires_at',
     ];
 
-    protected array $searchable = [
+    protected array $criteria = [
         'description' => Like::class,
         'code' => Like::class,
         'search' => DiscountSearch::class,
