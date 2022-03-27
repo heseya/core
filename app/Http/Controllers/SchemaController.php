@@ -24,7 +24,7 @@ class SchemaController extends Controller
 
     public function index(IndexSchemaRequest $request): JsonResource
     {
-        $schemas = Schema::search($request->validated())->sort($request->input('sort'));
+        $schemas = Schema::searchByCriteria($request->validated())->sort($request->input('sort'));
 
         return SchemaResource::collection(
             $schemas->paginate(Config::get('pagination.per_page')),

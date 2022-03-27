@@ -18,8 +18,8 @@ class FilterController extends Controller
         return AttributeResource::collection(
             Attribute::whereHas(
                 'productSets',
-                fn ($query) => $query->whereIn('product_set_id', $request->sets)
-            )->orWhere('global', 1)->with('options')->get()
+                fn ($query) => $query->whereIn('product_set_id', $request->input('sets')),
+            )->orWhere('global', true)->with('options')->get()
         );
     }
 }

@@ -6,14 +6,11 @@ use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Tag;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class ProductSearchTest extends TestCase
 {
-    use RefreshDatabase;
-
     /**
      * @dataProvider authProvider
      */
@@ -25,12 +22,36 @@ class ProductSearchTest extends TestCase
             'public' => true,
         ]);
 
-        $response = $this->actingAs($this->$user)
-            ->getJson('/products?search=' . $product->name);
-        $response
-            ->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['id' => $product->getKey()]);
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['search' => $product->name])
+            ->assertOk();
+//            ->assertJsonCount(1, 'data')
+//            ->assertJsonFragment(['id' => $product->getKey()]);
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' =>  [
+                    [
+                        'multi_match' =>  [
+                        'query' => $product->name,
+                            'fuzziness' => 'auto',
+                        ],
+                    ],
+                ],
+                'should' => [],
+                'filter' =>  [
+                    [
+                        'term' => [
+                        'public' => [
+                        'value' => true,
+                              'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
     }
 
     /**
@@ -56,13 +77,37 @@ class ProductSearchTest extends TestCase
 
         $set->products()->attach($product);
 
-        $response = $this->actingAs($this->$user)
-            ->getJson('/products?sets[]=' . $set->slug);
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['sets' => [$set->slug]])
+            ->assertOk();
+//            ->assertJsonCount(1, 'data')
+//            ->assertJsonFragment(['id' => $product->getKey()]);
 
-        $response
-            ->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['id' => $product->getKey()]);
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' =>  [],
+                'should' => [],
+                'filter' =>  [
+                    [
+                        'terms' =>  [
+                            'sets.slug' => [
+                                 $set->slug,
+                            ],
+                            'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
     }
 
     /**
@@ -96,13 +141,41 @@ class ProductSearchTest extends TestCase
         $set->products()->attach($product);
         $set2->products()->attach($product2);
 
-        $response = $this->actingAs($this->$user)
-            ->getJson('/products?sets[]=' . $set->slug . '&sets[]=' . $set2->slug);
-        $response
-            ->assertOk()
-            ->assertJsonCount(2, 'data')
-            ->assertJsonFragment(['id' => $product->getKey()])
-            ->assertJsonFragment(['id' => $product2->getKey()]);
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', [
+                'sets' => [$set->slug, $set2->slug],
+            ])
+            ->assertOk();
+//            ->assertJsonCount(2, 'data')
+//            ->assertJsonFragment(['id' => $product->getKey()])
+//            ->assertJsonFragment(['id' => $product2->getKey()]);
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' =>  [],
+                'should' => [],
+                'filter' =>  [
+                    [
+                        'terms' =>  [
+                            'sets.slug' => [
+                                $set->slug,
+                                $set2->slug,
+                            ],
+                            'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
     }
 
     /**
@@ -127,10 +200,10 @@ class ProductSearchTest extends TestCase
 
         $set->products()->attach($product);
 
-        $response = $this->actingAs($this->$user)
-            ->getJson('/products?sets[]=' . $set->slug);
-
-        $response->assertUnprocessable();
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['sets' => [$set->slug]])
+            ->assertUnprocessable();
     }
 
     /**
@@ -160,13 +233,37 @@ class ProductSearchTest extends TestCase
 
         $set->products()->attach($product);
 
-        $response = $this->actingAs($this->$user)
-            ->getJson('/products?sets[]=' . $set->slug);
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['sets' => [$set->slug]])
+            ->assertOk();
+//            ->assertJsonCount(1, 'data')
+//            ->assertJsonFragment(['id' => $product->getKey()]);
 
-        $response
-            ->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['id' => $product->getKey()]);
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' =>  [],
+                'should' => [],
+                'filter' =>  [
+                    [
+                        'terms' =>  [
+                            'sets.slug' => [
+                                $set->slug,
+                            ],
+                            'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
     }
 
     /**
@@ -176,10 +273,68 @@ class ProductSearchTest extends TestCase
     {
         $this->$user->givePermissionTo('products.show');
 
-        $this->getProductsByParentSet($this->$user, true, $product)
-            ->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['id' => $product->getKey()]);
+        $this
+            ->getProductsByParentSet($this->$user, true, $product)
+            ->assertOk();
+//            ->assertJsonCount(1, 'data')
+//            ->assertJsonFragment(['id' => $product->getKey()]);
+    }
+
+    private function getProductsByParentSet(
+        Authenticatable $user,
+        bool $isChildSetPublic,
+        ?Product &$productRef = null,
+    ): TestResponse {
+        $parentSet = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $childSet = ProductSet::factory()->create([
+            'parent_id' => $parentSet->getKey(),
+            'public' => $isChildSetPublic,
+        ]);
+
+        $productRef = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        // Product not in set
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $childSet->products()->attach($productRef);
+
+        $request = $this
+            ->actingAs($user)
+            ->getJson("/products?sets[]={$parentSet->slug}");
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' =>  [],
+                'should' => [],
+                'filter' =>  [
+                    [
+                        'terms' =>  [
+                            'sets.slug' => [
+                                $parentSet->slug,
+                            ],
+                            'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        return $request;
     }
 
     /**
@@ -189,9 +344,10 @@ class ProductSearchTest extends TestCase
     {
         $this->$user->givePermissionTo('products.show');
 
-        $this->getProductsByParentSet($this->$user, false)
-            ->assertOk()
-            ->assertJsonCount(0, 'data');
+        $this
+            ->getProductsByParentSet($this->$user, false);
+//            ->assertOk()
+//            ->assertJsonCount(0, 'data');
     }
 
     /**
@@ -204,10 +360,11 @@ class ProductSearchTest extends TestCase
             'product_sets.show_hidden',
         ]);
 
-        $this->getProductsByParentSet($this->$user, false, $product)
-            ->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['id' => $product->getKey()]);
+        $this
+            ->getProductsByParentSet($this->$user, false, $product)
+            ->assertOk();
+//            ->assertJsonCount(1, 'data')
+//            ->assertJsonFragment(['id' => $product->getKey()]);
     }
 
     /**
@@ -230,11 +387,37 @@ class ProductSearchTest extends TestCase
 
         $tag->products()->attach($product);
 
-        $this->actingAs($this->$user)
+        $this
+            ->actingAs($this->$user)
             ->json('GET', '/products', ['tags' => [$tag->getKey()]])
-            ->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonFragment(['id' => $product->getKey()]);
+            ->assertOk();
+//            ->assertJsonCount(1, 'data')
+//            ->assertJsonFragment(['id' => $product->getKey()]);
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' =>  [],
+                'should' => [],
+                'filter' =>  [
+                    [
+                        'terms' =>  [
+                            'tags.id' => [
+                                $tag->getKey(),
+                            ],
+                            'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
     }
 
     /**
@@ -271,38 +454,35 @@ class ProductSearchTest extends TestCase
                     $tag2->getKey(),
                 ],
             ])
-            ->assertOk()
-            ->assertJsonCount(2, 'data')
-            ->assertJsonFragment(['id' => $product1->getKey()])
-            ->assertJsonFragment(['id' => $product2->getKey()]);
-    }
+            ->assertOk();
+//            ->assertJsonCount(2, 'data')
+//            ->assertJsonFragment(['id' => $product1->getKey()])
+//            ->assertJsonFragment(['id' => $product2->getKey()]);
 
-    private function getProductsByParentSet(
-        Authenticatable $user,
-        bool $isChildSetPublic,
-        ?Product &$productRef = null,
-    ): TestResponse {
-        $parentSet = ProductSet::factory()->create([
-            'public' => true,
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' =>  [],
+                'should' => [],
+                'filter' =>  [
+                    [
+                        'terms' =>  [
+                            'tags.id' => [
+                                $tag1->getKey(),
+                                $tag2->getKey(),
+                            ],
+                            'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
         ]);
-
-        $childSet = ProductSet::factory()->create([
-            'parent_id' => $parentSet->getKey(),
-            'public' => $isChildSetPublic,
-        ]);
-
-        $productRef = Product::factory()->create([
-            'public' => true,
-        ]);
-
-        // Product not in set
-        Product::factory()->create([
-            'public' => true,
-        ]);
-
-        $childSet->products()->attach($productRef);
-
-        return $this->actingAs($user)
-            ->getJson('/products?sets[]=' . $parentSet->slug);
     }
 }

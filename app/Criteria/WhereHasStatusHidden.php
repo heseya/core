@@ -1,11 +1,11 @@
 <?php
 
-namespace App\SearchTypes;
+namespace App\Criteria;
 
-use Heseya\Searchable\Searches\Search;
+use Heseya\Searchable\Criteria\Criterion;
 use Illuminate\Database\Eloquent\Builder;
 
-class WhereHasStatusHidden extends Search
+class WhereHasStatusHidden extends Criterion
 {
     public function query(Builder $query): Builder
     {

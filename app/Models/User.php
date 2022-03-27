@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-use App\SearchTypes\UserSearch;
-use App\SearchTypes\WhereInIds;
+use App\Criteria\UserSearch;
+use App\Criteria\WhereInIds;
 use App\Traits\HasWebHooks;
-use Heseya\Searchable\Searches\Like;
-use Heseya\Searchable\Traits\Searchable;
-use Heseya\Sortable\Sortable;
+use App\Traits\Sortable;
+use Heseya\Searchable\Criteria\Like;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -43,7 +43,7 @@ class User extends Model implements
         HasFactory,
         HasRoles,
         SoftDeletes,
-        Searchable,
+        HasCriteria,
         Sortable,
         Auditable,
         HasWebHooks;
@@ -65,7 +65,7 @@ class User extends Model implements
         'remember_token',
     ];
 
-    protected array $searchable = [
+    protected array $criteria = [
         'name' => Like::class,
         'email' => Like::class,
         'search' => UserSearch::class,

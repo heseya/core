@@ -17,7 +17,9 @@ class FilterTest extends TestCase
         Attribute::factory()->count(3)->create(['global' => 1]);
         Attribute::factory()->create(['global' => 0]);
 
-        $this->actingAs($this->$user)->getJson('/filters')
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/filters')
             ->assertJsonCount(3, 'data');
     }
 
@@ -26,22 +28,22 @@ class FilterTest extends TestCase
      */
     public function testFilterWithSetsIds($user): void
     {
-        $optionOne = AttributeOption::create([
-            'value_text' => 'test',
-            'value' => 1,
-        ]);
-        $optionTwo = AttributeOption::create([
-            'value_text' => 'test2',
-            'value' => 99,
-        ]);
-
         $singleOptionAttribute = Attribute::factory()->create([
             'global' => 0,
             'type' => 'single-option',
         ]);
-        $singleOptionAttribute->options()->saveMany([
-            $optionOne,
-            $optionTwo,
+
+        AttributeOption::create([
+            'name' => 'test',
+            'value_number' => 1,
+            'index' => 0,
+            'attribute_id' => $singleOptionAttribute->getKey(),
+        ]);
+        AttributeOption::create([
+            'name' => 'test2',
+            'value_number' => 99,
+            'index' => 1,
+            'attribute_id' => $singleOptionAttribute->getKey(),
         ]);
 
         $firstProductSet = ProductSet::factory()->create();
@@ -84,17 +86,18 @@ class FilterTest extends TestCase
             ])->getKey(),
         ]);
 
-        $response = $this->actingAs($this->$user)
-            ->getJson('/filters?sets[]=' . $firstProductSet->getKey() . '&sets[]=' . $secondProductSet->getKey());
-
-        $response
-            ->assertJsonFragment([
-                'value_text' => 'test',
-                'value' => 1,
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/filters', [
+                'sets' => [$firstProductSet->getKey(), $secondProductSet->getKey()],
             ])
             ->assertJsonFragment([
-                'value_text' => 'test2',
-                'value' => 99,
+                'name' => 'test',
+                'value_number' => 1,
+            ])
+            ->assertJsonFragment([
+                'name' => 'test2',
+                'value_number' => 99,
             ])
             ->assertJsonCount(6, 'data');
     }

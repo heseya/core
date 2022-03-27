@@ -19,6 +19,7 @@ trait CreatesApplication
         'view:clear',
         'config:clear',
         'route:clear',
+        'scout:index products',
     ];
 
     /**

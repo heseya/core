@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Enums\AttributeType;
-use Heseya\Searchable\Traits\Searchable;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Attribute extends Model
 {
-    use HasFactory, Searchable;
+    use HasFactory, HasCriteria;
 
     protected $fillable = [
         'name',
@@ -36,7 +36,7 @@ class Attribute extends Model
         'updated_at' => 'datetime',
     ];
 
-    protected array $searchable = [
+    protected array $criteria = [
         'global',
     ];
 

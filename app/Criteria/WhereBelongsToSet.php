@@ -1,15 +1,15 @@
 <?php
 
-namespace App\SearchTypes;
+namespace App\Criteria;
 
-use Heseya\Searchable\Searches\Search;
+use Heseya\Searchable\Criteria\Criterion;
 use Illuminate\Database\Eloquent\Builder;
 
-class WhereHasSlug extends Search
+class WhereBelongsToSet extends Criterion
 {
     public function query(Builder $query): Builder
     {
-        return $query->whereHas($this->key, function (Builder $query) {
+        return $query->whereHas('set', function (Builder $query) {
             if (is_array($this->value)) {
                 return $query->whereIn('slug', $this->value);
             }

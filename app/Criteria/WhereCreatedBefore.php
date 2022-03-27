@@ -1,12 +1,12 @@
 <?php
 
-namespace App\SearchTypes;
+namespace App\Criteria;
 
-use Heseya\Searchable\Searches\Search;
+use Heseya\Searchable\Criteria\Criterion;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
-class WhereCreatedBefore extends Search
+class WhereCreatedBefore extends Criterion
 {
     public function query(Builder $query): Builder
     {

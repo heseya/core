@@ -35,7 +35,7 @@ class ProductSetService implements ProductSetServiceContract
 
     public function searchAll(array $attributes, bool $root): Collection
     {
-        $query = ProductSet::search($attributes);
+        $query = ProductSet::searchByCriteria($attributes);
 
         if (!Auth::user()->can('product_sets.show_hidden')) {
             $query->public();
@@ -241,6 +241,22 @@ class ProductSetService implements ProductSetServiceContract
         $subsets = $sets->map(
             fn ($set) => $this->flattenSetsTree($set->$relation, $relation),
         );
+
+        return $subsets->flatten()->concat($sets);
+    }
+
+    /**
+     * Recursive get all parents of set collection if parent exists.
+     */
+    public function flattenParentsSetsTree(Collection $sets): Collection
+    {
+        $subsets = Collection::make();
+
+        foreach ($sets as $set) {
+            if ($set->parent) {
+                $subsets = $subsets->merge($this->flattenParentsSetsTree(Collection::make([$set->parent])));
+            }
+        }
 
         return $subsets->flatten()->concat($sets);
     }

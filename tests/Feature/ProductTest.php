@@ -27,10 +27,13 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Spatie\WebhookServer\CallWebhookJob;
+use Tests\Support\ElasticTest;
 use Tests\TestCase;
 
 class ProductTest extends TestCase
 {
+    use ElasticTest;
+
     private Product $product;
     private Product $hidden_product;
 
@@ -209,16 +212,39 @@ class ProductTest extends TestCase
         ]);
         $product->sets()->sync([$set->getKey()]);
 
-        $response = $this->actingAs($this->$user)->getJson('/products?limit=100');
-        $response
-            ->assertOk()
-            ->assertJsonCount(1, 'data') // Should show only public products.
-            ->assertJson(['data' => [
-                0 => $this->expected_short,
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['limit' => 100])
+            ->assertOk();
+//            ->assertJsonCount(1, 'data') // Should show only public products.
+//            ->assertJson(['data' => [
+//                0 => $this->expected_short,
+//            ]]);
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' =>  [],
+                'should' => [],
+                'filter' =>  [
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'hide_on_index' => [
+                                'value' => false,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
             ],
-            ]);
-                0 => array_merge($this->expected_short, $this->expected_attribute_short),
-            ]]);
+        ], 100);
 
         $this->assertQueryCountLessThan(20);
     }
@@ -245,12 +271,39 @@ class ProductTest extends TestCase
             'created_at' => Carbon::now()->addHour(),
         ]);
 
-        $response = $this->actingAs($this->$user)
-            ->json('GET', "/products?ids={$firstProduct->getKey()},{$secondProduct->getKey()}");
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', [
+                'ids' => "{$firstProduct->getKey()},{$secondProduct->getKey()}",
+            ])
+            ->assertOk();
+//            ->assertJsonCount(2, 'data');
 
-        $response
-            ->assertOk()
-            ->assertJsonCount(2, 'data');
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' =>  [],
+                'should' => [],
+                'filter' =>  [
+                    [
+                        'terms' => [
+                            'id' => [
+                                $firstProduct->getKey(),
+                                $secondProduct->getKey(),
+                            ],
+                            'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
     }
 
     /**
@@ -270,52 +323,18 @@ class ProductTest extends TestCase
 
         $product->sets()->sync([$set->getKey()]);
 
-        $response = $this->actingAs($this->$user)->getJson('/products');
-        $response
-            ->assertOk()
-            ->assertJsonCount(3, 'data'); // Should show all products.
-    }
+        $this->actingAs($this->$user)
+            ->json('GET', '/products')
+            ->assertOk();
+//            ->assertJsonCount(3, 'data'); // Should show all products.
 
-    /**
-     * @dataProvider authProvider
-     */
-    public function testIndexPerformance($user): void
-    {
-        $this->$user->givePermissionTo('products.show');
-
-        Product::factory()->count(499)->create([
-            'public' => true,
-            'order' => 1,
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' =>  [],
+                'should' => [],
+                'filter' =>  [],
+            ],
         ]);
-
-        $this
-            ->actingAs($this->$user)
-            ->getJson('/products?limit=500')
-            ->assertOk()
-            ->assertJsonCount(500, 'data');
-
-        $this->assertQueryCountLessThan(20);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testIndexFullPerformance($user): void
-    {
-        $this->$user->givePermissionTo('products.show');
-
-        Product::factory()->count(499)->create([
-            'public' => true,
-            'order' => 1,
-        ]);
-
-        $this
-            ->actingAs($this->$user)
-            ->getJson('/products?limit=500&full')
-            ->assertOk()
-            ->assertJsonCount(500, 'data');
-
-        $this->assertQueryCountLessThan(20);
     }
 
     public function testShowUnauthorized(): void
@@ -480,7 +499,6 @@ class ProductTest extends TestCase
             ],
             ]);
     }
-
 
     /**
      * @dataProvider authProvider
@@ -1212,7 +1230,7 @@ class ProductTest extends TestCase
 
         $schemaPrice = 50;
         $schema = Schema::factory()->create([
-            'type' => 0,
+            'type' => SchemaType::STRING,
             'required' => false,
             'price' => $schemaPrice,
         ]);
@@ -1236,6 +1254,45 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => $productPrice,
             'price_min' => $productPrice,
+            'price_max' => $productPrice + $schemaPrice,
+            'public' => false,
+            'description_html' => null,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateMinPriceWithRequiredSchema($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $schemaPrice = 50;
+        $schema = Schema::factory()->create([
+            'type' => SchemaType::STRING,
+            'required' => true,
+            'price' => $schemaPrice,
+        ]);
+
+        $productPrice = 150;
+        $response = $this->actingAs($this->$user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => $productPrice,
+            'public' => false,
+            'sets' => [],
+            'schemas' => [
+                $schema->getKey(),
+            ],
+        ]);
+
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => $productPrice,
+            'price_min' => $productPrice + $schemaPrice,
             'price_max' => $productPrice + $schemaPrice,
             'public' => false,
             'description_html' => null,

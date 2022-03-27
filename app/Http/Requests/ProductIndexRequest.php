@@ -19,6 +19,8 @@ class ProductIndexRequest extends FormRequest
         }
 
         return [
+            'search' => ['nullable', 'string', 'max:255'],
+
             'ids' => ['string'],
             'name' => ['nullable', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
@@ -28,7 +30,6 @@ class ProductIndexRequest extends FormRequest
                 'string',
                 $setsExist,
             ],
-            'search' => ['nullable', 'string', 'max:255'],
             'sort' => ['nullable', 'string', 'max:255'],
             'available' => ['nullable'],
             'tags' => ['nullable', 'array'],
@@ -36,6 +37,8 @@ class ProductIndexRequest extends FormRequest
                 'string',
                 'uuid',
             ],
+
+            'full' => ['nullable', 'boolean'],
         ];
     }
 }

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ad9a1a00a86ef90d68ce0d39e25e3d2b",
+    "content-hash": "2380f831615bbb65f85e720f6c13f5bb",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -205,6 +205,73 @@
                 }
             ],
             "time": "2021-08-15T20:50:18+00:00"
+        },
+        {
+            "name": "bvlinsky/explorer",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/bvlinsky/Explorer.git",
+                "reference": "72333facc97df1b1ea584ea073d92d0835873b90"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/bvlinsky/Explorer/zipball/72333facc97df1b1ea584ea073d92d0835873b90",
+                "reference": "72333facc97df1b1ea584ea073d92d0835873b90",
+                "shasum": ""
+            },
+            "require": {
+                "elasticsearch/elasticsearch": "^7.16",
+                "illuminate/support": "^9.0",
+                "laravel/scout": "^9.0",
+                "php": "8.0.*||8.1.*",
+                "webmozart/assert": "^1.10"
+            },
+            "require-dev": {
+                "infection/infection": "^0.26",
+                "mockery/mockery": "^1.4",
+                "phpunit/phpunit": "~9.0",
+                "symplify/easy-coding-standard": "^9.0"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "JeroenG\\Explorer\\ExplorerServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "JeroenG\\Explorer\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "EUPL-1.2"
+            ],
+            "authors": [
+                {
+                    "name": "Jeroen",
+                    "email": "jeroengjeroeng@gmail.com",
+                    "homepage": "https://jeroeng.dev"
+                }
+            ],
+            "description": "Next-gen Elasticsearch driver for Laravel Scout.",
+            "homepage": "https://jeroen-g.github.io/Explorer/",
+            "keywords": [
+                "elastic",
+                "elasticsearch",
+                "explorer",
+                "laravel",
+                "scout",
+                "search"
+            ],
+            "support": {
+                "source": "https://github.com/bvlinsky/Explorer/tree/master"
+            },
+            "time": "2022-03-26T15:24:54+00:00"
         },
         {
             "name": "clue/stream-filter",
@@ -996,16 +1063,16 @@
         },
         {
             "name": "doctrine/dbal",
-            "version": "3.3.3",
+            "version": "3.3.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/dbal.git",
-                "reference": "82331b861727c15b1f457ef05a8729e508e7ead5"
+                "reference": "83f779beaea1893c0bece093ab2104c6d15a7f26"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/dbal/zipball/82331b861727c15b1f457ef05a8729e508e7ead5",
-                "reference": "82331b861727c15b1f457ef05a8729e508e7ead5",
+                "url": "https://api.github.com/repos/doctrine/dbal/zipball/83f779beaea1893c0bece093ab2104c6d15a7f26",
+                "reference": "83f779beaea1893c0bece093ab2104c6d15a7f26",
                 "shasum": ""
             },
             "require": {
@@ -1087,7 +1154,7 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/dbal/issues",
-                "source": "https://github.com/doctrine/dbal/tree/3.3.3"
+                "source": "https://github.com/doctrine/dbal/tree/3.3.4"
             },
             "funding": [
                 {
@@ -1103,7 +1170,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-03-09T15:39:50+00:00"
+            "time": "2022-03-20T18:37:29+00:00"
         },
         {
             "name": "doctrine/deprecations",
@@ -2465,16 +2532,16 @@
         },
         {
             "name": "heseya/laravel-searchable",
-            "version": "1.0.0",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/heseya/laravel-searchable.git",
-                "reference": "301235f4e67784af659f7e81da19b674fc4ed525"
+                "reference": "6daaaf153fc9ffdb19bed8252b150126feac9f0f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/heseya/laravel-searchable/zipball/301235f4e67784af659f7e81da19b674fc4ed525",
-                "reference": "301235f4e67784af659f7e81da19b674fc4ed525",
+                "url": "https://api.github.com/repos/heseya/laravel-searchable/zipball/6daaaf153fc9ffdb19bed8252b150126feac9f0f",
+                "reference": "6daaaf153fc9ffdb19bed8252b150126feac9f0f",
                 "shasum": ""
             },
             "require": {
@@ -2482,7 +2549,7 @@
                 "php": ">=7.3"
             },
             "require-dev": {
-                "pestphp/pest": "^0.2.4"
+                "pestphp/pest": "^1.21"
             },
             "type": "library",
             "autoload": {
@@ -2502,9 +2569,9 @@
             "description": "Search trait for Eloquent models",
             "support": {
                 "issues": "https://github.com/heseya/laravel-searchable/issues",
-                "source": "https://github.com/heseya/laravel-searchable/tree/master"
+                "source": "https://github.com/heseya/laravel-searchable/tree/2.0.0"
             },
-            "time": "2020-08-14T08:39:11+00:00"
+            "time": "2022-03-14T10:36:47+00:00"
         },
         {
             "name": "heseya/pagination",
@@ -2563,31 +2630,6 @@
                 "MIT"
             ],
             "description": "Enhanced Laravel Json Resource",
-            "transport-options": {
-                "relative": true
-            }
-        },
-        {
-            "name": "heseya/sortable",
-            "version": "dev-main",
-            "dist": {
-                "type": "path",
-                "url": "./heseya/sortable",
-                "reference": "4718346e8548d49105854349923a8f892cb86b4c"
-            },
-            "require": {
-                "laravel/framework": "^9.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Heseya\\Sortable\\": "src/"
-                }
-            },
-            "license": [
-                "MIT"
-            ],
-            "description": "Sortable Trait for Laravel",
             "transport-options": {
                 "relative": true
             }
@@ -2708,74 +2750,6 @@
                 "source": "https://github.com/Jean85/pretty-package-versions/tree/2.0.5"
             },
             "time": "2021-10-08T21:21:46+00:00"
-        },
-        {
-            "name": "jeroen-g/explorer",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Jeroen-G/Explorer.git",
-                "reference": "5546cb7bc0c1fce7244e3fd48aaa4513bda2013e"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Jeroen-G/Explorer/zipball/5546cb7bc0c1fce7244e3fd48aaa4513bda2013e",
-                "reference": "5546cb7bc0c1fce7244e3fd48aaa4513bda2013e",
-                "shasum": ""
-            },
-            "require": {
-                "elasticsearch/elasticsearch": "^7.16",
-                "illuminate/support": "^9.0",
-                "laravel/scout": "^9.0",
-                "php": "8.0.*||8.1.*",
-                "webmozart/assert": "^1.10"
-            },
-            "require-dev": {
-                "infection/infection": "^0.26",
-                "mockery/mockery": "^1.4",
-                "phpunit/phpunit": "~9.0",
-                "symplify/easy-coding-standard": "^9.0"
-            },
-            "default-branch": true,
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "JeroenG\\Explorer\\ExplorerServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "JeroenG\\Explorer\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "EUPL-1.2"
-            ],
-            "authors": [
-                {
-                    "name": "Jeroen",
-                    "email": "jeroengjeroeng@gmail.com",
-                    "homepage": "https://jeroeng.dev"
-                }
-            ],
-            "description": "Next-gen Elasticsearch driver for Laravel Scout.",
-            "homepage": "https://jeroen-g.github.io/Explorer/",
-            "keywords": [
-                "elastic",
-                "elasticsearch",
-                "explorer",
-                "laravel",
-                "scout",
-                "search"
-            ],
-            "support": {
-                "issues": "https://github.com/Jeroen-G/Explorer/issues",
-                "source": "https://github.com/Jeroen-G/Explorer/tree/master"
-            },
-            "time": "2022-03-11T11:22:52+00:00"
         },
         {
             "name": "justinrainbow/json-schema",
@@ -13153,16 +13127,16 @@
         },
         {
             "name": "slevomat/coding-standard",
-            "version": "7.0.19",
+            "version": "7.0.20",
             "source": {
                 "type": "git",
                 "url": "https://github.com/slevomat/coding-standard.git",
-                "reference": "bef66a43815bbf9b5f49775e9ded3f7c6ba0cc37"
+                "reference": "cbfadfe34c2c29473bf1e891306b3950b3b4350b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/bef66a43815bbf9b5f49775e9ded3f7c6ba0cc37",
-                "reference": "bef66a43815bbf9b5f49775e9ded3f7c6ba0cc37",
+                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/cbfadfe34c2c29473bf1e891306b3950b3b4350b",
+                "reference": "cbfadfe34c2c29473bf1e891306b3950b3b4350b",
                 "shasum": ""
             },
             "require": {
@@ -13174,11 +13148,11 @@
             "require-dev": {
                 "phing/phing": "2.17.2",
                 "php-parallel-lint/php-parallel-lint": "1.3.2",
-                "phpstan/phpstan": "1.4.6",
+                "phpstan/phpstan": "1.4.10|1.5.0",
                 "phpstan/phpstan-deprecation-rules": "1.0.0",
                 "phpstan/phpstan-phpunit": "1.0.0",
                 "phpstan/phpstan-strict-rules": "1.1.0",
-                "phpunit/phpunit": "7.5.20|8.5.21|9.5.16"
+                "phpunit/phpunit": "7.5.20|8.5.21|9.5.19"
             },
             "type": "phpcodesniffer-standard",
             "extra": {
@@ -13198,7 +13172,7 @@
             "description": "Slevomat Coding Standard for PHP_CodeSniffer complements Consistence Coding Standard by providing sniffs with additional checks.",
             "support": {
                 "issues": "https://github.com/slevomat/coding-standard/issues",
-                "source": "https://github.com/slevomat/coding-standard/tree/7.0.19"
+                "source": "https://github.com/slevomat/coding-standard/tree/7.0.20"
             },
             "funding": [
                 {
@@ -13210,7 +13184,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-03-01T18:01:41+00:00"
+            "time": "2022-03-25T09:43:20+00:00"
         },
         {
             "name": "spatie/backtrace",
@@ -13340,16 +13314,16 @@
         },
         {
             "name": "spatie/ignition",
-            "version": "1.2.5",
+            "version": "1.2.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/ignition.git",
-                "reference": "982f69f3c2e525cef62fa23ada047d745e4bcda9"
+                "reference": "be24d33a9de271638314924b5da85e168e4148e4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/ignition/zipball/982f69f3c2e525cef62fa23ada047d745e4bcda9",
-                "reference": "982f69f3c2e525cef62fa23ada047d745e4bcda9",
+                "url": "https://api.github.com/repos/spatie/ignition/zipball/be24d33a9de271638314924b5da85e168e4148e4",
+                "reference": "be24d33a9de271638314924b5da85e168e4148e4",
                 "shasum": ""
             },
             "require": {
@@ -13406,7 +13380,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2022-03-19T14:07:30+00:00"
+            "time": "2022-03-23T11:02:14+00:00"
         },
         {
             "name": "spatie/laravel-ignition",
@@ -13910,9 +13884,7 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "jeroen-g/explorer": 20
-    },
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

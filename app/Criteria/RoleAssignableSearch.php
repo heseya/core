@@ -1,13 +1,13 @@
 <?php
 
-namespace App\SearchTypes;
+namespace App\Criteria;
 
 use App\Enums\RoleType;
-use Heseya\Searchable\Searches\Search;
+use Heseya\Searchable\Criteria\Criterion;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
-class RoleAssignableSearch extends Search
+class RoleAssignableSearch extends Criterion
 {
     public function query(Builder $query): Builder
     {

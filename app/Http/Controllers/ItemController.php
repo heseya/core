@@ -19,7 +19,7 @@ class ItemController extends Controller
 {
     public function index(ItemIndexRequest $request): JsonResource
     {
-        $items = Item::search($request->validated())
+        $items = Item::searchByCriteria($request->validated())
             ->sort($request->input('sort', 'sku'))
             ->with('deposits');
 
