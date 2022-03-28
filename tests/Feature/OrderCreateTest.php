@@ -49,7 +49,10 @@ class OrderCreateTest extends TestCase
 
         $this->email = $this->faker->freeEmail;
 
-        $this->shippingMethod = ShippingMethod::factory()->create(['public' => true]);
+        $this->shippingMethod = ShippingMethod::factory()->create([
+            'public' => true,
+            'shipping_type' => ShippingType::ADDRESS,
+        ]);
         $lowRange = PriceRange::create(['start' => 0]);
         $lowRange->prices()->create(['value' => 8.11]);
 
@@ -72,7 +75,7 @@ class OrderCreateTest extends TestCase
         $response = $this->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'shipping_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'billing_address' => $this->address->toArray(),
             'items' => [
                 [
@@ -105,7 +108,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'shipping_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'billing_address' => $this->address->toArray(),
             'items' => [
                 [
@@ -171,7 +174,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $freeShipping->getKey(),
-            'shipping_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'billing_address' => $this->address->toArray(),
             'items' => [
                 [
@@ -231,7 +234,7 @@ class OrderCreateTest extends TestCase
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'billing_address' => $this->address->toArray(),
-            'shipping_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -279,7 +282,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'shipping_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'billing_address' => $this->address->toArray(),
             'items' => [
                 [
@@ -305,7 +308,7 @@ class OrderCreateTest extends TestCase
         $response = $this->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'shipping_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'billing_address' => $this->address->toArray(),
             'items' => [
                 [
@@ -395,7 +398,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'shipping_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'billing_address' => $this->address->toArray(),
             'items' => [
                 [
@@ -491,7 +494,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'shipping_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'billing_address' => $this->address->toArray(),
             'items' => [
                 [
@@ -577,7 +580,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'shipping_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'billing_address' => $this->address->toArray(),
             'items' => [
                 [
@@ -644,7 +647,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'shipping_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'billing_address' => $this->address->toArray(),
             'items' => [
                 [
@@ -692,7 +695,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->json('POST', '/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
-            'shipping_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'billing_address' => $this->address->toArray(),
             'items' => [
                 [
@@ -731,7 +734,7 @@ class OrderCreateTest extends TestCase
         $response = $this->actingAs($this->$user)->json('POST', '/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
-            'shipping_address' => [
+            'shipping_place' => [
                 'name' => 'Wojtek Testowy',
                 'phone' => '+48123321123',
                 'address' => 'Gdańska 89/1',
@@ -881,6 +884,7 @@ class OrderCreateTest extends TestCase
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
             'billing_address' => Address::factory()->create(),
+            'shipping_place' => null,
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -891,7 +895,6 @@ class OrderCreateTest extends TestCase
                 ],
             ],
         ]);
-
 
         $response->assertCreated();
 
@@ -939,7 +942,7 @@ class OrderCreateTest extends TestCase
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
-            'shipping_address' => $this->address,
+            'shipping_place' => $this->address,
             'billing_address' => Address::factory()->create(),
             'items' => [
                 [
@@ -958,7 +961,7 @@ class OrderCreateTest extends TestCase
         $this->assertDatabaseHas('orders', [
             'id' => $order->getKey(),
             'invoice_requested' => true,
-            'shipping_place' => $order->shippingAddress->getKey(),
+            'shipping_place' => null,
             'shipping_address_id' => $order->shippingAddress->getKey(),
             'shipping_type' => ShippingType::ADDRESS,
         ]);
@@ -988,16 +991,20 @@ class OrderCreateTest extends TestCase
 
         $productQuantity = 2;
 
+        $pointAddress = Address::factory()->create();
+
         $shippingMethod = ShippingMethod::factory()->create([
             'public' => true,
             'shipping_type' => ShippingType::POINT,
         ]);
 
+        $shippingMethod->shippingPoints()->attach($pointAddress);
+
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => $this->email,
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
-            'shipping_address' => $this->address,
+            'shipping_place' => $pointAddress->getKey(),
             'billing_address' => Address::factory()->create(),
             'items' => [
                 [
@@ -1010,14 +1017,15 @@ class OrderCreateTest extends TestCase
             ],
         ]);
 
+
         $response->assertCreated();
         $order = Order::find($response->getData()->data->id);
 
         $this->assertDatabaseHas('orders', [
             'id' => $order->getKey(),
             'invoice_requested' => true,
-            'shipping_place' => $order->shippingAddress->getKey(),
-            'shipping_address_id' => $order->shippingAddress->getKey(),
+            'shipping_place' => null,
+            'shipping_address_id' => $pointAddress->getKey(),
             'shipping_type' => ShippingType::POINT,
         ]);
 
@@ -1126,7 +1134,7 @@ class OrderCreateTest extends TestCase
         ]);
 
         $response->assertStatus(422)
-            ->assertJsonFragment(['shipping_address' => ['Shipping address is required with this shipping method type.']]);
+            ->assertJsonFragment(['shipping_place' => ['Shipping place data is incorrect.']]);
 
         Event::assertNotDispatched(OrderCreated::class);
     }
