@@ -108,19 +108,28 @@ class OrderController extends Controller
 
         $shippingMethod = ShippingMethod::findOrFail($request->input('shipping_method_id'));
 
-        if (array_key_exists('shipping_address', $validated)) {
-            $shippingAddress = Address::firstOrCreate($validated['shipping_address']);
+        switch ($shippingMethod->shipping_type) {
+            case ShippingType::ADDRESS:
+                $shippingPlace = null;
+                $shippingAddressId = Address::firstOrCreate($validated['shipping_place'])->getKey();
+                break;
+            case ShippingType::POINT:
+                $shippingPlace = null;
+                $shippingAddressId = Address::find($validated['shipping_place'])->getKey();
+                break;
+            case ShippingType::POINT_EXTERNAL:
+                $shippingPlace = $validated['shipping_place'];
+                $shippingAddressId = null;
+                break;
+            default:
+                $shippingPlace = null;
+                $shippingAddressId = null;
+                break;
         }
 
         if ($request->filled('billing_address.name')) {
             $billingAddress = Address::firstOrCreate($validated['billing_address']);
         }
-
-        $shippingPlace = match ($shippingMethod->shipping_type) {
-            ShippingType::ADDRESS, ShippingType::POINT => $shippingAddress->getKey(),
-            ShippingType::POINT_EXTERNAL => $request->input('shipping_place'),
-            default => null,
-        };
 
         $order = Order::create([
             'code' => $this->nameService->generate(),
@@ -131,7 +140,7 @@ class OrderController extends Controller
             'shipping_price' => 0.0,
             'status_id' => Status::select('id')->orderBy('order')->first()->getKey(),
             'billing_address_id' => isset($billingAddress) ? $billingAddress->getKey() : null,
-            'shipping_address_id' => isset($shippingAddress) ? $shippingAddress->getKey() : null,
+            'shipping_address_id' => $shippingAddressId,
             'user_id' => Auth::user()->getKey(),
             'user_type' => Auth::user()::class,
             'invoice_requested' => $request->input('invoice_requested'),
@@ -272,7 +281,6 @@ class OrderController extends Controller
     public function update(OrderUpdateRequest $request, Order $order): JsonResponse
     {
         $orderUpdateDto = OrderUpdateDto::instantiateFromRequest($request);
-
         return $this->orderService->update($orderUpdateDto, $order);
     }
 

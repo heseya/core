@@ -37,7 +37,7 @@ class OrderUpdateTest extends TestCase
     {
         parent::setUp();
 
-        $shippingMethod = $this->createShippingMethod();
+        $shippingMethod = $this->createShippingMethod(0, ['shipping_type' => ShippingType::ADDRESS]);
         $this->comment = $this->faker->text(10);
         $this->status = Status::factory()->create();
         $this->addressDelivery = Address::factory()->create();
@@ -81,11 +81,12 @@ class OrderUpdateTest extends TestCase
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'email' => $email,
             'comment' => $comment,
-            'shipping_address' => $address->toArray(),
+            'shipping_place' => $address->toArray(),
             'billing_address' => $address->toArray(),
         ]);
 
         $responseData = $response->getData()->data;
+
         $response
             ->assertOk()
             ->assertJsonFragment([
@@ -171,7 +172,7 @@ class OrderUpdateTest extends TestCase
             'email' => $email,
             'comment' => $comment,
             'billing_address' => $address->toArray(),
-            'shipping_address' => $address->toArray(),
+            'shipping_place' => $address->toArray(),
         ]);
 
         $responseData = $response->getData()->data;
@@ -259,7 +260,7 @@ class OrderUpdateTest extends TestCase
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'email' => $email,
             'comment' => $comment,
-            'shipping_address' => $address->toArray(),
+            'shipping_place' => $address->toArray(),
             'billing_address' => $address->toArray(),
         ]);
 
@@ -455,9 +456,11 @@ class OrderUpdateTest extends TestCase
         Event::fake([OrderUpdated::class]);
 
         $this->addressDelivery = Address::factory()->create();
+
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
-            'shipping_address' => $this->addressDelivery->toArray()
+            'shipping_place' => $this->addressDelivery->toArray()
         ]);
+
         $responseData = $response->getData()->data;
 
         $response
@@ -554,32 +557,6 @@ class OrderUpdateTest extends TestCase
             'city' =>  $address->city,
             'country' =>  $address->country,
         ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateOrderWithEmptyShippingAddress($user): void
-    {
-        $this->$user->givePermissionTo('orders.edit');
-
-        Event::fake([OrderUpdated::class]);
-
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
-            'shipping_address' => null
-        ]);
-
-        $response
-            ->assertOk()
-            ->assertJsonFragment(['shipping_place' => null]);
-
-        $this->assertDatabaseHas('orders', [
-            'id' => $this->order->getKey(),
-            'shipping_place' => null,
-            'billing_address_id' => $this->addressInvoice->getKey(),
-        ]);
-
-        Event::assertDispatched(OrderUpdated::class);
     }
 
     /**
@@ -730,6 +707,7 @@ class OrderUpdateTest extends TestCase
             'id' => $order->getKey(),
             'invoice_requested' => true,
             'shipping_place' => null,
+            'shipping_address_id' => null,
             'shipping_type' => ShippingType::NONE,
         ]);
 
@@ -750,21 +728,30 @@ class OrderUpdateTest extends TestCase
             'shipping_type' => ShippingType::ADDRESS,
         ]);
 
+
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
-            'shipping_address' => $this->address,
+            'shipping_place' => $this->address,
         ]);
 
-        $response->assertOk();
-
         $order = Order::find($response->getData()->data->id);
+
+        $response->assertOk();
 
         $this->assertDatabaseHas('orders', [
             'id' => $order->getKey(),
             'invoice_requested' => true,
             'shipping_place' => $order->shipping_place,
             'shipping_type' => ShippingType::ADDRESS,
+            'shipping_address_id' => $this->addressDelivery->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('addresses', [
+            'id' => $this->addressDelivery->getKey(),
+            'name' => $this->address->name,
+            'phone' => $this->address->phone,
+            'address' => $this->address->address,
         ]);
 
         Event::assertDispatched(OrderUpdated::class);
@@ -773,7 +760,7 @@ class OrderUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateOrderWithShippingMethodTypePoint($user): void
+    public function testUpdateOrderWithShippingMethodTypePoints($user): void
     {
         $this->$user->givePermissionTo('orders.edit');
 
@@ -784,10 +771,14 @@ class OrderUpdateTest extends TestCase
             'shipping_type' => ShippingType::POINT,
         ]);
 
+        $pointAddress = Address::factory()->create();
+
+        $shippingMethod->shippingPoints()->attach($pointAddress);
+
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
-            'shipping_address' => $this->address,
+            'shipping_place' => $pointAddress->getKey(),
         ]);
 
         $response->assertOk();
@@ -797,8 +788,16 @@ class OrderUpdateTest extends TestCase
         $this->assertDatabaseHas('orders', [
             'id' => $order->getKey(),
             'invoice_requested' => true,
-            'shipping_place' => $order->shipping_place,
+            'shipping_address_id' => $pointAddress->getKey(),
+            'shipping_place' => null,
             'shipping_type' => ShippingType::POINT,
+        ]);
+
+        $this->assertDatabaseHas('addresses', [
+            'id' => $pointAddress->getKey(),
+            'name' => $pointAddress->name,
+            'phone' => $pointAddress->phone,
+            'address' => $pointAddress->address,
         ]);
 
         Event::assertDispatched(OrderUpdated::class);
@@ -831,6 +830,7 @@ class OrderUpdateTest extends TestCase
         $this->assertDatabaseHas('orders', [
             'id' => $order->getKey(),
             'invoice_requested' => true,
+            'shipping_address_id' => null,
             'shipping_place' => 'Testowy numer domu w testowym mieście',
             'shipping_type' => ShippingType::POINT_EXTERNAL,
         ]);
@@ -859,7 +859,7 @@ class OrderUpdateTest extends TestCase
         ]);
 
         $response->assertStatus(422)
-            ->assertJsonFragment(['shipping_address' => ['Shipping address is required with this shipping method type.']]);
+            ->assertJsonFragment(['shipping_place' => ['Shipping place data is incorrect.']]);
 
         Event::assertNotDispatched(OrderUpdated::class);
     }

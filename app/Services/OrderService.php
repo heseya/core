@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Dtos\AddressDto;
 use App\Dtos\OrderIndexDto;
 use App\Dtos\OrderUpdateDto;
+use App\Enums\ShippingType;
 use App\Events\OrderRequestedShipping;
 use App\Events\OrderUpdated;
 use App\Exceptions\OrderException;
@@ -54,38 +55,36 @@ class OrderService implements OrderServiceContract
         DB::beginTransaction();
 
         try {
-            $shippingAddress = $this->modifyAddress(
-                $order,
-                'shipping_address_id',
-                $dto->getShippingAddress(),
-            );
+            $shippingType = ShippingMethod::find($dto->getShippingMethodId())->shipping_type ??
+                $order->shippingMethod->shipping_type;
 
-            $invoiceAddress = $this->modifyAddress(
+            if ($shippingType !== ShippingType::POINT) {
+                $shippingPlace = $dto->getShippingPlace() instanceof AddressDto ?
+                    $this->modifyAddress(
+                        $order,
+                        'shipping_address_id',
+                        $dto->getShippingPlace(),
+                    ) : $dto->getShippingPlace();
+            } else {
+                $shippingPlace = Address::find($dto->getShippingPlace())->getKey();
+            }
+
+            $billingAddress = $this->modifyAddress(
                 $order,
                 'billing_address_id',
                 $dto->getBillingAddress(),
             );
 
-            $shippingPlace = $dto->getShippingPlace() instanceof AddressDto ?
-                Address::updateOrCreate(
-                    ['id' => $order->shipping_place],
-                    $dto->getShippingPlace()->toArray()
-                )->getKey() :
-                $dto->getShippingPlace();
-
             $order->update([
                 'email' => $dto->getEmail() ?? $order->email,
                 'comment' => $dto->getComment() ?? $order->comment,
-                'shipping_address_id' => $shippingAddress === null ?
-                    (is_object($dto->getShippingAddress()) ? null : $order->shipping_address_id) :
-                    $shippingAddress->getKey(),
-                'billing_address_id' => $invoiceAddress === null ?
+                'shipping_address_id' => $this->resolveShippingAddress($shippingPlace, $shippingType, $order),
+                'billing_address_id' => $billingAddress === null ?
                     (is_object($dto->getBillingAddress()) ? null : $order->billing_address_id) :
-                    $invoiceAddress->getKey(),
+                    $billingAddress->getKey(),
                 'invoice_requested' => $dto->getInvoiceRequested(),
-                'shipping_place' => $shippingPlace ?? $order->shipping_place,
-                'shipping_type' => ShippingMethod::find($dto->getShippingMethodId())->shipping_type ??
-                    $order->shipping_type,
+                'shipping_place' => $this->resolveShippingPlace($shippingPlace, $shippingType, $order),
+                'shipping_type' => $shippingType ?? $order->shipping_type,
             ]);
 
             DB::commit();
@@ -141,5 +140,45 @@ class OrderService implements OrderServiceContract
         $order->forceAudit($attribute);
 
         return Address::updateOrCreate(['id' => $order->$attribute], $address);
+    }
+
+    private function resolveShippingAddress(
+        Address|string|null $shippingPlace,
+        string $shippingType,
+        Order $order
+    ): ?string {
+        switch ($shippingType) {
+            case ShippingType::POINT:
+                if ($order->shippingMethod->shipping_type === ShippingType::POINT && !$shippingPlace) {
+                    return $order->shipping_address_id;
+                }
+
+                return $shippingPlace;
+            case ShippingType::ADDRESS:
+                if ($order->shippingMethod->shipping_type === ShippingType::ADDRESS && !$shippingPlace) {
+                    return $order->shipping_address_id;
+                }
+
+                return $shippingPlace->getKey();
+            default:
+                return null;
+        }
+    }
+
+    private function resolveShippingPlace(
+        Address|string|null $shippingPlace,
+        string $shippingType,
+        Order $order
+    ): ?string {
+        switch ($shippingType) {
+            case ShippingType::POINT_EXTERNAL:
+                if ($order->shippingMethod->shipping_type === ShippingType::POINT && !$shippingPlace) {
+                    return $order->shipping_place;
+                }
+
+                return $shippingPlace;
+            default:
+                return null;
+        }
     }
 }
