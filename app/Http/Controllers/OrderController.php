@@ -304,6 +304,7 @@ class OrderController extends Controller
 
     public function sendDocuments(SendDocumentRequest $request, Order $order): JsonResponse
     {
+        //MAIL MICROSERVICE
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }
