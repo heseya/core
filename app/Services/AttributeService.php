@@ -8,7 +8,7 @@ use App\Models\Attribute;
 use App\Models\Product;
 use App\Services\Contracts\AttributeOptionServiceContract;
 use App\Services\Contracts\AttributeServiceContract;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Arr;
 
 class AttributeService implements AttributeServiceContract
 {
@@ -43,14 +43,10 @@ class AttributeService implements AttributeServiceContract
 
     public function sync(Product $product, array $data): void
     {
-        $attributes = Collection::make($data)->map(
-            fn ($option, $attribute) => [
-                'attribute_id' => $attribute,
-                'option_id' => $option,
-            ]
-        );
+        $attributes = Arr::divide($data)[0];
 
-        $product->attributes()->sync($attributes->values()->toArray());
+        $product->attributes()->sync($attributes);
+        $product->attributes->each(fn ($attribute) => $attribute->pivot->options()->sync($data[$attribute->getKey()]));
     }
 
     public function updateMinMax(Attribute $attribute): void

@@ -48,7 +48,7 @@ class Attribute extends Model
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'product_attribute')
-            ->withPivot('option_id')
+            ->withPivot('id')
             ->using(ProductAttribute::class);
     }
 

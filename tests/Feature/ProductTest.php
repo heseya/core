@@ -12,6 +12,7 @@ use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Models\Media;
 use App\Models\Product;
+use App\Models\ProductAttribute;
 use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Models\SeoMetadata;
@@ -103,10 +104,9 @@ class ProductTest extends TestCase
             'attribute_id' => $attribute->getKey()
         ]);
 
-        $this->product->attributes()->sync([[
-            'attribute_id' => $attribute->getKey(),
-            'option_id' => $option->getKey()
-        ]]);
+        $this->product->attributes()->attach($attribute->getKey());
+
+        $this->product->attributes->first()->pivot->options()->attach($option->getKey());
 
         $this->availabilityService->calculateAvailabilityOnOrderAndRestock($item);
 
@@ -125,17 +125,21 @@ class ProductTest extends TestCase
         ];
 
         $this->expected_attribute_short = [
-            'attributes' => [[
-                'name' => $attribute->name,
-                'selected_option' => [
-                    'id' => $option->getKey(),
-                    'name' => $option->name,
-                    'index' => $option->index,
-                    'value_number' => $option->value_number,
-                    'value_date' => $option->value_date,
-                    'attribute_id' => $attribute->getKey(),
+            'attributes' => [
+                [
+                    'name' => $attribute->name,
+                    'selected_options' => [
+                        [
+                            'id' => $option->getKey(),
+                            'name' => $option->name,
+                            'index' => $option->index,
+                            'value_number' => $option->value_number,
+                            'value_date' => $option->value_date,
+                            'attribute_id' => $attribute->getKey(),
+                        ],
+                    ],
                 ]
-            ]],
+            ],
         ];
 
         $this->expected_attribute = $this->expected_attribute_short;
@@ -518,7 +522,9 @@ class ProductTest extends TestCase
             'attribute_id' => $attribute->getKey()
         ]);
 
-        $product->attributes()->attach($attribute->getKey(), ['option_id' => $option->getKey()]);
+        $product->attributes()->attach($attribute->getKey());
+
+        $product->attributes->first()->pivot->options()->attach($option->getKey());
 
         $this
             ->actingAs($this->$user)
@@ -1320,7 +1326,7 @@ class ProductTest extends TestCase
             'attribute_id' => $attribute2->getKey()
         ]);
 
-        $this
+        $response = $this
             ->actingAs($this->$user)
             ->postJson('/products', [
                 'name' => 'Test',
@@ -1374,14 +1380,35 @@ class ProductTest extends TestCase
             'price' => 0,
         ]);
 
+        $product = Product::find($response->getData()->data->id);
+
+        $productAttribute1 = ProductAttribute::where('product_id', $product->getKey())
+            ->where('attribute_id', $attribute->getKey())
+            ->first();
+        $productAttribute2 = ProductAttribute::where('product_id', $product->getKey())
+            ->where('attribute_id', $attribute2->getKey())
+            ->first();
+
         $this->assertDatabaseHas('product_attribute', [
+            'product_id' => $product->getKey(),
             'attribute_id' => $attribute->getKey(),
-            'option_id' => $option->getKey()
         ]);
         $this->assertDatabaseHas('product_attribute', [
+            'product_id' => $product->getKey(),
             'attribute_id' => $attribute2->getKey(),
-            'option_id' => $option2->getKey()
         ]);
+
+        $this->assertDatabaseHas('product_attribute_attribute_option', [
+            'product_attribute_id' => $productAttribute1->getKey(),
+            'attribute_option_id' => $option->getKey()
+        ]);
+
+        $this->assertDatabaseHas('product_attribute_attribute_option', [
+            'product_attribute_id' => $productAttribute2->getKey(),
+            'attribute_option_id' => $option2->getKey()
+        ]);
+
+        $this->assertDatabaseCount('product_attribute_attribute_option', 3); // +1 from $this->product
     }
 
     public function testUpdateUnauthorized(): void
