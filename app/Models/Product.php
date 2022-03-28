@@ -131,7 +131,7 @@ class Product extends Model implements AuditableContract
     public function attributes(): BelongsToMany
     {
         return $this->belongsToMany(Attribute::class, 'product_attribute')
-            ->withPivot('option_id')
+            ->withPivot('id')
             ->using(ProductAttribute::class);
     }
 }
