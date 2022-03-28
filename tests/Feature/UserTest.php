@@ -845,9 +845,69 @@ class UserTest extends TestCase
     }
 
     /**
-     * @dataProvider unassignableProvider
+     * @dataProvider authProvider
      */
-    public function testUpdateUnassignableRole($user, $role): void
+    public function testUpdateAddRolesWithAuthenticated($user): void
+    {
+        $this->$user->givePermissionTo('users.edit');
+
+        $otherUser = User::factory()->create();
+        $role1 = Role::create(['name' => 'Role 1']);
+
+        $permission1 = Permission::create(['name' => 'permission.1']);
+        $permission2 = Permission::create(['name' => 'permission.2']);
+
+        $role1->syncPermissions([$permission1, $permission2]);
+        $this->$user->givePermissionTo([$permission1, $permission2]);
+
+        $data = [
+            'roles' => [
+                $role1->getKey(),
+                $this->authenticated->getKey(),
+            ],
+        ];
+
+        $permissions = $this->authenticatedPermissions
+            ->merge(['permission.1', 'permission.2'])
+            ->sort()
+            ->values()
+            ->toArray();
+
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/users/id:' . $otherUser->getKey(),
+            $data,
+        );
+        $response
+            ->assertOk()
+            ->assertJsonFragment([[
+                'id' => $role1->getKey(),
+                'name' => $role1->name,
+                'description' => $role1->description,
+                'assignable' => true,
+                'deletable' => true,
+            ]])->assertJsonFragment([[
+                'id' => $this->authenticated->getKey(),
+                'name' => $this->authenticated->name,
+                'description' => $this->authenticated->description,
+                'assignable' => false,
+                'deletable' => false,
+            ]])->assertJsonPath('data.permissions', $permissions);
+
+        $otherUser->refresh();
+
+        $this->assertTrue(
+            $otherUser->hasAllRoles([$role1, $this->authenticated]),
+        );
+
+        $this->assertTrue(
+            $otherUser->hasAllPermissions([$permission1, $permission2]),
+        );
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateUnassignableRole($user): void
     {
         $this->$user->givePermissionTo('users.edit');
 
@@ -855,10 +915,7 @@ class UserTest extends TestCase
 
         $data = [
             'roles' => [
-                match ($role) {
-                    RoleType::AUTHENTICATED => $this->authenticated->getKey(),
-                    RoleType::UNAUTHENTICATED => $this->unauthenticated->getKey(),
-                },
+                $this->unauthenticated->getKey(),
             ],
         ];
 
