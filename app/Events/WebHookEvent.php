@@ -6,6 +6,7 @@ use App\Enums\IssuerType;
 use App\Models\Model;
 use Carbon\Carbon;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
@@ -50,7 +51,7 @@ abstract class WebHookEvent
         return false;
     }
 
-    protected function getModelClass(Model $model): string
+    protected function getModelClass(Model|Pivot $model): string
     {
         return Str::remove('App\\Models\\', $model::class);
     }

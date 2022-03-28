@@ -5,26 +5,32 @@ namespace App\Http\Controllers;
 use App\Dtos\OrderIndexDto;
 use App\Dtos\OrderUpdateDto;
 use App\Enums\SchemaType;
+use App\Events\AddOrderDocument;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
+use App\Events\RemoveOrderDocument;
 use App\Exceptions\OrderException;
 use App\Http\Requests\OrderCreateRequest;
+use App\Http\Requests\OrderDocumentRequest;
 use App\Http\Requests\OrderIndexRequest;
 use App\Http\Requests\OrderItemsRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
+use App\Http\Resources\OrderDocumentResource;
 use App\Http\Resources\OrderPublicResource;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
 use App\Models\Discount;
 use App\Models\Order;
+use App\Models\OrderDocument;
 use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Services\Contracts\DiscountServiceContract;
+use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
@@ -43,6 +49,7 @@ class OrderController extends Controller
         private OrderServiceContract $orderService,
         private DiscountServiceContract $discountService,
         private ItemServiceContract $itemService,
+        private DocumentServiceContract $documentService
     ) {
     }
 
@@ -53,7 +60,7 @@ class OrderController extends Controller
 
         $query = Order::search($search_data)
             ->sort($request->input('sort'))
-            ->with(['products', 'discounts', 'payments']);
+            ->with(['products', 'discounts', 'payments', 'documents']);
 
         return OrderResource::collection(
             $query->paginate(Config::get('pagination.per_page')),
@@ -276,5 +283,21 @@ class OrderController extends Controller
         Gate::inspect('showUserOrder', [Order::class, $order]);
 
         return OrderResource::make($order);
+    }
+
+    public function storeDocument(OrderDocumentRequest $request, Order $order): JsonResource
+    {
+        $document = $this->documentService->storeDocument($order, $request->only('name', 'type', 'file'));
+        AddOrderDocument::dispatch($document);
+
+        return OrderDocumentResource::collection($order->documents);
+    }
+
+    public function deleteDocument(Order $order, OrderDocument $document): JsonResponse
+    {
+        $document = $this->documentService->removeDocument($order, $document->media_id);
+        RemoveOrderDocument::dispatch($document);
+
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }
