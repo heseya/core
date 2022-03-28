@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Criteria\MetadataPrivateSearch;
+use App\Criteria\MetadataSearch;
 use App\Criteria\UserSearch;
 use App\Criteria\WhereInIds;
+use App\Traits\HasMetadata;
 use App\Traits\HasWebHooks;
 use App\Traits\Sortable;
 use Heseya\Searchable\Criteria\Like;
@@ -46,7 +49,8 @@ class User extends Model implements
         HasCriteria,
         Sortable,
         Auditable,
-        HasWebHooks;
+        HasWebHooks,
+        HasMetadata;
 
     // Bez tego nie działały testy, w których jako aplikacja tworzy się użytkownika z określoną rolą
     protected $guard_name = 'api';
@@ -70,6 +74,8 @@ class User extends Model implements
         'email' => Like::class,
         'search' => UserSearch::class,
         'ids' => WhereInIds::class,
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     protected array $sortable = [

@@ -12,7 +12,7 @@
         "heseya/2fa": "^2.0",
         "heseya/dto": "^1.0",
         "heseya/laravel-searchable": "^2.0",
-        "heseya/pagination": "*",
+        "heseya/pagination": "^1.0.1",
         "heseya/resource": "*",
         "bvlinsky/explorer": "*",
         "laravel/framework": "^9.4",
@@ -107,10 +107,6 @@
         {
             "type": "path",
             "url": "./heseya/resource"
-        },
-        {
-            "type": "path",
-            "url": "./heseya/pagination"
         }
     ]
 }

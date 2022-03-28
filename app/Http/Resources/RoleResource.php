@@ -3,14 +3,17 @@
 namespace App\Http\Resources;
 
 use App\Enums\RoleType;
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class RoleResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
-        return [
+        return array_merge([
             'id' => $this->getKey(),
             'name' => $this->name,
             'description' => $this->description,
@@ -21,7 +24,7 @@ class RoleResource extends Resource
                     $this->getAllPermissions(),
                 ) : false,
             'deletable' => $this->type->is(RoleType::REGULAR),
-        ];
+        ], $this->metadataResource('roles.show_metadata_private'));
     }
 
     public function view(Request $request): array

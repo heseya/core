@@ -2,14 +2,17 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ProductResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
-        return [
+        return array_merge([
             'id' => $this->getKey(),
             'slug' => $this->slug,
             'name' => $this->name,
@@ -23,7 +26,7 @@ class ProductResource extends Resource
             'cover' => MediaResource::make($this->media->first()),
             'tags' => TagResource::collection($this->tags),
             'items' => ProductItemResource::collection($this->items),
-        ];
+        ], $this->metadataResource('products.show_metadata_private'));
     }
 
     public function view(Request $request): array

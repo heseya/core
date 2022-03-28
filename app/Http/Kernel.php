@@ -8,6 +8,7 @@ use App\Http\Middleware\Language;
 use App\Http\Middleware\SecureHeaders;
 use App\Http\Middleware\TrimStrings;
 use App\Http\Middleware\TrustProxies;
+use App\Http\Middleware\UndotParams;
 use Fruitcake\Cors\HandleCors;
 use Heseya\Pagination\Http\Middleware\Pagination;
 use Illuminate\Auth\Middleware\Authorize;
@@ -38,6 +39,7 @@ class Kernel extends HttpKernel
         ConvertEmptyStringsToNull::class,
         Pagination::class,
         Authenticate::class,
+        UndotParams::class,
     ];
 
     /**

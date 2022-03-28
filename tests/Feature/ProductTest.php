@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\MediaType;
 use App\Enums\SchemaType;
+use App\Enums\MetadataType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
@@ -93,6 +94,13 @@ class ProductTest extends TestCase
             'quantity' => 10,
         ]);
 
+        $metadata = $this->product->metadata()->create([
+            'name' => 'testMetadata',
+            'value' => 'value metadata',
+            'value_type' => MetadataType::STRING,
+            'public' => true
+        ]);
+
         $this->hidden_product = Product::factory()->create([
             'public' => false,
         ]);
@@ -166,6 +174,7 @@ class ProductTest extends TestCase
                 'required' => true,
                 'available' => true,
                 'price' => 0,
+                'metadata' => [],
                 'options' => [
                     [
                         'name' => 'XL',
@@ -177,6 +186,7 @@ class ProductTest extends TestCase
                             'sku' => 'K001/XL',
                         ],
                         ],
+                        'metadata' => [],
                     ],
                     [
                         'name' => 'L',
@@ -188,9 +198,13 @@ class ProductTest extends TestCase
                             'sku' => 'K001/L',
                         ],
                         ],
+                        'metadata' => [],
                     ],
                 ],
             ],
+            ],
+            'metadata' => [
+                $metadata->name => $metadata->value
             ],
         ]);
     }
@@ -407,6 +421,7 @@ class ProductTest extends TestCase
                     'parent_id' => $set1->parent_id,
                     'children_ids' => [],
                     'cover' => null,
+                    'metadata' => [],
                 ],
                 [
                     'id' => $set2->getKey(),
@@ -420,6 +435,7 @@ class ProductTest extends TestCase
                     'parent_id' => $set2->parent_id,
                     'children_ids' => [],
                     'cover' => null,
+                    'metadata' => [],
                 ],
             ],
             ]);
@@ -473,12 +489,14 @@ class ProductTest extends TestCase
                     'hide_on_index' => $set1->hide_on_index,
                     'parent_id' => $set1->parent_id,
                     'children_ids' => [],
+                    'metadata' => [],
                     'cover' => [
                         'id' => $media1->getKey(),
                         'type' => Str::lower($media1->type->key),
                         'url' => $media1->url,
                         'slug' => $media1->slug,
                         'alt' => $media1->alt,
+                        'metadata' => [],
                     ],
                 ],
                 [
@@ -492,12 +510,14 @@ class ProductTest extends TestCase
                     'hide_on_index' => $set2->hide_on_index,
                     'parent_id' => $set2->parent_id,
                     'children_ids' => [],
+                    'metadata' => [],
                     'cover' => [
                         'id' => $media2->getKey(),
                         'type' => Str::lower($media2->type->key),
                         'url' => $media2->url,
                         'slug' => $media2->slug,
                         'alt' => $media2->alt,
+                        'metadata' => [],
                     ],
                 ],
             ],
@@ -545,6 +565,30 @@ class ProductTest extends TestCase
                 'value_date' => $option->value_date,
                 'attribute_id' => $attribute->getKey(),
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowPrivateMetadata($user): void
+    {
+        $this->$user->givePermissionTo(['products.show_details', 'products.show_metadata_private']);
+
+        $privateMetadata = $this->product->metadataPrivate()->create([
+            'name' => 'hiddenMetadata',
+            'value' => 'hidden metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => false,
+        ]);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $this->product->getKey());
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['metadata_private' => [
+                $privateMetadata->name => $privateMetadata->value,
+            ]]);
     }
 
     /**

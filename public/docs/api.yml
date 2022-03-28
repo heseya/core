@@ -729,6 +729,82 @@ paths:
     $ref: './paths/Users.yml#/Users'
   '/users/id:{id}':
     $ref: './paths/Users.yml#/UsersParams'
+
+  '/products/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#Metadata'
+  '/products/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#Metadata'
+
+  '/schemas/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#Metadata'
+  '/schemas/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#Metadata'
+
+  '/options/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#Metadata'
+  '/options/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#Metadata'
+
+  '/product-sets/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#Metadata'
+  '/product-sets/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#Metadata'
+
+  '/discounts/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#Metadata'
+  '/discounts/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#Metadata'
+
+  '/items/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#Metadata'
+  '/items/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#Metadata'
+
+  '/orders/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#Metadata'
+  '/orders/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#Metadata'
+
+  '/statuses/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#Metadata'
+  '/statuses/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#Metadata'
+
+  '/shipping-methods/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#Metadata'
+  '/shipping-methods/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#Metadata'
+
+  '/package-templates/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#Metadata'
+  '/package-templates/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#Metadata'
+
+  '/users/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#Metadata'
+  '/users/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#Metadata'
+
+  '/roles/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#Metadata'
+  '/roles/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#Metadata'
+
+  '/pages/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#Metadata'
+  '/pages/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#Metadata'
+
+  '/apps/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#Metadata'
+  '/apps/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#Metadata'
+
+  '/media/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#Metadata'
+  '/media/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#Metadata'
+
   '/users/id:{id}/2fa/remove':
     $ref: './paths/Users.yml#/UserTFARemove'
   /webhooks:

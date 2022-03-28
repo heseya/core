@@ -5,10 +5,13 @@ namespace App\Models;
 use App\Audits\Redactors\AddressRedactor;
 use App\Audits\Redactors\ShippingMethodRedactor;
 use App\Audits\Redactors\StatusRedactor;
+use App\Criteria\MetadataPrivateSearch;
+use App\Criteria\MetadataSearch;
 use App\Criteria\OrderSearch;
 use App\Criteria\WhereCreatedAfter;
 use App\Criteria\WhereCreatedBefore;
 use App\Criteria\WhereHasStatusHidden;
+use App\Traits\HasMetadata;
 use App\Traits\Sortable;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
@@ -29,7 +32,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Order extends Model implements AuditableContract
 {
-    use HasFactory, HasCriteria, Sortable, Notifiable, Auditable;
+    use HasFactory, HasCriteria, Sortable, Notifiable, Auditable, HasMetadata;
 
     protected $fillable = [
         'code',
@@ -80,6 +83,8 @@ class Order extends Model implements AuditableContract
         'paid',
         'from' => WhereCreatedAfter::class,
         'to' => WhereCreatedBefore::class,
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     protected array $sortable = [

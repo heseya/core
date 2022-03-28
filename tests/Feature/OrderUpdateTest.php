@@ -92,6 +92,7 @@ class OrderUpdateTest extends TestCase
                     'name' => $this->status->name,
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
+                    "metadata" => [],
                 ],
                 'delivery_address' => [
                     'id' => $responseData->delivery_address->id,
@@ -181,6 +182,7 @@ class OrderUpdateTest extends TestCase
                     'name' => $this->status->name,
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
+                    "metadata" => [],
                 ],
                 'delivery_address' => [
                     'id' => $responseData->delivery_address->id,
@@ -270,6 +272,7 @@ class OrderUpdateTest extends TestCase
                     'name' => $this->status->name,
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
+                    "metadata" => [],
                 ],
                 'delivery_address' => [
                     'id' => $responseData->delivery_address->id,
@@ -351,8 +354,9 @@ class OrderUpdateTest extends TestCase
                     'name' => $this->status->name,
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
-                ],
-            ]);
+                 "metadata" => [],
+             ],
+         ]);
 
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
@@ -395,8 +399,9 @@ class OrderUpdateTest extends TestCase
                     'name' => $this->status->name,
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
-                ],
-            ]);
+                     "metadata" => [],
+                 ],
+             ]);
 
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
@@ -468,9 +473,10 @@ class OrderUpdateTest extends TestCase
                     'name' => $this->status->name,
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
-                ],
-                'delivery_address' => [
-                    'address' => $this->addressDelivery->address,
+                     "metadata" => [],
+                 ],
+                 'delivery_address' => [
+                     'address' => $this->addressDelivery->address,
                     'city' => $this->addressDelivery->city,
                     'country' => $this->addressDelivery->country ?? null,
                     'country_name' => $responseData->delivery_address->country_name,
@@ -591,9 +597,10 @@ class OrderUpdateTest extends TestCase
                     'name' => $this->status->name,
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
-                ],
-                'invoice_address' => [
-                    'address' => $this->addressInvoice->address,
+                     "metadata" => [],
+                 ],
+                 'invoice_address' => [
+                     'address' => $this->addressInvoice->address,
                     'city' => $this->addressInvoice->city,
                     'country' => $this->addressInvoice->country ?? null,
                     'country_name' => $responseData->invoice_address->country_name,

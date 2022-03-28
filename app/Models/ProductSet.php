@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Criteria\MetadataPrivateSearch;
+use App\Criteria\MetadataSearch;
 use App\Criteria\ProductSetSearch;
+use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
@@ -20,7 +23,7 @@ use Illuminate\Support\Str;
  */
 class ProductSet extends Model
 {
-    use HasCriteria, HasFactory, SoftDeletes, HasSeoMetadata;
+    use HasCriteria, HasFactory, SoftDeletes, HasSeoMetadata, HasMetadata;
 
     protected $fillable = [
         'name',
@@ -45,6 +48,8 @@ class ProductSet extends Model
         'slug' => Like::class,
         'search' => ProductSetSearch::class,
         'public',
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     public function getSlugOverrideAttribute(): bool

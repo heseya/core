@@ -53,8 +53,8 @@ class MediaTest extends TestCase
                 'url',
                 'slug',
                 'alt',
-            ],
-            ]);
+                'metadata'
+            ]]);
     }
 
     /**

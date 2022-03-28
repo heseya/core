@@ -93,7 +93,7 @@ class OrderService implements OrderServiceContract
     {
         return Order::searchByCriteria(['user_id' => Auth::id()] + $dto->getSearchCriteria())
             ->sort($dto->getSort())
-            ->with(['products', 'discounts', 'payments'])
+            ->with(['products', 'discounts', 'payments', 'metadata'])
             ->paginate(Config::get('pagination.per_page'));
     }
 

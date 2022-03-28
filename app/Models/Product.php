@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\Contracts\ProductSearchServiceContract;
+use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,7 +20,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Product extends Model implements AuditableContract, Explored
 {
-    use HasFactory, SoftDeletes, Searchable, Sortable, Auditable, HasSeoMetadata;
+    use HasFactory, SoftDeletes, Searchable, Sortable, Auditable, HasSeoMetadata, HasMetadata;
 
     protected $fillable = [
         'name',

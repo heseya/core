@@ -2,13 +2,16 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
 class ShippingMethodResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
-        return [
+        return array_merge([
             'id' => $this->getKey(),
             'name' => $this->name,
             'price' => $this->price,
@@ -19,6 +22,6 @@ class ShippingMethodResource extends Resource
             'price_ranges' => PriceRangeResource::collection($this->priceRanges->sortBy('start')),
             'shipping_time_min' => $this->shipping_time_min,
             'shipping_time_max' => $this->shipping_time_max,
-        ];
+        ], $this->metadataResource('shipping_methods.show_metadata_private'));
     }
 }

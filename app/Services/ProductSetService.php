@@ -35,7 +35,8 @@ class ProductSetService implements ProductSetServiceContract
 
     public function searchAll(array $attributes, bool $root): Collection
     {
-        $query = ProductSet::searchByCriteria($attributes);
+        $query = ProductSet::searchByCriteria($attributes)
+            ->with('metadata');
 
         if (!Auth::user()->can('product_sets.show_hidden')) {
             $query->public();

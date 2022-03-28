@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\MetadataType;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
@@ -60,6 +61,13 @@ class OrderTest extends TestCase
             'price' => 49.99,
         ]);
 
+        $metadata = $this->order->metadata()->create([
+            'name' => 'Metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
         /** @var OrderService $orderService */
         $orderService = App::make(OrderServiceContract::class);
 
@@ -96,6 +104,7 @@ class OrderTest extends TestCase
             'paid',
             'created_at',
             'shipping_method',
+            'metadata'
         ];
 
         $this->expected_full_view_structure = $this->expected_full_structure + ['user'];
@@ -121,12 +130,10 @@ class OrderTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonStructure(['data' => [
                 0 => $this->expected_full_structure,
-            ],
-            ])
+            ]])
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ],
-            ]);
+            ]]);
 
         $this->assertQueryCountLessThan(20);
     }
@@ -224,14 +231,12 @@ class OrderTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonStructure(['data' => [
                 0 => $this->expected_full_structure,
-            ],
-            ])
+            ]])
             ->assertJson(['data' => [
                 0 => [
                     'id' => $order->getKey(),
                 ],
-            ],
-            ])
+            ]])
             ->assertJsonMissing([
                 'id' => $order_another_user->getKey(),
             ])
@@ -284,12 +289,10 @@ class OrderTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonStructure(['data' => [
                 0 => $this->expected_full_structure,
-            ],
-            ])
+            ]])
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ],
-            ]);
+            ]]);
 
         $this->assertQueryCountLessThan(20);
     }
@@ -316,8 +319,7 @@ class OrderTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonStructure(['data' => [
                 0 => $this->expected_full_structure,
-            ],
-            ])
+            ]])
             ->assertJson(['data' => [
                 0 => [
                     'code' => $order->code,
@@ -330,8 +332,7 @@ class OrderTest extends TestCase
                         'no_notifications' => $status->no_notifications,
                     ],
                 ],
-            ],
-            ]);
+            ]]);
 
         $this->assertQueryCountLessThan(20);
     }
@@ -515,6 +516,31 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonFragment(['code' => $this->order->code])
             ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewPrivateMetadata($user): void
+    {
+        $this->$user->givePermissionTo(['orders.show_details', 'orders.show_metadata_private']);
+
+        $privateMetadata = $this->order->metadataPrivate()->create([
+            'name' => 'hiddenMetadata',
+            'value' => 'hidden metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => false,
+        ]);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/orders/id:' . $this->order->getKey());
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['code' => $this->order->code])
+            ->assertJsonStructure(['data' => $this->expected_full_view_structure])
+            ->assertJsonFragment(['metadata_private' => [
+                $privateMetadata->name => $privateMetadata->value
+            ]]);
     }
 
     public function testViewSummaryUnauthorized(): void

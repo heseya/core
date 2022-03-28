@@ -2,8 +2,12 @@
 
 namespace App\Models;
 
+use App\Criteria\MetadataPrivateSearch;
+use App\Criteria\MetadataSearch;
+use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
@@ -14,7 +18,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Page extends Model implements AuditableContract
 {
-    use HasFactory, Sortable, Auditable, SoftDeletes, HasSeoMetadata;
+    use HasFactory, HasCriteria, Sortable, Auditable, SoftDeletes, HasSeoMetadata, HasMetadata;
 
     protected $fillable = [
         'order',
@@ -32,5 +36,10 @@ class Page extends Model implements AuditableContract
         'order',
         'created_at',
         'updated_at',
+    ];
+
+    protected array $criteria = [
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 }

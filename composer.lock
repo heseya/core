@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2380f831615bbb65f85e720f6c13f5bb",
+    "content-hash": "fdc8ec31951faa271182c10fff3ea66c",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -2575,14 +2575,21 @@
         },
         {
             "name": "heseya/pagination",
-            "version": "dev-main",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/heseya/laravel-pagination.git",
+                "reference": "55ff29747417e5684b87e39e02f853867b8a3050"
+            },
             "dist": {
-                "type": "path",
-                "url": "./heseya/pagination",
-                "reference": "66288b218903a7d29c61eb1f358166df03d864df"
+                "type": "zip",
+                "url": "https://api.github.com/repos/heseya/laravel-pagination/zipball/55ff29747417e5684b87e39e02f853867b8a3050",
+                "reference": "55ff29747417e5684b87e39e02f853867b8a3050",
+                "shasum": ""
             },
             "require": {
-                "laravel/framework": "^9.0"
+                "laravel/framework": "^8.0|^9.0",
+                "php": "^8.0"
             },
             "type": "library",
             "extra": {
@@ -2594,20 +2601,25 @@
             },
             "autoload": {
                 "psr-4": {
-                    "Heseya\\Pagination\\": "src/",
-                    "Heseya\\Pagination\\Tests\\": "tests/"
+                    "Heseya\\Pagination\\": "src/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
             "authors": [
                 {
                     "name": "Jędrzej Buliński",
                     "email": "jedrzej@heseya.com"
                 }
             ],
-            "description": "Heseya Store Pagination Middleware",
-            "transport-options": {
-                "relative": true
-            }
+            "description": "Heseya Laravel Pagination Middleware",
+            "support": {
+                "issues": "https://github.com/heseya/laravel-pagination/issues",
+                "source": "https://github.com/heseya/laravel-pagination/tree/1.0.1"
+            },
+            "time": "2022-03-28T16:45:18+00:00"
         },
         {
             "name": "heseya/resource",

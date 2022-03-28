@@ -17,6 +17,8 @@ class DiscountIndexRequest extends FormRequest
             'search' => ['string', 'max:255'],
             'description' => ['string', 'max:255'],
             'code' => ['string', 'max:64'],
+            'metadata' => ['nullable', 'array'],
+            'metadata_private' => ['nullable', 'array'],
         ];
     }
 }

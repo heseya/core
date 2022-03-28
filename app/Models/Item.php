@@ -3,8 +3,11 @@
 namespace App\Models;
 
 use App\Criteria\ItemSearch;
+use App\Criteria\MetadataPrivateSearch;
+use App\Criteria\MetadataSearch;
 use App\Criteria\WhereCreatedBefore;
 use App\Criteria\WhereSoldOut;
+use App\Traits\HasMetadata;
 use App\Traits\Sortable;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
@@ -21,7 +24,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Item extends Model implements AuditableContract
 {
-    use SoftDeletes, HasFactory, HasCriteria, Sortable, Auditable;
+    use SoftDeletes, HasFactory, HasCriteria, Sortable, Auditable, HasMetadata;
 
     protected $fillable = [
         'name',
@@ -35,6 +38,8 @@ class Item extends Model implements AuditableContract
         'search' => ItemSearch::class,
         'sold_out' => WhereSoldOut::class,
         'day' => WhereCreatedBefore::class,
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     protected array $sortable = [

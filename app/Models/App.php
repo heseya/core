@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Criteria\MetadataPrivateSearch;
+use App\Criteria\MetadataSearch;
 use App\Services\Contracts\UrlServiceContract;
+use App\Traits\HasMetadata;
 use App\Traits\HasWebHooks;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
@@ -12,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Support\Facades\App as AppFacade;
+use Laravel\Scout\Searchable;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use Spatie\Permission\Contracts\Permission;
 use Spatie\Permission\Traits\HasPermissions;
@@ -25,10 +29,12 @@ class App extends Model implements
     JWTSubject
 {
     use HasFactory,
+        Searchable,
         Authorizable,
         Authenticatable,
         HasPermissions,
-        HasWebHooks;
+        HasWebHooks,
+        HasMetadata;
 
     protected $guard_name = 'api';
 
@@ -45,6 +51,11 @@ class App extends Model implements
         'author',
         'uninstall_token',
         'role_id',
+    ];
+
+    protected array $criteria = [
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     public function setUrlAttribute(string $url): void

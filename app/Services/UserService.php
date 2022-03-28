@@ -21,6 +21,7 @@ class UserService implements UserServiceContract
     {
         return User::searchByCriteria($search)
             ->sort($sort)
+            ->with('metadata')
             ->paginate($limit);
     }
 
