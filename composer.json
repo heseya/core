@@ -7,7 +7,6 @@
         "php": "^8.0",
         "bensampo/laravel-enum": "^5.1",
         "doctrine/dbal": "^3.3",
-        "fruitcake/laravel-cors": "^2.2",
         "guzzlehttp/guzzle": "^7.4",
         "heseya/2fa": "^2.0",
         "heseya/dto": "^1.0",
