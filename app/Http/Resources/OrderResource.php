@@ -23,7 +23,7 @@ class OrderResource extends Resource
             'status' => $this->status ? StatusResource::make($this->status) : null,
             'delivery_address' => $this->deliveryAddress ? AddressResource::make($this->deliveryAddress) : null,
             'shipping_method' => $this->shippingMethod ? ShippingMethodResource::make($this->shippingMethod) : null,
-            'documents' => OrderDocumentResource::collection($this->documents),
+            'documents' => OrderDocumentResource::collection($this->documents->pluck('pivot')),
         ];
     }
 
