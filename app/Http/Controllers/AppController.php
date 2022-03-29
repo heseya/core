@@ -22,7 +22,7 @@ class AppController extends Controller
 
     public function index(AppIndexRequest $request): JsonResource
     {
-        $apps = App::search($request->validated())
+        $apps = App::searchByCriteria($request->validated())
             ->with('metadata');
 
         return AppResource::collection($apps->paginate(Config::get('pagination.per_page')));

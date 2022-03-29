@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fdc8ec31951faa271182c10fff3ea66c",
+    "content-hash": "4201b90439683a560cfffe92361c3eab",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -2575,16 +2575,16 @@
         },
         {
             "name": "heseya/pagination",
-            "version": "1.0.1",
+            "version": "1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/heseya/laravel-pagination.git",
-                "reference": "55ff29747417e5684b87e39e02f853867b8a3050"
+                "reference": "ac83ba6801f213e3b61126ccf4cf66dd09c41a07"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/heseya/laravel-pagination/zipball/55ff29747417e5684b87e39e02f853867b8a3050",
-                "reference": "55ff29747417e5684b87e39e02f853867b8a3050",
+                "url": "https://api.github.com/repos/heseya/laravel-pagination/zipball/ac83ba6801f213e3b61126ccf4cf66dd09c41a07",
+                "reference": "ac83ba6801f213e3b61126ccf4cf66dd09c41a07",
                 "shasum": ""
             },
             "require": {
@@ -2617,9 +2617,9 @@
             "description": "Heseya Laravel Pagination Middleware",
             "support": {
                 "issues": "https://github.com/heseya/laravel-pagination/issues",
-                "source": "https://github.com/heseya/laravel-pagination/tree/1.0.1"
+                "source": "https://github.com/heseya/laravel-pagination/tree/1.0.2"
             },
-            "time": "2022-03-28T16:45:18+00:00"
+            "time": "2022-03-29T06:19:39+00:00"
         },
         {
             "name": "heseya/resource",

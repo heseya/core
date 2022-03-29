@@ -14,7 +14,7 @@ class PackageTemplateController extends Controller
 {
     public function index(PackageTemplateIndexRequest $request): JsonResource
     {
-        $packages = PackageTemplate::search($request->validated())
+        $packages = PackageTemplate::searchByCriteria($request->validated())
             ->with(['metadata']);
 
         return PackageTemplateResource::collection($packages->get());

@@ -5,15 +5,15 @@ namespace App\Models;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Traits\HasMetadata;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Laravel\Scout\Searchable;
 
 /**
  * @mixin IdeHelperPackageTemplate
  */
 class PackageTemplate extends Model
 {
-    use HasFactory, Searchable, HasMetadata;
+    use HasFactory, HasCriteria, HasMetadata;
 
     protected $fillable = [
         'name',

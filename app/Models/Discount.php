@@ -35,7 +35,6 @@ class Discount extends Model implements AuditableContract
 
     protected $casts = [
         'type' => DiscountType::class,
-
     ];
 
     protected $dates = [

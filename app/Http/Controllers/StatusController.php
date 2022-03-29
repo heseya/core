@@ -17,7 +17,7 @@ class StatusController extends Controller
 {
     public function index(StatusIndexRequest $request): JsonResource
     {
-        $statuses = Status::search($request->validated())
+        $statuses = Status::searchByCriteria($request->validated())
             ->with(['metadata']);
 
         return StatusResource::collection(

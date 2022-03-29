@@ -15,7 +15,7 @@ class ShippingMethodService implements ShippingMethodServiceContract
     public function index(?array $search, ?string $country, float $cartValue): Collection
     {
         $query = ShippingMethod::query()
-            ->search($search)
+            ->searchByCriteria($search)
             ->with('metadata')
             ->orderBy('order');
 

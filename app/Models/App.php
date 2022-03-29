@@ -7,6 +7,7 @@ use App\Criteria\MetadataSearch;
 use App\Services\Contracts\UrlServiceContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasWebHooks;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
@@ -15,7 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Support\Facades\App as AppFacade;
-use Laravel\Scout\Searchable;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use Spatie\Permission\Contracts\Permission;
 use Spatie\Permission\Traits\HasPermissions;
@@ -29,7 +29,7 @@ class App extends Model implements
     JWTSubject
 {
     use HasFactory,
-        Searchable,
+        HasCriteria,
         Authorizable,
         Authenticatable,
         HasPermissions,
