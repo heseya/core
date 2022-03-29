@@ -416,3 +416,33 @@ OrderDeleteDocument:
         description: No content
     security:
       - oauth: [ ]
+
+OrderDownloadDocument:
+  get:
+    tags:
+      - Orders
+    summary: 'downloads document'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
+    responses:
+      200:
+        description: A PDF file
+        content:
+          application/pdf:
+            schema:
+              example: test
+              type: string
+              format: binary
+    security:
+      - oauth: [ ]
