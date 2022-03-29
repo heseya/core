@@ -37,7 +37,7 @@ OrderCreate:
                       example: 'HE + YA'
                   type: object
               type: object
-          shipping_address:
+          shipping_place:
             $ref: './../schemas/Addresses.yml#/Address'
           billing_address:
             $ref: './../schemas/Addresses.yml#/Address'
@@ -46,9 +46,6 @@ OrderCreate:
             items: [ ]
           invoice_requested:
             type: boolean
-          shipping_place:
-            type: string
-            example: 'Test 12 11-111 Test'
         type: object
 
 OrderUpdate:
@@ -62,7 +59,7 @@ OrderUpdate:
           comment:
             type: string
             example: 'asap plz'
-          shipping_address:
+          shipping_place:
             $ref: './../schemas/Addresses.yml#/Address'
           billing_address:
             $ref: './../schemas/Addresses.yml#/Address'

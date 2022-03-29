@@ -33,8 +33,6 @@ Order:
       $ref: './Statuses.yml#/Status'
     shipping_method:
       $ref: './ShippingMethods.yml#/ShippingMethod'
-    shipping_address:
-      $ref: './Addresses.yml#/Address'
     billing_address:
       $ref: './Addresses.yml#/Address'
     products:
@@ -45,9 +43,9 @@ Order:
       type: boolean
     shipping_place:
       oneOf:
+        - $ref: './Addresses.yml#/Address'
         - type: string
           example: 'Test 12 11-111 Test'
-        - $ref: './Addresses.yml#/Address'
   type: object
 
 OrderProduct:
