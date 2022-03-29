@@ -34,7 +34,9 @@ Product:
     seo:
       $ref: './../schemas/Seo.yml#SeoStore'
     items:
-      $ref: './../schemas/Items.yml#ItemWithRequiredQuantity'
+      type: array
+      items:
+        $ref: './../schemas/Items.yml#ItemWithRequiredQuantity'
 
 ProductStore:
   content:
