@@ -34,7 +34,7 @@ class ProductSearchTest extends TestCase
                 'must' =>  [
                     [
                         'multi_match' =>  [
-                        'query' => $product->name,
+                            'query' => $product->name,
                             'fuzziness' => 'auto',
                         ],
                     ],
