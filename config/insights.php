@@ -81,6 +81,7 @@ return [
         LineEndingsSniff::class,
         ComposerMustBeValid::class,
         TodoSniff::class,
+        ForbiddenFunctionsSniff::class,
 
         // replaced with own
         SpaceAfterNotSniff::class,

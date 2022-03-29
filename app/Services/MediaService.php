@@ -37,11 +37,11 @@ class MediaService implements MediaServiceContract
         }
     }
 
-    public function store(UploadedFile $file): Media
+    public function store(UploadedFile $file, bool $private = false): Media
     {
         $response = Http::attach('file', $file->getContent(), 'file')
             ->withHeaders(['x-api-key' => Config::get('silverbox.key')])
-            ->post(Config::get('silverbox.host') . '/' . Config::get('silverbox.client'));
+            ->post(Config::get('silverbox.host') . '/' . Config::get('silverbox.client') . '?private=' . $private);
 
         if ($response->failed()) {
             throw new MediaCriticalException('CDN responded with an error');

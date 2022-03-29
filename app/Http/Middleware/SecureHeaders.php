@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class SecureHeaders
 {
@@ -14,12 +15,14 @@ class SecureHeaders
     {
         $response = $next($request);
 
-        $response->withHeaders([
-            'Server' => 'Heseya',
-            'X-Powered-By' => 'Heseya',
-            'X-Frame-Options' => 'DENY',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
+        if ($response instanceof Response) {
+            $response->withHeaders([
+                'Server' => 'Heseya',
+                'X-Powered-By' => 'Heseya',
+                'X-Frame-Options' => 'DENY',
+                'X-Content-Type-Options' => 'nosniff',
+            ]);
+        }
 
         return $response;
     }
