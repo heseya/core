@@ -292,7 +292,7 @@ class OrderController extends Controller
         $document = $this->documentService->storeDocument($order, $request->only('name', 'type', 'file'));
         AddOrderDocument::dispatch($document);
 
-        return OrderDocumentResource::collection($order->documents);
+        return OrderDocumentResource::collection($order->documents->pluck('pivot'));
     }
 
     public function deleteDocument(Order $order, OrderDocument $document): JsonResponse
@@ -307,7 +307,7 @@ class OrderController extends Controller
     {
         $documents = OrderDocument::findMany($request->input('uuid'));
         //MAIL MICROSERVICE
-        SendOrderDocument::dispatch($documents);
+        SendOrderDocument::dispatch($order, $documents);
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }

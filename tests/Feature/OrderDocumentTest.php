@@ -8,6 +8,9 @@ use App\Events\SendOrderDocument;
 use App\Models\Media;
 use App\Models\Order;
 use App\Models\OrderDocument;
+use App\Models\PaymentMethod;
+use App\Models\ShippingMethod;
+use App\Models\Status;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
@@ -28,6 +31,22 @@ class OrderDocumentTest extends TestCase
         Http::fake(['*' => Http::response([0 => ['path' => 'image.jpeg']])]);
 
         $this->order = Order::factory()->create();
+
+        $status = Status::factory()->create([
+            'cancel' => false
+        ]);
+
+        $paymentMethod = PaymentMethod::factory()->create();
+
+        $shippingMethod = ShippingMethod::factory()->create();
+        $shippingMethod->paymentMethods()->save($paymentMethod);
+
+        $this->order->update([
+            'status_id' => $status->getKey(),
+            'payment_method_id' => $paymentMethod->getKey(),
+            'shipping_method_id' => $shippingMethod->getKey(),
+        ]);
+
         $this->file = UploadedFile::fake()->image('image.jpeg');
     }
 
