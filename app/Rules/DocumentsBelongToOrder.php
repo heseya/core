@@ -11,8 +11,7 @@ class DocumentsBelongToOrder implements Rule
     public function passes($attribute, $value): bool
     {
         $this->error = $value;
-        $documents = request()->route('order')->documents->pluck('pivot.id');
-        return $documents->contains($value);
+        return request()->route('order')->documents()->wherePivot('id', $value)->exists();
     }
 
     public function message(): string

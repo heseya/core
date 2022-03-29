@@ -10,6 +10,7 @@ use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
 use App\Events\RemoveOrderDocument;
+use App\Events\SendOrderDocument;
 use App\Exceptions\OrderException;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderDocumentRequest;
@@ -304,7 +305,10 @@ class OrderController extends Controller
 
     public function sendDocuments(SendDocumentRequest $request, Order $order): JsonResponse
     {
+        $documents = OrderDocument::findMany($request->input('uuid'));
         //MAIL MICROSERVICE
+        SendOrderDocument::dispatch($documents);
+
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

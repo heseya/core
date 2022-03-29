@@ -22,6 +22,7 @@ use App\Events\ProductSetCreated;
 use App\Events\ProductSetDeleted;
 use App\Events\ProductSetUpdated;
 use App\Events\ProductUpdated;
+use App\Events\SendOrderDocument;
 use App\Events\UserCreated;
 use App\Events\UserDeleted;
 use App\Events\UserUpdated;
@@ -50,6 +51,9 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         OrderDocumentEvent::class => [
             WebHookEventListener::class,
+        ],
+        SendOrderDocument::class => [
+          WebHookEventListener::class,
         ],
         OrderCreated::class => [
             OrderCreatedListener::class,

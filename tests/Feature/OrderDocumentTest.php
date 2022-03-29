@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\OrderDocumentType;
 use App\Events\AddOrderDocument;
+use App\Events\SendOrderDocument;
 use App\Models\Media;
 use App\Models\Order;
 use App\Models\OrderDocument;
@@ -83,10 +84,14 @@ class OrderDocumentTest extends TestCase
      */
     public function testSendDocuments($user)
     {
+        Event::fake(SendOrderDocument::class);
+
         $mediaOne = Media::factory()->create();
         $mediaTwo = Media::factory()->create();
+
         $this->order->documents()->attach($mediaOne, ['type' => OrderDocumentType::OTHER, 'name' => 'test']);
         $this->order->documents()->attach($mediaTwo, ['type' => OrderDocumentType::OTHER, 'name' => 'test']);
+
         $response = $this->actingAs($this->$user)->postJson('orders/id:' . $this->order->getKey() . '/docs/send', [
             'uuid' =>
                 [
@@ -96,6 +101,8 @@ class OrderDocumentTest extends TestCase
         ]);
 
         $response->assertStatus(JsonResponse::HTTP_NO_CONTENT);
+
+        Event::assertDispatched(SendOrderDocument::class);
     }
 
     /**
@@ -103,6 +110,8 @@ class OrderDocumentTest extends TestCase
      */
     public function testSendOtherOrderDocument($user)
     {
+        Event::fake(SendOrderDocument::class);
+
         $order = Order::factory()->create();
 
         $mediaOne = Media::factory()->create();
@@ -126,5 +135,7 @@ class OrderDocumentTest extends TestCase
                 'message' => 'Document with id '. $wrongDocId . ' doesn\'t belong to this order.'
             ])
             ->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
+
+        Event::assertNotDispatched(SendOrderDocument::class);
     }
 }
