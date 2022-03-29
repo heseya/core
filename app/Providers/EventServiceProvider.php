@@ -53,7 +53,7 @@ class EventServiceProvider extends ServiceProvider
             WebHookEventListener::class,
         ],
         SendOrderDocument::class => [
-          WebHookEventListener::class,
+            WebHookEventListener::class,
         ],
         OrderCreated::class => [
             OrderCreatedListener::class,
