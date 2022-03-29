@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\MediaType;
 use App\Enums\OrderDocumentType;
 use App\Events\AddOrderDocument;
 use App\Models\Media;
@@ -21,9 +22,7 @@ class OrderDocumentTest extends TestCase
     {
         parent::setUp();
 
-
         Event::fake(AddOrderDocument::class);
-        Http::fake(['*' => Http::response([0 => ['path' => 'image.jpeg']])]);
 
         $this->order = Order::factory()->create();
         $this->file = UploadedFile::fake()->image('image.jpeg');
@@ -34,6 +33,8 @@ class OrderDocumentTest extends TestCase
      */
     public function testStoreDocument($user)
     {
+        Http::fake(['*' => Http::response([0 => ['path' => 'image.jpeg']])]);
+
         $this->$user->givePermissionTo('orders.edit');
 
         $response = $this->actingAs($this->$user)->postJson('orders/id:' . $this->order->getKey() . '/docs', [
@@ -59,12 +60,13 @@ class OrderDocumentTest extends TestCase
      */
     public function testDeleteDocument($user)
     {
+        Http::fake(['*' => Http::response()]);
+
         $this->$user->givePermissionTo('orders.edit');
 
-        $this->actingAs($this->$user)->postJson('orders/id:' . $this->order->getKey() . '/docs', [
-            'file' => $this->file,
-            'type' => OrderDocumentType::OTHER
-        ]);
+        $media = Media::factory()->create();
+
+        $this->order->documents()->attach($media, ['type' => OrderDocumentType::OTHER, 'name' => 'test']);
 
         $response = $this->actingAs($this->$user)
             ->deleteJson(
@@ -75,5 +77,36 @@ class OrderDocumentTest extends TestCase
 
         $this->assertDatabaseCount('media', 0);
         $this->assertDatabaseCount('order_document', 0);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDownloadDocument($user)
+    {
+        $this->$user->givePermissionTo('orders.edit');
+
+        $file = UploadedFile::fake()->image('test.jpeg');
+
+        $media = Media::factory()->create([
+            'type' => MediaType::OTHER,
+            'url' => 'silverbox/heseya/test.jpeg',
+        ]);
+
+        $this->order->documents()->attach($media, ['type' => OrderDocumentType::INVOICE, 'name' => 'test']);
+
+        Http::fake(['*' => Http::response($file)]);
+
+        $response = $this->actingAs($this->$user)
+            ->json(
+                'GET', 'orders/id:'
+                . $this->order->getKey() . '/docs/id:'
+                . $this->order->documents->last()->pivot->id
+                . '/download'
+            );
+
+        $response
+            ->assertStatus(200)
+            ->assertHeader('content-disposition', 'attachment; filename=test.jpeg');
     }
 }

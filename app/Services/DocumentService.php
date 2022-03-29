@@ -7,6 +7,10 @@ use App\Models\Order;
 use App\Models\OrderDocument;
 use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\MediaServiceContract;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class DocumentService implements DocumentServiceContract
 {
@@ -14,17 +18,25 @@ class DocumentService implements DocumentServiceContract
     {
     }
 
-    public function storeDocument(Order $order, array $data): OrderDocument
+    public function storeDocument(Order $order, ?string $name, string $type, UploadedFile $file): OrderDocument
     {
-        $media = $this->mediaService->store($data['file']);
-        $order->documents()->attach($media, ['type' => $data['type'], 'name' => $data['name'] ?? null]);
+        $media = $this->mediaService->store($file, true);
+        $order->documents()->attach($media, ['type' => $type, 'name' => $name ?? null]);
 
         return OrderDocument::where([
-            ['type', $data['type']],
-            ['name', $data['name']],
+            ['type', $type],
+            ['name', $name],
             ['media_id', $media->getKey()],
             ['order_id', $order->getKey()],
         ])->first();
+    }
+
+    public function downloadDocument(OrderDocument $document)
+    {
+        return response()->streamDownload(function () use ($document): void {
+            echo Http::get($document->media->url)
+                ->withHeaders(['x-api-key' => Config::get('silverbox.key')]);
+        }, Str::of($document->media->url)->afterLast('/'));
     }
 
     public function removeDocument(Order $order, string $mediaId): OrderDocument

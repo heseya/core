@@ -49,7 +49,7 @@ class OrderController extends Controller
         private OrderServiceContract $orderService,
         private DiscountServiceContract $discountService,
         private ItemServiceContract $itemService,
-        private DocumentServiceContract $documentService
+        private DocumentServiceContract $documentService,
     ) {
     }
 
@@ -287,7 +287,13 @@ class OrderController extends Controller
 
     public function storeDocument(OrderDocumentRequest $request, Order $order): JsonResource
     {
-        $document = $this->documentService->storeDocument($order, $request->only('name', 'type', 'file'));
+        $document = $this->documentService
+            ->storeDocument(
+                $order,
+                $request->input('name'),
+                $request->input('type'),
+                $request->file('file'),
+            );
         AddOrderDocument::dispatch($document);
 
         return OrderDocumentResource::collection($order->documents);
@@ -299,5 +305,10 @@ class OrderController extends Controller
         RemoveOrderDocument::dispatch($document);
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    public function downloadDocument(Order $order, OrderDocument $document)
+    {
+        return $this->documentService->downloadDocument($document);
     }
 }

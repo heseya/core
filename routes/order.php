@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Middleware\SecureHeaders;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('orders')->group(function (): void {
@@ -28,6 +29,8 @@ Route::prefix('orders')->group(function (): void {
         ->middleware('can:orders.edit');
     Route::delete('id:{order:id}/docs/id:{document}', [OrderController::class, 'deleteDocument'])
         ->middleware('can:orders.edit');
+    Route::get('id:{order:id}/docs/id:{document}/download', [OrderController::class, 'downloadDocument'])
+        ->withoutMiddleware([SecureHeaders::class]);
 
     Route::post('{order:code}/pay/offline', [PaymentController::class, 'offlinePayment'])
         ->middleware('can:payments.offline');
