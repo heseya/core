@@ -350,3 +350,69 @@ OrdersCodePayOffline:
                 data:
                   $ref: './../schemas/Payments.yml#/Payment'
               type: object
+
+OrderAddDocument:
+  post:
+    tags:
+      - Orders
+    summary: 'add document'
+    consumes:
+      - multipart/form-data
+    parameters:
+      - name: file
+        type: file
+        in: formData
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      request: OrderDocument
+      content:
+        application/json:
+          schema:
+            properties:
+              name:
+                type: string
+                example: test
+              file:
+                type: file
+              type:
+                type: string
+                example: invoice
+            type: object
+    responses:
+      200:
+        description: Ok
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Documents.yml#/Document'
+              type: object
+
+OrderDeleteDocument:
+  delete:
+    tags:
+      - Orders
+    summary: 'delete document'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: d1365285-ad58-48da-88e2-99e9f4c0800d
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: d1365285-ad58-48da-88e2-99e9f4c0800d
+    responses:
+      204:
+        description: No content
+    security:
+      - oauth: [ ]

@@ -301,6 +301,10 @@ paths:
     $ref: './paths/Orders.yml#/OrdersMy'
   '/orders/my/id:{id}':
     $ref: './paths/Orders.yml#/OrdersMyId'
+  '/orders/id:{id}/docs':
+    $ref: './paths/Orders.yml#/OrderAddDocument'
+  '/orders/id:{id}/docs/id:{id}':
+    $ref: './paths/Orders.yml#/OrderDeleteDocument'
   /package-templates:
     get:
       tags:
