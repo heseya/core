@@ -17,7 +17,7 @@ class OrderDocumentEvent extends WebHookEvent
 
     public function getDataContent(): array
     {
-        return OrderDocumentResource::make($this->document)->resolve();
+        return OrderDocumentResource::make($this->document->pivot)->resolve();
     }
 
     public function getDataType(): string

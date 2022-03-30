@@ -307,6 +307,8 @@ paths:
     $ref: './paths/Orders.yml#/OrderDeleteDocument'
   '/orders/id:{id}/docs/id:{id}/download':
     $ref: './paths/Orders.yml#/OrderDownloadDocument'
+  '/orders/id:{id}/docs/send':
+    $ref: './paths/Orders.yml#/OrdersDocumentsSend'
   /package-templates:
     get:
       tags:

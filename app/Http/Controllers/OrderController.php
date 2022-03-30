@@ -10,6 +10,9 @@ use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
 use App\Events\RemoveOrderDocument;
+use App\Events\SendOrderDocument;
+use App\Events\RemoveOrderDocument;
+use App\Events\SendOrderDocument;
 use App\Exceptions\OrderException;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderDocumentRequest;
@@ -17,7 +20,10 @@ use App\Http\Requests\OrderIndexRequest;
 use App\Http\Requests\OrderItemsRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
+use App\Http\Requests\SendDocumentRequest;
 use App\Http\Resources\OrderDocumentResource;
+use App\Http\Resources\OrderDocumentResource;
+use App\Http\Requests\SendDocumentRequest;
 use App\Http\Resources\OrderPublicResource;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
@@ -310,5 +316,14 @@ class OrderController extends Controller
     public function downloadDocument(Order $order, OrderDocument $document)
     {
         return $this->documentService->downloadDocument($document);
+    }
+
+    public function sendDocuments(SendDocumentRequest $request, Order $order): JsonResponse
+    {
+        $documents = OrderDocument::findMany($request->input('uuid'));
+        //MAIL MICROSERVICE
+        SendOrderDocument::dispatch($order, $documents);
+
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

@@ -2,12 +2,17 @@
 
 namespace Tests\Feature;
 
-use App\Enums\MediaType;
 use App\Enums\OrderDocumentType;
 use App\Events\AddOrderDocument;
+use App\Events\SendOrderDocument;
 use App\Models\Media;
 use App\Models\Order;
 use App\Models\OrderDocument;
+use App\Models\PaymentMethod;
+use App\Models\ShippingMethod;
+use App\Models\Status;
+use Illuminate\Http\JsonResponse;
+use App\Enums\MediaType;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
@@ -22,9 +27,26 @@ class OrderDocumentTest extends TestCase
     {
         parent::setUp();
 
+
         Event::fake(AddOrderDocument::class);
 
         $this->order = Order::factory()->create();
+
+        $status = Status::factory()->create([
+            'cancel' => false
+        ]);
+
+        $paymentMethod = PaymentMethod::factory()->create();
+
+        $shippingMethod = ShippingMethod::factory()->create();
+        $shippingMethod->paymentMethods()->save($paymentMethod);
+
+        $this->order->update([
+            'status_id' => $status->getKey(),
+            'payment_method_id' => $paymentMethod->getKey(),
+            'shipping_method_id' => $shippingMethod->getKey(),
+        ]);
+
         $this->file = UploadedFile::fake()->image('image.jpeg');
     }
 
@@ -77,6 +99,66 @@ class OrderDocumentTest extends TestCase
 
         $this->assertDatabaseCount('media', 0);
         $this->assertDatabaseCount('order_document', 0);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSendDocuments($user)
+    {
+        Event::fake(SendOrderDocument::class);
+
+        $mediaOne = Media::factory()->create();
+        $mediaTwo = Media::factory()->create();
+
+        $this->order->documents()->attach($mediaOne, ['type' => OrderDocumentType::OTHER, 'name' => 'test']);
+        $this->order->documents()->attach($mediaTwo, ['type' => OrderDocumentType::OTHER, 'name' => 'test']);
+
+        $response = $this->actingAs($this->$user)->postJson('orders/id:' . $this->order->getKey() . '/docs/send', [
+            'uuid' =>
+                [
+                    $this->order->documents->first()->pivot->id,
+                    $this->order->documents->last()->pivot->id,
+                ],
+        ]);
+
+        $response->assertStatus(JsonResponse::HTTP_NO_CONTENT);
+
+        Event::assertDispatched(SendOrderDocument::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSendOtherOrderDocument($user)
+    {
+        Event::fake(SendOrderDocument::class);
+
+        $order = Order::factory()->create();
+
+        $mediaOne = Media::factory()->create();
+        $mediaTwo = Media::factory()->create();
+
+        $this->order->documents()->attach($mediaOne, ['type' => OrderDocumentType::OTHER, 'name' => 'test']);
+        $order->documents()->attach($mediaTwo, ['type' => OrderDocumentType::OTHER, 'name' => 'test']);
+
+        $wrongDocId = $order->documents->last()->pivot->id;
+
+        $response = $this->actingAs($this->$user)->postJson('orders/id:' . $this->order->getKey() . '/docs/send', [
+            'uuid' =>
+                [
+                    $this->order->documents->first()->pivot->id,
+                    $wrongDocId,
+                ],
+        ]);
+
+        $response
+            ->assertJsonFragment([
+                'message' => 'Document with id '. $wrongDocId . ' doesn\'t belong to this order.'
+            ])
+            ->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
+
+        Event::assertNotDispatched(SendOrderDocument::class);
     }
 
     /**

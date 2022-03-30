@@ -29,6 +29,7 @@ Route::prefix('orders')->group(function (): void {
         ->middleware('can:orders.edit');
     Route::delete('id:{order:id}/docs/id:{document}', [OrderController::class, 'deleteDocument'])
         ->middleware('can:orders.edit');
+    Route::post('id:{order:id}/docs/send', [OrderController::class, 'sendDocuments']);
     Route::get('id:{order:id}/docs/id:{document}/download', [OrderController::class, 'downloadDocument'])
         ->withoutMiddleware([SecureHeaders::class]);
 
