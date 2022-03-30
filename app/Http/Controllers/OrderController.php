@@ -298,7 +298,7 @@ class OrderController extends Controller
             );
         AddOrderDocument::dispatch($document);
 
-        return OrderDocumentResource::collection($order->documents);
+        return OrderDocumentResource::collection($order->documents->pluck('pivot'));
     }
 
     public function deleteDocument(Order $order, OrderDocument $document): JsonResponse
