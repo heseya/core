@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\SchemaType;
+use App\Exceptions\ItemException;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
@@ -23,6 +24,17 @@ class ProductService implements ProductServiceContract
         }
 
         return $product;
+    }
+
+    public function validateProductItems(Product $product): void
+    {
+        $product->items->each(function ($item) {
+            if ($item->quantity < $item->pivot->quantity) {
+                throw new ItemException(
+                    "There's less than {$item->pivot->quantity} of {$item->name} available",
+                );
+            }
+        });
     }
 
     public function getMinMaxPrices(Product $product): array

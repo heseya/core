@@ -28,6 +28,7 @@ use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
+use App\Services\Contracts\ProductServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
@@ -42,6 +43,7 @@ class OrderController extends Controller
         private OrderServiceContract $orderService,
         private DiscountServiceContract $discountService,
         private ItemServiceContract $itemService,
+        private ProductServiceContract $productService,
     ) {
     }
 
@@ -76,6 +78,9 @@ class OrderController extends Controller
 
         foreach ($request->input('items', []) as $item) {
             $product = Product::findOrFail($item['product_id']);
+
+            $this->productService->validateProductItems($product);
+
             $schemas = $item['schemas'] ?? [];
 
             /** @var Schema $schema */
@@ -92,7 +97,6 @@ class OrderController extends Controller
                 $items = $this->itemService->addItemArrays($items, $schemaItems);
             }
         }
-
         $this->itemService->validateItems($items);
 
         # Discount validation
@@ -140,6 +144,15 @@ class OrderController extends Controller
 
                 $order->products()->save($orderProduct);
                 $summary += $product->price * $item['quantity'];
+
+                # Remove items from warehouse for items directly related to product
+                $product->items->each(function ($productItem) use ($orderProduct, $item) {
+                    $orderProduct->deposits()->create([
+                        'item_id' => $productItem->getKey(),
+                        'quantity' => -1 * $item['quantity'] * $productItem->pivot->quantity,
+                    ]);
+                    ItemUpdatedQuantity::dispatch($productItem->refresh());
+                });
 
                 # Add schemas to products
                 foreach ($product->schemas as $schema) {

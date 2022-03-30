@@ -22,6 +22,7 @@ use App\Models\Role;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\WebHook;
+use App\Services\Contracts\AvailabilityServiceContract;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -803,5 +804,124 @@ class OrderCreateTest extends TestCase
         ]);
 
         $response->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateSimpleOrderWithDirectItems($user): void
+    {
+        $this->product->update([
+            'name' => 'test',
+            'available' => true
+        ]);
+        $item = Item::factory()->create([
+            'name' => 'testItem',
+            'quantity' => 2
+            ]);
+
+        $this->product->items()->attach($item->getKey(), ['quantity' => 2]);
+
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $this->product->update([
+            'price' => 10,
+        ]);
+
+        $productQuantity = 1;
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+        ]);
+
+        $response->assertCreated();
+        $order = $response->getData()->data;
+
+        $shippingPrice = $this->shippingMethod->getPrice(
+            $this->product->price * $productQuantity,
+        );
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'email' => $this->email,
+            'shipping_price' => $shippingPrice,
+            'summary' => $this->product->price * $productQuantity + $shippingPrice,
+        ]);
+        $this->assertDatabaseHas('addresses', $this->address->toArray());
+        $this->assertDatabaseHas('order_products', [
+            'order_id' => $order->id,
+            'product_id' => $this->product->getKey(),
+            'quantity' => $productQuantity,
+        ]);
+        $this->assertDatabaseHas('products', [
+            'id' => $this->product->getKey(),
+            'available' => false,
+        ]);
+        $this->assertDatabaseHas('items', [
+            'id' => $item->getKey(),
+            'quantity' => 0,
+        ]);
+
+        Event::assertDispatched(OrderCreated::class);
+
+        Queue::fake();
+
+        $order = Order::find($order->id);
+        $event = new OrderCreated($order);
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateSimpleOrderWithDirectItemsNotEnoughItems($user): void
+    {
+        $this->product->update([
+            'name' => 'test',
+            'available' => false
+        ]);
+        $item = Item::factory()->create([
+            'name' => 'testItem',
+            'quantity' => 2
+        ]);
+
+        $this->product->items()->attach($item->getKey(), ['quantity' => 3]);
+
+        $this->$user->givePermissionTo('orders.add');
+
+
+        $this->product->update([
+            'price' => 10,
+        ]);
+
+        $productQuantity = 1;
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => $productQuantity,
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonFragment(['message' => "There's less than 3 of {$item->name} available"]);
     }
 }
