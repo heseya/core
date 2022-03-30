@@ -38,6 +38,8 @@ class AvailabilityService implements AvailabilityServiceContract
 
         $products = $schemas->pluck('products')->flatten()->unique('id');
         $products->each(fn ($product) => $this->calculateProductAvailability($product));
+        # calculates availability for direct item-product
+        $item->products->each(fn ($product) => $this->calculateProductAvailability($product));
     }
 
     public function calculateOptionAvailability(Option $option): void
@@ -73,6 +75,19 @@ class AvailabilityService implements AvailabilityServiceContract
 
     public function calculateProductAvailability(Product $product): void
     {
+        if ($product->items()->exists()) {
+            if ($product->items->every(fn ($item) => $item->pivot->quantity <= $item->quantity)) {
+                $product->update([
+                    'available' => true,
+                ]);
+            } else {
+                $product->update([
+                    'available' => false,
+                ]);
+            }
+            return;
+        }
+
         if (!$product->schemas()->exists()) {
             $product->update([
                 'available' => true,
