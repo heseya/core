@@ -839,4 +839,29 @@ class AppInstallTest extends TestCase
 
         $response->assertUnprocessable();
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testInstallAppWithExistingUrl($user): void
+    {
+        $this->$user->givePermissionTo([
+            'apps.install',
+        ]);
+
+        App::factory()->create([
+            'url' => $this->url,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/apps', [
+            'url' => $this->url,
+            'allowed_permissions' => [
+                'products.show',
+            ],
+            'public_app_permissions' => [],
+        ]);
+
+        $response->assertStatus(422)
+        ->assertJsonFragment(['message' => 'App with url: ' . $this->url . ' is already installed']);
+    }
 }
