@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\MediaType;
 use App\Enums\OrderDocumentType;
 use App\Events\AddOrderDocument;
 use App\Events\SendOrderDocument;
@@ -12,7 +13,6 @@ use App\Models\PaymentMethod;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use Illuminate\Http\JsonResponse;
-use App\Enums\MediaType;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
@@ -26,7 +26,6 @@ class OrderDocumentTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-
 
         Event::fake(AddOrderDocument::class);
 
