@@ -34,8 +34,8 @@ class DocumentService implements DocumentServiceContract
     public function downloadDocument(OrderDocument $document)
     {
         return response()->streamDownload(function () use ($document): void {
-            echo Http::get($document->media->url)
-                ->withHeaders(['x-api-key' => Config::get('silverbox.key')]);
+            echo Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
+                ->get($document->media->url);
         }, Str::of($document->media->url)->afterLast('/'));
     }
 
