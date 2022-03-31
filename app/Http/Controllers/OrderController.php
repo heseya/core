@@ -79,7 +79,7 @@ class OrderController extends Controller
         foreach ($request->input('items', []) as $item) {
             $product = Product::findOrFail($item['product_id']);
 
-            $this->productService->validateProductItems($product);
+            $this->productService->validateProductItems($product, $item['quantity']);
 
             $schemas = $item['schemas'] ?? [];
 

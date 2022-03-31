@@ -26,12 +26,14 @@ class ProductService implements ProductServiceContract
         return $product;
     }
 
-    public function validateProductItems(Product $product): void
+    public function validateProductItems(Product $product, int $orderedQuantity): void
     {
-        $product->items->each(function ($item) {
-            if ($item->quantity < $item->pivot->quantity) {
+        $product->items->each(function ($item) use ($orderedQuantity) {
+            $requiredQuantity = $item->pivot->quantity * $orderedQuantity;
+
+            if ($item->quantity < $requiredQuantity) {
                 throw new ItemException(
-                    "There's less than {$item->pivot->quantity} of {$item->name} available",
+                    "There's less than {$requiredQuantity} of {$item->name} available",
                 );
             }
         });
