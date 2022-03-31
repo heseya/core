@@ -159,9 +159,8 @@ class AppService implements AppServiceContract
                 ],
             );
         }
-
         if (!$this->isResponseValid($response, [
-            'uninstall_token' => ['required', 'string'],
+            'uninstall_token' => ['required', 'string', 'max:255'],
         ])) {
             $app->delete();
 
