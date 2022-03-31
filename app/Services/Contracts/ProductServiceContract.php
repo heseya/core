@@ -8,7 +8,7 @@ interface ProductServiceContract
 {
     public function assignItems(Product $product, array|null $itemsIds): Product;
 
-    public function validateProductItems(Product $product): void;
+    public function validateProductItems(Product $product, int $orderedQuantity): void;
     /**
      * Returns minimum and maximum possible product price in
      * array formatted as such: [minimum, maximum]
