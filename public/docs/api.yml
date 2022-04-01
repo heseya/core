@@ -601,32 +601,8 @@ paths:
         - Schemas
       summary: 'all schemas list'
       operationId: 170c0b7f342ea07d3a8a3049dd252ca4
-      parameters:
-        - name: name
-          in: path
-          schema:
-            type: string
-            example: test
-        - name: hidden
-          in: path
-          schema:
-            type: boolean
-            example: true
-        - name: required
-          in: path
-          schema:
-            type: boolean
-            example: true
-        - name: search
-          in: path
-          schema:
-            type: string
-            example: test
-        - name: sort
-          in: path
-          schema:
-            type: string
-            example: test
+      requestBody:
+        $ref: '#/components/requestBodies/IndexSchema'
       responses:
         200:
           description: Success
