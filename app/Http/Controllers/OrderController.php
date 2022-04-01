@@ -296,7 +296,7 @@ class OrderController extends Controller
                 $request->input('type'),
                 $request->file('file'),
             );
-        AddOrderDocument::dispatch($document);
+        AddOrderDocument::dispatch($order, $document);
 
         return OrderDocumentResource::collection($order->documents->pluck('pivot'));
     }
@@ -304,7 +304,7 @@ class OrderController extends Controller
     public function deleteDocument(Order $order, OrderDocument $document): JsonResponse
     {
         $document = $this->documentService->removeDocument($order, $document->media_id);
-        RemoveOrderDocument::dispatch($document);
+        RemoveOrderDocument::dispatch($order, $document);
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
