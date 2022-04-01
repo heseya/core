@@ -843,6 +843,126 @@ class AppInstallTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+
+    public function testReinstall($user): void
+    {
+        $this->$user->givePermissionTo([
+            'apps.install',
+            'products.show',
+            'apps.remove',
+        ]);
+
+        $uninstallToken = Str::random(128);
+
+        $app = App::factory()->create([
+            'name' => 'testApp',
+            'slug' => 'test',
+            'url' => $this->url
+        ]);
+
+        Permission::create([
+            'name' => "app.{$app->slug}.test",
+            'display_name' => 'test',
+            'description' => 'test',
+        ]);
+
+        Http::fake([
+            $this->url . '/uninstall' => new ConnectionException('Test', 7),
+        ]);
+        $this->actingAs($this->$user)->json('delete', '/apps/id:' . $app->getKey() . '?force');
+
+        Http::fake([
+            $this->url => Http::response([
+                'name' => 'test',
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
+                'description' => 'Cool description',
+                'microfrontend_url' => 'https://front.example.com',
+                'icon' => 'https://picsum.photos/200',
+                'licence_required' => false,
+                'required_permissions' => [
+                    'products.show',
+                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'test',
+                        'display_name' => 'test',
+                        'description' => 'test',
+                    ]
+                ],
+            ]),
+            $this->url . '/install' => Http::response([
+                'uninstall_token' => $uninstallToken,
+            ]),
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/apps', [
+            'url' => $this->url,
+            'allowed_permissions' => [
+                'products.show',
+            ],
+            'public_app_permissions' => [],
+        ]);
+
+        $name = 'test';
+
+        $response->assertCreated()
+            ->assertJsonFragment([
+                'url' => $this->url,
+                'microfrontend_url' => 'https://front.example.com',
+                'name' => $name,
+                'slug' => Str::slug($name),
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'description' => 'Cool description',
+                'icon' => 'https://picsum.photos/200',
+            ]);
+
+        $this->assertDatabaseHas('apps', [
+            'name' => $name,
+            'author' => 'Mr. Author',
+            'version' => '1.0.0',
+            'api_version' => '^1.4.0',
+            'description' => 'Cool description',
+            'microfrontend_url' => 'https://front.example.com',
+            'icon' => 'https://picsum.photos/200',
+            'uninstall_token' => $uninstallToken,
+        ]);
+
+        $this->assertDatabaseHas('permissions', [
+            'name' => 'app.' . Str::slug($name) . '.test',
+            'display_name' => 'test',
+            'description' => 'test',
+        ]);
+
+        $app = App::where('name', $name)->firstOrFail();
+
+        $this->assertTrue($app->hasAllPermissions([
+            'auth.login',
+            'auth.check_identity',
+            'products.show',
+        ]));
+
+        if ($this->$user instanceof User) {
+            $this->assertDatabaseHas('roles', [
+                'id' => $app->role_id,
+                'name' => $name . ' owner',
+            ]);
+
+            $this->assertTrue($this->$user->hasRole($app->role));
+            $this->assertTrue($app->role->hasAllPermissions([
+                'app.' . Str::slug($name) . '.test',
+            ]));
+        }
+
+        $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
+        $this->assertTrue($owner->hasAllPermissions(Permission::all()));
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testInstallAppWithExistingUrl($user): void
     {
         $this->$user->givePermissionTo([
