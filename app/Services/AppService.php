@@ -15,6 +15,7 @@ use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UrlServiceContract;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
@@ -223,6 +224,9 @@ class AppService implements AppServiceContract
         }
 
         Permission::where('name', 'like', 'app.' . $app->slug . '%')->delete();
+
+        Artisan::call('permission:cache-reset');
+
         $app->role()->delete();
         $app->webhooks()->delete();
         $app->delete();
