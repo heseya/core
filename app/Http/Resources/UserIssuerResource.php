@@ -9,10 +9,10 @@ class UserIssuerResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'email' => $this->email,
-            'name' => $this->name,
-            'avatar' => $this->avatar,
+            'id' => $this->resource->getKey(),
+            'email' => $this->resource->email,
+            'name' => $this->resource->name,
+            'avatar' => $this->resource->avatar,
         ];
     }
 }

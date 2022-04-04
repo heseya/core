@@ -12,10 +12,10 @@ class ProfileResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'name' => $this->name,
-            'avatar' => $this->avatar,
-            'permissions' => $this->getAllPermissions()
+            'id' => $this->resource->getKey(),
+            'name' => $this->resource->name,
+            'avatar' => $this->resource->avatar,
+            'permissions' => $this->resource->getAllPermissions()
                 ->map(
                     fn ($perm) => Str::startsWith($perm->name, $this->permissionPrefix) ?
                     Str::substr($perm->name, Str::length($this->permissionPrefix)) : $perm->name,

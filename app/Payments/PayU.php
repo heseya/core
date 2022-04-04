@@ -127,16 +127,13 @@ class PayU implements PaymentMethod
 
     /**
      * Function returns signature validate
-     *
-     * @param string $message
-     * @param string $signature
-     * @param string $signatureKey
-     * @param string $algorithm
-     *
-     * @return bool
      */
-    public static function verifySignature($message, $signature, $signatureKey, $algorithm = 'MD5')
-    {
+    public static function verifySignature(
+        mixed $message,
+        mixed $signature,
+        mixed $signatureKey,
+        string $algorithm = 'MD5',
+    ): bool {
         if (isset($signature)) {
             if ($algorithm === 'MD5') {
                 $hash = md5($message . $signatureKey);

@@ -2,6 +2,8 @@
 
 namespace App\Exceptions;
 
+use Throwable;
+
 class WebHookEventException extends StoreException
 {
     public function __construct(

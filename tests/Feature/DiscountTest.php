@@ -347,7 +347,8 @@ class DiscountTest extends TestCase
 
         Queue::fake();
 
-        $response = $this->actingAs($this->$user)
+        $this
+            ->actingAs($this->$user)
             ->json('PATCH', '/discounts/id:' . $discount->getKey(), [
                 'description' => 'Weekend Sale',
                 'code' => 'WEEKEND',
@@ -399,7 +400,8 @@ class DiscountTest extends TestCase
 
         Bus::fake();
 
-        $response = $this->actingAs($this->$user)
+        $this
+            ->actingAs($this->$user)
             ->json('PATCH', '/discounts/id:' . $discount->getKey(), [
                 'description' => 'Weekend Sale',
                 'code' => 'WEEKEND',

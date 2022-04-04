@@ -121,7 +121,7 @@ class SettingsTest extends TestCase
     {
         $this->$user->givePermissionTo('settings.edit');
 
-        $setting = Setting::create([
+        Setting::create([
             'name' => 'new_setting',
             'value' => 'Old Value',
             'public' => true,

@@ -12,9 +12,9 @@ class UndotParamsTest extends TestCase
     {
         $request = Request::create('/orders?metadata.Producent=Heseya', 'GET');
 
-        $middleware = new UndotParams;
+        $middleware = new UndotParams();
 
-        $middleware->handle($request, function ($req) {
+        $middleware->handle($request, function ($req): void {
             $this->assertIsArray($req->metadata);
             $this->assertEquals(['Producent' => 'Heseya'], $req->metadata);
         });
@@ -24,14 +24,16 @@ class UndotParamsTest extends TestCase
     {
         $request = Request::create('/orders?metadata.Producent.Zagraniczny=false', 'GET');
 
-        $middleware = new UndotParams;
+        $middleware = new UndotParams();
 
-        $middleware->handle($request, function ($req) {
+        $middleware->handle($request, function ($req): void {
             $this->assertIsArray($req->metadata);
-            $this->assertEquals([
-                'Producent' => [
-                    'Zagraniczny' => 'false'
-                ]],
+            $this->assertEquals(
+                [
+                    'Producent' => [
+                        'Zagraniczny' => 'false',
+                    ],
+                ],
                 $req->metadata
             );
         });
@@ -39,11 +41,19 @@ class UndotParamsTest extends TestCase
 
     public function testUndotParamsMiddlewareMixed(): void
     {
-        $request = Request::create('/orders?metadata.Producent=Heseya&metadata.Kolor=Czerwony&metadata.Kraj.Produkcja=Chiny&metadata.Kraj.Dystrybucja[]=Polska&metadata.Kraj.Dystrybucja[]=Francja&not_related_param=test', 'GET');
+        $request = Request::create(implode('', [
+            '/orders?',
+            'metadata.Producent=Heseya',
+            '&metadata.Kolor=Czerwony',
+            '&metadata.Kraj.Produkcja=Chiny',
+            '&metadata.Kraj.Dystrybucja[]=Polska',
+            '&metadata.Kraj.Dystrybucja[]=Francja',
+            '&not_related_param=test',
+        ]));
 
-        $middleware = new UndotParams;
+        $middleware = new UndotParams();
 
-        $middleware->handle($request, function ($req) {
+        $middleware->handle($request, function ($req): void {
             $this->assertIsArray($req->metadata);
             $this->assertEquals(
                 [

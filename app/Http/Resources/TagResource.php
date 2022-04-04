@@ -7,9 +7,9 @@ class TagResource extends Resource
     public function base($request): array
     {
         return [
-            'id' => $this->getKey(),
-            'name' => $this->name,
-            'color' => $this->color,
+            'id' => $this->resource->getKey(),
+            'name' => $this->resource->name,
+            'color' => $this->resource->color,
         ];
     }
 }
