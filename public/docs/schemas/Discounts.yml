@@ -1,0 +1,33 @@
+Discounts:
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    code:
+      type: string
+      example: 83734AE
+    description:
+      type: string
+      example: 'Balck Weekend 2021'
+    type:
+      type: number
+      example: '0'
+    discount:
+      type: float
+      example: '50'
+    uses:
+      type: float
+      example: '41'
+    max_uses:
+      type: float
+      example: '100'
+    available:
+      type: boolean
+      example: 'true'
+    starts_at:
+      type: datetime
+      example: '2021-09-13T11:11'
+    expires_at:
+      type: datetime
+      example: '2021-09-13T11:11'
+  type: object
