@@ -451,7 +451,7 @@ class OrderCreateTest extends TestCase
 
         $item = Item::factory()->create();
 
-        $deposit = Deposit::factory()->create([
+        Deposit::factory()->create([
             'item_id' => $item->getKey(),
             'quantity' => 100,
         ]);

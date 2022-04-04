@@ -110,6 +110,7 @@ class ItemTest extends TestCase
             ->actingAs($this->$user)
             ->json('GET', '/items', ['sold_out' => 0])
             ->assertOk()
+            ->assertJsonMissing(['id' => $item_sold_out->getKey()])
             ->assertJsonCount(1, 'data')
             ->assertJson(['data' => [
                 0 => [
@@ -471,7 +472,8 @@ class ItemTest extends TestCase
     {
         Event::fake(ItemDeleted::class);
 
-        $response = $this->deleteJson('/items/id:' . $this->item->getKey())
+        $this
+            ->json('DELETE', '/items/id:' . $this->item->getKey())
             ->assertForbidden();
 
         $this->assertDatabaseHas('items', [

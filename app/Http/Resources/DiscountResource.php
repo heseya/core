@@ -14,16 +14,16 @@ class DiscountResource extends Resource
         }
 
         return [
-            'id' => $this->getKey(),
-            'code' => $this->code,
-            'description' => $this->description,
+            'id' => $this->resource->getKey(),
+            'code' => $this->resource->code,
+            'description' => $this->resource->description,
             'discount' => $this->resource->discount,
             'type' => $this->resource->type,
-            'uses' => $this->uses,
-            'max_uses' => $this->max_uses,
-            'available' => $this->available,
-            'starts_at' => $this->starts_at,
-            'expires_at' => $this->expires_at,
+            'uses' => $this->resource->uses,
+            'max_uses' => $this->resource->max_uses,
+            'available' => $this->resource->available,
+            'starts_at' => $this->resource->starts_at,
+            'expires_at' => $this->resource->expires_at,
         ];
     }
 }

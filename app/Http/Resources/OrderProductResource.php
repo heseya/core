@@ -9,12 +9,12 @@ class OrderProductResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'quantity' => $this->quantity,
-            'price' => $this->price,
-            'product' => ProductResource::make($this->product),
-            'schemas' => OrderSchemaResource::collection($this->schemas),
-            'deposits' => DepositResource::collection($this->deposits),
+            'id' => $this->resource->getKey(),
+            'quantity' => $this->resource->quantity,
+            'price' => $this->resource->price,
+            'product' => ProductResource::make($this->resource->product),
+            'schemas' => OrderSchemaResource::collection($this->resource->schemas),
+            'deposits' => DepositResource::collection($this->resource->deposits),
         ];
     }
 }

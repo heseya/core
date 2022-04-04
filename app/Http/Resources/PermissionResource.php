@@ -10,11 +10,11 @@ class PermissionResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'name' => $this->name,
-            'display_name' => $this->display_name,
-            'description' => $this->description,
-            'assignable' => Auth::user()->can($this->name),
+            'id' => $this->resource->getKey(),
+            'name' => $this->resource->name,
+            'display_name' => $this->resource->display_name,
+            'description' => $this->resource->description,
+            'assignable' => Auth::user()->can($this->resource->name),
         ];
     }
 }

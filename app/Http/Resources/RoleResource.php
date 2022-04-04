@@ -11,24 +11,24 @@ class RoleResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'name' => $this->name,
-            'description' => $this->description,
+            'id' => $this->resource->getKey(),
+            'name' => $this->resource->name,
+            'description' => $this->resource->description,
             'assignable' => Auth::user() !== null
-            && $this->type->isNot(RoleType::UNAUTHENTICATED)
-            && $this->type->isNot(RoleType::AUTHENTICATED)
+            && $this->resource->type->isNot(RoleType::UNAUTHENTICATED)
+            && $this->resource->type->isNot(RoleType::AUTHENTICATED)
                 ? Auth::user()->hasAllPermissions(
-                    $this->getAllPermissions(),
+                    $this->resource->getAllPermissions(),
                 ) : false,
-            'deletable' => $this->type->is(RoleType::REGULAR),
+            'deletable' => $this->resource->type->is(RoleType::REGULAR),
         ];
     }
 
     public function view(Request $request): array
     {
         return [
-            'permissions' => $this->getPermissionNames()->sort()->values(),
-            'locked_permissions' => $this->type->is(RoleType::OWNER),
+            'permissions' => $this->resource->getPermissionNames()->sort()->values(),
+            'locked_permissions' => $this->resource->type->is(RoleType::OWNER),
         ];
     }
 }

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\App as AppFacade;
 
 class AppUniqueUrl implements Rule
 {
+    protected string $error;
     /**
      * Determine if the validation rule passes.
      *
@@ -24,11 +25,13 @@ class AppUniqueUrl implements Rule
         $apps = App::query()->where('url', 'like', $urls[0] . '%')
             ->orWhere('url', 'like', $urls[1] . '%');
 
+        $this->error = $value;
+
         return !$apps->exists();
     }
 
     public function message(): string
     {
-        return 'App with url :value is already installed';
+        return 'App with url: ' . $this->error . ' is already installed';
     }
 }

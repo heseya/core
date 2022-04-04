@@ -395,7 +395,7 @@ class ProductSetOtherTest extends TestCase
         $product2 = Product::factory()->create([
             'public' => false,
         ]);
-        $productNotInSet = Product::factory()->create([
+        Product::factory()->create([
             'public' => true,
         ]);
 

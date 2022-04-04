@@ -9,12 +9,12 @@ class PackageTemplateResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'name' => $this->name,
-            'weight' => $this->weight,
-            'width' => $this->width,
-            'height' => $this->height,
-            'depth' => $this->depth,
+            'id' => $this->resource->getKey(),
+            'name' => $this->resource->name,
+            'weight' => $this->resource->weight,
+            'width' => $this->resource->width,
+            'height' => $this->resource->height,
+            'depth' => $this->resource->depth,
         ];
     }
 }

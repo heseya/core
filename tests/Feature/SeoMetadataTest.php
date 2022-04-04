@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\Feature;
+
 use App\Models\Product;
 use App\Models\SeoMetadata;
 use Illuminate\Support\Str;
@@ -27,15 +29,22 @@ class SeoMetadataTest extends TestCase
     {
         $seo = SeoMetadata::where('global', 1)->first();
 
-        $response = $this->json('GET', '/seo');
-
-        $response->assertOk()
-            ->assertJson(fn (AssertableJson $json) => $json->has('meta', fn ($json) => $json->has('seo')
-            ->etc())
-            ->has('data', fn ($json) => $json->where('title', $seo->title)
-            ->where('description', $seo->description)
-            ->etc())
-            ->etc())
+        $this
+            ->json('GET', '/seo')
+            ->assertOk()
+            ->assertJson(function (AssertableJson $json) use ($seo): void {
+                $json
+                    ->has('meta', function ($json): void {
+                        $json->has('seo')->etc();
+                    })
+                    ->has('data', function ($json) use ($seo): void {
+                        $json
+                            ->where('title', $seo->title)
+                            ->where('description', $seo->description)
+                            ->etc();
+                    })
+                    ->etc();
+            })
             ->assertJsonStructure([
                 'data' => $this->expected_structure,
             ]);
@@ -48,18 +57,23 @@ class SeoMetadataTest extends TestCase
     {
         $seo = SeoMetadata::where('global', 1)->first();
 
-        $response = $this->actingAs($this->$user)->json('GET', '/seo');
-
-        $response->assertOk()
-            ->assertJson(fn (AssertableJson $json) => $json->has('meta', fn ($json) => $json->has('seo')
-            ->etc())
-            ->has('data', fn ($json) => $json->where('title', $seo->title)
-            ->where('description', $seo->description)
-            ->etc())
-            ->etc())
-            ->assertJsonStructure([
-                'data' => $this->expected_structure,
-            ]);
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/seo')
+            ->assertOk()
+            ->assertJson(function (AssertableJson $json) use ($seo): void {
+                $json
+                    ->has('meta', function ($json): void {
+                        $json->has('seo')->etc();
+                    })
+                    ->has('data', function ($json) use ($seo): void {
+                        $json
+                            ->where('title', $seo->title)
+                            ->where('description', $seo->description)
+                            ->etc();
+                    })
+                    ->etc();
+            });
     }
 
     public function testCreateUnauthorized(): void
@@ -86,18 +100,26 @@ class SeoMetadataTest extends TestCase
             'description' => 'description',
             'keywords' => ['key', 'words'],
         ];
-        $response = $this->actingAs($this->$user)->json('PATCH', '/seo', $seo);
-
-        $response->assertCreated()->assertJson(
-            fn (AssertableJson $json) => $json->has('meta', fn ($json) => $json->has('seo')
-                ->etc())
-                ->has('data', fn ($json) => $json->where('title', $seo['title'])
-                ->where('description', $seo['description'])
-                ->etc())
-                ->etc()
-        )->assertJsonStructure([
-            'data' => $this->expected_structure,
-        ]);
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', '/seo', $seo)
+            ->assertCreated()
+            ->assertJson(function (AssertableJson $json) use ($seo): void {
+                $json
+                    ->has('meta', function ($json): void {
+                        $json->has('seo')->etc();
+                    })
+                    ->has('data', function ($json) use ($seo): void {
+                        $json
+                            ->where('title', $seo['title'])
+                            ->where('description', $seo['description'])
+                            ->etc();
+                    })
+                    ->etc();
+            })
+            ->assertJsonStructure([
+                'data' => $this->expected_structure,
+            ]);
 
         $seo = SeoMetadata::where('global', '=', true)->first();
 
@@ -344,13 +366,15 @@ class SeoMetadataTest extends TestCase
             ],
         ])->create());
 
-        $this->actingAs($this->$user)->json('POST', '/seo/check', [
-            'keywords' => $keywords,
-            'excluded' => [
-                'id' => $product->getKey(),
-                'model' => 'Product',
-            ],
-        ])
+        $this
+            ->actingAs($this->$user)
+            ->json('POST', '/seo/check', [
+                'keywords' => $keywords,
+                'excluded' => [
+                    'id' => $product->getKey(),
+                    'model' => 'Product',
+                ],
+            ])
             ->assertOk()
             ->assertJsonCount(1, 'data.duplicates')
             ->assertJsonFragment(['data' => [

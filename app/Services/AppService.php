@@ -15,6 +15,7 @@ use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UrlServiceContract;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
@@ -211,17 +212,20 @@ class AppService implements AppServiceContract
             $response = Http::post($url, [
                 'uninstall_token' => $app->uninstall_token,
             ]);
+
+            if (!$force && $response->failed()) {
+                throw new AppException('Failed to uninstall the application');
+            }
         } catch (Throwable) {
             if (!$force) {
                 throw new AppException('Failed to connect with application');
             }
         }
 
-        if (!$force && $response->failed()) {
-            throw new AppException('Failed to uninstall the application');
-        }
-
         Permission::where('name', 'like', 'app.' . $app->slug . '%')->delete();
+
+        Artisan::call('permission:cache-reset');
+
         $app->role()->delete();
         $app->webhooks()->delete();
         $app->delete();

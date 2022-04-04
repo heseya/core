@@ -145,7 +145,7 @@ class OrderUpdateTest extends TestCase
     {
         $this->$user->givePermissionTo('orders.edit');
 
-        $webHook = WebHook::factory()->create([
+        WebHook::factory()->create([
             'events' => [
                 'OrderUpdated',
             ],

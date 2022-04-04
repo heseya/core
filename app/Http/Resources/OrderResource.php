@@ -10,34 +10,37 @@ class OrderResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'code' => $this->code,
-            'email' => $this->email,
-            'currency' => $this->currency,
-            'summary' => $this->summary,
-            'summary_paid' => $this->paid_amount,
-            'shipping_price' => $this->shipping_price,
-            'paid' => $this->paid,
-            'comment' => $this->comment,
-            'created_at' => $this->created_at,
-            'status' => $this->status ? StatusResource::make($this->status) : null,
-            'delivery_address' => $this->deliveryAddress ? AddressResource::make($this->deliveryAddress) : null,
-            'shipping_method' => $this->shippingMethod ? ShippingMethodResource::make($this->shippingMethod) : null,
+            'id' => $this->resource->getKey(),
+            'code' => $this->resource->code,
+            'email' => $this->resource->email,
+            'currency' => $this->resource->currency,
+            'summary' => $this->resource->summary,
+            'summary_paid' => $this->resource->paid_amount,
+            'shipping_price' => $this->resource->shipping_price,
+            'paid' => $this->resource->paid,
+            'comment' => $this->resource->comment,
+            'created_at' => $this->resource->created_at,
+            'status' => $this->resource->status ? StatusResource::make($this->resource->status) : null,
+            'delivery_address' => $this->resource->deliveryAddress ?
+                AddressResource::make($this->resource->deliveryAddress) : null,
+            'shipping_method' => $this->resource->shippingMethod ?
+                ShippingMethodResource::make($this->resource->shippingMethod) : null,
         ];
     }
 
     public function view(Request $request): array
     {
         return [
-            'invoice_address' => AddressResource::make($this->invoiceAddress),
-            'shipping_method' => ShippingMethodResource::make($this->shippingMethod),
-            'products' => OrderProductResource::collection($this->products),
-            'payments' => PaymentResource::collection($this->payments),
-            'shipping_number' => $this->shipping_number,
-            'payable' => $this->payable,
-            'discounts' => DiscountResource::collection($this->discounts),
-            'user' => $this->user instanceof User
-                ? UserResource::make($this->user)->baseOnly() : AppResource::make($this->user),
+            'invoice_address' => AddressResource::make($this->resource->invoiceAddress),
+            'shipping_method' => ShippingMethodResource::make($this->resource->shippingMethod),
+            'products' => OrderProductResource::collection($this->resource->products),
+            'payments' => PaymentResource::collection($this->resource->payments),
+            'shipping_number' => $this->resource->shipping_number,
+            'payable' => $this->resource->payable,
+            'discounts' => DiscountResource::collection($this->resource->discounts),
+            'user' => $this->resource->user instanceof User ?
+                UserResource::make($this->resource->user)->baseOnly() :
+                AppResource::make($this->resource->user),
         ];
     }
 }

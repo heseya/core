@@ -9,9 +9,9 @@ class ItemPublicResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'name' => $this->name,
-            'sku' => $this->sku,
+            'id' => $this->resource->getKey(),
+            'name' => $this->resource->name,
+            'sku' => $this->resource->sku,
         ];
     }
 }

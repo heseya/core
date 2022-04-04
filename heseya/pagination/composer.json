@@ -2,6 +2,7 @@
     "name": "heseya/pagination",
     "description": "Heseya Store Pagination Middleware",
     "type": "library",
+    "version": "1.0.0",
     "require": {
         "laravel/framework": "^9.0"
     },

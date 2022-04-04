@@ -9,9 +9,9 @@ class DepositResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'quantity' => $this->quantity,
-            'item_id' => $this->item_id,
+            'id' => $this->resource->getKey(),
+            'quantity' => $this->resource->quantity,
+            'item_id' => $this->resource->item_id,
         ];
     }
 }

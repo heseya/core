@@ -9,10 +9,10 @@ class ItemResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'name' => $this->name,
-            'sku' => $this->sku,
-            'quantity' => $this->getQuantity($request->input('day')),
+            'id' => $this->resource->getKey(),
+            'name' => $this->resource->name,
+            'sku' => $this->resource->sku,
+            'quantity' => $this->resource->getQuantity($request->input('day')),
         ];
     }
 }

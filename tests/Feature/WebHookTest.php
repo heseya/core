@@ -82,7 +82,12 @@ class WebHookTest extends TestCase
      */
     public function testCreate($user): void
     {
-        $this->$user->givePermissionTo('webhooks.add', 'products.show', 'products.show_details', 'products.show_hidden');
+        $this->$user->givePermissionTo(
+            'webhooks.add',
+            'products.show',
+            'products.show_details',
+            'products.show_hidden',
+        );
 
         $response = $this->actingAs($this->$user)->json('POST', '/webhooks', [
             'name' => 'WebHook test',

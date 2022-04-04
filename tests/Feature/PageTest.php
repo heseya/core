@@ -312,6 +312,8 @@ class PageTest extends TestCase
 
         Event::fake([PageCreated::class]);
 
+        $uuids = [];
+
         for ($i = 0; $i < 3; $i++) {
             $name = ' order test ' . $this->faker->sentence(rand(1, 3));
             $page = [
