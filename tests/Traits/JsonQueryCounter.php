@@ -9,7 +9,7 @@ trait JsonQueryCounter
 {
     public function json($method, $uri, array $data = [], array $headers = [])
     {
-        $startQuery = static::getQueryCount();
+        static::getQueryCount();
 
         static::trackQueries();
         return parent::json($method, $uri, $data, $headers);

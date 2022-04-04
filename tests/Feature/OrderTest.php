@@ -273,7 +273,7 @@ class OrderTest extends TestCase
             'hidden' => true,
         ])->create();
 
-        $order = Order::factory([
+        Order::factory([
             'status_id' => $status->getKey(),
         ])->create();
 

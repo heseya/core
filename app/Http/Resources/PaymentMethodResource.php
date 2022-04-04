@@ -9,10 +9,10 @@ class PaymentMethodResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'name' => $this->name,
-            'alias' => $this->alias,
-            'public' => $this->public,
+            'id' => $this->resource->getKey(),
+            'name' => $this->resource->name,
+            'alias' => $this->resource->alias,
+            'public' => $this->resource->public,
         ];
     }
 }

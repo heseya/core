@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use App\Http\Resources\ErrorResource;
 use Illuminate\Http\JsonResponse;
 
 /**

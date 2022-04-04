@@ -7,10 +7,7 @@ use OwenIt\Auditing\Contracts\AttributeRedactor;
 
 class StatusRedactor implements AttributeRedactor
 {
-    /**
-     * {@inheritdoc}
-     */
-    public static function redact($value): string
+    public static function redact(mixed $value): string
     {
         /** @var Status $status */
         $status = Status::find($value);
@@ -19,6 +16,6 @@ class StatusRedactor implements AttributeRedactor
             $value = $status->name;
         }
 
-        return $value ?? '';
+        return $value;
     }
 }

@@ -29,7 +29,7 @@ class MiddlewareTest extends TestCase
         $middleware->handle($request, function (): void {
         });
 
-        $this->assertEquals(config('pagination.per_page'), 100);
+        $this->assertEquals(Config::get('pagination.per_page'), 100);
     }
 
     public function testLimit(): void
@@ -40,7 +40,7 @@ class MiddlewareTest extends TestCase
         $middleware->handle($request, function (): void {
         });
 
-        $this->assertEquals(config('pagination.per_page'), 50);
+        $this->assertEquals(Config::get('pagination.per_page'), 50);
     }
 
     public function testLimitValidation(): void

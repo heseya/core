@@ -9,14 +9,14 @@ class WebHookResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'name' => $this->name,
-            'url' => $this->url,
-            'secret' => $this->secret,
-            'with_issuer' => $this->with_issuer,
-            'with_hidden' => $this->with_hidden,
-            'events' => $this->events,
-            'logs' => $this->logs,
+            'id' => $this->resource->getKey(),
+            'name' => $this->resource->name,
+            'url' => $this->resource->url,
+            'secret' => $this->resource->secret,
+            'with_issuer' => $this->resource->with_issuer,
+            'with_hidden' => $this->resource->with_hidden,
+            'events' => $this->resource->events,
+            'logs' => $this->resource->logs,
         ];
     }
 }

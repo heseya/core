@@ -35,12 +35,12 @@ class ProductSetResourceUniversal extends Resource
     public function base(Request $request): array
     {
         $parentResource = $this->showParent ? [
-            'parent' => ProductSetResourceUniversal::make($this->parent)->setIsPublic($this->public),
-        ] : ['parent_id' => $this->parent_id];
+            'parent' => ProductSetResourceUniversal::make($this->resource->parent)->setIsPublic($this->public),
+        ] : ['parent_id' => $this->resource->parent_id];
 
         $children = $this->public
-            ? $this->childrenPublic
-            : $this->children;
+            ? $this->resource->childrenPublic
+            : $this->resource->children;
 
         $childrenResource = $this->showChildren ? [
             'children' => ProductSetResourceUniversal::collection($children)->setIsPublic($this->public),
@@ -49,16 +49,16 @@ class ProductSetResourceUniversal extends Resource
         ];
 
         return [
-            'id' => $this->getKey(),
-            'name' => $this->name,
-            'slug' => $this->slug,
-            'slug_suffix' => $this->slugSuffix,
-            'slug_override' => $this->slugOverride,
-            'public' => $this->public,
-            'visible' => $this->public_parent && $this->public,
-            'hide_on_index' => $this->hide_on_index,
-            'seo' => SeoMetadataResource::make($this->seo),
-            'description_html' => $this->description_html,
+            'id' => $this->resource->getKey(),
+            'name' => $this->resource->name,
+            'slug' => $this->resource->slug,
+            'slug_suffix' => $this->resource->slugSuffix,
+            'slug_override' => $this->resource->slugOverride,
+            'public' => $this->resource->public,
+            'visible' => $this->resource->public_parent && $this->resource->public,
+            'hide_on_index' => $this->resource->hide_on_index,
+            'seo' => SeoMetadataResource::make($this->resource->seo),
+            'description_html' => $this->resource->description_html,
         ] + $parentResource + $childrenResource;
     }
 }

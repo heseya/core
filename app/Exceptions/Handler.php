@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use App\Http\Resources\ErrorResource;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -139,8 +140,8 @@ final class Handler extends ExceptionHandler
             ->setStatusCode($error->code);
     }
 
-    public function report(Throwable $e)
+    public function report(Throwable $e): void
     {
-        return $e instanceof StoreException && $e->isSimpleLogs() ? $e->logException() : parent::report($e);
+        $e instanceof StoreException && $e->isSimpleLogs() ? $e->logException() : parent::report($e);
     }
 }

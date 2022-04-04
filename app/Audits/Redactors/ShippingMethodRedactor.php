@@ -7,10 +7,7 @@ use OwenIt\Auditing\Contracts\AttributeRedactor;
 
 class ShippingMethodRedactor implements AttributeRedactor
 {
-    /**
-     * {@inheritdoc}
-     */
-    public static function redact($value): string
+    public static function redact(mixed $value): string
     {
         /** @var ShippingMethod $shippingMethod */
         $shippingMethod = ShippingMethod::find($value);
@@ -19,6 +16,6 @@ class ShippingMethodRedactor implements AttributeRedactor
             $value = $shippingMethod->name;
         }
 
-        return $value ?? '';
+        return $value;
     }
 }

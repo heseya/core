@@ -10,21 +10,21 @@ class ProductSetChildrenResource extends Resource
     public function base(Request $request): array
     {
         $children = Gate::denies('product_sets.show_hidden')
-            ? $this->childrenPublic
-            : $this->children;
+            ? $this->resource->childrenPublic
+            : $this->resource->children;
 
         return [
-            'id' => $this->getKey(),
-            'name' => $this->name,
-            'slug' => $this->slug,
-            'slug_suffix' => $this->slugSuffix,
-            'slug_override' => $this->slugOverride,
-            'public' => $this->public,
-            'visible' => $this->public_parent && $this->public,
-            'hide_on_index' => $this->hide_on_index,
-            'parent_id' => $this->parent_id,
+            'id' => $this->resource->getKey(),
+            'name' => $this->resource->name,
+            'slug' => $this->resource->slug,
+            'slug_suffix' => $this->resource->slugSuffix,
+            'slug_override' => $this->resource->slugOverride,
+            'public' => $this->resource->public,
+            'visible' => $this->resource->public_parent && $this->resource->public,
+            'hide_on_index' => $this->resource->hide_on_index,
+            'parent_id' => $this->resource->parent_id,
             'children' => ProductSetChildrenResource::collection($children),
-            'cover' => MediaResource::make($this->media),
+            'cover' => MediaResource::make($this->resource->media),
         ];
     }
 }

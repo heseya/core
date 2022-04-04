@@ -160,7 +160,10 @@ class AuthTest extends TestCase
         $code = '';
 
         if ($method === TFAType::EMAIL) {
-            $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user, Config::get('tfa.code_expires_time'));
+            $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
+                $this->user,
+                Config::get('tfa.code_expires_time'),
+            );
         } elseif ($method === TFAType::APP) {
             $google_authenticator = new PHPGangsta_GoogleAuthenticator();
             $code = $google_authenticator->getCode($secret);
@@ -190,7 +193,10 @@ class AuthTest extends TestCase
             'is_tfa_active' => true,
         ]);
 
-        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user, Config::get('tfa.code_expires_time'));
+        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
+            $this->user,
+            Config::get('tfa.code_expires_time'),
+        );
 
         // Wygenerowanie nowego kodu
         $this->actingAs($this->user)->postJson('/login', [
@@ -494,7 +500,7 @@ class AuthTest extends TestCase
         $email = $this->faker->unique()->safeEmail;
         $password = 'Passwd###111';
 
-        $user = User::factory()->create([
+        User::factory()->create([
             'name' => $this->faker->firstName() . ' '  . $this->faker->lastName(),
             'email' => $email,
             'password' => Hash::make($password),
@@ -579,16 +585,19 @@ class AuthTest extends TestCase
             ->withArgs(function ($message) {
                 return str_contains(
                     $message,
-                    'AuthException(code: 0): The token is invalid or inactive. '
-                    . 'Try to reset your password again. at'
+                    'AuthException(code: 0): The token is invalid or inactive. Try to reset your password again. at',
                 );
             });
 
-        $response = $this->actingAs($this->user)->json('PATCH', '/users/save-reset-password', [
-            'email' => $email,
-            'password' => $newPassword,
-            'token' => 'token',
-        ]);
+        $response = $this->actingAs($this->user)->json(
+            'PATCH',
+            '/users/save-reset-password',
+            [
+                'email' => $email,
+                'password' => $newPassword,
+                'token' => 'token',
+            ],
+        );
 
         $user->refresh();
         $response->assertStatus(422);
@@ -1225,7 +1234,10 @@ class AuthTest extends TestCase
     {
         Notification::fake();
 
-        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user, Config::get('tfa.code_expires_time'));
+        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
+            $this->user,
+            Config::get('tfa.code_expires_time'),
+        );
 
         $this->user->update([
             'tfa_type' => TFAType::EMAIL,

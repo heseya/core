@@ -7,8 +7,8 @@ class CountryResource extends Resource
     public function base($request): array
     {
         return [
-            'code' => $this->code,
-            'name' => $this->name,
+            'code' => $this->resource->code,
+            'name' => $this->resource->name,
         ];
     }
 }

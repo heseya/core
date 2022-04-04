@@ -7,11 +7,6 @@ use Tests\TestCase;
 
 class PermissionTest extends TestCase
 {
-    public function setUp(): void
-    {
-        parent::setUp();
-    }
-
     public function testIndexUnauthorized(): void
     {
         $response = $this->getJson('/roles');

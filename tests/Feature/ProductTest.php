@@ -745,7 +745,7 @@ class ProductTest extends TestCase
     {
         $this->$user->givePermissionTo('products.add');
 
-        $webHook = WebHook::factory()->create([
+        WebHook::factory()->create([
             'events' => [
                 'ProductCreated',
             ],

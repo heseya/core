@@ -30,7 +30,7 @@ class PaymentTest extends TestCase
             'status_id' => $status->getKey(),
         ]);
 
-        $item = $this->order->products()->create([
+        $this->order->products()->create([
             'product_id' => $product->getKey(),
             'quantity' => 1,
             'price' => 125.50,
@@ -44,14 +44,14 @@ class PaymentTest extends TestCase
         Http::fakeSequence()
             ->push([
                 'access_token' => 'random_access_token',
-            ], 200)
+            ])
             ->push([
                 'status' => [
                     'statusCode' => 'SUCCESS',
                 ],
                 'redirectUri' => 'payment_url',
                 'orderId' => 'payu_id',
-            ], 200);
+            ]);
 
         $code = $this->order->code;
         $response = $this->postJson("/orders/${code}/pay/payu", [

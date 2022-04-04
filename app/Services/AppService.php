@@ -213,14 +213,14 @@ class AppService implements AppServiceContract
             $response = Http::post($url, [
                 'uninstall_token' => $app->uninstall_token,
             ]);
+
+            if (!$force && $response->failed()) {
+                throw new AppException('Failed to uninstall the application');
+            }
         } catch (Throwable) {
             if (!$force) {
                 throw new AppException('Failed to connect with application');
             }
-        }
-
-        if (!$force && $response->failed()) {
-            throw new AppException('Failed to uninstall the application');
         }
 
         Permission::where('name', 'like', 'app.' . $app->slug . '%')->delete();

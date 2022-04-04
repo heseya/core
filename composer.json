@@ -11,9 +11,9 @@
         "heseya/2fa": "^2.0",
         "heseya/dto": "^1.0",
         "heseya/laravel-searchable": "^1.0",
-        "heseya/pagination": "*",
-        "heseya/resource": "*",
-        "heseya/sortable": "*",
+        "heseya/pagination": "^1.0",
+        "heseya/resource": "^1.0",
+        "heseya/sortable": "^1.0",
         "laravel/framework": "^9.4",
         "league/html-to-markdown": "^5.1",
         "league/omnipay": "^3.2",
@@ -29,17 +29,17 @@
         "spatie/laravel-webhook-server": "^3.1"
     },
     "require-dev": {
-        "heseya/insights": "^1.0",
-        "heseya/demo": "*",
-        "spatie/laravel-ignition": "^1.1",
+        "barryvdh/laravel-ide-helper": "^2.12",
         "fakerphp/faker": "^v1.19",
+        "heseya/demo": "^1.0",
+        "heseya/insights": "^1.0",
         "laravel/tinker": "^2.7",
-        "mattiasgeniar/phpunit-query-count-assertions": "^1.1",
         "mockery/mockery": "^1.5",
         "nunomaduro/collision": "^6.1",
+        "nunomaduro/larastan": "^2.0",
         "nunomaduro/phpinsights": "^2.2",
         "phpunit/phpunit": "^9.5",
-        "barryvdh/laravel-ide-helper": "^2.12"
+        "spatie/laravel-ignition": "^1.1"
     },
     "config": {
         "optimize-autoloader": true,
@@ -86,9 +86,15 @@
             "@php artisan ide-helper:models -M",
             "@php artisan ide-helper:meta"
         ],
+        "insights": [
+            "@php artisan insights ./ ./tests --fix --no-interaction"
+        ],
+        "phpstan": [
+            "./vendor/bin/phpstan analyse --memory-limit=2G"
+        ],
         "style": [
             "@ide-helper",
-            "@php artisan insights --fix --no-interaction"
+            "@insights"
         ],
         "pre-commit": [
             "@composer style"

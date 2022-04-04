@@ -9,19 +9,19 @@ class UserResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'email' => $this->email,
-            'name' => $this->name,
-            'avatar' => $this->avatar,
-            'roles' => RoleResource::collection($this->roles),
-            'is_tfa_active' => $this->is_tfa_active,
+            'id' => $this->resource->getKey(),
+            'email' => $this->resource->email,
+            'name' => $this->resource->name,
+            'avatar' => $this->resource->avatar,
+            'roles' => RoleResource::collection($this->resource->roles),
+            'is_tfa_active' => $this->resource->is_tfa_active,
         ];
     }
 
     public function view(Request $request): array
     {
         return [
-            'permissions' => $this->getAllPermissions()
+            'permissions' => $this->resource->getAllPermissions()
                 ->map(fn ($perm) => $perm->name)
                 ->sort()
                 ->values(),
