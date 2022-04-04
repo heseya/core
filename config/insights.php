@@ -3,8 +3,6 @@
 declare(strict_types=1);
 
 use Heseya\Insights\Sniffs\NotSpaceAfterNot;
-use NunoMaduro\PhpInsights\Domain\Insights\Composer\ComposerMustBeValid;
-use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenDefineFunctions;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenPrivateMethods;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenTraits;
@@ -68,7 +66,6 @@ return [
     'remove' => [
         DeclareStrictTypesSniff::class,
         DisallowMixedTypeHintSniff::class,
-        ForbiddenDefineFunctions::class,
         ForbiddenNormalClasses::class,
         ForbiddenTraits::class,
         ParameterTypeHintSniff::class,
@@ -79,7 +76,6 @@ return [
         ForbiddenPublicPropertySniff::class,
         FunctionLengthSniff::class,
         LineEndingsSniff::class,
-        ComposerMustBeValid::class,
         TodoSniff::class,
 
         // replaced with own

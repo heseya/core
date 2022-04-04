@@ -8,15 +8,12 @@ use OwenIt\Auditing\Contracts\AttributeRedactor;
 
 class AddressRedactor implements AttributeRedactor
 {
-    /**
-     * {@inheritdoc}
-     */
-    public static function redact($value): string
+    public static function redact(mixed $value): string
     {
-        $cache = Cache::get('address.' . $value);
+        $cache = Cache::get("address.${$value}");
 
         if ($cache !== null) {
-            Cache::forget('address.' . $value);
+            Cache::forget("address.${$value}");
             return $cache;
         }
 
@@ -27,6 +24,6 @@ class AddressRedactor implements AttributeRedactor
             $value = (string) $address;
         }
 
-        return $value ?? '';
+        return $value;
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Exceptions\TFAException;
+use App\Models\App;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Auth\Access\Response;

@@ -3,6 +3,7 @@
     "description": "Helpers for Heseya Demo Store",
     "type": "library",
     "require": {},
+    "version": "1.0.0",
     "autoload": {
         "psr-4": {
             "Heseya\\Demo\\": "src/"

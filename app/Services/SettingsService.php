@@ -15,7 +15,7 @@ class SettingsService implements SettingsServiceContract
 
         Collection::make(Config::get('settings'))->each(function ($setting, $key) use ($settings): void {
             if (!$settings->contains('name', $key)) {
-                $settings->push(Setting::make($setting + [
+                $settings->push(new Setting($setting + [
                     'name' => $key,
                 ]));
             }
@@ -39,7 +39,7 @@ class SettingsService implements SettingsServiceContract
         $setting = Setting::where('name', $name)->first();
 
         if ($setting === null) {
-            $setting = Setting::make($config + [
+            $setting = new Setting($config + [
                 'name' => $name,
             ]);
         }

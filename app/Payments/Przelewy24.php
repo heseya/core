@@ -123,6 +123,8 @@ class Przelewy24 implements PaymentMethod
             'external_id' => $validated['orderId'],
             'paid' => true,
         ]);
+
+        return null;
     }
 
     private static function sign(array $fields): string

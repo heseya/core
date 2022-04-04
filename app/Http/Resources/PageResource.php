@@ -9,20 +9,24 @@ class PageResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'slug' => $this->slug,
-            'name' => $this->name,
-            'public' => $this->public,
-            'order' => $this->order,
+            'id' => $this->resource->getKey(),
+            'slug' => $this->resource->slug,
+            'name' => $this->resource->name,
+            'public' => $this->resource->public,
+            'order' => $this->resource->order,
         ];
     }
 
     public function view(Request $request): array
     {
         return [
-            'content_html' => $this->content_html,
-            'meta_description' => str_replace("\n", ' ', trim(strip_tags($this->content_html))),
-            'seo' => SeoMetadataResource::make($this->seo),
+            'content_html' => $this->resource->content_html,
+            'meta_description' => str_replace(
+                "\n",
+                ' ',
+                trim(strip_tags($this->resource->content_html)),
+            ),
+            'seo' => SeoMetadataResource::make($this->resource->seo),
         ];
     }
 }

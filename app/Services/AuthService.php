@@ -119,6 +119,7 @@ class AuthService implements AuthServiceContract
 
     public function logout(): void
     {
+        // @phpstan-ignore-next-line
         $this->tokenService->invalidateToken(Auth::getToken());
     }
 
@@ -185,7 +186,7 @@ class AuthService implements AuthServiceContract
 
     public function unauthenticatedUser(): User
     {
-        $user = User::make([
+        $user = new User([
             'name' => 'Unauthenticated',
         ]);
 

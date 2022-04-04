@@ -9,9 +9,9 @@ class ProductItemResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'name' => $this->name,
-            'required_quantity' => $this->pivot->quantity,
+            'id' => $this->resource->getKey(),
+            'name' => $this->resource->name,
+            'required_quantity' => $this->resource->pivot->quantity,
         ];
     }
 }

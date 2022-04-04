@@ -9,12 +9,12 @@ class OptionResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'name' => $this->name,
-            'price' => $this->price,
-            'disabled' => $this->disabled,
-            'available' => $this->available,
-            'items' => ItemPublicResource::collection($this->items),
+            'id' => $this->resource->getKey(),
+            'name' => $this->resource->name,
+            'price' => $this->resource->price,
+            'disabled' => $this->resource->disabled,
+            'available' => $this->resource->available,
+            'items' => ItemPublicResource::collection($this->resource->items),
         ];
     }
 }

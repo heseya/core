@@ -10,11 +10,11 @@ class MediaResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'type' => Str::lower($this->type->key),
-            'url' => $this->url,
-            'slug' => $this->slug,
-            'alt' => $this->alt,
+            'id' => $this->resource->getKey(),
+            'type' => Str::lower($this->resource->type->key),
+            'url' => $this->resource->url,
+            'slug' => $this->resource->slug,
+            'alt' => $this->resource->alt,
         ];
     }
 }

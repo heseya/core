@@ -857,7 +857,7 @@ class AppInstallTest extends TestCase
         $app = App::factory()->create([
             'name' => 'testApp',
             'slug' => 'test',
-            'url' => $this->url
+            'url' => $this->url,
         ]);
 
         Permission::create([
@@ -889,7 +889,7 @@ class AppInstallTest extends TestCase
                         'name' => 'test',
                         'display_name' => 'test',
                         'description' => 'test',
-                    ]
+                    ],
                 ],
             ]),
             $this->url . '/install' => Http::response([
@@ -982,6 +982,6 @@ class AppInstallTest extends TestCase
         ]);
 
         $response->assertStatus(422)
-        ->assertJsonFragment(['message' => 'App with url: ' . $this->url . ' is already installed']);
+            ->assertJsonFragment(['message' => 'App with url: ' . $this->url . ' is already installed']);
     }
 }

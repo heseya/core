@@ -506,7 +506,7 @@ class AvailabilityTest extends TestCase
             'quantity' => 0,
         ]);
 
-        return collect([
+        return Collection::make([
             'schemaOne' => $schemaOne,
             'schemaTwo' => $schemaTwo,
             'optionOne' => $optionOne,
