@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use Heseya\Insights\Sniffs\NotSpaceAfterNot;
+use NunoMaduro\PhpInsights\Domain\Insights\Composer\ComposerMustBeValid;
+use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenDefineFunctions;
+use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenGlobals;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenPrivateMethods;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenTraits;
@@ -13,6 +16,7 @@ use PHP_CodeSniffer\Standards\Generic\Sniffs\Commenting\TodoSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineEndingsSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Files\LineLengthSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
+use SlevomatCodingStandard\Sniffs\Arrays\DisallowImplicitArrayCreationSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\PHP\ForbiddenFunctionsSniff;
 use PhpCsFixer\Fixer\FunctionNotation\VoidReturnFixer;
 use SlevomatCodingStandard\Sniffs\Classes\ForbiddenPublicPropertySniff;
@@ -81,6 +85,8 @@ return [
         // replaced with own
         SpaceAfterNotSniff::class,
         DisallowShortTernaryOperatorSniff::class,
+        ForbiddenGlobals::class,
+        DisallowImplicitArrayCreationSniff::class,
     ],
 
     'config' => [

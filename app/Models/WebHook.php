@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Heseya\Searchable\Searches\Like;
-use Heseya\Searchable\Traits\Searchable;
-use Heseya\Sortable\Sortable;
+use App\Traits\Sortable;
+use Heseya\Searchable\Criteria\Like;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -18,7 +18,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class WebHook extends Model implements AuditableContract
 {
-    use HasFactory, SoftDeletes, Searchable, Sortable, Auditable, Notifiable;
+    use HasFactory, SoftDeletes, HasCriteria, Sortable, Auditable, Notifiable;
 
     protected $fillable = [
         'name',
@@ -39,7 +39,7 @@ class WebHook extends Model implements AuditableContract
         'events' => 'array',
     ];
 
-    protected array $searchable = [
+    protected array $criteria = [
         'name' => Like::class,
         'url' => Like::class,
     ];

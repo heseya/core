@@ -24,7 +24,7 @@ class UserController extends Controller
     public function index(UserIndexRequest $request): JsonResource
     {
         $paginator = $this->userService->index(
-            $request->only('name', 'email', 'search', 'ids'),
+            $request->only('name', 'email', 'search', 'ids', 'metadata', 'metadata_private'),
             $request->input('sort', 'created_at:asc'),
             $request->input('pagination_limit', 12)
         );

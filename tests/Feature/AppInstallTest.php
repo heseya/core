@@ -246,6 +246,7 @@ class AppInstallTest extends TestCase
                 'version' => '1.0.0',
                 'description' => 'Cool description',
                 'icon' => 'https://picsum.photos/200',
+                'metadata' => [],
             ]);
 
         $this->assertDatabaseHas('apps', [
@@ -374,6 +375,7 @@ class AppInstallTest extends TestCase
                 'version' => '1.0.0',
                 'description' => 'Cool description',
                 'icon' => 'https://picsum.photos/200',
+                'metadata' => [],
             ]);
 
         $this->assertDatabaseHas('apps', [

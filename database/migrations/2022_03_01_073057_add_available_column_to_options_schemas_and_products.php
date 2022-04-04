@@ -34,7 +34,11 @@ class AddAvailableColumnToOptionsSchemasAndProducts extends Migration
         $items->each(fn ($item) => $availabilityService->calculateAvailabilityOnOrderAndRestock($item));
 
         $products = Product::doesntHave('schemas')->get();
-        $products->each(fn ($product) => $product->update(['available' => true]));
+        $products->each(function (Product $product): void {
+            Product::withoutSyncingToSearch(function () use ($product): void {
+                $product->update(['available' => true]);
+            });
+        });
     }
 
     /**

@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Criteria\MetadataPrivateSearch;
+use App\Criteria\MetadataSearch;
+use App\Traits\HasMetadata;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,7 +17,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class ShippingMethod extends Model implements AuditableContract
 {
-    use HasFactory, Auditable;
+    use HasFactory, Auditable, HasCriteria, HasMetadata;
 
     /**
      * The attributes that are mass assignable.
@@ -35,6 +39,11 @@ class ShippingMethod extends Model implements AuditableContract
     protected $casts = [
         'public' => 'boolean',
         'black_list' => 'boolean',
+    ];
+
+    protected array $criteria = [
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     public function orders(): HasMany

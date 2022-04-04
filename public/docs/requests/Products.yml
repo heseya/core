@@ -38,6 +38,10 @@ Product:
       items:
         type: string
         example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+    metadata:
+      $ref: './../schemas/Metadata.yml#Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#Metadata'
 
 ProductStore:
   content:
@@ -53,6 +57,12 @@ ProductStore:
         properties:
           description_short:
             type: string
+          attributes:
+            type: array
+            items:
+              type: string
+              description: attribute_id,option_id
+              example: 0006c3a0-21af-4485-b7fe-9c42233cf03a,0006c654-21bn-44rt-b7fe-9c4uyji8f03a
         type: object
 
 ProductUpdate:

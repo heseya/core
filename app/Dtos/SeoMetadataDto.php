@@ -3,8 +3,7 @@
 namespace App\Dtos;
 
 use App\Enums\TwitterCardType;
-use App\Http\Requests\SeoMetadataRequest;
-use App\Http\Requests\SeoMetadataRulesRequest;
+use App\Http\Requests\Contracts\SeoRequestContract;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
 
@@ -19,9 +18,10 @@ class SeoMetadataDto extends Dto
     private string|null|Missing $model_type;
     private bool|Missing $no_index;
 
-    public static function fromFormRequest(SeoMetadataRulesRequest|SeoMetadataRequest $request): self
+    public static function fromFormRequest(SeoRequestContract $request): self
     {
         $seo = $request->has('seo') ? 'seo.' : '';
+
         return new self(
             title: $request->input($seo . 'title', new Missing()),
             description: $request->input($seo . 'description', new Missing()),

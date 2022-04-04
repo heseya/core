@@ -15,6 +15,8 @@ class IndexSchemaRequest extends FormRequest
 
             'search' => ['nullable', 'string', 'max:255'],
             'sort' => ['nullable', 'string', 'max:255'],
+            'metadata' => ['nullable', 'array'],
+            'metadata_private' => ['nullable', 'array'],
         ];
     }
 }

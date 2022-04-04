@@ -2,14 +2,19 @@
 
 namespace Tests\Feature;
 
+use App\Enums\AttributeType;
 use App\Enums\MediaType;
+use App\Enums\MetadataType;
 use App\Enums\SchemaType;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductUpdated;
 use App\Listeners\WebHookEventListener;
+use App\Models\Attribute;
+use App\Models\AttributeOption;
 use App\Models\Media;
 use App\Models\Product;
+use App\Models\ProductAttribute;
 use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Models\SeoMetadata;
@@ -25,15 +30,20 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Spatie\WebhookServer\CallWebhookJob;
+use Tests\Support\ElasticTest;
 use Tests\TestCase;
 
 class ProductTest extends TestCase
 {
+    use ElasticTest;
+
     private Product $product;
     private Product $hidden_product;
 
     private array $expected;
     private array $expected_short;
+    private array $expected_attribute;
+    private array $expected_attribute_short;
 
     private ProductServiceContract $productService;
     private AvailabilityServiceContract $availabilityService;
@@ -85,9 +95,27 @@ class ProductTest extends TestCase
             'quantity' => 10,
         ]);
 
+        $metadata = $this->product->metadata()->create([
+            'name' => 'testMetadata',
+            'value' => 'value metadata',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
         $this->hidden_product = Product::factory()->create([
             'public' => false,
         ]);
+
+        $attribute = Attribute::factory()->create();
+
+        $option = AttributeOption::factory()->create([
+            'index' => 1,
+            'attribute_id' => $attribute->getKey(),
+        ]);
+
+        $this->product->attributes()->attach($attribute->getKey());
+
+        $this->product->attributes->first()->pivot->options()->attach($option->getKey());
 
         $this->availabilityService->calculateAvailabilityOnOrderAndRestock($item);
 
@@ -105,10 +133,38 @@ class ProductTest extends TestCase
             'cover' => null,
         ];
 
+        $this->expected_attribute_short = [
+            'attributes' => [
+                [
+                    'name' => $attribute->name,
+                    'selected_options' => [
+                        [
+                            'id' => $option->getKey(),
+                            'name' => $option->name,
+                            'index' => $option->index,
+                            'value_number' => $option->value_number,
+                            'value_date' => $option->value_date,
+                            'attribute_id' => $attribute->getKey(),
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $this->expected_attribute = $this->expected_attribute_short;
+        $this->expected_attribute['attributes'][0] += [
+            'id' => $attribute->getKey(),
+            'slug' => $attribute->slug,
+            'description' => $attribute->description,
+            'type' => $attribute->type,
+            'global' => $attribute->global,
+            'sortable' => $attribute->sortable,
+        ];
+
         /**
          * Expected full response
          */
-        $this->expected = array_merge($this->expected_short, [
+        $this->expected = array_merge($this->expected_short, $this->expected_attribute, [
             'description_html' => $this->product->description_html,
             'description_short' => $this->product->description_short,
             'meta_description' => strip_tags($this->product->description_html),
@@ -119,6 +175,7 @@ class ProductTest extends TestCase
                 'required' => true,
                 'available' => true,
                 'price' => 0,
+                'metadata' => [],
                 'options' => [
                     [
                         'name' => 'XL',
@@ -130,6 +187,7 @@ class ProductTest extends TestCase
                             'sku' => 'K001/XL',
                         ],
                         ],
+                        'metadata' => [],
                     ],
                     [
                         'name' => 'L',
@@ -141,9 +199,13 @@ class ProductTest extends TestCase
                             'sku' => 'K001/L',
                         ],
                         ],
+                        'metadata' => [],
                     ],
                 ],
             ],
+            ],
+            'metadata' => [
+                $metadata->name => $metadata->value,
             ],
         ]);
     }
@@ -169,14 +231,39 @@ class ProductTest extends TestCase
         ]);
         $product->sets()->sync([$set->getKey()]);
 
-        $response = $this->actingAs($this->$user)->getJson('/products?limit=100');
-        $response
-            ->assertOk()
-            ->assertJsonCount(1, 'data') // Should show only public products.
-            ->assertJson(['data' => [
-                0 => $this->expected_short,
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['limit' => 100])
+            ->assertOk();
+//            ->assertJsonCount(1, 'data') // Should show only public products.
+//            ->assertJson(['data' => [
+//                0 => $this->expected_short,
+//            ]]);
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' => [],
+                'should' => [],
+                'filter' => [
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'hide_on_index' => [
+                                'value' => false,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
             ],
-            ]);
+        ], 100);
 
         $this->assertQueryCountLessThan(20);
     }
@@ -203,12 +290,39 @@ class ProductTest extends TestCase
             'created_at' => Carbon::now()->addHour(),
         ]);
 
-        $response = $this->actingAs($this->$user)
-            ->json('GET', "/products?ids={$firstProduct->getKey()},{$secondProduct->getKey()}");
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', [
+                'ids' => "{$firstProduct->getKey()},{$secondProduct->getKey()}",
+            ])
+            ->assertOk();
+//            ->assertJsonCount(2, 'data');
 
-        $response
-            ->assertOk()
-            ->assertJsonCount(2, 'data');
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' => [],
+                'should' => [],
+                'filter' => [
+                    [
+                        'terms' => [
+                            'id' => [
+                                $firstProduct->getKey(),
+                                $secondProduct->getKey(),
+                            ],
+                            'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
     }
 
     /**
@@ -228,52 +342,18 @@ class ProductTest extends TestCase
 
         $product->sets()->sync([$set->getKey()]);
 
-        $response = $this->actingAs($this->$user)->getJson('/products');
-        $response
-            ->assertOk()
-            ->assertJsonCount(3, 'data'); // Should show all products.
-    }
+        $this->actingAs($this->$user)
+            ->json('GET', '/products')
+            ->assertOk();
+//            ->assertJsonCount(3, 'data'); // Should show all products.
 
-    /**
-     * @dataProvider authProvider
-     */
-    public function testIndexPerformance($user): void
-    {
-        $this->$user->givePermissionTo('products.show');
-
-        Product::factory()->count(499)->create([
-            'public' => true,
-            'order' => 1,
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' => [],
+                'should' => [],
+                'filter' => [],
+            ],
         ]);
-
-        $this
-            ->actingAs($this->$user)
-            ->getJson('/products?limit=500')
-            ->assertOk()
-            ->assertJsonCount(500, 'data');
-
-        $this->assertQueryCountLessThan(20);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testIndexFullPerformance($user): void
-    {
-        $this->$user->givePermissionTo('products.show');
-
-        Product::factory()->count(499)->create([
-            'public' => true,
-            'order' => 1,
-        ]);
-
-        $this
-            ->actingAs($this->$user)
-            ->getJson('/products?limit=500&full')
-            ->assertOk()
-            ->assertJsonCount(500, 'data');
-
-        $this->assertQueryCountLessThan(20);
     }
 
     public function testShowUnauthorized(): void
@@ -342,6 +422,7 @@ class ProductTest extends TestCase
                     'parent_id' => $set1->parent_id,
                     'children_ids' => [],
                     'cover' => null,
+                    'metadata' => [],
                 ],
                 [
                     'id' => $set2->getKey(),
@@ -355,6 +436,7 @@ class ProductTest extends TestCase
                     'parent_id' => $set2->parent_id,
                     'children_ids' => [],
                     'cover' => null,
+                    'metadata' => [],
                 ],
             ],
             ]);
@@ -408,12 +490,14 @@ class ProductTest extends TestCase
                     'hide_on_index' => $set1->hide_on_index,
                     'parent_id' => $set1->parent_id,
                     'children_ids' => [],
+                    'metadata' => [],
                     'cover' => [
                         'id' => $media1->getKey(),
                         'type' => Str::lower($media1->type->key),
                         'url' => $media1->url,
                         'slug' => $media1->slug,
                         'alt' => $media1->alt,
+                        'metadata' => [],
                     ],
                 ],
                 [
@@ -427,14 +511,84 @@ class ProductTest extends TestCase
                     'hide_on_index' => $set2->hide_on_index,
                     'parent_id' => $set2->parent_id,
                     'children_ids' => [],
+                    'metadata' => [],
                     'cover' => [
                         'id' => $media2->getKey(),
                         'type' => Str::lower($media2->type->key),
                         'url' => $media2->url,
                         'slug' => $media2->slug,
                         'alt' => $media2->alt,
+                        'metadata' => [],
                     ],
                 ],
+            ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowAttributes($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $attribute = Attribute::factory()->create();
+
+        $option = AttributeOption::factory()->create([
+            'index' => 1,
+            'attribute_id' => $attribute->getKey(),
+        ]);
+
+        $product->attributes()->attach($attribute->getKey());
+
+        $product->attributes->first()->pivot->options()->attach($option->getKey());
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/products/' . $product->slug)
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $attribute->getKey(),
+                'name' => $attribute->name,
+                'description' => $attribute->description,
+                'type' => $attribute->type,
+                'global' => $attribute->global,
+            ])
+            ->assertJsonFragment([
+                'id' => $option->getKey(),
+                'name' => $option->name,
+                'index' => $option->index,
+                'value_number' => $option->value_number,
+                'value_date' => $option->value_date,
+                'attribute_id' => $attribute->getKey(),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowPrivateMetadata($user): void
+    {
+        $this->$user->givePermissionTo(['products.show_details', 'products.show_metadata_private']);
+
+        $privateMetadata = $this->product->metadataPrivate()->create([
+            'name' => 'hiddenMetadata',
+            'value' => 'hidden metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => false,
+        ]);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $this->product->getKey());
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['metadata_private' => [
+                $privateMetadata->name => $privateMetadata->value,
             ],
             ]);
     }
@@ -1128,7 +1282,7 @@ class ProductTest extends TestCase
 
         $schemaPrice = 50;
         $schema = Schema::factory()->create([
-            'type' => 0,
+            'type' => SchemaType::STRING,
             'required' => false,
             'price' => $schemaPrice,
         ]);
@@ -1156,6 +1310,312 @@ class ProductTest extends TestCase
             'public' => false,
             'description_html' => null,
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateMinPriceWithRequiredSchema($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $schemaPrice = 50;
+        $schema = Schema::factory()->create([
+            'type' => SchemaType::STRING,
+            'required' => true,
+            'price' => $schemaPrice,
+        ]);
+
+        $productPrice = 150;
+        $response = $this->actingAs($this->$user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => $productPrice,
+            'public' => false,
+            'sets' => [],
+            'schemas' => [
+                $schema->getKey(),
+            ],
+        ]);
+
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => $productPrice,
+            'price_min' => $productPrice + $schemaPrice,
+            'price_max' => $productPrice + $schemaPrice,
+            'public' => false,
+            'description_html' => null,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithAttribute($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $attribute = Attribute::factory()->create();
+
+        $option = AttributeOption::factory()->create([
+            'index' => 1,
+            'attribute_id' => $attribute->getKey(),
+        ]);
+
+        $attribute2 = Attribute::factory()->create();
+
+        $option2 = AttributeOption::factory()->create([
+            'index' => 2,
+            'attribute_id' => $attribute2->getKey(),
+        ]);
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->postJson('/products', [
+                'name' => 'Test',
+                'slug' => 'test',
+                'price' => 0,
+                'public' => true,
+                'attributes' => [
+                    $attribute->getKey() => [
+                        $option->getKey(),
+                    ],
+                    $attribute2->getKey() => [
+                        $option2->getKey(),
+                    ],
+                ],
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'id' => $attribute->getKey(),
+                'name' => $attribute->name,
+                'slug' => $attribute->slug,
+                'description' => $attribute->description,
+                'type' => $attribute->type,
+                'global' => $attribute->global,
+                'sortable' => $attribute->sortable,
+            ])
+            ->assertJsonFragment([
+                'id' => $option->getKey(),
+                'name' => $option->name,
+                'index' => $option->index,
+                'value_number' => $option->value_number,
+                'value_date' => $option->value_date,
+                'attribute_id' => $attribute->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $attribute2->getKey(),
+                'name' => $attribute2->name,
+                'slug' => $attribute2->slug,
+                'description' => $attribute2->description,
+                'type' => $attribute2->type,
+                'global' => $attribute2->global,
+                'sortable' => $attribute2->sortable,
+            ])
+            ->assertJsonFragment([
+                'id' => $option2->getKey(),
+                'name' => $option2->name,
+                'index' => $option2->index,
+                'value_number' => $option2->value_number,
+                'value_date' => $option2->value_date,
+                'attribute_id' => $attribute2->getKey(),
+            ]);
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 0,
+        ]);
+
+        $product = Product::find($response->getData()->data->id);
+
+        $productAttribute1 = ProductAttribute::where('product_id', $product->getKey())
+            ->where('attribute_id', $attribute->getKey())
+            ->first();
+        $productAttribute2 = ProductAttribute::where('product_id', $product->getKey())
+            ->where('attribute_id', $attribute2->getKey())
+            ->first();
+
+        $this->assertDatabaseHas('product_attribute', [
+            'product_id' => $product->getKey(),
+            'attribute_id' => $attribute->getKey(),
+        ]);
+        $this->assertDatabaseHas('product_attribute', [
+            'product_id' => $product->getKey(),
+            'attribute_id' => $attribute2->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_attribute_attribute_option', [
+            'product_attribute_id' => $productAttribute1->getKey(),
+            'attribute_option_id' => $option->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_attribute_attribute_option', [
+            'product_attribute_id' => $productAttribute2->getKey(),
+            'attribute_option_id' => $option2->getKey(),
+        ]);
+
+        $this->assertDatabaseCount('product_attribute_attribute_option', 3); // +1 from $this->product
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithAttributeMultipleOptions($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $attribute = Attribute::factory()->create([
+            'type' => AttributeType::MULTI_CHOICE_OPTION,
+        ]);
+
+        $option = $attribute->options()->create([
+            'index' => 1,
+        ]);
+
+        $option2 = $attribute->options()->create([
+            'index' => 1,
+        ]);
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->postJson('/products', [
+                'name' => 'Test',
+                'slug' => 'test',
+                'price' => 0,
+                'public' => true,
+                'attributes' => [
+                    $attribute->getKey() => [
+                        $option->getKey(),
+                        $option2->getKey(),
+                    ],
+                ],
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'id' => $attribute->getKey(),
+                'name' => $attribute->name,
+                'slug' => $attribute->slug,
+                'description' => $attribute->description,
+                'type' => $attribute->type,
+                'global' => $attribute->global,
+                'sortable' => $attribute->sortable,
+            ])
+            ->assertJsonFragment([
+                'id' => $option->getKey(),
+                'name' => $option->name,
+                'index' => $option->index,
+                'value_number' => $option->value_number,
+                'value_date' => $option->value_date,
+                'attribute_id' => $attribute->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $option2->getKey(),
+                'name' => $option2->name,
+                'index' => $option2->index,
+                'value_number' => $option2->value_number,
+                'value_date' => $option2->value_date,
+                'attribute_id' => $attribute->getKey(),
+            ]);
+
+        $this->assertDatabaseHas('products', [
+            'slug' => 'test',
+            'name' => 'Test',
+            'price' => 0,
+        ]);
+
+        $product = Product::find($response->getData()->data->id);
+
+        $productAttribute = ProductAttribute::where('product_id', $product->getKey())
+            ->where('attribute_id', $attribute->getKey())
+            ->first();
+
+        $this->assertDatabaseHas('product_attribute', [
+            'product_id' => $product->getKey(),
+            'attribute_id' => $attribute->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_attribute_attribute_option', [
+            'product_attribute_id' => $productAttribute->getKey(),
+            'attribute_option_id' => $option->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('product_attribute_attribute_option', [
+            'product_attribute_id' => $productAttribute->getKey(),
+            'attribute_option_id' => $option2->getKey(),
+        ]);
+
+        $this->assertDatabaseCount('product_attribute_attribute_option', 3); // +1 from $this->product
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithAttributeInvalidMultipleOptions($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $attribute = Attribute::factory()->create([
+            'type' => AttributeType::SINGLE_OPTION,
+        ]);
+
+        $option = $attribute->options()->create([
+            'index' => 1,
+        ]);
+
+        $option2 = $attribute->options()->create([
+            'index' => 1,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/products', [
+                'name' => 'Test',
+                'slug' => 'test',
+                'price' => 0,
+                'public' => true,
+                'attributes' => [
+                    $attribute->getKey() => [
+                        $option->getKey(),
+                        $option2->getKey(),
+                    ],
+                ],
+            ])
+            ->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithAttributeInvalidOption($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $attribute = Attribute::factory()->create();
+
+        $attribute2 = Attribute::factory()->create();
+
+        $option = $attribute2->options()->create([
+            'index' => 1,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/products', [
+                'name' => 'Test',
+                'slug' => 'test',
+                'price' => 0,
+                'public' => true,
+                'attributes' => [
+                    $attribute->getKey() => [
+                        $option->getKey(),
+                    ],
+                ],
+            ])
+            ->assertUnprocessable();
     }
 
     public function testUpdateUnauthorized(): void

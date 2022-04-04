@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Criteria\MetadataPrivateSearch;
+use App\Criteria\MetadataSearch;
+use App\Traits\HasMetadata;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
@@ -9,7 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class PackageTemplate extends Model
 {
-    use HasFactory;
+    use HasFactory, HasCriteria, HasMetadata;
 
     protected $fillable = [
         'name',
@@ -21,5 +25,10 @@ class PackageTemplate extends Model
 
     protected $casts = [
         'weight' => 'float',
+    ];
+
+    protected array $criteria = [
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 }

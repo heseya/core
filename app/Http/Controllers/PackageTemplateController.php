@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\PackageTemplateIndexRequest;
 use App\Http\Resources\PackageTemplateResource;
 use App\Models\PackageTemplate;
 use Illuminate\Http\JsonResponse;
@@ -11,11 +12,12 @@ use Illuminate\Support\Facades\Response;
 
 class PackageTemplateController extends Controller
 {
-    public function index(): JsonResource
+    public function index(PackageTemplateIndexRequest $request): JsonResource
     {
-        $packages = PackageTemplate::all();
+        $packages = PackageTemplate::searchByCriteria($request->validated())
+            ->with(['metadata']);
 
-        return PackageTemplateResource::collection($packages);
+        return PackageTemplateResource::collection($packages->get());
     }
 
     public function store(Request $request): JsonResource
