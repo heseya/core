@@ -133,63 +133,7 @@ paths:
   '/items/id:{id}/deposits':
     $ref: './paths/Deposits.yml#/ItemDeposits'
   /discounts:
-    get:
-      tags:
-        - Discounts
-      summary: 'get all discounts'
-      operationId: 48cb22131f7f432605564e1929459975
-      parameters:
-        - name: search
-          in: query
-          required: false
-          schema:
-            type: string
-        - name: description
-          in: query
-          required: false
-          schema:
-            type: string
-        - name: code
-          in: query
-          required: false
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Discount'
-                type: object
-      security:
-        - oauth: [ ]
-    post:
-      tags:
-        - Discounts
-      summary: 'add new discount'
-      operationId: 2fc4fbd324ec2ae8d910665255d1a3c0
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Discount'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Discount'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Discounts.yml#/Discounts'
   '/discounts/{code}':
     get:
       tags:
@@ -210,55 +154,10 @@ paths:
               schema:
                 properties:
                   data:
-                    $ref: '#/components/schemas/Discount'
+                    $ref: '././schemas/Discounts.yml/Discount'
                 type: object
   '/discounts/id:{id}':
-    delete:
-      tags:
-        - Discounts
-      summary: 'delete discount'
-      operationId: 696b261316fff870c9f296902a6f116e
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
-    patch:
-      tags:
-        - Discounts
-      summary: 'update discount'
-      operationId: 0ce28dd72c4a02adb46ddd0768ad7f6b
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Discount'
-      responses:
-        200:
-          description: Updated
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Discount'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Discounts.yml#/DiscountParams'
   /webhooks/events:
     get:
       tags:
@@ -1070,39 +969,6 @@ components:
       $ref: './schemas/Countries.yml#/Country'
     Deposit:
       $ref: './schemas/Deposits.yml#/Deposit'
-    Discount:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        code:
-          type: string
-          example: 83734AE
-        description:
-          type: string
-          example: 'Balck Weekend 2021'
-        type:
-          type: number
-          example: '0'
-        discount:
-          type: float
-          example: '50'
-        uses:
-          type: float
-          example: '41'
-        max_uses:
-          type: float
-          example: '100'
-        available:
-          type: boolean
-          example: 'true'
-        starts_at:
-          type: datetime
-          example: '2021-09-13T11:11'
-        expires_at:
-          type: datetime
-          example: '2021-09-13T11:11'
-      type: object
     Item:
       $ref: './schemas/Items.yml#/Item'
     Media:
