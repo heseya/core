@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 interface ShippingMethodServiceContract
 {
-    public function index(?string $country, float $cartValue): Collection;
+    public function index(?array $search, ?string $country, float $cartValue): Collection;
 
     public function store(ShippingMethodDto $shippingMethodDto): ShippingMethod;
 

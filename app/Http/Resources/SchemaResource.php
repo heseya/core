@@ -2,14 +2,17 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class SchemaResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
-        return [
+        return array_merge([
             'id' => $this->resource->getKey(),
             'type' => Str::lower($this->resource->type->key),
             'name' => $this->resource->name,
@@ -26,7 +29,7 @@ class SchemaResource extends Resource
             'validation' => $this->resource->validation,
             'options' => OptionResource::collection($this->resource->options),
             'used_schemas' => $this->resource->usedSchemas->map(fn ($schema) => $schema->getKey()),
-        ];
+        ], $this->metadataResource('schemas.show_metadata_private'));
     }
 
     public function view(Request $request): array

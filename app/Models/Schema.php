@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use App\Criteria\MetadataPrivateSearch;
+use App\Criteria\MetadataSearch;
+use App\Criteria\SchemaSearch;
 use App\Enums\SchemaType;
 use App\Rules\OptionAvailable;
-use App\SearchTypes\SchemaSearch;
+use App\Traits\HasMetadata;
+use App\Traits\Sortable;
 use BenSampo\Enum\Exceptions\InvalidEnumKeyException;
-use Heseya\Searchable\Searches\Like;
-use Heseya\Searchable\Traits\Searchable;
-use Heseya\Sortable\Sortable;
+use Heseya\Searchable\Criteria\Like;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -23,7 +26,7 @@ use Illuminate\Validation\ValidationException;
  */
 class Schema extends Model
 {
-    use HasFactory, Searchable, Sortable;
+    use HasFactory, HasCriteria, Sortable, HasMetadata;
 
     protected $fillable = [
         'type',
@@ -49,11 +52,13 @@ class Schema extends Model
         'type' => SchemaType::class,
     ];
 
-    protected $searchable = [
+    protected $criteria = [
         'search' => SchemaSearch::class,
         'name' => Like::class,
         'hidden',
         'required',
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     protected array $sortable = [

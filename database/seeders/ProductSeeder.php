@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Models\ProductSet;
 use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\Media;
 use App\Models\Option;
 use App\Models\Product;
+use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Models\SeoMetadata;
 use App\Services\Contracts\ProductServiceContract;
@@ -34,7 +34,7 @@ class ProductSeeder extends Seeder
         $brands = ProductSet::factory([
             'name' => 'Brands',
             'slug' => 'brands',
-        ])->create();
+        ])->make();
         $this->seo($brands);
         $brands = ProductSet::factory([
             'parent_id' => $brands->getKey(),
@@ -71,8 +71,16 @@ class ProductSeeder extends Seeder
                 $this->categories($product, $categories);
             }
 
+            $product->refresh();
+            $product->save();
             $productService->updateMinMaxPrices($product);
         });
+    }
+
+    private function seo(Product|ProductSet $product): void
+    {
+        $seo = SeoMetadata::factory()->create();
+        $product->seo()->save($seo);
     }
 
     private function schemas(Product $product): void
@@ -101,19 +109,13 @@ class ProductSeeder extends Seeder
         }
     }
 
-    private function categories(Product $product, Collection $categories): void
-    {
-        $product->sets()->syncWithoutDetaching($categories->random());
-    }
-
     private function brands(Product $product, Collection $brands): void
     {
         $product->sets()->syncWithoutDetaching($brands->random());
     }
 
-    private function seo(Product|ProductSet $product): void
+    private function categories(Product $product, Collection $categories): void
     {
-        $seo = SeoMetadata::factory()->create();
-        $product->seo()->save($seo);
+        $product->sets()->syncWithoutDetaching($categories->random());
     }
 }

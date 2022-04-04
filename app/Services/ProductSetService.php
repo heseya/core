@@ -35,7 +35,8 @@ class ProductSetService implements ProductSetServiceContract
 
     public function searchAll(array $attributes, bool $root): Collection
     {
-        $query = ProductSet::search($attributes);
+        $query = ProductSet::searchByCriteria($attributes)
+            ->with('metadata');
 
         if (!Auth::user()->can('product_sets.show_hidden')) {
             $query->public();
@@ -74,6 +75,11 @@ class ProductSetService implements ProductSetServiceContract
             'slug' => $slug,
             'public_parent' => $publicParent,
         ]);
+
+        $attributes = Collection::make($dto->getAttributesIds());
+        if ($attributes->isNotEmpty()) {
+            $set->attributes()->sync($attributes);
+        }
 
         $children = Collection::make($dto->getChildrenIds());
         if ($children->isNotEmpty()) {
@@ -170,6 +176,11 @@ class ProductSetService implements ProductSetServiceContract
             'public_parent' => $publicParent,
         ]);
 
+        if ($dto->getAttributesIds() !== null) {
+            $attributes = Collection::make($dto->getAttributesIds());
+            $set->attributes()->sync($attributes);
+        }
+
         $seo = $set->seo;
         if ($seo !== null) {
             $this->seoMetadataService->update($dto->getSeo(), $seo);
@@ -231,6 +242,22 @@ class ProductSetService implements ProductSetServiceContract
         $subsets = $sets->map(
             fn ($set) => $this->flattenSetsTree($set->$relation, $relation),
         );
+
+        return $subsets->flatten()->concat($sets);
+    }
+
+    /**
+     * Recursive get all parents of set collection if parent exists.
+     */
+    public function flattenParentsSetsTree(Collection $sets): Collection
+    {
+        $subsets = Collection::make();
+
+        foreach ($sets as $set) {
+            if ($set->parent) {
+                $subsets = $subsets->merge($this->flattenParentsSetsTree(Collection::make([$set->parent])));
+            }
+        }
 
         return $subsets->flatten()->concat($sets);
     }

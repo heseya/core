@@ -25,7 +25,7 @@ class MediaService implements MediaServiceContract
         $this->reorderService = $reorderService;
     }
 
-    public function sync(Product $product, array $media = []): void
+    public function sync(Product $product, array $media): void
     {
         $operations = $product->media()->sync($this->reorderService->reorder($media));
 
@@ -35,6 +35,22 @@ class MediaService implements MediaServiceContract
                     $this->destroy($object);
                 });
         }
+    }
+
+    public function destroy(Media $media): void
+    {
+        if ($media->products()->exists()) {
+            Gate::authorize('products.edit');
+        }
+
+        $response = Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
+            ->delete($media->url);
+
+        if ($response->failed()) {
+            throw new MediaCriticalException('CDN responded with an error');
+        }
+
+        $media->forceDelete();
     }
 
     public function store(UploadedFile $file): Media
@@ -67,22 +83,6 @@ class MediaService implements MediaServiceContract
         $media->save();
 
         return $media;
-    }
-
-    public function destroy(Media $media): void
-    {
-        if ($media->products()->exists()) {
-            Gate::authorize('products.edit');
-        }
-
-        $response = Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
-            ->delete($media->url);
-
-        if ($response->failed()) {
-            throw new MediaCriticalException('CDN responded with an error');
-        }
-
-        $media->forceDelete();
     }
 
     private function getMediaType(string $extension): int

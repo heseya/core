@@ -6,14 +6,11 @@ use App\Enums\SchemaType;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Services\Contracts\ProductServiceContract;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
 class ProductServiceTest extends TestCase
 {
-    use RefreshDatabase;
-
     private ProductServiceContract $productService;
 
     public function setUp(): void
@@ -26,6 +23,7 @@ class ProductServiceTest extends TestCase
     public function testMinMaxPricesNoSchemas(): void
     {
         $price = 10;
+        /** @var Product $product */
         $product = Product::factory()->create([
             'price' => $price,
         ]);

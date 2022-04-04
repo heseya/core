@@ -15,7 +15,7 @@ class TagController extends Controller
 {
     public function index(TagIndexRequest $request): JsonResource
     {
-        $tags = Tag::search($request->validated())
+        $tags = Tag::searchByCriteria($request->validated())
             ->withCount('products')
             ->orderBy('products_count', 'DESC')
             ->paginate(Config::get('pagination.per_page'));

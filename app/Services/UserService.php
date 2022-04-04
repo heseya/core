@@ -19,8 +19,9 @@ class UserService implements UserServiceContract
 {
     public function index(array $search, ?string $sort, int $limit): LengthAwarePaginator
     {
-        return User::search($search)
+        return User::searchByCriteria($search)
             ->sort($sort)
+            ->with('metadata')
             ->paginate($limit);
     }
 

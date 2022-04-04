@@ -28,9 +28,11 @@ class PageService implements PageServiceContract
         }
     }
 
-    public function getPaginated(): LengthAwarePaginator
+    public function getPaginated(?array $search): LengthAwarePaginator
     {
-        $query = Page::query()->with('seo');
+        $query = Page::query()
+            ->searchByCriteria($search)
+            ->with(['seo', 'metadata']);
 
         if (!Auth::user()->can('pages.show_hidden')) {
             $query->where('public', true);

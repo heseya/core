@@ -46,6 +46,12 @@ ProductSetStore:
               example: 026bc5f6-8373-4aeb-972e-e78d72a67121
           seo:
             $ref: './../schemas/Seo.yml#SeoStore'
+          attributes:
+            description: 'Array of assigned attributes ids'
+            type: array
+            items:
+              type: string
+              example: 026bc5f6-8373-4aeb-972e-e78d72a67121
         type: object
 ProductSetUpdate:
   content:
@@ -95,6 +101,12 @@ ProductSetUpdate:
               example: 026bc5f6-8373-4aeb-972e-e78d72a67121
           seo:
             $ref: './../schemas/Seo.yml#SeoStore'
+          attributes:
+            description: 'Array of assigned attributes ids'
+            type: array
+            items:
+              type: string
+              example: 026bc5f6-8373-4aeb-972e-e78d72a67121
         type: object
 ProductSetAttach:
   content:

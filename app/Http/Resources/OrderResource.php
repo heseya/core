@@ -3,17 +3,20 @@
 namespace App\Http\Resources;
 
 use App\Models\User;
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
 class OrderResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
-        return [
+        return array_merge([
             'id' => $this->resource->getKey(),
             'code' => $this->resource->code,
-            'email' => $this->resource->email,
             'currency' => $this->resource->currency,
+            'email' => $this->resource->email,
             'summary' => $this->resource->summary,
             'summary_paid' => $this->resource->paid_amount,
             'shipping_price' => $this->resource->shipping_price,
@@ -25,7 +28,7 @@ class OrderResource extends Resource
                 AddressResource::make($this->resource->deliveryAddress) : null,
             'shipping_method' => $this->resource->shippingMethod ?
                 ShippingMethodResource::make($this->resource->shippingMethod) : null,
-        ];
+        ], $this->metadataResource('orders.show_metadata_private'));
     }
 
     public function view(Request $request): array

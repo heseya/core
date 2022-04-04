@@ -11,6 +11,8 @@ class ShippingMethodIndexRequest extends FormRequest
         return [
             'country' => ['string', 'size:2', 'exists:countries,code'],
             'cart_value' => ['numeric'],
+            'metadata' => ['nullable', 'array'],
+            'metadata_private' => ['nullable', 'array'],
         ];
     }
 }

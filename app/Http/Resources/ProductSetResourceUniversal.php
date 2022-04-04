@@ -45,7 +45,7 @@ class ProductSetResourceUniversal extends Resource
         $childrenResource = $this->showChildren ? [
             'children' => ProductSetResourceUniversal::collection($children)->setIsPublic($this->public),
         ] : [
-            'children_ids' => $children->map(fn ($child) => $child->getKey())->toArray(),
+            'children_ids' => $children->map(fn ($child) => $child->getKey()),
         ];
 
         return [

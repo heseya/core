@@ -11,7 +11,7 @@ class PermissionService implements PermissionServiceContract
     public function getAll(?bool $assignable): Collection
     {
         if ($assignable !== null) {
-            return Permission::search([
+            return Permission::searchByCriteria([
                 'assignable' => $assignable,
             ])->get();
         }

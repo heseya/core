@@ -46,6 +46,11 @@ Product:
       type: array
       items:
         $ref: './Tags.yml#/Tag'
+    attributes:
+      description: 'Array of assigned attributes'
+      type: array
+      items:
+        $ref: './Attributes.yml#/AttributeProductList'
     items:
       description: 'Ids of assigned items'
       type: array
@@ -89,5 +94,10 @@ ProductView:
             $ref: './ProductSets.yml#/ProductSet'
         seo:
           $ref: './Seo.yml#/SeoView'
+        attributes:
+          description: 'Array of assigned attributes'
+          type: array
+          items:
+            $ref: './Attributes.yml#/AttributeProduct'
         items:
           $ref: './Items.yml#/ItemWithRequiredQuantity'
