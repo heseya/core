@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Criteria\MetadataPrivateSearch;
+use App\Criteria\MetadataSearch;
+use App\Traits\HasMetadata;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -12,7 +16,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class AttributeOption extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory,
+        SoftDeletes,
+        HasCriteria,
+        HasMetadata;
 
     protected $fillable = [
         'name',
@@ -25,6 +32,11 @@ class AttributeOption extends Model
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+    ];
+
+    protected array $criteria = [
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     public function attribute(): BelongsTo

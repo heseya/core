@@ -3,10 +3,13 @@
 namespace App\Http\Resources;
 
 use App\Enums\AttributeType;
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
 class AttributeResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
         [$min, $max] = match ($this->resource->type->value) {
@@ -15,7 +18,7 @@ class AttributeResource extends Resource
             default => [null, null],
         };
 
-        return [
+        return array_merge([
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
             'slug' => $this->resource->slug,
@@ -26,6 +29,6 @@ class AttributeResource extends Resource
             'global' => $this->resource->global,
             'sortable' => $this->resource->sortable,
             'options' => AttributeOptionResource::collection($this->resource->options),
-        ];
+        ], $this->metadataResource('attributes.show_metadata_private'));
     }
 }

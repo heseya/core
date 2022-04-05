@@ -23,7 +23,7 @@ class AttributeController extends Controller
     public function index(AttributeIndexRequest $request): JsonResource
     {
         $query = Attribute::searchByCriteria($request->validated())
-            ->with('options');
+            ->with(['options', 'metadata', 'metadataPrivate']);
 
         return AttributeResource::collection(
             $query->paginate(Config::get('pagination.per_page'))

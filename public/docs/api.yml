@@ -728,6 +728,16 @@ paths:
   '/media/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
 
+  '/attributes/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#Metadata'
+  '/attributes/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#Metadata'
+
+  '/attributes/id:{id}/options/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#Metadata'
+  '/attributes/id:{id}/options/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#Metadata'
+
   '/users/id:{id}/2fa/remove':
     $ref: './paths/Users.yml#/UserTFARemove'
   /webhooks:
