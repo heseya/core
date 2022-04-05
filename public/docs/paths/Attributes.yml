@@ -2,6 +2,26 @@ Attributes:
   get:
     tags:
       - Attributes
+    parameters:
+      - name: global
+        in: query
+        required: false
+        description: search by global flag
+        schema:
+          type: boolean
+      - name: metadata
+        in: query
+        description: search by metadata
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          type: object
+          properties:
+            kolor:
+              type: string
+            czerwony:
+              type: string
     summary: 'list attributes'
     responses:
       200:
@@ -106,6 +126,39 @@ AttributesParams:
       - oauth: [ ]
 
 AttributeOption:
+  get:
+    tags:
+      - Attributes
+    summary: 'get list of all options attribute'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: metadata
+        in: query
+        description: search by metadata
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          type: object
+          properties:
+            kolor:
+              type: string
+            czerwony:
+              type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: './../schemas/Attributes.yml#/AttributeOption'
   post:
     tags:
       - Attributes

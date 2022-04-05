@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Criteria\MetadataPrivateSearch;
+use App\Criteria\MetadataSearch;
 use App\Enums\AttributeType;
+use App\Traits\HasMetadata;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -13,7 +16,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Attribute extends Model
 {
-    use HasFactory, HasCriteria;
+    use HasFactory,
+        HasCriteria,
+        HasMetadata;
 
     protected $fillable = [
         'name',
@@ -38,6 +43,8 @@ class Attribute extends Model
 
     protected array $criteria = [
         'global',
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     public function options(): HasMany
