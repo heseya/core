@@ -10,3 +10,11 @@ Metadata:
     synced:
       type: boolean
       example: true
+
+MetadataQuery:
+  type: object
+  properties:
+    kolor:
+      type: string
+    czerwony:
+      type: string
