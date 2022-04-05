@@ -24,6 +24,22 @@ Roles:
         description: 'Is the role assignable by current user'
         schema:
           type: boolean
+      - name: metadata
+        in: query
+        description: search by metadata
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: metadata_private
+        in: query
+        description: search by metadata private
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
     responses:
       200:
         description: Success

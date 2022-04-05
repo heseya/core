@@ -206,6 +206,23 @@ paths:
     get:
       tags:
         - Packages
+      parameters:
+        - name: metadata
+          in: query
+          description: search by metadata
+          style: deepObject
+          explode: true
+          required: false
+          schema:
+            $ref: './schemas/Metadata.yml#/MetadataQuery'
+        - name: metadata_private
+          in: query
+          description: search by metadata private
+          style: deepObject
+          explode: true
+          required: false
+          schema:
+            $ref: './schemas/Metadata.yml#/MetadataQuery'
       summary: 'list packages'
       operationId: 521fda12b023dd7945d369e3c30599c5
       responses:
@@ -293,6 +310,23 @@ paths:
     get:
       tags:
         - Pages
+      parameters:
+        - name: metadata
+          in: query
+          description: search by metadata
+          style: deepObject
+          explode: true
+          required: false
+          schema:
+            $ref: './schemas/Metadata.yml#/MetadataQuery'
+        - name: metadata_private
+          in: query
+          description: search by metadata private
+          style: deepObject
+          explode: true
+          required: false
+          schema:
+            $ref: './schemas/Metadata.yml#/MetadataQuery'
       summary: 'list page'
       operationId: 82fdf932ecaac31515345d77358bcbe7
       responses:
@@ -528,6 +562,22 @@ paths:
           schema:
             type: string
             example: test
+        - name: metadata
+          in: query
+          description: search by metadata
+          style: deepObject
+          explode: true
+          required: false
+          schema:
+            $ref: './schemas/Metadata.yml#/MetadataQuery'
+        - name: metadata_private
+          in: query
+          description: search by metadata private
+          style: deepObject
+          explode: true
+          required: false
+          schema:
+            $ref: './schemas/Metadata.yml#/MetadataQuery'
       responses:
         200:
           description: Success

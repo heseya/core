@@ -16,12 +16,15 @@ Attributes:
         explode: true
         required: false
         schema:
-          type: object
-          properties:
-            kolor:
-              type: string
-            czerwony:
-              type: string
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: metadata_private
+        in: query
+        description: search by metadata private
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
     summary: 'list attributes'
     responses:
       200:
