@@ -986,4 +986,42 @@ class AppInstallTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonFragment(['message' => 'App with url: ' . $this->url . ' is already installed']);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testInstallTooLongUninstallToken($user): void
+    {
+        $this->$user->givePermissionTo([
+            'apps.install',
+            'products.show',
+        ]);
+
+        Http::fake([
+            $this->url => Http::response([
+                'name' => 'App name',
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
+                'description' => 'Cool description',
+                'microfrontend_url' => 'https://front.example.com',
+                'icon' => 'https://picsum.photos/200',
+                'licence_required' => false,
+                'required_permissions' => [],
+                'internal_permissions' => [],
+            ]),
+            $this->url . '/install' => Http::response([
+                'uninstall_token' => Str::random(256),
+            ]),
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/apps', [
+            'url' => $this->url,
+            'allowed_permissions' => [],
+            'public_app_permissions' => [],
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonFragment(['message' => 'App has invalid installation response']);
+    }
 }
