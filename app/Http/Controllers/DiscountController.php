@@ -19,9 +19,9 @@ class DiscountController extends Controller
 {
     public function index(DiscountIndexRequest $request): JsonResource
     {
-        $query = Discount::search($request->validated())
+        $query = Discount::searchByCriteria($request->validated())
             ->orderBy('updated_at', 'DESC')
-            ->with('orders');
+            ->with(['orders', 'metadata']);
 
         return DiscountResource::collection(
             $query->paginate(Config::get('pagination.per_page')),

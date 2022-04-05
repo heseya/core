@@ -50,6 +50,7 @@ class RoleTest extends TestCase
                 'description' => $role1->description,
                 'assignable' => true,
                 'deletable' => true,
+                'metadata' => [],
             ],
             ])
             ->assertJsonFragment([[
@@ -58,6 +59,7 @@ class RoleTest extends TestCase
                 'description' => $role2->description,
                 'assignable' => true,
                 'deletable' => true,
+                'metadata' => [],
             ],
             ]);
     }
@@ -99,6 +101,7 @@ class RoleTest extends TestCase
                 'description' => $role1->description,
                 'assignable' => true,
                 'deletable' => true,
+                'metadata' => [],
             ],
             ])
             ->assertJsonFragment([[
@@ -107,6 +110,7 @@ class RoleTest extends TestCase
                 'description' => $role2->description,
                 'assignable' => true,
                 'deletable' => true,
+                'metadata' => [],
             ],
             ]);
     }
@@ -148,6 +152,7 @@ class RoleTest extends TestCase
                 'description' => $role1->description,
                 'assignable' => true,
                 'deletable' => true,
+                'metadata' => [],
             ],
             ])
             ->assertJsonFragment([[
@@ -156,6 +161,7 @@ class RoleTest extends TestCase
                 'description' => $role2->description,
                 'assignable' => true,
                 'deletable' => true,
+                'metadata' => [],
             ],
             ]);
     }
@@ -220,6 +226,7 @@ class RoleTest extends TestCase
                 'description' => $roleNoPermissions->description,
                 'assignable' => true,
                 'deletable' => true,
+                'metadata' => [],
             ],
             ])
             ->assertJsonFragment([[
@@ -228,6 +235,7 @@ class RoleTest extends TestCase
                 'description' => $roleHasPermissions->description,
                 'assignable' => true,
                 'deletable' => true,
+                'metadata' => [],
             ],
             ]);
     }
@@ -292,6 +300,7 @@ class RoleTest extends TestCase
                 'description' => $roleHasSomePermissions->description,
                 'assignable' => false,
                 'deletable' => true,
+                'metadata' => [],
             ],
             ])
             ->assertJsonFragment([[
@@ -300,6 +309,7 @@ class RoleTest extends TestCase
                 'description' => $roleHasNoPermissions->description,
                 'assignable' => false,
                 'deletable' => true,
+                'metadata' => [],
             ],
             ])
             ->assertJsonFragment([[
@@ -308,6 +318,7 @@ class RoleTest extends TestCase
                 'description' => $roleUnauthenticated->description,
                 'assignable' => false,
                 'deletable' => false,
+                'metadata' => [],
             ],
             ])
             ->assertJsonFragment([[
@@ -316,6 +327,7 @@ class RoleTest extends TestCase
                 'description' => $roleAuthenticated->description,
                 'assignable' => false,
                 'deletable' => false,
+                'metadata' => [],
             ],
             ]);
     }
@@ -357,6 +369,7 @@ class RoleTest extends TestCase
                 'description' => $role1->description,
                 'assignable' => true,
                 'deletable' => true,
+                'metadata' => [],
             ],
             ])
             ->assertJsonFragment([[
@@ -365,6 +378,7 @@ class RoleTest extends TestCase
                 'description' => $role2->description,
                 'assignable' => true,
                 'deletable' => true,
+                'metadata' => [],
             ],
             ]);
     }
@@ -403,6 +417,7 @@ class RoleTest extends TestCase
                 'assignable' => true,
                 'deletable' => true,
                 'permissions' => [],
+                'metadata' => [],
             ],
             ]);
     }
@@ -437,6 +452,7 @@ class RoleTest extends TestCase
                     'test.custom1',
                     'test.custom2',
                 ],
+                'metadata' => [],
             ],
             ]);
     }
@@ -471,6 +487,7 @@ class RoleTest extends TestCase
                     'test.custom1',
                     'test.custom2',
                 ],
+                'metadata' => [],
             ],
             ]);
     }
@@ -508,6 +525,7 @@ class RoleTest extends TestCase
                     'test.custom1',
                     'test.custom2',
                 ],
+                'metadata' => [],
             ],
             ]);
     }
@@ -586,6 +604,7 @@ class RoleTest extends TestCase
                     'test.custom1',
                     'test.custom2',
                 ],
+                'metadata' => [],
             ],
             ]);
 
@@ -617,6 +636,7 @@ class RoleTest extends TestCase
                 'assignable' => true,
                 'deletable' => true,
                 'permissions' => [],
+                'metadata' => [],
             ],
             ]);
 
@@ -787,6 +807,7 @@ class RoleTest extends TestCase
                     'test.custom2',
                     'test.custom3',
                 ],
+                'metadata' => [],
             ],
             ]);
 
@@ -826,6 +847,7 @@ class RoleTest extends TestCase
                 'assignable' => true,
                 'deletable' => true,
                 'permissions' => [],
+                'metadata' => [],
             ],
             ]);
 
@@ -859,6 +881,7 @@ class RoleTest extends TestCase
                 'assignable' => true,
                 'deletable' => true,
                 'permissions' => [],
+                'metadata' => [],
             ],
             ]);
 
@@ -892,6 +915,7 @@ class RoleTest extends TestCase
                 'assignable' => true,
                 'deletable' => true,
                 'permissions' => [],
+                'metadata' => [],
             ],
             ]);
 

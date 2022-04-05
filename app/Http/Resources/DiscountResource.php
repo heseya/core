@@ -2,10 +2,13 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
 class DiscountResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
         if (isset($this->resource->pivot)) {
@@ -13,7 +16,7 @@ class DiscountResource extends Resource
             $this->resource->discount = $this->resource->pivot->discount;
         }
 
-        return [
+        return array_merge([
             'id' => $this->resource->getKey(),
             'code' => $this->resource->code,
             'description' => $this->resource->description,
@@ -24,6 +27,6 @@ class DiscountResource extends Resource
             'available' => $this->resource->available,
             'starts_at' => $this->resource->starts_at,
             'expires_at' => $this->resource->expires_at,
-        ];
+        ], $this->metadataResource('discounts.show_metadata_private'));
     }
 }

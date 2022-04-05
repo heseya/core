@@ -10,11 +10,13 @@ devil www options $DOMAIN sslonly on
 cd ./domains/$DOMAIN
 rm -r public_html
 rm -r logs
-git pull || git clone $3 .
+(git reset --hard && git pull) || git clone $3 .
 git checkout $2
 ln -s public public_html
+rm .env
 cp .env.deploy .env
 echo "DB_DATABASE=m1457_$NAME" >> .env
+echo "APP_URL=https://$DOMAIN" >> .env
 /home/heseya-dev/composer/composer i --optimize-autoloader --no-interaction --prefer-dist --ignore-platform-reqs
 /home/heseya-dev/bin/php artisan cache:clear
 /home/heseya-dev/bin/php artisan key:generate

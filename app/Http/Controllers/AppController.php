@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Dtos\AppInstallDto;
 use App\Http\Requests\AppDeleteRequest;
+use App\Http\Requests\AppIndexRequest;
 use App\Http\Requests\AppStoreRequest;
 use App\Http\Resources\AppResource;
 use App\Models\App;
@@ -19,9 +20,12 @@ class AppController extends Controller
     {
     }
 
-    public function index(): JsonResource
+    public function index(AppIndexRequest $request): JsonResource
     {
-        return AppResource::collection(App::paginate(Config::get('pagination.per_page')));
+        $apps = App::searchByCriteria($request->validated())
+            ->with('metadata');
+
+        return AppResource::collection($apps->paginate(Config::get('pagination.per_page')));
     }
 
     public function show(App $app): JsonResource

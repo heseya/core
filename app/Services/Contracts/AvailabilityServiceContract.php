@@ -18,6 +18,8 @@ interface AvailabilityServiceContract
 
     public function calculateProductAvailability(Product $product): void;
 
+    public function isProductAvaiable(Product $product): bool;
+
     public function checkPermutations(Collection $schemas): bool;
 
     public function getSchemaOptions(

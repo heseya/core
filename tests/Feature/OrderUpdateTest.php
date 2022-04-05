@@ -92,6 +92,7 @@ class OrderUpdateTest extends TestCase
                     'name' => $this->status->name,
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
+                    'metadata' => [],
                 ],
                 'delivery_address' => [
                     'id' => $responseData->delivery_address->id,
@@ -181,6 +182,7 @@ class OrderUpdateTest extends TestCase
                     'name' => $this->status->name,
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
+                    'metadata' => [],
                 ],
                 'delivery_address' => [
                     'id' => $responseData->delivery_address->id,
@@ -270,6 +272,7 @@ class OrderUpdateTest extends TestCase
                     'name' => $this->status->name,
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
+                    'metadata' => [],
                 ],
                 'delivery_address' => [
                     'id' => $responseData->delivery_address->id,
@@ -351,6 +354,7 @@ class OrderUpdateTest extends TestCase
                     'name' => $this->status->name,
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
+                    'metadata' => [],
                 ],
             ]);
 
@@ -395,6 +399,7 @@ class OrderUpdateTest extends TestCase
                     'name' => $this->status->name,
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
+                    'metadata' => [],
                 ],
             ]);
 
@@ -468,6 +473,7 @@ class OrderUpdateTest extends TestCase
                     'name' => $this->status->name,
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
+                    'metadata' => [],
                 ],
                 'delivery_address' => [
                     'address' => $this->addressDelivery->address,
@@ -591,6 +597,7 @@ class OrderUpdateTest extends TestCase
                     'name' => $this->status->name,
                     'hidden' => $this->status->hidden,
                     'no_notifications' => $this->status->no_notifications,
+                    'metadata' => [],
                 ],
                 'invoice_address' => [
                     'address' => $this->addressInvoice->address,

@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
-use App\SearchTypes\UserSearch;
-use App\SearchTypes\WhereInIds;
+use App\Criteria\MetadataPrivateSearch;
+use App\Criteria\MetadataSearch;
+use App\Criteria\UserSearch;
+use App\Criteria\WhereInIds;
+use App\Traits\HasMetadata;
 use App\Traits\HasWebHooks;
-use Heseya\Searchable\Searches\Like;
-use Heseya\Searchable\Traits\Searchable;
-use Heseya\Sortable\Sortable;
+use App\Traits\Sortable;
+use Heseya\Searchable\Criteria\Like;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -43,10 +46,11 @@ class User extends Model implements
         HasFactory,
         HasRoles,
         SoftDeletes,
-        Searchable,
+        HasCriteria,
         Sortable,
         Auditable,
-        HasWebHooks;
+        HasWebHooks,
+        HasMetadata;
 
     // Bez tego nie działały testy, w których jako aplikacja tworzy się użytkownika z określoną rolą
     protected $guard_name = 'api';
@@ -65,11 +69,13 @@ class User extends Model implements
         'remember_token',
     ];
 
-    protected array $searchable = [
+    protected array $criteria = [
         'name' => Like::class,
         'email' => Like::class,
         'search' => UserSearch::class,
         'ids' => WhereInIds::class,
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     protected array $sortable = [

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\Error;
 use App\Http\Requests\StatusCreateRequest;
+use App\Http\Requests\StatusIndexRequest;
 use App\Http\Requests\StatusReorderRequest;
 use App\Http\Requests\StatusUpdateRequest;
 use App\Http\Resources\StatusResource;
@@ -14,9 +15,14 @@ use Illuminate\Support\Facades\Response;
 
 class StatusController extends Controller
 {
-    public function index(): JsonResource
+    public function index(StatusIndexRequest $request): JsonResource
     {
-        return StatusResource::collection(Status::orderBy('order')->get());
+        $statuses = Status::searchByCriteria($request->validated())
+            ->with(['metadata']);
+
+        return StatusResource::collection(
+            $statuses->orderBy('order')->get()
+        );
     }
 
     public function store(StatusCreateRequest $request): JsonResource

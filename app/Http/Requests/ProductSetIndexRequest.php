@@ -15,6 +15,8 @@ class ProductSetIndexRequest extends FormRequest
             'public' => ['nullable', 'boolean'],
             'tree' => ['nullable', 'boolean'],
             'root' => ['nullable', 'boolean'],
+            'metadata' => ['nullable', 'array'],
+            'metadata_private' => ['nullable', 'array'],
         ];
     }
 }

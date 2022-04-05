@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\CanShowPrivateMetadata;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -19,6 +20,8 @@ class ProductIndexRequest extends FormRequest
         }
 
         return [
+            'search' => ['nullable', 'string', 'max:255'],
+
             'ids' => ['string'],
             'name' => ['nullable', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
@@ -28,14 +31,14 @@ class ProductIndexRequest extends FormRequest
                 'string',
                 $setsExist,
             ],
-            'search' => ['nullable', 'string', 'max:255'],
             'sort' => ['nullable', 'string', 'max:255'],
             'available' => ['nullable'],
             'tags' => ['nullable', 'array'],
-            'tags.*' => [
-                'string',
-                'uuid',
-            ],
+            'tags.*' => ['string', 'uuid'],
+            'metadata' => ['nullable', 'array'],
+            'metadata_private' => ['nullable', 'array', new CanShowPrivateMetadata()],
+
+            'full' => ['nullable', 'boolean'],
         ];
     }
 }

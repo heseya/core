@@ -72,39 +72,36 @@ class AvailabilityService implements AvailabilityServiceContract
 
     public function calculateProductAvailability(Product $product): void
     {
+        $product->update([
+            'available' => $this->isProductAvaiable($product),
+        ]);
+    }
+
+    public function isProductAvaiable(Product $product): bool
+    {
         //If every product's item quantity is greater or equal to pivot quantity or product has no schemas
         //then product is available
         if (
-            ($product->items->isNotEmpty()
-                && $product->items->every(fn ($item) => $item->pivot->quantity <= $item->quantity))
-            || !$product->schemas()->exists()) {
-            $product->update([
-                'available' => true,
-            ]);
-            return;
+            $product->schemas->isEmpty() ||
+            ($product->items->isNotEmpty() &&
+                $product->items->every(fn ($item) => $item->pivot->quantity <= $item->quantity))
+        ) {
+            return true;
         }
 
         $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
 
         if ($requiredSelectSchemas->isEmpty()) {
-            $product->update([
-                'available' => true,
-            ]);
-
-            return;
+            return true;
         }
 
         $hasAvailablePermutations = $this->checkPermutations($requiredSelectSchemas);
 
         if ($hasAvailablePermutations) {
-            $product->update([
-                'available' => true,
-            ]);
-        } else {
-            $product->update([
-                'available' => false,
-            ]);
+            return true;
         }
+
+        return false;
     }
 
     public function checkPermutations(Collection $schemas): bool

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MetadataController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +21,10 @@ Route::prefix('orders')->group(function (): void {
     Route::post('id:{order:id}/status', [OrderController::class, 'updateStatus'])
         ->middleware('can:orders.edit.status');
     Route::patch('id:{order:id}', [OrderController::class, 'update'])
+        ->middleware('can:orders.edit');
+    Route::patch('id:{order:id}/metadata', [MetadataController::class, 'updateOrCreate'])
+        ->middleware('can:orders.edit');
+    Route::patch('id:{order:id}/metadata-private', [MetadataController::class, 'updateOrCreate'])
         ->middleware('can:orders.edit');
     Route::get('{order:code}', [OrderController::class, 'showPublic'])
         ->middleware('can:orders.show_summary');

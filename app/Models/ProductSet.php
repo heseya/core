@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
-use App\SearchTypes\ProductSetSearch;
+use App\Criteria\MetadataPrivateSearch;
+use App\Criteria\MetadataSearch;
+use App\Criteria\ProductSetSearch;
+use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
-use Heseya\Searchable\Searches\Like;
-use Heseya\Searchable\Traits\Searchable;
+use Heseya\Searchable\Criteria\Like;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,7 +23,7 @@ use Illuminate\Support\Str;
  */
 class ProductSet extends Model
 {
-    use Searchable, HasFactory, SoftDeletes, HasSeoMetadata;
+    use HasCriteria, HasFactory, SoftDeletes, HasSeoMetadata, HasMetadata;
 
     protected $fillable = [
         'name',
@@ -40,11 +43,13 @@ class ProductSet extends Model
         'hide_on_index' => 'boolean',
     ];
 
-    protected array $searchable = [
+    protected array $criteria = [
         'name' => Like::class,
         'slug' => Like::class,
         'search' => ProductSetSearch::class,
         'public',
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     public function getSlugOverrideAttribute(): bool
@@ -53,6 +58,11 @@ class ProductSet extends Model
             $this->slug,
             $this->parent->slug . '-',
         );
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_id');
     }
 
     public function getSlugSuffixAttribute(): string
@@ -77,9 +87,9 @@ class ProductSet extends Model
             ->orderBy('order', 'desc');
     }
 
-    public function parent(): BelongsTo
+    public function allChildren(): HasMany
     {
-        return $this->belongsTo(self::class, 'parent_id');
+        return $this->children()->with('allChildren');
     }
 
     public function children(): HasMany
@@ -87,19 +97,19 @@ class ProductSet extends Model
         return $this->hasMany(self::class, 'parent_id');
     }
 
-    public function childrenPublic(): HasMany
+    public function attributes(): BelongsToMany
     {
-        return $this->children()->public();
-    }
-
-    public function allChildren(): HasMany
-    {
-        return $this->children()->with('allChildren');
+        return $this->belongsToMany(Attribute::class);
     }
 
     public function allChildrenPublic(): HasMany
     {
         return $this->childrenPublic()->with('allChildrenPublic');
+    }
+
+    public function childrenPublic(): HasMany
+    {
+        return $this->children()->public();
     }
 
     public function products(): BelongsToMany

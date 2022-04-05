@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Dtos\SeoKeywordsDto;
 use App\Dtos\SeoMetadataDto;
 use App\Http\Requests\SeoKeywordsRequest;
-use App\Http\Requests\SeoMetadataRequest;
+use App\Http\Requests\SeoRequest;
 use App\Http\Resources\SeoKeywordsResource;
 use App\Http\Resources\SeoMetadataResource;
 use App\Models\SeoMetadata;
@@ -27,7 +27,7 @@ class SeoMetadataController extends Controller
         return SeoMetadataResource::make($this->seoMetadataService->show());
     }
 
-    public function createOrUpdate(SeoMetadataRequest $request): JsonResource
+    public function createOrUpdate(SeoRequest $request): JsonResource
     {
         $seo = SeoMetadataDto::fromFormRequest($request);
         return SeoMetadataResource::make($this->seoMetadataService->createOrUpdate($seo));
