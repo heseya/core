@@ -36,14 +36,8 @@ class ProductResource extends Resource
         return [
             'order' => $this->resource->order,
             'user_id' => $this->resource->user_id,
-            'original_id' => $this->resource->original_id,
             'description_html' => $this->resource->description_html,
             'description_short' => $this->resource->description_short,
-            'meta_description' => str_replace(
-                "\n",
-                ' ',
-                trim(strip_tags($this->resource->description_html)),
-            ),
             'gallery' => MediaResource::collection($this->resource->media),
             'schemas' => SchemaResource::collection($this->resource->schemas),
             'sets' => ProductSetResource::collection($sets),
