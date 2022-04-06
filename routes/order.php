@@ -20,7 +20,7 @@ Route::prefix('orders')->group(function (): void {
     Route::get('id:{order:id}', [OrderController::class, 'show'])
         ->middleware('can:orders.show_details')
         ->whereUuid('order');
-    Route::post('id:{order:id}/status', [OrderController::class, 'updateStatus'])
+    Route::patch('id:{order:id}/status', [OrderController::class, 'updateStatus'])
         ->middleware('can:orders.edit.status');
     Route::patch('id:{order:id}', [OrderController::class, 'update'])
         ->middleware('can:orders.edit');

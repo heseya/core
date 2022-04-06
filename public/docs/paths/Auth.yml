@@ -174,50 +174,6 @@ Refresh:
                   type: object
               type: object
 
-LoginHistory:
-  get:
-    tags:
-      - Auth
-    summary: 'Get login history'
-    responses:
-      200:
-        description: Success
-    deprecated: true
-    security:
-      - oauth: [ ]
-
-KillSessionParams:
-  get:
-    tags:
-      - Auth
-    summary: 'Allow to ''kill'' active session'
-    parameters:
-      - name: id
-        in: path
-        description: 'token id from the table ''oauth_access_tokens'''
-        required: true
-        schema:
-          type: string
-          example: 47e380b746d6cacb20473b82d911b2701a3c05422c65cbc4872045a100fcb72be554ad1680aef2bf
-    responses:
-      200:
-        description: Success
-    deprecated: true
-    security:
-      - oauth: [ ]
-
-KillSession:
-  get:
-    tags:
-      - Auth
-    summary: 'Allow to ''kill'' all old sessions'
-    responses:
-      200:
-        description: Success
-    deprecated: true
-    security:
-      - oauth: [ ]
-
 Profile:
   get:
     tags:
