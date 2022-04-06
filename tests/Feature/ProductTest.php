@@ -167,7 +167,6 @@ class ProductTest extends TestCase
         $this->expected = array_merge($this->expected_short, $this->expected_attribute, [
             'description_html' => $this->product->description_html,
             'description_short' => $this->product->description_short,
-            'meta_description' => strip_tags($this->product->description_html),
             'gallery' => [],
             'schemas' => [[
                 'name' => 'Rozmiar',

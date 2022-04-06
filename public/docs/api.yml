@@ -1006,10 +1006,6 @@ components:
               description: 'HTML formated text to be displayed as a main content under the page header'
               type: string
               example: '<h1>Lorem ipsum dolor sit amet</h1>'
-            meta_description:
-              description: 'Tag stripped and trimmed version of HTML content to use as meta data'
-              type: string
-              example: 'Lorem ipsum dolor sit amet'
             seo:
               $ref: '#/components/schemas/SeoView'
     Permission:
