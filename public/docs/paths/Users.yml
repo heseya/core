@@ -14,7 +14,7 @@ Users:
         description: 'Name search'
         schema:
           type: string
-      - name: name
+      - name: email
         in: query
         description: 'Email search'
         schema:
@@ -25,7 +25,7 @@ Users:
         schema:
           type: string
         example: 'name:desc'
-      - name: pagination_limit
+      - name: limit
         in: query
         description: 'Number of elements per page'
         schema:
