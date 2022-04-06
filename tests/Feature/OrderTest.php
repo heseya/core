@@ -692,7 +692,7 @@ class OrderTest extends TestCase
 
         $status = Status::factory()->create();
 
-        $response = $this->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+        $response = $this->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
             'status_id' => $status->getKey(),
         ]);
 
@@ -713,7 +713,7 @@ class OrderTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+            ->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
                 'status_id' => $status->getKey(),
             ])
             ->assertOk();
@@ -741,7 +741,7 @@ class OrderTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+            ->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
                 'status_id' => $status->getKey(),
             ])
             ->assertOk();
@@ -786,7 +786,7 @@ class OrderTest extends TestCase
             'cancel' => true,
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
             'status_id' => $status->getKey(),
         ]);
 
@@ -839,7 +839,7 @@ class OrderTest extends TestCase
 
         $status = Status::factory()->create();
 
-        $response = $this->actingAs($this->$user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
             'status_id' => $status->getKey(),
         ]);
 
@@ -890,7 +890,7 @@ class OrderTest extends TestCase
 
         $status = Status::factory()->create();
 
-        $response = $this->actingAs($this->$user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
             'status_id' => $status->getKey(),
         ]);
 
