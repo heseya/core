@@ -106,12 +106,6 @@ paths:
     $ref: './paths/Auth.yml#/Password'
   /auth/refresh:
     $ref: './paths/Auth.yml#/Refresh'
-  /auth/login-history:
-    $ref: './paths/Auth.yml#/LoginHistory'
-  '/auth/kill-session/id:{id}':
-    $ref: './paths/Auth.yml#/KillSessionParams'
-  /auth/kill-all-sessions:
-    $ref: './paths/Auth.yml#/KillSession'
   /auth/profile:
     $ref: './paths/Auth.yml#/Profile'
   /auth/check:
