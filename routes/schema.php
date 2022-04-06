@@ -10,7 +10,8 @@ Route::prefix('schemas')->group(function (): void {
     Route::post(null, [SchemaController::class, 'store'])
         ->middleware('permission:products.add|products.edit');
     Route::get('id:{schema:id}', [SchemaController::class, 'show'])
-        ->middleware('permission:products.add|products.edit');
+        ->middleware('permission:products.add|products.edit')
+        ->whereUuid('schema');
     Route::patch('id:{schema:id}', [SchemaController::class, 'update'])
         ->middleware('permission:products.add|products.edit');
     Route::patch('id:{schema:id}/metadata', [MetadataController::class, 'updateOrCreate'])

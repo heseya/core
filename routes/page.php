@@ -10,9 +10,11 @@ Route::prefix('pages')->group(function (): void {
     Route::post(null, [PageController::class, 'store'])
         ->middleware('can:pages.add');
     Route::get('id:{page:id}', [PageController::class, 'show'])
-        ->middleware('can:pages.show_details');
+        ->middleware('can:pages.show_details')
+        ->whereUuid('page');
     Route::get('{page:slug}', [PageController::class, 'show'])
-        ->middleware('can:pages.show_details');
+        ->middleware('can:pages.show_details')
+        ->where('page', '^[a-z0-9]+(?:-[a-z0-9]+)*$');
     Route::patch('id:{page:id}', [PageController::class, 'update'])
         ->middleware('can:pages.edit');
     Route::patch('id:{page:id}/metadata', [MetadataController::class, 'updateOrCreate'])
