@@ -165,7 +165,7 @@ class OrderDepositTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->json('POST', "/orders/id:{$order->getKey()}/status", [
+            ->json('PATCH', "/orders/id:{$order->getKey()}/status", [
                 'status_id' => $status->getKey(),
             ])
             ->assertOk();

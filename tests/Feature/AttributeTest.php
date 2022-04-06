@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\AttributeType;
+use App\Enums\MetadataType;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
 use Carbon\Carbon;
@@ -48,6 +49,7 @@ class AttributeTest extends TestCase
                 'global',
                 'sortable',
                 'options',
+                'metadata',
             ],
         ];
     }
@@ -81,12 +83,14 @@ class AttributeTest extends TestCase
                 'type' => $this->attribute->type,
                 'global' => $this->attribute->global,
                 'sortable' => $this->attribute->sortable,
+                'metadata' => [],
             ])
             ->assertJsonFragment([
                 'index' => $this->option->index,
                 'name' => $this->option->name,
                 'value_number' => $this->option->value_number,
                 'value_date' => $this->option->value_date,
+                'metadata' => [],
             ])
             ->assertJsonFragment($this->newAttribute);
     }
@@ -127,6 +131,102 @@ class AttributeTest extends TestCase
             ->assertOk()
             ->assertJsonMissing(['global' => true])
             ->assertJsonFragment($this->newAttribute);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexMetadata($user): void
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        unset($this->newAttribute['options']);
+        $attribute = Attribute::create($this->newAttribute);
+        $attribute->metadata()->create([
+            'name' => 'Dystrybucja',
+            'value' => 'Polska',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes?metadata[Dystrybucja]=Polska')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(
+                array_merge($this->newAttribute, ['Dystrybucja' => 'Polska'])
+            );
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexMetadataNotFound($user): void
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $attribute = Attribute::create($this->newAttribute);
+        $attribute->metadata()->create([
+            'name' => 'Dystrybucja',
+            'value' => 'Francja',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes?metadata[Dystrybucja]=Polska')
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexMetadataPrivate($user): void
+    {
+        $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
+
+        unset($this->newAttribute['options']);
+        $attribute = Attribute::create($this->newAttribute);
+        $attribute->metadata()->create([
+            'name' => 'Dystrybucja',
+            'value' => 'Polska',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes?metadata[Dystrybucja]=Polska')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(
+                array_merge($this->newAttribute, ['Dystrybucja' => 'Polska'])
+            );
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexMetadataPrivateNotFound($user): void
+    {
+        $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
+
+        $attribute = Attribute::create($this->newAttribute);
+        $attribute->metadata()->create([
+            'name' => 'Dystrybucja',
+            'value' => 'Francja',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes?metadata[Dystrybucja]=Polska')
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
     }
 
     /**
@@ -661,6 +761,142 @@ class AttributeTest extends TestCase
             ->actingAs($this->$user)
             ->deleteJson('/attributes/id:' . $this->attribute->getKey())
             ->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexOptions($user): void
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson("/attributes/id:{$this->attribute->getKey()}/options")
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $this->option->getKey(),
+                'name' => $this->option->name,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexOptionsMetadata($user): void
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $option = AttributeOption::create(
+            $this->newOption +
+            [
+                'index' => 1,
+                'attribute_id' => $this->attribute->getKey(),
+            ]
+        );
+        $option->metadata()->create([
+            'name' => 'Dystrybucja',
+            'value' => 'Polska',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson("/attributes/id:{$this->attribute->getKey()}/options?metadata[Dystrybucja]=Polska")
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(
+                array_merge($this->newOption, ['Dystrybucja' => 'Polska'])
+            );
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexOptionsMetadataNotFound($user): void
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $option = AttributeOption::create(
+            $this->newOption +
+            [
+                'index' => 1,
+                'attribute_id' => $this->attribute->getKey(),
+            ]
+        );
+        $option->metadata()->create([
+            'name' => 'Dystrybucja',
+            'value' => 'Francja',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson("/attributes/id:{$this->attribute->getKey()}/options?metadata[Dystrybucja]=Polska")
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexOptionsMetadataPrivate($user): void
+    {
+        $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
+
+        $option = AttributeOption::create(
+            $this->newOption +
+            [
+                'index' => 1,
+                'attribute_id' => $this->attribute->getKey(),
+            ]
+        );
+        $option->metadata()->create([
+            'name' => 'Dystrybucja',
+            'value' => 'Polska',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson("/attributes/id:{$this->attribute->getKey()}/options?metadata[Dystrybucja]=Polska")
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(
+                array_merge($this->newOption, ['Dystrybucja' => 'Polska'])
+            );
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexOptionsMetadataPrivateNotFound($user): void
+    {
+        $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
+
+        $option = AttributeOption::create(
+            $this->newOption +
+            [
+                'index' => 1,
+                'attribute_id' => $this->attribute->getKey(),
+            ]
+        );
+        $option->metadata()->create([
+            'name' => 'Dystrybucja',
+            'value' => 'Francja',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson("/attributes/id:{$this->attribute->getKey()}/options?metadata[Dystrybucja]=Polska")
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
     }
 
     /**

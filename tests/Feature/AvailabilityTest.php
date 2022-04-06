@@ -355,7 +355,7 @@ class AvailabilityTest extends TestCase
             'cancel' => true,
         ]);
 
-        $this->actingAs($this->$user)->postJson("/orders/id:{$order->getKey()}/status", [
+        $this->actingAs($this->$user)->patchJson("/orders/id:{$order->getKey()}/status", [
             'status_id' => $statusCancel->getKey(),
         ]);
 

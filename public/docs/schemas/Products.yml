@@ -66,17 +66,10 @@ ProductView:
         user_id:
           type: string
           example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        original_id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
         description_html:
           description: 'HTML formated text to be displayed as a product description'
           type: string
           example: '<h1>Lorem ipsum dolor sit amet</h1>'
-        meta_description:
-          description: 'Tag stripped and trimmed version of HTML description to use as meta data'
-          type: string
-          example: 'Lorem ipsum dolor sit amet'
         gallery:
           description: 'Ids of assigned subsets'
           type: array

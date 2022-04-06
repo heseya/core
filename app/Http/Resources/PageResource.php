@@ -24,11 +24,6 @@ class PageResource extends Resource
     {
         return [
             'content_html' => $this->resource->content_html,
-            'meta_description' => str_replace(
-                "\n",
-                ' ',
-                trim(strip_tags($this->resource->content_html)),
-            ),
             'seo' => SeoMetadataResource::make($this->resource->seo),
         ];
     }

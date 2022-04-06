@@ -106,12 +106,6 @@ paths:
     $ref: './paths/Auth.yml#/Password'
   /auth/refresh:
     $ref: './paths/Auth.yml#/Refresh'
-  /auth/login-history:
-    $ref: './paths/Auth.yml#/LoginHistory'
-  '/auth/kill-session/id:{id}':
-    $ref: './paths/Auth.yml#/KillSessionParams'
-  /auth/kill-all-sessions:
-    $ref: './paths/Auth.yml#/KillSession'
   /auth/profile:
     $ref: './paths/Auth.yml#/Profile'
   /auth/check:
@@ -206,6 +200,23 @@ paths:
     get:
       tags:
         - Packages
+      parameters:
+        - name: metadata
+          in: query
+          description: search by metadata
+          style: deepObject
+          explode: true
+          required: false
+          schema:
+            $ref: './schemas/Metadata.yml#/MetadataQuery'
+        - name: metadata_private
+          in: query
+          description: search by metadata private
+          style: deepObject
+          explode: true
+          required: false
+          schema:
+            $ref: './schemas/Metadata.yml#/MetadataQuery'
       summary: 'list packages'
       operationId: 521fda12b023dd7945d369e3c30599c5
       responses:
@@ -293,6 +304,23 @@ paths:
     get:
       tags:
         - Pages
+      parameters:
+        - name: metadata
+          in: query
+          description: search by metadata
+          style: deepObject
+          explode: true
+          required: false
+          schema:
+            $ref: './schemas/Metadata.yml#/MetadataQuery'
+        - name: metadata_private
+          in: query
+          description: search by metadata private
+          style: deepObject
+          explode: true
+          required: false
+          schema:
+            $ref: './schemas/Metadata.yml#/MetadataQuery'
       summary: 'list page'
       operationId: 82fdf932ecaac31515345d77358bcbe7
       responses:
@@ -528,6 +556,22 @@ paths:
           schema:
             type: string
             example: test
+        - name: metadata
+          in: query
+          description: search by metadata
+          style: deepObject
+          explode: true
+          required: false
+          schema:
+            $ref: './schemas/Metadata.yml#/MetadataQuery'
+        - name: metadata_private
+          in: query
+          description: search by metadata private
+          style: deepObject
+          explode: true
+          required: false
+          schema:
+            $ref: './schemas/Metadata.yml#/MetadataQuery'
       responses:
         200:
           description: Success
@@ -726,6 +770,16 @@ paths:
   '/media/id:{id}/metadata':
     $ref: './paths/Metadata.yml#Metadata'
   '/media/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#Metadata'
+
+  '/attributes/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#Metadata'
+  '/attributes/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#Metadata'
+
+  '/attributes/id:{id}/options/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#Metadata'
+  '/attributes/id:{id}/options/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
 
   '/users/id:{id}/2fa/remove':
@@ -952,10 +1006,6 @@ components:
               description: 'HTML formated text to be displayed as a main content under the page header'
               type: string
               example: '<h1>Lorem ipsum dolor sit amet</h1>'
-            meta_description:
-              description: 'Tag stripped and trimmed version of HTML content to use as meta data'
-              type: string
-              example: 'Lorem ipsum dolor sit amet'
             seo:
               $ref: '#/components/schemas/SeoView'
     Permission:

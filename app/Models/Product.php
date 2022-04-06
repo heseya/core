@@ -29,7 +29,6 @@ class Product extends Model implements AuditableContract, Explored
         'description_html',
         'description_short',
         'public',
-        'public_legacy',
         'quantity_step',
         'price_min',
         'price_max',
