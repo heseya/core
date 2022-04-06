@@ -196,7 +196,7 @@ OrdersVerify:
         description: Success
 
 OrdersStatus:
-  post:
+  patch:
     tags:
       - Orders
     summary: 'change order status'
