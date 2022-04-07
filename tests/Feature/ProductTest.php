@@ -387,6 +387,26 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testShowWrongIdOrSlug($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $this->actingAs($this->$user)
+            ->getJson('/products/its_wrong_slug')
+            ->assertNotFound();
+
+        $this->actingAs($this->$user)
+            ->getJson('/products/id:its-not-uuid')
+            ->assertNotFound();
+
+        $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $this->product->getKey() . $this->product->getKey())
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testShowSets($user): void
     {
         $this->$user->givePermissionTo('products.show_details');

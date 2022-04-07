@@ -72,6 +72,21 @@ class AppOtherTest extends TestCase
             ]);
     }
 
+    public function testShowWrongId(): void
+    {
+        $this->user->givePermissionTo('apps.show_details');
+
+        $app = App::factory()->create();
+
+        $this->actingAs($this->user)
+            ->getJson('/apps/id:its-not-uuid')
+            ->assertNotFound();
+
+        $this->actingAs($this->user)
+            ->getJson('/apps/id:' . $app->getKey() . $app->getKey())
+            ->assertNotFound();
+    }
+
     public function testUninstallUnauthorized(): void
     {
         $app = App::factory()->create(['url' => $this->url]);

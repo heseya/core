@@ -259,6 +259,24 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testShowWrongId($user): void
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes/id:its-not-uuid')
+            ->assertNotFound();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes/id:'. $this->attribute->getKey() . $this->attribute->getKey())
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testShowMinMaxNumber($user): void
     {
         $this->$user->givePermissionTo('attributes.show');
@@ -779,6 +797,24 @@ class AttributeTest extends TestCase
                 'id' => $this->option->getKey(),
                 'name' => $this->option->name,
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexOptionsWrongId($user): void
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson("/attributes/id:its-not-uuid/options")
+            ->assertNotFound();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson("/attributes/id:{$this->attribute->getKey()}{$this->attribute->getKey()}/options")
+            ->assertNotFound();
     }
 
     /**

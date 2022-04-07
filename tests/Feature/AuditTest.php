@@ -45,6 +45,26 @@ class AuditTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testViewWrongId($user): void
+    {
+        $this->$user->givePermissionTo('audits.show');
+
+        $product = $this->createProduct();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/audits/products/id:its-not-id')
+            ->assertNotFound();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/audits/products/id:' . $product->getKey() . $product->getKey())
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testViewNotAuditable($user): void
     {
         $this->$user->givePermissionTo('audits.show');

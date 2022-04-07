@@ -319,6 +319,24 @@ class UserTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testShowWrongId($user): void
+    {
+        $this->$user->givePermissionTo('users.show_details');
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/users/id:its-not-uuid')
+            ->assertNotFound();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/users/id:' . $this->user->getKey() . $this->user->getKey())
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testShowPrivateMetadata($user): void
     {
         $this->$user->givePermissionTo(['users.show_details', 'users.show_metadata_private']);

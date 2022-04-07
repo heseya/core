@@ -149,6 +149,26 @@ class SchemaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testShowWrongId($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $schema = Schema::factory()->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/schemas/id:its-not-uuid')
+            ->assertNotFound();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/schemas/id:' . $schema->getKey() . $schema->getKey())
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateUnauthorized($user): void
     {
         $item = Item::factory()->create();
