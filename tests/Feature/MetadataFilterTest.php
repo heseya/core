@@ -488,6 +488,52 @@ class MetadataFilterTest extends TestCase
     }
 
     /**
+     * @dataProvider authProvider
+     */
+    public function testQueryWithoutValue($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        $objects = $this->createObjects(Order::class);
+
+        $objects->first()->metadata()->create([
+            'name' => 'test1',
+            'value' => 123,
+            'value_type' => MetadataType::NUMBER,
+            'public' => true,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders?metadata[test1]')
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testQueryPrivateWithoutValue($user): void
+    {
+        $this->$user->givePermissionTo(['orders.show', 'orders.show_metadata_private']);
+
+        $objects = $this->createObjects(Order::class);
+
+        $objects->first()->metadata()->create([
+            'name' => 'test1',
+            'value' => 123,
+            'value_type' => MetadataType::NUMBER,
+            'public' => false,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders?metadata_private[test1]')
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
+
+    /**
      * @dataProvider dataProvider
      */
     public function testQueryPrivate($user, $data): void
