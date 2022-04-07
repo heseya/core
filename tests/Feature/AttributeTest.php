@@ -808,7 +808,7 @@ class AttributeTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->getJson("/attributes/id:its-not-uuid/options")
+            ->getJson('/attributes/id:its-not-uuid/options')
             ->assertNotFound();
 
         $this

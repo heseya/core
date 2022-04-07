@@ -762,7 +762,7 @@ class AuthTest extends TestCase
             ->assertStatus(422);
 
         $this->actingAs($this->$user)
-            ->getJson("/auth/check/its-not-real-token")
+            ->getJson('/auth/check/its-not-real-token')
             ->assertNotFound();
     }
 
