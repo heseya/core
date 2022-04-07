@@ -27,48 +27,6 @@ class FurgonetkaController extends Controller
     ) {
     }
 
-    /**
-     * Odbieranie statusów przesyłek z Furgonetka.pl w formacie JSON
-     *
-     * https://furgonetka.pl/files/dokumentacja_webhook.pdf
-     */
-    public function webhook(Request $request): JsonResponse
-    {
-        $control = md5(
-            $request->package_id .
-            $request->package_no .
-            $request->partner_order_id .
-            $request->tracking['state'] .
-            $request->tracking['description'] .
-            $request->tracking['datetime'] .
-            $request->tracking['branch'] .
-            Config::get('furgonetka.webhook_salt')
-        );
-
-        if ($control !== $request->control) {
-            return Response::json([
-                'status' => 'ERROR',
-                'message' => 'control value not match',
-            ], 400);
-        }
-
-        $order = Order::where('delivery_tracking', $request->package_no) // numer śledzenia
-            ->orWhere('code', $request->partner_order_id) // kod zamówienia
-            ->first();
-
-        if ($order) {
-            $status = new Status();
-            $order->update([
-                'delivery_status' => $status->furgonetka_status[$request->tracking['state']],
-            ]);
-        }
-
-        // Brak błędów bo furgonetka musi dostać status ok jak hash się zgadza
-        return Response::json([
-            'status' => 'OK',
-        ]);
-    }
-
     public function createPackage(Request $request): JsonResponse
     {
         $validated = $request->validate([

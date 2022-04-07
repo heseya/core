@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Models\Metadata;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Gate;
 
@@ -27,6 +28,6 @@ trait MetadataResource
             return (object) [];
         }
 
-        return $data->mapWithKeys(fn ($meta) => [$meta->name => $meta->value]);
+        return $data->mapWithKeys(fn (Metadata $meta) => [$meta->name => $meta->value]);
     }
 }

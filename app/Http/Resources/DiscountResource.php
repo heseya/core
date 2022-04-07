@@ -12,7 +12,9 @@ class DiscountResource extends Resource
     public function base(Request $request): array
     {
         if (isset($this->resource->pivot)) {
+            // @phpstan-ignore-next-line
             $this->resource->type = $this->resource->pivot->type;
+            // @phpstan-ignore-next-line
             $this->resource->discount = $this->resource->pivot->discount;
         }
 

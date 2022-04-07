@@ -128,6 +128,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Builder::macro('sort', function (?string $sortString = null) {
             if ($sortString !== null) {
+                // @phpstan-ignore-next-line
                 return app(SortServiceContract::class)->sort($this, $sortString);
             }
 

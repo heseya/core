@@ -60,6 +60,7 @@ class Przelewy24 implements PaymentMethod
             'sessionId' => 'required|integer|exists:payments,id',
         ]);
 
+        /** @var Payment $payment */
         $payment = Payment::find($request->sesionId)->with('order');
 
         $amount = (int) ($payment->amount * 100);

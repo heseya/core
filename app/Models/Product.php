@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Contracts\SortableContract;
 use App\Services\Contracts\ProductSearchServiceContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
@@ -18,7 +19,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 /**
  * @mixin IdeHelperProduct
  */
-class Product extends Model implements AuditableContract, Explored
+class Product extends Model implements AuditableContract, Explored, SortableContract
 {
     use HasFactory, SoftDeletes, Searchable, Sortable, Auditable, HasSeoMetadata, HasMetadata;
 

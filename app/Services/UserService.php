@@ -74,7 +74,7 @@ class UserService implements UserServiceContract
             }
 
             $permissions = $removedRoles->flatMap(
-                fn ($role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
+                fn (Role $role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
             )->unique();
 
             if (!$authenticable->hasAllPermissions($permissions)) {

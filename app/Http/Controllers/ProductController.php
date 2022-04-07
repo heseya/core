@@ -12,6 +12,8 @@ use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\ProductServiceContract;
+use Exception;
+use Heseya\Resource\ResourceCollection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
@@ -32,7 +34,10 @@ class ProductController extends Controller
             ProductSearchDto::instantiateFromRequest($request),
         );
 
-        return ProductResource::collection($products)->full($request->has('full'));
+        /** @var ResourceCollection $productsCollection */
+        $productsCollection = ProductResource::collection($products);
+
+        return $productsCollection->full($request->has('full'));
     }
 
     public function show(Product $product): JsonResource

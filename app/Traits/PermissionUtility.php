@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Models\PackageTemplate;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
 
 trait PermissionUtility
@@ -20,11 +21,11 @@ trait PermissionUtility
     /**
      * Allows to change returned prefix to desired model if is different to table name
      *
-     * @param $model
+     * @param Model $model
      *
      * @return string
      * */
-    protected function getPermissionPrefix($model): string
+    protected function getPermissionPrefix(Model $model): string
     {
         return match ($model::class) {
             PackageTemplate::class => 'packages',

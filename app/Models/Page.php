@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Models\Contracts\SortableContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
@@ -16,7 +17,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 /**
  * @mixin IdeHelperPage
  */
-class Page extends Model implements AuditableContract
+class Page extends Model implements AuditableContract, SortableContract
 {
     use HasFactory, HasCriteria, Sortable, Auditable, SoftDeletes, HasSeoMetadata, HasMetadata;
 

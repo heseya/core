@@ -46,7 +46,7 @@ class AttributeService implements AttributeServiceContract
         $attributes = Arr::divide($data)[0];
 
         $product->attributes()->sync($attributes);
-        $product->attributes->each(fn ($attribute) => $attribute->pivot->options()->sync($data[$attribute->getKey()]));
+        $product->attributes->each(fn (Attribute $attribute) => $attribute->pivot->options()->sync($data[$attribute->getKey()]));
     }
 
     public function updateMinMax(Attribute $attribute): void

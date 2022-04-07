@@ -2,16 +2,24 @@
 
 namespace App\Services;
 
+use App\Models\Contracts\SortableContract;
 use App\Services\Contracts\SortServiceContract;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Scout\Builder as ScoutBuilder;
 
 class SortService implements SortServiceContract
 {
+    /**
+     * @throws Exception
+     */
     public function sortScout(ScoutBuilder $query, ?string $sortString): ScoutBuilder
     {
-        return $this->sort($query, $sortString, $query->model->getSortable());
+        if ($query->model instanceof SortableContract) {
+            return $this->sort($query, $sortString, $query->model->getSortable());
+        }
+        throw new Exception('Model is not sortable');
     }
 
     public function sort(Builder|ScoutBuilder $query, string $sortString, array $sortable): Builder|ScoutBuilder

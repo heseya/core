@@ -6,6 +6,7 @@ use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\UserSearch;
 use App\Criteria\WhereInIds;
+use App\Models\Contracts\SortableContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasWebHooks;
 use App\Traits\Sortable;
@@ -36,7 +37,8 @@ class User extends Model implements
     AuthorizableContract,
     CanResetPasswordContract,
     AuditableContract,
-    JWTSubject
+    JWTSubject,
+    SortableContract
 {
     use Notifiable,
         Authenticatable,

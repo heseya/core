@@ -11,6 +11,7 @@ use App\Criteria\OrderSearch;
 use App\Criteria\WhereCreatedAfter;
 use App\Criteria\WhereCreatedBefore;
 use App\Criteria\WhereHasStatusHidden;
+use App\Models\Contracts\SortableContract;
 use App\Traits\HasMetadata;
 use App\Traits\Sortable;
 use Heseya\Searchable\Criteria\Like;
@@ -30,7 +31,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 /**
  * @mixin IdeHelperOrder
  */
-class Order extends Model implements AuditableContract
+class Order extends Model implements AuditableContract, SortableContract
 {
     use HasFactory, HasCriteria, Sortable, Notifiable, Auditable, HasMetadata;
 

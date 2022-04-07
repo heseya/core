@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Discount;
 use Illuminate\Validation\Rule;
 
 class DiscountUpdateRequest extends DiscountCreateRequest
@@ -13,11 +14,14 @@ class DiscountUpdateRequest extends DiscountCreateRequest
     {
         $rules = parent::rules();
 
+        /** @var Discount $discount */
+        $discount = $this->route('discount');
+
         $rules['code'] = [
             'required',
             'string',
             'max:64',
-            Rule::unique('discounts')->ignore($this->route('discount')->code, 'code'),
+            Rule::unique('discounts')->ignore($discount->code, 'code'),
         ];
 
         return $rules;

@@ -4,8 +4,11 @@ namespace App\Dtos;
 
 use App\Enums\TwitterCardType;
 use App\Http\Requests\Contracts\SeoRequestContract;
+use Exception;
 use Heseya\Dto\Dto;
+use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
+use Illuminate\Http\Request;
 
 class SeoMetadataDto extends Dto
 {
@@ -18,8 +21,20 @@ class SeoMetadataDto extends Dto
     private string|null|Missing $model_type;
     private bool|Missing $no_index;
 
+    /**
+     * @param SeoRequestContract $request
+     *
+     * @return static
+     *
+     * @throws DtoException
+     * @throws Exception
+     */
     public static function fromFormRequest(SeoRequestContract $request): self
     {
+        if (!($request instanceof Request)) {
+            throw new Exception('$request must be an instance of Illuminate\Http\Request');
+        }
+
         $seo = $request->has('seo') ? 'seo.' : '';
 
         return new self(
