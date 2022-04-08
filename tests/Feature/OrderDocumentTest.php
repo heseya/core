@@ -165,7 +165,7 @@ class OrderDocumentTest extends TestCase
      */
     public function testDownloadDocument($user)
     {
-        $this->$user->givePermissionTo('orders.edit');
+        $this->$user->givePermissionTo('orders.show_details');
 
         $file = UploadedFile::fake()->image('test.jpeg');
 
@@ -189,5 +189,65 @@ class OrderDocumentTest extends TestCase
         $response
             ->assertStatus(200)
             ->assertHeader('content-disposition', 'attachment; filename=test.jpeg');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDownloadUserDocumentWithoutPermission($user)
+    {
+        $this->order->update(['user_id' => $this->$user->getKey()]);
+
+        $file = UploadedFile::fake()->image('test.jpeg');
+
+        $media = Media::factory()->create([
+            'type' => MediaType::OTHER,
+            'url' => 'silverbox/heseya/test.jpeg',
+        ]);
+
+        $this->order->documents()->attach($media, ['type' => OrderDocumentType::INVOICE, 'name' => 'test']);
+
+        Http::fake(['*' => Http::response($file)]);
+
+        $response = $this->actingAs($this->$user)
+            ->json(
+                'GET', 'orders/id:'
+                . $this->order->getKey() . '/docs/id:'
+                . $this->order->documents->last()->pivot->id
+                . '/download'
+            );
+
+        $response
+            ->assertStatus(200)
+            ->assertHeader('content-disposition', 'attachment; filename=test.jpeg');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDownloadDocumentUnauthorized($user)
+    {
+        $file = UploadedFile::fake()->image('test.jpeg');
+
+        $media = Media::factory()->create([
+            'type' => MediaType::OTHER,
+            'url' => 'silverbox/heseya/test.jpeg',
+        ]);
+
+        $this->order->documents()->attach($media, ['type' => OrderDocumentType::INVOICE, 'name' => 'test']);
+
+        Http::fake(['*' => Http::response($file)]);
+
+        $response = $this->actingAs($this->$user)
+            ->json(
+                'GET', 'orders/id:'
+                . $this->order->getKey() . '/docs/id:'
+                . $this->order->documents->last()->pivot->id
+                . '/download'
+            );
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonFragment(['message' => 'No access.']);
     }
 }

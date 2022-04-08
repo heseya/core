@@ -33,10 +33,15 @@ class DocumentService implements DocumentServiceContract
 
     public function downloadDocument(OrderDocument $document)
     {
+        $mime = Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
+            ->get($document->media->url . '/info')->json('mime');
+
         return response()->streamDownload(function () use ($document): void {
             echo Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
                 ->get($document->media->url);
-        }, Str::of($document->media->url)->afterLast('/'));
+        }, Str::of($document->media->url)->afterLast('/'), [
+            'Content-Type' => $mime,
+        ]);
     }
 
     public function removeDocument(Order $order, string $mediaId): OrderDocument
