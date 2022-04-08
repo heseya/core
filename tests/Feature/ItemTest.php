@@ -291,6 +291,24 @@ class ItemTest extends TestCase
         $this->assertQueryCountLessThan(10);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewWrongId($user): void
+    {
+        $this->$user->givePermissionTo('items.show_details');
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/items/id:its-not-id')
+            ->assertNotFound();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/items/id:' . $this->item->getKey() . $this->item->getKey())
+            ->assertNotFound();
+    }
+
     public function testCreateUnauthorized(): void
     {
         Event::fake(ItemCreated::class);

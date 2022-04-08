@@ -425,6 +425,29 @@ class RoleTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testShowWrongId($user): void
+    {
+        $this->$user->givePermissionTo('roles.show_details');
+
+        $role = Role::create([
+            'name' => 'role1',
+            'description' => 'Role 1',
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/roles/id:its-not-uuid')
+            ->assertNotFound();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/roles/id:' . $role->getKey() . $role->getKey())
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testShowPermissions($user): void
     {
         $this->$user->givePermissionTo('roles.show_details');

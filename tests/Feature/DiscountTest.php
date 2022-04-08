@@ -88,6 +88,25 @@ class DiscountTest extends TestCase
             ->assertJsonFragment(['id' => $discount->getKey()]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWrongCode($user): void
+    {
+        $this->$user->givePermissionTo('discounts.show_details');
+        $discount = Discount::factory()->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/discounts/its_not_code')
+            ->assertNotFound();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/discounts/' . $discount->code . '_' . $discount->code)
+            ->assertNotFound();
+    }
+
     public function testCreateUnauthorized(): void
     {
         Event::fake();

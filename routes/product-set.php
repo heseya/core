@@ -8,9 +8,11 @@ Route::prefix('product-sets')->group(function (): void {
     Route::get(null, [ProductSetController::class, 'index'])
         ->middleware('permission:product_sets.show|products.add|products.edit');
     Route::get('id:{product_set:id}', [ProductSetController::class, 'show'])
-        ->middleware('can:product_sets.show_details');
+        ->middleware('can:product_sets.show_details')
+        ->whereUuid('product_set');
     Route::get('{product_set:slug}', [ProductSetController::class, 'show'])
-        ->middleware('can:product_sets.show_details');
+        ->middleware('can:product_sets.show_details')
+        ->where('product_set', '^[a-z0-9]+(?:-[a-z0-9]+)*$');
     Route::post(null, [ProductSetController::class, 'store'])
         ->middleware('can:product_sets.add');
     Route::patch('id:{product_set:id}', [ProductSetController::class, 'update'])
@@ -27,7 +29,8 @@ Route::prefix('product-sets')->group(function (): void {
         ->middleware('can:product_sets.remove');
 
     Route::get('id:{product_set:id}/products', [ProductSetController::class, 'products'])
-        ->middleware('can:product_sets.show_details');
+        ->middleware('can:product_sets.show_details')
+        ->whereUuid('product_set');
     Route::post('id:{product_set:id}/products', [ProductSetController::class, 'attach'])
         ->middleware('can:product_sets.edit');
 });

@@ -37,6 +37,19 @@ class SettingsTest extends TestCase
         $this->actingAs($this->$user)->getJson('/settings/store_name')->assertOk();
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewWrongSetting($user): void
+    {
+        $this->$user->givePermissionTo('settings.show_details');
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/settings/it\'s-wrong%parameter')
+            ->assertNotFound();
+    }
+
     public function testCreateUnauthorized(): void
     {
         $setting = [
