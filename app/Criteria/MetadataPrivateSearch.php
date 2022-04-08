@@ -3,10 +3,9 @@
 namespace App\Criteria;
 
 use App\Traits\PermissionUtility;
-use Heseya\Searchable\Criteria\Criterion;
 use Illuminate\Database\Eloquent\Builder;
 
-class MetadataPrivateSearch extends Criterion
+class MetadataPrivateSearch extends MetadataSearch
 {
     use PermissionUtility;
 
@@ -16,20 +15,6 @@ class MetadataPrivateSearch extends Criterion
             return $query;
         }
 
-        return $query->where(function (Builder $query): void {
-            $query->whereHas('metadataPrivate', function (Builder $query): void {
-                $first = true;
-                foreach ($this->value as $key => $value) {
-                    if ($first) {
-                        $query->where('name', 'LIKE', "%${key}%")
-                            ->where('value', 'LIKE', "%${value}%");
-                        $first = false;
-                    } else {
-                        $query->orWhere('name', 'LIKE', "%${key}%")
-                            ->where('value', 'LIKE', "%${value}%");
-                    }
-                }
-            });
-        });
+        return $this->makeQuery($query, 'metadataPrivate');
     }
 }
