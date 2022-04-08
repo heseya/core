@@ -529,6 +529,22 @@ class OrderTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testViewWrongId($user): void
+    {
+        $this->$user->givePermissionTo('orders.show_details');
+
+        $this->actingAs($this->$user)
+            ->getJson('/orders/id:its-not-uuid')
+            ->assertNotFound();
+
+        $this->actingAs($this->$user)
+            ->getJson('/orders/id:' . $this->order->getKey() . $this->order->getKey())
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testViewPrivateMetadata($user): void
     {
         $this->$user->givePermissionTo(['orders.show_details', 'orders.show_metadata_private']);
@@ -571,6 +587,22 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonStructure(['data' => $this->expected_summary_structure])
             ->assertJson(['data' => $this->expected]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewSummaryWrongCode($user): void
+    {
+        $this->$user->givePermissionTo('orders.show_summary');
+
+        $this->actingAs($this->$user)
+            ->getJson('/orders/its_wrong_code')
+            ->assertNotFound();
+
+        $this->actingAs($this->$user)
+            ->getJson('/orders/' . $this->order->code . '_' . $this->order->code)
+            ->assertNotFound();
     }
 
     /**
@@ -641,6 +673,32 @@ class OrderTest extends TestCase
                 'code' => $order->code,
             ])
             ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewUserWrongCode($user): void
+    {
+        $this->$user->givePermissionTo('orders.show_own');
+
+        $shipping_method = ShippingMethod::factory()->create();
+        $status = Status::factory()->create();
+
+        $order = Order::factory()->create([
+            'shipping_method_id' => $shipping_method->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+
+        $this->$user->orders()->save($order);
+
+        $this->actingAs($this->$user)
+            ->json('GET', '/orders/my/its_wrong_code')
+            ->assertNotFound();
+
+        $this->actingAs($this->$user)
+            ->json('GET', '/orders/my/' . $order->code . '_' . $order->code)
+            ->assertNotFound();
     }
 
     /**

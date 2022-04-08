@@ -13,11 +13,13 @@ Route::prefix('orders')->group(function (): void {
     Route::get('my', [OrderController::class, 'indexUserOrder'])
         ->middleware('can:orders.show_own');
     Route::get('my/{order:code}', [OrderController::class, 'showUserOrder'])
-        ->middleware('can:orders.show_own');
+        ->middleware('can:orders.show_own')
+        ->whereAlphaNumeric('order');
     Route::post('verify', [OrderController::class, 'verify'])
         ->middleware('can:cart.verify');
     Route::get('id:{order:id}', [OrderController::class, 'show'])
-        ->middleware('can:orders.show_details');
+        ->middleware('can:orders.show_details')
+        ->whereUuid('order');
     Route::patch('id:{order:id}/status', [OrderController::class, 'updateStatus'])
         ->middleware('can:orders.edit.status');
     Route::patch('id:{order:id}', [OrderController::class, 'update'])
@@ -27,7 +29,8 @@ Route::prefix('orders')->group(function (): void {
     Route::patch('id:{order:id}/metadata-private', [MetadataController::class, 'updateOrCreate'])
         ->middleware('can:orders.edit');
     Route::get('{order:code}', [OrderController::class, 'showPublic'])
-        ->middleware('can:orders.show_summary');
+        ->middleware('can:orders.show_summary')
+        ->whereAlphaNumeric('order');
 
     Route::post('{order:code}/pay/offline', [PaymentController::class, 'offlinePayment'])
         ->middleware('can:payments.offline');

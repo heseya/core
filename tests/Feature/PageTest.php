@@ -156,6 +156,26 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testViewWrongIdOrSlug($user): void
+    {
+        $this->$user->givePermissionTo('pages.show_details');
+
+        $this->actingAs($this->$user)
+            ->getJson('/pages/its_wrong_slug')
+            ->assertNotFound();
+
+        $this->actingAs($this->$user)
+            ->getJson('/pages/id:its-not-uuid')
+            ->assertNotFound();
+
+        $this->actingAs($this->$user)
+            ->getJson('/pages/id:' . $this->page->getKey() . $this->page->getKey())
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testViewPrivateMetadata($user): void
     {
         $this->$user->givePermissionTo(['pages.show_details', 'pages.show_metadata_private']);

@@ -108,6 +108,22 @@ class ProductSetShowTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testShowWrongId($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.show_details');
+
+        $this->actingAs($this->$user)
+            ->getJson('/product-sets/id:its-not-uuid')
+            ->assertNotFound();
+
+        $this->actingAs($this->$user)
+            ->getJson('/product-sets/id:' . $this->set->getKey() . $this->set->getKey())
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testShowHiddenUnauthorized($user): void
     {
         $this->$user->givePermissionTo('product_sets.show_details');
@@ -292,6 +308,24 @@ class ProductSetShowTest extends TestCase
             ->assertJsonStructure([
                 'data' => $this->expected_structure,
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWrongSlug($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.show_details');
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/product-sets/its_wrong_slug')
+            ->assertNotFound();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/product-sets/' . $this->set->slug . '_' . $this->set->slug)
+            ->assertNotFound();
     }
 
     /**

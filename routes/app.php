@@ -8,7 +8,8 @@ Route::prefix('apps')->group(function (): void {
     Route::get(null, [AppController::class, 'index'])
         ->middleware('can:apps.show');
     Route::get('id:{app:id}', [AppController::class, 'show'])
-        ->middleware('can:apps.show_details');
+        ->middleware('can:apps.show_details')
+        ->whereUuid('app');
     Route::post(null, [AppController::class, 'store'])
         ->middleware('can:apps.install');
     Route::patch('id:{app:id}/metadata', [MetadataController::class, 'updateOrCreate'])

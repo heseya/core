@@ -423,6 +423,41 @@ class ProductSetOtherTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testShowProductsWrongId($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.show_details');
+
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $product2 = Product::factory()->create([
+            'public' => false,
+        ]);
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $set->products()->sync([
+            $product1->getKey(),
+            $product2->getKey(),
+        ]);
+
+        $this->actingAs($this->$user)
+            ->getJson('/product-sets/id:its-not-uuid/products')
+            ->assertNotFound();
+
+        $this->actingAs($this->$user)
+            ->getJson('/product-sets/id:' . $set->getKey() . $set->getKey() . '/products')
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testShowProductsHidden($user): void
     {
         $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);

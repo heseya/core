@@ -18,7 +18,8 @@ Route::prefix('users')->group(function (): void {
     Route::get(null, [UserController::class, 'index'])
         ->middleware('can:users.show');
     Route::get('id:{user:id}', [UserController::class, 'show'])
-        ->middleware('can:users.show_details');
+        ->middleware('can:users.show_details')
+        ->whereUuid('user');
     Route::post(null, [UserController::class, 'store'])
         ->middleware('can:users.add');
     Route::patch('id:{user:id}', [UserController::class, 'update'])

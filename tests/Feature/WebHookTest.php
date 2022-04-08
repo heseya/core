@@ -407,4 +407,22 @@ class WebHookTest extends TestCase
             ->assertOk()
             ->assertJsonFragment($this->expected);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWrongId($user): void
+    {
+        $this->$user->givePermissionTo('webhooks.show_details');
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/webhooks/id:its-not-uuid')
+            ->assertNotFound();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/webhooks/id:' . $this->webHook->getKey() . $this->webHook->getKey())
+            ->assertNotFound();
+    }
 }
