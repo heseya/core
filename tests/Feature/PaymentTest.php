@@ -156,42 +156,6 @@ class PaymentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testWrongMethod($user): void
-    {
-        $this->$user->givePermissionTo('payments.edit');
-
-        $payment = Payment::factory()->make([
-            'paid' => false,
-        ]);
-
-        $this->order->payments()->save($payment);
-
-        $body = [
-            'order' => [
-                'status' => 'COMPLETED',
-                'extOrderId' => $payment->getKey(),
-            ],
-        ];
-        $signature = md5(json_encode($body) . Config::get('payu.second_key'));
-
-        $this
-            ->actingAs($this->$user)
-            ->postJson('/payments/payu24', $body, [
-                'OpenPayu-Signature' => "signature=${signature};algorithm=MD5",
-            ])
-            ->assertStatus(400);
-
-        $this
-            ->actingAs($this->$user)
-            ->postJson('/payments/its_not_method', $body, [
-                'OpenPayu-Signature' => "signature=${signature};algorithm=MD5",
-            ])
-            ->assertNotFound();
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testOfflinePaymentUnauthorized($user): void
     {
         $code = $this->order->code;
