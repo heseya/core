@@ -184,6 +184,57 @@ class WebHookTest extends TestCase
         $response->assertStatus(422);
     }
 
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testCreateBooleanValues($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo(
+            'webhooks.add',
+            'products.show',
+            'products.show_details',
+            'products.show_hidden',
+            'users.show',
+            'apps.show',
+        );
+
+        $webHook = [
+            'name' => 'WebHook test',
+            'url' => 'https://www.www.www',
+            'secret' => 'secret',
+            'with_issuer' => $boolean,
+            'with_hidden' => $boolean,
+        ];
+
+        $response = $this->actingAs($this->$user)->json(
+            'POST',
+            '/webhooks',
+            $webHook + [
+                'events' => [
+                    'ProductCreated',
+                ],
+            ]
+        );
+
+        $webHookResponse = array_merge($webHook, [
+            'with_issuer' => $booleanValue,
+            'with_hidden' => $booleanValue,
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment($webHookResponse + [
+                'events' => [
+                    'ProductCreated',
+                ],
+            ]);
+
+        $this->assertDatabaseHas('web_hooks', $webHookResponse + [
+            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->$user::class,
+        ]);
+    }
+
     public function testUpdateUnauthorized(): void
     {
         $response = $this->json('PATCH', '/webhooks/id:' . $this->webHook->getKey());

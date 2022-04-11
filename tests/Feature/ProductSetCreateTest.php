@@ -643,6 +643,74 @@ class ProductSetCreateTest extends TestCase
     }
 
     /**
+     * @dataProvider booleanProvider
+     */
+    public function testCreateBooleanValues($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('product_sets.add');
+
+        Event::fake([ProductSetCreated::class]);
+
+        $media = Media::factory()->create([
+            'type' => MediaType::PHOTO,
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ]);
+
+        $set = [
+            'name' => 'Test',
+            'public' => $boolean,
+            'hide_on_index' => $boolean,
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson(
+            '/product-sets',
+            $set + [
+                'slug_suffix' => 'test',
+                'slug_override' => $boolean,
+                'cover_id' => $media->getKey(),
+                'seo' => [
+                    'title' => 'seo title',
+                    'description' => 'seo description',
+                    'no_index' => $boolean,
+                ],
+            ]
+        );
+
+        $setResponse = array_merge($set, ['public' => $booleanValue, 'hide_on_index' => $booleanValue]);
+
+        $response
+            ->assertCreated()
+            ->assertJson([
+                'data' => $setResponse + [
+                    'slug_suffix' => 'test',
+                    'slug_override' => false,
+                    'parent' => null,
+                    'slug' => 'test',
+                    'cover' => [
+                        'id' => $media->getKey(),
+                        'type' => Str::lower($media->type->key),
+                        'url' => $media->url,
+                    ],
+                    'seo' => [
+                        'title' => 'seo title',
+                        'description' => 'seo description',
+                        'no_index' => $booleanValue,
+                    ],
+                ],
+            ]);
+
+        $this->assertDatabaseHas(
+            'product_sets',
+            $setResponse + [
+                'parent_id' => null,
+                'slug' => 'test',
+            ]
+        );
+
+        Event::assertDispatched(ProductSetCreated::class);
+    }
+
+    /**
      * @dataProvider authProvider
      */
     public function testCreateWithAttributes($user): void

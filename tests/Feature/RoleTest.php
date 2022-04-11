@@ -167,9 +167,9 @@ class RoleTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider trueBooleanProvider
      */
-    public function testIndexSearchByAssignable($user): void
+    public function testIndexSearchByAssignable($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo('roles.show');
 
@@ -216,7 +216,7 @@ class RoleTest extends TestCase
 
         $roleAuthenticated->givePermissionTo('roles.show');
 
-        $response = $this->actingAs($this->$user)->getJson('/roles?assignable=1');
+        $response = $this->actingAs($this->$user)->json('GET', '/roles', ['assignable' => $boolean]);
 
         $response->assertOk()
             ->assertJsonCount(2, 'data')
@@ -241,9 +241,9 @@ class RoleTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider falseBooleanProvider
      */
-    public function testIndexSearchByUnassignable($user): void
+    public function testIndexSearchByUnassignable($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo('roles.show');
 
@@ -290,7 +290,7 @@ class RoleTest extends TestCase
 
         $roleAuthenticated->givePermissionTo('roles.show');
 
-        $response = $this->actingAs($this->$user)->getJson('/roles?assignable=0');
+        $response = $this->actingAs($this->$user)->json('GET', '/roles', ['assignable' => $boolean]);
 
         $response->assertOk()
             ->assertJsonCount(4, 'data')
