@@ -3,13 +3,20 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Contracts\SeoRequestContract;
+use App\Rules\Boolean;
+use App\Traits\BooleanRules;
 use App\Traits\SeoRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class PageUpdateRequest extends FormRequest implements SeoRequestContract
 {
-    use SeoRules;
+    use SeoRules, BooleanRules;
+
+    protected array $booleanFields = [
+        'public',
+        'seo.no_index',
+    ];
 
     public function rules(): array
     {
@@ -22,7 +29,7 @@ class PageUpdateRequest extends FormRequest implements SeoRequestContract
                     'max:255',
                     Rule::unique('pages')->ignore($this->route('page')->slug, 'slug'),
                 ],
-                'public' => ['boolean'],
+                'public' => [new Boolean()],
                 'content_html' => ['string', 'min:1'],
             ],
         );

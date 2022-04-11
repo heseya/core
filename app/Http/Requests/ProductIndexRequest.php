@@ -2,13 +2,22 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\Boolean;
 use App\Rules\CanShowPrivateMetadata;
+use App\Traits\BooleanRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 class ProductIndexRequest extends FormRequest
 {
+    use BooleanRules;
+
+    protected array $booleanFields = [
+        'public',
+        'full',
+    ];
+
     public function rules(): array
     {
         $setsExist = Rule::exists('product_sets', 'slug');
@@ -25,7 +34,7 @@ class ProductIndexRequest extends FormRequest
             'ids' => ['string'],
             'name' => ['nullable', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
-            'public' => ['nullable', 'boolean'],
+            'public' => [new Boolean()],
             'sets' => ['nullable', 'array'],
             'sets.*' => [
                 'string',
@@ -38,7 +47,7 @@ class ProductIndexRequest extends FormRequest
             'metadata' => ['nullable', 'array'],
             'metadata_private' => ['nullable', 'array', new CanShowPrivateMetadata()],
 
-            'full' => ['nullable', 'boolean'],
+            'full' => [new Boolean()],
         ];
     }
 }

@@ -357,9 +357,9 @@ class OrderTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider booleanProvider
      */
-    public function testIndexSearchByPaid($user): void
+    public function testIndexSearchByPaid($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo('orders.show');
 
@@ -385,21 +385,16 @@ class OrderTest extends TestCase
             'paid' => true,
         ]);
 
-        $order2 = Order::factory([
-            'status_id' => $status->getKey(),
-        ])->create();
-
-        $order2->products()->create([
-            'product_id' => $product->getKey(),
-            'quantity' => 10,
-            'price' => 247.47,
-        ]);
+        $orderId = $booleanValue ? $order1->getKey() : $this->order->getKey();
 
         $this
             ->actingAs($this->$user)
-            ->getJson('/orders?paid=1')
+            ->json('GET', '/orders', ['paid' => $boolean])
             ->assertOk()
-            ->assertJsonCount(1, 'data');
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $orderId,
+            ]);
     }
 
     /**

@@ -1171,9 +1171,9 @@ class ProductTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider booleanProvider
      */
-    public function testCreateWithSeo($user): void
+    public function testCreateWithSeo($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo('products.add');
 
@@ -1187,12 +1187,12 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'price' => 100.00,
             'description_html' => '<h1>Description</h1>',
-            'public' => true,
+            'public' => $boolean,
             'seo' => [
                 'title' => 'seo title',
                 'description' => 'seo description',
                 'og_image_id' => $media->getKey(),
-                'no_index' => true,
+                'no_index' => $boolean,
             ],
         ]);
 
@@ -1202,7 +1202,7 @@ class ProductTest extends TestCase
                 'slug' => 'test',
                 'name' => 'Test',
                 'price' => 100,
-                'public' => true,
+                'public' => $booleanValue,
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -1212,7 +1212,7 @@ class ProductTest extends TestCase
                     'og_image' => [
                         'id' => $media->getKey(),
                     ],
-                    'no_index' => true,
+                    'no_index' => $booleanValue,
                 ],
             ],
             ]);
@@ -1221,7 +1221,7 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'name' => 'Test',
             'price' => 100,
-            'public' => true,
+            'public' => $booleanValue,
             'description_html' => '<h1>Description</h1>',
         ]);
 
@@ -1230,7 +1230,7 @@ class ProductTest extends TestCase
             'description' => 'seo description',
             'model_id' => $response->getData()->data->id,
             'model_type' => Product::class,
-            'no_index' => true,
+            'no_index' => $booleanValue,
         ]);
 
         $this->assertDatabaseCount('seo_metadata', 2);
@@ -1933,6 +1933,56 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('seo_metadata', [
             'title' => 'seo title',
             'description' => 'seo description',
+        ]);
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testUpdateBooleanValues($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $product = Product::factory([
+            'name' => 'Created',
+            'slug' => 'created',
+            'price' => 100,
+            'description_html' => '<h1>Description</h1>',
+            'public' => false,
+            'order' => 1,
+        ])->create();
+
+        $seo = SeoMetadata::factory()->create();
+        $product->seo()->save($seo);
+
+        $response = $this->actingAs($this->$user)->json('PATCH', '/products/id:' . $product->getKey(), [
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150,
+            'description_html' => '<h1>New description</h1>',
+            'public' => $boolean,
+            'seo' => [
+                'title' => 'seo title',
+                'description' => 'seo description',
+                'no_index' => $boolean,
+            ],
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150,
+            'description_html' => '<h1>New description</h1>',
+            'public' => $booleanValue,
+        ]);
+
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => 'seo title',
+            'description' => 'seo description',
+            'no_index' => $booleanValue,
         ]);
     }
 

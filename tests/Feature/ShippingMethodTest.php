@@ -464,6 +464,47 @@ class ShippingMethodTest extends TestCase
     }
 
     /**
+     * @dataProvider booleanProvider
+     */
+    public function testCreateBooleanValues($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('shipping_methods.add');
+
+        $shipping_method = [
+            'name' => 'Test',
+            'public' => $boolean,
+            'black_list' => $boolean,
+            'shipping_time_min' => 2,
+            'shipping_time_max' => 2,
+        ];
+
+        $response = $this->actingAs($this->$user)
+            ->json(
+                'POST',
+                '/shipping-methods',
+                $shipping_method + [
+                    'price_ranges' => [
+                        [
+                            'start' => 0,
+                            'value' => 10.37,
+                        ],
+                    ],
+                ]
+            );
+
+        $shippingMethodResponse = array_merge($shipping_method, [
+            'public' => $booleanValue,
+            'black_list' => $booleanValue,
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $shippingMethodResponse]);
+
+        $this->assertDatabaseHas('shipping_methods', $shippingMethodResponse);
+    }
+
+    /**
      * Price range testing with no initial 'start' value of zero
      *
      * @dataProvider authProvider
@@ -608,6 +649,48 @@ class ShippingMethodTest extends TestCase
         $this->assertDatabaseHas(
             'shipping_methods',
             $shipping_method + ['id' => $this->shipping_method->getKey()],
+        );
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testUpdateBooleanValues($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('shipping_methods.edit');
+
+        $this->shipping_method->update(['black_list' => false]);
+
+        $shipping_method = [
+            'name' => 'Test 2',
+            'public' => $boolean,
+            'black_list' => $boolean,
+        ];
+
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/shipping-methods/id:' . $this->shipping_method->getKey(),
+            $shipping_method + [
+                'price_ranges' => [
+                    [
+                        'start' => 0,
+                        'value' => 10.37,
+                    ],
+                ],
+            ],
+        );
+
+        $shippingMethodResponse = array_merge($shipping_method, [
+            'public' => $booleanValue,
+            'black_list' => $booleanValue,
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => $shippingMethodResponse]);
+
+        $this->assertDatabaseHas(
+            'shipping_methods',
+            $shippingMethodResponse + ['id' => $this->shipping_method->getKey()],
         );
     }
 

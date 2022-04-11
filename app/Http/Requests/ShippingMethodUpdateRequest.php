@@ -2,17 +2,26 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\Boolean;
 use App\Rules\ShippingMethodPriceRanges;
+use App\Traits\BooleanRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ShippingMethodUpdateRequest extends FormRequest
 {
+    use BooleanRules;
+
+    protected array $booleanFields = [
+        'public',
+        'black_list',
+    ];
+
     public function rules(): array
     {
         return [
             'name' => ['string', 'max:255'],
-            'public' => 'boolean',
-            'black_list' => 'boolean',
+            'public' => [new Boolean()],
+            'black_list' => [new Boolean()],
             'payment_methods' => 'array',
             'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
             'countries' => 'array',

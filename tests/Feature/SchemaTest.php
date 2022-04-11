@@ -77,6 +77,60 @@ class SchemaTest extends TestCase
     }
 
     /**
+     * @dataProvider booleanProvider
+     */
+    public function testIndexSearchByHidden($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $hidden = Schema::factory()->create([
+            'hidden' => true,
+        ]);
+
+        $visible = Schema::factory()->create([
+            'hidden' => false,
+        ]);
+
+        $schemaId = $booleanValue ? $hidden->getKey() : $visible->getKey();
+
+        $response = $this->actingAs($this->$user)->json('GET', '/schemas', ['hidden' => $boolean]);
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $schemaId,
+            ]);
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testIndexSearchByRequired($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $hidden = Schema::factory()->create([
+            'required' => true,
+        ]);
+
+        $visible = Schema::factory()->create([
+            'required' => false,
+        ]);
+
+        $schemaId = $booleanValue ? $hidden->getKey() : $visible->getKey();
+
+        $response = $this->actingAs($this->$user)->json('GET', '/schemas', ['required' => $boolean]);
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $schemaId,
+            ]);
+    }
+
+    /**
      * @dataProvider authProvider
      */
     public function testShowUnauthorized($user): void
@@ -282,6 +336,55 @@ class SchemaTest extends TestCase
             'option_id' => $option->id,
             'item_id' => $item->getKey(),
         ]);
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testCreateBooleanValues($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
+            'name' => 'Test',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'price' => 120,
+            'description' => 'test test',
+            'hidden' => $boolean,
+            'required' => $boolean,
+            'options' => [
+                [
+                    'name' => 'A',
+                    'price' => 1000,
+                    'disabled' => $boolean,
+                ],
+                [
+                    'name' => 'B',
+                    'price' => 0,
+                    'disabled' => 'off',
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => 'Test',
+                'price' => 120,
+                'description' => 'test test',
+                'hidden' => $booleanValue,
+                'required' => $booleanValue,
+            ])
+            ->assertJsonFragment([
+                'name' => 'A',
+                'price' => 1000,
+                'disabled' => $booleanValue,
+            ])
+            ->assertJsonFragment([
+                'name' => 'B',
+                'price' => 0,
+                'disabled' => false,
+            ]);
     }
 
     /**
