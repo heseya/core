@@ -18,6 +18,7 @@ class UserResource extends Resource
             'avatar' => $this->resource->avatar,
             'roles' => RoleResource::collection($this->resource->roles),
             'is_tfa_active' => $this->resource->is_tfa_active,
+            'consents' => ConsentUserResource::collection($this->resource->consents),
         ], $this->metadataResource('users.show_metadata_private'));
     }
 

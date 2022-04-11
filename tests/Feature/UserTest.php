@@ -214,6 +214,7 @@ class UserTest extends TestCase
                 'avatar' => $otherUser->avatar,
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
+                'consents' => [],
                 'metadata' => [],
             ]);
     }
@@ -241,6 +242,7 @@ class UserTest extends TestCase
                 'avatar' => $otherUser->avatar,
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
+                'consents' => [],
                 'metadata' => [],
             ]);
     }
@@ -267,6 +269,7 @@ class UserTest extends TestCase
                 'avatar' => $otherUser->avatar,
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
+                'consents' => [],
                 'metadata' => [],
             ]);
     }
@@ -293,6 +296,7 @@ class UserTest extends TestCase
                 'avatar' => $otherUser->avatar,
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
+                'consents' => [],
                 'metadata' => [],
             ]);
     }
