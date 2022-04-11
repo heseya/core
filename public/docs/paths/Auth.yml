@@ -106,7 +106,7 @@ ResetPasswordParams:
       - oauth: [ ]
 
 SaveResetPassword:
-  patch:
+  put:
     tags:
       - Auth
     summary: 'save the reset password'
@@ -119,7 +119,7 @@ SaveResetPassword:
       - oauth: [ ]
 
 Password:
-  patch:
+  put:
     tags:
       - Auth
     summary: 'Change password'
