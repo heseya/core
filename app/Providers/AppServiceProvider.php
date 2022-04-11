@@ -9,6 +9,7 @@ use App\Services\AttributeService;
 use App\Services\AuditService;
 use App\Services\AuthService;
 use App\Services\AvailabilityService;
+use App\Services\ConsentService;
 use App\Services\Contracts\AnalyticsServiceContract;
 use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\AttributeOptionServiceContract;
@@ -16,6 +17,7 @@ use App\Services\Contracts\AttributeServiceContract;
 use App\Services\Contracts\AuditServiceContract;
 use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\AvailabilityServiceContract;
+use App\Services\Contracts\ConsentServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\EventServiceContract;
 use App\Services\Contracts\ItemServiceContract;
@@ -104,6 +106,7 @@ class AppServiceProvider extends ServiceProvider
         AttributeOptionServiceContract::class => AttributeOptionService::class,
         SortServiceContract::class => SortService::class,
         ProductSearchServiceContract::class => ProductSearchService::class,
+        ConsentServiceContract::class => ConsentService::class,
     ];
 
     /**

@@ -1,0 +1,58 @@
+<?php
+
+use App\Enums\RoleType;
+use App\Models\Permission;
+use App\Models\Role;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('consents', function (Blueprint $table) {
+            $table->uuid('id')->index();
+            $table->string('name');
+            $table->string('description_html');
+            $table->boolean('required');
+            $table->timestamps();
+        });
+
+        Schema::create('consent_user', function (Blueprint $table) {
+            $table->foreignUuid('consent_id')->constrained('consents')->onDelete('cascade');
+            $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
+            $table->boolean('value');
+        });
+
+        Permission::create(['name' => 'consents.show', 'display_name' => 'Dostęp do listy zgód']);
+        Permission::create(['name' => 'consents.add', 'display_name' => 'Możliwość tworzenia zgód']);
+        Permission::create(['name' => 'consents.edit', 'display_name' => 'Możliwość edycji zgód']);
+        Permission::create(['name' => 'consents.remove', 'display_name' => 'Możliwość usuwania zgód']);
+
+        Role::where('type', RoleType::AUTHENTICATED)->firstOrFail()->givePermissionTo('consents.show');
+        Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail()->givePermissionTo('consents.show');
+        Role::where('type', RoleType::OWNER)->firstOrFail()->givePermissionTo([
+            'consents.show',
+            'consents.add',
+            'consents.edit',
+            'consents.remove',
+        ]);
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('consents');
+        Schema::dropIfExists('consent_user');
+    }
+};
