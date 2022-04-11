@@ -127,9 +127,9 @@ class ItemTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider booleanProvider
      */
-    public function testIndexFilterBySoldOut($user): void
+    public function testIndexFilterBySoldOut($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo('items.show');
 
@@ -141,19 +141,15 @@ class ItemTest extends TestCase
 
         $item_sold_out = Item::factory()->create();
 
+        $itemId = $booleanValue ? $item_sold_out->getKey() : $this->item->getKey();
+
         $this
             ->actingAs($this->$user)
-            ->json('GET', '/items', ['sold_out' => 1])
+            ->json('GET', '/items', ['sold_out' => $boolean])
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJson(['data' => [
-                0 => [
-                    'id' => $item_sold_out->getKey(),
-                    'name' => $item_sold_out->name,
-                    'sku' => $item_sold_out->sku,
-                    'quantity' => $item_sold_out->quantity,
-                ],
-            ],
+            ->assertJsonFragment([
+                'id' => $itemId,
             ]);
 
         $this->assertQueryCountLessThan(11);

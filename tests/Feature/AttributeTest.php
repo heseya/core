@@ -96,40 +96,21 @@ class AttributeTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider booleanProvider
      */
-    public function testIndexGlobalFlagTrue($user): void
+    public function testIndexGlobalFlagBooleanValues($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo('attributes.show');
 
-        $this->newAttribute['global'] = true;
+        $this->newAttribute['global'] = $booleanValue;
         unset($this->newAttribute['options']);
         Attribute::create($this->newAttribute);
 
         $this
             ->actingAs($this->$user)
-            ->getJson('/attributes?global=1')
+            ->json('GET', '/attributes', ['global' => $boolean])
             ->assertOk()
-            ->assertJsonMissing(['global' => false])
-            ->assertJsonFragment($this->newAttribute);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testIndexGlobalFlagFalse($user): void
-    {
-        $this->$user->givePermissionTo('attributes.show');
-
-        $this->newAttribute['global'] = false;
-        unset($this->newAttribute['options']);
-        Attribute::create($this->newAttribute);
-
-        $this
-            ->actingAs($this->$user)
-            ->getJson('/attributes?global=0')
-            ->assertOk()
-            ->assertJsonMissing(['global' => true])
+            ->assertJsonMissing(['global' => !$booleanValue])
             ->assertJsonFragment($this->newAttribute);
     }
 
@@ -443,6 +424,30 @@ class AttributeTest extends TestCase
                 'type' => $this->newAttribute['type'],
                 'global' => $this->newAttribute['global'],
                 'sortable' => $this->newAttribute['sortable'],
+            ])
+            ->assertJsonFragment(['index' => 1] + $this->newAttribute['options'][0])
+            ->assertJsonFragment(['index' => 2] + $this->newAttribute['options'][1]);
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testCreateBooleanValues($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('attributes.add');
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/attributes', array_merge($this->newAttribute, ['global' => $boolean, 'sortable' => $boolean]))
+            ->assertCreated()
+            ->assertJsonStructure($this->expectedStructure)
+            ->assertJsonFragment([
+                'name' => $this->newAttribute['name'],
+                'slug' => $this->newAttribute['slug'],
+                'description' => $this->newAttribute['description'],
+                'type' => $this->newAttribute['type'],
+                'global' => $booleanValue,
+                'sortable' => $booleanValue,
             ])
             ->assertJsonFragment(['index' => 1] + $this->newAttribute['options'][0])
             ->assertJsonFragment(['index' => 2] + $this->newAttribute['options'][1]);

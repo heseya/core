@@ -76,4 +76,37 @@ abstract class TestCase extends BaseTestCase
 
         return $this;
     }
+
+    public function trueBooleanProvider(): array
+    {
+        return [
+            'as user true' => ['user', true, true],
+            'as user 1' => ['user', 1, true],
+            'as user on' => ['user', 'on', true],
+            'as user yes' => ['user', 'yes', true],
+            'as application true' => ['application', true, true],
+            'as application 1' => ['application', 1, true],
+            'as application on' => ['application', 'on', true],
+            'as application yes' => ['application', 'yes', true],
+        ];
+    }
+
+    public function falseBooleanProvider(): array
+    {
+        return [
+            'as user false' => ['user', false, false],
+            'as user 0' => ['user', 0, false],
+            'as user off' => ['user', 'off', false],
+            'as user no' => ['user', 'no', false],
+            'as application false' => ['application', false, false],
+            'as application 0' => ['application', 0, false],
+            'as application off' => ['application', 'off', false],
+            'as application no' => ['application', 'no', false],
+        ];
+    }
+
+    public function booleanProvider(): array
+    {
+        return array_merge($this->trueBooleanProvider(), $this->falseBooleanProvider());
+    }
 }

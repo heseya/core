@@ -55,6 +55,50 @@ class ProductSearchTest extends TestCase
     }
 
     /**
+     * @dataProvider booleanProvider
+     */
+    public function testSearchByPublic($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['public' => $boolean])
+            ->assertOk();
+//            ->assertJsonCount(1, 'data')
+//            ->assertJsonFragment(['id' => $product->getKey()]);
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' => [],
+                'should' => [],
+                'filter' => [
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => $booleanValue,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    /**
      * @dataProvider authProvider
      */
     public function testSearchBySet($user): void
