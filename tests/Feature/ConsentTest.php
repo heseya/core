@@ -156,4 +156,42 @@ class ConsentTest extends TestCase
 
         $this->assertDatabaseMissing('consents', $this->consent->toArray());
     }
+
+    public function testRelationship(): void
+    {
+        $consentOne = Consent::factory()->create();
+        $consentTwo = Consent::factory()->create();
+
+        $this->user->consents()->save($consentOne, ['value' => true]);
+        $this->user->consents()->save($consentTwo, ['value' => false]);
+
+        $response = $this->actingAs($this->user)->json('GET', '/auth/profile');
+
+        $this
+            ->assertDatabaseCount('consent_user', 2)
+            ->assertDatabaseHas('consent_user', [
+                'consent_id' => $consentOne->getKey(),
+                'user_id' => $this->user->getKey(),
+                'value' => true,
+            ])
+            ->assertDatabaseHas('consent_user', [
+                'consent_id' => $consentTwo->getKey(),
+                'user_id' => $this->user->getKey(),
+                'value' => false,
+            ]);
+
+        $response->assertJsonCount(2, 'data.consents');
+        $response->assertJsonFragment([
+            'name' => $consentOne->name,
+            'description_html' => $consentOne->description_html,
+            'required' => $consentOne->required,
+            'value' => true,
+        ]);
+        $response->assertJsonFragment([
+            'name' => $consentTwo->name,
+            'description_html' => $consentTwo->description_html,
+            'required' => $consentTwo->required,
+            'value' => false,
+        ]);
+    }
 }

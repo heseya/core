@@ -18,6 +18,7 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -109,6 +110,13 @@ class User extends Model implements
     public function orders(): MorphMany
     {
         return $this->morphMany(Order::class, 'user');
+    }
+
+    public function consents(): BelongsToMany
+    {
+        return $this->belongsToMany(Consent::class)
+            ->using(ConsentUser::class)
+            ->withPivot('value');
     }
 
     public function securityCodes(): HasMany
