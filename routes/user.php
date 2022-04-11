@@ -10,7 +10,7 @@ Route::prefix('users')->group(function (): void {
         ->middleware(['app.restrict', 'can:auth.password_reset']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])
         ->middleware(['app.restrict', 'can:auth.password_reset']);
-    Route::patch('/save-reset-password', [AuthController::class, 'saveResetPassword'])
+    Route::put('/save-reset-password', [AuthController::class, 'saveResetPassword'])
         ->middleware(['app.restrict', 'can:auth.password_reset']);
     Route::post('/id:{user:id}/2fa/remove', [AuthController::class, 'removeUsersTFA'])
         ->middleware('permission:users.2fa_remove');
