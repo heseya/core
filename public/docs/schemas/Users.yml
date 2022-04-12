@@ -21,6 +21,12 @@ User:
       type: array
       items:
         $ref: './Roles.yml#/Role'
+    consents:
+      description: 'User''s consents'
+      type: array
+      items:
+        $ref: './Consents.yml#/ConsentUser'
+
 
 UserView:
   type: object
