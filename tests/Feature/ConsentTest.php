@@ -19,6 +19,7 @@ class ConsentTest extends TestCase
         $this->consent = Consent::factory()->create(['required' => false]);
 
         $this->requiredConsent = Consent::factory()->create([
+            'name' => 'aTest',
             'required' => true,
         ]);
     }
@@ -249,5 +250,48 @@ class ConsentTest extends TestCase
             'required' => $consentTwo->required,
             'value' => false,
         ]);
+    }
+    public function testUpdateUserConsents(): void
+    {
+        $consent = Consent::factory()->create([
+            'name' => 'bTest',
+            'required' => false,
+        ]);
+
+        $this->user->consents()->save($consent, ['value' => false]);
+
+        $response = $this->actingAs($this->user)->json('PATCH', '/auth/profile', [
+            'name' => 'test test',
+            'consents' => [
+                $this->requiredConsent->getKey() => true,
+                $consent->getKey() => true,
+            ],
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonFragment([
+            'name' => $this->requiredConsent->name,
+            'description_html' => $this->requiredConsent->description_html,
+            'required' => $this->requiredConsent->required,
+            'value' => true,
+        ]);
+        $response->assertJsonFragment([
+            'name' => $consent->name,
+            'description_html' => $consent->description_html,
+            'required' => $consent->required,
+            'value' => true,
+        ]);
+
+        $this->assertDatabaseCount('consent_user', 2)
+            ->assertDatabaseHas('consent_user', [
+                'consent_id' => $this->requiredConsent->getKey(),
+                'user_id' => $this->user->getKey(),
+                'value' => true,
+            ])
+            ->assertDatabaseHas('consent_user', [
+                'consent_id' => $consent->getKey(),
+                'user_id' => $this->user->getKey(),
+                'value' => true,
+            ]);
     }
 }

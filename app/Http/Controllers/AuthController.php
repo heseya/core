@@ -10,6 +10,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Requests\PasswordResetRequest;
 use App\Http\Requests\PasswordResetSaveRequest;
+use App\Http\Requests\ProfileUpdateRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\TFAConfirmRequest;
 use App\Http\Requests\TFAPasswordRequest;
@@ -169,5 +170,13 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): JsonResource
     {
         return UserResource::make($this->authService->register(RegisterDto::fromFormRequest($request)));
+    }
+
+    public function updateProfile(ProfileUpdateRequest $request): JsonResource
+    {
+        return UserResource::make($this->authService->updateProfile(
+            $request->input('name'),
+            $request->input('consents')
+        ));
     }
 }

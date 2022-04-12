@@ -43,4 +43,6 @@ interface AuthServiceContract
     public function removeUsersTFA(User $user): void;
 
     public function register(RegisterDto $dto): User;
+
+    public function updateProfile(?string $name, array $consents): User;
 }
