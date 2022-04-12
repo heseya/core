@@ -2,17 +2,25 @@
 
 namespace Tests\Feature;
 
+use App\Enums\RoleType;
 use App\Models\Consent;
+use App\Models\Role;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class ConsentTest extends TestCase
 {
     private Consent $consent;
+    private Consent $requiredConsent;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->consent = Consent::factory()->create();
+        $this->consent = Consent::factory()->create(['required' => false]);
+
+        $this->requiredConsent = Consent::factory()->create([
+            'required' => true,
+        ]);
     }
 
     /**
@@ -39,7 +47,7 @@ class ConsentTest extends TestCase
         $response = $this->actingAs($this->$user)->json('get', '/consents');
 
         $response->assertOk();
-        $response->assertJsonCount(11, 'data');
+        $response->assertJsonCount(12, 'data');
     }
 
     /**
@@ -68,7 +76,7 @@ class ConsentTest extends TestCase
         $response->assertCreated();
         $response->assertJsonFragment($consent->toArray());
 
-        $this->assertDatabaseCount('consents', 2)
+        $this->assertDatabaseCount('consents', 3)
             ->assertDatabaseHas('consents', $consent->toArray());
     }
 
@@ -100,7 +108,7 @@ class ConsentTest extends TestCase
         $response->assertOk();
         $response->assertJsonFragment($consent->toArray());
 
-        $this->assertDatabaseCount('consents', 1)
+        $this->assertDatabaseCount('consents', 2)
             ->assertDatabaseHas('consents', $consent->toArray());
     }
 
@@ -123,7 +131,7 @@ class ConsentTest extends TestCase
             'required' => $this->consent->required,
         ]);
 
-        $this->assertDatabaseCount('consents', 1)
+        $this->assertDatabaseCount('consents', 2)
             ->assertDatabaseHas('consents', [
                 'name' => 'updated',
                 'description_html' => $this->consent->description_html,
@@ -155,6 +163,54 @@ class ConsentTest extends TestCase
         $response->assertStatus(204);
 
         $this->assertDatabaseMissing('consents', $this->consent->toArray());
+    }
+
+    public function testRegisterWithoutConsentWhenExists(): void
+    {
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.register');
+
+        Consent::factory()->create([
+            'required' => true,
+        ]);
+
+        $response = $this->json('POST', '/register', [
+            'name' => 'test',
+            'email' => 'test@test.test',
+            'password' => 'TestTset432!!',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonFragment(['message' => 'You must accept the required consents.']);
+    }
+
+    public function testRegisterWitConsent(): void
+    {
+        Notification::fake();
+
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.register');
+
+        $response = $this->json('POST', '/register', [
+            'name' => 'test',
+            'email' => 'test@test.test',
+            'password' => 'TestTset432!!',
+            'consents' => [
+                $this->requiredConsent->getKey() => true,
+            ],
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonFragment([
+                'name' => 'test',
+                'email' => 'test@test.test',
+            ]);
+
+        $this->assertDatabaseHas('consent_user', [
+            'user_id' => $response->getData()->data->id,
+            'consent_id' => $this->requiredConsent->getKey(),
+            'value' => true,
+        ]);
     }
 
     public function testRelationship(): void

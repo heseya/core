@@ -20,6 +20,7 @@ use App\Notifications\TFAInitialization;
 use App\Notifications\TFASecurityCode;
 use App\Notifications\UserRegistered;
 use App\Services\Contracts\AuthServiceContract;
+use App\Services\Contracts\ConsentServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
 use Carbon\Carbon;
@@ -35,6 +36,7 @@ class AuthService implements AuthServiceContract
     public function __construct(
         protected TokenServiceContract $tokenService,
         protected OneTimeSecurityCodeContract $oneTimeSecurityCodeService,
+        protected ConsentServiceContract $consentService,
     ) {
     }
 
@@ -275,6 +277,8 @@ class AuthService implements AuthServiceContract
         $authenticated = Role::where('type', RoleType::AUTHENTICATED)->first();
 
         $user->syncRoles($authenticated);
+
+        $this->consentService->syncUserConsents($user, $dto->getConsents());
 
         $user->notify(new UserRegistered());
 
