@@ -7,6 +7,8 @@ Route::prefix('auth')->group(function (): void {
     Route::post('logout', [AuthController::class, 'logout'])
         ->middleware('app.restrict');
     Route::get('profile', [AuthController::class, 'profile']);
+    Route::patch('profile', [AuthController::class, 'updateProfile'])
+        ->middleware('can:authenticated');
     Route::post('refresh', [AuthController::class, 'refresh'])
         ->middleware('can:auth.login');
     Route::get('check', [AuthController::class, 'checkIdentity'])
