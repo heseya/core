@@ -2,10 +2,19 @@
 
 namespace App\Models;
 
+use App\Criteria\MetadataPrivateSearch;
+use App\Criteria\MetadataSearch;
+use App\Criteria\ProductSearch;
+use App\Criteria\WhereHasId;
+use App\Criteria\WhereHasSlug;
+use App\Criteria\WhereInIds;
 use App\Services\Contracts\ProductSearchServiceContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
+use Heseya\Searchable\Criteria\Equals;
+use Heseya\Searchable\Criteria\Like;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -20,7 +29,14 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Product extends Model implements AuditableContract, Explored
 {
-    use HasFactory, SoftDeletes, Searchable, Sortable, Auditable, HasSeoMetadata, HasMetadata;
+    use HasFactory,
+        SoftDeletes,
+        Searchable,
+        Sortable,
+        Auditable,
+        HasSeoMetadata,
+        HasMetadata,
+        HasCriteria;
 
     protected $fillable = [
         'name',
@@ -65,6 +81,19 @@ class Product extends Model implements AuditableContract, Explored
         'order',
         'public',
         'available',
+    ];
+
+    protected array $criteria = [
+        'search' => ProductSearch::class,
+        'ids' => WhereInIds::class,
+        'slug' => Like::class,
+        'name' => Like::class,
+        'public' => Equals::class,
+        'available' => Equals::class,
+        'sets' => WhereHasSlug::class,
+        'tags' => WhereHasId::class,
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     protected string $defaultSortBy = 'order';
