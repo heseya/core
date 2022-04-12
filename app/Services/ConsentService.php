@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Dtos\ConsentDto;
 use App\Models\Consent;
+use App\Models\ConsentUser;
 use App\Models\User;
 use App\Services\Contracts\ConsentServiceContract;
 use Illuminate\Support\Collection;
@@ -32,5 +33,22 @@ class ConsentService implements ConsentServiceContract
         $consents->each(function ($consent, $key) use ($user): void {
             $user->consents()->attach($key, ['value' => $consent]);
         });
+    }
+
+    public function updateUserConsents(?Collection $consents, User $user): void
+    {
+        if ($consents->isNotEmpty()) {
+            $consents->each(function ($value, $key) use ($user): void {
+                ConsentUser::updateOrInsert(
+                    [
+                        'user_id' => $user->getKey(),
+                        'consent_id' => $key,
+                    ],
+                    [
+                        'value' => $value,
+                    ]
+                );
+            });
+        }
     }
 }
