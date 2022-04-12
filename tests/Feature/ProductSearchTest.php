@@ -5,12 +5,81 @@ namespace Tests\Feature;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Tag;
+use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Repositories\Elastic\ProductRepository;
+use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Testing\TestResponse;
+use Tests\Support\ElasticTest;
 use Tests\TestCase;
 
 class ProductSearchTest extends TestCase
 {
+    use ElasticTest;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        Config::set('scout.driver', 'elastic');
+
+        $this->app->bind(
+            ProductRepositoryContract::class,
+            ProductRepository::class,
+        );
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+        $set = ProductSet::factory()->create([
+            'public' => true,
+            'hide_on_index' => true,
+        ]);
+        $product->sets()->sync([$set->getKey()]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['limit' => 100])
+            ->assertOk();
+//            ->assertJsonCount(1, 'data'); // Should show only public products.
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' => [],
+                'should' => [],
+                'filter' => [
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'hide_on_index' => [
+                                'value' => false,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ], 100);
+
+        $this->assertQueryCountLessThan(20);
+    }
+
     /**
      * @dataProvider authProvider
      */
@@ -50,6 +119,84 @@ class ProductSearchTest extends TestCase
                         ],
                     ],
                 ],
+            ],
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexIdsSearch($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $firstProduct = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $secondProduct = Product::factory()->create([
+            'public' => true,
+            'created_at' => Carbon::now()->addHour(),
+        ]);
+
+        // Dummy product to check if response will return only 2 products created above
+        Product::factory()->create([
+            'public' => true,
+            'created_at' => Carbon::now()->addHour(),
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', [
+                'ids' => "{$firstProduct->getKey()},{$secondProduct->getKey()}",
+            ])
+            ->assertOk();
+//            ->assertJsonCount(2, 'data');
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' => [],
+                'should' => [],
+                'filter' => [
+                    [
+                        'terms' => [
+                            'id' => [
+                                $firstProduct->getKey(),
+                                $secondProduct->getKey(),
+                            ],
+                            'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexHidden($user): void
+    {
+        $this->$user->givePermissionTo(['products.show', 'products.show_hidden']);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products')
+            ->assertOk();
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' => [],
+                'should' => [],
+                'filter' => [],
             ],
         ]);
     }

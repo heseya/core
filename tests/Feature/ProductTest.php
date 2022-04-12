@@ -21,7 +21,6 @@ use App\Models\SeoMetadata;
 use App\Models\WebHook;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\ProductServiceContract;
-use Carbon\Carbon;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
@@ -30,30 +29,24 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Spatie\WebhookServer\CallWebhookJob;
-use Tests\Support\ElasticTest;
 use Tests\TestCase;
 
 class ProductTest extends TestCase
 {
-    use ElasticTest;
-
     private Product $product;
     private Product $hidden_product;
 
     private array $expected;
     private array $expected_short;
-    private array $expected_attribute;
-    private array $expected_attribute_short;
 
     private ProductServiceContract $productService;
-    private AvailabilityServiceContract $availabilityService;
 
     public function setUp(): void
     {
         parent::setUp();
 
         $this->productService = App::make(ProductServiceContract::class);
-        $this->availabilityService = App::make(AvailabilityServiceContract::class);
+        $availabilityService = App::make(AvailabilityServiceContract::class);
 
         $this->product = Product::factory()->create([
             'public' => true,
@@ -117,7 +110,7 @@ class ProductTest extends TestCase
 
         $this->product->attributes->first()->pivot->options()->attach($option->getKey());
 
-        $this->availabilityService->calculateAvailabilityOnOrderAndRestock($item);
+        $availabilityService->calculateAvailabilityOnOrderAndRestock($item);
 
         /**
          * Expected short response
@@ -133,7 +126,7 @@ class ProductTest extends TestCase
             'cover' => null,
         ];
 
-        $this->expected_attribute_short = [
+        $expected_attribute_short = [
             'attributes' => [
                 [
                     'name' => $attribute->name,
@@ -151,8 +144,8 @@ class ProductTest extends TestCase
             ],
         ];
 
-        $this->expected_attribute = $this->expected_attribute_short;
-        $this->expected_attribute['attributes'][0] += [
+        $expected_attribute = $expected_attribute_short;
+        $expected_attribute['attributes'][0] += [
             'id' => $attribute->getKey(),
             'slug' => $attribute->slug,
             'description' => $attribute->description,
@@ -164,7 +157,7 @@ class ProductTest extends TestCase
         /**
          * Expected full response
          */
-        $this->expected = array_merge($this->expected_short, $this->expected_attribute, [
+        $this->expected = array_merge($this->expected_short, $expected_attribute, [
             'description_html' => $this->product->description_html,
             'description_short' => $this->product->description_short,
             'gallery' => [],
@@ -233,95 +226,14 @@ class ProductTest extends TestCase
         $this
             ->actingAs($this->$user)
             ->json('GET', '/products', ['limit' => 100])
-            ->assertOk();
-//            ->assertJsonCount(1, 'data') // Should show only public products.
-//            ->assertJson(['data' => [
-//                0 => $this->expected_short,
-//            ]]);
-
-        $this->assertElasticQuery([
-            'bool' => [
-                'must' => [],
-                'should' => [],
-                'filter' => [
-                    [
-                        'term' => [
-                            'public' => [
-                                'value' => true,
-                                'boost' => 1.0,
-                            ],
-                        ],
-                    ],
-                    [
-                        'term' => [
-                            'hide_on_index' => [
-                                'value' => false,
-                                'boost' => 1.0,
-                            ],
-                        ],
-                    ],
-                ],
+            ->assertOk()
+            ->assertJsonCount(1, 'data') // Should show only public products.
+            ->assertJson(['data' => [
+                0 => $this->expected_short,
             ],
-        ], 100);
+            ]);
 
         $this->assertQueryCountLessThan(20);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testIndexIdsSearch($user): void
-    {
-        $this->$user->givePermissionTo('products.show');
-
-        $firstProduct = Product::factory()->create([
-            'public' => true,
-        ]);
-
-        $secondProduct = Product::factory()->create([
-            'public' => true,
-            'created_at' => Carbon::now()->addHour(),
-        ]);
-
-        // Dummy product to check if response will return only 2 products created above
-        Product::factory()->create([
-            'public' => true,
-            'created_at' => Carbon::now()->addHour(),
-        ]);
-
-        $this
-            ->actingAs($this->$user)
-            ->json('GET', '/products', [
-                'ids' => "{$firstProduct->getKey()},{$secondProduct->getKey()}",
-            ])
-            ->assertOk();
-//            ->assertJsonCount(2, 'data');
-
-        $this->assertElasticQuery([
-            'bool' => [
-                'must' => [],
-                'should' => [],
-                'filter' => [
-                    [
-                        'terms' => [
-                            'id' => [
-                                $firstProduct->getKey(),
-                                $secondProduct->getKey(),
-                            ],
-                            'boost' => 1.0,
-                        ],
-                    ],
-                    [
-                        'term' => [
-                            'public' => [
-                                'value' => true,
-                                'boost' => 1.0,
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-        ]);
     }
 
     /**
@@ -343,16 +255,8 @@ class ProductTest extends TestCase
 
         $this->actingAs($this->$user)
             ->json('GET', '/products')
-            ->assertOk();
-//            ->assertJsonCount(3, 'data'); // Should show all products.
-
-        $this->assertElasticQuery([
-            'bool' => [
-                'must' => [],
-                'should' => [],
-                'filter' => [],
-            ],
-        ]);
+            ->assertOk()
+            ->assertJsonCount(3, 'data'); // Should show all products.
     }
 
     public function testShowUnauthorized(): void
@@ -2012,7 +1916,6 @@ class ProductTest extends TestCase
         $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $product->getKey(), [
             'name' => $product->name,
             'slug' => $product->slug,
-            'price' => $product->price,
             'public' => $product->public,
             'price' => $productNewPrice,
             'sets' => [],
@@ -2274,19 +2177,5 @@ class ProductTest extends TestCase
                 && $payload['data_type'] === 'Product'
                 && $payload['event'] === 'ProductDeleted';
         });
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testIndexSetsDefaultAsArray($user): void
-    {
-        $this->$user->givePermissionTo('products.show');
-
-        $response = $this->actingAs($this->$user)->json('GET', '/products?full=1&sets=');
-        $response
-            ->assertOk()
-            ->assertJsonCount(0, 'data')
-            ->assertJson(['data' => []]);
     }
 }
