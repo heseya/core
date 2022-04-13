@@ -203,6 +203,25 @@ class SettingsTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateDatabaseSettingWithEmptyData($user): void
+    {
+        $this->$user->givePermissionTo('settings.edit');
+
+        $setting = Setting::create([
+            'name' => 'new_setting',
+            'value' => 'Old Value',
+            'public' => true,
+        ]);
+
+        $this->actingAs($this->$user)->json('PATCH', '/settings/new_setting', [])
+            ->assertOk();
+
+        $this->assertDatabaseHas('settings', $setting->toArray());
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testDelete($user): void
     {
         $this->$user->givePermissionTo('settings.remove');

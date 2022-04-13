@@ -515,6 +515,9 @@ class SchemaTest extends TestCase
         $this->update($user);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
     public function update($user): void
     {
         $schema = Schema::factory()->create();
@@ -590,6 +593,44 @@ class SchemaTest extends TestCase
             'option_id' => $option->getKey(),
             'item_id' => $item2->getKey(),
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithEmptyData($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $schema = Schema::factory()->create([
+            'name' => 'new schema',
+            'description' => 'new schema description',
+            'price' => 10,
+            'hidden' => false,
+            'required' => true,
+            'max' => 10,
+            'min' => 1,
+        ]);
+
+        $item = Item::factory()->create();
+        $item2 = Item::factory()->create();
+
+        $option = Option::factory()->create([
+            'name' => 'L',
+            'price' => 0,
+            'disabled' => false,
+            'schema_id' => $schema->getKey(),
+        ]);
+        $option->items()->sync([
+            $item->getKey(),
+            $item2->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->$user)->patchJson('/schemas/id:' . $schema->getKey(), []);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('schemas', $schema->toArray());
     }
 
     /**

@@ -419,11 +419,47 @@ class ItemTest extends TestCase
             '/items/id:' . $this->item->getKey(),
             $item,
         );
+
         $response
             ->assertOk()
             ->assertJson(['data' => $item]);
 
         $this->assertDatabaseHas('items', $item + ['id' => $this->item->getKey()]);
+
+        Event::assertDispatched(ItemUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithPartialData($user): void
+    {
+        $this->$user->givePermissionTo('items.edit');
+
+        Event::fake(ItemUpdated::class);
+
+        $item = [
+            'name' => 'Test 2',
+        ];
+
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        );
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'name' => 'Test 2',
+                'sku' => $this->item->sku,
+            ],
+            ]);
+
+        $this->assertDatabaseHas('items', [
+            'id' => $this->item->getKey(),
+            'sku' => $this->item->sku,
+            'name' => 'Test 2',
+        ]);
 
         Event::assertDispatched(ItemUpdated::class);
     }

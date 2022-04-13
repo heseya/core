@@ -21,7 +21,6 @@ class SettingUpdateRequest extends FormRequest
     {
         return [
             'name' => [
-                'required',
                 'string',
                 'max:255',
                 Rule::unique('settings')->whereNot('name', $this->setting),
@@ -30,7 +29,7 @@ class SettingUpdateRequest extends FormRequest
                         ->except($this->setting)->keys()->toArray(),
                 ),
             ],
-            'value' => ['required', 'string', 'max:1000'],
+            'value' => ['string', 'max:1000'],
             'public' => ['nullable', new Boolean()],
         ];
     }
