@@ -4,6 +4,7 @@ namespace App\Dtos;
 
 use App\Dtos\Contracts\DtoContract;
 use App\Dtos\Contracts\InstantiateFromRequest;
+use Heseya\Dto\Missing;
 use Illuminate\Http\Request;
 
 class OrderUpdateDto implements DtoContract, InstantiateFromRequest
@@ -63,24 +64,24 @@ class OrderUpdateDto implements DtoContract, InstantiateFromRequest
     {
         $deliveryAddress = $request->exists('delivery_address') ?
             new AddressDto(
-                $request->input('delivery_address.name'),
-                $request->input('delivery_address.phone'),
-                $request->input('delivery_address.address'),
-                $request->input('delivery_address.vat'),
-                $request->input('delivery_address.zip'),
-                $request->input('delivery_address.city'),
-                $request->input('delivery_address.country'),
+                name: $request->input('delivery_address.name') ?? new Missing(),
+                phone: $request->input('delivery_address.phone') ?? new Missing(),
+                address: $request->input('delivery_address.address') ?? new Missing(),
+                vat: $request->input('delivery_address.vat') ?? new Missing(),
+                zip: $request->input('delivery_address.zip') ?? new Missing(),
+                city: $request->input('delivery_address.city') ?? new Missing(),
+                country: $request->input('delivery_address.country') ?? new Missing(),
             ) : null;
 
         $invoiceAddress = $request->exists('invoice_address') ?
             new AddressDto(
-                $request->input('invoice_address.name'),
-                $request->input('invoice_address.phone'),
-                $request->input('invoice_address.address'),
-                $request->input('invoice_address.vat'),
-                $request->input('invoice_address.zip'),
-                $request->input('invoice_address.city'),
-                $request->input('invoice_address.country'),
+                name: $request->input('invoice_address.name') ?? new Missing(),
+                phone: $request->input('invoice_address.phone') ?? new Missing(),
+                address: $request->input('invoice_address.address') ?? new Missing(),
+                vat: $request->input('invoice_address.vat') ?? new Missing(),
+                zip: $request->input('invoice_address.zip') ?? new Missing(),
+                city: $request->input('invoice_address.city') ?? new Missing(),
+                country: $request->input('invoice_address.country') ?? new Missing(),
             ) : null;
 
         return new self(

@@ -351,6 +351,51 @@ class DiscountTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateWithPartialData($user): void
+    {
+        $this->$user->givePermissionTo('discounts.edit');
+        $discount = Discount::factory()->create();
+
+        Queue::fake();
+
+        $response = $this->actingAs($this->$user)
+            ->json('PATCH', '/discounts/id:' . $discount->getKey(), [
+                'max_uses' => 40,
+                'starts_at' => Carbon::yesterday()->format('Y-m-d\TH:i'),
+                'expires_at' => Carbon::tomorrow()->format('Y-m-d\TH:i'),
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $discount->getKey(),
+                'description' => $discount->description,
+                'code' => $discount->code,
+                'discount' => $discount->discount,
+                'type' => $discount->type,
+                'max_uses' => 40,
+                'starts_at' => Carbon::yesterday(),
+                'expires_at' => Carbon::tomorrow(),
+                'metadata' => [],
+            ]);
+
+        $this->assertDatabaseHas('discounts', [
+            'id' => $discount->getKey(),
+            'description' => $discount->description,
+            'code' => $discount->code,
+            'discount' => $discount->discount,
+            'type' => $discount->type,
+            'max_uses' => 40,
+            'starts_at' => Carbon::yesterday(),
+            'expires_at' => Carbon::tomorrow(),
+        ]);
+
+        Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateWithWebHookQueue($user): void
     {
         $this->$user->givePermissionTo('discounts.edit');
