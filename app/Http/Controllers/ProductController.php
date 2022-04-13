@@ -11,6 +11,7 @@ use App\Http\Requests\ProductUpdateRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -23,6 +24,7 @@ class ProductController extends Controller
     public function __construct(
         private ProductServiceContract $productService,
         private ProductRepositoryContract $productRepository,
+        private DiscountServiceContract $discountService,
     ) {
     }
 
@@ -32,7 +34,8 @@ class ProductController extends Controller
             ProductSearchDto::instantiateFromRequest($request),
         );
 
-        return ProductResource::collection($products)->full($request->has('full'));
+        return ProductResource::collection($this->discountService->applyDiscountsOnProducts($products->items()))
+            ->full($request->has('full'));
     }
 
     public function show(Product $product): JsonResource
@@ -41,7 +44,7 @@ class ProductController extends Controller
             throw new NotFoundHttpException();
         }
 
-        return ProductResource::make($product);
+        return ProductResource::make($this->discountService->applyDiscountsOnProduct($product));
     }
 
     public function store(ProductCreateRequest $request): JsonResource
@@ -50,7 +53,7 @@ class ProductController extends Controller
             ProductCreateDto::instantiateFromRequest($request),
         );
 
-        return ProductResource::make($product);
+        return ProductResource::make($this->discountService->applyDiscountsOnProduct($product));
     }
 
     public function update(ProductUpdateRequest $request, Product $product): JsonResource
@@ -60,7 +63,7 @@ class ProductController extends Controller
             ProductUpdateDto::instantiateFromRequest($request),
         );
 
-        return ProductResource::make($product);
+        return ProductResource::make($this->discountService->applyDiscountsOnProduct($product));
     }
 
     public function destroy(Product $product): JsonResponse

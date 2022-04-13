@@ -49,11 +49,22 @@ class OrderSeeder extends Seeder
                 if (rand(0, 3) === 0) {
                     $schemas = OrderSchema::factory()->count(rand(1, 3))->make();
                     $product->schemas()->saveMany($schemas);
+
+                    $sum = $product->price_initial + $schemas->sum('price');
+                    $product->update([
+                        'price_initial' => $sum,
+                        'price' => $sum,
+                    ]);
                 }
             });
 
+            $summary = $orderService->calcSummary($order);
+            $cart_total = $summary - $order->shipping_price;
+
             $order->update([
-                'summary' => $orderService->calcSummary($order),
+                'summary' => $summary,
+                'cart_total' => $cart_total,
+                'cart_total_initial' => $cart_total,
             ]);
 
             for ($i = 0; $i < rand(0, 5); $i++) {

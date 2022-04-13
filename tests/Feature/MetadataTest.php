@@ -61,13 +61,22 @@ class MetadataTest extends TestCase
                 ['model' => ProductSet::class, 'prefix_url' => 'product-sets', 'role' => 'product_sets.edit'],
             ],
 
-            'discounts as user' => [
+            'coupons as user' => [
                 'user',
-                ['model' => Discount::class, 'prefix_url' => 'discounts', 'role' => 'discounts.edit'],
+                ['model' => Discount::class, 'prefix_url' => 'coupons', 'role' => 'coupons.edit'],
             ],
-            'discounts as application' => [
+            'coupons as application' => [
                 'application',
-                ['model' => Discount::class, 'prefix_url' => 'discounts', 'role' => 'discounts.edit'],
+                ['model' => Discount::class, 'prefix_url' => 'coupons', 'role' => 'coupons.edit'],
+            ],
+
+            'sales as user' => [
+                'user',
+                ['model' => Discount::class, 'prefix_url' => 'sales', 'role' => 'sales.edit'],
+            ],
+            'sales as application' => [
+                'application',
+                ['model' => Discount::class, 'prefix_url' => 'sales', 'role' => 'sales.edit'],
             ],
 
             'items as user' => [
@@ -183,6 +192,7 @@ class MetadataTest extends TestCase
         $this->$user->givePermissionTo($data['role']);
 
         $related = [];
+        $code = [];
 
         if ($data['model'] === Option::class) {
             $related = [
@@ -190,7 +200,11 @@ class MetadataTest extends TestCase
             ];
         }
 
-        $object = $data['model']::factory()->create($related);
+        if ($data['prefix_url'] === 'sales') {
+            $code = ['code' => null];
+        }
+
+        $object = $data['model']::factory()->create($related + $code);
 
         $metadata = [
             'sample text metadata' => 'Lorem ipsum dolor sit amet',
@@ -198,10 +212,12 @@ class MetadataTest extends TestCase
             'sample bool metadata' => true,
         ];
 
-        $this->actingAs($this->$user)->patchJson(
+        $response = $this->actingAs($this->$user)->patchJson(
             "/{$data['prefix_url']}/id:{$object->getKey()}/metadata",
             $metadata
-        )
+        );
+
+        $response
             ->assertOk()
             ->assertJsonFragment(['data' => $metadata]);
     }
@@ -214,6 +230,7 @@ class MetadataTest extends TestCase
         $this->$user->givePermissionTo($data['role']);
 
         $related = [];
+        $code = [];
 
         if ($data['model'] === Option::class) {
             $related = [
@@ -221,7 +238,11 @@ class MetadataTest extends TestCase
             ];
         }
 
-        $object = $data['model']::factory()->create($related);
+        if ($data['prefix_url'] === 'sales') {
+            $code = ['code' => null];
+        }
+
+        $object = $data['model']::factory()->create($related + $code);
 
         $metadata = [
             'sample text metadata private' => 'Aliquam porta viverra tortor non faucibus',
@@ -245,6 +266,7 @@ class MetadataTest extends TestCase
         $this->$user->givePermissionTo($data['role']);
 
         $related = [];
+        $code = [];
 
         if ($data['model'] === Option::class) {
             $related = [
@@ -252,7 +274,11 @@ class MetadataTest extends TestCase
             ];
         }
 
-        $object = $data['model']::factory()->create($related);
+        if ($data['prefix_url'] === 'sales') {
+            $code = ['code' => null];
+        }
+
+        $object = $data['model']::factory()->create($related + $code);
 
         $metadata = $object->metadata()->create([
             'name' => 'Metadata',
@@ -325,6 +351,7 @@ class MetadataTest extends TestCase
         $this->$user->givePermissionTo($data['role']);
 
         $related = [];
+        $code = [];
 
         if ($data['model'] === Option::class) {
             $related = [
@@ -332,7 +359,11 @@ class MetadataTest extends TestCase
             ];
         }
 
-        $object = $data['model']::factory()->create($related);
+        if ($data['prefix_url'] === 'sales') {
+            $code = ['code' => null];
+        }
+
+        $object = $data['model']::factory()->create($related + $code);
 
         $metadata = $object->metadataPrivate()->create([
             'name' => 'Metadata',
@@ -362,6 +393,7 @@ class MetadataTest extends TestCase
         $this->$user->givePermissionTo($data['role']);
 
         $related = [];
+        $code = [];
 
         if ($data['model'] === Option::class) {
             $related = [
@@ -369,7 +401,11 @@ class MetadataTest extends TestCase
             ];
         }
 
-        $object = $data['model']::factory()->create($related);
+        if ($data['prefix_url'] === 'sales') {
+            $code = ['code' => null];
+        }
+
+        $object = $data['model']::factory()->create($related + $code);
 
         $metadata1 = $object->metadata()->create([
             'name' => 'Metadata',
@@ -410,6 +446,7 @@ class MetadataTest extends TestCase
         $this->$user->givePermissionTo($data['role']);
 
         $related = [];
+        $code = [];
 
         if ($data['model'] === Option::class) {
             $related = [
@@ -417,7 +454,11 @@ class MetadataTest extends TestCase
             ];
         }
 
-        $object = $data['model']::factory()->create($related);
+        if ($data['prefix_url'] === 'sales') {
+            $code = ['code' => null];
+        }
+
+        $object = $data['model']::factory()->create($related + $code);
 
         $metadata1 = $object->metadataPrivate()->create([
             'name' => 'Metadata',

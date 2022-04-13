@@ -6,6 +6,7 @@ use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\UserSearch;
 use App\Criteria\WhereInIds;
+use App\Traits\HasDiscountConditions;
 use App\Traits\HasMetadata;
 use App\Traits\HasWebHooks;
 use App\Traits\Sortable;
@@ -51,7 +52,8 @@ class User extends Model implements
         Sortable,
         Auditable,
         HasWebHooks,
-        HasMetadata;
+        HasMetadata,
+        HasDiscountConditions;
 
     // Bez tego nie działały testy, w których jako aplikacja tworzy się użytkownika z określoną rolą
     protected $guard_name = 'api';
@@ -109,7 +111,7 @@ class User extends Model implements
 
     public function orders(): MorphMany
     {
-        return $this->morphMany(Order::class, 'user');
+        return $this->morphMany(Order::class, 'buyer');
     }
 
     public function consents(): BelongsToMany

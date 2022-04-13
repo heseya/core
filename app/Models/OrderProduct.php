@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasOrderDiscount;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,19 +12,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class OrderProduct extends Model
 {
-    use HasFactory;
+    use HasFactory, HasOrderDiscount;
 
     protected $fillable = [
         'quantity',
+        'price_initial',
         'price',
         'order_id',
         'product_id',
+        'name',
     ];
-
-    public function getPriceAttribute($value): float
-    {
-        return $value + $this->schemas()->sum('price');
-    }
 
     public function schemas(): HasMany
     {

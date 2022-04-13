@@ -7,6 +7,7 @@ use App\Criteria\MetadataSearch;
 use App\Criteria\RoleAssignableSearch;
 use App\Criteria\RoleSearch;
 use App\Enums\RoleType;
+use App\Traits\HasDiscountConditions;
 use App\Traits\HasMetadata;
 use App\Traits\HasUuid;
 use Heseya\Searchable\Criteria\Like;
@@ -21,7 +22,7 @@ use Spatie\Permission\Models\Role as SpatieRole;
  */
 class Role extends SpatieRole implements AuditableContract
 {
-    use HasCriteria, HasUuid, HasFactory, Auditable, HasMetadata;
+    use HasCriteria, HasUuid, HasFactory, Auditable, HasMetadata, HasDiscountConditions;
 
     protected $fillable = [
         'name',

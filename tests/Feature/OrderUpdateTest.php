@@ -513,12 +513,12 @@ class OrderUpdateTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'id' => $this->order->getKey(),
-                'comment' => '',
+                'comment' => null,
             ]);
 
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
-            'comment' => '',
+            'comment' => null,
         ]);
 
         Event::assertDispatched(OrderUpdated::class);

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class DiscountIndexRequest extends FormRequest
+class SaleIndexRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -16,7 +16,6 @@ class DiscountIndexRequest extends FormRequest
         return [
             'search' => ['string', 'max:255'],
             'description' => ['string', 'max:255'],
-            'code' => ['string', 'max:64'],
             'metadata' => ['nullable', 'array'],
             'metadata_private' => ['nullable', 'array'],
         ];

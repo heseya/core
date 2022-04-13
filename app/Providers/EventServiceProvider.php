@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
-use App\Events\DiscountCreated;
-use App\Events\DiscountDeleted;
-use App\Events\DiscountUpdated;
+use App\Events\CouponCreated;
+use App\Events\CouponDeleted;
+use App\Events\CouponUpdated;
 use App\Events\ItemCreated;
 use App\Events\ItemDeleted;
 use App\Events\ItemUpdated;
@@ -21,6 +21,9 @@ use App\Events\ProductSetCreated;
 use App\Events\ProductSetDeleted;
 use App\Events\ProductSetUpdated;
 use App\Events\ProductUpdated;
+use App\Events\SaleCreated;
+use App\Events\SaleDeleted;
+use App\Events\SaleUpdated;
 use App\Events\UserCreated;
 use App\Events\UserDeleted;
 use App\Events\UserUpdated;
@@ -55,13 +58,22 @@ class EventServiceProvider extends ServiceProvider
             WebHookEventListener::class,
         ],
         // WebHookEvents
-        DiscountCreated::class => [
+        SaleCreated::class => [
             WebHookEventListener::class,
         ],
-        DiscountDeleted::class => [
+        SaleDeleted::class => [
             WebHookEventListener::class,
         ],
-        DiscountUpdated::class => [
+        SaleUpdated::class => [
+            WebHookEventListener::class,
+        ],
+        CouponCreated::class => [
+            WebHookEventListener::class,
+        ],
+        CouponDeleted::class => [
+            WebHookEventListener::class,
+        ],
+        CouponUpdated::class => [
             WebHookEventListener::class,
         ],
         ItemCreated::class => [

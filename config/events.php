@@ -23,9 +23,12 @@ return [
         EventType::USER_CREATED => ['users.show_details', 'users.show'],
         EventType::USER_UPDATED => ['users.show_details', 'users.show'],
         EventType::USER_DELETED => ['users.show_details', 'users.show'],
-        EventType::DISCOUNT_CREATED => ['discounts.show_details', 'discounts.show'],
-        EventType::DISCOUNT_UPDATED => ['discounts.show_details', 'discounts.show'],
-        EventType::DISCOUNT_DELETED => ['discounts.show_details', 'discounts.show'],
+        EventType::SALE_CREATED => ['sales.show_details', 'sales.show'],
+        EventType::SALE_UPDATED => ['sales.show_details', 'sales.show'],
+        EventType::SALE_DELETED => ['sales.show_details', 'sales.show'],
+        EventType::COUPON_CREATED => ['coupons.show_details', 'coupons.show'],
+        EventType::COUPON_UPDATED => ['coupons.show_details', 'coupons.show'],
+        EventType::COUPON_DELETED => ['coupons.show_details', 'coupons.show'],
     ],
 
     'permissions_hidden' => [

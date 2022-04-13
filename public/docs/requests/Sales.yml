@@ -1,0 +1,23 @@
+SaleStore:
+  content:
+    application/json:
+      schema:
+        required:
+          - name
+          - type
+          - value
+          - priority
+          - target_type
+          - target_is_allow_list
+        allOf:
+          - $ref: './../schemas/Sales.yml#/SaleStore'
+        type: object
+
+SaleUpdate:
+  content:
+    application/json:
+      schema:
+        required:
+        allOf:
+          - $ref: './../schemas/Sales.yml#/SaleStore'
+        type: object
