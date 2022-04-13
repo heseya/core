@@ -3,13 +3,15 @@
 namespace App\Dtos;
 
 use App\Dtos\Contracts\InstantiateFromRequest;
+use App\Traits\MapMetadata;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 
 class ProductCreateDto extends Dto implements InstantiateFromRequest
 {
+    use MapMetadata;
+
     public string $name;
     public string $slug;
     public float $price;
@@ -50,25 +52,6 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
             metadata: self::mapMetadata($request),
             attributes: $request->input('attributes', new Missing()),
         );
-    }
-
-    public static function mapMetadata(Request $request): array|Missing
-    {
-        $metadata = Collection::make();
-
-        if ($request->has('metadata')) {
-            foreach ($request->input('metadata') as $key => $value) {
-                $metadata->push(MetadataDto::manualInit($key, $value, true));
-            }
-        }
-
-        if ($request->has('metadata_private')) {
-            foreach ($request->input('metadata_private') as $key => $value) {
-                $metadata->push(MetadataDto::manualInit($key, $value, false));
-            }
-        }
-
-        return $metadata->isEmpty() ? new Missing() : $metadata->toArray();
     }
 
     public function getMedia(): Missing|array
