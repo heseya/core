@@ -14,6 +14,7 @@ class OrderSchema extends Model
     protected $fillable = [
         'name',
         'value',
+        'price_initial',
         'price',
         'order_product_id',
     ];

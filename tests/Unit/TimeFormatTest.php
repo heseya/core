@@ -73,18 +73,13 @@ class TimeFormatTest extends TestCase
 
     public function testDiscountTimeFormat(): void
     {
-        $discount = Discount::factory()->create([
-            'starts_at' => Carbon::now(),
-            'expires_at' => Carbon::now()->addHour(),
-        ]);
+        $discount = Discount::factory()->create();
         $discount->delete();
 
         $this->modelTimeFormat($discount, [
             'created_at',
             'updated_at',
             'deleted_at',
-            'starts_at',
-            'expires_at',
         ]);
     }
 

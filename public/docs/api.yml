@@ -126,32 +126,16 @@ paths:
     $ref: './paths/Deposits.yml#/Deposits'
   '/items/id:{id}/deposits':
     $ref: './paths/Deposits.yml#/ItemDeposits'
-  /discounts:
-    $ref: './paths/Discounts.yml#/Discounts'
-  '/discounts/{code}':
-    get:
-      tags:
-        - Discounts
-      summary: 'show discount'
-      operationId: f961a76e9e4cd4035be42b73e8076385
-      parameters:
-        - name: code
-          in: path
-          required: false
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '././schemas/Discounts.yml/Discount'
-                type: object
-  '/discounts/id:{id}':
-    $ref: './paths/Discounts.yml#/DiscountParams'
+  /sales:
+    $ref: './paths/Sales.yml#/Sales'
+  '/sales/id:{id}':
+    $ref: './paths/Sales.yml#/SalesParams'
+  /coupons:
+    $ref: './paths/Coupons.yml#/Coupons'
+  '/coupons/id:{id}':
+    $ref: './paths/Coupons.yml#/CouponsParams'
+  '/coupons/{code}':
+    $ref: './paths/Coupons.yml#/CouponCode'
   /webhooks/events:
     get:
       tags:
@@ -196,6 +180,8 @@ paths:
     $ref: './paths/Orders.yml#/OrdersMy'
   '/orders/my/id:{id}':
     $ref: './paths/Orders.yml#/OrdersMyId'
+  /cart/process:
+    $ref: './paths/Orders.yml#/CartProcess'
   /package-templates:
     get:
       tags:
@@ -696,92 +682,74 @@ paths:
     $ref: './paths/Users.yml#/Users'
   '/users/id:{id}':
     $ref: './paths/Users.yml#/UsersParams'
-
   '/products/id:{id}/metadata':
     $ref: './paths/Metadata.yml#Metadata'
   '/products/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
-
   '/schemas/id:{id}/metadata':
     $ref: './paths/Metadata.yml#Metadata'
   '/schemas/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
-
   '/options/id:{id}/metadata':
     $ref: './paths/Metadata.yml#Metadata'
   '/options/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
-
   '/product-sets/id:{id}/metadata':
     $ref: './paths/Metadata.yml#Metadata'
   '/product-sets/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
-
   '/discounts/id:{id}/metadata':
     $ref: './paths/Metadata.yml#Metadata'
   '/discounts/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
-
   '/items/id:{id}/metadata':
     $ref: './paths/Metadata.yml#Metadata'
   '/items/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
-
   '/orders/id:{id}/metadata':
     $ref: './paths/Metadata.yml#Metadata'
   '/orders/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
-
   '/statuses/id:{id}/metadata':
     $ref: './paths/Metadata.yml#Metadata'
   '/statuses/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
-
   '/shipping-methods/id:{id}/metadata':
     $ref: './paths/Metadata.yml#Metadata'
   '/shipping-methods/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
-
   '/package-templates/id:{id}/metadata':
     $ref: './paths/Metadata.yml#Metadata'
   '/package-templates/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
-
   '/users/id:{id}/metadata':
     $ref: './paths/Metadata.yml#Metadata'
   '/users/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
-
   '/roles/id:{id}/metadata':
     $ref: './paths/Metadata.yml#Metadata'
   '/roles/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
-
   '/pages/id:{id}/metadata':
     $ref: './paths/Metadata.yml#Metadata'
   '/pages/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
-
   '/apps/id:{id}/metadata':
     $ref: './paths/Metadata.yml#Metadata'
   '/apps/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
-
   '/media/id:{id}/metadata':
     $ref: './paths/Metadata.yml#Metadata'
   '/media/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
-
   '/attributes/id:{id}/metadata':
     $ref: './paths/Metadata.yml#Metadata'
   '/attributes/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
-
   '/attributes/id:{id}/options/id:{id}/metadata':
     $ref: './paths/Metadata.yml#Metadata'
   '/attributes/id:{id}/options/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
-
   '/users/id:{id}/2fa/remove':
     $ref: './paths/Users.yml#/UserTFARemove'
   /webhooks:
@@ -1037,7 +1005,7 @@ components:
     ProductView:
       $ref: './schemas/Products.yml#/ProductView'
     ProfileView:
-      $ref: './schemas/Auth.yml#/Profile'
+      $ref: './schemas/Auth.yml#/ProfileView'
     Role:
       $ref: './schemas/Roles.yml#/Role'
     RoleView:
@@ -1111,6 +1079,12 @@ components:
       $ref: './schemas/Countries.yml#/Country'
     Deposit:
       $ref: './schemas/Deposits.yml#/Deposit'
+    Sale:
+      $ref: './schemas/Sales.yml#/SaleShow'
+    Coupon:
+      $ref: './schemas/Coupons.yml#/CouponShow'
+    ConditionGroup:
+      $ref: './schemas/DiscountConditions.yml#/ConditionGroupShow'
     Item:
       $ref: './schemas/Items.yml#/Item'
     Media:
@@ -1142,6 +1116,8 @@ components:
       type: object
     Order:
       $ref: './schemas/Orders.yml#/Order'
+    OrderDiscount:
+      $ref: './schemas/Orders.yml#/OrderDiscount'
     OrderProduct:
       $ref: './schemas/Orders.yml#/OrderProduct'
     OrderSchema:

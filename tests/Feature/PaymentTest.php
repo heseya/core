@@ -34,6 +34,8 @@ class PaymentTest extends TestCase
             'product_id' => $product->getKey(),
             'quantity' => 1,
             'price' => 125.50,
+            'price_initial' => 125.50,
+            'name' => $product->name,
         ]);
 
         $this->order->refresh();

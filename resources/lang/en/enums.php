@@ -24,8 +24,11 @@ return [
         EventType::USER_CREATED => 'Event triggered when new users are created',
         EventType::USER_UPDATED => 'Event triggered after user is updated',
         EventType::USER_DELETED => 'Event triggered after user is deleted',
-        EventType::DISCOUNT_CREATED => 'Event triggered when new discounts are created',
-        EventType::DISCOUNT_UPDATED => 'Event triggered after discount is updated',
-        EventType::DISCOUNT_DELETED => 'Event triggered after discount is deleted',
+        EventType::SALE_CREATED => 'Event triggered when new sales are created',
+        EventType::SALE_UPDATED => 'Event triggered after sale is updated',
+        EventType::SALE_DELETED => 'Event triggered after sale is deleted',
+        EventType::COUPON_CREATED => 'Event triggered when new coupons are created',
+        EventType::COUPON_UPDATED => 'Event triggered after coupon is updated',
+        EventType::COUPON_DELETED => 'Event triggered after coupon is deleted',
     ]
 ];

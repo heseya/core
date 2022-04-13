@@ -66,7 +66,7 @@ Orders:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Orders.yml#/Order'
+                    $ref: './../schemas/Orders.yml#/OrderList'
               type: object
     security:
       - oauth: [ ]
@@ -84,7 +84,7 @@ Orders:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Orders.yml#/Order'
+                  $ref: './../schemas/Orders.yml#/OrderSummary'
               type: object
 
 OrdersParams:
@@ -132,7 +132,7 @@ OrdersParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Orders.yml#/Order'
+                  $ref: './../schemas/Orders.yml#/OrderView'
               type: object
     security:
       - oauth: [ ]
@@ -365,4 +365,22 @@ OrdersCodePayOffline:
               properties:
                 data:
                   $ref: './../schemas/Payments.yml#/Payment'
+              type: object
+
+CartProcess:
+  post:
+    tags:
+      - Orders
+    summary: 'validate cart items and coupons'
+    requestBody:
+      $ref: './../requests/Cart.yml#/CartProcess'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Cart.yml#/Cart'
               type: object

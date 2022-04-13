@@ -37,6 +37,10 @@ class MetadataService implements MetadataServiceContract
     public function returnModel(array $routeSegments): Model|Role|null
     {
         $segment = Collection::make($routeSegments)->first();
+        $segment = match ($segment) {
+            'sales', 'coupons' => 'discounts',
+            default => $segment,
+        };
         $className = 'App\\Models\\' . Str::studly(Str::singular($segment));
 
         if (class_exists($className)) {

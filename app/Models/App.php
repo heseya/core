@@ -78,7 +78,7 @@ class App extends Model implements
 
     public function orders(): MorphMany
     {
-        return $this->morphMany(Order::class, 'user');
+        return $this->morphMany(Order::class, 'buyer');
     }
 
     public function role(): BelongsTo

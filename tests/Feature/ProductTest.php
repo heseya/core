@@ -3,6 +3,9 @@
 namespace Tests\Feature;
 
 use App\Enums\AttributeType;
+use App\Enums\ConditionType;
+use App\Enums\DiscountTargetType;
+use App\Enums\DiscountType;
 use App\Enums\MediaType;
 use App\Enums\MetadataType;
 use App\Enums\SchemaType;
@@ -12,6 +15,8 @@ use App\Events\ProductUpdated;
 use App\Listeners\WebHookEventListener;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
+use App\Models\ConditionGroup;
+use App\Models\Discount;
 use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductAttribute;
@@ -228,9 +233,13 @@ class ProductTest extends TestCase
             ->json('GET', '/products', ['limit' => 100])
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public products.
-            ->assertJson(['data' => [
-                0 => $this->expected_short,
-            ],
+            ->assertJson([
+                'data' => [
+                    0 => $this->expected_short,
+                ],
+            ])->assertJsonFragment([
+                'min_price_discounted' => $this->product->price_min,
+                'max_price_discounted' => $this->product->price_max,
             ]);
 
         $this->assertQueryCountLessThan(20);
@@ -612,6 +621,130 @@ class ProductTest extends TestCase
                 'twitter_card' => $seo->twitter_card,
                 'keywords' => $seo->keywords,
             ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWithSales($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 3000,
+            'price_min' => 2500,
+            'price_max' => 3500,
+        ]);
+
+        // Applied - product is on list
+        $sale1 = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Testowa promocja obowiązująca',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        $sale1->products()->attach($product);
+
+        // Not applied - product is not on list
+        $sale2 = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Testowa promocja',
+            'value' => 10,
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        // Not applied - invalid target type
+        $sale3 = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Order-value',
+            'value' => 5,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        $sale3->products()->attach($product);
+
+        // Not applied - product is on list, but target_is_allow_list = false
+        $sale4 = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Not allow list',
+            'value' => 5,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => false,
+            'code' => null,
+        ]);
+
+        $sale4->products()->attach($product);
+
+        // Not applied - invalid condition type in condition group
+        $sale5 = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Condition type Order-value',
+            'value' => 5,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'condition_group_id' => $conditionGroup->getKey(),
+            'type' => ConditionType::ORDER_VALUE,
+            'value' => [
+                'min_value' => 20,
+                'max_value' => 10000,
+                'include_taxes' => false,
+                'is_in_range' => true,
+            ],
+        ]);
+
+        $sale5->conditionGroups()->attach($conditionGroup);
+
+        $sale5->products()->attach($product);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $product->getKey());
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $product->getKey(),
+                'name' => $product->name,
+                'price' => $product->price,
+                'price_min' => $product->price_min,
+                'price_max' => $product->price_max,
+                'min_price_discounted' => 2250,
+                'max_price_discounted' => 3150,
+            ])
+            ->assertJsonFragment([
+                'id' => $sale1->getKey(),
+                'name' => $sale1->name,
+            ])
+            ->assertJsonMissing([
+                'id' => $sale2->getKey(),
+            ])
+            ->assertJsonMissing([
+                'id' => $sale3->getKey(),
+            ])
+            ->assertJsonMissing([
+                'id' => $sale4->getKey(),
+            ])
+            ->assertJsonMissing([
+                'id' => $sale5->getKey(),
             ]);
     }
 

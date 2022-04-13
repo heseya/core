@@ -24,8 +24,11 @@ return [
         EventType::USER_CREATED => 'Zdarzenie wyzwalane po utworzeniu nowych użytkowników',
         EventType::USER_UPDATED => 'Zdarzenie wyzwalane po aktualizacji użytkowników',
         EventType::USER_DELETED => 'Zdarzenie wyzwalane po usunięciu użytkowników',
-        EventType::DISCOUNT_CREATED => 'Zdarzenie wyzwalane po utworzeniu nowych kodów rabatowych',
-        EventType::DISCOUNT_UPDATED => 'Zdarzenie wyzwalane po aktualizacji kodów rabatowych',
-        EventType::DISCOUNT_DELETED => 'Zdarzenie wyzwalane po usunięciu kodów rabatowych',
+        EventType::SALE_CREATED => 'Zdarzenie wyzwalane po utworzeniu nowych promocji',
+        EventType::SALE_UPDATED => 'Zdarzenie wyzwalane po aktualizacji promocji',
+        EventType::SALE_DELETED => 'Zdarzenie wyzwalane po usunięciu promocji',
+        EventType::COUPON_CREATED => 'Zdarzenie wyzwalane po utworzeniu nowych kodów rabatowych',
+        EventType::COUPON_UPDATED => 'Zdarzenie wyzwalane po aktualizacji kodów rabatowych',
+        EventType::COUPON_DELETED => 'Zdarzenie wyzwalane po usunięciu kodów rabatowych',
     ]
 ];

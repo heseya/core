@@ -143,12 +143,15 @@ class OrderDepositTest extends TestCase
         $orderProduct = $order->products()->create([
             'product_id' => $this->product->getKey(),
             'quantity' => 2,
+            'price_initial' => 100,
             'price' => 100,
+            'name' => $this->product->name,
         ]);
         $orderProduct->schemas()->create([
             'order_product_id' => $orderProduct->getKey(),
             'name' => 'Size',
             'value' => 'XL',
+            'price_initial' => 0,
             'price' => 0,
         ]);
         $deposit = $orderProduct->deposits()->create([

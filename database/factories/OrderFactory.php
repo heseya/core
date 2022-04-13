@@ -19,11 +19,13 @@ class OrderFactory extends Factory
      */
     public function definition(): array
     {
+        $shipping_price = rand(8, 20) + 0.99;
         return [
             'code' => $this->faker->regexify('[A-Z0-9]{6}'),
             'email' => $this->faker->unique()->safeEmail,
             'currency' => rand(0, 9) < 1 ? $this->faker->currencyCode : 'PLN',
-            'shipping_price' => rand(8, 20) + 0.99,
+            'shipping_price_initial' => $shipping_price,
+            'shipping_price' => $shipping_price,
             'comment' => rand(0, 9) ? null : $this->faker->text,
         ];
     }

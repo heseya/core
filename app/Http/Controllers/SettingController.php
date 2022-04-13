@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -69,6 +70,10 @@ class SettingController extends Controller
                 $setting = Setting::create($config);
             } else {
                 $setting->update($request->validated());
+            }
+
+            if (in_array($name, ['minimal_product_price', 'minimal_shipping_price', 'minimal_order_price'])) {
+                Cache::put($name, $setting->value);
             }
         } else {
             $setting = Setting::where('name', $name)->firstOrFail();

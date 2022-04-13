@@ -13,6 +13,7 @@ class OrderSchemaResource extends Resource
             'name' => $this->resource->name,
             'value' => $this->resource->value,
             'price' => $this->resource->price,
+            'price_initial' => $this->resource->price_initial,
         ];
     }
 }

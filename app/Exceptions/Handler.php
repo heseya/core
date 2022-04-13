@@ -92,6 +92,9 @@ final class Handler extends ExceptionHandler
         MediaCriticalException::class => [
             'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
         ],
+        DiscountException::class => [
+            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+        ],
     ];
 
     /**
