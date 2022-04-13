@@ -12,7 +12,6 @@ class ItemUpdateRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'sku' => [
-                'required',
                 'string',
                 'max:255',
                 Rule::unique('items')->ignore($this->route('item')->sku, 'sku'),

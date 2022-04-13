@@ -3,6 +3,7 @@
 namespace App\Services\Contracts;
 
 use App\Dtos\ProductSetDto;
+use App\Dtos\ProductSetUpdateDto;
 use App\Models\ProductSet;
 use Illuminate\Support\Collection;
 
@@ -14,7 +15,7 @@ interface ProductSetServiceContract
 
     public function create(ProductSetDto $dto): ProductSet;
 
-    public function update(ProductSet $set, ProductSetDto $dto): ProductSet;
+    public function update(ProductSet $set, ProductSetUpdateDto $dto): ProductSet;
 
     public function reorder(ProductSet $parent, array $sets): void;
 

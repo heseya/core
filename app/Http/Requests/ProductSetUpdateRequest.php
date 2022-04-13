@@ -24,16 +24,15 @@ class ProductSetUpdateRequest extends FormRequest implements SeoRequestContract
         return array_merge(
             $this->seoRules(),
             [
-                'name' => ['required', 'string', 'max:255'],
+                'name' => ['string', 'max:255'],
                 'slug_suffix' => [
-                    'required',
                     'string',
                     'max:255',
                     'alpha_dash',
                 ],
-                'slug_override' => ['required', new Boolean()],
-                'public' => ['required', new Boolean()],
-                'hide_on_index' => ['required', new Boolean()],
+                'slug_override' => [new Boolean()],
+                'public' => [new Boolean()],
+                'hide_on_index' => [new Boolean()],
                 'parent_id' => ['present', 'nullable', 'uuid', 'exists:product_sets,id'],
                 'children_ids' => ['present', 'array'],
                 'children_ids.*' => ['uuid', 'exists:product_sets,id'],

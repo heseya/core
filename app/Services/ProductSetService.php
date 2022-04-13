@@ -3,12 +3,14 @@
 namespace App\Services;
 
 use App\Dtos\ProductSetDto;
+use App\Dtos\ProductSetUpdateDto;
 use App\Events\ProductSetCreated;
 use App\Events\ProductSetDeleted;
 use App\Events\ProductSetUpdated;
 use App\Models\ProductSet;
 use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
+use Heseya\Dto\Missing;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -125,7 +127,7 @@ class ProductSetService implements ProductSetServiceContract
         );
     }
 
-    public function update(ProductSet $set, ProductSetDto $dto): ProductSet
+    public function update(ProductSet $set, ProductSetUpdateDto $dto): ProductSet
     {
         $parentId = $set->parent ? $set->parent->getKey() : null;
 
@@ -176,7 +178,7 @@ class ProductSetService implements ProductSetServiceContract
             'public_parent' => $publicParent,
         ]);
 
-        if ($dto->getAttributesIds() !== null) {
+        if (!($dto->getAttributesIds() instanceof Missing)) {
             $attributes = Collection::make($dto->getAttributesIds());
             $set->attributes()->sync($attributes);
         }

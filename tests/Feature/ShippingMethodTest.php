@@ -618,6 +618,45 @@ class ShippingMethodTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateWithEmptyData($user): void
+    {
+        $this->$user->givePermissionTo('shipping_methods.edit');
+
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/shipping-methods/id:' . $this->shipping_method->getKey(),
+            []
+        );
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $this->shipping_method->getKey(),
+                'name' => $this->shipping_method->name,
+                'public' => $this->shipping_method->public,
+                'black_list' => $this->shipping_method->black_list,
+                'shipping_time_min' => $this->shipping_method->shipping_time_min,
+                'shipping_time_max' => $this->shipping_method->shipping_time_max,
+            ],
+            ])
+            ->assertJsonCount(2, 'data.price_ranges')
+            ->assertJsonFragment(['start' => $this->shipping_method->priceRanges->first()->start])
+            ->assertJsonFragment(['value' => $this->shipping_method->priceRanges->first()->prices()->first()->value])
+            ->assertJsonFragment(['start' => $this->shipping_method->priceRanges->last()->start])
+            ->assertJsonFragment(['value' => $this->shipping_method->priceRanges->last()->prices()->first()->value]);
+
+        $this->assertDatabaseHas('shipping_methods', [
+            'id' => $this->shipping_method->getKey(),
+            'name' => $this->shipping_method->name,
+            'public' => $this->shipping_method->public,
+            'black_list' => $this->shipping_method->black_list,
+            'shipping_time_min' => $this->shipping_method->shipping_time_min,
+            'shipping_time_max' => $this->shipping_method->shipping_time_max,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateBlacklistToTrue($user): void
     {
         $this->$user->givePermissionTo('shipping_methods.edit');

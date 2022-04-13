@@ -117,7 +117,6 @@ class OrderService implements OrderServiceContract
         $old = Address::find($order->$attribute);
         Cache::add('address.' . $order->$attribute, $old ? ((string) $old) : null);
         $order->forceAudit($attribute);
-
-        return Address::updateOrCreate(['id' => $order->$attribute], $address);
+        return Address::updateOrCreate(['id' => $order->$attribute], $addressDto->toArray());
     }
 }
