@@ -913,6 +913,8 @@ paths:
     $ref: './paths/Consents.yml#Consents'
   '/consents/id:{id}':
     $ref: './paths/Consents.yml#ConsentsParam'
+  '/banners':
+    $ref: './paths/Banners.yml#Banners'
 components:
   schemas:
     Error:
