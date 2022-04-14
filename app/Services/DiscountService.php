@@ -363,9 +363,9 @@ class DiscountService implements DiscountServiceContract
             }
         }
 
-        $product->min_price_discounted = $minPriceDiscounted;
-        $product->max_price_discounted = $maxPriceDiscounted;
-        $product->sales = $productSales;
+        $product['min_price_discounted'] = $minPriceDiscounted;
+        $product['max_price_discounted'] = $maxPriceDiscounted;
+        $product['sales'] = $productSales;
 
         return $product;
     }

@@ -38,8 +38,7 @@ class ProductController extends Controller
         /** @var ResourceCollection $productsCollection */
         $productsCollection = ProductResource::collection($this->discountService->applyDiscountsOnProducts($products->items()));
 
-        return ProductResource::collection($this->discountService->applyDiscountsOnProducts($products->items()))
-            ->full($request->has('full'));
+        return $productsCollection->full($request->has('full'));
     }
 
     public function show(Product $product): JsonResource
