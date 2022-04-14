@@ -9,8 +9,10 @@ use App\Http\Requests\BannerUpdateRequest;
 use App\Http\Resources\BannerResource;
 use App\Models\Banner;
 use App\Services\Contracts\BannerServiceContract;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Response;
 
 class BannerController extends Controller
 {
@@ -45,5 +47,14 @@ class BannerController extends Controller
                 BannerDto::instantiateFromRequest($request)
             )
         );
+    }
+
+    public function destroy(Banner $banner): JsonResponse
+    {
+        if ($this->bannerService->delete($banner)) {
+            return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+        }
+
+        return Response::json(null, JsonResponse::HTTP_CONFLICT);
     }
 }

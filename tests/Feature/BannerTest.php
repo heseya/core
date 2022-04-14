@@ -267,4 +267,59 @@ class BannerTest extends TestCase
             ->patchJson("/banners/id:{$this->banner->getKey()}", $banner)
             ->assertUnprocessable();
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteBanner($user): void
+    {
+        $this->$user->givePermissionTo('banners.remove');
+
+        $this
+            ->actingAs($this->$user)
+            ->deleteJson("/banners/id:{$this->banner->getKey()}")
+            ->assertNoContent();
+
+        $this->assertDatabaseMissing(Banner::class, [
+            'id' => $this->banner->getKey(),
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteBannerUnauthorized($user): void
+    {
+        $this->$user->givePermissionTo('banners.remove');
+
+        $this
+            ->deleteJson("/banners/id:{$this->banner->getKey()}")
+            ->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteBannerWithoutPermissions($user): void
+    {
+        $this
+            ->actingAs($this->$user)
+            ->deleteJson("/banners/id:{$this->banner->getKey()}")
+            ->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteBannerOnDeletedObject($user): void
+    {
+        $this->$user->givePermissionTo('banners.remove');
+
+        $this->banner->delete();
+
+        $this
+            ->actingAs($this->$user)
+            ->deleteJson("/banners/id:{$this->banner->getKey()}")
+            ->assertNotFound();
+    }
 }

@@ -66,3 +66,18 @@ BannersParam:
               properties:
                 data:
                   $ref: './../schemas/Banners.yml#Banner'
+  delete:
+    tags:
+      - Banners
+    summary: 'update banner'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    security:
+      - oauth: [ ]
+    responses:
+      204:
+        description: No content
