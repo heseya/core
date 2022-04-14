@@ -26,7 +26,7 @@ final class Handler extends ExceptionHandler
         NotFoundHttpException::class => ErrorCode::NOT_FOUND,
         ModelNotFoundException::class => ErrorCode::NOT_FOUND,
         MethodNotAllowedHttpException::class => ErrorCode::NOT_FOUND,
-        ValidationException::class => ErrorCode::UNPROCESSABLE_ENTITY,
+        ValidationException::class => ErrorCode::VALIDATION_ERROR,
         StoreException::class => ErrorCode::BAD_REQUEST,
         AppAccessException::class => ErrorCode::BAD_REQUEST,
         AuthException::class => ErrorCode::UNPROCESSABLE_ENTITY,
@@ -74,10 +74,11 @@ final class Handler extends ExceptionHandler
                     ->response()
                     ->setStatusCode($exception->getCode());
             }
+
             $error = new Error(
-                ErrorCode::getMessage(self::ERRORS[$class]),
-                ErrorCode::getCode(self::ERRORS[$class]),
                 self::ERRORS[$class],
+                ErrorCode::getCode(self::ERRORS[$class]),
+                ErrorCode::fromValue(self::ERRORS[$class])->key,
                 method_exists($exception, 'errors') ? $exception->errors() : [],
             );
         } else {

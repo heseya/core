@@ -6,13 +6,14 @@ use BenSampo\Enum\Enum;
 
 final class ErrorCode extends Enum
 {
-    public const NOT_FOUND = 'NOT_FOUND';
-    public const INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR';
-    public const UNAUTHORIZED = 'UNAUTHORIZED';
-    public const FORBIDDEN = 'FORBIDDEN';
-    public const UNPROCESSABLE_ENTITY = 'UNPROCESSABLE_ENTITY';
-    public const BAD_REQUEST = 'BAD_REQUEST';
-    public const BAD_GATEWAY = 'BAD_GATEWAY';
+    public const NOT_FOUND = 'Not found';
+    public const INTERNAL_SERVER_ERROR = 'Internal server error';
+    public const UNAUTHORIZED = 'Unauthorized';
+    public const FORBIDDEN = 'Forbidden';
+    public const UNPROCESSABLE_ENTITY = 'Unprocessable entity';
+    public const BAD_REQUEST = 'Bad request';
+    public const BAD_GATEWAY = 'Bad gateway';
+    public const VALIDATION_ERROR = 'Validation error';
 
     public static function getCode($value): int
     {
@@ -20,7 +21,7 @@ final class ErrorCode extends Enum
             self::NOT_FOUND => 404,
             self::UNAUTHORIZED => 401,
             self::FORBIDDEN => 403,
-            self::UNPROCESSABLE_ENTITY => 422,
+            self::UNPROCESSABLE_ENTITY, self::VALIDATION_ERROR => 422,
             self::BAD_REQUEST => 400,
             self::BAD_GATEWAY => 502,
             default => 500,
@@ -36,6 +37,7 @@ final class ErrorCode extends Enum
             self::UNPROCESSABLE_ENTITY => 'Unprocessable entity',
             self::BAD_REQUEST => 'Bad request',
             self::BAD_GATEWAY => 'Bad gateway',
+            self::VALIDATION_ERROR => 'Validation error',
             default => 'Internal server error',
         };
     }
