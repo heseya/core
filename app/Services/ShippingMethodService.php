@@ -52,7 +52,7 @@ class ShippingMethodService implements ShippingMethodServiceContract
         }
 
         $shippingMethods = $query->get();
-        $shippingMethods->each(fn ($method) => $method->price = $method->getPrice($cartValue));
+        $shippingMethods->each(fn (ShippingMethod $method) => $method->price = $method->getPrice($cartValue));
 
         return $shippingMethods;
     }

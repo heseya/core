@@ -6,6 +6,7 @@ use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\SchemaSearch;
 use App\Enums\SchemaType;
+use App\Models\Contracts\SortableContract;
 use App\Rules\OptionAvailable;
 use App\Traits\HasMetadata;
 use App\Traits\Sortable;
@@ -24,7 +25,7 @@ use Illuminate\Validation\ValidationException;
 /**
  * @mixin IdeHelperSchema
  */
-class Schema extends Model
+class Schema extends Model implements SortableContract
 {
     use HasFactory, HasCriteria, Sortable, HasMetadata;
 
@@ -71,12 +72,12 @@ class Schema extends Model
     /**
      * Check if user input is valid
      *
-     * @param mixed $input
+     * @param mixed $value
      * @param float $quantity
      *
      * @throws ValidationException
      */
-    public function validate($value, float $quantity = 0): void
+    public function validate(mixed $value, float $quantity = 0): void
     {
         $validation = new Collection();
 

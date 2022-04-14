@@ -93,6 +93,9 @@
         "phpstan": [
             "./vendor/bin/phpstan analyse --memory-limit=2G"
         ],
+        "stan": [
+            "@phpstan"
+        ],
         "style": [
             "@ide-helper",
             "@insights"

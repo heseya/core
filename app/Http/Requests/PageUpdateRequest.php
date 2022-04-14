@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Contracts\SeoRequestContract;
+use App\Models\Page;
 use App\Rules\Boolean;
 use App\Traits\BooleanRules;
 use App\Traits\SeoRules;
@@ -20,6 +21,9 @@ class PageUpdateRequest extends FormRequest implements SeoRequestContract
 
     public function rules(): array
     {
+        /** @var Page $page */
+        $page = $this->route('page');
+
         return array_merge(
             $this->seoRules(),
             [
@@ -27,7 +31,7 @@ class PageUpdateRequest extends FormRequest implements SeoRequestContract
                 'slug' => [
                     'string',
                     'max:255',
-                    Rule::unique('pages')->ignore($this->route('page')->slug, 'slug'),
+                    Rule::unique('pages')->ignore($page->slug, 'slug'),
                 ],
                 'public' => [new Boolean()],
                 'content_html' => ['string', 'min:1'],

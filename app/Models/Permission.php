@@ -8,6 +8,8 @@ use Heseya\Searchable\Traits\HasCriteria;
 use Spatie\Permission\Models\Permission as SpatiePermission;
 
 /**
+ * @property string $name
+ *
  * @mixin IdeHelperPermission
  */
 class Permission extends SpatiePermission

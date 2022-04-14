@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\Route;
 
 // External
 Route::prefix('furgonetka')->group(function (): void {
-    Route::post('webhook', [FurgonetkaController::class, 'webhook']);
     Route::post('create-package', [FurgonetkaController::class, 'createPackage'])
         ->middleware('permission:orders.edit|orders.edit.status');
 });

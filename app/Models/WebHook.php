@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Contracts\SortableContract;
 use App\Traits\Sortable;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
@@ -16,7 +17,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 /**
  * @mixin IdeHelperWebHook
  */
-class WebHook extends Model implements AuditableContract
+class WebHook extends Model implements AuditableContract, SortableContract
 {
     use HasFactory, SoftDeletes, HasCriteria, Sortable, Auditable, Notifiable;
 
