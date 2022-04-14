@@ -1,22 +1,4 @@
 Banners:
-  post:
-    tags:
-      - Banners
-    summary: 'adding new banner'
-    security:
-      - oauth: [ ]
-    requestBody:
-      $ref: './../requests/Banners.yml#Banner'
-    responses:
-      201:
-        description: Created
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                data:
-                  $ref: './../schemas/Banners.yml#Banner'
   get:
     tags:
       - Banners
@@ -40,3 +22,62 @@ Banners:
                   type: array
                   items:
                     $ref: './../schemas/Banners.yml#Banner'
+  post:
+    tags:
+      - Banners
+    summary: 'adding new banner'
+    security:
+      - oauth: [ ]
+    requestBody:
+      $ref: './../requests/Banners.yml#Banner'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: './../schemas/Banners.yml#Banner'
+
+BannersParam:
+  patch:
+    tags:
+      - Banners
+    summary: 'update banner'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    security:
+      - oauth: [ ]
+    requestBody:
+      $ref: './../requests/Banners.yml#Banner'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: './../schemas/Banners.yml#Banner'
+  delete:
+    tags:
+      - Banners
+    summary: 'update banner'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    security:
+      - oauth: [ ]
+    responses:
+      204:
+        description: No content

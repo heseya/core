@@ -2,11 +2,13 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Banner;
 use App\Rules\Boolean;
 use App\Traits\BooleanRules;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class BannerStoreRequest extends FormRequest
+class BannerUpdateRequest extends FormRequest
 {
     use BooleanRules;
 
@@ -16,8 +18,17 @@ class BannerStoreRequest extends FormRequest
 
     public function rules()
     {
+        /** @var Banner $banner */
+        $banner = $this->route('banner');
+
         return [
-            'slug' => ['required', 'string', 'max:255', 'unique:banners', 'alpha_dash'],
+            'slug' => [
+                'required',
+                'string',
+                'max:255',
+                'alpha_dash',
+                Rule::unique('banners')->ignore($banner->slug, 'slug'),
+            ],
             'url' => ['required', 'string', 'max:255'],
             'name' => ['required', 'string', 'max:255'],
             'active' => ['required', new Boolean()],
