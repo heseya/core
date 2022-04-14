@@ -32,7 +32,7 @@ class OrderDocumentTest extends TestCase
         $this->order = Order::factory()->create();
 
         $status = Status::factory()->create([
-            'cancel' => false
+            'cancel' => false,
         ]);
 
         $paymentMethod = PaymentMethod::factory()->create();
@@ -52,7 +52,7 @@ class OrderDocumentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testStoreDocument($user)
+    public function testStoreDocument($user): void
     {
         Http::fake(['*' => Http::response([0 => ['path' => 'image.jpeg']])]);
 
@@ -79,7 +79,7 @@ class OrderDocumentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteDocument($user)
+    public function testDeleteDocument($user): void
     {
         Http::fake(['*' => Http::response()]);
 
@@ -91,7 +91,10 @@ class OrderDocumentTest extends TestCase
 
         $response = $this->actingAs($this->$user)
             ->deleteJson(
-                'orders/id:' . $this->order->getKey() . '/docs/id:' . $this->order->documents()->latest()->first()->pivot->id
+                'orders/id:'
+                . $this->order->getKey()
+                . '/docs/id:'
+                . $this->order->documents()->latest()->first()->pivot->id
             );
 
         $response->assertStatus(204);
@@ -103,7 +106,7 @@ class OrderDocumentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testSendDocuments($user)
+    public function testSendDocuments($user): void
     {
         Event::fake(SendOrderDocument::class);
 
@@ -114,11 +117,10 @@ class OrderDocumentTest extends TestCase
         $this->order->documents()->attach($mediaTwo, ['type' => OrderDocumentType::OTHER, 'name' => 'test']);
 
         $response = $this->actingAs($this->$user)->postJson('orders/id:' . $this->order->getKey() . '/docs/send', [
-            'uuid' =>
-                [
-                    $this->order->documents->first()->pivot->id,
-                    $this->order->documents->last()->pivot->id,
-                ],
+            'uuid' => [
+                $this->order->documents->first()->pivot->id,
+                $this->order->documents->last()->pivot->id,
+            ],
         ]);
 
         $response->assertStatus(JsonResponse::HTTP_NO_CONTENT);
@@ -129,7 +131,7 @@ class OrderDocumentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testSendOtherOrderDocument($user)
+    public function testSendOtherOrderDocument($user): void
     {
         Event::fake(SendOrderDocument::class);
 
@@ -144,16 +146,15 @@ class OrderDocumentTest extends TestCase
         $wrongDocId = $order->documents->last()->pivot->id;
 
         $response = $this->actingAs($this->$user)->postJson('orders/id:' . $this->order->getKey() . '/docs/send', [
-            'uuid' =>
-                [
-                    $this->order->documents->first()->pivot->id,
-                    $wrongDocId,
-                ],
+            'uuid' => [
+                $this->order->documents->first()->pivot->id,
+                $wrongDocId,
+            ],
         ]);
 
         $response
             ->assertJsonFragment([
-                'message' => 'Document with id '. $wrongDocId . ' doesn\'t belong to this order.'
+                'message' => 'Document with id '. $wrongDocId . ' doesn\'t belong to this order.',
             ])
             ->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
 
@@ -163,7 +164,7 @@ class OrderDocumentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDownloadDocument($user)
+    public function testDownloadDocument($user): void
     {
         $this->$user->givePermissionTo('orders.show_details');
 
@@ -180,7 +181,8 @@ class OrderDocumentTest extends TestCase
 
         $response = $this->actingAs($this->$user)
             ->json(
-                'GET', 'orders/id:'
+                'GET',
+                'orders/id:'
                 . $this->order->getKey() . '/docs/id:'
                 . $this->order->documents->last()->pivot->id
                 . '/download'
@@ -194,7 +196,7 @@ class OrderDocumentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDownloadUserDocumentWithoutPermission($user)
+    public function testDownloadUserDocumentWithoutPermission($user): void
     {
         $this->order->update(['user_id' => $this->$user->getKey()]);
 
@@ -211,21 +213,22 @@ class OrderDocumentTest extends TestCase
 
         $response = $this->actingAs($this->$user)
             ->json(
-                'GET', 'orders/id:'
+                'GET',
+                'orders/id:'
                 . $this->order->getKey() . '/docs/id:'
                 . $this->order->documents->last()->pivot->id
                 . '/download'
             );
 
         $response
-            ->assertStatus(200)
-            ->assertHeader('content-disposition', 'attachment; filename=test.jpeg');
+            ->assertStatus(422)
+            ->assertJsonFragment(['message' => 'No access.']);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testDownloadDocumentUnauthorized($user)
+    public function testDownloadDocumentUnauthorized($user): void
     {
         $file = UploadedFile::fake()->image('test.jpeg');
 
@@ -240,7 +243,8 @@ class OrderDocumentTest extends TestCase
 
         $response = $this->actingAs($this->$user)
             ->json(
-                'GET', 'orders/id:'
+                'GET',
+                'orders/id:'
                 . $this->order->getKey() . '/docs/id:'
                 . $this->order->documents->last()->pivot->id
                 . '/download'

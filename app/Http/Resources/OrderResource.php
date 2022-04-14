@@ -25,7 +25,7 @@ class OrderResource extends Resource
             'status' => $this->resource->status ? StatusResource::make($this->resource->status) : null,
             'shipping_method' => $this->resource->shippingMethod ?
                 ShippingMethodResource::make($this->resource->shippingMethod) : null,
-            'documents' => OrderDocumentResource::collection($this->documents->pluck('pivot')),
+            'documents' => OrderDocumentResource::collection($this->resource->documents->pluck('pivot')),
             'paid' => $this->resource->paid,
             'cart_total' => $this->resource->cart_total,
             'cart_total_initial' => $this->resource->cart_total_initial,

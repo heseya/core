@@ -11,7 +11,7 @@ interface MediaServiceContract
 {
     public function sync(Product $product, array $media): void;
 
-    public function store(UploadedFile $file): Media;
+    public function store(UploadedFile $file, bool $private = false): Media;
 
     public function update(Media $media, MediaUpdateDto $dto): Media;
 
