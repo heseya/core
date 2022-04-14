@@ -13,7 +13,7 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
- * @property double $price
+ * @property float $price
  *
  * @mixin IdeHelperShippingMethod
  */
