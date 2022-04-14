@@ -14,7 +14,7 @@ use Illuminate\Testing\TestResponse;
 use Tests\Support\ElasticTest;
 use Tests\TestCase;
 
-class ProductSearchTest extends TestCase
+class ProductSearchElasticTest extends TestCase
 {
     use ElasticTest;
 
@@ -773,6 +773,52 @@ class ProductSearchTest extends TestCase
             ->actingAs($this->$user)
             ->json('GET', '/products?metadata_private.sku=S001')
             ->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByPrice($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['price' => ['min' => 100, 'max' => 200]])
+            ->assertOk();
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' => [],
+                'should' => [],
+                'filter' => [
+                    [
+                        'range' => [
+                            'price_min' => [
+                                'gte' => 100.0,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                    [
+                        'range' => [
+                            'price_max' => [
+                                'lte' => 200.0,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
     }
 
     private function getProductsByParentSet(

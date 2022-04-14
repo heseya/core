@@ -35,17 +35,21 @@ class ProductIndexRequest extends FormRequest
             'name' => ['nullable', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
             'public' => [new Boolean()],
-            'sets' => ['nullable', 'array'],
-            'sets.*' => [
-                'string',
-                $setsExist,
-            ],
             'sort' => ['nullable', 'string', 'max:255'],
             'available' => ['nullable'],
+
+            'sets' => ['nullable', 'array'],
+            'sets.*' => ['string', $setsExist],
+
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'uuid'],
+
             'metadata' => ['nullable', 'array'],
             'metadata_private' => ['nullable', 'array', new CanShowPrivateMetadata()],
+
+            'price' => ['nullable', 'array'],
+            'price.min' => ['nullable', 'numeric', 'min:0'],
+            'price.max' => ['nullable', 'numeric'],
 
             'full' => [new Boolean()],
         ];
