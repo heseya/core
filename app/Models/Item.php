@@ -22,6 +22,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property mixed $pivot
+ *
  * @mixin IdeHelperItem
  */
 class Item extends Model implements AuditableContract, SortableContract

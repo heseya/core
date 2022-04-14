@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property mixed $pivot
+ *
  * @mixin IdeHelperAttribute
  */
 class Attribute extends Model
