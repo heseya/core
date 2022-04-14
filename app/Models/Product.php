@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Criteria\LessOrEquals;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\MoreOrEquals;
 use App\Criteria\ProductSearch;
 use App\Criteria\WhereHasId;
 use App\Criteria\WhereHasSlug;
@@ -98,6 +100,8 @@ class Product extends Model implements AuditableContract, Explored
         'tags' => WhereHasId::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
+        'price_max' => LessOrEquals::class,
+        'price_min' => MoreOrEquals::class,
     ];
 
     protected string $defaultSortBy = 'order';

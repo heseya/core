@@ -47,6 +47,14 @@ Products:
         description: 'Is available search'
         schema:
           type: boolean
+      - name: price.min
+        in: query
+        schema:
+          type: number
+      - name: price.max
+        in: query
+        schema:
+          type: number
     responses:
       200:
         description: Success

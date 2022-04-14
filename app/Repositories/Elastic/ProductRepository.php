@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use JeroenG\Explorer\Domain\Syntax\Matching;
+use JeroenG\Explorer\Domain\Syntax\Range;
 use JeroenG\Explorer\Domain\Syntax\Term;
 use JeroenG\Explorer\Domain\Syntax\Terms;
 use Laravel\Scout\Builder;
@@ -28,6 +29,8 @@ class ProductRepository implements ProductRepositoryContract
         'tags' => 'filterId',
         'metadata' => 'filterMeta',
         'metadata_private' => 'filterMeta',
+        'price_min' => 'filterPriceMin',
+        'price_max' => 'filterPriceMax',
     ];
 
     public function search(ProductSearchDto $dto): LengthAwarePaginator
@@ -90,5 +93,15 @@ class ProductRepository implements ProductRepositoryContract
         $query->filter(new Terms("${key}.value", array_values($meta)));
 
         return $query;
+    }
+
+    private function filterPriceMin(Builder $query, string $key, float $value): Builder
+    {
+        return $query->filter(new Range('price_min', ['gte' => $value]));
+    }
+
+    private function filterPriceMax(Builder $query, string $key, float $value): Builder
+    {
+        return $query->filter(new Range('price_max', ['lte' => $value]));
     }
 }
