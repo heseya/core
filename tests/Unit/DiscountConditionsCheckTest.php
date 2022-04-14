@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Services\Contracts\DiscountServiceContract;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;
@@ -1084,6 +1085,144 @@ class DiscountConditionsCheckTest extends TestCase
 
         $this->assertTrue($cart->getCartLength() === $quantity1 + $quantity2);
         $this->assertFalse($this->discountService->checkCondition($discountCondition, $cart));
+    }
+
+    public function couponsCountProvider(): array
+    {
+        return [
+            'pass min-max min value' => [
+                3,
+                [
+                    'min_value' => 3,
+                    'max_value' => 10,
+                ],
+                true,
+            ],
+            'pass min-max max value' => [
+                3,
+                [
+                    'min_value' => 1,
+                    'max_value' => 3,
+                ],
+                true,
+            ],
+            'pass only min value' => [
+                3,
+                [
+                    'min_value' => 2,
+                ],
+                true,
+            ],
+            'pass only max value' => [
+                2,
+                [
+                    'max_value' => 5,
+                ],
+                true,
+            ],
+            'fail min-max min value' => [
+                4,
+                [
+                    'min_value' => 5,
+                    'max_value' => 10,
+                ],
+                false,
+            ],
+            'fail min-max max value' => [
+                6,
+                [
+                    'min_value' => 3,
+                    'max_value' => 5,
+                ],
+                false,
+            ],
+            'fail only min value' => [
+                2,
+                [
+                    'min_value' => 10,
+                ],
+                false,
+            ],
+            'fail only max value' => [
+                6,
+                [
+                    'max_value' => 5,
+                ],
+                false,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider couponsCountProvider
+     */
+    public function testCheckConditionCouponsCount($quantity, $value, $result): void
+    {
+        $product1 = Product::factory()->create();
+
+        $coupons = Discount::factory()->count($quantity)->create();
+
+        $cart = CartDto::fromArray([
+            'items' => [
+                [
+                    'cartitem_id' => 0,
+                    'product_id' => $product1->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+            'coupons' => Arr::pluck($coupons, 'code'),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+        ]);
+
+        $discountCondition = $this->conditionGroup->conditions()->create([
+            'type' => ConditionType::COUPONS_COUNT,
+            'value' => $value,
+        ]);
+
+        $this->assertTrue(count($cart->getCoupons()) === $quantity);
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, $cart) === $result);
+    }
+
+    public function couponsCountWithSalesProvider(): array
+    {
+        return [
+            'pass' => [true],
+            'fail' => [false],
+        ];
+    }
+
+    /**
+     * @dataProvider couponsCountWithSalesProvider
+     */
+    public function testCheckConditionCouponsCountWithSales($result): void
+    {
+        $product1 = Product::factory()->create();
+
+        Discount::factory()->create(['code' => null]);
+
+        $cart = CartDto::fromArray([
+            'items' => [
+                [
+                    'cartitem_id' => 0,
+                    'product_id' => $product1->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+            'coupons' => [],
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+        ]);
+
+        $value = $result ? ['max_value' => 0] : ['min_value' => 1];
+
+        $discountCondition = $this->conditionGroup->conditions()->create([
+            'type' => ConditionType::COUPONS_COUNT,
+            'value' => $value,
+        ]);
+
+        $this->assertTrue(count($cart->getCoupons()) === 0);
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, $cart) === $result);
     }
 
     private function prepareConditionGroup(): void
