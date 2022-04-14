@@ -10,7 +10,6 @@ use App\Models\Product;
 use App\Models\Schema;
 use App\Services\Contracts\ItemServiceContract;
 use Illuminate\Support\Collection;
-use Illuminate\Validation\ValidationException;
 
 class ItemService implements ItemServiceContract
 {

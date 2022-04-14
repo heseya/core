@@ -36,7 +36,9 @@ class ProductController extends Controller
         );
 
         /** @var ResourceCollection $productsCollection */
-        $productsCollection = ProductResource::collection($this->discountService->applyDiscountsOnProducts($products->items()));
+        $productsCollection = ProductResource::collection(
+            $this->discountService->applyDiscountsOnProducts($products->items())
+        );
 
         return $productsCollection->full($request->has('full'));
     }
