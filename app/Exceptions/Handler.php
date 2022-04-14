@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use App\Enums\ErrorCode;
 use App\Http\Resources\ErrorResource;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -20,82 +21,29 @@ use Throwable;
 final class Handler extends ExceptionHandler
 {
     private const ERRORS = [
-        AuthenticationException::class => [
-            'message' => 'Unauthenticated',
-            'code' => Response::HTTP_UNAUTHORIZED,
-        ],
-        AccessDeniedHttpException::class => [
-            'message' => 'Unauthorized',
-            'code' => Response::HTTP_FORBIDDEN,
-        ],
-        NotFoundHttpException::class => [
-            'message' => 'Page not found',
-            'code' => Response::HTTP_NOT_FOUND,
-        ],
-        ModelNotFoundException::class => [
-            'message' => 'Page not found',
-            'code' => Response::HTTP_NOT_FOUND,
-        ],
-        MethodNotAllowedHttpException::class => [
-            'message' => 'Page not found',
-            'code' => Response::HTTP_NOT_FOUND,
-        ],
-        ValidationException::class => [
-            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-        ],
-        StoreException::class => [
-            'code' => Response::HTTP_BAD_REQUEST,
-        ],
-        AppAccessException::class => [
-            'code' => Response::HTTP_BAD_REQUEST,
-        ],
-        AuthException::class => [
-            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-        ],
-        MediaException::class => [
-            'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
-        ],
-        AppException::class => [
-            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-        ],
-        OrderException::class => [
-            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-        ],
-        RoleException::class => [
-            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-        ],
-        AuthorizationException::class => [
-            'message' => 'Unauthorized',
-            'code' => Response::HTTP_FORBIDDEN,
-        ],
-        WebHookCreatorException::class => [
-            'code' => Response::HTTP_FORBIDDEN,
-        ],
-        WebHookEventException::class => [
-            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-        ],
-        TokenExpiredException::class => [
-            'message' => 'Unauthorized',
-            'code' => Response::HTTP_UNAUTHORIZED,
-        ],
-        PackageException::class => [
-            'code' => Response::HTTP_BAD_GATEWAY,
-        ],
-        PackageAuthException::class => [
-            'code' => Response::HTTP_BAD_GATEWAY,
-        ],
-        ItemException::class => [
-            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-        ],
-        TFAException::class => [
-            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-        ],
-        MediaCriticalException::class => [
-            'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
-        ],
-        DiscountException::class => [
-            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-        ],
+        AuthenticationException::class => ErrorCode::UNAUTHORIZED,
+        AccessDeniedHttpException::class => ErrorCode::FORBIDDEN,
+        NotFoundHttpException::class => ErrorCode::NOT_FOUND,
+        ModelNotFoundException::class => ErrorCode::NOT_FOUND,
+        MethodNotAllowedHttpException::class => ErrorCode::NOT_FOUND,
+        ValidationException::class => ErrorCode::UNPROCESSABLE_ENTITY,
+        StoreException::class => ErrorCode::BAD_REQUEST,
+        AppAccessException::class => ErrorCode::BAD_REQUEST,
+        AuthException::class => ErrorCode::UNPROCESSABLE_ENTITY,
+        MediaException::class => ErrorCode::INTERNAL_SERVER_ERROR,
+        AppException::class => ErrorCode::UNPROCESSABLE_ENTITY,
+        OrderException::class => ErrorCode::UNPROCESSABLE_ENTITY,
+        RoleException::class => ErrorCode::UNPROCESSABLE_ENTITY,
+        AuthorizationException::class => ErrorCode::FORBIDDEN,
+        WebHookCreatorException::class => ErrorCode::FORBIDDEN,
+        WebHookEventException::class => ErrorCode::UNPROCESSABLE_ENTITY,
+        TokenExpiredException::class => ErrorCode::UNAUTHORIZED,
+        PackageException::class => ErrorCode::BAD_GATEWAY,
+        PackageAuthException::class => ErrorCode::BAD_GATEWAY,
+        ItemException::class => ErrorCode::UNPROCESSABLE_ENTITY,
+        TFAException::class => ErrorCode::UNPROCESSABLE_ENTITY,
+        MediaCriticalException::class => ErrorCode::INTERNAL_SERVER_ERROR,
+        DiscountException::class => ErrorCode::UNPROCESSABLE_ENTITY,
     ];
 
     /**
@@ -127,8 +75,9 @@ final class Handler extends ExceptionHandler
                     ->setStatusCode($exception->getCode());
             }
             $error = new Error(
-                self::ERRORS[$class]['message'] ?? $exception->getMessage(),
-                self::ERRORS[$class]['code'] ?? 500,
+                ErrorCode::getMessage(self::ERRORS[$class]),
+                ErrorCode::getCode(self::ERRORS[$class]),
+                self::ERRORS[$class],
                 method_exists($exception, 'errors') ? $exception->errors() : [],
             );
         } else {
