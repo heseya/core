@@ -253,6 +253,7 @@ class SaleCreateRequest extends FormRequest
                 return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
                     ->in([
                         ConditionType::CART_LENGTH,
+                        ConditionType::COUPONS_COUNT,
                     ]);
             }
         );
@@ -268,6 +269,7 @@ class SaleCreateRequest extends FormRequest
                 return ConditionType::hasValue($item->type) && ConditionType::fromValue($item->type)
                     ->in([
                         ConditionType::CART_LENGTH,
+                        ConditionType::COUPONS_COUNT,
                     ]);
             }
         );

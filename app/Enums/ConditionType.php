@@ -17,4 +17,5 @@ final class ConditionType extends Enum
     public const MAX_USES_PER_USER = 'max-uses-per-user';
     public const WEEKDAY_IN = 'weekday-in';
     public const CART_LENGTH = 'cart-length';
+    public const COUPONS_COUNT = 'coupons-count';
 }
