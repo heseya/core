@@ -698,10 +698,14 @@ paths:
     $ref: './paths/Metadata.yml#Metadata'
   '/product-sets/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
-  '/discounts/id:{id}/metadata':
+  '/sales/id:{id}/metadata':
     $ref: './paths/Metadata.yml#Metadata'
-  '/discounts/id:{id}/metadata-private':
+  '/sales/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#Metadata'
+  '/coupons/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#Metadata'
+  '/coupons/id:{id}/metadata-private':
+     $ref: './paths/Metadata.yml#Metadata'
   '/items/id:{id}/metadata':
     $ref: './paths/Metadata.yml#Metadata'
   '/items/id:{id}/metadata-private':

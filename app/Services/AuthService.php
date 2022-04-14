@@ -97,6 +97,10 @@ class AuthService implements AuthServiceContract
         $user = $this->tokenService->getUser($refreshToken);
         $this->tokenService->invalidateToken($refreshToken);
 
+        if ($user === null) {
+            throw new AuthException('User does not exist.');
+        }
+
         $token = $this->tokenService->createToken(
             $user,
             new TokenType(TokenType::ACCESS),

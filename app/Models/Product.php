@@ -10,6 +10,7 @@ use App\Criteria\ProductSearch;
 use App\Criteria\WhereHasId;
 use App\Criteria\WhereHasSlug;
 use App\Criteria\WhereInIds;
+use App\Models\Contracts\SortableContract;
 use App\Services\Contracts\ProductSearchServiceContract;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
@@ -31,7 +32,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 /**
  * @mixin IdeHelperProduct
  */
-class Product extends Model implements AuditableContract, Explored
+class Product extends Model implements AuditableContract, Explored, SortableContract
 {
     use HasFactory,
         SoftDeletes,

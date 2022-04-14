@@ -10,6 +10,7 @@ use App\Dtos\ConditionDto;
 use App\Dtos\ConditionGroupDto;
 use App\Dtos\CouponDto;
 use App\Dtos\CouponIndexDto;
+use App\Dtos\CouponsCountConditionDto;
 use App\Dtos\DateBetweenConditionDto;
 use App\Dtos\MaxUsesConditionDto;
 use App\Dtos\MaxUsesPerUserConditionDto;
@@ -176,6 +177,7 @@ class DiscountService implements DiscountServiceContract
             ConditionType::MAX_USES_PER_USER => $this->checkConditionMaxUsesPerUser($condition),
             ConditionType::WEEKDAY_IN => $this->checkConditionWeekdayIn($condition),
             ConditionType::CART_LENGTH => $this->checkConditionCartLength($condition, $dto->getCartLength()),
+            ConditionType::COUPONS_COUNT => $this->checkConditionCouponsCount($condition, count($dto->getCoupons())),
             default => false,
         };
     }
@@ -363,9 +365,9 @@ class DiscountService implements DiscountServiceContract
             }
         }
 
-        $product->min_price_discounted = $minPriceDiscounted;
-        $product->max_price_discounted = $maxPriceDiscounted;
-        $product->sales = $productSales;
+        $product['min_price_discounted'] = $minPriceDiscounted;
+        $product['max_price_discounted'] = $maxPriceDiscounted;
+        $product['sales'] = $productSales;
 
         return $product;
     }
@@ -948,6 +950,25 @@ class DiscountService implements DiscountServiceContract
 
         if (!$conditionDto->getMaxValue() instanceof Missing) {
             return $cartLength <= $conditionDto->getMaxValue();
+        }
+
+        return false;
+    }
+
+    private function checkConditionCouponsCount(DiscountCondition $condition, int $couponsCount): bool
+    {
+        $conditionDto = CouponsCountConditionDto::fromArray($condition->value + ['type' => $condition->type]);
+
+        if (!$conditionDto->getMinValue() instanceof Missing && !$conditionDto->getMaxValue() instanceof Missing) {
+            return $couponsCount >= $conditionDto->getMinValue() && $couponsCount <= $conditionDto->getMaxValue();
+        }
+
+        if (!$conditionDto->getMinValue() instanceof Missing) {
+            return $couponsCount >= $conditionDto->getMinValue();
+        }
+
+        if (!$conditionDto->getMaxValue() instanceof Missing) {
+            return $couponsCount <= $conditionDto->getMaxValue();
         }
 
         return false;

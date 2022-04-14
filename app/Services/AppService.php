@@ -33,7 +33,7 @@ class AppService implements AppServiceContract
 
     public function install(AppInstallDto $dto): App
     {
-        $allPermissions = Permission::all()->map(fn ($perm) => $perm->name);
+        $allPermissions = Permission::all()->map(fn (Permission $perm) => $perm->name);
         $permissions = Collection::make($dto->getAllowedPermissions());
 
         if ($permissions->diff($allPermissions)->isNotEmpty()) {

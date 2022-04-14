@@ -3,6 +3,7 @@
 namespace App\Casts;
 
 use App\Enums\MetadataType;
+use App\Models\Metadata;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
 
@@ -11,7 +12,7 @@ class MetadataValue implements CastsAttributes
     /**
      * Cast the given value.
      *
-     * @param Model $model
+     * @param Metadata $model
      * @param string $key
      * @param mixed $value
      * @param array $attributes
@@ -37,7 +38,7 @@ class MetadataValue implements CastsAttributes
      *
      * @return mixed
      */
-    public function set($model, string $key, $value, array $attributes)
+    public function set($model, string $key, $value, array $attributes): mixed
     {
         return $value;
     }

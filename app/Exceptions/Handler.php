@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use App\Http\Resources\ErrorResource;
+use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -117,6 +118,10 @@ final class Handler extends ExceptionHandler
 
         if (array_key_exists($class, self::ERRORS)) {
             if (method_exists($exception, 'isTypeSet') && $exception->isTypeSet()) {
+                if (!($exception instanceof TFAException)) {
+                    throw new Exception('$exception must be an instance of TFAException');
+                }
+
                 return TFAExceptionResource::make($exception->toArray())
                     ->response()
                     ->setStatusCode($exception->getCode());

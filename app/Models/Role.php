@@ -18,6 +18,8 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use Spatie\Permission\Models\Role as SpatieRole;
 
 /**
+ * @property RoleType $type
+ *
  * @mixin IdeHelperRole
  */
 class Role extends SpatieRole implements AuditableContract

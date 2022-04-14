@@ -7,6 +7,7 @@ use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereCreatedBefore;
 use App\Criteria\WhereSoldOut;
+use App\Models\Contracts\SortableContract;
 use App\Traits\HasMetadata;
 use App\Traits\Sortable;
 use Heseya\Searchable\Criteria\Like;
@@ -20,9 +21,11 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
+ * @property mixed $pivot
+ *
  * @mixin IdeHelperItem
  */
-class Item extends Model implements AuditableContract
+class Item extends Model implements AuditableContract, SortableContract
 {
     use SoftDeletes, HasFactory, HasCriteria, Sortable, Auditable, HasMetadata;
 

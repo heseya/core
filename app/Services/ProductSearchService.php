@@ -111,7 +111,7 @@ class ProductSearchService implements ProductSearchServiceContract
         return [
             'id' => $meta->getKey(),
             'name' => $meta->name,
-            'value' => (string) $meta->value,
+            'value' => $meta->value,
             'value_type' => $meta->value_type,
         ];
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UserCreateRequest;
 use App\Http\Requests\UserIndexRequest;
 use App\Http\Requests\UserUpdateRequest;
+use App\Http\Resources\ResourceCollection;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\Contracts\UserServiceContract;
@@ -29,7 +30,10 @@ class UserController extends Controller
             $request->input('limit', 12)
         );
 
-        return UserResource::collection($paginator)->full($request->has('full'));
+        /** @var ResourceCollection $userCollection */
+        $userCollection = UserResource::collection($paginator);
+
+        return $userCollection->full($request->has('full'));
     }
 
     public function show(User $user): JsonResource

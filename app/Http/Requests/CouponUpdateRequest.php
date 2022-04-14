@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Models\Discount;
 use App\Rules\Boolean;
 use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Validation\Rule;
@@ -12,6 +13,9 @@ class CouponUpdateRequest extends CouponCreateRequest
 {
     public function rules(): array
     {
+        /** @var Discount $coupon */
+        $coupon = $this->route('coupon');
+
         return array_merge(parent::rules(), [
             'name' => ['filled', 'string', 'max:255'],
             'value' => ['numeric'],
@@ -22,7 +26,7 @@ class CouponUpdateRequest extends CouponCreateRequest
             'code' => [
                 'string',
                 'max:64',
-                Rule::unique('discounts')->ignore($this->route('coupon')->code, 'code'),
+                Rule::unique('discounts')->ignore($coupon->code, 'code'),
             ],
         ]);
     }
