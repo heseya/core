@@ -81,6 +81,7 @@ return [
         FunctionLengthSniff::class,
         LineEndingsSniff::class,
         TodoSniff::class,
+        ForbiddenFunctionsSniff::class,
 
         // replaced with own
         SpaceAfterNotSniff::class,

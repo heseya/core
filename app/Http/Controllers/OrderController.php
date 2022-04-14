@@ -5,21 +5,32 @@ namespace App\Http\Controllers;
 use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
+use App\Dtos\OrderUpdateDto;
+use App\Enums\SchemaType;
+use App\Events\AddOrderDocument;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderUpdatedStatus;
+use App\Events\RemoveOrderDocument;
+use App\Events\SendOrderDocument;
 use App\Exceptions\OrderException;
 use App\Http\Requests\CartRequest;
 use App\Http\Requests\OrderCreateRequest;
+use App\Http\Requests\OrderDocumentRequest;
 use App\Http\Requests\OrderIndexRequest;
 use App\Http\Requests\OrderItemsRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Resources\CartResource;
+use App\Http\Requests\SendDocumentRequest;
+use App\Http\Resources\OrderDocumentResource;
 use App\Http\Resources\OrderPublicResource;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use App\Models\OrderDocument;
+use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\Status;
+use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -31,6 +42,7 @@ class OrderController extends Controller
 {
     public function __construct(
         private OrderServiceContract $orderService,
+        private DocumentServiceContract $documentService,
     ) {
     }
 
@@ -50,6 +62,7 @@ class OrderController extends Controller
                 'shippingMethod.paymentMethods',
                 'deliveryAddress',
                 'metadata',
+                'documents',
             ]);
 
         return OrderResource::collection(
@@ -136,6 +149,42 @@ class OrderController extends Controller
         Gate::inspect('showUserOrder', [Order::class, $order]);
 
         return OrderResource::make($order);
+    }
+
+    public function storeDocument(OrderDocumentRequest $request, Order $order): JsonResource
+    {
+        $document = $this->documentService
+            ->storeDocument(
+                $order,
+                $request->input('name'),
+                $request->input('type'),
+                $request->file('file'),
+            );
+        AddOrderDocument::dispatch($order, $document);
+
+        return OrderDocumentResource::make($document);
+    }
+
+    public function deleteDocument(Order $order, OrderDocument $document): JsonResponse
+    {
+        $document = $this->documentService->removeDocument($order, $document->media_id);
+        RemoveOrderDocument::dispatch($order, $document);
+
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    public function downloadDocument(Order $order, OrderDocument $document)
+    {
+        return $this->documentService->downloadDocument($document);
+    }
+
+    public function sendDocuments(SendDocumentRequest $request, Order $order): JsonResponse
+    {
+        $documents = OrderDocument::findMany($request->input('uuid'));
+        //MAIL MICROSERVICE
+        SendOrderDocument::dispatch($order, $documents);
+
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function cartProcess(CartRequest $request): JsonResource
