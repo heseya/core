@@ -182,7 +182,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(21);
     }
 
     /**

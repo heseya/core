@@ -2,6 +2,7 @@
 
 namespace App\Rules;
 
+use App\Models\Order;
 use Illuminate\Contracts\Validation\Rule;
 
 class DocumentsBelongToOrder implements Rule
@@ -10,8 +11,11 @@ class DocumentsBelongToOrder implements Rule
 
     public function passes($attribute, $value): bool
     {
+        /** @var Order $order */
+        $order = request()->route('order');
+
         $this->error = $value;
-        return request()->route('order')->documents()->wherePivot('id', $value)->exists();
+        return $order->documents()->wherePivot('id', $value)->exists();
     }
 
     public function message(): string
