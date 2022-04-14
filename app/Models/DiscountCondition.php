@@ -6,6 +6,9 @@ use App\Enums\ConditionType;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
+/**
+ * @mixin IdeHelperDiscountCondition
+ */
 class DiscountCondition extends Model
 {
     protected $fillable = [

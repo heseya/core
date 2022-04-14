@@ -23,6 +23,9 @@ class ProductSearchDto extends Dto
     private array|Missing $metadata;
     private array|Missing $metadata_private;
 
+    private float|Missing $price_min;
+    private float|Missing $price_max;
+
     public static function instantiateFromRequest(ProductIndexRequest $request): self
     {
         return new self(
@@ -37,6 +40,8 @@ class ProductSearchDto extends Dto
             tags: self::array('tags', $request),
             metadata: self::array('metadata', $request),
             metadata_private: self::array('metadata_private', $request),
+            price_min: $request->input('price.min', new Missing()),
+            price_max: $request->input('price.max', new Missing())
         );
     }
 
@@ -48,6 +53,16 @@ class ProductSearchDto extends Dto
     public function getSort(): ?string
     {
         return $this->sort;
+    }
+
+    public function getPriceMin(): float|Missing
+    {
+        return $this->price_min;
+    }
+
+    public function getPriceMax(): float|Missing
+    {
+        return $this->price_max;
     }
 
     private static function boolean(string $key, ProductIndexRequest $request): bool|Missing
