@@ -430,6 +430,77 @@ class AttributeTest extends TestCase
     }
 
     /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('attributes.add');
+
+        $attribute = Attribute::factory()->make()->toArray();
+        $attribute['options'] = [
+            AttributeOption::factory()->make(['name' => 'optionOne'])->toArray() + [
+                'metadata' => [
+                    'optionOne' => 'optionOneValue',
+                ],
+                'metadata_private' => [
+                    'optionOnePriv' => 'optionOneValuePriv',
+                ],
+            ],
+            AttributeOption::factory()->make(['name' => 'optionTwo'])->toArray() + [
+                'metadata' => [
+                    'optionTwo' => 'optionTwoValue',
+                ],
+            ],
+        ];
+
+        $response = $this->actingAs($this->$user)
+            ->postJson('/attributes', $attribute + [
+                'metadata' => [
+                    'attributeMeta' => 'attributeValueOne',
+                ],
+                'metadata_private' => [
+                    'attributeMetaPriv' => 'attributeValueOnePriv',
+                ],
+            ]);
+
+        $createdAttribute = Attribute::find($response->getData()->data->id);
+        $optionOne = $createdAttribute->options()->where('name', 'optionOne')->first();
+        $optionTwo = $createdAttribute->options()->where('name', 'optionTwo')->first();
+
+        $this->assertDatabaseCount('metadata', 5)
+            ->assertDatabaseHas('metadata', [
+                'name' => 'attributeMeta',
+                'value' => 'attributeValueOne',
+                'model_id' => $createdAttribute->getKey(),
+                'public' => true,
+            ])
+            ->assertDatabaseHas('metadata', [
+                'name' => 'attributeMetaPriv',
+                'value' => 'attributeValueOnePriv',
+                'model_id' => $createdAttribute->getKey(),
+                'public' => false,
+            ])
+            ->assertDatabaseHas('metadata', [
+                'name' => 'optionOne',
+                'value' => 'optionOneValue',
+                'model_id' => $optionOne->getKey(),
+                'public' => true,
+            ])
+            ->assertDatabaseHas('metadata', [
+                'name' => 'optionOnePriv',
+                'value' => 'optionOneValuePriv',
+                'model_id' => $optionOne->getKey(),
+                'public' => false,
+            ])
+            ->assertDatabaseHas('metadata', [
+                'name' => 'optionTwo',
+                'value' => 'optionTwoValue',
+                'model_id' => $optionTwo->getKey(),
+                'public' => true,
+            ]);
+    }
+
+    /**
      * @dataProvider booleanProvider
      */
     public function testCreateBooleanValues($user, $boolean, $booleanValue): void
@@ -954,6 +1025,31 @@ class AttributeTest extends TestCase
             ->assertJsonFragment($this->newOption);
 
         $this->assertDatabaseHas('attribute_options', $this->newOption);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAddOptionWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('attributes.edit');
+
+        $response = $this->actingAs($this->$user)
+            ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption + [
+                'metadata' => [
+                    'optionMeta' => 'testValue',
+                ],
+            ])
+            ->assertCreated()
+            ->assertJsonFragment($this->newOption);
+
+        $this->assertDatabaseHas('attribute_options', $this->newOption)
+            ->assertDatabaseCount('metadata', 1)
+            ->assertDatabaseHas('metadata', [
+                'name' => 'optionMeta',
+                'value' => 'testValue',
+                'model_id' => $response->getData()->data->id,
+            ]);
     }
 
     /**

@@ -1,0 +1,31 @@
+Coupon:
+  type: object
+  allOf:
+    - $ref: './Sales.yml#/Sale'
+    - properties:
+        code:
+          type: string
+          example: '83734AE'
+
+CouponShow:
+  type: object
+  allOf:
+    - $ref: '#Coupon'
+    - properties:
+        id:
+          type: string
+          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+        condition_groups:
+          type: array
+          items:
+            $ref: './DiscountConditions.yml#/ConditionGroupShow'
+
+CouponStore:
+  type: object
+  allOf:
+    - $ref: '#Coupon'
+    - properties:
+        condition_groups:
+          type: array
+          items:
+            $ref: './DiscountConditions.yml#/ConditionGroup'

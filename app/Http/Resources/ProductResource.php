@@ -26,12 +26,16 @@ class ProductResource extends Resource
             'cover' => MediaResource::make($this->resource->media->first()),
             'tags' => TagResource::collection($this->resource->tags),
             'items' => ProductItemResource::collection($this->resource->items),
+            'min_price_discounted' => $this->resource->min_price_discounted ?? $this->resource->price_min,
+            'max_price_discounted' => $this->resource->max_price_discounted ?? $this->resource->price_max,
         ], $this->metadataResource('products.show_metadata_private'));
     }
 
     public function view(Request $request): array
     {
         $sets = Auth::check() ? $this->resource->sets : $this->resource->sets()->public()->get();
+
+        $sales = $this->resource->sales ? ['sales' => SaleResource::collection($this->resource->sales)] : [];
 
         return [
             'order' => $this->resource->order,
@@ -41,9 +45,9 @@ class ProductResource extends Resource
             'gallery' => MediaResource::collection($this->resource->media),
             'schemas' => SchemaResource::collection($this->resource->schemas),
             'sets' => ProductSetResource::collection($sets),
-            'seo' => SeoMetadataResource::make($this->resource->seo),
             'attributes' => ProductAttributeResource::collection($this->resource->attributes),
-        ];
+            'seo' => SeoMetadataResource::make($this->resource->seo),
+        ] + $sales;
     }
 
     public function index(Request $request): array

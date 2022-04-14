@@ -8,6 +8,7 @@ use App\Events\ProductSetCreated;
 use App\Events\ProductSetDeleted;
 use App\Events\ProductSetUpdated;
 use App\Models\ProductSet;
+use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use Heseya\Dto\Missing;
@@ -21,7 +22,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class ProductSetService implements ProductSetServiceContract
 {
     public function __construct(
-        protected SeoMetadataServiceContract $seoMetadataService,
+        private SeoMetadataServiceContract $seoMetadataService,
+        private MetadataServiceContract $metadataService,
     ) {
     }
 
@@ -90,6 +92,10 @@ class ProductSetService implements ProductSetServiceContract
         }
 
         $set->seo()->save($this->seoMetadataService->create($dto->getSeo()));
+
+        if (!($dto->getMetadata() instanceof Missing)) {
+            $this->metadataService->sync($set, $dto->getMetadata());
+        }
 
         ProductSetCreated::dispatch($set);
 

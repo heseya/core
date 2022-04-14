@@ -2,67 +2,66 @@
 
 namespace App\Dtos;
 
-use App\Dtos\Contracts\DtoContract;
-use App\Dtos\Contracts\InstantiateFromRequest;
+use App\Http\Requests\OrderCreateRequest;
+use App\Http\Requests\OrderUpdateRequest;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
-use Illuminate\Http\Request;
 
-class AddressDto extends Dto implements DtoContract, InstantiateFromRequest
+class AddressDto extends Dto
 {
     private string|Missing $name;
-    private string|Missing $phone;
     private string|Missing $address;
     private string|Missing $vat;
     private string|Missing $zip;
     private string|Missing $city;
     private string|Missing $country;
+    private string|Missing $phone;
 
-    public static function instantiateFromRequest(Request $request): self
+    public static function fromFormRequest(OrderCreateRequest|OrderUpdateRequest $request, ?string $prefix = ''): self
     {
         return new self(
-            $request->input('name', new Missing()),
-            $request->input('phone', new Missing()),
-            $request->input('address', new Missing()),
-            $request->input('vat', new Missing()),
-            $request->input('zip', new Missing()),
-            $request->input('city', new Missing()),
-            $request->input('country', new Missing()),
+            name: $request->input($prefix . 'name', new Missing()),
+            address: $request->input($prefix . 'address', new Missing()),
+            vat: $request->input($prefix . 'vat', new Missing()),
+            zip: $request->input($prefix . 'zip', new Missing()),
+            city: $request->input($prefix . 'city', new Missing()),
+            country: $request->input($prefix . 'country', new Missing()),
+            phone: $request->input($prefix . 'phone', new Missing()),
         );
     }
 
-    public function getAddressName(): Missing|string
+    public function getName(): Missing|string
     {
         return $this->name;
     }
 
-    public function getAddressPhone(): Missing|string
-    {
-        return $this->phone;
-    }
-
-    public function getAddressAddress(): Missing|string
+    public function getAddress(): Missing|string
     {
         return $this->address;
     }
 
-    public function getAddressVat(): Missing|string
+    public function getVat(): Missing|string
     {
         return $this->vat;
     }
 
-    public function getAddressZip(): Missing|string
+    public function getZip(): Missing|string
     {
         return $this->zip;
     }
 
-    public function getAddressCity(): Missing|string
+    public function getCity(): Missing|string
     {
         return $this->city;
     }
 
-    public function getAddressCountry(): Missing|string
+    public function getCountry(): Missing|string
     {
         return $this->country;
+    }
+
+    public function getPhone(): Missing|string
+    {
+        return $this->phone;
     }
 }

@@ -20,9 +20,12 @@ class OrderProductFactory extends Factory
      */
     public function definition(): array
     {
+        $price = rand(100, 200);
         return [
+            'name' => $this->faker->word,
             'quantity' => rand(1, 4),
-            'price' => rand(100, 200),
+            'price' => $price,
+            'price_initial' => $price,
             'product_id' => Product::select('id')->inRandomOrder()->first()->getKey(),
         ];
     }

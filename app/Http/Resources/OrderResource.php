@@ -15,19 +15,22 @@ class OrderResource extends Resource
         return array_merge([
             'id' => $this->resource->getKey(),
             'code' => $this->resource->code,
-            'currency' => $this->resource->currency,
             'email' => $this->resource->email,
+            'currency' => $this->resource->currency,
             'summary' => $this->resource->summary,
             'summary_paid' => $this->resource->paid_amount,
+            'shipping_price_initial' => $this->resource->shipping_price_initial,
             'shipping_price' => $this->resource->shipping_price,
-            'paid' => $this->resource->paid,
             'comment' => $this->resource->comment,
-            'created_at' => $this->resource->created_at,
             'status' => $this->resource->status ? StatusResource::make($this->resource->status) : null,
-            'delivery_address' => $this->resource->deliveryAddress ?
-                AddressResource::make($this->resource->deliveryAddress) : null,
             'shipping_method' => $this->resource->shippingMethod ?
                 ShippingMethodResource::make($this->resource->shippingMethod) : null,
+            'paid' => $this->resource->paid,
+            'cart_total' => $this->resource->cart_total,
+            'cart_total_initial' => $this->resource->cart_total_initial,
+            'delivery_address' => $this->resource->deliveryAddress ?
+                AddressResource::make($this->resource->deliveryAddress) : null,
+            'created_at' => $this->resource->created_at,
         ], $this->metadataResource('orders.show_metadata_private'));
     }
 
@@ -35,15 +38,19 @@ class OrderResource extends Resource
     {
         return [
             'invoice_address' => AddressResource::make($this->resource->invoiceAddress),
-            'shipping_method' => ShippingMethodResource::make($this->resource->shippingMethod),
             'products' => OrderProductResource::collection($this->resource->products),
             'payments' => PaymentResource::collection($this->resource->payments),
             'shipping_number' => $this->resource->shipping_number,
+            'discounts' => OrderDiscountResource::collection($this->resource->discounts),
+            'buyer' => $this->resource->buyer instanceof User
+                ? UserResource::make($this->resource->buyer)->baseOnly() : AppResource::make($this->resource->buyer),
+        ];
+    }
+
+    public function index(Request $request): array
+    {
+        return [
             'payable' => $this->resource->payable,
-            'discounts' => DiscountResource::collection($this->resource->discounts),
-            'user' => $this->resource->user instanceof User ?
-                UserResource::make($this->resource->user)->baseOnly() :
-                AppResource::make($this->resource->user),
         ];
     }
 }

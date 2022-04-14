@@ -9,6 +9,8 @@ use App\Criteria\WhereHasId;
 use App\Criteria\WhereHasSlug;
 use App\Criteria\WhereInIds;
 use App\Services\Contracts\ProductSearchServiceContract;
+use App\Traits\HasDiscountConditions;
+use App\Traits\HasDiscounts;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use App\Traits\Sortable;
@@ -36,7 +38,9 @@ class Product extends Model implements AuditableContract, Explored
         Auditable,
         HasSeoMetadata,
         HasMetadata,
-        HasCriteria;
+        HasCriteria,
+        HasDiscountConditions,
+        HasDiscounts;
 
     protected $fillable = [
         'name',

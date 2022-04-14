@@ -35,9 +35,16 @@ OrderCreate:
             $ref: './../schemas/Addresses.yml#/Address'
           invoice_address:
             $ref: './../schemas/Addresses.yml#/Address'
-          discounts:
+          coupons:
             type: array
-            items: [ ]
+            items:
+              type: string
+              example: 8JVA0XRT
+          sale_ids:
+            type: array
+            items:
+              type: string
+              example: '16277176-d819-417b-90af-8d8534995786'
         type: object
 
 OrderUpdate:

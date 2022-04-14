@@ -37,3 +37,8 @@ Route::prefix('orders')->group(function (): void {
     Route::post('{order:code}/pay/{method}', [PaymentController::class, 'store'])
         ->middleware('can:payments.add');
 });
+
+Route::prefix('cart')->group(function (): void {
+    Route::post('process', [OrderController::class, 'cartProcess'])
+        ->middleware('can:cart.verify');
+});

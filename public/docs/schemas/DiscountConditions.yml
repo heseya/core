@@ -1,0 +1,297 @@
+ConditionGroup:
+  type: object
+  properties:
+    conditions:
+      type: array
+      items:
+        oneOf:
+          - $ref: '#OrderValue'
+          - $ref: '#UserInRole'
+          - $ref: '#UserIn'
+          - $ref: '#ProductInSet'
+          - $ref: '#ProductIn'
+          - $ref: '#DateBetween'
+          - $ref: '#TimeBetween'
+          - $ref: '#MaxUses'
+          - $ref: '#MaxUsesPerUser'
+          - $ref: '#WeekdayIn'
+          - $ref: '#CartLength'
+
+ConditionGroupShow:
+  type: object
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    conditions:
+      type: array
+      items:
+        oneOf:
+          - $ref: '#OrderValueShow'
+          - $ref: '#UserInRoleShow'
+          - $ref: '#UserInShow'
+          - $ref: '#ProductInSetShow'
+          - $ref: '#ProductInShow'
+          - $ref: '#DateBetweenShow'
+          - $ref: '#TimeBetweenShow'
+          - $ref: '#MaxUsesShow'
+          - $ref: '#MaxUsesPerUserShow'
+          - $ref: '#WeekdayInShow'
+          - $ref: '#CartLengthShow'
+
+OrderValue:
+  type: object
+  properties:
+    type:
+      type: string
+      example: 'order-value'
+    min_value:
+      type: number
+      example: 9.99
+    max_value:
+      type: number
+      example: 999.99
+    include_taxes:
+      type: boolean
+      example: false
+    is_in_range:
+      type: boolean
+      example: true
+
+OrderValueShow:
+  type: object
+  allOf:
+    - $ref: '#OrderValue'
+    - properties:
+        id:
+          type: string
+          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+
+
+UserInRole:
+  type: object
+  properties:
+    type:
+      type: string
+      example: 'user-in-role'
+    roles:
+      type: array
+      items:
+        type: string
+        example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    is_allow_list:
+      type: boolean
+      example: true
+
+UserInRoleShow:
+  type: object
+  allOf:
+    - $ref: '#UserInRole'
+    - properties:
+        id:
+          type: string
+          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+
+UserIn:
+  type: object
+  properties:
+    type:
+      type: string
+      example: 'user-in'
+    users:
+      type: array
+      items:
+        type: string
+        example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    is_allow_list:
+      type: boolean
+      example: true
+
+UserInShow:
+  type: object
+  allOf:
+    - $ref: '#UserIn'
+    - properties:
+        id:
+          type: string
+          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+
+ProductInSet:
+  type: object
+  properties:
+    type:
+      type: string
+      example: 'product-in-set'
+    product_sets:
+      type: array
+      items:
+        type: string
+        example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    is_allow_list:
+      type: boolean
+      example: true
+
+ProductInSetShow:
+  type: object
+  allOf:
+    - $ref: '#ProductInSet'
+    - properties:
+        id:
+          type: string
+          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+
+ProductIn:
+  type: object
+  properties:
+    type:
+      type: string
+      example: 'product-in'
+    products:
+      type: array
+      items:
+        type: string
+        example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    is_allow_list:
+      type: boolean
+      example: true
+
+ProductInShow:
+  type: object
+  allOf:
+    - $ref: '#ProductIn'
+    - properties:
+        id:
+          type: string
+          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+
+DateBetween:
+  type: object
+  properties:
+    type:
+      type: string
+      example: 'date-between'
+    start_at:
+      type: datetime
+      example: '2022-03-03T12:49'
+    end_at:
+      type: datetime
+      example: '2022-03-10T12:49'
+    is_in_range:
+      type: boolean
+      example: true
+
+DateBetweenShow:
+  type: object
+  allOf:
+    - $ref: '#DateBetween'
+    - properties:
+        id:
+          type: string
+          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+
+TimeBetween:
+  type: object
+  properties:
+    type:
+      type: string
+      example: 'time-between'
+    start_at:
+      type: time
+      example: '12:46:00'
+    end_at:
+      type: time
+      example: '15:00:00'
+    is_in_range:
+      type: boolean
+      example: true
+
+TimeBetweenShow:
+  type: object
+  allOf:
+    - $ref: '#TimeBetween'
+    - properties:
+        id:
+          type: string
+          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+
+MaxUses:
+  type: object
+  properties:
+    type:
+      type: string
+      example: 'max-uses'
+    max-uses:
+      type: number
+      example: 150
+
+MaxUsesShow:
+  type: object
+  allOf:
+    - $ref: '#MaxUses'
+    - properties:
+        id:
+          type: string
+          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+
+MaxUsesPerUser:
+  type: object
+  properties:
+    type:
+      type: string
+      example: 'max-uses-per-user'
+    max-uses:
+      type: number
+      example: 150
+
+MaxUsesPerUserShow:
+  type: object
+  allOf:
+    - $ref: '#MaxUsesPerUser'
+    - properties:
+        id:
+          type: string
+          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+
+WeekdayIn:
+  type: object
+  properties:
+    type:
+      type: string
+      example: 'weekday-in'
+    weekday:
+      description: '[Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday]'
+      type: array
+      example: [false, true, false, false, true, true, false]
+      items:
+        type: boolean
+
+WeekdayInShow:
+  type: object
+  allOf:
+    - $ref: '#WeekdayIn'
+    - properties:
+        id:
+          type: string
+          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+
+CartLength:
+  type: object
+  properties:
+    type:
+      type: string
+      example: 'cart-length'
+    min_value:
+      type: number
+      example: 5
+    max_value:
+      type: number
+      example: 10
+
+CartLengthShow:
+  type: object
+  allOf:
+    - $ref: '#CartLength'
+    - properties:
+        id:
+          type: string
+          example: 026bc5f6-8373-4aeb-972e-e78d72a67121

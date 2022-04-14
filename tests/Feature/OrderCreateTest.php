@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ConditionType;
+use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\IssuerType;
 use App\Enums\RoleType;
@@ -10,6 +12,7 @@ use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Listeners\WebHookEventListener;
 use App\Models\Address;
+use App\Models\ConditionGroup;
 use App\Models\Deposit;
 use App\Models\Discount;
 use App\Models\Item;
@@ -661,7 +664,7 @@ class OrderCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateOrderWithDiscount($user): void
+    public function testCreateOrderNoSalesIds($user): void
     {
         $this->$user->givePermissionTo('orders.add');
 
@@ -669,14 +672,26 @@ class OrderCreateTest extends TestCase
 
         $discount = Discount::factory()->create([
             'description' => 'Testowy kupon',
-            'code' => 'S43SA2',
-            'discount' => 10,
+            'code' => null,
+            'value' => 10,
             'type' => DiscountType::PERCENTAGE,
-            'max_uses' => 20,
-            'starts_at' => Carbon::yesterday(),
-            'expires_at' => Carbon::tomorrow(),
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
         ]);
         $shippingMethod = ShippingMethod::factory()->create();
+        $discount->products()->attach($this->product->getKey());
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::DATE_BETWEEN,
+            'value' => [
+                'end_at' => Carbon::yesterday(),
+                'is_in_range' => true,
+            ],
+        ]);
+
+        $discount->conditionGroups()->attach($conditionGroup);
 
         $response = $this->actingAs($this->$user)->json('POST', '/orders', [
             'email' => $this->email,
@@ -688,7 +703,44 @@ class OrderCreateTest extends TestCase
                     'quantity' => 1,
                 ],
             ],
-            'discounts' => [
+        ]);
+
+        $response->assertCreated();
+
+        Event::assertDispatched(OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderWithDiscount($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $discount = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'code' => 'S43SA2',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+        ]);
+        $shippingMethod = ShippingMethod::factory()->create();
+        $discount->products()->attach($this->product->getKey());
+
+        $response = $this->actingAs($this->$user)->json('POST', '/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'delivery_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+            'coupons' => [
                 $discount->code,
             ],
         ]);
@@ -702,6 +754,109 @@ class OrderCreateTest extends TestCase
             'shipping_price' => $shippingMethod->getPrice(
                 $this->product->price * 1,
             ),
+        ]);
+
+        Event::assertDispatched(OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderWithDiscountMinimalPrices($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 150,
+        ]);
+
+        $discount = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'code' => 'S43SA2',
+            'value' => 95,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+        ]);
+
+        $saleOrder = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'name' => 'Kupon order',
+            'value' => 50,
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        $couponShipping = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'name' => 'Kupon shipping',
+            'value' => 15,
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::SHIPPING_PRICE,
+            'target_is_allow_list' => false,
+        ]);
+
+        $discount->products()->attach($product->getKey());
+
+        $shippingMethod = ShippingMethod::factory()->create(['public' => true]);
+        $lowRange = PriceRange::create(['start' => 0]);
+        $lowRange->prices()->create(['value' => 10]);
+
+        $shippingMethod->priceRanges()->saveMany([$lowRange]);
+
+        $response = $this->actingAs($this->$user)->json('POST', '/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'delivery_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+            'coupons' => [
+                $discount->code,
+                $couponShipping->code,
+            ],
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonFragment([
+                'cart_total_initial' => 150,
+                'cart_total' => 0,
+                'shipping_price_initial' => 10,
+                'shipping_price' => 0,
+                'summary' => 0,
+            ]);
+        $order = Order::find($response->getData()->data->id);
+
+        $this->assertDatabaseHas('order_products', [
+            'order_id' => $order->getKey(),
+            'product_id' => $product->getKey(),
+            'price_initial' => 150,
+            'price' => 7.50,
+        ]);
+
+        $this->assertDatabaseHas('order_discounts', [
+            'discount_id' => $discount->getKey(),
+            'applied_discount' => 142.5, // -95%
+        ]);
+
+        $this->assertDatabaseHas('order_discounts', [
+            'model_id' => $order->getKey(),
+            'discount_id' => $saleOrder->getKey(),
+            'applied_discount' => 7.50, // discount -50, but price should be 7.50 when discount is applied
+        ]);
+
+        $this->assertDatabaseHas('order_discounts', [
+            'model_id' => $order->getKey(),
+            'discount_id' => $couponShipping->getKey(),
+            'applied_discount' => 10, // discount -15, but shipping_price_initial is 10
         ]);
 
         Event::assertDispatched(OrderCreated::class);
@@ -743,12 +898,24 @@ class OrderCreateTest extends TestCase
         $discount = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',
-            'discount' => 10,
+            'value' => 10,
             'type' => DiscountType::PERCENTAGE,
-            'max_uses' => 20,
-            'starts_at' => Carbon::now()->subDay(),
-            'expires_at' => Carbon::now()->subHour(),
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
         ]);
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::DATE_BETWEEN,
+            'value' => [
+                'end_at' => Carbon::yesterday(),
+                'is_in_range' => true,
+            ],
+        ]);
+
+        $discount->conditionGroups()->attach($conditionGroup);
+
         $shippingMethod = ShippingMethod::factory()->create();
 
         $response = $this->actingAs($this->$user)->json('POST', '/orders', [
@@ -761,7 +928,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => 1,
                 ],
             ],
-            'discounts' => [
+            'coupons' => [
                 $discount->code,
             ],
         ]);
@@ -779,12 +946,24 @@ class OrderCreateTest extends TestCase
         $discount = Discount::factory()->create([
             'description' => 'Testowy kupon',
             'code' => 'S43SA2',
-            'discount' => 10,
+            'value' => 10,
             'type' => DiscountType::PERCENTAGE,
-            'max_uses' => 20,
-            'starts_at' => Carbon::now()->addDay(),
-            'expires_at' => Carbon::now()->addDays(2),
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
         ]);
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::DATE_BETWEEN,
+            'value' => [
+                'start_at' => Carbon::tomorrow(),
+                'is_in_range' => true,
+            ],
+        ]);
+
+        $discount->conditionGroups()->attach($conditionGroup);
+
         $shippingMethod = ShippingMethod::factory()->create();
 
         $response = $this->actingAs($this->$user)->json('POST', '/orders', [
@@ -797,7 +976,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => 1,
                 ],
             ],
-            'discounts' => [
+            'coupons' => [
                 $discount->code,
             ],
         ]);

@@ -4,11 +4,15 @@ namespace App\Dtos;
 
 use App\Http\Requests\AttributeStoreRequest;
 use App\Http\Requests\AttributeUpdateRequest;
+use App\Traits\MapMetadata;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
 
 class AttributeDto extends Dto
 {
+    use MapMetadata;
+
+    public array|Missing $metadata;
     private string $name;
     private string $slug;
     private string|null|Missing $description;
@@ -30,6 +34,7 @@ class AttributeDto extends Dto
                 fn ($data) => AttributeOptionDto::fromDataArray($data),
                 $request->input('options')
             ) : [],
+            metadata: self::mapMetadata($request),
         );
     }
 

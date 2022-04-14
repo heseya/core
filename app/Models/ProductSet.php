@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\ProductSetSearch;
+use App\Traits\HasDiscountConditions;
+use App\Traits\HasDiscounts;
 use App\Traits\HasMetadata;
 use App\Traits\HasSeoMetadata;
 use Heseya\Searchable\Criteria\Like;
@@ -23,7 +25,7 @@ use Illuminate\Support\Str;
  */
 class ProductSet extends Model
 {
-    use HasCriteria, HasFactory, SoftDeletes, HasSeoMetadata, HasMetadata;
+    use HasCriteria, HasFactory, SoftDeletes, HasSeoMetadata, HasMetadata, HasDiscountConditions, HasDiscounts;
 
     protected $fillable = [
         'name',

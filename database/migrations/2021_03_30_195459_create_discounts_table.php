@@ -19,7 +19,7 @@ class CreateDiscountsTable extends Migration
             $table->string('code', 64)->unique();
             $table->string('description')->nullable();
             $table->double('discount', 9, 2);
-            $table->unsignedTinyInteger('type')->default(DiscountType::PERCENTAGE);
+            $table->unsignedTinyInteger('type');
             $table->unsignedInteger('max_uses')->default(1);
             $table->timestamps();
             $table->softDeletes();
