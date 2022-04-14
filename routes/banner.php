@@ -8,4 +8,7 @@ Route::prefix('banners')->group(function (): void {
         ->middleware('can:banners.show');
     Route::post(null, [BannerController::class, 'store'])
         ->middleware('can:banners.add');
+    Route::patch('/id:{banner:id}', [BannerController::class, 'update'])
+        ->middleware('can:banners.edit')
+        ->whereUuid('banner');
 });
