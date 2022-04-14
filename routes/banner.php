@@ -11,4 +11,7 @@ Route::prefix('banners')->group(function (): void {
     Route::patch('/id:{banner:id}', [BannerController::class, 'update'])
         ->middleware('can:banners.edit')
         ->whereUuid('banner');
+    Route::delete('/id:{banner:id}', [BannerController::class, 'destroy'])
+        ->middleware('can:banners.remove')
+        ->whereUuid('banner');
 });
