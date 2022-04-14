@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\MetadataType;
 use App\Models\App;
+use App\Models\Banner;
 use App\Models\Discount;
 use App\Models\Item;
 use App\Models\Media;
@@ -180,6 +181,15 @@ class MetadataTest extends TestCase
             'media as application' => [
                 'application',
                 ['model' => Media::class, 'prefix_url' => 'media', 'role' => 'products.edit'],
+            ],
+
+            'banners as user' => [
+                'user',
+                ['model' => Banner::class, 'prefix_url' => 'banners', 'role' => 'banners.edit'],
+            ],
+            'banners as application' => [
+                'application',
+                ['model' => Banner::class, 'prefix_url' => 'banners', 'role' => 'banners.edit'],
             ],
         ];
     }

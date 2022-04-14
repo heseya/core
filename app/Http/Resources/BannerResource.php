@@ -2,13 +2,16 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
 class BannerResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
-        return [
+        return array_merge([
             'id' => $this->resource->getKey(),
             'slug' => $this->resource->slug,
             'url' => $this->resource->url,
@@ -17,6 +20,6 @@ class BannerResource extends Resource
             'responsive_media' => $this->resource->responsiveMedia->map(
                 fn ($item) => ResponsiveMediaResource::collection($item->media)
             ),
-        ];
+        ], $this->metadataResource('banners.show_metadata_private'));
     }
 }
