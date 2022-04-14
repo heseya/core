@@ -307,6 +307,29 @@ class AuthTest extends TestCase
         $response->assertUnprocessable();
     }
 
+    public function testRefreshTokenAfterUserDeleted(): void
+    {
+        $this->user->givePermissionTo('auth.login');
+
+        $token = $this->tokenService->createToken(
+            $this->user,
+            new TokenType(TokenType::REFRESH),
+        );
+
+        $response = $this->actingAs($this->user)->json('POST', 'auth/refresh', [
+            'refresh_token' => $token,
+        ]);
+
+        $this->user->delete();
+
+        $responseFail = $this->json('POST', 'auth/refresh', [
+            'refresh_token' => $response->getData()->data->refresh_token,
+        ]);
+
+        $responseFail->assertStatus(422)
+            ->assertJsonFragment(['message' => 'User does not exist.']);
+    }
+
     public function testRefreshTokenUser(): void
     {
         $this->user->givePermissionTo('auth.login');
