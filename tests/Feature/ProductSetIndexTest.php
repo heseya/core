@@ -182,13 +182,13 @@ class ProductSetIndexTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider trueBooleanProvider
      */
-    public function testIndexRoot($user): void
+    public function testIndexRoot($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo('product_sets.show');
 
-        $response = $this->actingAs($this->$user)->getJson('/product-sets?root');
+        $response = $this->actingAs($this->$user)->json('GET', '/product-sets', ['root' => $boolean]);
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public sets.
@@ -211,13 +211,13 @@ class ProductSetIndexTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider trueBooleanProvider
      */
-    public function testIndexRootHidden($user): void
+    public function testIndexRootHidden($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo(['product_sets.show', 'product_sets.show_hidden']);
 
-        $response = $this->actingAs($this->$user)->getJson('/product-sets?root');
+        $response = $this->actingAs($this->$user)->json('GET', '/product-sets', ['root' => $boolean]);
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data') // Should show only public sets.
@@ -251,13 +251,13 @@ class ProductSetIndexTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider trueBooleanProvider
      */
-    public function testIndexTree($user): void
+    public function testIndexTree($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo('product_sets.show');
 
-        $response = $this->actingAs($this->$user)->getJson('/product-sets?tree');
+        $response = $this->actingAs($this->$user)->json('GET', '/product-sets', ['tree' => $boolean]);
         $response
             ->assertOk()
             ->assertJsonCount(1, 'data') // Should show only public sets.
@@ -292,13 +292,13 @@ class ProductSetIndexTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider trueBooleanProvider
      */
-    public function testIndexTreeHidden($user): void
+    public function testIndexTreeHidden($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo(['product_sets.show', 'product_sets.show_hidden']);
 
-        $response = $this->actingAs($this->$user)->getJson('/product-sets?tree');
+        $response = $this->actingAs($this->$user)->json('GET', '/product-sets?tree', ['tree' => $boolean]);
         $response
             ->assertOk()
             ->assertJsonCount(2, 'data') // Should show only public sets.

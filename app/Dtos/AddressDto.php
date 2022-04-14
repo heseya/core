@@ -2,96 +2,66 @@
 
 namespace App\Dtos;
 
-use App\Dtos\Contracts\DtoContract;
-use App\Dtos\Contracts\InstantiateFromRequest;
-use Illuminate\Http\Request;
+use App\Http\Requests\OrderCreateRequest;
+use App\Http\Requests\OrderUpdateRequest;
+use Heseya\Dto\Dto;
+use Heseya\Dto\Missing;
 
-class AddressDto implements DtoContract, InstantiateFromRequest
+class AddressDto extends Dto
 {
-    private ?string $addressName;
-    private ?string $addressPhone;
-    private ?string $addressAddress;
-    private ?string $addressVat;
-    private ?string $addressZip;
-    private ?string $addressCity;
-    private ?string $addressCountry;
+    private string|Missing $name;
+    private string|Missing $address;
+    private string|Missing $vat;
+    private string|Missing $zip;
+    private string|Missing $city;
+    private string|Missing $country;
+    private string|Missing $phone;
 
-    public function __construct(
-        ?string $addressName,
-        ?string $addressPhone,
-        ?string $addressAddress,
-        ?string $addressVat,
-        ?string $addressZip,
-        ?string $addressCity,
-        ?string $addressCountry
-    ) {
-        $this->addressName = $addressName;
-        $this->addressPhone = $addressPhone;
-        $this->addressAddress = $addressAddress;
-        $this->addressVat = $addressVat;  // Vat number - NIP
-        $this->addressZip = $addressZip;
-        $this->addressCity = $addressCity;
-        $this->addressCountry = $addressCountry;
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'name' => $this->getAddressName(),
-            'phone' => $this->getAddressPhone(),
-            'address' => $this->getAddressAddress(),
-            'vat' => $this->getAddressVat(),
-            'zip' => $this->getAddressZip(),
-            'city' => $this->getAddressCity(),
-            'country' => $this->getAddressCountry(),
-        ];
-    }
-
-    public static function instantiateFromRequest(Request $request): self
+    public static function fromFormRequest(OrderCreateRequest|OrderUpdateRequest $request, ?string $prefix = ''): self
     {
         return new self(
-            $request->input('name'),
-            $request->input('phone'),
-            $request->input('address'),
-            $request->input('vat'),
-            $request->input('zip'),
-            $request->input('city'),
-            $request->input('country'),
+            name: $request->input($prefix . 'name', new Missing()),
+            address: $request->input($prefix . 'address', new Missing()),
+            vat: $request->input($prefix . 'vat', new Missing()),
+            zip: $request->input($prefix . 'zip', new Missing()),
+            city: $request->input($prefix . 'city', new Missing()),
+            country: $request->input($prefix . 'country', new Missing()),
+            phone: $request->input($prefix . 'phone', new Missing()),
         );
     }
 
-    public function getAddressName(): ?string
+    public function getName(): Missing|string
     {
-        return $this->addressName;
+        return $this->name;
     }
 
-    public function getAddressPhone(): ?string
+    public function getAddress(): Missing|string
     {
-        return $this->addressPhone;
+        return $this->address;
     }
 
-    public function getAddressAddress(): ?string
+    public function getVat(): Missing|string
     {
-        return $this->addressAddress;
+        return $this->vat;
     }
 
-    public function getAddressVat(): ?string
+    public function getZip(): Missing|string
     {
-        return $this->addressVat;
+        return $this->zip;
     }
 
-    public function getAddressZip(): ?string
+    public function getCity(): Missing|string
     {
-        return $this->addressZip;
+        return $this->city;
     }
 
-    public function getAddressCity(): ?string
+    public function getCountry(): Missing|string
     {
-        return $this->addressCity;
+        return $this->country;
     }
 
-    public function getAddressCountry(): ?string
+    public function getPhone(): Missing|string
     {
-        return $this->addressCountry;
+        return $this->phone;
     }
 }

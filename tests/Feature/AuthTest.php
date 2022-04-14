@@ -530,7 +530,7 @@ class AuthTest extends TestCase
 
         $token = Password::createToken($user);
 
-        $response = $this->patchJson('/users/save-reset-password', [
+        $response = $this->putJson('/users/save-reset-password', [
             'email' => $email,
             'password' => $newPassword,
             'token' => $token,
@@ -554,7 +554,7 @@ class AuthTest extends TestCase
         $token = Password::createToken($user);
         $this->assertTrue(Password::tokenExists($user, $token));
 
-        $this->actingAs($this->user)->patchJson('/users/save-reset-password', [
+        $this->actingAs($this->user)->putJson('/users/save-reset-password', [
             'email' => $email,
             'password' => $newPassword,
             'token' => $token,
@@ -590,7 +590,7 @@ class AuthTest extends TestCase
             });
 
         $response = $this->actingAs($this->user)->json(
-            'PATCH',
+            'PUT',
             '/users/save-reset-password',
             [
                 'email' => $email,
@@ -609,7 +609,7 @@ class AuthTest extends TestCase
             'password' => Hash::make('test'),
         ]);
 
-        $response = $this->actingAs($user)->patchJson('/users/password', [
+        $response = $this->actingAs($user)->putJson('/users/password', [
             'password' => 'test',
             'password_new' => 'Test1@3456',
         ]);
@@ -625,7 +625,7 @@ class AuthTest extends TestCase
 
         $user->givePermissionTo('auth.password_change');
 
-        $response = $this->actingAs($user)->patchJson('/users/password', [
+        $response = $this->actingAs($user)->putJson('/users/password', [
             'password' => 'test',
             'password_new' => 'Test1@345678',
         ]);
@@ -650,7 +650,7 @@ class AuthTest extends TestCase
                 return str_contains($message, $this->expectedLog);
             });
 
-        $response = $this->actingAs($user)->json('PATCH', '/users/password', [
+        $response = $this->actingAs($user)->json('PUT', '/users/password', [
             'password' => 'tests',
             'password_new' => 'Test1@345678',
         ]);
@@ -760,6 +760,10 @@ class AuthTest extends TestCase
 
         $this->actingAs($this->$user)->getJson("/auth/check/${token}")
             ->assertStatus(422);
+
+        $this->actingAs($this->$user)
+            ->getJson('/auth/check/its-not-real-token')
+            ->assertNotFound();
     }
 
     /**

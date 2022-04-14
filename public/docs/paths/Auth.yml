@@ -106,7 +106,7 @@ ResetPasswordParams:
       - oauth: [ ]
 
 SaveResetPassword:
-  patch:
+  put:
     tags:
       - Auth
     summary: 'save the reset password'
@@ -119,7 +119,7 @@ SaveResetPassword:
       - oauth: [ ]
 
 Password:
-  patch:
+  put:
     tags:
       - Auth
     summary: 'Change password'
@@ -191,6 +191,40 @@ Profile:
                   oneOf:
                     - $ref: './../schemas/Users.yml#/UserView'
                     - $ref: './../schemas/Apps.yml#/AppView'
+              type: object
+    security:
+      - oauth: [ ]
+  patch:
+    tags:
+      - Auth
+    summary: 'get your own user or app resource'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              name:
+                type: string
+                example: 'Test User'
+              consents:
+                properties:
+                  119c0a63-1ea1-4769-8d5f-169f68de5598:
+                    type: boolean
+                    example: true
+                  02b97693-857c-4fb9-9999-47400ac5fbef:
+                    type: boolean
+                    example: false
+                type: object
+            type: object
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Users.yml#/UserView'
               type: object
     security:
       - oauth: [ ]
@@ -365,5 +399,14 @@ Register:
                     description: 'Authenticated user role'
                     assignable: false
                     deletable: false
+                consents:
+                  - name: 'Consent one'
+                    description_html: '<h1>Lorem ipsum dolor sit amet</h1>'
+                    required: false
+                    value: true
+                  - name: 'Consent two'
+                    description_html: '<h1>Lorem ipsum dolor sit amet</h1>'
+                    required: true
+                    value: true
     security:
       - oauth: [ ]

@@ -10,7 +10,7 @@ Route::prefix('users')->group(function (): void {
         ->middleware(['app.restrict', 'can:auth.password_reset']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])
         ->middleware(['app.restrict', 'can:auth.password_reset']);
-    Route::patch('/save-reset-password', [AuthController::class, 'saveResetPassword'])
+    Route::put('/save-reset-password', [AuthController::class, 'saveResetPassword'])
         ->middleware(['app.restrict', 'can:auth.password_reset']);
     Route::post('/id:{user:id}/2fa/remove', [AuthController::class, 'removeUsersTFA'])
         ->middleware('permission:users.2fa_remove');
@@ -18,7 +18,8 @@ Route::prefix('users')->group(function (): void {
     Route::get(null, [UserController::class, 'index'])
         ->middleware('can:users.show');
     Route::get('id:{user:id}', [UserController::class, 'show'])
-        ->middleware('can:users.show_details');
+        ->middleware('can:users.show_details')
+        ->whereUuid('user');
     Route::post(null, [UserController::class, 'store'])
         ->middleware('can:users.add');
     Route::patch('id:{user:id}', [UserController::class, 'update'])

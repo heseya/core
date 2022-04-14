@@ -59,21 +59,39 @@ class MetadataFilterTest extends TestCase
                 ],
             ],
 
-            'discounts as user' => [
+            'coupons as user' => [
                 'user', [
                     'model' => Discount::class,
-                    'prefix_url' => 'discounts',
-                    'public_role' => 'discounts.show',
-                    'private_role' => 'discounts.show_metadata_private',
+                    'prefix_url' => 'coupons',
+                    'public_role' => 'coupons.show',
+                    'private_role' => 'coupons.show_metadata_private',
                 ],
             ],
-            'discounts as application' => [
+            'coupons as application' => [
                 'application',
                 [
                     'model' => Discount::class,
-                    'prefix_url' => 'discounts',
-                    'public_role' => 'discounts.show',
-                    'private_role' => 'discounts.show_metadata_private',
+                    'prefix_url' => 'coupons',
+                    'public_role' => 'coupons.show',
+                    'private_role' => 'coupons.show_metadata_private',
+                ],
+            ],
+
+            'sales as user' => [
+                'user', [
+                    'model' => Discount::class,
+                    'prefix_url' => 'sales',
+                    'public_role' => 'sales.show',
+                    'private_role' => 'sales.show_metadata_private',
+                ],
+            ],
+            'sales as application' => [
+                'application',
+                [
+                    'model' => Discount::class,
+                    'prefix_url' => 'sales',
+                    'public_role' => 'sales.show',
+                    'private_role' => 'sales.show_metadata_private',
                 ],
             ],
 
@@ -252,7 +270,7 @@ class MetadataFilterTest extends TestCase
     {
         $this->$user->givePermissionTo($data['public_role']);
 
-        $object = $this->createObjects($data['model']);
+        $object = $this->createObjects($data['model'], $data['prefix_url'] === 'sales');
 
         $metadata = $object->first()->metadata()->create([
             'name' => 'Producent',
@@ -274,9 +292,37 @@ class MetadataFilterTest extends TestCase
             ]);
     }
 
-    public function createObjects($model)
+    public function createObjects($model, $sale = false)
     {
-        $objects = $model::factory()->count(3)->create();
+        $code = [];
+        $status = [];
+
+        if ($sale) {
+            $code = ['code' => null];
+        }
+
+        if ($model === Order::class) {
+            $status = Status::factory()->create();
+            $status->metadata()->create([
+                'name' => 'Status metadata',
+                'value' => 'status',
+                'value_type' => MetadataType::STRING,
+                'public' => true,
+            ]);
+            $shippingMethod = ShippingMethod::factory()->create();
+            $shippingMethod->metadata()->create([
+                'name' => 'Shipping Method metadata',
+                'value' => 'Value',
+                'value_type' => MetadataType::STRING,
+                'public' => true,
+            ]);
+            $status = [
+                'status_id' => $status->getKey(),
+                'shipping_method_id' => $shippingMethod->getKey(),
+            ];
+        }
+
+        $objects = $model::factory()->count(3)->create($code + $status);
 
         if ($objects->first()->public !== null) {
             $objects->each(fn ($object) => $object->update(['public' => true]));
@@ -488,13 +534,59 @@ class MetadataFilterTest extends TestCase
     }
 
     /**
+     * @dataProvider authProvider
+     */
+    public function testQueryWithoutValue($user): void
+    {
+        $this->$user->givePermissionTo('orders.show');
+
+        $objects = $this->createObjects(Order::class);
+
+        $objects->first()->metadata()->create([
+            'name' => 'test1',
+            'value' => 123,
+            'value_type' => MetadataType::NUMBER,
+            'public' => true,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders?metadata[test1]')
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testQueryPrivateWithoutValue($user): void
+    {
+        $this->$user->givePermissionTo(['orders.show', 'orders.show_metadata_private']);
+
+        $objects = $this->createObjects(Order::class);
+
+        $objects->first()->metadata()->create([
+            'name' => 'test1',
+            'value' => 123,
+            'value_type' => MetadataType::NUMBER,
+            'public' => false,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders?metadata_private[test1]')
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
+
+    /**
      * @dataProvider dataProvider
      */
-    public function testQueryPrivate($user, $data): void
+    public function testQueryPrivate2($user, $data): void
     {
         $this->$user->givePermissionTo([$data['public_role'], $data['private_role']]);
 
-        $object = $this->createObjects($data['model']);
+        $object = $this->createObjects($data['model'], $data['prefix_url'] === 'sales');
 
         $metadata = $object->first()->metadataPrivate()->create([
             'name' => 'Producent',

@@ -2,9 +2,11 @@
 
 namespace App\Traits;
 
+use App\Models\Discount;
 use App\Models\PackageTemplate;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Request;
 
 trait PermissionUtility
 {
@@ -27,8 +29,10 @@ trait PermissionUtility
      * */
     protected function getPermissionPrefix(Model $model): string
     {
+        $segments = Request::segments();
         return match ($model::class) {
             PackageTemplate::class => 'packages',
+            Discount::class => $segments[0],
             default => $model->getTable(),
         };
     }

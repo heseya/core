@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\ProductSetDto;
+use App\Dtos\ProductSetUpdateDto;
 use App\Http\Requests\ProductSetAttachRequest;
 use App\Http\Requests\ProductSetIndexRequest;
 use App\Http\Requests\ProductSetProductsRequest;
@@ -71,7 +72,7 @@ class ProductSetController extends Controller
 
     public function update(ProductSet $productSet, ProductSetUpdateRequest $request): JsonResource
     {
-        $dto = ProductSetDto::fromFormRequest($request);
+        $dto = ProductSetUpdateDto::fromFormRequest($request);
         $productSet = $this->productSetService->update($productSet, $dto);
 
         if ($request->has('tree') && $request->input('tree', true) !== false) {

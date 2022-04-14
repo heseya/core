@@ -7,6 +7,7 @@ use App\Criteria\MetadataSearch;
 use App\Criteria\UserSearch;
 use App\Criteria\WhereInIds;
 use App\Models\Contracts\SortableContract;
+use App\Traits\HasDiscountConditions;
 use App\Traits\HasMetadata;
 use App\Traits\HasWebHooks;
 use App\Traits\Sortable;
@@ -19,6 +20,7 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -52,7 +54,8 @@ class User extends Model implements
         Sortable,
         Auditable,
         HasWebHooks,
-        HasMetadata;
+        HasMetadata,
+        HasDiscountConditions;
 
     // Bez tego nie działały testy, w których jako aplikacja tworzy się użytkownika z określoną rolą
     protected $guard_name = 'api';
@@ -110,7 +113,14 @@ class User extends Model implements
 
     public function orders(): MorphMany
     {
-        return $this->morphMany(Order::class, 'user');
+        return $this->morphMany(Order::class, 'buyer');
+    }
+
+    public function consents(): BelongsToMany
+    {
+        return $this->belongsToMany(Consent::class)
+            ->using(ConsentUser::class)
+            ->withPivot('value');
     }
 
     public function securityCodes(): HasMany

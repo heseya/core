@@ -68,6 +68,22 @@ class DepositsTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testViewWrongId($user): void
+    {
+        $this->$user->givePermissionTo('deposits.show');
+
+        $this
+            ->getJson('/items/id:its-not-id/deposits')
+            ->assertNotFound();
+
+        $this
+            ->getJson('/items/id:' . $this->item->getKey() . $this->item->getKey() . '/deposits')
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testView($user): void
     {
         $this->$user->givePermissionTo('deposits.show');

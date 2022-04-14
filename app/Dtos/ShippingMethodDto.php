@@ -9,9 +9,9 @@ use Heseya\Dto\Missing;
 
 class ShippingMethodDto extends Dto
 {
-    protected string $name;
-    protected bool $public;
-    protected bool $black_list;
+    protected string|Missing $name;
+    protected bool|Missing $public;
+    protected bool|Missing $black_list;
     protected ?array $payment_methods;
     protected ?array $countries;
     protected ?array $price_ranges;
@@ -22,9 +22,9 @@ class ShippingMethodDto extends Dto
         ShippingMethodStoreRequest|ShippingMethodUpdateRequest $request,
     ): self {
         return new self(
-            name: $request->input('name'),
-            public: $request->boolean('public'),
-            black_list: $request->boolean('black_list'),
+            name: $request->input('name', new Missing()),
+            public: $request->input('public', new Missing()),
+            black_list: $request->input('black_list', new Missing()),
             payment_methods: $request->input('payment_methods'),
             countries: $request->input('countries'),
             price_ranges: $request->input('price_ranges'),
@@ -33,17 +33,17 @@ class ShippingMethodDto extends Dto
         );
     }
 
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    public function isPublic(): bool
+    public function isPublic(): ?bool
     {
         return $this->public;
     }
 
-    public function isBlackList(): bool
+    public function isBlackList(): ?bool
     {
         return $this->black_list;
     }

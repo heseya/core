@@ -71,9 +71,9 @@ class PermissionTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider trueBooleanProvider
      */
-    public function testIndexAssignable($user): void
+    public function testIndexAssignable($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo('roles.show_details');
 
@@ -88,7 +88,7 @@ class PermissionTest extends TestCase
         ]);
 
         $this->$user->givePermissionTo($permission1);
-        $response = $this->actingAs($this->$user)->getJson('/permissions?assignable=1');
+        $response = $this->actingAs($this->$user)->json('GET', '/permissions', ['assignable' => $boolean]);
 
         $response->assertOk()
             ->assertJsonCount(2, 'data')
@@ -114,9 +114,9 @@ class PermissionTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider falseBooleanProvider
      */
-    public function testIndexUnassignable($user): void
+    public function testIndexUnassignable($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo('roles.show_details');
 
@@ -133,7 +133,7 @@ class PermissionTest extends TestCase
         ]);
 
         $this->$user->givePermissionTo($permission2);
-        $response = $this->actingAs($this->$user)->getJson('/permissions?assignable=0');
+        $response = $this->actingAs($this->$user)->json('GET', '/permissions', ['assignable' => $boolean]);
 
         $response->assertOk()
             ->assertJsonCount($permissionCount, 'data')

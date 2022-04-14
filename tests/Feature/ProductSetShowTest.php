@@ -108,6 +108,22 @@ class ProductSetShowTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testShowWrongId($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.show_details');
+
+        $this->actingAs($this->$user)
+            ->getJson('/product-sets/id:its-not-uuid')
+            ->assertNotFound();
+
+        $this->actingAs($this->$user)
+            ->getJson('/product-sets/id:' . $this->set->getKey() . $this->set->getKey())
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testShowHiddenUnauthorized($user): void
     {
         $this->$user->givePermissionTo('product_sets.show_details');
@@ -151,14 +167,14 @@ class ProductSetShowTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider trueBooleanProvider
      */
-    public function testShowTree($user): void
+    public function testShowTree($user, $boolean): void
     {
         $this->$user->givePermissionTo('product_sets.show_details');
 
         $response = $this->actingAs($this->$user)
-            ->getJson('/product-sets/id:' . $this->set->getKey() . '?tree');
+            ->json('GET', '/product-sets/id:' . $this->set->getKey(), ['tree' => $boolean]);
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -195,14 +211,14 @@ class ProductSetShowTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider trueBooleanProvider
      */
-    public function testShowTreeHidden($user): void
+    public function testShowTreeHidden($user, $boolean): void
     {
         $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
 
         $response = $this->actingAs($this->$user)
-            ->getJson('/product-sets/id:' . $this->set->getKey() . '?tree');
+            ->json('GET', '/product-sets/id:' . $this->set->getKey(), ['tree' => $boolean]);
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -297,6 +313,24 @@ class ProductSetShowTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testShowWrongSlug($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.show_details');
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/product-sets/its_wrong_slug')
+            ->assertNotFound();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/product-sets/' . $this->set->slug . '_' . $this->set->slug)
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testShowSlugHiddenUnauthorized($user): void
     {
         $this->$user->givePermissionTo('product_sets.show_details');
@@ -338,14 +372,14 @@ class ProductSetShowTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider trueBooleanProvider
      */
-    public function testShowSlugTree($user): void
+    public function testShowSlugTree($user, $boolean): void
     {
         $this->$user->givePermissionTo('product_sets.show_details');
 
         $response = $this->actingAs($this->$user)
-            ->getJson('/product-sets/' . $this->set->slug . '?tree');
+            ->json('GET', '/product-sets/' . $this->set->slug, ['tree' => $boolean]);
         $response
             ->assertOk()
             ->assertJson(['data' => [
@@ -382,14 +416,14 @@ class ProductSetShowTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider trueBooleanProvider
      */
-    public function testShowSlugTreeHidden($user): void
+    public function testShowSlugTreeHidden($user, $boolean): void
     {
         $this->$user->givePermissionTo(['product_sets.show_details', 'product_sets.show_hidden']);
 
         $response = $this->actingAs($this->$user)
-            ->getJson('/product-sets/' . $this->set->slug . '?tree');
+            ->json('GET', '/product-sets/' . $this->set->slug, ['tree' => $boolean]);
         $response
             ->assertOk()
             ->assertJson(['data' => [

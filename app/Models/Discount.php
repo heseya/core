@@ -5,13 +5,15 @@ namespace App\Models;
 use App\Criteria\DiscountSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\WhereHasCode;
+use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Traits\HasMetadata;
-use Carbon\Carbon;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
@@ -24,22 +26,20 @@ class Discount extends Model implements AuditableContract
     use HasFactory, HasCriteria, SoftDeletes, Auditable, HasMetadata;
 
     protected $fillable = [
+        'name',
         'description',
         'code',
-        'discount',
+        'value',
         'type',
-        'max_uses',
-        'starts_at',
-        'expires_at',
+        'target_type',
+        'target_is_allow_list',
+        'priority',
     ];
 
     protected $casts = [
         'type' => DiscountType::class,
-    ];
-
-    protected $dates = [
-        'starts_at',
-        'expires_at',
+        'target_type' => DiscountTargetType::class,
+        'target_is_allow_list' => 'boolean',
     ];
 
     protected array $criteria = [
@@ -48,6 +48,7 @@ class Discount extends Model implements AuditableContract
         'search' => DiscountSearch::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
+        'coupon' => WhereHasCode::class,
     ];
 
     public function getUsesAttribute(): int
@@ -55,31 +56,40 @@ class Discount extends Model implements AuditableContract
         return $this->orders->count();
     }
 
-    public function orders(): BelongsToMany
+    public function orders(): MorphToMany
     {
-        return $this->belongsToMany(Order::class, 'order_discounts');
+        return $this->morphedByMany(Order::class, 'model', 'order_discounts');
     }
 
-    public function getAvailableAttribute(): bool
+    public function products(): MorphToMany
     {
-        if ($this->uses >= $this->max_uses) {
-            return false;
-        }
+        return $this->morphedByMany(
+            Product::class,
+            'model',
+            'model_has_discounts'
+        );
+    }
 
-        $today = Carbon::now();
+    public function productSets(): MorphToMany
+    {
+        return $this->morphedByMany(
+            ProductSet::class,
+            'model',
+            'model_has_discounts'
+        );
+    }
 
-        if ($this->starts_at !== null && $this->expires_at !== null) {
-            return $today >= $this->starts_at && $today <= $this->expires_at;
-        }
+    public function shippingMethods(): MorphToMany
+    {
+        return $this->morphedByMany(
+            ShippingMethod::class,
+            'model',
+            'model_has_discounts',
+        );
+    }
 
-        if ($this->starts_at !== null) {
-            return $today >= $this->starts_at;
-        }
-
-        if ($this->expires_at !== null) {
-            return $today <= $this->expires_at;
-        }
-
-        return true;
+    public function conditionGroups(): BelongsToMany
+    {
+        return $this->belongsToMany(ConditionGroup::class, 'discount_condition_groups');
     }
 }

@@ -871,7 +871,7 @@ class AppInstallTest extends TestCase
         Http::fake([
             $this->url . '/uninstall' => new ConnectionException('Test', 7),
         ]);
-        $this->actingAs($this->$user)->json('delete', '/apps/id:' . $app->getKey() . '?force');
+        $this->actingAs($this->$user)->json('delete', '/apps/id:' . $app->getKey(), ['force' => true]);
 
         Http::fake([
             $this->url => Http::response([

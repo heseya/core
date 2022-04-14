@@ -156,6 +156,26 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testViewWrongIdOrSlug($user): void
+    {
+        $this->$user->givePermissionTo('pages.show_details');
+
+        $this->actingAs($this->$user)
+            ->getJson('/pages/its_wrong_slug')
+            ->assertNotFound();
+
+        $this->actingAs($this->$user)
+            ->getJson('/pages/id:its-not-uuid')
+            ->assertNotFound();
+
+        $this->actingAs($this->$user)
+            ->getJson('/pages/id:' . $this->page->getKey() . $this->page->getKey())
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testViewPrivateMetadata($user): void
     {
         $this->$user->givePermissionTo(['pages.show_details', 'pages.show_metadata_private']);
@@ -310,9 +330,9 @@ class PageTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider booleanProvider
      */
-    public function testCreateWithSeo($user): void
+    public function testCreateWithSeo($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo('pages.add');
 
@@ -320,30 +340,42 @@ class PageTest extends TestCase
         $page = [
             'name' => 'Test',
             'slug' => 'test-test',
-            'public' => true,
+            'public' => $boolean,
             'content_html' => $html,
             'seo' => [
                 'title' => 'seo title',
                 'description' => 'seo description',
+                'no_index' => $boolean,
             ],
         ];
 
         $response = $this->actingAs($this->$user)->json('POST', '/pages', $page);
-        $response->assertJson([
-            'data' => $page,
-        ])->assertCreated();
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'title' => $page['seo']['title'],
+                'description' => $page['seo']['description'],
+                'no_index' => $booleanValue,
+            ])
+            ->assertJsonFragment([
+                'name' => $page['name'],
+                'slug' => $page['slug'],
+                'public' => $booleanValue,
+                'content_html' => $page['content_html'],
+            ]);
 
         $this->assertDatabaseHas('pages', [
             'id' => $response->getData()->data->id,
             'name' => 'Test',
             'slug' => 'test-test',
-            'public' => true,
+            'public' => $booleanValue,
             'content_html' => $html,
         ]);
         $this->assertDatabaseHas('seo_metadata', [
             'title' => 'seo title',
             'description' => 'seo description',
             'model_id' => $response->getData()->data->id,
+            'no_index' => $booleanValue,
         ]);
     }
 
@@ -497,9 +529,9 @@ class PageTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider booleanProvider
      */
-    public function testUpdateWithSeo($user): void
+    public function testUpdateWithSeo($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo('pages.edit');
 
@@ -507,11 +539,12 @@ class PageTest extends TestCase
         $page = [
             'name' => 'Test 2',
             'slug' => 'test-2',
-            'public' => false,
+            'public' => $boolean,
             'content_html' => $html,
             'seo' => [
                 'title' => 'seo title',
                 'description' => 'seo description',
+                'no_index' => $boolean,
             ],
         ];
 
@@ -526,18 +559,28 @@ class PageTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJson(['data' => $page]);
+            ->assertJsonFragment([
+                'title' => $page['seo']['title'],
+                'description' => $page['seo']['description'],
+                'no_index' => $booleanValue,
+            ])->assertJsonFragment([
+                'name' => $page['name'],
+                'slug' => $page['slug'],
+                'public' => $booleanValue,
+                'content_html' => $html,
+            ]);
 
         $this->assertDatabaseHas('pages', [
             'id' => $this->page->getKey(),
             'name' => 'Test 2',
             'slug' => 'test-2',
-            'public' => false,
+            'public' => $booleanValue,
             'content_html' => $html,
         ]);
         $this->assertDatabaseHas('seo_metadata', [
             'title' => 'seo title',
             'description' => 'seo description',
+            'no_index' => $booleanValue,
         ]);
     }
 

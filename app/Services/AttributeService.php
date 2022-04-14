@@ -8,17 +8,24 @@ use App\Models\Attribute;
 use App\Models\Product;
 use App\Services\Contracts\AttributeOptionServiceContract;
 use App\Services\Contracts\AttributeServiceContract;
+use App\Services\Contracts\MetadataServiceContract;
+use Heseya\Dto\Missing;
 use Illuminate\Support\Arr;
 
 class AttributeService implements AttributeServiceContract
 {
-    public function __construct(private AttributeOptionServiceContract $attributeOptionService)
-    {
+    public function __construct(
+        private AttributeOptionServiceContract $attributeOptionService,
+        private MetadataServiceContract $metadataService,
+    ) {
     }
 
     public function create(AttributeDto $dto): Attribute
     {
         $attribute = Attribute::create($dto->toArray());
+        if (!($dto->getMetadata() instanceof Missing)) {
+            $this->metadataService->sync($attribute, $dto->getMetadata());
+        }
 
         $this->processAttributeOptions($attribute, $dto);
 
@@ -77,7 +84,11 @@ class AttributeService implements AttributeServiceContract
             );
 
         foreach ($dto->getOptions() as $option) {
-            $this->attributeOptionService->updateOrCreate($attribute->getKey(), $option);
+            $attributeOption = $this->attributeOptionService->updateOrCreate($attribute->getKey(), $option);
+
+            if (!($option->getMetadata() instanceof Missing)) {
+                $this->metadataService->sync($attributeOption, $option->getMetadata());
+            }
         }
 
         return $attribute->refresh();

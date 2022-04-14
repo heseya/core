@@ -142,6 +142,86 @@ class OrderUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testFullUpdateOrderWithPartialAddresses($user): void
+    {
+        $this->$user->givePermissionTo('orders.edit');
+
+        Event::fake([OrderUpdated::class]);
+
+        $email = $this->faker->email();
+        $comment = $this->faker->text(200);
+
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+            'email' => $email,
+            'comment' => $comment,
+            'delivery_address' => [
+                'name' => 'delivery test',
+            ],
+            'invoice_address' => [
+                'name' => 'invoice test',
+            ],
+        ]);
+
+        $responseData = $response->getData()->data;
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'delivery_address' => [
+                    'id' => $this->addressDelivery->getKey(),
+                    'address' => $this->addressDelivery->address,
+                    'city' => $this->addressDelivery->city,
+                    'country' => $this->addressDelivery->country,
+                    'country_name' => $responseData->delivery_address->country_name,
+                    'name' => 'delivery test',
+                    'phone' => $this->addressDelivery->phone,
+                    'vat' => $this->addressDelivery->vat,
+                    'zip' => $this->addressDelivery->zip,
+                ],
+                'invoice_address' => [
+                    'id' => $this->addressInvoice->getKey(),
+                    'address' => $this->addressInvoice->address,
+                    'city' => $this->addressInvoice->city,
+                    'country' => $this->addressInvoice->country,
+                    'country_name' => $responseData->invoice_address->country_name,
+                    'name' => 'invoice test',
+                    'phone' => $this->addressInvoice->phone,
+                    'vat' => $this->addressInvoice->vat,
+                    'zip' => $this->addressInvoice->zip,
+                ],
+            ]);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'email' => $email,
+            'comment' => $comment,
+            'delivery_address_id' => $responseData->delivery_address->id,
+            'invoice_address_id' => $responseData->invoice_address->id,
+        ])
+            ->assertDatabaseHas('addresses', [
+                'id' => $this->addressDelivery->getKey(),
+                'address' => $this->addressDelivery->address,
+                'city' => $this->addressDelivery->city,
+                'country' => $this->addressDelivery->country,
+                'name' => 'delivery test',
+                'phone' => $this->addressDelivery->phone,
+                'vat' => $this->addressDelivery->vat,
+                'zip' => $this->addressDelivery->zip,
+            ])
+            ->assertDatabaseHas('addresses', [
+                'id' => $this->addressInvoice->getKey(),
+                'address' => $this->addressInvoice->address,
+                'city' => $this->addressInvoice->city,
+                'country' => $this->addressInvoice->country,
+                'name' => 'invoice test',
+                'phone' => $this->addressInvoice->phone,
+                'vat' => $this->addressInvoice->vat,
+                'zip' => $this->addressInvoice->zip,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testFullUpdateOrderWithWebHookQueue($user): void
     {
         $this->$user->givePermissionTo('orders.edit');
@@ -433,12 +513,12 @@ class OrderUpdateTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'id' => $this->order->getKey(),
-                'comment' => '',
+                'comment' => null,
             ]);
 
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
-            'comment' => '',
+            'comment' => null,
         ]);
 
         Event::assertDispatched(OrderUpdated::class);

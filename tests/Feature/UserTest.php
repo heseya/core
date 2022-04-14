@@ -214,6 +214,7 @@ class UserTest extends TestCase
                 'avatar' => $otherUser->avatar,
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
+                'consents' => [],
                 'metadata' => [],
             ]);
     }
@@ -241,6 +242,7 @@ class UserTest extends TestCase
                 'avatar' => $otherUser->avatar,
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
+                'consents' => [],
                 'metadata' => [],
             ]);
     }
@@ -267,6 +269,7 @@ class UserTest extends TestCase
                 'avatar' => $otherUser->avatar,
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
+                'consents' => [],
                 'metadata' => [],
             ]);
     }
@@ -293,6 +296,7 @@ class UserTest extends TestCase
                 'avatar' => $otherUser->avatar,
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
+                'consents' => [],
                 'metadata' => [],
             ]);
     }
@@ -314,6 +318,24 @@ class UserTest extends TestCase
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected + ['permissions' => []]]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWrongId($user): void
+    {
+        $this->$user->givePermissionTo('users.show_details');
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/users/id:its-not-uuid')
+            ->assertNotFound();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/users/id:' . $this->user->getKey() . $this->user->getKey())
+            ->assertNotFound();
     }
 
     /**

@@ -104,7 +104,13 @@
             "@composer style"
         ],
         "test": [
-            "@php artisan test --env=.env --parallel"
+            "@php artisan test --env=.env"
+        ],
+        "scout-import": [
+            "@php artisan scout:import 'App\\Models\\Product'"
+        ],
+        "scout-clear": [
+            "@php artisan scout:delete-index products"
         ]
     },
     "repositories": [

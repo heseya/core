@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\Discount;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\WebHook;
 use App\Policies\AuthenticatedPolicy;
+use App\Policies\DiscountPolicy;
 use App\Policies\OrderPolicy;
 use App\Policies\UserPolicy;
 use App\Policies\WebHookPolicy;
@@ -24,6 +26,7 @@ class AuthServiceProvider extends ServiceProvider
         WebHook::class => WebHookPolicy::class,
         Order::class => OrderPolicy::class,
         User::class => UserPolicy::class,
+        Discount::class => DiscountPolicy::class,
     ];
 
     /**

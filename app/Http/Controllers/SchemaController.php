@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\IndexSchemaRequest;
 use App\Http\Requests\SchemaStoreRequest;
+use App\Http\Requests\SchemaUpdateRequest;
 use App\Http\Resources\SchemaResource;
 use App\Models\Product;
 use App\Models\Schema;
@@ -58,7 +59,7 @@ class SchemaController extends Controller
         return SchemaResource::make($schema);
     }
 
-    public function update(SchemaStoreRequest $request, Schema $schema): JsonResource
+    public function update(SchemaUpdateRequest $request, Schema $schema): JsonResource
     {
         $schema->update($request->validated());
 

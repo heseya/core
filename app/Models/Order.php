@@ -13,12 +13,12 @@ use App\Criteria\WhereCreatedBefore;
 use App\Criteria\WhereHasStatusHidden;
 use App\Models\Contracts\SortableContract;
 use App\Traits\HasMetadata;
+use App\Traits\HasOrderDiscount;
 use App\Traits\Sortable;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -33,7 +33,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  */
 class Order extends Model implements AuditableContract, SortableContract
 {
-    use HasFactory, HasCriteria, Sortable, Notifiable, Auditable, HasMetadata;
+    use HasFactory, HasCriteria, Sortable, Notifiable, Auditable, HasMetadata, HasOrderDiscount;
 
     protected $fillable = [
         'code',
@@ -42,15 +42,18 @@ class Order extends Model implements AuditableContract, SortableContract
         'comment',
         'status_id',
         'shipping_method_id',
+        'shipping_price_initial',
         'shipping_price',
         'shipping_number',
         'delivery_address_id',
         'invoice_address_id',
         'created_at',
-        'user_id',
-        'user_type',
+        'buyer_id',
+        'buyer_type',
         'summary',
         'paid',
+        'cart_total_initial',
+        'cart_total',
     ];
 
     protected $auditInclude = [
@@ -79,7 +82,7 @@ class Order extends Model implements AuditableContract, SortableContract
         'shipping_method_id',
         'code' => Like::class,
         'email' => Like::class,
-        'user_id',
+        'buyer_id',
         'status.hidden' => WhereHasStatusHidden::class,
         'paid',
         'from' => WhereCreatedAfter::class,
@@ -144,7 +147,7 @@ class Order extends Model implements AuditableContract, SortableContract
     {
         return !$this->paid &&
             !$this->status->cancel &&
-            $this->shippingMethod->paymentMethods()->count() > 0;
+            $this->shippingMethod->paymentMethods->count() > 0;
     }
 
     public function isPaid(): bool
@@ -201,14 +204,6 @@ class Order extends Model implements AuditableContract, SortableContract
         return $this->hasManyThrough(Deposit::class, OrderProduct::class);
     }
 
-    public function discounts(): BelongsToMany
-    {
-        return $this
-            ->belongsToMany(Discount::class, 'order_discounts')
-            ->withPivot(['type', 'discount'])
-            ->withTrashed();
-    }
-
     /**
      * @param array $items
      */
@@ -241,8 +236,8 @@ class Order extends Model implements AuditableContract, SortableContract
         return $code;
     }
 
-    public function user(): MorphTo
+    public function buyer(): MorphTo
     {
-        return $this->morphTo('order', 'user_type', 'user_id', 'id');
+        return $this->morphTo('order', 'buyer_type', 'buyer_id', 'id');
     }
 }

@@ -20,9 +20,11 @@ use App\Notifications\TFAInitialization;
 use App\Notifications\TFASecurityCode;
 use App\Notifications\UserRegistered;
 use App\Services\Contracts\AuthServiceContract;
+use App\Services\Contracts\ConsentServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
@@ -35,6 +37,7 @@ class AuthService implements AuthServiceContract
     public function __construct(
         protected TokenServiceContract $tokenService,
         protected OneTimeSecurityCodeContract $oneTimeSecurityCodeService,
+        protected ConsentServiceContract $consentService,
     ) {
     }
 
@@ -276,7 +279,22 @@ class AuthService implements AuthServiceContract
 
         $user->syncRoles($authenticated);
 
+        $this->consentService->syncUserConsents($user, $dto->getConsents());
+
         $user->notify(new UserRegistered());
+
+        return $user;
+    }
+
+    public function updateProfile(?string $name, ?array $consents): User
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $user->update([
+            'name' => $name ?? $user->name,
+        ]);
+
+        $this->consentService->updateUserConsents(new Collection($consents), $user);
 
         return $user;
     }

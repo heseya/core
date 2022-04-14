@@ -6,6 +6,14 @@ use BenSampo\Enum\Enum;
 
 class DiscountType extends Enum
 {
-    public const PERCENTAGE = 0;
-    public const AMOUNT = 1;
+    public const PERCENTAGE = 'percentage';
+    public const AMOUNT = 'amount';
+
+    public static function getPriority($value): int
+    {
+        return match ($value) {
+            self::AMOUNT => 0,
+            self::PERCENTAGE => 1,
+        };
+    }
 }

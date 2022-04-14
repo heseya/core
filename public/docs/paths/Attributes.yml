@@ -45,10 +45,7 @@ Attributes:
       - Attributes
     summary: 'add new attribute'
     requestBody:
-      content:
-        application/json:
-          schema:
-            $ref: './../schemas/Attributes.yml#/Attribute'
+      $ref: './../requests/Attributes.yml#Attribute'
     responses:
       201:
         description: Created
@@ -173,10 +170,7 @@ AttributeOption:
         schema:
           type: integer
     requestBody:
-      content:
-        application/json:
-          schema:
-            $ref: './../schemas/Attributes.yml#/AttributeOption'
+      $ref: './../requests/Attributes.yml#AttributeOption'
 AttributeOptionParams:
   patch:
     tags:

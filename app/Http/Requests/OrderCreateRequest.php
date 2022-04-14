@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\DiscountAvailable;
+use Illuminate\Validation\Rule;
 
 class OrderCreateRequest extends OrderItemsRequest
 {
@@ -29,8 +29,16 @@ class OrderCreateRequest extends OrderItemsRequest
             'invoice_address.country' => ['nullable', 'string', 'size:2'],
             'invoice_address.vat' => ['nullable', 'string', 'max:15'],
 
-            'discounts' => ['nullable', 'array'],
-            'discounts.*' => ['string', 'max:64', 'exists:discounts,code', new DiscountAvailable()],
+            'coupons' => ['nullable', 'array'],
+            'coupons.*' => ['string', 'max:64', 'exists:discounts,code'],
+
+            'sale_ids' => ['nullable'],
+            'sale_ids.*' => [
+                'uuid',
+                Rule::exists('discounts', 'id')->where(function ($query) {
+                    return $query->where('code', null);
+                }),
+            ],
 
             'validation' => ['boolean'],
         ];

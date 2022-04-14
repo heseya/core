@@ -93,6 +93,56 @@ class ProductSetUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateWithPartialData($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.edit');
+
+        Event::fake([ProductSetUpdated::class]);
+
+        $newSet = ProductSet::factory()->create([
+            'public' => false,
+            'order' => 40,
+        ]);
+
+        $set = [
+            'name' => 'Test Edit',
+        ];
+
+        $parentId = [
+            'parent_id' => null,
+        ];
+
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/product-sets/id:' . $newSet->getKey(),
+            $set + $parentId + [
+                'children_ids' => [],
+                'slug_suffix' => 'test-edit',
+                'slug_override' => false,
+            ],
+        );
+        $response
+            ->assertOk()
+            ->assertJson(['data' => $set + [
+                'parent' => null,
+                'children_ids' => [],
+                'slug' => 'test-edit',
+                'slug_suffix' => 'test-edit',
+                'slug_override' => false,
+            ],
+            ]);
+
+        $this->assertDatabaseHas('product_sets', [
+            'name' => 'Test Edit',
+            'public' => false,
+        ] +
+            $parentId + [
+                'slug' => 'test-edit',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateWithWebHook($user): void
     {
         $this->$user->givePermissionTo('product_sets.edit');
@@ -395,6 +445,79 @@ class ProductSetUpdateTest extends TestCase
         $this->assertDatabaseHas('seo_metadata', [
             'title' => 'seo title',
             'description' => 'seo description',
+        ]);
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testUpdateBooleanValues($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('product_sets.edit');
+
+        $newSet = ProductSet::factory()->create([
+            'public' => false,
+            'order' => 40,
+        ]);
+
+        $set = [
+            'name' => 'Test Edit',
+            'public' => $boolean,
+            'hide_on_index' => $boolean,
+        ];
+
+        $seo = SeoMetadata::factory()->create();
+        $newSet->seo()->save($seo);
+
+        $parentId = [
+            'parent_id' => null,
+        ];
+
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/product-sets/id:' . $newSet->getKey(),
+            $set + $parentId + [
+                'children_ids' => [],
+                'slug_suffix' => 'test-edit',
+                'slug_override' => $boolean,
+                'seo' => [
+                    'title' => 'seo title',
+                    'description' => 'seo description',
+                    'no_index' => $boolean,
+                ],
+            ],
+        );
+
+        $setResponse = array_merge($set, ['public' => $booleanValue, 'hide_on_index' => $booleanValue]);
+
+        $response
+            ->assertOk()
+            ->assertJson(
+                [
+                    'data' => $setResponse + [
+                        'parent' => null,
+                        'children_ids' => [],
+                        'slug' => 'test-edit',
+                        'slug_suffix' => 'test-edit',
+                        'slug_override' => false,
+                        'seo' => [
+                            'title' => 'seo title',
+                            'description' => 'seo description',
+                            'no_index' => $booleanValue,
+                        ],
+                    ],
+                ]
+            );
+
+        $this->assertDatabaseHas(
+            'product_sets',
+            $setResponse + $parentId + [
+                'slug' => 'test-edit',
+            ]
+        );
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => 'seo title',
+            'description' => 'seo description',
+            'no_index' => $booleanValue,
         ]);
     }
 

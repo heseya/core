@@ -27,7 +27,7 @@ class UserController extends Controller
         $paginator = $this->userService->index(
             $request->only('name', 'email', 'search', 'ids', 'metadata', 'metadata_private'),
             $request->input('sort', 'created_at:asc'),
-            $request->input('pagination_limit', 12)
+            $request->input('limit', 12)
         );
 
         /** @var ResourceCollection $userCollection */

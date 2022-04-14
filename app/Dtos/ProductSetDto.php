@@ -21,6 +21,8 @@ class ProductSetDto extends Dto
     private string|null|Missing $cover_id;
     private array|null|Missing $attributes_ids;
 
+    private array|Missing $metadata;
+
     public static function fromFormRequest(ProductSetStoreRequest|ProductSetUpdateRequest $request): self
     {
         return new self(
@@ -35,6 +37,7 @@ class ProductSetDto extends Dto
             description_html: $request->input('description_html'),
             cover_id: $request->input('cover_id'),
             attributes_ids: $request->input('attributes'),
+            metadata: ProductCreateDto::mapMetadata($request),
         );
     }
 
@@ -91,5 +94,10 @@ class ProductSetDto extends Dto
     public function getAttributesIds(): Missing|null|array
     {
         return $this->attributes_ids;
+    }
+
+    public function getMetadata(): Missing|array
+    {
+        return $this->metadata;
     }
 }

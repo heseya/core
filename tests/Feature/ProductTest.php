@@ -3,6 +3,9 @@
 namespace Tests\Feature;
 
 use App\Enums\AttributeType;
+use App\Enums\ConditionType;
+use App\Enums\DiscountTargetType;
+use App\Enums\DiscountType;
 use App\Enums\MediaType;
 use App\Enums\MetadataType;
 use App\Enums\SchemaType;
@@ -12,6 +15,8 @@ use App\Events\ProductUpdated;
 use App\Listeners\WebHookEventListener;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
+use App\Models\ConditionGroup;
+use App\Models\Discount;
 use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductAttribute;
@@ -21,7 +26,6 @@ use App\Models\SeoMetadata;
 use App\Models\WebHook;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\ProductServiceContract;
-use Carbon\Carbon;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
@@ -30,30 +34,24 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Spatie\WebhookServer\CallWebhookJob;
-use Tests\Support\ElasticTest;
 use Tests\TestCase;
 
 class ProductTest extends TestCase
 {
-    use ElasticTest;
-
     private Product $product;
     private Product $hidden_product;
 
     private array $expected;
     private array $expected_short;
-    private array $expected_attribute;
-    private array $expected_attribute_short;
 
     private ProductServiceContract $productService;
-    private AvailabilityServiceContract $availabilityService;
 
     public function setUp(): void
     {
         parent::setUp();
 
         $this->productService = App::make(ProductServiceContract::class);
-        $this->availabilityService = App::make(AvailabilityServiceContract::class);
+        $availabilityService = App::make(AvailabilityServiceContract::class);
 
         $this->product = Product::factory()->create([
             'public' => true,
@@ -117,7 +115,7 @@ class ProductTest extends TestCase
 
         $this->product->attributes->first()->pivot->options()->attach($option->getKey());
 
-        $this->availabilityService->calculateAvailabilityOnOrderAndRestock($item);
+        $availabilityService->calculateAvailabilityOnOrderAndRestock($item);
 
         /**
          * Expected short response
@@ -133,7 +131,7 @@ class ProductTest extends TestCase
             'cover' => null,
         ];
 
-        $this->expected_attribute_short = [
+        $expected_attribute_short = [
             'attributes' => [
                 [
                     'name' => $attribute->name,
@@ -151,8 +149,8 @@ class ProductTest extends TestCase
             ],
         ];
 
-        $this->expected_attribute = $this->expected_attribute_short;
-        $this->expected_attribute['attributes'][0] += [
+        $expected_attribute = $expected_attribute_short;
+        $expected_attribute['attributes'][0] += [
             'id' => $attribute->getKey(),
             'slug' => $attribute->slug,
             'description' => $attribute->description,
@@ -164,7 +162,7 @@ class ProductTest extends TestCase
         /**
          * Expected full response
          */
-        $this->expected = array_merge($this->expected_short, $this->expected_attribute, [
+        $this->expected = array_merge($this->expected_short, $expected_attribute, [
             'description_html' => $this->product->description_html,
             'description_short' => $this->product->description_short,
             'gallery' => [],
@@ -233,95 +231,18 @@ class ProductTest extends TestCase
         $this
             ->actingAs($this->$user)
             ->json('GET', '/products', ['limit' => 100])
-            ->assertOk();
-//            ->assertJsonCount(1, 'data') // Should show only public products.
-//            ->assertJson(['data' => [
-//                0 => $this->expected_short,
-//            ]]);
-
-        $this->assertElasticQuery([
-            'bool' => [
-                'must' => [],
-                'should' => [],
-                'filter' => [
-                    [
-                        'term' => [
-                            'public' => [
-                                'value' => true,
-                                'boost' => 1.0,
-                            ],
-                        ],
-                    ],
-                    [
-                        'term' => [
-                            'hide_on_index' => [
-                                'value' => false,
-                                'boost' => 1.0,
-                            ],
-                        ],
-                    ],
+            ->assertOk()
+            ->assertJsonCount(1, 'data') // Should show only public products.
+            ->assertJson([
+                'data' => [
+                    0 => $this->expected_short,
                 ],
-            ],
-        ], 100);
+            ])->assertJsonFragment([
+                'min_price_discounted' => $this->product->price_min,
+                'max_price_discounted' => $this->product->price_max,
+            ]);
 
         $this->assertQueryCountLessThan(20);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testIndexIdsSearch($user): void
-    {
-        $this->$user->givePermissionTo('products.show');
-
-        $firstProduct = Product::factory()->create([
-            'public' => true,
-        ]);
-
-        $secondProduct = Product::factory()->create([
-            'public' => true,
-            'created_at' => Carbon::now()->addHour(),
-        ]);
-
-        // Dummy product to check if response will return only 2 products created above
-        Product::factory()->create([
-            'public' => true,
-            'created_at' => Carbon::now()->addHour(),
-        ]);
-
-        $this
-            ->actingAs($this->$user)
-            ->json('GET', '/products', [
-                'ids' => "{$firstProduct->getKey()},{$secondProduct->getKey()}",
-            ])
-            ->assertOk();
-//            ->assertJsonCount(2, 'data');
-
-        $this->assertElasticQuery([
-            'bool' => [
-                'must' => [],
-                'should' => [],
-                'filter' => [
-                    [
-                        'terms' => [
-                            'id' => [
-                                $firstProduct->getKey(),
-                                $secondProduct->getKey(),
-                            ],
-                            'boost' => 1.0,
-                        ],
-                    ],
-                    [
-                        'term' => [
-                            'public' => [
-                                'value' => true,
-                                'boost' => 1.0,
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-        ]);
     }
 
     /**
@@ -343,16 +264,8 @@ class ProductTest extends TestCase
 
         $this->actingAs($this->$user)
             ->json('GET', '/products')
-            ->assertOk();
-//            ->assertJsonCount(3, 'data'); // Should show all products.
-
-        $this->assertElasticQuery([
-            'bool' => [
-                'must' => [],
-                'should' => [],
-                'filter' => [],
-            ],
-        ]);
+            ->assertOk()
+            ->assertJsonCount(3, 'data'); // Should show all products.
     }
 
     public function testShowUnauthorized(): void
@@ -382,6 +295,26 @@ class ProductTest extends TestCase
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWrongIdOrSlug($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $this->actingAs($this->$user)
+            ->getJson('/products/its_wrong_slug')
+            ->assertNotFound();
+
+        $this->actingAs($this->$user)
+            ->getJson('/products/id:its-not-uuid')
+            ->assertNotFound();
+
+        $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $this->product->getKey() . $this->product->getKey())
+            ->assertNotFound();
     }
 
     /**
@@ -688,6 +621,130 @@ class ProductTest extends TestCase
                 'twitter_card' => $seo->twitter_card,
                 'keywords' => $seo->keywords,
             ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWithSales($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 3000,
+            'price_min' => 2500,
+            'price_max' => 3500,
+        ]);
+
+        // Applied - product is on list
+        $sale1 = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Testowa promocja obowiązująca',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        $sale1->products()->attach($product);
+
+        // Not applied - product is not on list
+        $sale2 = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Testowa promocja',
+            'value' => 10,
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        // Not applied - invalid target type
+        $sale3 = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Order-value',
+            'value' => 5,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        $sale3->products()->attach($product);
+
+        // Not applied - product is on list, but target_is_allow_list = false
+        $sale4 = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Not allow list',
+            'value' => 5,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => false,
+            'code' => null,
+        ]);
+
+        $sale4->products()->attach($product);
+
+        // Not applied - invalid condition type in condition group
+        $sale5 = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Condition type Order-value',
+            'value' => 5,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'condition_group_id' => $conditionGroup->getKey(),
+            'type' => ConditionType::ORDER_VALUE,
+            'value' => [
+                'min_value' => 20,
+                'max_value' => 10000,
+                'include_taxes' => false,
+                'is_in_range' => true,
+            ],
+        ]);
+
+        $sale5->conditionGroups()->attach($conditionGroup);
+
+        $sale5->products()->attach($product);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $product->getKey());
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $product->getKey(),
+                'name' => $product->name,
+                'price' => $product->price,
+                'price_min' => $product->price_min,
+                'price_max' => $product->price_max,
+                'min_price_discounted' => 2250,
+                'max_price_discounted' => 3150,
+            ])
+            ->assertJsonFragment([
+                'id' => $sale1->getKey(),
+                'name' => $sale1->name,
+            ])
+            ->assertJsonMissing([
+                'id' => $sale2->getKey(),
+            ])
+            ->assertJsonMissing([
+                'id' => $sale3->getKey(),
+            ])
+            ->assertJsonMissing([
+                'id' => $sale4->getKey(),
+            ])
+            ->assertJsonMissing([
+                'id' => $sale5->getKey(),
             ]);
     }
 
@@ -1151,9 +1208,9 @@ class ProductTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider booleanProvider
      */
-    public function testCreateWithSeo($user): void
+    public function testCreateWithSeo($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo('products.add');
 
@@ -1167,12 +1224,12 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'price' => 100.00,
             'description_html' => '<h1>Description</h1>',
-            'public' => true,
+            'public' => $boolean,
             'seo' => [
                 'title' => 'seo title',
                 'description' => 'seo description',
                 'og_image_id' => $media->getKey(),
-                'no_index' => true,
+                'no_index' => $boolean,
             ],
         ]);
 
@@ -1182,7 +1239,7 @@ class ProductTest extends TestCase
                 'slug' => 'test',
                 'name' => 'Test',
                 'price' => 100,
-                'public' => true,
+                'public' => $booleanValue,
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -1192,7 +1249,7 @@ class ProductTest extends TestCase
                     'og_image' => [
                         'id' => $media->getKey(),
                     ],
-                    'no_index' => true,
+                    'no_index' => $booleanValue,
                 ],
             ],
             ]);
@@ -1201,7 +1258,7 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'name' => 'Test',
             'price' => 100,
-            'public' => true,
+            'public' => $booleanValue,
             'description_html' => '<h1>Description</h1>',
         ]);
 
@@ -1210,7 +1267,7 @@ class ProductTest extends TestCase
             'description' => 'seo description',
             'model_id' => $response->getData()->data->id,
             'model_type' => Product::class,
-            'no_index' => true,
+            'no_index' => $booleanValue,
         ]);
 
         $this->assertDatabaseCount('seo_metadata', 2);
@@ -1917,6 +1974,56 @@ class ProductTest extends TestCase
     }
 
     /**
+     * @dataProvider booleanProvider
+     */
+    public function testUpdateBooleanValues($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $product = Product::factory([
+            'name' => 'Created',
+            'slug' => 'created',
+            'price' => 100,
+            'description_html' => '<h1>Description</h1>',
+            'public' => false,
+            'order' => 1,
+        ])->create();
+
+        $seo = SeoMetadata::factory()->create();
+        $product->seo()->save($seo);
+
+        $response = $this->actingAs($this->$user)->json('PATCH', '/products/id:' . $product->getKey(), [
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150,
+            'description_html' => '<h1>New description</h1>',
+            'public' => $boolean,
+            'seo' => [
+                'title' => 'seo title',
+                'description' => 'seo description',
+                'no_index' => $boolean,
+            ],
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'name' => 'Updated',
+            'slug' => 'updated',
+            'price' => 150,
+            'description_html' => '<h1>New description</h1>',
+            'public' => $booleanValue,
+        ]);
+
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => 'seo title',
+            'description' => 'seo description',
+            'no_index' => $booleanValue,
+        ]);
+    }
+
+    /**
      * @dataProvider authProvider
      */
     public function testUpdateMinMaxPrice($user): void
@@ -1942,7 +2049,6 @@ class ProductTest extends TestCase
         $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $product->getKey(), [
             'name' => $product->name,
             'slug' => $product->slug,
-            'price' => $product->price,
             'public' => $product->public,
             'price' => $productNewPrice,
             'sets' => [],
@@ -2204,19 +2310,5 @@ class ProductTest extends TestCase
                 && $payload['data_type'] === 'Product'
                 && $payload['event'] === 'ProductDeleted';
         });
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testIndexSetsDefaultAsArray($user): void
-    {
-        $this->$user->givePermissionTo('products.show');
-
-        $response = $this->actingAs($this->$user)->json('GET', '/products?full=1&sets=');
-        $response
-            ->assertOk()
-            ->assertJsonCount(0, 'data')
-            ->assertJson(['data' => []]);
     }
 }

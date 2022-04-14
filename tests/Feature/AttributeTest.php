@@ -96,40 +96,21 @@ class AttributeTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider booleanProvider
      */
-    public function testIndexGlobalFlagTrue($user): void
+    public function testIndexGlobalFlagBooleanValues($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo('attributes.show');
 
-        $this->newAttribute['global'] = true;
+        $this->newAttribute['global'] = $booleanValue;
         unset($this->newAttribute['options']);
         Attribute::create($this->newAttribute);
 
         $this
             ->actingAs($this->$user)
-            ->getJson('/attributes?global=1')
+            ->json('GET', '/attributes', ['global' => $boolean])
             ->assertOk()
-            ->assertJsonMissing(['global' => false])
-            ->assertJsonFragment($this->newAttribute);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testIndexGlobalFlagFalse($user): void
-    {
-        $this->$user->givePermissionTo('attributes.show');
-
-        $this->newAttribute['global'] = false;
-        unset($this->newAttribute['options']);
-        Attribute::create($this->newAttribute);
-
-        $this
-            ->actingAs($this->$user)
-            ->getJson('/attributes?global=0')
-            ->assertOk()
-            ->assertJsonMissing(['global' => true])
+            ->assertJsonMissing(['global' => !$booleanValue])
             ->assertJsonFragment($this->newAttribute);
     }
 
@@ -254,6 +235,24 @@ class AttributeTest extends TestCase
                 'value_number' => $this->option->value_number,
                 'value_date' => $this->option->value_date,
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWrongId($user): void
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes/id:its-not-uuid')
+            ->assertNotFound();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes/id:'. $this->attribute->getKey() . $this->attribute->getKey())
+            ->assertNotFound();
     }
 
     /**
@@ -425,6 +424,101 @@ class AttributeTest extends TestCase
                 'type' => $this->newAttribute['type'],
                 'global' => $this->newAttribute['global'],
                 'sortable' => $this->newAttribute['sortable'],
+            ])
+            ->assertJsonFragment(['index' => 1] + $this->newAttribute['options'][0])
+            ->assertJsonFragment(['index' => 2] + $this->newAttribute['options'][1]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('attributes.add');
+
+        $attribute = Attribute::factory()->make()->toArray();
+        $attribute['options'] = [
+            AttributeOption::factory()->make(['name' => 'optionOne'])->toArray() + [
+                'metadata' => [
+                    'optionOne' => 'optionOneValue',
+                ],
+                'metadata_private' => [
+                    'optionOnePriv' => 'optionOneValuePriv',
+                ],
+            ],
+            AttributeOption::factory()->make(['name' => 'optionTwo'])->toArray() + [
+                'metadata' => [
+                    'optionTwo' => 'optionTwoValue',
+                ],
+            ],
+        ];
+
+        $response = $this->actingAs($this->$user)
+            ->postJson('/attributes', $attribute + [
+                'metadata' => [
+                    'attributeMeta' => 'attributeValueOne',
+                ],
+                'metadata_private' => [
+                    'attributeMetaPriv' => 'attributeValueOnePriv',
+                ],
+            ]);
+
+        $createdAttribute = Attribute::find($response->getData()->data->id);
+        $optionOne = $createdAttribute->options()->where('name', 'optionOne')->first();
+        $optionTwo = $createdAttribute->options()->where('name', 'optionTwo')->first();
+
+        $this->assertDatabaseCount('metadata', 5)
+            ->assertDatabaseHas('metadata', [
+                'name' => 'attributeMeta',
+                'value' => 'attributeValueOne',
+                'model_id' => $createdAttribute->getKey(),
+                'public' => true,
+            ])
+            ->assertDatabaseHas('metadata', [
+                'name' => 'attributeMetaPriv',
+                'value' => 'attributeValueOnePriv',
+                'model_id' => $createdAttribute->getKey(),
+                'public' => false,
+            ])
+            ->assertDatabaseHas('metadata', [
+                'name' => 'optionOne',
+                'value' => 'optionOneValue',
+                'model_id' => $optionOne->getKey(),
+                'public' => true,
+            ])
+            ->assertDatabaseHas('metadata', [
+                'name' => 'optionOnePriv',
+                'value' => 'optionOneValuePriv',
+                'model_id' => $optionOne->getKey(),
+                'public' => false,
+            ])
+            ->assertDatabaseHas('metadata', [
+                'name' => 'optionTwo',
+                'value' => 'optionTwoValue',
+                'model_id' => $optionTwo->getKey(),
+                'public' => true,
+            ]);
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testCreateBooleanValues($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('attributes.add');
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/attributes', array_merge($this->newAttribute, ['global' => $boolean, 'sortable' => $boolean]))
+            ->assertCreated()
+            ->assertJsonStructure($this->expectedStructure)
+            ->assertJsonFragment([
+                'name' => $this->newAttribute['name'],
+                'slug' => $this->newAttribute['slug'],
+                'description' => $this->newAttribute['description'],
+                'type' => $this->newAttribute['type'],
+                'global' => $booleanValue,
+                'sortable' => $booleanValue,
             ])
             ->assertJsonFragment(['index' => 1] + $this->newAttribute['options'][0])
             ->assertJsonFragment(['index' => 2] + $this->newAttribute['options'][1]);
@@ -784,6 +878,24 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexOptionsWrongId($user): void
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes/id:its-not-uuid/options')
+            ->assertNotFound();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson("/attributes/id:{$this->attribute->getKey()}{$this->attribute->getKey()}/options")
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexOptionsMetadata($user): void
     {
         $this->$user->givePermissionTo('attributes.show');
@@ -913,6 +1025,31 @@ class AttributeTest extends TestCase
             ->assertJsonFragment($this->newOption);
 
         $this->assertDatabaseHas('attribute_options', $this->newOption);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testAddOptionWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('attributes.edit');
+
+        $response = $this->actingAs($this->$user)
+            ->postJson('/attributes/id:' . $this->attribute->getKey() . '/options', $this->newOption + [
+                'metadata' => [
+                    'optionMeta' => 'testValue',
+                ],
+            ])
+            ->assertCreated()
+            ->assertJsonFragment($this->newOption);
+
+        $this->assertDatabaseHas('attribute_options', $this->newOption)
+            ->assertDatabaseCount('metadata', 1)
+            ->assertDatabaseHas('metadata', [
+                'name' => 'optionMeta',
+                'value' => 'testValue',
+                'model_id' => $response->getData()->data->id,
+            ]);
     }
 
     /**

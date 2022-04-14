@@ -85,6 +85,40 @@ class StatusTest extends TestCase
     }
 
     /**
+     * @dataProvider booleanProvider
+     */
+    public function testCreateBooleanValues($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('statuses.add');
+
+        $status = [
+            'name' => 'Test Status',
+            'color' => 'ffffff',
+            'description' => 'To jest status testowy.',
+            'hidden' => $boolean,
+            'no_notifications' => $boolean,
+            'cancel' => $boolean,
+        ];
+
+        $statusResponse = array_merge(
+            $status,
+            [
+                'hidden' => $booleanValue,
+                'no_notifications' => $booleanValue,
+                'cancel' => $booleanValue,
+            ]
+        );
+
+        $response = $this->actingAs($this->$user)->json('POST', '/statuses', $status);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $statusResponse]);
+
+        $this->assertDatabaseHas('statuses', $statusResponse);
+    }
+
+    /**
      * @dataProvider authProvider
      */
     public function testCreateDefault($user): void
@@ -137,6 +171,43 @@ class StatusTest extends TestCase
             ->assertJson(['data' => $status]);
 
         $this->assertDatabaseHas('statuses', $status + ['id' => $this->status_model->getKey()]);
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testUpdateBooleanValues($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('statuses.edit');
+
+        $status = [
+            'name' => 'Test Status 2',
+            'color' => '444444',
+            'description' => 'Testowy opis testowego statusu 2.',
+            'hidden' => $boolean,
+            'no_notifications' => $boolean,
+            'cancel' => $boolean,
+        ];
+
+        $statusResponse = array_merge(
+            $status,
+            [
+                'hidden' => $booleanValue,
+                'no_notifications' => $booleanValue,
+                'cancel' => $booleanValue,
+            ]
+        );
+
+        $response = $this->actingAs($this->$user)->json(
+            'PATCH',
+            '/statuses/id:' . $this->status_model->getKey(),
+            $status,
+        );
+        $response
+            ->assertOk()
+            ->assertJson(['data' => $statusResponse]);
+
+        $this->assertDatabaseHas('statuses', $statusResponse + ['id' => $this->status_model->getKey()]);
     }
 
     public function testDeleteUnauthorized(): void

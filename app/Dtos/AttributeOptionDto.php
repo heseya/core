@@ -3,11 +3,15 @@
 namespace App\Dtos;
 
 use App\Http\Requests\AttributeOptionRequest;
+use App\Traits\MapMetadata;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
 
 class AttributeOptionDto extends Dto
 {
+    use MapMetadata;
+
+    public array|Missing $metadata;
     private string|null|Missing $id;
     private string|null|Missing $name;
     private float|null|Missing $value_number;
@@ -20,6 +24,7 @@ class AttributeOptionDto extends Dto
             name: $request->input('name', new Missing()),
             value_number: $request->input('value_number', new Missing()),
             value_date: $request->input('value_date', new Missing()),
+            metadata: self::mapMetadata($request),
         );
     }
 
@@ -30,6 +35,7 @@ class AttributeOptionDto extends Dto
             name: array_key_exists('name', $data) ? $data['name'] : null,
             value_number: array_key_exists('value_number', $data) ? $data['value_number'] : null,
             value_date: array_key_exists('value_date', $data) ? $data['value_date'] : null,
+            metadata: self::mapMetadataFromArray($data),
         );
     }
 

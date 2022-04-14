@@ -5,10 +5,15 @@ namespace App\Services;
 use App\Dtos\AttributeOptionDto;
 use App\Models\AttributeOption;
 use App\Services\Contracts\AttributeOptionServiceContract;
+use App\Services\Contracts\MetadataServiceContract;
 use Heseya\Dto\Missing;
 
 class AttributeOptionService implements AttributeOptionServiceContract
 {
+    public function __construct(private MetadataServiceContract $metadataService)
+    {
+    }
+
     public function create(string $attributeId, AttributeOptionDto $dto): AttributeOption
     {
         $data = array_merge(
@@ -18,8 +23,13 @@ class AttributeOptionService implements AttributeOptionServiceContract
             ],
             $dto->toArray(),
         );
+        $attributeOption = AttributeOption::create($data);
 
-        return AttributeOption::create($data);
+        if (!($dto->getMetadata() instanceof Missing)) {
+            $this->metadataService->sync($attributeOption, $dto->getMetadata());
+        }
+
+        return $attributeOption;
     }
 
     public function updateOrCreate(string $attributeId, AttributeOptionDto $dto): AttributeOption

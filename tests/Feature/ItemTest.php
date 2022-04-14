@@ -127,9 +127,9 @@ class ItemTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider booleanProvider
      */
-    public function testIndexFilterBySoldOut($user): void
+    public function testIndexFilterBySoldOut($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo('items.show');
 
@@ -141,19 +141,15 @@ class ItemTest extends TestCase
 
         $item_sold_out = Item::factory()->create();
 
+        $itemId = $booleanValue ? $item_sold_out->getKey() : $this->item->getKey();
+
         $this
             ->actingAs($this->$user)
-            ->json('GET', '/items', ['sold_out' => 1])
+            ->json('GET', '/items', ['sold_out' => $boolean])
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJson(['data' => [
-                0 => [
-                    'id' => $item_sold_out->getKey(),
-                    'name' => $item_sold_out->name,
-                    'sku' => $item_sold_out->sku,
-                    'quantity' => $item_sold_out->quantity,
-                ],
-            ],
+            ->assertJsonFragment([
+                'id' => $itemId,
             ]);
 
         $this->assertQueryCountLessThan(11);
@@ -291,6 +287,24 @@ class ItemTest extends TestCase
         $this->assertQueryCountLessThan(10);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewWrongId($user): void
+    {
+        $this->$user->givePermissionTo('items.show_details');
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/items/id:its-not-id')
+            ->assertNotFound();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/items/id:' . $this->item->getKey() . $this->item->getKey())
+            ->assertNotFound();
+    }
+
     public function testCreateUnauthorized(): void
     {
         Event::fake(ItemCreated::class);
@@ -405,11 +419,47 @@ class ItemTest extends TestCase
             '/items/id:' . $this->item->getKey(),
             $item,
         );
+
         $response
             ->assertOk()
             ->assertJson(['data' => $item]);
 
         $this->assertDatabaseHas('items', $item + ['id' => $this->item->getKey()]);
+
+        Event::assertDispatched(ItemUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithPartialData($user): void
+    {
+        $this->$user->givePermissionTo('items.edit');
+
+        Event::fake(ItemUpdated::class);
+
+        $item = [
+            'name' => 'Test 2',
+        ];
+
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        );
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'name' => 'Test 2',
+                'sku' => $this->item->sku,
+            ],
+            ]);
+
+        $this->assertDatabaseHas('items', [
+            'id' => $this->item->getKey(),
+            'sku' => $this->item->sku,
+            'name' => 'Test 2',
+        ]);
 
         Event::assertDispatched(ItemUpdated::class);
     }

@@ -57,14 +57,14 @@ Products:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Products.yml#Product'
+                    $ref: './../schemas/Products.yml#/Product'
               type: object
   post:
     tags:
       - Products
     summary: 'create product'
     requestBody:
-      $ref: './../requests/Products.yml#ProductStore'
+      $ref: './../requests/Products.yml#/ProductStore'
     responses:
       201:
         description: Created
@@ -73,7 +73,7 @@ Products:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Products.yml#ProductView'
+                  $ref: './../schemas/Products.yml#/ProductView'
               type: object
     security:
       - oauth: [ ]
@@ -97,7 +97,7 @@ ProductsSlug:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Products.yml#ProductView'
+                  $ref: './../schemas/Products.yml#/ProductView'
               type: object
 
 ProductsParams:
@@ -119,7 +119,7 @@ ProductsParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Products.yml#ProductView'
+                  $ref: './../schemas/Products.yml#/ProductView'
               type: object
     security:
       - oauth: [ ]
@@ -158,7 +158,7 @@ ProductsParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Products.yml#ProductView'
+                  $ref: './../schemas/Products.yml#/ProductView'
               type: object
     security:
       - oauth: [ ]

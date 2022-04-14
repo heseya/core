@@ -133,6 +133,47 @@ class SeoMetadataTest extends TestCase
     }
 
     /**
+     * @dataProvider booleanProvider
+     */
+    public function testCreateBooleanValues($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('seo.edit');
+
+        SeoMetadata::where('global', 1)->delete();
+
+        $seo = [
+            'title' => 'title',
+            'description' => 'description',
+            'no_index' => $boolean,
+        ];
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', '/seo', $seo)
+            ->assertCreated()
+            ->assertJson(function (AssertableJson $json) use ($seo, $booleanValue): void {
+                $json
+                    ->has('meta', function ($json): void {
+                        $json->has('seo')->etc();
+                    })
+                    ->has('data', function ($json) use ($seo, $booleanValue): void {
+                        $json
+                            ->where('title', $seo['title'])
+                            ->where('description', $seo['description'])
+                            ->where('no_index', $booleanValue)
+                            ->etc();
+                    })
+                    ->etc();
+            });
+
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => $seo['title'],
+            'description' => $seo['description'],
+            'global' => true,
+            'no_index' => $booleanValue,
+        ]);
+    }
+
+    /**
      * @dataProvider authProvider
      */
     public function testUpdateGlobal($user): void
@@ -165,6 +206,37 @@ class SeoMetadataTest extends TestCase
             'title' => $seo2->title,
             'description' => $seo2->description,
             'global' => true,
+        ]);
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testUpdateBooleanValues($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('seo.edit');
+
+        $seo2 = [
+            'title' => 'title',
+            'description' => 'description',
+            'no_index' => $boolean,
+        ];
+        $response = $this->actingAs($this->$user)->json('PATCH', '/seo', $seo2);
+
+        $response->assertOk()
+            ->assertJsonFragment([
+                'title' => $seo2['title'],
+                'description' => $seo2['description'],
+                'no_index' => $booleanValue,
+            ]);
+
+        $this->assertDatabaseCount('seo_metadata', 1);
+
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => $seo2['title'],
+            'description' => $seo2['description'],
+            'global' => true,
+            'no_index' => $booleanValue,
         ]);
     }
 

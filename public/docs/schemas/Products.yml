@@ -1,4 +1,5 @@
 Product:
+  type: object
   properties:
     id:
       type: string
@@ -56,7 +57,14 @@ Product:
       type: array
       items:
         $ref: './Items.yml#/ItemWithRequiredQuantity'
-#    type: object
+    min_price_discounted:
+      description: 'Min price after applied all sales'
+      type: numeric
+      example: 11.99
+    max_price_discounted:
+      description: 'Max price after applied all sales'
+      type: numeric
+      example: 19.99
 
 ProductView:
   type: object
@@ -67,7 +75,7 @@ ProductView:
           type: string
           example: 026bc5f6-8373-4aeb-972e-e78d72a67121
         description_html:
-          description: 'HTML formated text to be displayed as a product description'
+          description: 'HTML formatted text to be displayed as a product description'
           type: string
           example: '<h1>Lorem ipsum dolor sit amet</h1>'
         gallery:
@@ -94,3 +102,8 @@ ProductView:
             $ref: './Attributes.yml#/AttributeProduct'
         items:
           $ref: './Items.yml#/ItemWithRequiredQuantity'
+        sales:
+          description: 'List of all applied sales'
+          type: array
+          items:
+            $ref: './Sales.yml#/Sale'

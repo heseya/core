@@ -1,0 +1,43 @@
+CartProcess:
+  content:
+    application/json:
+      schema:
+        required:
+          - items
+        type: object
+        properties:
+          items:
+            description: 'List of products'
+            type: array
+            items:
+              $ref: '#/CartItem'
+          coupons:
+            type: array
+            items:
+              type: string
+              example: 'BLWEEK22'
+          shipping_method_id:
+            type: string
+            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+
+CartItem:
+  type: object
+  properties:
+    cartitem_id:
+      type: string
+      example: 1
+    product_id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    quantity:
+      type: number
+      example: 1.5
+    schemas:
+      properties:
+        119c0a63-1ea1-4769-8d5f-169f68de5598:
+          type: string
+          example: 123459fb-39a4-4dd0-8240-14793aa1f73b
+        02b97693-857c-4fb9-9999-47400ac5fbef:
+          type: string
+          example: 'HE + YA'
+      type: object
