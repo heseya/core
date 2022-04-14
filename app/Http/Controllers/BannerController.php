@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Dtos\BannerDto;
 use App\Http\Requests\BannerIndexRequest;
 use App\Http\Requests\BannerStoreRequest;
+use App\Http\Requests\BannerUpdateRequest;
 use App\Http\Resources\BannerResource;
 use App\Models\Banner;
 use App\Services\Contracts\BannerServiceContract;
@@ -31,6 +32,16 @@ class BannerController extends Controller
     {
         return BannerResource::make(
             $this->bannerService->create(
+                BannerDto::instantiateFromRequest($request)
+            )
+        );
+    }
+
+    public function update(Banner $banner, BannerUpdateRequest $request): JsonResource
+    {
+        return BannerResource::make(
+            $this->bannerService->update(
+                $banner,
                 BannerDto::instantiateFromRequest($request)
             )
         );

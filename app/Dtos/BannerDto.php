@@ -23,8 +23,8 @@ class BannerDto extends Dto implements InstantiateFromRequest
             name: $request->input('name'),
             active: $request->input('active'),
             responsive_media: Collection::make($request->input('responsive_media'))
-                ->map(function ($media) {
-                    return ResponsiveMediaDto::fromDataArray($media);
+                ->map(function ($group) {
+                    return Collection::make($group)->map(fn ($media) => ResponsiveMediaDto::fromDataArray($media));
                 })
         );
     }
