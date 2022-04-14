@@ -14,6 +14,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @property double $price
+ *
  * @mixin IdeHelperShippingMethod
  */
 class ShippingMethod extends Model implements AuditableContract

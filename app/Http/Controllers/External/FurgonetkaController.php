@@ -8,7 +8,6 @@ use App\Exceptions\PackageException;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\PackageTemplate;
-use App\Models\Status;
 use App\Services\Contracts\SettingsServiceContract;
 use Exception;
 use Illuminate\Http\JsonResponse;

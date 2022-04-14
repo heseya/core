@@ -12,7 +12,6 @@ use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\ProductServiceContract;
-use Exception;
 use Heseya\Resource\ResourceCollection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
