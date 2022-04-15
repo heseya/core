@@ -60,6 +60,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 
 class DiscountService implements DiscountServiceContract
 {
@@ -886,17 +887,26 @@ class DiscountService implements DiscountServiceContract
 
         $actualDate = Carbon::now();
 
-        if (!$conditionDto->getStartAt() instanceof Missing && !$conditionDto->getEndAt() instanceof Missing) {
+        $startAt = $conditionDto->getStartAt();
+        $endAt = $conditionDto->getEndAt();
+
+        $startAt = !$startAt instanceof Missing && !Str::contains($startAt, ':')
+            ? Str::before($startAt, 'T'). 'T00:00:00' : $startAt;
+
+        $endAt = !$endAt instanceof Missing && !Str::contains($endAt, ':')
+            ? Str::before($endAt, 'T'). 'T23:59:59' : $endAt;
+
+        if (!$startAt instanceof Missing && !$endAt instanceof Missing) {
             return $actualDate
-                ->between($conditionDto->getStartAt(), $conditionDto->getEndAt()) === $conditionDto->isIsInRange();
+                ->between($startAt, $endAt) === $conditionDto->isIsInRange();
         }
 
-        if (!$conditionDto->getStartAt() instanceof Missing) {
-            return $actualDate->greaterThanOrEqualTo($conditionDto->getStartAt()) === $conditionDto->isIsInRange();
+        if (!$startAt instanceof Missing) {
+            return $actualDate->greaterThanOrEqualTo($startAt) === $conditionDto->isIsInRange();
         }
 
-        if (!$conditionDto->getEndAt() instanceof Missing) {
-            return $actualDate->lessThanOrEqualTo($conditionDto->getEndAt()) === $conditionDto->isIsInRange();
+        if (!$endAt instanceof Missing) {
+            return $actualDate->lessThanOrEqualTo($endAt) === $conditionDto->isIsInRange();
         }
         return false;
     }
