@@ -1073,6 +1073,68 @@ class DiscountTest extends TestCase
     /**
      * @dataProvider authWithDiscountProvider
      */
+    public function testCreateDateBetweenCondition($user, $discountKind): void
+    {
+        $this->$user->givePermissionTo("${discountKind}.add");
+
+        $discount = [
+            'name' => 'Kupon',
+            'description' => 'Testowy kupon',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'priority' => 1,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+        ];
+
+        if ($discountKind === 'coupons') {
+            $discount['code'] = 'S43SA2';
+        }
+
+        $conditions = [
+            'condition_groups' => [
+                [
+                    'conditions' => [
+                        [
+                            'type' => ConditionType::DATE_BETWEEN,
+                            'is_in_range' => true,
+                            'start_at' => '2022-04-15',
+                            'end_at' => '2022-04-20',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $response = $this->actingAs($this->$user)->json('POST', "/${discountKind}", $discount + $conditions);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment($discount)
+            ->assertJsonFragment([
+                'type' => ConditionType::DATE_BETWEEN,
+                'is_in_range' => true,
+                'start_at' => '2022-04-15',
+                'end_at' => '2022-04-20',
+            ]);
+
+        $discountModel = Discount::find($response->getData()->data->id);
+        $conditionGroup = $discountModel->conditionGroups->first();
+
+        $this->assertDatabaseHas('discounts', $discount + ['id' => $discountModel->getKey()]);
+        $this->assertDatabaseCount('condition_groups', 1);
+        $this->assertDatabaseHas('discount_condition_groups', ['discount_id' => $discountModel->getKey()]);
+        $this->assertDatabaseCount('discount_conditions', 1);
+
+        $this->assertDatabaseHas('discount_conditions', [
+            'condition_group_id' => $conditionGroup->getKey(),
+            'type' => ConditionType::DATE_BETWEEN,
+        ]);
+    }
+
+    /**
+     * @dataProvider authWithDiscountProvider
+     */
     public function testCreateInvalidConditionType($user, $discountKind): void
     {
         $this->$user->givePermissionTo("${discountKind}.add");
