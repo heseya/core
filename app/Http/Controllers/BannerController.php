@@ -23,7 +23,7 @@ class BannerController extends Controller
     public function index(BannerIndexRequest $request): JsonResource
     {
         $query = Banner::searchByCriteria($request->validated())
-            ->with(['responsiveMedia', 'responsiveMedia.media']);
+            ->with(['responsiveMedia', 'responsiveMedia.media', 'metadata', 'metadataPrivate']);
 
         return BannerResource::collection(
             $query->paginate(Config::get('pagination.per_page'))

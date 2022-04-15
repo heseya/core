@@ -10,6 +10,8 @@ class BannerIndexRequest extends FormRequest
     {
         return [
             'slug' => ['nullable', 'string', 'max:255', 'alpha_dash'],
+            'metadata' => ['nullable', 'array'],
+            'metadata_private' => ['nullable', 'array'],
         ];
     }
 }
