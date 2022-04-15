@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\MetadataType;
 use App\Models\App;
+use App\Models\Banner;
 use App\Models\Discount;
 use App\Models\Item;
 use App\Models\Order;
@@ -258,6 +259,25 @@ class MetadataFilterTest extends TestCase
                     'prefix_url' => 'apps',
                     'public_role' => 'apps.show',
                     'private_role' => 'apps.show_metadata_private',
+                ],
+            ],
+
+            'banners as user' => [
+                'user',
+                [
+                    'model' => Banner::class,
+                    'prefix_url' => 'banners',
+                    'public_role' => 'banners.show',
+                    'private_role' => 'banners.show_metadata_private',
+                ],
+            ],
+            'banners as application' => [
+                'application',
+                [
+                    'model' => Banner::class,
+                    'prefix_url' => 'banners',
+                    'public_role' => 'banners.show',
+                    'private_role' => 'banners.show_metadata_private',
                 ],
             ],
         ];
