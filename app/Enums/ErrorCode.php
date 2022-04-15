@@ -27,18 +27,4 @@ final class ErrorCode extends Enum
             default => 500,
         };
     }
-
-    public static function getMessage($value): string
-    {
-        return match ($value) {
-            self::NOT_FOUND => 'Not found',
-            self::UNAUTHORIZED => 'Unauthorized',
-            self::FORBIDDEN => 'Forbidden',
-            self::UNPROCESSABLE_ENTITY => 'Unprocessable entity',
-            self::BAD_REQUEST => 'Bad request',
-            self::BAD_GATEWAY => 'Bad gateway',
-            self::VALIDATION_ERROR => 'Validation error',
-            default => 'Internal server error',
-        };
-    }
 }

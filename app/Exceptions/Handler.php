@@ -3,13 +3,16 @@
 namespace App\Exceptions;
 
 use App\Enums\ErrorCode;
+use App\Enums\ValidationErrors;
 use App\Http\Resources\ErrorResource;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException;
 use Symfony\Component\HttpFoundation\Response;
@@ -79,7 +82,8 @@ final class Handler extends ExceptionHandler
                 self::ERRORS[$class],
                 ErrorCode::getCode(self::ERRORS[$class]),
                 ErrorCode::fromValue(self::ERRORS[$class])->key,
-                method_exists($exception, 'errors') ? $exception->errors() : [],
+                method_exists($exception, 'errors') ?
+                    $this->mapValidationErrors($exception->validator) : [],
             );
         } else {
             if (app()->bound('sentry')) {
@@ -101,5 +105,45 @@ final class Handler extends ExceptionHandler
     public function report(Throwable $e): void
     {
         $e instanceof StoreException && $e->isSimpleLogs() ? $e->logException() : parent::report($e);
+    }
+
+    private function mapValidationErrors(Validator $validator) {
+
+        $validationErrors = [];
+        foreach ($validator->failed() as $field => &$value) {
+            $value = array_change_key_case($value, CASE_UPPER);
+            $validationErrors[$field] = [];
+            $index = 0;
+
+            foreach ($value as $attribute => $attrValue) {
+                $attribute = Str::of($attribute)->afterLast("\\")->toString();
+                $key = ValidationErrors::coerce($attribute)->value ?? 'INTERNAL_SERVER_ERROR';
+
+                $validationErrors[$field][] = [
+                    'key' => $key,
+                    'message' => $validator->errors()->toArray()[$field][$index],
+                ] + $this->createValidationAttributeArray($key, $attrValue);
+                $index++;
+            }
+        }
+
+        return $validationErrors;
+    }
+
+    private function createValidationAttributeArray(string $key, array $data): array
+    {
+        return match ($key) {
+            ValidationErrors::MIN, ValidationErrors::MAX, ValidationErrors::SIZE => [
+                'min' => $data[0],
+            ],
+            ValidationErrors::BETWEEN => [
+                'min' => $data[0],
+                'max' => $data[1],
+            ],
+            ValidationErrors::PASSWORD => [
+                'min' => 12
+            ],
+            default => []
+        };
     }
 }
