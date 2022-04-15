@@ -748,6 +748,154 @@ class ProductTest extends TestCase
             ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWithSalesBlockListEmpty($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 3000,
+            'price_min' => 2500,
+            'price_max' => 3500,
+        ]);
+
+        // Applied - product is not on block list
+        $sale = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Testowa promocja obowiązująca',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => false,
+            'code' => null,
+        ]);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $product->getKey());
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $product->getKey(),
+                'name' => $product->name,
+                'price' => $product->price,
+                'price_min' => $product->price_min,
+                'price_max' => $product->price_max,
+                'min_price_discounted' => 2250,
+                'max_price_discounted' => 3150,
+            ])
+            ->assertJsonFragment([
+                'id' => $sale->getKey(),
+                'name' => $sale->name,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWithSalesProductSets($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 3000,
+            'price_min' => 2500,
+            'price_max' => 3500,
+        ]);
+
+        $set = ProductSet::factory()->create([
+            'public' => true,
+            'order' => 20,
+        ]);
+
+        $product->sets()->sync([$set->getKey()]);
+
+        // Applied - product set is on allow list
+        $sale1 = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Testowa promocja obowiązująca',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+            'priority' => 1,
+        ]);
+
+        $sale1->productSets()->attach($set);
+
+        // Not applied - product set is on block list
+        $sale2 = Discount::factory()->create([
+            'description' => 'Not applied - product set is on block list',
+            'name' => 'Set on block list',
+            'value' => 5,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => false,
+            'code' => null,
+        ]);
+
+        $sale2->productSets()->attach($set);
+
+        // Not applied - product set is not on list
+        $sale3 = Discount::factory()->create([
+            'description' => 'Not applied - product set is not on list',
+            'name' => 'Set not on list',
+            'value' => 5,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        // Applied - product set is not on block list
+        $sale4 = Discount::factory()->create([
+            'description' => 'Not applied - product set is on block list',
+            'name' => 'Set not on block list',
+            'value' => 5,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => false,
+            'code' => null,
+            'priority' => 0,
+        ]);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $product->getKey());
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $product->getKey(),
+                'name' => $product->name,
+                'price' => $product->price,
+                'price_min' => $product->price_min,
+                'price_max' => $product->price_max,
+                'min_price_discounted' => 2137.5,
+                'max_price_discounted' => 2992.5,
+            ])
+            ->assertJsonFragment([
+                'id' => $sale1->getKey(),
+                'name' => $sale1->name,
+            ])
+            ->assertJsonFragment([
+                'id' => $sale4->getKey(),
+                'name' => $sale4->name,
+            ])
+            ->assertJsonMissing([
+                'id' => $sale2->getKey(),
+                'name' => $sale2->name,
+            ])
+            ->assertJsonMissing([
+                'id' => $sale3->getKey(),
+                'name' => $sale3->name,
+            ]);
+    }
+
     public function testCreateUnauthorized(): void
     {
         Event::fake([ProductCreated::class]);

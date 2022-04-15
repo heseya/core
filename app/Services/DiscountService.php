@@ -335,10 +335,37 @@ class DiscountService implements DiscountServiceContract
 
     public function applyDiscountsOnProduct(Product $product): Product
     {
-        $sales = $product->discounts
-            ->where('code', null)
+        $sales = Discount::where('code', null)
+            ->where('target_type', DiscountTargetType::PRODUCTS)
             ->where('target_is_allow_list', true)
-            ->where('target_type', DiscountTargetType::PRODUCTS);
+            ->whereHas('products', function ($query) use ($product): void {
+                $query->where('id', $product->getKey());
+            })
+            ->orWhere(function ($query) use ($product): void {
+                $query->where('code', null)
+                    ->where('target_type', DiscountTargetType::PRODUCTS)
+                    ->where('target_is_allow_list', true)
+                    ->whereHas('productSets', function ($query) use ($product): void {
+                        $query->whereHas('products', function ($query) use ($product): void {
+                            $query->where('id', $product->getKey());
+                        });
+                    });
+            })
+            ->orWhere(function ($query) use ($product): void {
+                $query->where('code', null)
+                    ->where('target_type', DiscountTargetType::PRODUCTS)
+                    ->where('target_is_allow_list', false)
+                    ->whereDoesntHave('products', function ($query) use ($product): void {
+                        $query->where('id', $product->getKey());
+                    })
+                    ->whereDoesntHave('productSets', function ($query) use ($product): void {
+                        $query->whereHas('products', function ($query) use ($product): void {
+                            $query->where('id', $product->getKey());
+                        });
+                    });
+            })
+            ->with(['products', 'productSets', 'conditionGroups', 'shippingMethods'])
+            ->get();
 
         $sales = $this->sortDiscounts($sales);
 
