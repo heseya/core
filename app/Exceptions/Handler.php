@@ -82,7 +82,7 @@ final class Handler extends ExceptionHandler
                 self::ERRORS[$class],
                 ErrorCode::getCode(self::ERRORS[$class]),
                 ErrorCode::fromValue(self::ERRORS[$class])->key,
-                method_exists($exception, 'errors') ?
+                $exception instanceof ValidationException ?
                     $this->mapValidationErrors($exception->validator) : [],
             );
         } else {
@@ -117,8 +117,7 @@ final class Handler extends ExceptionHandler
             $index = 0;
 
             foreach ($value as $attribute => $attrValue) {
-
-                $attribute = Str::of($attribute)->afterLast("\\")->toString();
+                $attribute = Str::of($attribute)->afterLast('\\')->toString();
                 $key = ValidationError::coerce($attribute)->value ?? 'INTERNAL_SERVER_ERROR';
 
                 $message = array_key_exists($field, $errors) ?
@@ -133,13 +132,13 @@ final class Handler extends ExceptionHandler
                 }
 
                 $validationErrors[$field][$index] = [
-                    'key' => $key
+                    'key' => $key,
                 ] + $this->createValidationAttributeData($key, $attrValue);
 
                 if ($message !== null) {
-                    $validationErrors[$field][$index] = $validationErrors[$field][$index] + [
-                            'message' => $message
-                        ];
+                    $validationErrors[$field][$index] += [
+                        'message' => $message,
+                    ];
                 }
 
                 $index++;
@@ -184,7 +183,7 @@ final class Handler extends ExceptionHandler
                 'field' => $data[1],
             ],
             ValidationError::GTE => [
-                'field' => $data[0]
+                'field' => $data[0],
             ],
             default => []
         };
