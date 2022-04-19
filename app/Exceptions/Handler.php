@@ -3,7 +3,7 @@
 namespace App\Exceptions;
 
 use App\Enums\ErrorCode;
-use App\Enums\ValidationErrors;
+use App\Enums\ValidationError;
 use App\Http\Resources\ErrorResource;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -107,22 +107,41 @@ final class Handler extends ExceptionHandler
         $e instanceof StoreException && $e->isSimpleLogs() ? $e->logException() : parent::report($e);
     }
 
-    private function mapValidationErrors(Validator $validator) {
-
+    private function mapValidationErrors(Validator $validator): array
+    {
         $validationErrors = [];
+        $errors = $validator->errors()->toArray();
+
         foreach ($validator->failed() as $field => &$value) {
             $value = array_change_key_case($value, CASE_UPPER);
-            $validationErrors[$field] = [];
             $index = 0;
 
             foreach ($value as $attribute => $attrValue) {
-                $attribute = Str::of($attribute)->afterLast("\\")->toString();
-                $key = ValidationErrors::coerce($attribute)->value ?? 'INTERNAL_SERVER_ERROR';
 
-                $validationErrors[$field][] = [
-                    'key' => $key,
-                    'message' => $validator->errors()->toArray()[$field][$index],
-                ] + $this->createValidationAttributeArray($key, $attrValue);
+                $attribute = Str::of($attribute)->afterLast("\\")->toString();
+                $key = ValidationError::coerce($attribute)->value ?? 'INTERNAL_SERVER_ERROR';
+
+                $message = array_key_exists($field, $errors) ?
+                    array_key_exists($index, $errors[$field]) ?
+                        $errors[$field][$index] : null
+                    : null;
+
+                #Workaround for Password::defaults() rule
+                if ($key === ValidationError::PASSWORD) {
+                    $key = Str::contains($message, 'data leak') ?
+                        ValidationError::PASSWORDCOMPROMISED : ValidationError::PASSWORDLENGTH;
+                }
+
+                $validationErrors[$field][$index] = [
+                    'key' => $key
+                ] + $this->createValidationAttributeData($key, $attrValue);
+
+                if ($message !== null) {
+                    $validationErrors[$field][$index] = $validationErrors[$field][$index] + [
+                            'message' => $message
+                        ];
+                }
+
                 $index++;
             }
         }
@@ -130,18 +149,42 @@ final class Handler extends ExceptionHandler
         return $validationErrors;
     }
 
-    private function createValidationAttributeArray(string $key, array $data): array
+    private function createValidationAttributeData(string $key, array $data): array
     {
         return match ($key) {
-            ValidationErrors::MIN, ValidationErrors::MAX, ValidationErrors::SIZE => [
+            ValidationError::MIN => [
                 'min' => $data[0],
             ],
-            ValidationErrors::BETWEEN => [
+            ValidationError::MAX => [
+                'max' => $data[0],
+            ],
+            ValidationError::SIZE => [
+                'size' => $data[0],
+            ],
+            ValidationError::BETWEEN => [
                 'min' => $data[0],
                 'max' => $data[1],
             ],
-            ValidationErrors::PASSWORD => [
-                'min' => 12
+            ValidationError::PASSWORDLENGTH => [
+                'min' => Config::get('validation.min_length'),
+            ],
+            ValidationError::BEFOREOREQUAL,
+            ValidationError::AFTEROREQUAL => [
+                'when' => $data[0],
+            ],
+            ValidationError::PROHIBITEDUNLESS => [
+                'field' => $data[0],
+                'value' => $data[1],
+            ],
+            ValidationError::MIMETYPES => [
+                'types' => $data,
+            ],
+            ValidationError::EXISTS => [
+                'table' => $data[0],
+                'field' => $data[1],
+            ],
+            ValidationError::GTE => [
+                'field' => $data[0]
             ],
             default => []
         };
