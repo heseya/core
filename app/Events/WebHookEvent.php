@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 
 abstract class WebHookEvent
@@ -34,6 +35,7 @@ abstract class WebHookEvent
             'triggered_at' => $this->triggered_at,
             'issuer_type' => $this->issuer ? IssuerType::getValue(strtoupper($this->getModelClass($this->issuer)))
                 : IssuerType::UNAUTHENTICATED,
+            'api_url' => Config::get('app.url'),
         ];
     }
 
