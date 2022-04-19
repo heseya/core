@@ -53,7 +53,7 @@ Roles:
                     $ref: './../schemas/Roles.yml#/Role'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   post:
     tags:
       - Roles
@@ -71,7 +71,7 @@ Roles:
                   $ref: './../schemas/Roles.yml#/RoleView'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 RolesParams:
   get:
@@ -95,7 +95,7 @@ RolesParams:
                   $ref: './../schemas/Roles.yml#/RoleView'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   delete:
     tags:
       - Roles
@@ -110,7 +110,7 @@ RolesParams:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   patch:
     tags:
       - Roles
@@ -134,4 +134,4 @@ RolesParams:
                   $ref: './../schemas/Roles.yml#/RoleView'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]

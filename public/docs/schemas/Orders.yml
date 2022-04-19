@@ -90,10 +90,10 @@ OrderDiscount:
       description: 'order-value | products | product-sets | shipping-price'
       enum: [ 'order-value', 'products', 'product-sets', 'shipping-price' ]
     value:
-      type: float
+      type: number
       example: 9.99
     applied_discount:
-      type: float
+      type: number
       example: 9.99
 
 OrderSchema:
@@ -180,6 +180,7 @@ OrderSummary:
     shipping_method:
       $ref: './ShippingMethods.yml#/ShippingMethod'
     created_at:
-      type: datetime
+      type: string
+      format: date-time
       example: '2021-09-13T11:11'
   type: object

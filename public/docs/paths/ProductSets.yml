@@ -76,7 +76,7 @@ ProductSets:
         schema:
           type: boolean
     requestBody:
-      $ref: './../requests/ProductSets.yml#ProductSetStore'
+      $ref: './../requests/ProductSets.yml#/ProductSetStore'
     responses:
       201:
         description: Created
@@ -87,11 +87,11 @@ ProductSets:
                 data:
                   type: object
                   oneOf:
-                    - $ref: './../schemas/ProductSets.yml#ProductSetParent'
-                    - $ref: './../schemas/ProductSets.yml#ProductSetParentChildren'
+                    - $ref: './../schemas/ProductSets.yml#/ProductSetParent'
+                    - $ref: './../schemas/ProductSets.yml#/ProductSetParentChildren'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 ProductSetsSlug:
   get:
     tags:
@@ -118,8 +118,8 @@ ProductSetsSlug:
                 data:
                   type: object
                   oneOf:
-                    - $ref: './../schemas/ProductSets.yml#ProductSetParent'
-                    - $ref: './../schemas/ProductSets.yml#ProductSetParentChildren'
+                    - $ref: './../schemas/ProductSets.yml#/ProductSetParent'
+                    - $ref: './../schemas/ProductSets.yml#/ProductSetParentChildren'
               type: object
 ProductSetsParams:
   get:
@@ -147,8 +147,8 @@ ProductSetsParams:
                 data:
                   type: object
                   oneOf:
-                    - $ref: './../schemas/ProductSets.yml#ProductSetParent'
-                    - $ref: './../schemas/ProductSets.yml#ProductSetParentChildren'
+                    - $ref: './../schemas/ProductSets.yml#/ProductSetParent'
+                    - $ref: './../schemas/ProductSets.yml#/ProductSetParentChildren'
               type: object
   delete:
     tags:
@@ -165,7 +165,7 @@ ProductSetsParams:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   patch:
     tags:
       - 'Product Sets'
@@ -183,7 +183,7 @@ ProductSetsParams:
         schema:
           type: boolean
     requestBody:
-      $ref: './../requests/ProductSets.yml#ProductSetUpdate'
+      $ref: './../requests/ProductSets.yml#/ProductSetUpdate'
     responses:
       200:
         description: Success
@@ -194,22 +194,22 @@ ProductSetsParams:
                 data:
                   type: object
                   oneOf:
-                    - $ref: './../schemas/ProductSets.yml#ProductSetParent'
-                    - $ref: './../schemas/ProductSets.yml#ProductSetParentChildren'
+                    - $ref: './../schemas/ProductSets.yml#/ProductSetParent'
+                    - $ref: './../schemas/ProductSets.yml#/ProductSetParentChildren'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 ProductSetsReorder:
   post:
     tags:
       - 'Product Sets'
     requestBody:
-      $ref: './../requests/ProductSets.yml#ProductSetReorder'
+      $ref: './../requests/ProductSets.yml#/ProductSetReorder'
     responses:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 ProductSetsReorderParams:
   post:
     tags:
@@ -222,12 +222,12 @@ ProductSetsReorderParams:
           type: string
           example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
     requestBody:
-      $ref: './../requests/ProductSets.yml#ProductSetReorder'
+      $ref: './../requests/ProductSets.yml#/ProductSetReorder'
     responses:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 ProductSetsProducts:
   get:
     tags:
@@ -248,10 +248,10 @@ ProductSetsProducts:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Products.yml#Product'
+                    $ref: './../schemas/Products.yml#/Product'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   post:
     tags:
       - 'Product Sets'
@@ -264,7 +264,7 @@ ProductSetsProducts:
           type: string
           example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
     requestBody:
-      $ref: './../requests/ProductSets.yml#ProductSetAttach'
+      $ref: './../requests/ProductSets.yml#/ProductSetAttach'
     responses:
       200:
         description: Success
@@ -275,7 +275,7 @@ ProductSetsProducts:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Products.yml#Product'
+                    $ref: './../schemas/Products.yml#/Product'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]

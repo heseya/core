@@ -27,7 +27,7 @@ Sales:
                     $ref: './../schemas/Sales.yml#/SaleShow'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   post:
     tags:
       - Discounts
@@ -45,7 +45,7 @@ Sales:
                   $ref: './../schemas/Sales.yml#/SaleShow'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 SalesParams:
   get:
@@ -84,7 +84,7 @@ SalesParams:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   patch:
     tags:
       - Discounts
@@ -109,4 +109,4 @@ SalesParams:
                   $ref: './../schemas/Sales.yml#/SaleShow'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]

@@ -84,7 +84,7 @@ Products:
                   $ref: './../schemas/Products.yml#/ProductView'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 ProductsSlug:
   get:
@@ -130,7 +130,7 @@ ProductsParams:
                   $ref: './../schemas/Products.yml#/ProductView'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   delete:
     tags:
       - Products
@@ -145,7 +145,7 @@ ProductsParams:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   patch:
     tags:
       - Products
@@ -169,4 +169,4 @@ ProductsParams:
                   $ref: './../schemas/Products.yml#/ProductView'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]

@@ -172,10 +172,12 @@ DateBetween:
       type: string
       example: 'date-between'
     start_at:
-      type: datetime
+      type: string
+      format: date-time
       example: '2022-03-03T12:49'
     end_at:
-      type: datetime
+      type: string
+      format: date-time
       example: '2022-03-10T12:49'
     is_in_range:
       type: boolean

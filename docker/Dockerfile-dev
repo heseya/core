@@ -1,5 +1,7 @@
 FROM php:8.0.2-apache
 
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+
 RUN apt-get update && apt-get install -y \
     libc-client-dev \
     libkrb5-dev \
@@ -9,16 +11,12 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libxml2-dev \
     zip \
-    unzip
+    unzip \
+    nodejs
 
-RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl
-RUN docker-php-ext-install imap
-
-RUN docker-php-ext-install pdo_mysql
-RUN docker-php-ext-install soap
-
-RUN docker-php-ext-configure gd --with-jpeg
-RUN docker-php-ext-install gd
+RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl && docker-php-ext-configure gd --with-jpeg
+RUN docker-php-ext-install imap pdo_mysql soap gd
+RUN npm i -g swagger-cli
 
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 

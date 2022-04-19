@@ -32,16 +32,16 @@ Product:
         type: string
         example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
     seo:
-      $ref: './../schemas/Seo.yml#SeoStore'
+      $ref: './../schemas/Seo.yml#/SeoStore'
     items:
       type: array
       items:
         type: string
         example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
     metadata:
-      $ref: './../schemas/Metadata.yml#Metadata'
+      $ref: './../schemas/Metadata.yml#/Metadata'
     metadata_private:
-      $ref: './../schemas/Metadata.yml#Metadata'
+      $ref: './../schemas/Metadata.yml#/Metadata'
 
 ProductStore:
   content:
