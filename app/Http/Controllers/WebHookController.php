@@ -8,7 +8,6 @@ use App\Http\Requests\WebHookUpdateRequest;
 use App\Http\Resources\WebHookResource;
 use App\Models\WebHook;
 use App\Services\Contracts\WebHookServiceContract;
-use App\Services\WebHookService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
@@ -16,11 +15,9 @@ use Illuminate\Support\Facades\Response;
 
 class WebHookController extends Controller
 {
-    private WebHookService $webHookService;
-
-    public function __construct(WebHookServiceContract $webHookService)
-    {
-        $this->webHookService = $webHookService;
+    public function __construct(
+        private WebHookServiceContract $webHookService,
+    ) {
     }
 
     public function index(WebHookIndexRequest $request): JsonResource

@@ -24,6 +24,8 @@ class ShippingMethod extends Model implements AuditableContract
 
     /**
      * The attributes that are mass assignable.
+     *
+     * @var array<string>
      */
     protected $fillable = [
         'name',
@@ -37,13 +39,16 @@ class ShippingMethod extends Model implements AuditableContract
     /**
      * The attributes that should be cast to native types.
      *
-     * @var array
+     * @var array<string, string>
      */
     protected $casts = [
         'public' => 'boolean',
         'black_list' => 'boolean',
     ];
 
+    /**
+     * @var array<string, class-string>
+     */
     protected array $criteria = [
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,

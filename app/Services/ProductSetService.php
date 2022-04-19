@@ -202,7 +202,7 @@ class ProductSetService implements ProductSetServiceContract
     public function reorder(ProductSet $parent, array $sets): void
     {
         foreach ($sets as $id) {
-            ProductSet::where('parent_id', $parent ? $parent->getKey() : null)
+            ProductSet::where('parent_id', $parent->getKey())
                 ->findOrFail($id);
         }
 

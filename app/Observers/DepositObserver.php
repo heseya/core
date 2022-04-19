@@ -3,13 +3,11 @@
 namespace App\Observers;
 
 use App\Models\Deposit;
-use App\Services\Contracts\AvailabilityServiceContract;
 
 class DepositObserver
 {
-    public function created(Deposit $deposit)
+    public function created(Deposit $deposit): void
     {
         $deposit->item->increment('quantity', $deposit->quantity);
     }
-
 }

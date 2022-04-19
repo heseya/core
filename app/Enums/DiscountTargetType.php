@@ -3,6 +3,7 @@
 namespace App\Enums;
 
 use BenSampo\Enum\Enum;
+use Exception;
 
 final class DiscountTargetType extends Enum
 {
@@ -18,6 +19,7 @@ final class DiscountTargetType extends Enum
             self::CHEAPEST_PRODUCT => 1,
             self::ORDER_VALUE => 2,
             self::SHIPPING_PRICE => 3,
+            default => throw new Exception('Unknown discount target type'),
         };
     }
 }

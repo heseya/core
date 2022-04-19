@@ -31,7 +31,7 @@ class WebHookNotification extends Notification
             $this->data['issuer'] = match ($this->data['issuer_type']) {
                 IssuerType::APP => AppIssuerResource::make($this->issuer)->resolve(),
                 IssuerType::USER => UserIssuerResource::make($this->issuer)->resolve(),
-                IssuerType::UNAUTHENTICATED => null,
+                default => null,
             };
         }
         return $this->data;

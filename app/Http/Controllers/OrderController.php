@@ -26,6 +26,7 @@ use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Models\OrderDocument;
 use App\Models\Product;
+use App\Models\Schema;
 use App\Models\Status;
 use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\OrderServiceContract;
@@ -79,7 +80,9 @@ class OrderController extends Controller
 
     public function store(OrderCreateRequest $request): JsonResource
     {
-        return OrderPublicResource::make($this->orderService->store(OrderDto::fromFormRequest($request)));
+        return OrderPublicResource::make(
+            $this->orderService->store(OrderDto::fromFormRequest($request)),
+        );
     }
 
     public function verify(OrderItemsRequest $request): JsonResponse
@@ -88,10 +91,10 @@ class OrderController extends Controller
             $product = Product::findOrFail($item['product_id']);
             $schemas = $item['schemas'] ?? [];
 
+            /** @var Schema $schema */
             foreach ($product->schemas as $schema) {
                 $schema->validate(
                     $schemas[$schema->getKey()] ?? null,
-                    $item['quantity'],
                 );
             }
         }

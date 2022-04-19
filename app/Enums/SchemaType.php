@@ -4,7 +4,7 @@ namespace App\Enums;
 
 use BenSampo\Enum\Enum;
 
-class SchemaType extends Enum
+final class SchemaType extends Enum
 {
     public const STRING = 0;
     public const NUMERIC = 1;

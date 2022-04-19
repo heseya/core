@@ -13,7 +13,7 @@ return [
     ],
 
     'mail_order_created' => [
-        'value' => 'Dear customer,<br/>Thank you for placing your order. You will receive a separate email when the status changes.',
+        'value' => 'Thank you for placing your order. You will receive a separate email when the status changes.',
         'public' => false,
     ],
 
