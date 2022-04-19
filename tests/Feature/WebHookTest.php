@@ -2,8 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Events\ItemUpdatedQuantity;
+use App\Listeners\WebHookEventListener;
 use App\Models\App;
+use App\Models\Item;
 use App\Models\WebHook;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Config;
+use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
 class WebHookTest extends TestCase
@@ -475,5 +481,44 @@ class WebHookTest extends TestCase
             ->actingAs($this->$user)
             ->json('GET', '/webhooks/id:' . $this->webHook->getKey() . $this->webHook->getKey())
             ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testWebHookHasApiUrl($user): void
+    {
+        $this->$user->givePermissionTo('deposits.add');
+
+        $item = Item::factory()->create();
+
+        WebHook::factory()->create([
+            'events' => [
+                'ItemUpdatedQuantity',
+            ],
+            'model_type' => $this->user::class,
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => true,
+            'with_hidden' => false,
+        ]);
+
+        $deposit = [
+            'quantity' => 1200000.50,
+        ];
+
+        $this->actingAs($this->$user)->postJson(
+            "/items/id:{$item->getKey()}/deposits",
+            $deposit,
+        );
+
+        Bus::fake();
+
+        $event = new ItemUpdatedQuantity($item);
+        $listener = new WebHookEventListener();
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) {
+            return $job->payload['api_url'] === Config::get('app.url');
+        });
     }
 }
