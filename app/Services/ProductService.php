@@ -56,10 +56,6 @@ class ProductService implements ProductServiceContract
             $product->tags()->sync($dto->getTags());
         }
 
-        if (!($dto->getSeo() instanceof Missing)) {
-            $product->seo()->save($this->seoMetadataService->create($dto->getSeo()));
-        }
-
         if (!($dto->getMetadata() instanceof Missing)) {
             $this->metadataService->sync($product, $dto->getMetadata());
         }
@@ -67,6 +63,8 @@ class ProductService implements ProductServiceContract
         if (!($dto->getAttributes() instanceof Missing)) {
             $this->attributeService->sync($product, $dto->getAttributes());
         }
+
+        $product->seo()->save($this->seoMetadataService->create($dto->getSeo()));
 
         [$priceMin, $priceMax] = $this->getMinMaxPrices($product);
         $product->price_min = $priceMin;

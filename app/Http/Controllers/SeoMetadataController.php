@@ -10,16 +10,13 @@ use App\Http\Resources\SeoKeywordsResource;
 use App\Http\Resources\SeoMetadataResource;
 use App\Models\SeoMetadata;
 use App\Services\Contracts\SeoMetadataServiceContract;
-use App\Services\SeoMetadataService;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class SeoMetadataController extends Controller
 {
-    private SeoMetadataService $seoMetadataService;
-
-    public function __construct(SeoMetadataServiceContract $seoMetadataService)
-    {
-        $this->seoMetadataService = $seoMetadataService;
+    public function __construct(
+        private SeoMetadataServiceContract $seoMetadataService,
+    ) {
     }
 
     public function show(SeoMetadata $seoMetadata): JsonResource

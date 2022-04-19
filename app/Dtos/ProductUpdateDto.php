@@ -34,7 +34,7 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
             name: $request->input('name', new Missing()),
             slug: $request->input('slug', new Missing()),
             price: $request->input('price', new Missing()),
-            public: $request->boolean('public', new Missing()),
+            public: $request->input('public', new Missing()),
             order: $request->input('order', new Missing()),
             quantity_step: $request->input('quantity_step', new Missing()),
             description_html: $request->input('description_html', new Missing()),

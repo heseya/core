@@ -10,13 +10,13 @@ class AttributeOptionRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array
+     * @return array<string, array<string>>
      */
     public function rules(): array
     {
-        $nameRule = match ($this?->attribute?->type->value ?? $this->input('type')) {
+        $nameRule = match ($this->attribute?->type->value ?? $this->input('type')) {
             AttributeType::SINGLE_OPTION => 'required',
-            default => 'nullable'
+            default => 'nullable',
         };
 
         return [

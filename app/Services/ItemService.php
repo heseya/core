@@ -27,13 +27,15 @@ class ItemService implements ItemServiceContract
     public function validateItems(array $items): void
     {
         foreach ($items as $id => $count) {
-            /** @var Item $item */
-            $item = Item::findOrFail($id);
+            /** @var ?Item $item */
+            $item = Item::find($id);
+
+            if ($item === null) {
+                throw new ItemException("Item `{$id}` not found");
+            }
 
             if ($item->quantity < $count) {
-                throw new ItemException(
-                    "There's less than ${count} of {$item->name} available",
-                );
+                throw new ItemException("There's less than {$count} of {$item->name} available");
             }
         }
     }
@@ -41,8 +43,12 @@ class ItemService implements ItemServiceContract
     public function validateCartItems(array $items, array $selectedItems): bool
     {
         foreach ($items as $id => $count) {
-            /** @var Item $item */
-            $item = Item::findOrFail($id);
+            /** @var ?Item $item */
+            $item = Item::find($id);
+
+            if ($item === null) {
+                return false;
+            }
 
             if (array_key_exists($id, $selectedItems)) {
                 $count += $selectedItems[$id];
@@ -79,7 +85,7 @@ class ItemService implements ItemServiceContract
             foreach ($product->schemas as $schema) {
                 $value = $schemas[$schema->getKey()] ?? null;
 
-                $schema->validate($value, $item->getQuantity());
+                $schema->validate($value);
 
                 if ($value === null) {
                     continue;
@@ -116,7 +122,7 @@ class ItemService implements ItemServiceContract
             foreach ($product->schemas as $schema) {
                 $value = $schemas[$schema->getKey()] ?? null;
 
-                $schema->validate($value, $item->getQuantity());
+                $schema->validate($value);
 
                 if ($value === null) {
                     continue;

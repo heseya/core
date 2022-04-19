@@ -68,7 +68,7 @@ class WebHookPolicy
             : throw new WebHookCreatorException('Only user can ' . $method . ' this WebHook.');
     }
 
-    private function getRequiredPermissions(array $events, bool $with_issuer, bool $with_hidden): array|false
+    private function getRequiredPermissions(array $events, bool $with_issuer, bool $with_hidden): array
     {
         $result = [];
         $event_permissions = Config::get('events.permissions');

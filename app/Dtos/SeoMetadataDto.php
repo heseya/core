@@ -6,7 +6,6 @@ use App\Enums\TwitterCardType;
 use App\Http\Requests\Contracts\SeoRequestContract;
 use Exception;
 use Heseya\Dto\Dto;
-use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Http\Request;
 
@@ -21,14 +20,6 @@ class SeoMetadataDto extends Dto
     private string|null|Missing $model_type;
     private bool|Missing $no_index;
 
-    /**
-     * @param SeoRequestContract $request
-     *
-     * @return static
-     *
-     * @throws DtoException
-     * @throws Exception
-     */
     public static function fromFormRequest(SeoRequestContract $request): self
     {
         if (!($request instanceof Request)) {

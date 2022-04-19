@@ -4,7 +4,7 @@ namespace App\Enums;
 
 use BenSampo\Enum\Enum;
 
-class MetadataType extends Enum
+final class MetadataType extends Enum
 {
     public const STRING = 'string';
     public const NUMBER = 'number';

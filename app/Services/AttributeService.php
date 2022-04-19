@@ -63,13 +63,13 @@ class AttributeService implements AttributeServiceContract
         $attribute->refresh();
 
         if ($attribute->type->value === AttributeType::NUMBER) {
-            $attribute->min_number = $attribute->options->min('value_number');
-            $attribute->max_number = $attribute->options->max('value_number');
+            $attribute->setAttribute('min_number', $attribute->options->min('value_number'));
+            $attribute->setAttribute('max_number', $attribute->options->max('value_number'));
         }
 
         if ($attribute->type->value === AttributeType::DATE) {
-            $attribute->min_date = $attribute->options->min('value_date');
-            $attribute->max_date = $attribute->options->max('value_date');
+            $attribute->setAttribute('min_date', $attribute->options->min('value_date'));
+            $attribute->setAttribute('max_date', $attribute->options->max('value_date'));
         }
 
         $attribute->update();

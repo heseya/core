@@ -421,11 +421,15 @@ class DiscountService implements DiscountServiceContract
         CartResource $cart,
     ): CartItemResponse {
         /** @var CartItemResponse $result */
-        $result = $cart->items->filter(function ($value, $key) use ($cartItem) {
-            return $value->cartitem_id === $cartItem->getCartitemId();
-        })->first();
+        $result = $cart->items->filter(
+            fn ($value) => $value->cartitem_id === $cartItem->getCartitemId(),
+        )->first();
 
-        $result->price_discounted = $this->calcPrice($result->price_discounted, $cartItem->getProductId(), $discount);
+        $result->price_discounted = $this->calcPrice(
+            $result->price_discounted,
+            $cartItem->getProductId(),
+            $discount,
+        );
 
         return $result;
     }
@@ -437,6 +441,7 @@ class DiscountService implements DiscountServiceContract
             DiscountTargetType::ORDER_VALUE => $this->applyDiscountOnOrderValue($order, $discount),
             DiscountTargetType::SHIPPING_PRICE => $this->applyDiscountOnOrderShipping($order, $discount),
             DiscountTargetType::CHEAPEST_PRODUCT => $this->applyDiscountOnOrderCheapestProduct($order, $discount),
+            default => throw new StoreException('Unsupported discount target type'),
         };
     }
 
@@ -596,6 +601,7 @@ class DiscountService implements DiscountServiceContract
             DiscountTargetType::ORDER_VALUE => $this->applyDiscountOnCartTotal($discount, $cart),
             DiscountTargetType::SHIPPING_PRICE => $this->applyDiscountOnCartShipping($discount, $cartDto, $cart),
             DiscountTargetType::CHEAPEST_PRODUCT => $this->applyDiscountOnCartCheapestItem($discount, $cartDto, $cart),
+            default => throw new StoreException('Unknown discount target type'),
         };
     }
 

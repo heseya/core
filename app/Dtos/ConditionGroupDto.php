@@ -3,6 +3,7 @@
 namespace App\Dtos;
 
 use App\Enums\ConditionType;
+use Exception;
 use Heseya\Dto\Dto;
 
 class ConditionGroupDto extends Dto
@@ -37,6 +38,7 @@ class ConditionGroupDto extends Dto
                 ConditionType::MAX_USES_PER_USER => MaxUsesPerUserConditionDto::fromArray($condition),
                 ConditionType::WEEKDAY_IN => WeekDayInConditionDto::fromArray($condition),
                 ConditionType::CART_LENGTH => CartLengthConditionDto::fromArray($condition),
+                default => throw new Exception('Unknown condition type.')
             });
         }
         return $result;

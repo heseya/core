@@ -14,19 +14,18 @@ class ItemProductObserver
         $this->availabilityService = $availabilityService;
     }
 
-    public function created(ItemProduct $itemProduct)
+    public function created(ItemProduct $itemProduct): void
     {
         $this->availabilityService->calculateProductAvailability($itemProduct->product);
     }
 
-    public function updated(ItemProduct $itemProduct)
+    public function updated(ItemProduct $itemProduct): void
     {
         $this->availabilityService->calculateProductAvailability($itemProduct->product);
     }
 
-    public function deleted(ItemProduct $itemProduct)
+    public function deleted(ItemProduct $itemProduct): void
     {
         $this->availabilityService->calculateProductAvailability($itemProduct->product);
     }
-
 }
