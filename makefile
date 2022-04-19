@@ -17,3 +17,6 @@ hooks:
 
 hooks-remove:
 	- rm ./.git/hooks/*
+
+validate-swagger:
+	- swagger-cli validate ./public/docs/api.yml

@@ -12,7 +12,7 @@ Sale:
       type: string
       enum: [ 'amount', 'percentage' ]
     value:
-      type: float
+      type: number
       example: '50'
     priority:
       type: number

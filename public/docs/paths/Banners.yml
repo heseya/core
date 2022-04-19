@@ -5,7 +5,7 @@ Banners:
     summary: 'displaying banners'
     parameters:
       - name: 'slug'
-        in: path
+        in: query
         required: false
         schema:
           type: string
@@ -37,15 +37,15 @@ Banners:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Banners.yml#Banner'
+                    $ref: './../schemas/Banners.yml#/Banner'
   post:
     tags:
       - Banners
     summary: 'adding new banner'
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
     requestBody:
-      $ref: './../requests/Banners.yml#Banner'
+      $ref: './../requests/Banners.yml#/Banner'
     responses:
       201:
         description: Created
@@ -55,7 +55,7 @@ Banners:
               type: object
               properties:
                 data:
-                  $ref: './../schemas/Banners.yml#Banner'
+                  $ref: './../schemas/Banners.yml#/Banner'
 
 BannersParam:
   patch:
@@ -69,9 +69,9 @@ BannersParam:
         schema:
           type: string
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
     requestBody:
-      $ref: './../requests/Banners.yml#Banner'
+      $ref: './../requests/Banners.yml#/Banner'
     responses:
       200:
         description: Success
@@ -81,7 +81,7 @@ BannersParam:
               type: object
               properties:
                 data:
-                  $ref: './../schemas/Banners.yml#Banner'
+                  $ref: './../schemas/Banners.yml#/Banner'
   delete:
     tags:
       - Banners
@@ -93,7 +93,7 @@ BannersParam:
         schema:
           type: string
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
     responses:
       204:
         description: No content

@@ -7,20 +7,20 @@ Login:
       content:
         application/json:
           schema:
+            required:
+              - email
+              - password
+            type: object
             properties:
               email:
                 type: string
                 example: admin@example.com
-                required: true
               password:
                 type: string
                 example: secret
-                required: true
               code:
                 type: string
                 example: XyDZR-M9GWZ
-                required: false
-            type: object
     responses:
       200:
         description: Success
@@ -92,7 +92,7 @@ ResetPassword:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 ResetPasswordParams:
   get:
@@ -103,7 +103,7 @@ ResetPasswordParams:
       200:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 SaveResetPassword:
   put:
@@ -116,7 +116,7 @@ SaveResetPassword:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 Password:
   put:
@@ -139,7 +139,7 @@ Password:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 Refresh:
   post:
@@ -193,7 +193,7 @@ Profile:
                     - $ref: './../schemas/Apps.yml#/AppView'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   patch:
     tags:
       - Auth
@@ -227,7 +227,7 @@ Profile:
                   $ref: './../schemas/Users.yml#/UserView'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 Check:
   get:
@@ -366,9 +366,9 @@ TFARemove:
                 type: string
                 example: secret
             type: object
-  responses:
-    204:
-      description: Success
+    responses:
+      204:
+        description: Success
 
 Register:
   post:
@@ -409,4 +409,4 @@ Register:
                     required: true
                     value: true
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]

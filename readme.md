@@ -67,16 +67,14 @@ php artisan test
 ```
 
 ## Docs
-Write documentation using [Swagger-PHP](http://zircote.github.io/swagger-php/).
+OpenAPI documentation files are located under `./public/docs`
 
-Generating documentation:
+Validate documentation:
 ```
-composer docs
+make swagger-validate
 ```
 
-The generated documentation is available at `/docs`.
-
-Locally I recommend set `L5_SWAGGER_GENERATE_ALWAYS` option in .env to `true`, then the documentation will be generated with every refresh.
+The documentation page is available at `/docs`.
 
 ## Release checklist
 This project uses [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html)
