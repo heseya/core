@@ -37,11 +37,29 @@ class MediaService implements MediaServiceContract
         }
     }
 
+    public function destroy(Media $media): void
+    {
+        if ($media->products()->exists()) {
+            Gate::authorize('products.edit');
+        }
+
+        $response = Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
+            ->delete($media->url);
+
+        if ($response->failed()) {
+            throw new MediaCriticalException('CDN responded with an error');
+        }
+
+        $media->forceDelete();
+    }
+
     public function store(UploadedFile $file, bool $private = false): Media
     {
+        $private = $private ? '?private' : '';
+
         $response = Http::attach('file', $file->getContent(), 'file')
             ->withHeaders(['x-api-key' => Config::get('silverbox.key')])
-            ->post(Config::get('silverbox.host') . '/' . Config::get('silverbox.client') . '?private=' . $private);
+            ->post(Config::get('silverbox.host') . '/' . Config::get('silverbox.client') . $private);
 
         if ($response->failed()) {
             throw new MediaCriticalException('CDN responded with an error');
@@ -49,7 +67,7 @@ class MediaService implements MediaServiceContract
 
         return Media::create([
             'type' => $this->getMediaType($file->extension()),
-            'url' => Config::get('silverbox.host') . '/' . $response[0]['path'],
+            'url' => Config::get('silverbox.host') . '/' . $response->json('0.path'),
         ]);
     }
 
@@ -67,22 +85,6 @@ class MediaService implements MediaServiceContract
         $media->save();
 
         return $media;
-    }
-
-    public function destroy(Media $media): void
-    {
-        if ($media->products()->exists()) {
-            Gate::authorize('products.edit');
-        }
-
-        $response = Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
-            ->delete($media->url);
-
-        if ($response->failed()) {
-            throw new MediaCriticalException('CDN responded with an error');
-        }
-
-        $media->forceDelete();
     }
 
     private function getMediaType(string $extension): int

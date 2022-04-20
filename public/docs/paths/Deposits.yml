@@ -33,7 +33,7 @@ Deposits:
                     $ref: './../schemas/Deposits.yml#/Deposit'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 ItemDeposits:
   get:
@@ -57,7 +57,7 @@ ItemDeposits:
                   $ref: './../schemas/Deposits.yml#/Deposit'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   post:
     tags:
       - Deposits
@@ -84,4 +84,4 @@ ItemDeposits:
                   $ref: './../schemas/Deposits.yml#/Deposit'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]

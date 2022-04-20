@@ -6,7 +6,7 @@ use App\Models\Payment;
 
 class PaymentObserver
 {
-    public function created(Payment $payment)
+    public function created(Payment $payment): void
     {
         if ($payment->paid) {
             $payment->order->update([
@@ -15,7 +15,7 @@ class PaymentObserver
         }
     }
 
-    public function updated(Payment $payment)
+    public function updated(Payment $payment): void
     {
         if ($payment->paid) {
             $payment->order->update([

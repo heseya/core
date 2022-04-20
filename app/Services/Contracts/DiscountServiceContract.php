@@ -50,9 +50,9 @@ interface DiscountServiceContract
         Discount $discount
     ): OrderProduct;
 
-    public function applyDiscountsOnProducts(array $products): array;
+    public function applyDiscountsOnProducts(Collection $products): void;
 
-    public function applyDiscountsOnProduct(Product $product): Product;
+    public function applyDiscountsOnProduct(Product $product): void;
 
     public function applyDiscountOnOrderProduct(OrderProduct $orderProduct, Discount $discount): OrderProduct;
 

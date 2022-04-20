@@ -11,7 +11,7 @@ Item:
       type: string
       example: K121
     quantity:
-      type: float
+      type: number
       example: '20'
 
 ItemWithRequiredQuantity:
@@ -27,5 +27,5 @@ ItemWithRequiredQuantity:
       type: string
       example: K121
     required_quantity:
-      type: float
+      type: number
       example: '5'

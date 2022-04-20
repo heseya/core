@@ -45,7 +45,7 @@ ProductSetStore:
               type: string
               example: 026bc5f6-8373-4aeb-972e-e78d72a67121
           seo:
-            $ref: './../schemas/Seo.yml#SeoStore'
+            $ref: './../schemas/Seo.yml#/SeoStore'
           attributes:
             description: 'Array of assigned attributes ids'
             type: array
@@ -53,9 +53,9 @@ ProductSetStore:
               type: string
               example: 026bc5f6-8373-4aeb-972e-e78d72a67121
           metadata:
-            $ref: './../schemas/Metadata.yml#Metadata'
+            $ref: './../schemas/Metadata.yml#/Metadata'
           metadata_private:
-            $ref: './../schemas/Metadata.yml#Metadata'
+            $ref: './../schemas/Metadata.yml#/Metadata'
         type: object
 ProductSetUpdate:
   content:
@@ -104,7 +104,7 @@ ProductSetUpdate:
               type: string
               example: 026bc5f6-8373-4aeb-972e-e78d72a67121
           seo:
-            $ref: './../schemas/Seo.yml#SeoStore'
+            $ref: './../schemas/Seo.yml#/SeoStore'
           attributes:
             description: 'Array of assigned attributes ids'
             type: array
@@ -112,9 +112,9 @@ ProductSetUpdate:
               type: string
               example: 026bc5f6-8373-4aeb-972e-e78d72a67121
           metadata:
-            $ref: './../schemas/Metadata.yml#Metadata'
+            $ref: './../schemas/Metadata.yml#/Metadata'
           metadata_private:
-            $ref: './../schemas/Metadata.yml#Metadata'
+            $ref: './../schemas/Metadata.yml#/Metadata'
         type: object
 ProductSetAttach:
   content:

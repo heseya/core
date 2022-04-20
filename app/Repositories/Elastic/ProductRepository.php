@@ -7,6 +7,7 @@ namespace App\Repositories\Elastic;
 use App\Dtos\ProductSearchDto;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryContract;
+use App\Services\Contracts\SortServiceContract;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
@@ -33,10 +34,18 @@ class ProductRepository implements ProductRepositoryContract
         'price_max' => 'filterPriceMax',
     ];
 
+    public function __construct(
+        private SortServiceContract $sortService,
+    ) {
+    }
+
     public function search(ProductSearchDto $dto): LengthAwarePaginator
     {
-        $query = Product::search($dto->getSearch())
-            ->sort($dto->getSort());
+        $query = Product::search($dto->getSearch());
+
+        if ($dto->getSort() !== null) {
+            $query = $this->sortService->sortScout($query, $dto->getSort());
+        }
 
         $hide_on_index = true;
 
@@ -70,12 +79,20 @@ class ProductRepository implements ProductRepositoryContract
 
     private function filterSlug(Builder $query, string $key, array $slugs): Builder
     {
-        return $query->filter(new Terms("{$key}.slug", $slugs));
+        foreach ($slugs as $slug) {
+            $query->filter(new Matching("{$key}.slug", $slug));
+        }
+
+        return $query;
     }
 
     private function filterId(Builder $query, string $key, array $ids): Builder
     {
-        return $query->filter(new Terms("{$key}.id", $ids));
+        foreach ($ids as $id) {
+            $query->filter(new Matching("{$key}.id", $id));
+        }
+
+        return $query;
     }
 
     private function filterIds(Builder $query, string $key, string $ids): Builder

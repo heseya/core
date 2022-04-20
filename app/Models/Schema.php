@@ -71,13 +71,8 @@ class Schema extends Model implements SortableContract
 
     /**
      * Check if user input is valid
-     *
-     * @param mixed $value
-     * @param float $quantity
-     *
-     * @throws ValidationException
      */
-    public function validate(mixed $value, float $quantity = 0): void
+    public function validate(mixed $value): void
     {
         $validation = new Collection();
 
@@ -97,7 +92,7 @@ class Schema extends Model implements SortableContract
 
         if ($this->type->is(SchemaType::SELECT)) {
             $validation->push('uuid');
-            $validation->push(new OptionAvailable($this, $quantity));
+            $validation->push(new OptionAvailable($this));
         }
 
         if (

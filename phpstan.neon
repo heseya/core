@@ -7,12 +7,17 @@ parameters:
         - app
 
     # The level 9 is the highest level
-    level: 2
+    level: 4
 
     checkMissingIterableValueType: false
 
     ignoreErrors:
         - '#PHPDoc tag @mixin contains unknown class .*IdeHelper.*#'
+        - message: '#Property [a-zA-Z0-9\\_]+::\$[a-zA-Z0-9\\_]+ is never written, only read\.#'
+          path: ./app/Dtos/*
+        - message: '#Property [a-zA-Z0-9\\_]+::\$[a-zA-Z0-9\\_]+ is unused\.#'
+          path: ./app/Dtos/*
 
     excludePaths:
-        - ./app/Payments/PayPal.php
+        - ./app/Payments/*
+        - ./app/Http/Middleware/Authenticate.php

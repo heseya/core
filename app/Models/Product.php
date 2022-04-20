@@ -57,6 +57,8 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'price_max',
         'available',
         'order',
+        'min_price_discounted',
+        'max_price_discounted',
     ];
 
     protected $auditInclude = [
@@ -200,5 +202,15 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
                 ],
             ],
         ];
+    }
+
+    public function sales(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Discount::class,
+            'product_sales',
+            'product_id',
+            'sale_id',
+        );
     }
 }

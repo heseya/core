@@ -60,7 +60,7 @@ Users:
                     $ref: './../schemas/Users.yml#/User'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   post:
     tags:
       - Users
@@ -78,7 +78,7 @@ Users:
                   $ref: './../schemas/Users.yml#/User'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 UsersParams:
   get:
@@ -103,7 +103,7 @@ UsersParams:
                   $ref: './../schemas/Users.yml#/User'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   delete:
     tags:
       - Users
@@ -119,7 +119,7 @@ UsersParams:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   patch:
     tags:
       - Users
@@ -144,7 +144,7 @@ UsersParams:
                   $ref: './../schemas/Users.yml#/User'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 UserTFARemove:
   post:
@@ -158,6 +158,6 @@ UserTFARemove:
         schema:
           type: string
           example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
-  responses:
-    204:
-      description: Success
+    responses:
+      204:
+        description: Success

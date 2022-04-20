@@ -40,7 +40,7 @@ SeoView:
     - type: object
       properties:
         og_image:
-          $ref: './../schemas/Media.yml#Media'
+          $ref: './../schemas/Media.yml#/Media'
   type: object
 
 SeoKeywordsResponse:

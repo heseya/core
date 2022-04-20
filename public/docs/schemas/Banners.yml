@@ -27,4 +27,4 @@ Banner:
               type: integer
               example: 200
             media:
-              $ref: './Media.yml#Media'
+              $ref: './Media.yml#/Media'

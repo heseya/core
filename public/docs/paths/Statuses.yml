@@ -33,7 +33,7 @@ Statuses:
                     $ref: './../schemas/Statuses.yml#/Status'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   post:
     tags:
       - Statuses
@@ -54,7 +54,7 @@ Statuses:
                   $ref: './../schemas/Statuses.yml#/Status'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 StatusesParams:
   delete:
@@ -71,7 +71,7 @@ StatusesParams:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   patch:
     tags:
       - Statuses
@@ -98,7 +98,7 @@ StatusesParams:
                   $ref: './../schemas/Statuses.yml#/Status'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 StatusesReorder:
   post:
@@ -111,4 +111,4 @@ StatusesReorder:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]

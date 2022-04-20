@@ -16,7 +16,7 @@ Consents:
                     $ref: './../schemas/Consents.yml#/Consent'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   post:
     tags:
       - Consents
@@ -34,7 +34,7 @@ Consents:
                   $ref: './../schemas/Consents.yml#/Consent'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 ConsentsParam:
   delete:
@@ -51,7 +51,7 @@ ConsentsParam:
       204:
         description: No content
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   patch:
     tags:
       - Consents
@@ -75,4 +75,4 @@ ConsentsParam:
                   $ref: './../schemas/Consents.yml#/Consent'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]

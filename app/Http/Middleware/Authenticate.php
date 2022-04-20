@@ -40,7 +40,6 @@ class Authenticate extends Middleware
             }
         }
 
-        // @phpstan-ignore-next-line
         if (Auth::getClaim('typ') !== TokenType::ACCESS) {
             throw new AuthenticationException();
         }
