@@ -40,9 +40,7 @@ class CalculateDiscount implements ShouldQueue
     {
         // if job is called after update, then calculate discount for all products,
         // because it may change the list of related products or target_is_allow_list value
-        if ($this->updated || $this->discount === null) {
-            $products = Product::all();
-        } else {
+        if (!$this->updated && $this->discount !== null) {
             $products = $this->discount->products;
             foreach ($this->discount->productSets as $productSet) {
                 $products = $products->merge($productSet->products);
@@ -53,6 +51,8 @@ class CalculateDiscount implements ShouldQueue
             }
 
             $products = $products->unique('id');
+        } else {
+            $products = Product::all();
         }
 
         $discountService->applyDiscountsOnProducts($products);

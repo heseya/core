@@ -125,6 +125,11 @@ class DiscountTest extends TestCase
                 'min_value' => 1,
                 'max_value' => 100,
             ],
+            [
+                'type' => ConditionType::COUPONS_COUNT,
+                'min_value' => 1,
+                'max_value' => 10,
+            ],
         ];
     }
 

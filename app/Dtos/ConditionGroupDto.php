@@ -38,6 +38,7 @@ class ConditionGroupDto extends Dto
                 ConditionType::MAX_USES_PER_USER => MaxUsesPerUserConditionDto::fromArray($condition),
                 ConditionType::WEEKDAY_IN => WeekDayInConditionDto::fromArray($condition),
                 ConditionType::CART_LENGTH => CartLengthConditionDto::fromArray($condition),
+                ConditionType::COUPONS_COUNT => CouponsCountConditionDto::fromArray($condition),
                 default => throw new Exception('Unknown condition type.')
             });
         }
