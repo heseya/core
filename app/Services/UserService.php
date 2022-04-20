@@ -7,7 +7,6 @@ use App\Enums\RoleType;
 use App\Events\UserCreated;
 use App\Events\UserDeleted;
 use App\Events\UserUpdated;
-use App\Exceptions\AuthException;
 use App\Exceptions\ClientException;
 use App\Models\Role;
 use App\Models\User;
@@ -67,7 +66,7 @@ class UserService implements UserServiceContract
             )->unique();
 
             if (!$authenticable->hasAllPermissions($permissions)) {
-                throw new AuthException(throw new ClientException(Exceptions::CLIENT_GIVE_ROLE_THAT_USER_DOESNT_HAVE));
+                throw new ClientException(Exceptions::CLIENT_GIVE_ROLE_THAT_USER_DOESNT_HAVE);
             }
 
             $permissions = $removedRoles->flatMap(
@@ -75,7 +74,7 @@ class UserService implements UserServiceContract
             )->unique();
 
             if (!$authenticable->hasAllPermissions($permissions)) {
-                throw new AuthException(Exceptions::CLIENT_REMOVE_ROLE_THAT_USER_DOESNT_HAVE);
+                throw new ClientException(Exceptions::CLIENT_REMOVE_ROLE_THAT_USER_DOESNT_HAVE);
             }
 
             $owner = Role::where('type', RoleType::OWNER)->first();

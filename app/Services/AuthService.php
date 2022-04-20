@@ -219,7 +219,7 @@ class AuthService implements AuthServiceContract
         return match ($dto->getType()) {
             TFAType::APP => $this->googleTFA(),
             TFAType::EMAIL => $this->emailTFA(),
-            default => throw new ClientException(Exceptions::CLIENT_INVALID_2FA_TYPE),
+            default => throw new ClientException(Exceptions::CLIENT_INVALID_TFA_TYPE),
         };
     }
 
@@ -234,7 +234,7 @@ class AuthService implements AuthServiceContract
         $this->checkIsTFA(Auth::user());
 
         if (!Auth::user()->tfa_type) {
-            throw new TFAException('First select Two-Factor Authentication type.');
+            throw new ClientException(Exceptions::CLIENT_TFA_SELECT_TYPE);
         }
 
         $this->checkIsValidTFA($dto->getCode());
@@ -308,7 +308,7 @@ class AuthService implements AuthServiceContract
     private function verifyTFA(?string $code): void
     {
         if (!Auth::user()->is_tfa_active && $code !== null) {
-            throw new TFAException('Two-Factor Authentication is not setup.', simpleLogs: true);
+            throw new ClientException(Exceptions::CLIENT_TFA_NOT_SET_UP, simpleLogs: true);
         }
 
         if (Auth::user()->is_tfa_active) {
@@ -331,7 +331,7 @@ class AuthService implements AuthServiceContract
             Auth::user()->notify(new TFASecurityCode($code));
         }
         throw new TFAException(
-            'Two-Factor Authentication is required',
+            Exceptions::CLIENT_TFA_REQUIRED,
             403,
             simpleLogs: true,
             type: Auth::user()->tfa_type
@@ -350,7 +350,7 @@ class AuthService implements AuthServiceContract
         }
 
         if (!$valid) {
-            throw new TFAException('Invalid Two-Factor Authentication token.', simpleLogs: true);
+            throw new ClientException(Exceptions::CLIENT_TFA_INVALID_TOKEN, simpleLogs: true);
         }
     }
 
@@ -419,14 +419,14 @@ class AuthService implements AuthServiceContract
     private function checkIsUserTFA(): void
     {
         if (!$this->isUserAuthenticated()) {
-            throw new TFAException('Only users can set up Two-Factor Authentication');
+            throw new ClientException(Exceptions::CLIENT_ONLY_USER_CAN_SET_TFA);
         }
     }
 
     private function checkIsTFA(User $user): void
     {
         if ($user->is_tfa_active) {
-            throw new TFAException('Two-Factor Authentication is already setup.');
+            throw new ClientException(Exceptions::CLIENT_TFA_ALREADY_SET_UP);
         }
     }
 
@@ -475,7 +475,7 @@ class AuthService implements AuthServiceContract
     private function checkNoTFA(User $user): void
     {
         if (!$user->is_tfa_active) {
-            throw new TFAException('Two-Factor Authentication is not setup.');
+            throw new ClientException(Exceptions::CLIENT_TFA_NOT_SET_UP);
         }
     }
 

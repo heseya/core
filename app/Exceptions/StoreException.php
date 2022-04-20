@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Traits\HasExceptionKey;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -19,6 +20,7 @@ class StoreException extends Exception
         private array $errorArray = [],
     ) {
         parent::__construct($message, $code, $previous);
+        $this->code = Exceptions::getCode($message);
     }
 
     public function isSimpleLogs(): bool

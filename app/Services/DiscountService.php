@@ -36,8 +36,6 @@ use App\Events\SaleCreated;
 use App\Events\SaleDeleted;
 use App\Events\SaleUpdated;
 use App\Exceptions\ClientException;
-use App\Exceptions\DiscountException;
-use App\Exceptions\StoreException;
 use App\Models\App;
 use App\Models\CartItemResponse;
 use App\Models\CartResource;
@@ -85,7 +83,9 @@ class DiscountService implements DiscountServiceContract
             return $discount->value;
         }
 
-        throw new StoreException('Discount type "' . $discount->type . '" is not supported');
+        throw new ClientException(Exceptions::CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED, errorArray: [
+            'type' => $discount->type,
+        ]);
     }
 
     public function index(SaleIndexDto|CouponIndexDto $dto): LengthAwarePaginator

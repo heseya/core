@@ -81,11 +81,11 @@ final class Handler extends ExceptionHandler
 
             $error = new Error(
                 $exception->getMessage(),
-                ErrorCode::getCode(self::ERRORS[$class]),
-                $exception instanceof ClientException ?
+                $exception instanceof StoreException ?
+                    $exception->getCode() : ErrorCode::getCode(self::ERRORS[$class]),
+                $exception instanceof StoreException ?
                     $exception->getKey() : ErrorCode::fromValue(self::ERRORS[$class])->key,
-                $exception instanceof ValidationException ?
-                    $this->mapValidationErrors($exception->validator) : [],
+                $this->getExceptionData($exception),
             );
 
         } else {
@@ -151,6 +151,16 @@ final class Handler extends ExceptionHandler
         return $validationErrors;
     }
 
+    private function getExceptionData(Exception $exception): array {
+        if ($exception instanceof StoreException) {
+            return $exception->errors();
+        }
+        if ($exception instanceof ValidationException) {
+            return $this->mapValidationErrors($exception->validator);
+        }
+        return [];
+    }
+
     private function createValidationAttributeData(string $key, array $data): array
     {
         return match ($key) {
@@ -162,6 +172,9 @@ final class Handler extends ExceptionHandler
             ],
             ValidationError::SIZE => [
                 'size' => $data[0],
+            ],
+            ValidationError::IN => [
+                'available' => $data
             ],
             ValidationError::BETWEEN => [
                 'min' => $data[0],

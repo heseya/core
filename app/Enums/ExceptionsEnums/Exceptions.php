@@ -16,21 +16,18 @@ final class Exceptions extends Enum
     public const CLIENT_APP_WANTS_INVALID_INFO = 'App wants invalid permissions';
     public const CLIENT_ADD_APP_WITHOUT_REQUIRED_PERMISSIONS = 'Can\'t add app without all required permissions';
     public const CLIENT_ADD_PERMISSION_AP_DOESNT_WANT = 'Can\'t add any permissions application doesn\'t want';
-    #Bad request
+
     public const CLIENT_MODEL_NOT_AUDITABLE = 'Model not auditable';
     public const CLIENT_INVALID_CREDENTIALS = 'Invalid credentials';
     public const CLIENT_INVALID_TOKEN = 'Invalid token';
     public const CLIENT_INVALID_IDENTITY_TOKEN = 'Invalid identity token';
     public const CLIENT_USER_DOESNT_EXIST = 'User doesn\'t exist';
-    public const CLIENT_INVALID_2FA_TYPE = 'Invalid Two-Factor Authentication type';
     public const CLIENT_TOKEN_INVALID_OR_INACTIVE = 'The token is invalid or inactive. Try to reset your password again';
-    public const CLIENT_ONLY_USER_CAN_SET_2FA = 'Only users can set up Two-Factor Authentication';
-    #Bad request
+
     public const CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED = 'Discount type is not supported';
     public const CLIENT_CANNOT_APPLY_SELECTED_DISCOUNT_TYPE = 'Cannot apply selected discount type to order';
     public const CLIENT_NOT_ENOUGH_ITEMS = 'There is not enough items';
     public const CLIENT_WRONG_VALUE = 'Wrong value';
-    public const CLIENT_ORDER_EDIT_ERROR ='Error while editing order';
 
     public const CLIENT_CREATE_ROLE_WITHOUT_PERMISSION = 'Cant create a role with permissions you don\'t have';
     public const CLIENT_UPDATE_ROLE_WITHOUT_PERMISSION = 'Cant update a role with permissions you don\'t have';
@@ -42,12 +39,49 @@ final class Exceptions extends Enum
     public const CLIENT_ONLY_OWNER_GRANTS_OWNER_ROLE = 'Only owner can grant the owner role';
     public const CLIENT_ONLY_OWNER_REMOVES_OWNER_ROLE = 'Only owner can remove the owner role';
     public const CLIENT_ONE_OWNER_REMAINS = 'There must always be at least one Owner left';
-
     public const CLIENT_DELETE_WHEN_RELATION_EXISTS = 'Element can\'t be deleted, because it has relations';
 
+    public const CLIENT_ORDER_EDIT_ERROR ='Error while editing order';
+    public const CLIENT_CHANGE_CANCELED_ORDER_STATUS = 'Cannot change the status of a cancelled order';
     public const CLIENT_MODEL_NOT_SORTABLE = 'Model is not sortable';
+    public const CLIENT_ORDER_PAID = 'Model is not sortable';
+    public const CLIENT_UNKNOWN_PAYMENT_METHOD = 'Unknown payment method';
+    public const CLIENT_INVALID_PAYMENT = 'Invalid payment';
+    public const CLIENT_GENERATE_PAYMENT_URL = 'Cannot generate payment url';
+    public const CLIENT_VERIFY_PAYMENT = 'Cannot verify payment';
+
+    public const CLIENT_UNTRUSTED_NOTIFICATION = 'Untrusted notification';
+
+    public const CLIENT_NO_REQUIRED_PERMISSIONS_TO_EVENTS = 'No required permissions to events';
+
+    public const CLIENT_TFA_SELECT_TYPE = 'First select Two-Factor Authentication type';
+    public const CLIENT_TFA_CANNOT_REMOVE = 'You cannot remove 2FA yourself in this way';
+    public const CLIENT_TFA_REQUIRED = 'Two-Factor Authentication is required';
+    public const CLIENT_ONLY_USER_CAN_SET_TFA = 'Only users can set up Two-Factor Authentication';
+    public const CLIENT_INVALID_TFA_TYPE = 'Invalid Two-Factor Authentication type';
+    public const CLIENT_TFA_INVALID_TOKEN = 'Invalid Two-Factor Authentication token';
+    public const CLIENT_TFA_NOT_SET_UP = 'Two-Factor Authentication is not setup';
+    public const CLIENT_TFA_ALREADY_SET_UP = 'Two-Factor Authentication is already setup';
+
+    public const CLIENT_WEBHOOK_USER_ACTION = 'Only user can use this method on this webhook';
+    public const CLIENT_WEBHOOK_APP_ACTION = 'Only application can use this method on this webhook';
+
+    public const CLIENT_APPS_NO_ACCESS = 'Applications cannot access this endpoint';
 
     public const SERVER_CDN_ERROR = 'CDN responded with an error';
 
-    public const NOT_FOUND = '';
+    public static function getCode($value): int
+    {
+        return match ($value) {
+            self::CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED,
+            self::CLIENT_DELETE_WHEN_RELATION_EXISTS,
+            self::CLIENT_MODEL_NOT_AUDITABLE,
+            self::CLIENT_APPS_NO_ACCESS => 400,
+            self::CLIENT_TFA_REQUIRED,
+            self::CLIENT_WEBHOOK_APP_ACTION,
+            self::CLIENT_WEBHOOK_USER_ACTION => 403,
+            self::SERVER_CDN_ERROR => 500,
+            default => 422
+        };
+    }
 }

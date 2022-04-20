@@ -5,8 +5,6 @@ namespace App\Services;
 use App\Dtos\MediaUpdateDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\MediaType;
-use App\Exceptions\AppAccessException;
-use App\Exceptions\MediaCriticalException;
 use App\Exceptions\ServerException;
 use App\Models\Media;
 use App\Models\Product;
