@@ -36,6 +36,7 @@ use App\Events\SaleDeleted;
 use App\Events\SaleUpdated;
 use App\Exceptions\DiscountException;
 use App\Exceptions\StoreException;
+use App\Jobs\CalculateDiscount;
 use App\Models\App;
 use App\Models\CartItemResponse;
 use App\Models\CartResource;
@@ -111,6 +112,10 @@ class DiscountService implements DiscountServiceContract
         if ($dto instanceof CouponDto) {
             CouponCreated::dispatch($discount);
         } else {
+            CalculateDiscount::dispatchIf(
+                $discount->target_type->is(DiscountTargetType::PRODUCTS),
+                $discount,
+            );
             SaleCreated::dispatch($discount);
         }
 
@@ -144,6 +149,7 @@ class DiscountService implements DiscountServiceContract
         if ($dto instanceof CouponDto) {
             CouponUpdated::dispatch($discount);
         } else {
+            CalculateDiscount::dispatch($discount, true);
             SaleUpdated::dispatch($discount);
         }
 
@@ -156,6 +162,10 @@ class DiscountService implements DiscountServiceContract
             if ($discount->code !== null) {
                 CouponDeleted::dispatch($discount);
             } else {
+                CalculateDiscount::dispatchIf(
+                    $discount->target_type->is(DiscountTargetType::PRODUCTS),
+                    $discount,
+                );
                 SaleDeleted::dispatch($discount);
             }
         }
@@ -326,15 +336,15 @@ class DiscountService implements DiscountServiceContract
         ]);
     }
 
-    public function applyDiscountsOnProducts(array $products): array
+    public function applyDiscountsOnProducts(Collection $products): void
     {
         foreach ($products as $product) {
             $this->applyDiscountsOnProduct($product);
+            $product->save();
         }
-        return $products;
     }
 
-    public function applyDiscountsOnProduct(Product $product): Product
+    public function applyDiscountsOnProduct(Product $product): void
     {
         $sales = Discount::where('code', null)
             ->where('target_type', DiscountTargetType::PRODUCTS)
@@ -393,11 +403,11 @@ class DiscountService implements DiscountServiceContract
             }
         }
 
-        $product['min_price_discounted'] = $minPriceDiscounted;
-        $product['max_price_discounted'] = $maxPriceDiscounted;
-        $product['sales'] = $productSales;
-
-        return $product;
+        $product->update([
+            'min_price_discounted' => $minPriceDiscounted,
+            'max_price_discounted' => $maxPriceDiscounted,
+        ]);
+        $product->sales()->sync($productSales->pluck('id'));
     }
 
     public function applyDiscountOnOrderProduct(OrderProduct $orderProduct, Discount $discount): OrderProduct
