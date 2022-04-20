@@ -55,6 +55,8 @@ class MediaService implements MediaServiceContract
 
     public function store(UploadedFile $file, bool $private = false): Media
     {
+        $private = $private ? '1' : '0';
+
         $response = Http::attach('file', $file->getContent(), 'file')
             ->withHeaders(['x-api-key' => Config::get('silverbox.key')])
             ->post(Config::get('silverbox.host') . '/' . Config::get('silverbox.client') . '?private=' . $private);
