@@ -35,6 +35,7 @@ final class Handler extends ExceptionHandler
         AuthException::class => ErrorCode::UNPROCESSABLE_ENTITY,
         MediaException::class => ErrorCode::INTERNAL_SERVER_ERROR,
         AppException::class => ErrorCode::UNPROCESSABLE_ENTITY,
+        ClientException::class => ErrorCode::UNPROCESSABLE_ENTITY,
         OrderException::class => ErrorCode::UNPROCESSABLE_ENTITY,
         RoleException::class => ErrorCode::UNPROCESSABLE_ENTITY,
         AuthorizationException::class => ErrorCode::FORBIDDEN,
@@ -79,12 +80,14 @@ final class Handler extends ExceptionHandler
             }
 
             $error = new Error(
-                self::ERRORS[$class],
+                $exception->getMessage(),
                 ErrorCode::getCode(self::ERRORS[$class]),
-                ErrorCode::fromValue(self::ERRORS[$class])->key,
+                $exception instanceof ClientException ?
+                    $exception->getKey() : ErrorCode::fromValue(self::ERRORS[$class])->key,
                 $exception instanceof ValidationException ?
                     $this->mapValidationErrors($exception->validator) : [],
             );
+
         } else {
             if (app()->bound('sentry')) {
                 app('sentry')->captureException($exception);
