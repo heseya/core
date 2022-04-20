@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ClientException;
 use App\Exceptions\StoreException;
 use App\Services\Contracts\AuditServiceContract;
 use Illuminate\Support\Collection;
@@ -18,7 +20,7 @@ class AuditService implements AuditServiceContract
         $model = $class::select('id')->findOrFail($id);
 
         if (!($model instanceof Auditable)) {
-            throw new StoreException('Model not auditable');
+            throw new ClientException(Exceptions::CLIENT_MODEL_NOT_AUDITABLE);
         }
 
         return $model->audits()->with('user')->orderBy('created_at', 'DESC')->get();

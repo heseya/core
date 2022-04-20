@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\TokenType;
 use App\Exceptions\AuthException;
+use App\Exceptions\ClientException;
 use App\Models\App;
 use App\Models\Token;
 use App\Models\User;
@@ -101,7 +103,7 @@ class TokenService implements TokenServiceContract
                     'expires_at' => $payload->get('exp'),
                 ]);
             } catch (Exception $error) {
-                throw new AuthException('Invalid token');
+                throw new ClientException(Exceptions::CLIENT_INVALID_TOKEN);
             }
         }
     }

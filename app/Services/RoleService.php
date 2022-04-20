@@ -5,8 +5,10 @@ namespace App\Services;
 use App\Dtos\RoleCreateDto;
 use App\Dtos\RoleSearchDto;
 use App\Dtos\RoleUpdateDto;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Exceptions\AuthException;
+use App\Exceptions\ClientException;
 use App\Exceptions\RoleException;
 use App\Models\Role;
 use App\Services\Contracts\RoleServiceContract;
@@ -24,9 +26,7 @@ class RoleService implements RoleServiceContract
     public function create(RoleCreateDto $dto): Role
     {
         if (!Auth::user()->hasAllPermissions($dto->getPermissions())) {
-            throw new AuthException(
-                'Cant create a role with permissions you don\'t have',
-            );
+            throw new ClientException(Exceptions::CLIENT_CREATE_ROLE_WITHOUT_PERMISSION);
         }
 
         $role = Role::create($dto->toArray());
@@ -39,9 +39,7 @@ class RoleService implements RoleServiceContract
     public function update(Role $role, RoleUpdateDto $dto): Role
     {
         if (!Auth::user()->hasAllPermissions($role->getAllPermissions())) {
-            throw new AuthException(
-                'Cant update a role with permissions you don\'t have',
-            );
+            throw new ClientException(Exceptions::CLIENT_UPDATE_ROLE_WITHOUT_PERMISSION);
         }
 
         if (!$dto->getPermissions() instanceof Missing) {
@@ -49,13 +47,11 @@ class RoleService implements RoleServiceContract
                 $role->type->is(RoleType::OWNER) &&
                 $role->getPermissionNames()->diff($dto->getPermissions())->isNotEmpty()
             ) {
-                throw new RoleException('Can\'t update owners permissions');
+                throw new ClientException(Exceptions::CLIENT_UPDATE_OWNER_PERMISSION);
             }
 
             if (!Auth::user()->hasAllPermissions($dto->getPermissions())) {
-                throw new AuthException(
-                    'Cant update a role with permissions you don\'t have',
-                );
+                throw new ClientException(Exceptions::CLIENT_UPDATE_ROLE_WITHOUT_PERMISSION);
             }
 
             $role->syncPermissions($dto->getPermissions());
@@ -73,13 +69,11 @@ class RoleService implements RoleServiceContract
             $role->type->is(RoleType::UNAUTHENTICATED) ||
             $role->type->is(RoleType::AUTHENTICATED)
         ) {
-            throw new RoleException('Can\'t delete built-in roles');
+            throw new ClientException(Exceptions::CLIENT_DELETE_BUILT_IN_ROLE);
         }
 
         if (!Auth::user()->hasAllPermissions($role->getAllPermissions())) {
-            throw new AuthException(
-                'Cant delete a role with permissions you don\'t have',
-            );
+            throw new ClientException(Exceptions::CLIENT_DELETE_ROLE_WITHOUT_PERMISSION);
         }
 
         $role->delete();

@@ -3,9 +3,11 @@
 namespace App\Services;
 
 use App\Dtos\MediaUpdateDto;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\MediaType;
 use App\Exceptions\AppAccessException;
 use App\Exceptions\MediaCriticalException;
+use App\Exceptions\ServerException;
 use App\Models\Media;
 use App\Models\Product;
 use App\Services\Contracts\MediaServiceContract;
@@ -47,7 +49,7 @@ class MediaService implements MediaServiceContract
             ->delete($media->url);
 
         if ($response->failed()) {
-            throw new MediaCriticalException('CDN responded with an error');
+            throw new ServerException(Exceptions::SERVER_CDN_ERROR);
         }
 
         $media->forceDelete();
@@ -60,7 +62,7 @@ class MediaService implements MediaServiceContract
             ->post(Config::get('silverbox.host') . '/' . Config::get('silverbox.client'));
 
         if ($response->failed()) {
-            throw new MediaCriticalException('CDN responded with an error');
+            throw new ServerException(Exceptions::SERVER_CDN_ERROR);
         }
 
         return Media::create([
@@ -104,7 +106,7 @@ class MediaService implements MediaServiceContract
             ]);
 
         if ($response->failed() || !isset($response['path'])) {
-            throw new AppAccessException('CDN responded with an error', 500);
+            throw new ServerException(Exceptions::SERVER_CDN_ERROR);
         }
 
         return Config::get('silverbox.host') . '/' . $response['path'];

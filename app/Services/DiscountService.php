@@ -28,12 +28,14 @@ use App\Dtos\WeekDayInConditionDto;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Events\CouponCreated;
 use App\Events\CouponDeleted;
 use App\Events\CouponUpdated;
 use App\Events\SaleCreated;
 use App\Events\SaleDeleted;
 use App\Events\SaleUpdated;
+use App\Exceptions\ClientException;
 use App\Exceptions\DiscountException;
 use App\Exceptions\StoreException;
 use App\Models\App;
@@ -226,7 +228,7 @@ class DiscountService implements DiscountServiceContract
                 $discount->code !== null
             ) {
                 [$type, $id] = $discount->code !== null ? ['coupon', $discount->code] : ['sale', $discount->getKey()];
-                throw new DiscountException("Cannot apply selected ${type} to order: ${id}");
+                throw new ClientException(Exceptions::CLIENT_CANNOT_APPLY_SELECTED_DISCOUNT_TYPE);
             }
         }
 
