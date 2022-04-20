@@ -6,24 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 class RenamePayedToPaid extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('payments', function (Blueprint $table) {
             $table->renameColumn('payed', 'paid');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('payments', function (Blueprint $table) {
             $table->renameColumn('paid', 'payed');

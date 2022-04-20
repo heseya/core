@@ -6,12 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class CrateTagsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::create('tags', function (Blueprint $table) {
             $table->uuid('id')->primary();
@@ -31,12 +26,7 @@ class CrateTagsTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('product_tags');
         Schema::dropIfExists('tags');

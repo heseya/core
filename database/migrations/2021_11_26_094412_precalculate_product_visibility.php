@@ -8,12 +8,7 @@ use Illuminate\Support\Facades\Schema;
 
 class PrecalculateProductVisibility extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('products', function (Blueprint $table) {
            $table->boolean('public_legacy')->nullable(); // Deprecated, to be removed in 3.0
@@ -36,12 +31,7 @@ class PrecalculateProductVisibility extends Migration
         ));
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Product::chunk(100, fn (Collection $products) => $products->each(
             fn (Product $product) => $product->update([

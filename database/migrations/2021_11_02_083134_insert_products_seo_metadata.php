@@ -10,12 +10,7 @@ use Illuminate\Support\Str;
 
 class InsertProductsSeoMetadata extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         if (Schema::hasTable('products') && Schema::hasTable('seo_metadata')) {
             Product::whereDoesntHave('seo')->chunk(100, fn ($products) => $products->each(
@@ -28,12 +23,7 @@ class InsertProductsSeoMetadata extends Migration
         }
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         if (Schema::hasTable('seo_metadata')) {
             DB::table('seo_metadata')->delete();

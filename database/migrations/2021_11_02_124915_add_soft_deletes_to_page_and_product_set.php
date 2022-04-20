@@ -6,12 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class AddSoftDeletesToPageAndProductSet extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('pages', function (Blueprint $table) {
             $table->softDeletes();
@@ -21,12 +16,7 @@ class AddSoftDeletesToPageAndProductSet extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('pages', function (Blueprint $table) {
             $table->dropSoftDeletes();

@@ -8,12 +8,7 @@ use League\HTMLToMarkdown\HtmlConverter;
 
 class ChangePageContentToHtml extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('pages', function (Blueprint $table) {
             $table->text('content_html');
@@ -32,12 +27,7 @@ class ChangePageContentToHtml extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('pages', function (Blueprint $table) {
             $table->text('content_md');

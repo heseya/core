@@ -6,11 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 class ChangeOrderTypeForShippingMethodsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up(): void
     {
         Schema::table('shipping_methods', function (Blueprint $table) {
@@ -18,12 +13,10 @@ class ChangeOrderTypeForShippingMethodsTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down(): void
     {
+        Schema::table('shipping_methods', function (Blueprint $table) {
+            $table->unsignedTinyInteger('order')->default(0)->change();
+        });
     }
 }

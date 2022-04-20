@@ -7,12 +7,7 @@ use Illuminate\Database\Migrations\Migration;
 
 class AddAuthenticatedRole extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         $authenticated = Role::create(['name' => 'Authenticated']);
         $authenticated->type = RoleType::AUTHENTICATED;
@@ -23,12 +18,7 @@ class AddAuthenticatedRole extends Migration
         }
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         $authenticated = Role::where('type', '=', RoleType::AUTHENTICATED);
         foreach (User::all() as $user) {

@@ -8,12 +8,7 @@ use Illuminate\Support\Str;
 
 class InitDatabase extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->uuid('id')->primary();
@@ -350,26 +345,5 @@ class InitDatabase extends Migration
             $table->boolean('public');
             $table->timestamps();
         });
-
-        DB::table('statuses')->insert([
-            'id' => Str::uuid(),
-            'name' => 'Nowe',
-            'color' => 'ffd600',
-            'description' => 'Twoje zamówienie zostało zapisane w systemie!',
-        ]);
-
-        DB::table('statuses')->insert([
-            'id' => Str::uuid(),
-            'name' => 'Wysłane',
-            'color' => '1faa00',
-            'description' => 'Zamówienie zostało wysłane i niedługo znajdzie się w Twoich rękach :)',
-        ]);
-
-        DB::table('statuses')->insert([
-            'id' => Str::uuid(),
-            'name' => 'Anulowane',
-            'color' => 'a30000',
-            'description' => 'Twoje zamówienie zostało anulowane, jeśli uważasz, że to błąd, skontaktuj się z nami.',
-        ]);
     }
 }

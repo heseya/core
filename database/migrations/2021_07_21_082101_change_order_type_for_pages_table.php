@@ -6,11 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 class ChangeOrderTypeForPagesTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up(): void
     {
         Schema::table('pages', static function (Blueprint $table) {
@@ -18,12 +13,10 @@ class ChangeOrderTypeForPagesTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down(): void
     {
+        Schema::table('pages', function (Blueprint $table) {
+            $table->unsignedTinyInteger('order')->default(0)->change();
+        });
     }
 }

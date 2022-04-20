@@ -8,12 +8,7 @@ use League\HTMLToMarkdown\HtmlConverter;
 
 class ChangeProductDescriptionToHtml extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('products', function (Blueprint $table) {
             $table->text('description_html')->nullable();
@@ -32,12 +27,7 @@ class ChangeProductDescriptionToHtml extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('products', function (Blueprint $table) {
             $table->text('description_md');

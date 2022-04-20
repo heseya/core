@@ -6,11 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 class AddSoftDeleteToUsersTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up(): void
     {
         Schema::table('users', static function (Blueprint $table) {
@@ -18,11 +13,6 @@ class AddSoftDeleteToUsersTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down(): void
     {
         //

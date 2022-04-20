@@ -6,12 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class AddCoverToProductSetsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('product_sets', function (Blueprint $table) {
             $table->uuid('cover_id')->nullable();
@@ -19,12 +14,7 @@ class AddCoverToProductSetsTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('product_sets', function (Blueprint $table) {
             $table->dropColumn('cover_id');

@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 class ChangeDecimalInSchemasTable extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('schemas', function (Blueprint $table) {

@@ -1,6 +1,5 @@
 <?php
 
-use Database\Seeders\CountriesSeeder;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Artisan;
@@ -8,20 +7,12 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateCountriesTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::create('countries', function (Blueprint $table) {
             $table->char('code', 2)->primary()->index();
             $table->string('name', 64);
         });
-
-        $seeder = new CountriesSeeder;
-        $seeder->run();
 
         Schema::create('shipping_method_country', function (Blueprint $table) {
             $table->char('country_code', 2)->index();
@@ -38,12 +29,7 @@ class CreateCountriesTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('shipping_methods', function (Blueprint $table) {
             $table->dropColumn('black_list');

@@ -9,12 +9,7 @@ use Illuminate\Support\Facades\Schema;
 
 class ChangeDiscountsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('discounts', function (Blueprint $table) {
             $table->string('name');
@@ -91,12 +86,7 @@ class ChangeDiscountsTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('discounts', function (Blueprint $table) {
             $table->unsignedInteger('max_uses')->default(1);

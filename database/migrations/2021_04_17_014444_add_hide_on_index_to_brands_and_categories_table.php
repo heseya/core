@@ -6,12 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class AddHideOnIndexToBrandsAndCategoriesTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('brands', function (Blueprint $table) {
             $table->boolean('hide_on_index')->default(false);
@@ -22,12 +17,7 @@ class AddHideOnIndexToBrandsAndCategoriesTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('brands', function (Blueprint $table) {
             $table->dropColumn('hide_on_index');

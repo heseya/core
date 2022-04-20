@@ -7,12 +7,7 @@ use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Permission::create(['name' => 'attributes.show_metadata_private', 'display_name' => 'Możliwość wyświetlania prywatnych metadanych atrybutów oraz opcji atrybutów']);
 
@@ -21,12 +16,7 @@ return new class extends Migration
         $owner->save();
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         $owner = Role::query()->where('type', '=', RoleType::OWNER)->firstOrFail();
         $owner->revokePermissionTo('attributes.show_metadata_private');

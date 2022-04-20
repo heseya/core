@@ -6,24 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 class AddNoIndexToSeoMetadataTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('seo_metadata', function (Blueprint $table) {
             $table->boolean('no_index')->default(false);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('seo_metadata', function (Blueprint $table) {
             $table->dropColumn('no_index');

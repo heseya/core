@@ -6,12 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class AddOrder extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('categories', function (Blueprint $table) {
             $table->unsignedTinyInteger('order')->default(0);
@@ -34,12 +29,7 @@ class AddOrder extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('categories', function (Blueprint $table) {
             $table->dropColumn('order');

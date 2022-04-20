@@ -6,12 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class AddUserAgentAndIpToOauthAccessTokensTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('oauth_access_tokens', function (Blueprint $table) {
             $table->ipAddress('ip')->nullable();
@@ -19,12 +14,7 @@ class AddUserAgentAndIpToOauthAccessTokensTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('oauth_access_tokens', function (Blueprint $table) {
             $table->dropColumn([

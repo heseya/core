@@ -6,12 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateWebHooksTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::create('web_hooks', function (Blueprint $table) {
             $table->uuid('id')->primary();
@@ -41,12 +36,7 @@ class CreateWebHooksTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('web_hook_event_log_entries');
         Schema::dropIfExists('web_hooks');

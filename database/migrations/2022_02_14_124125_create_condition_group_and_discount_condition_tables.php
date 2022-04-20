@@ -6,12 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateConditionGroupAndDiscountConditionTables extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::create('condition_groups', function (Blueprint $table) {
             $table->uuid('id')->primary();
@@ -50,12 +45,7 @@ class CreateConditionGroupAndDiscountConditionTables extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('model_has_discount_conditions');
         Schema::dropIfExists('discount_conditions');

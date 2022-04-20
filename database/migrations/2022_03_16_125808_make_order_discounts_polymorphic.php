@@ -7,12 +7,7 @@ use Illuminate\Support\Facades\Schema;
 
 class MakeOrderDiscountsPolymorphic extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('order_discounts', function (Blueprint $table) {
             $table->string('model_type');
@@ -37,12 +32,7 @@ class MakeOrderDiscountsPolymorphic extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('order_discounts', function (Blueprint $table) {
             $table->dropPrimary(['order_id', 'discount_id', 'model_type']);

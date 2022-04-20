@@ -9,12 +9,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Permission::create([
             'name' => 'banners.show_metadata_private',
@@ -26,12 +21,7 @@ return new class extends Migration
             ->givePermissionTo('banners.show_metadata_private');
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Role::where('type', RoleType::OWNER)
             ->firstOrFail()

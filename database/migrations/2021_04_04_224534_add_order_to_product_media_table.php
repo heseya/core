@@ -6,24 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 class AddOrderToProductMediaTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('product_media', function (Blueprint $table) {
             $table->unsignedTinyInteger('order')->default(0);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('product_media', function (Blueprint $table) {
             $table->dropColumn('order');

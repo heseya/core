@@ -7,12 +7,7 @@ use Illuminate\Support\Facades\Schema;
 
 class AddQuantityToItemsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('items', function (Blueprint $table) {
             $table->decimal('quantity', 16, 4)->default(0);
@@ -25,12 +20,7 @@ class AddQuantityToItemsTable extends Migration
         ));
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('items', function (Blueprint $table) {
             $table->dropColumn('quantity');

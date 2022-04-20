@@ -6,24 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 class AddOrderToOptionsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('options', function (Blueprint $table) {
             $table->unsignedSmallInteger('order')->default(0);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('options', function (Blueprint $table) {
             $table->dropColumn('order');

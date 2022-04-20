@@ -10,11 +10,6 @@ use Illuminate\Support\Str;
 
 class CreateProductSetsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up(): void
     {
         Schema::create('product_sets', function (Blueprint $table) {
@@ -57,11 +52,6 @@ class CreateProductSetsTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down(): void
     {
         Schema::table('products', function (Blueprint $table) {

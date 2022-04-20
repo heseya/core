@@ -6,12 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class UpdateAppsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('apps', function (Blueprint $table) {
             $table->dropColumn('key');
@@ -28,12 +23,7 @@ class UpdateAppsTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('apps', function (Blueprint $table) {
             $table->string('key');

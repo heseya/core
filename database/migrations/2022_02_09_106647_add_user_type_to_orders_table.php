@@ -6,12 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class AddUserTypeToOrdersTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
             $table->string('user_type')->nullable();
@@ -21,12 +16,7 @@ class AddUserTypeToOrdersTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('orders', function (Blueprint $table) {
             $table->dropColumn('user_type');

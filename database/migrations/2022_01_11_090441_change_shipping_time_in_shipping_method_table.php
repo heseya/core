@@ -6,12 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class ChangeShippingTimeInShippingMethodTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('shipping_methods', function (Blueprint $table) {
             $table->renameColumn('shipping_time', 'shipping_time_max');
@@ -19,12 +14,7 @@ class ChangeShippingTimeInShippingMethodTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('shipping_methods', function (Blueprint $table) {
             $table->renameColumn('shipping_time_max', 'shipping_time');

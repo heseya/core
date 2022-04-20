@@ -6,12 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class AddUserToOrdersTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
             $table->uuid('user_id')->nullable();
@@ -20,12 +15,7 @@ class AddUserToOrdersTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('orders', function (Blueprint $table) {
             $table->dropForeign('orders_user_id_foreign');

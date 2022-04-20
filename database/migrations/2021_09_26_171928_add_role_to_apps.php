@@ -6,12 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class AddRoleToApps extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('apps', function (Blueprint $table) {
             $table->uuid('role_id')->nullable();
@@ -20,12 +15,7 @@ class AddRoleToApps extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('apps', function (Blueprint $table) {
             $table->dropForeign('apps_role_id_foreign');

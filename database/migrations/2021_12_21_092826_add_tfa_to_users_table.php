@@ -6,12 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class AddTfaToUsersTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
             $table->string('tfa_type')->nullable();
@@ -32,12 +27,7 @@ class AddTfaToUsersTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('tfa_type');

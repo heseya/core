@@ -6,12 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 
 class AuthenticatedRolePermissions extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         $authenticated = Role::where('type', RoleType::AUTHENTICATED)->firstOrFail();
 
@@ -44,12 +39,7 @@ class AuthenticatedRolePermissions extends Migration
         $authenticated->save();
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         $authenticated = Role::where('type', RoleType::AUTHENTICATED)->firstOrFail();
 

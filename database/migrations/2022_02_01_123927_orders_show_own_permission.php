@@ -7,12 +7,7 @@ use Illuminate\Database\Migrations\Migration;
 
 class OrdersShowOwnPermission extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Permission::create(['name' => 'orders.show_own', 'display_name' => 'Dostęp do listy zamówień zalogowanego użytkownika']);
 
@@ -21,12 +16,7 @@ class OrdersShowOwnPermission extends Migration
         $owner->save();
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
         $owner->revokePermissionTo(['orders.show_own']);

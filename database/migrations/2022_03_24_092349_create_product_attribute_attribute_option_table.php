@@ -6,12 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateProductAttributeAttributeOptionTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::table('product_attribute', function (Blueprint $table) {
             $table->dropForeign('product_attribute_option_id_foreign');
@@ -33,12 +28,7 @@ class CreateProductAttributeAttributeOptionTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('product_attribute_attribute_option');
 
