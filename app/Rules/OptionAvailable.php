@@ -7,13 +7,9 @@ use Illuminate\Contracts\Validation\Rule;
 
 class OptionAvailable implements Rule
 {
-    private Schema $schema;
-    private float $quantity;
-
-    public function __construct(Schema $schema, float $quantity)
-    {
-        $this->schema = $schema;
-        $this->quantity = $quantity;
+    public function __construct(
+        private Schema $schema,
+    ) {
     }
 
     /**

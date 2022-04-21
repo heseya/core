@@ -113,6 +113,7 @@ class AuthController extends Controller
 
     public function profile(Request $request): JsonResponse
     {
+        /** @var User|App|null $authenticable */
         $authenticable = $request->user();
 
         $resource = $authenticable instanceof App

@@ -39,13 +39,13 @@ Attributes:
                     $ref: './../schemas/Attributes.yml#/Attribute'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   post:
     tags:
       - Attributes
     summary: 'add new attribute'
     requestBody:
-      $ref: './../requests/Attributes.yml#Attribute'
+      $ref: './../requests/Attributes.yml#/Attribute'
     responses:
       201:
         description: Created
@@ -57,7 +57,7 @@ Attributes:
                   $ref: './../schemas/Attributes.yml#/Attribute'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 AttributesParams:
   get:
@@ -81,7 +81,7 @@ AttributesParams:
                   $ref: './../schemas/Attributes.yml#/Attribute'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   delete:
     tags:
       - Attributes
@@ -96,7 +96,7 @@ AttributesParams:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   patch:
     tags:
       - Attributes
@@ -123,7 +123,7 @@ AttributesParams:
                   $ref: './../schemas/Attributes.yml#/Attribute'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 AttributeOption:
   get:
@@ -149,16 +149,20 @@ AttributeOption:
               type: string
             czerwony:
               type: string
-    requestBody:
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              data:
-                type: array
-                items:
-                  $ref: './../schemas/Attributes.yml#/AttributeOption'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  data:
+                    $ref: './../schemas/Attributes.yml#/AttributeOption'
+    security:
+      - BearerAuth: [ ]
   post:
     tags:
       - Attributes
@@ -170,7 +174,19 @@ AttributeOption:
         schema:
           type: integer
     requestBody:
-      $ref: './../requests/Attributes.yml#AttributeOption'
+      $ref: './../requests/Attributes.yml#/AttributeOption'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Attributes.yml#/AttributeOption'
+              type: object
+    security:
+      - BearerAuth: [ ]
 AttributeOptionParams:
   patch:
     tags:
@@ -181,17 +197,29 @@ AttributeOptionParams:
         in: path
         required: true
         schema:
-          type: integer
+          type: string
       - name: option_id
         in: path
         required: true
         schema:
-          type: integer
+          type: string
     requestBody:
       content:
         application/json:
           schema:
             $ref: './../schemas/Attributes.yml#/AttributeOption'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Attributes.yml#/AttributeOption'
+              type: object
+    security:
+      - BearerAuth: [ ]
   delete:
     tags:
       - Attributes
@@ -211,4 +239,4 @@ AttributeOptionParams:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]

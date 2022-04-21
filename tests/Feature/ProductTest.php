@@ -25,6 +25,7 @@ use App\Models\Schema;
 use App\Models\SeoMetadata;
 use App\Models\WebHook;
 use App\Services\Contracts\AvailabilityServiceContract;
+use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\App;
@@ -45,6 +46,7 @@ class ProductTest extends TestCase
     private array $expected_short;
 
     private ProductServiceContract $productService;
+    private DiscountServiceContract $discountService;
 
     public function setUp(): void
     {
@@ -52,6 +54,7 @@ class ProductTest extends TestCase
 
         $this->productService = App::make(ProductServiceContract::class);
         $availabilityService = App::make(AvailabilityServiceContract::class);
+        $this->discountService = App::make(DiscountServiceContract::class);
 
         $this->product = Product::factory()->create([
             'public' => true,
@@ -716,6 +719,8 @@ class ProductTest extends TestCase
 
         $sale5->products()->attach($product);
 
+        $this->discountService->applyDiscountsOnProduct($product);
+
         $response = $this->actingAs($this->$user)
             ->getJson('/products/id:' . $product->getKey());
 
@@ -745,6 +750,158 @@ class ProductTest extends TestCase
             ])
             ->assertJsonMissing([
                 'id' => $sale5->getKey(),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWithSalesBlockListEmpty($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 3000,
+            'price_min' => 2500,
+            'price_max' => 3500,
+        ]);
+
+        // Applied - product is not on block list
+        $sale = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Testowa promocja obowiązująca',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => false,
+            'code' => null,
+        ]);
+
+        $this->discountService->applyDiscountsOnProduct($product);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $product->getKey());
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $product->getKey(),
+                'name' => $product->name,
+                'price' => $product->price,
+                'price_min' => $product->price_min,
+                'price_max' => $product->price_max,
+                'min_price_discounted' => 2250,
+                'max_price_discounted' => 3150,
+            ])
+            ->assertJsonFragment([
+                'id' => $sale->getKey(),
+                'name' => $sale->name,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWithSalesProductSets($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 3000,
+            'price_min' => 2500,
+            'price_max' => 3500,
+        ]);
+
+        $set = ProductSet::factory()->create([
+            'public' => true,
+            'order' => 20,
+        ]);
+
+        $product->sets()->sync([$set->getKey()]);
+
+        // Applied - product set is on allow list
+        $sale1 = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Testowa promocja obowiązująca',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+            'priority' => 1,
+        ]);
+
+        $sale1->productSets()->attach($set);
+
+        // Not applied - product set is on block list
+        $sale2 = Discount::factory()->create([
+            'description' => 'Not applied - product set is on block list',
+            'name' => 'Set on block list',
+            'value' => 5,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => false,
+            'code' => null,
+        ]);
+
+        $sale2->productSets()->attach($set);
+
+        // Not applied - product set is not on list
+        $sale3 = Discount::factory()->create([
+            'description' => 'Not applied - product set is not on list',
+            'name' => 'Set not on list',
+            'value' => 5,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        // Applied - product set is not on block list
+        $sale4 = Discount::factory()->create([
+            'description' => 'Not applied - product set is on block list',
+            'name' => 'Set not on block list',
+            'value' => 5,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => false,
+            'code' => null,
+            'priority' => 0,
+        ]);
+
+        $this->discountService->applyDiscountsOnProduct($product);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $product->getKey());
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $product->getKey(),
+                'name' => $product->name,
+                'price' => $product->price,
+                'price_min' => $product->price_min,
+                'price_max' => $product->price_max,
+                'min_price_discounted' => 2137.5,
+                'max_price_discounted' => 2992.5,
+            ])
+            ->assertJsonFragment([
+                'id' => $sale1->getKey(),
+                'name' => $sale1->name,
+            ])
+            ->assertJsonFragment([
+                'id' => $sale4->getKey(),
+                'name' => $sale4->name,
+            ])
+            ->assertJsonMissing([
+                'id' => $sale2->getKey(),
+                'name' => $sale2->name,
+            ])
+            ->assertJsonMissing([
+                'id' => $sale3->getKey(),
+                'name' => $sale3->name,
             ]);
     }
 
@@ -1674,6 +1831,59 @@ class ProductTest extends TestCase
             ->assertUnprocessable();
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithExistingSale($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $saleNotApplied = Discount::factory()->create([
+            'type' => DiscountType::AMOUNT,
+            'value' => 10,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        $saleApplied = Discount::factory()->create([
+            'type' => DiscountType::AMOUNT,
+            'value' => 20,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => false,
+            'code' => null,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'public' => true,
+        ]);
+
+        $productId = $response->getData()->data->id;
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'id' => $productId,
+                'min_price_discounted' => 80,
+                'max_price_discounted' => 80,
+            ])
+            ->assertJsonFragment([
+                'id' => $saleApplied->getKey(),
+            ])
+            ->assertJsonMissing([
+                'id' => $saleNotApplied->getKey(),
+            ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $productId,
+            'min_price_discounted' => 80,
+            'max_price_discounted' => 80,
+        ]);
+    }
+
     public function testUpdateUnauthorized(): void
     {
         Event::fake([ProductUpdated::class]);
@@ -2070,6 +2280,65 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateMinMaxPriceWithSale($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $productPrice = 150;
+        $product = Product::factory()->create([
+            'price' => $productPrice,
+        ]);
+
+        $schemaPrice = 50;
+        $schema = Schema::factory()->create([
+            'type' => 0,
+            'required' => false,
+            'price' => $schemaPrice,
+        ]);
+
+        $product->schemas()->attach($schema->getKey());
+        $this->productService->updateMinMaxPrices($product);
+
+        $saleValue = 25;
+        $sale = Discount::factory()->create([
+            'code' => null,
+            'type' => DiscountType::AMOUNT,
+            'value' => $saleValue,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+        ]);
+
+        $sale->products()->attach($product->getKey());
+
+        $this->discountService->applyDiscountsOnProduct($product);
+
+        $productNewPrice = 250;
+        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $product->getKey(), [
+            'name' => $product->name,
+            'slug' => $product->slug,
+            'public' => $product->public,
+            'price' => $productNewPrice,
+            'sets' => [],
+            'schemas' => [
+                $schema->getKey(),
+            ],
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            $product->getKeyName() => $product->getKey(),
+            'price' => $productNewPrice,
+            'price_min' => $productNewPrice,
+            'price_max' => $productNewPrice + $schemaPrice,
+            'min_price_discounted' => $productNewPrice - $saleValue,
+            'max_price_discounted' => $productNewPrice + $schemaPrice - $saleValue,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateSchemaMinMaxPrice($user): void
     {
         $this->$user->givePermissionTo('products.edit');
@@ -2110,6 +2379,61 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateSchemaMinMaxPriceWithSale($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $productPrice = 150;
+        $product = Product::factory()->create([
+            'price' => $productPrice,
+        ]);
+
+        $schemaPrice = 50;
+        $schema = Schema::factory()->create([
+            'type' => 0,
+            'required' => false,
+            'price' => $schemaPrice,
+        ]);
+
+        $product->schemas()->attach($schema->getKey());
+        $this->productService->updateMinMaxPrices($product);
+
+        $saleValue = 25;
+        $sale = Discount::factory()->create([
+            'code' => null,
+            'type' => DiscountType::AMOUNT,
+            'value' => $saleValue,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+        ]);
+
+        $sale->products()->attach($product->getKey());
+
+        $this->discountService->applyDiscountsOnProduct($product);
+
+        $schemaNewPrice = 75;
+        $response = $this->actingAs($this->$user)->patchJson('/schemas/id:' . $schema->getKey(), [
+            'name' => 'Test Updated',
+            'price' => $schemaNewPrice,
+            'type' => 'string',
+            'required' => false,
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            $product->getKeyName() => $product->getKey(),
+            'price' => $productPrice,
+            'price_min' => $productPrice,
+            'price_max' => $productPrice + $schemaNewPrice,
+            'min_price_discounted' => $productPrice - $saleValue,
+            'max_price_discounted' => $productPrice + $schemaNewPrice - $saleValue,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testDeleteSchemaMinMaxPrice($user): void
     {
         $this->$user->givePermissionTo('schemas.remove');
@@ -2138,6 +2462,55 @@ class ProductTest extends TestCase
             'price' => $productPrice,
             'price_min' => $productPrice,
             'price_max' => $productPrice,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteSchemaMinMaxPriceWithSale($user): void
+    {
+        $this->$user->givePermissionTo('schemas.remove');
+
+        $productPrice = 150;
+        $product = Product::factory()->create([
+            'price' => $productPrice,
+        ]);
+
+        $schemaPrice = 50;
+        $schema = Schema::factory()->create([
+            'type' => 0,
+            'required' => true,
+            'price' => $schemaPrice,
+        ]);
+
+        $product->schemas()->attach($schema->getKey());
+        $this->productService->updateMinMaxPrices($product);
+
+        $saleValue = 25;
+        $sale = Discount::factory()->create([
+            'code' => null,
+            'type' => DiscountType::AMOUNT,
+            'value' => $saleValue,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+        ]);
+
+        $sale->products()->attach($product->getKey());
+
+        $this->discountService->applyDiscountsOnProduct($product);
+
+        $response = $this->actingAs($this->$user)->deleteJson('/schemas/id:' . $schema->getKey());
+
+        $response->assertNoContent();
+
+        $this->assertDatabaseHas('products', [
+            $product->getKeyName() => $product->getKey(),
+            'price' => $productPrice,
+            'price_min' => $productPrice,
+            'price_max' => $productPrice,
+            'min_price_discounted' => $productPrice - $saleValue,
+            'max_price_discounted' => $productPrice - $saleValue,
         ]);
     }
 

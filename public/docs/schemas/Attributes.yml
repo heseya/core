@@ -48,7 +48,7 @@ Attribute:
             example: 'inch'
           value:
             description: 'Value of attribute option'
-            type: float
+            type: number
             example: '27'
 
 AttributeOption:
@@ -67,11 +67,12 @@ AttributeOption:
       example: 1
     value_number:
       description: 'Number value attribute option'
-      type: float
+      type: number
       example: '27'
     value_date:
       description: 'Date value attribute option'
-      type: date
+      type: string
+      format: date
       example: '2022-02-22'
     attribute_id:
       type: string

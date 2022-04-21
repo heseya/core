@@ -19,10 +19,12 @@ Banner:
     responsive_media:
       type: array
       items:
-        type: object
-        properties:
-          min_screen_width:
-            type: integer
-            example: 200
-          media:
-            $ref: './Media.yml#Media'
+        type: array
+        items:
+          type: object
+          properties:
+            min_screen_width:
+              type: integer
+              example: 200
+            media:
+              $ref: './Media.yml#/Media'

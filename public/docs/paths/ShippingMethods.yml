@@ -63,7 +63,7 @@ ShippingMethods:
                   $ref: './../schemas/ShippingMethods.yml#/ShippingMethod'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 ShippingMethodsParams:
   delete:
@@ -81,7 +81,7 @@ ShippingMethodsParams:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   patch:
     tags:
       - Shipping
@@ -106,7 +106,7 @@ ShippingMethodsParams:
                   $ref: './../schemas/ShippingMethods.yml#/ShippingMethod'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 ShippingMethodsReorder:
   post:
@@ -119,4 +119,4 @@ ShippingMethodsReorder:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]

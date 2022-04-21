@@ -18,18 +18,15 @@ use App\Http\Resources\ProductSetParentResource;
 use App\Http\Resources\ProductSetResource;
 use App\Models\ProductSet;
 use App\Services\Contracts\ProductSetServiceContract;
-use App\Services\ProductSetService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
 
 class ProductSetController extends Controller
 {
-    private ProductSetService $productSetService;
-
-    public function __construct(ProductSetServiceContract $productSetService)
-    {
-        $this->productSetService = $productSetService;
+    public function __construct(
+        private ProductSetServiceContract $productSetService,
+    ) {
     }
 
     public function index(ProductSetIndexRequest $request): JsonResource

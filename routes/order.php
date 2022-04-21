@@ -3,6 +3,8 @@
 use App\Http\Controllers\MetadataController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Middleware\CanDownloadDocument;
+use App\Http\Middleware\SecureHeaders;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('orders')->group(function (): void {
@@ -31,6 +33,15 @@ Route::prefix('orders')->group(function (): void {
     Route::get('{order:code}', [OrderController::class, 'showPublic'])
         ->middleware('can:orders.show_summary')
         ->whereAlphaNumeric('order');
+
+    Route::post('id:{order:id}/docs', [OrderController::class, 'storeDocument'])
+        ->middleware('can:orders.edit');
+    Route::delete('id:{order:id}/docs/id:{document}', [OrderController::class, 'deleteDocument'])
+        ->middleware('can:orders.edit');
+    Route::post('id:{order:id}/docs/send', [OrderController::class, 'sendDocuments']);
+    Route::get('id:{order:id}/docs/id:{document}/download', [OrderController::class, 'downloadDocument'])
+        ->middleware(CanDownloadDocument::class)
+        ->withoutMiddleware([SecureHeaders::class]);
 
     Route::post('{order:code}/pay/offline', [PaymentController::class, 'offlinePayment'])
         ->middleware('can:payments.offline');

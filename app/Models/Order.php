@@ -19,6 +19,7 @@ use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -225,6 +226,14 @@ class Order extends Model implements AuditableContract, SortableContract
     public function products(): HasMany
     {
         return $this->hasMany(OrderProduct::class);
+    }
+
+    public function documents(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(Media::class, 'order_document', 'order_id', 'media_id')
+            ->using(OrderDocument::class)
+            ->withPivot('id', 'type', 'name');
     }
 
     public function generateCode(): string

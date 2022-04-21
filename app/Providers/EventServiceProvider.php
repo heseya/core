@@ -10,6 +10,7 @@ use App\Events\ItemDeleted;
 use App\Events\ItemUpdated;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
+use App\Events\OrderDocumentEvent;
 use App\Events\OrderUpdated;
 use App\Events\OrderUpdatedStatus;
 use App\Events\PageCreated;
@@ -24,6 +25,7 @@ use App\Events\ProductUpdated;
 use App\Events\SaleCreated;
 use App\Events\SaleDeleted;
 use App\Events\SaleUpdated;
+use App\Events\SendOrderDocument;
 use App\Events\UserCreated;
 use App\Events\UserDeleted;
 use App\Events\UserUpdated;
@@ -49,6 +51,12 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
+        OrderDocumentEvent::class => [
+            WebHookEventListener::class,
+        ],
+        SendOrderDocument::class => [
+            WebHookEventListener::class,
+        ],
         OrderCreated::class => [
             OrderCreatedListener::class,
             WebHookEventListener::class,

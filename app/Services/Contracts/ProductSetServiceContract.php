@@ -33,4 +33,6 @@ interface ProductSetServiceContract
     public function flattenSetsTree(Collection $sets, string $relation): Collection;
 
     public function flattenParentsSetsTree(Collection $sets): Collection;
+
+    public function attach(ProductSet $set, array $products): Collection;
 }

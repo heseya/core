@@ -13,6 +13,7 @@ use App\Models\Product;
 use App\Models\Schema;
 use App\Services\Contracts\AttributeServiceContract;
 use App\Services\Contracts\AvailabilityServiceContract;
+use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ProductServiceContract;
@@ -31,6 +32,7 @@ class ProductService implements ProductServiceContract
         private AvailabilityServiceContract $availabilityService,
         private MetadataServiceContract $metadataService,
         private AttributeServiceContract $attributeService,
+        private DiscountServiceContract $discountService,
     ) {
     }
 
@@ -56,10 +58,6 @@ class ProductService implements ProductServiceContract
             $product->tags()->sync($dto->getTags());
         }
 
-        if (!($dto->getSeo() instanceof Missing)) {
-            $product->seo()->save($this->seoMetadataService->create($dto->getSeo()));
-        }
-
         if (!($dto->getMetadata() instanceof Missing)) {
             $this->metadataService->sync($product, $dto->getMetadata());
         }
@@ -68,10 +66,13 @@ class ProductService implements ProductServiceContract
             $this->attributeService->sync($product, $dto->getAttributes());
         }
 
+        $product->seo()->save($this->seoMetadataService->create($dto->getSeo()));
+
         [$priceMin, $priceMax] = $this->getMinMaxPrices($product);
         $product->price_min = $priceMin;
         $product->price_max = $priceMax;
         $product->available = $this->availabilityService->isProductAvaiable($product);
+        $this->discountService->applyDiscountsOnProduct($product);
 
         return $product;
     }
@@ -141,6 +142,7 @@ class ProductService implements ProductServiceContract
             'price_min' => $productMinMaxPrices[0],
             'price_max' => $productMinMaxPrices[1],
         ]);
+        $this->discountService->applyDiscountsOnProduct($product);
     }
 
     private function assignItems(Product $product, ?array $items): void

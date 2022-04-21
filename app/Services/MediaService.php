@@ -53,11 +53,13 @@ class MediaService implements MediaServiceContract
         $media->forceDelete();
     }
 
-    public function store(UploadedFile $file): Media
+    public function store(UploadedFile $file, bool $private = false): Media
     {
+        $private = $private ? '?private' : '';
+
         $response = Http::attach('file', $file->getContent(), 'file')
             ->withHeaders(['x-api-key' => Config::get('silverbox.key')])
-            ->post(Config::get('silverbox.host') . '/' . Config::get('silverbox.client'));
+            ->post(Config::get('silverbox.host') . '/' . Config::get('silverbox.client') . $private);
 
         if ($response->failed()) {
             throw new ServerException(Exceptions::SERVER_CDN_ERROR);
@@ -65,7 +67,7 @@ class MediaService implements MediaServiceContract
 
         return Media::create([
             'type' => $this->getMediaType($file->extension()),
-            'url' => Config::get('silverbox.host') . '/' . $response[0]['path'],
+            'url' => Config::get('silverbox.host') . '/' . $response->json('0.path'),
         ]);
     }
 

@@ -20,9 +20,12 @@ use App\Models\Role;
 use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Models\WebHook;
+use App\Services\Contracts\DiscountServiceContract;
 use Carbon\Carbon;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -47,7 +50,10 @@ class DiscountTest extends TestCase
         // kupony
         Discount::factory()->count(10)->create();
         // promocje
-        Discount::factory(['code' => null])->count(10)->create();
+        Discount::factory([
+            'code' => null,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+        ])->count(10)->create();
 
         $this->role = Role::factory()->create();
         $this->conditionUser = User::factory()->create();
@@ -118,6 +124,11 @@ class DiscountTest extends TestCase
                 'type' => ConditionType::CART_LENGTH,
                 'min_value' => 1,
                 'max_value' => 100,
+            ],
+            [
+                'type' => ConditionType::COUPONS_COUNT,
+                'min_value' => 1,
+                'max_value' => 10,
             ],
         ];
     }
@@ -560,7 +571,15 @@ class DiscountTest extends TestCase
     {
         $this->$user->givePermissionTo("${discountKind}.add");
 
-        $event = $discountKind === 'coupons' ? CouponCreated::class : SaleCreated::class;
+        if ($discountKind === 'coupons') {
+            $event = CouponCreated::class;
+            $minPriceDiscounted = 900;
+            $maxPriceDiscounted = 1200;
+        } else {
+            $event = SaleCreated::class;
+            $minPriceDiscounted = 810;
+            $maxPriceDiscounted = 1080;
+        }
 
         Event::fake($event);
 
@@ -578,7 +597,12 @@ class DiscountTest extends TestCase
             $discount['code'] = 'S43SA2';
         }
 
-        $product = Product::factory()->create(['public' => true]);
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 1000,
+            'price_min' => 900,
+            'price_max' => 1200,
+        ]);
 
         $productSet = ProductSet::factory()->create(['public' => true]);
 
@@ -602,6 +626,8 @@ class DiscountTest extends TestCase
                 'id' => $product->getKey(),
                 'name' => $product->name,
                 'public' => true,
+                'min_price_discounted' => $minPriceDiscounted,
+                'max_price_discounted' => $maxPriceDiscounted,
             ])
             ->assertJsonFragment([
                 'id' => $productSet->getKey(),
@@ -1068,6 +1094,68 @@ class DiscountTest extends TestCase
             ->select('value')
             ->first();
         $this->assertTrue(json_decode($condition->value)->weekday === 38); // DEC(38) == BIN(0100110)
+    }
+
+    /**
+     * @dataProvider authWithDiscountProvider
+     */
+    public function testCreateDateBetweenCondition($user, $discountKind): void
+    {
+        $this->$user->givePermissionTo("${discountKind}.add");
+
+        $discount = [
+            'name' => 'Kupon',
+            'description' => 'Testowy kupon',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'priority' => 1,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+        ];
+
+        if ($discountKind === 'coupons') {
+            $discount['code'] = 'S43SA2';
+        }
+
+        $conditions = [
+            'condition_groups' => [
+                [
+                    'conditions' => [
+                        [
+                            'type' => ConditionType::DATE_BETWEEN,
+                            'is_in_range' => true,
+                            'start_at' => '2022-04-15',
+                            'end_at' => '2022-04-20',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $response = $this->actingAs($this->$user)->json('POST', "/${discountKind}", $discount + $conditions);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment($discount)
+            ->assertJsonFragment([
+                'type' => ConditionType::DATE_BETWEEN,
+                'is_in_range' => true,
+                'start_at' => '2022-04-15',
+                'end_at' => '2022-04-20',
+            ]);
+
+        $discountModel = Discount::find($response->getData()->data->id);
+        $conditionGroup = $discountModel->conditionGroups->first();
+
+        $this->assertDatabaseHas('discounts', $discount + ['id' => $discountModel->getKey()]);
+        $this->assertDatabaseCount('condition_groups', 1);
+        $this->assertDatabaseHas('discount_condition_groups', ['discount_id' => $discountModel->getKey()]);
+        $this->assertDatabaseCount('discount_conditions', 1);
+
+        $this->assertDatabaseHas('discount_conditions', [
+            'condition_group_id' => $conditionGroup->getKey(),
+            'type' => ConditionType::DATE_BETWEEN,
+        ]);
     }
 
     /**
@@ -1636,6 +1724,116 @@ class DiscountTest extends TestCase
     }
 
     /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSaleWithProduct($user): void
+    {
+        $this->$user->givePermissionTo('sales.edit');
+        $discount = Discount::factory(['target_type' => DiscountTargetType::PRODUCTS, 'code' => null])->create();
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+            'price' => 100,
+            'price_min' => 100,
+            'price_max' => 150,
+        ]);
+
+        $product2 = Product::factory()->create([
+            'public' => true,
+            'price' => 200,
+            'price_min' => 190,
+            'price_max' => 250,
+        ]);
+
+        $product3 = Product::factory()->create([
+            'public' => true,
+            'price' => 300,
+            'price_min' => 290,
+            'price_max' => 350,
+        ]);
+
+        $discount->products()->sync([$product1->getKey(), $product2->getKey()]);
+
+        /** @var DiscountServiceContract $discountService */
+        $discountService = App::make(DiscountServiceContract::class);
+
+        // Apply discount to products before update
+        $discountService->applyDiscountsOnProducts(Collection::make([$product1, $product2, $product3]));
+
+        $discountNew = [
+            'name' => 'Kupon',
+            'description' => 'Testowy kupon',
+            'value' => 10,
+            'type' => DiscountType::AMOUNT,
+            'priority' => 1,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+        ];
+
+        $targetProducts = [
+            'target_products' => [
+                $product2->getKey(),
+                $product3->getKey(),
+            ],
+        ];
+
+        $response = $this->actingAs($this->$user)
+            ->json('PATCH', '/sales/id:' . $discount->getKey(), $discountNew + $targetProducts);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment($discountNew + ['id' => $discount->getKey()])
+            ->assertJsonFragment([
+                'id' => $product2->getKey(),
+                'price' => 200,
+                'price_min' => 190,
+                'price_max' => 250,
+                'min_price_discounted' => 180,
+                'max_price_discounted' => 240,
+            ])
+            ->assertJsonFragment([
+                'id' => $product3->getKey(),
+                'price' => 300,
+                'price_min' => 290,
+                'price_max' => 350,
+                'min_price_discounted' => 280,
+                'max_price_discounted' => 340,
+            ]);
+
+        $this->assertDatabaseHas('discounts', $discountNew + ['id' => $discount->getKey()]);
+
+        $this->assertDatabaseMissing('product_sales', [
+            'product_id' => $product1->getKey(),
+            'sale_id' => $discount->getKey(),
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product1->getKey(),
+            'price' => 100,
+            'price_min' => 100,
+            'price_max' => 150,
+            'min_price_discounted' => 100,
+            'max_price_discounted' => 150,
+        ]);
+        $this->assertDatabaseHas('products', [
+            'id' => $product2->getKey(),
+            'price' => 200,
+            'price_min' => 190,
+            'price_max' => 250,
+            'min_price_discounted' => 180,
+            'max_price_discounted' => 240,
+        ]);
+        $this->assertDatabaseHas('products', [
+            'id' => $product3->getKey(),
+            'price' => 300,
+            'price_min' => 290,
+            'price_max' => 350,
+            'min_price_discounted' => 280,
+            'max_price_discounted' => 340,
+        ]);
+    }
+
+    /**
      * @dataProvider couponOrSaleProvider
      */
     public function testDeleteUnauthorized($discountKind): void
@@ -1805,5 +2003,51 @@ class DiscountTest extends TestCase
                 && $payload['data_type'] === 'Discount'
                 && $payload['event'] === $webHookEvent;
         });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteSaleWithProduct($user): void
+    {
+        $this->$user->givePermissionTo('sales.remove');
+        $discount = Discount::factory([
+            'type' => DiscountType::AMOUNT,
+            'value' => 10,
+            'code' => null,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+        ])->create();
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 100,
+            'price_min' => 100,
+            'price_max' => 200,
+        ]);
+
+        $discount->products()->attach($product);
+
+        /** @var DiscountServiceContract $discountService */
+        $discountService = App::make(DiscountServiceContract::class);
+
+        // Apply discount to products before update
+        $discountService->applyDiscountsOnProducts(Collection::make([$product]));
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'min_price_discounted' => 90,
+            'max_price_discounted' => 190,
+        ]);
+
+        $response = $this->actingAs($this->$user)->deleteJson('/sales/id:' . $discount->getKey());
+        $response->assertNoContent();
+        $this->assertSoftDeleted($discount);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'min_price_discounted' => 100,
+            'max_price_discounted' => 200,
+        ]);
     }
 }

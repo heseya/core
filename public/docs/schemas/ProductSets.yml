@@ -30,7 +30,7 @@ ProductSet:
         type: string
         example: 026bc5f6-8373-4aeb-972e-e78d72a67121
     cover:
-      $ref: './../schemas/Media.yml#Media'
+      $ref: './../schemas/Media.yml#/Media'
   type: object
 
 ProductSetParent:
@@ -63,7 +63,7 @@ ProductSetParent:
       type: string
       example: '<h1>Lorem ipsum dolor sit amet</h1>'
     cover:
-      $ref: './../schemas/Media.yml#Media'
+      $ref: './../schemas/Media.yml#/Media'
     parent:
       $ref: '#ProductSet'
     children_ids:
@@ -73,7 +73,7 @@ ProductSetParent:
         type: string
         example: 026bc5f6-8373-4aeb-972e-e78d72a67121
     seo:
-      $ref: './Seo.yml#SeoView'
+      $ref: './Seo.yml#/SeoView'
   type: object
 
 ProductSetChildren:

@@ -201,13 +201,14 @@ class AuthService implements AuthServiceContract
 
         $roles = Role::where('type', RoleType::UNAUTHENTICATED)->get();
         $user->setRelation('roles', $roles);
-        $user->id = null;
+        $user->setAttribute('id', null);
 
         return $user;
     }
 
     public function isAppAuthenticated(): bool
     {
+        // @phpstan-ignore-next-line
         return Auth::user() instanceof App;
     }
 
@@ -343,6 +344,7 @@ class AuthService implements AuthServiceContract
         $valid = match (Auth::user()->tfa_type) {
             TFAType::APP => $this->googleTFAVerify($code),
             TFAType::EMAIL => $this->emailTFAVerify($code),
+            default => throw new TFAException('Invalid Two-Factor Authentication Type', simpleLogs: true),
         };
 
         if (Auth::user()->is_tfa_active && !$valid) {

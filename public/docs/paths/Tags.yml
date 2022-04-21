@@ -30,10 +30,10 @@ Tags:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Tags.yml#Tag'
+                    $ref: './../schemas/Tags.yml#/Tag'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   post:
     tags:
       - Tags
@@ -43,7 +43,7 @@ Tags:
       content:
         application/json:
           schema:
-            $ref: './../schemas/Tags.yml#Tag'
+            $ref: './../schemas/Tags.yml#/Tag'
     responses:
       201:
         description: Created
@@ -52,10 +52,10 @@ Tags:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Tags.yml#Tag'
+                  $ref: './../schemas/Tags.yml#/Tag'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 TagsParams:
   delete:
@@ -74,7 +74,7 @@ TagsParams:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   patch:
     tags:
       - Tags
@@ -91,7 +91,7 @@ TagsParams:
       content:
         application/json:
           schema:
-            $ref: './../schemas/Tags.yml#Tag'
+            $ref: './../schemas/Tags.yml#/Tag'
     responses:
       200:
         description: Success
@@ -100,7 +100,7 @@ TagsParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Tags.yml#Tag'
+                  $ref: './../schemas/Tags.yml#/Tag'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]

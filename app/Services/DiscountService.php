@@ -35,6 +35,9 @@ use App\Events\CouponUpdated;
 use App\Events\SaleCreated;
 use App\Events\SaleDeleted;
 use App\Events\SaleUpdated;
+use App\Exceptions\DiscountException;
+use App\Exceptions\StoreException;
+use App\Jobs\CalculateDiscount;
 use App\Exceptions\ClientException;
 use App\Models\App;
 use App\Models\CartItemResponse;
@@ -60,6 +63,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 
 class DiscountService implements DiscountServiceContract
 {
@@ -112,6 +116,10 @@ class DiscountService implements DiscountServiceContract
         if ($dto instanceof CouponDto) {
             CouponCreated::dispatch($discount);
         } else {
+            CalculateDiscount::dispatchIf(
+                $discount->target_type->is(DiscountTargetType::PRODUCTS),
+                $discount,
+            );
             SaleCreated::dispatch($discount);
         }
 
@@ -145,6 +153,7 @@ class DiscountService implements DiscountServiceContract
         if ($dto instanceof CouponDto) {
             CouponUpdated::dispatch($discount);
         } else {
+            CalculateDiscount::dispatch($discount, true);
             SaleUpdated::dispatch($discount);
         }
 
@@ -157,6 +166,10 @@ class DiscountService implements DiscountServiceContract
             if ($discount->code !== null) {
                 CouponDeleted::dispatch($discount);
             } else {
+                CalculateDiscount::dispatchIf(
+                    $discount->target_type->is(DiscountTargetType::PRODUCTS),
+                    $discount,
+                );
                 SaleDeleted::dispatch($discount);
             }
         }
@@ -330,20 +343,47 @@ class DiscountService implements DiscountServiceContract
         ]);
     }
 
-    public function applyDiscountsOnProducts(array $products): array
+    public function applyDiscountsOnProducts(Collection $products): void
     {
         foreach ($products as $product) {
             $this->applyDiscountsOnProduct($product);
+            $product->save();
         }
-        return $products;
     }
 
-    public function applyDiscountsOnProduct(Product $product): Product
+    public function applyDiscountsOnProduct(Product $product): void
     {
-        $sales = $product->discounts
-            ->where('code', null)
+        $sales = Discount::where('code', null)
+            ->where('target_type', DiscountTargetType::PRODUCTS)
             ->where('target_is_allow_list', true)
-            ->where('target_type', DiscountTargetType::PRODUCTS);
+            ->whereHas('products', function ($query) use ($product): void {
+                $query->where('id', $product->getKey());
+            })
+            ->orWhere(function ($query) use ($product): void {
+                $query->where('code', null)
+                    ->where('target_type', DiscountTargetType::PRODUCTS)
+                    ->where('target_is_allow_list', true)
+                    ->whereHas('productSets', function ($query) use ($product): void {
+                        $query->whereHas('products', function ($query) use ($product): void {
+                            $query->where('id', $product->getKey());
+                        });
+                    });
+            })
+            ->orWhere(function ($query) use ($product): void {
+                $query->where('code', null)
+                    ->where('target_type', DiscountTargetType::PRODUCTS)
+                    ->where('target_is_allow_list', false)
+                    ->whereDoesntHave('products', function ($query) use ($product): void {
+                        $query->where('id', $product->getKey());
+                    })
+                    ->whereDoesntHave('productSets', function ($query) use ($product): void {
+                        $query->whereHas('products', function ($query) use ($product): void {
+                            $query->where('id', $product->getKey());
+                        });
+                    });
+            })
+            ->with(['products', 'productSets', 'conditionGroups', 'shippingMethods'])
+            ->get();
 
         $sales = $this->sortDiscounts($sales);
 
@@ -370,11 +410,11 @@ class DiscountService implements DiscountServiceContract
             }
         }
 
-        $product['min_price_discounted'] = $minPriceDiscounted;
-        $product['max_price_discounted'] = $maxPriceDiscounted;
-        $product['sales'] = $productSales;
-
-        return $product;
+        $product->update([
+            'min_price_discounted' => $minPriceDiscounted,
+            'max_price_discounted' => $maxPriceDiscounted,
+        ]);
+        $product->sales()->sync($productSales->pluck('id'));
     }
 
     public function applyDiscountOnOrderProduct(OrderProduct $orderProduct, Discount $discount): OrderProduct
@@ -398,11 +438,15 @@ class DiscountService implements DiscountServiceContract
         CartResource $cart,
     ): CartItemResponse {
         /** @var CartItemResponse $result */
-        $result = $cart->items->filter(function ($value, $key) use ($cartItem) {
-            return $value->cartitem_id === $cartItem->getCartitemId();
-        })->first();
+        $result = $cart->items->filter(
+            fn ($value) => $value->cartitem_id === $cartItem->getCartitemId(),
+        )->first();
 
-        $result->price_discounted = $this->calcPrice($result->price_discounted, $cartItem->getProductId(), $discount);
+        $result->price_discounted = $this->calcPrice(
+            $result->price_discounted,
+            $cartItem->getProductId(),
+            $discount,
+        );
 
         return $result;
     }
@@ -414,6 +458,7 @@ class DiscountService implements DiscountServiceContract
             DiscountTargetType::ORDER_VALUE => $this->applyDiscountOnOrderValue($order, $discount),
             DiscountTargetType::SHIPPING_PRICE => $this->applyDiscountOnOrderShipping($order, $discount),
             DiscountTargetType::CHEAPEST_PRODUCT => $this->applyDiscountOnOrderCheapestProduct($order, $discount),
+            default => throw new StoreException('Unsupported discount target type'),
         };
     }
 
@@ -573,6 +618,7 @@ class DiscountService implements DiscountServiceContract
             DiscountTargetType::ORDER_VALUE => $this->applyDiscountOnCartTotal($discount, $cart),
             DiscountTargetType::SHIPPING_PRICE => $this->applyDiscountOnCartShipping($discount, $cartDto, $cart),
             DiscountTargetType::CHEAPEST_PRODUCT => $this->applyDiscountOnCartCheapestItem($discount, $cartDto, $cart),
+            default => throw new StoreException('Unknown discount target type'),
         };
     }
 
@@ -864,17 +910,26 @@ class DiscountService implements DiscountServiceContract
 
         $actualDate = Carbon::now();
 
-        if (!$conditionDto->getStartAt() instanceof Missing && !$conditionDto->getEndAt() instanceof Missing) {
+        $startAt = $conditionDto->getStartAt();
+        $endAt = $conditionDto->getEndAt();
+
+        $startAt = !$startAt instanceof Missing && !Str::contains($startAt, ':')
+            ? Str::before($startAt, 'T'). 'T00:00:00' : $startAt;
+
+        $endAt = !$endAt instanceof Missing && !Str::contains($endAt, ':')
+            ? Str::before($endAt, 'T'). 'T23:59:59' : $endAt;
+
+        if (!$startAt instanceof Missing && !$endAt instanceof Missing) {
             return $actualDate
-                ->between($conditionDto->getStartAt(), $conditionDto->getEndAt()) === $conditionDto->isIsInRange();
+                ->between($startAt, $endAt) === $conditionDto->isIsInRange();
         }
 
-        if (!$conditionDto->getStartAt() instanceof Missing) {
-            return $actualDate->greaterThanOrEqualTo($conditionDto->getStartAt()) === $conditionDto->isIsInRange();
+        if (!$startAt instanceof Missing) {
+            return $actualDate->greaterThanOrEqualTo($startAt) === $conditionDto->isIsInRange();
         }
 
-        if (!$conditionDto->getEndAt() instanceof Missing) {
-            return $actualDate->lessThanOrEqualTo($conditionDto->getEndAt()) === $conditionDto->isIsInRange();
+        if (!$endAt instanceof Missing) {
+            return $actualDate->lessThanOrEqualTo($endAt) === $conditionDto->isIsInRange();
         }
         return false;
     }

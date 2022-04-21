@@ -26,9 +26,9 @@ class ProductSetUpdateDto extends Dto
         return new self(
             name: $request->input('name', new Missing()),
             slug_suffix: $request->input('slug_suffix', new Missing()),
-            slug_override: $request->boolean('slug_override', new Missing()),
-            public: $request->boolean('public', new Missing()),
-            hide_on_index: $request->boolean('hide_on_index', new Missing()),
+            slug_override: $request->input('slug_override', new Missing()),
+            public: $request->input('public', new Missing()),
+            hide_on_index: $request->input('hide_on_index', new Missing()),
             parent_id: $request->input('parent_id', new Missing()),
             children_ids: $request->input('children_ids', new Missing()),
             seo: SeoMetadataDto::fromFormRequest($request),

@@ -4,7 +4,7 @@ Metadata:
       - Metadata
     summary: 'Create/update/delete metadata'
     requestBody:
-      $ref: './../requests/Metadata.yml#Metadata'
+      $ref: './../requests/Metadata.yml#/Metadata'
     responses:
       200:
         description: 'Returned list has whole metadata attached to requested object'
@@ -13,5 +13,5 @@ Metadata:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Metadata.yml#Metadata'
+                  $ref: './../schemas/Metadata.yml#/Metadata'
               type: object

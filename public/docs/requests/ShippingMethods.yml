@@ -48,7 +48,7 @@ ShippingMethodIndex:
           country:
             type: string
           cart_value:
-            type: float
+            type: number
         type: object
 
 ShippingMethodReorder:

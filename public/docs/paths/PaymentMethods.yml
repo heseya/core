@@ -40,7 +40,7 @@ PaymentMethods:
                   $ref: './../schemas/PaymentMethods.yml#/PaymentMethod'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 PaymentMethodsParams:
   delete:
@@ -57,7 +57,7 @@ PaymentMethodsParams:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   patch:
     tags:
       - Payments
@@ -84,4 +84,4 @@ PaymentMethodsParams:
                   $ref: './../schemas/PaymentMethods.yml#/PaymentMethod'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]

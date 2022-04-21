@@ -214,6 +214,7 @@ class OrderService implements OrderServiceContract
                 'shippingMethod.paymentMethods',
                 'deliveryAddress',
                 'metadata',
+                'documents',
             ])
             ->paginate(Config::get('pagination.per_page'));
     }
