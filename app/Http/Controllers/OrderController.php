@@ -9,7 +9,6 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderUpdatedStatus;
 use App\Exceptions\ClientException;
-use App\Exceptions\OrderException;
 use App\Http\Requests\CartRequest;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderIndexRequest;

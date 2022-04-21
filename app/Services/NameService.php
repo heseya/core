@@ -7,7 +7,6 @@ use App\Exceptions\ClientException;
 use App\Models\Order;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
-use Exception;
 use Illuminate\Support\Str;
 
 class NameService implements NameServiceContract

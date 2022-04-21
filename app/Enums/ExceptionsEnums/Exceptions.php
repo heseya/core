@@ -41,7 +41,7 @@ final class Exceptions extends Enum
     public const CLIENT_ONE_OWNER_REMAINS = 'There must always be at least one Owner left';
     public const CLIENT_DELETE_WHEN_RELATION_EXISTS = 'Element can\'t be deleted, because it has relations';
 
-    public const CLIENT_ORDER_EDIT_ERROR ='Error while editing order';
+    public const CLIENT_ORDER_EDIT_ERROR = 'Error while editing order';
     public const CLIENT_CHANGE_CANCELED_ORDER_STATUS = 'Cannot change the status of a cancelled order';
     public const CLIENT_MODEL_NOT_SORTABLE = 'Model is not sortable';
     public const CLIENT_ORDER_PAID = 'Model is not sortable';

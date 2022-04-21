@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Dtos\ShippingMethodDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
-use App\Exceptions\StoreException;
 use App\Models\ShippingMethod;
 use App\Services\Contracts\ShippingMethodServiceContract;
 use Illuminate\Database\Eloquent\Builder;

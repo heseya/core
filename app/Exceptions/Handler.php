@@ -87,7 +87,6 @@ final class Handler extends ExceptionHandler
                     $exception->getKey() : ErrorCode::fromValue(self::ERRORS[$class])->key,
                 $this->getExceptionData($exception),
             );
-
         } else {
             if (app()->bound('sentry')) {
                 app('sentry')->captureException($exception);
@@ -151,7 +150,8 @@ final class Handler extends ExceptionHandler
         return $validationErrors;
     }
 
-    private function getExceptionData(Exception $exception): array {
+    private function getExceptionData(Exception $exception): array
+    {
         if ($exception instanceof StoreException) {
             return $exception->errors();
         }
@@ -174,7 +174,7 @@ final class Handler extends ExceptionHandler
                 'size' => $data[0],
             ],
             ValidationError::IN => [
-                'available' => $data
+                'available' => $data,
             ],
             ValidationError::BETWEEN => [
                 'min' => $data[0],

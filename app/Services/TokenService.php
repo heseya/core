@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\TokenType;
-use App\Exceptions\AuthException;
 use App\Exceptions\ClientException;
 use App\Models\App;
 use App\Models\Token;

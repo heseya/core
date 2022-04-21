@@ -6,7 +6,6 @@ use App\Dtos\CartItemDto;
 use App\Dtos\OrderProductDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
-use App\Exceptions\ItemException;
 use App\Models\Item;
 use App\Models\Product;
 use App\Models\Schema;

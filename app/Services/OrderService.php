@@ -12,7 +12,6 @@ use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdated;
 use App\Exceptions\ClientException;
-use App\Exceptions\OrderException;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
 use App\Models\CartResource;

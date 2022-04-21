@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
-use App\Exceptions\StoreException;
 use App\Services\Contracts\AuditServiceContract;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
