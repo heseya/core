@@ -47,6 +47,6 @@ class GoogleProductCategoryExist implements Rule
             throw new GoogleProductCategoryFileException();
         }
 
-        return file_exists($path) ? file($path) : [];
+        return file($path);
     }
 }
