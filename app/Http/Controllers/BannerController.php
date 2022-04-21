@@ -30,6 +30,13 @@ class BannerController extends Controller
         );
     }
 
+    public function show(Banner $banner): JsonResource
+    {
+        $banner->load(['responsiveMedia', 'responsiveMedia.media', 'metadata', 'metadataPrivate']);
+
+        return BannerResource::make($banner);
+    }
+
     public function store(BannerStoreRequest $request): JsonResource
     {
         return BannerResource::make(
