@@ -13,7 +13,7 @@ class PageSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         $pages = Page::factory()->count(10)->create();
 
@@ -38,12 +38,13 @@ class PageSeeder extends Seeder
             'content_html' => file_get_contents(__DIR__ . '/../pages/about.html'),
         ]));
 
-        $pages->each(function ($page) {
+        $pages->each(function ($page): void {
             $this->seo($page);
         });
     }
 
-    private function seo(Page $page) {
+    private function seo(Page $page): void
+    {
         $seo = SeoMetadata::factory()->create();
         $page->seo()->save($seo);
     }

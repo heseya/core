@@ -4,17 +4,10 @@ use App\Enums\RoleType;
 use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 class AddSalesShowDetailsPermission extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Permission::create(['name' => 'sales.show_details', 'display_name' => 'Dostęp do szczegółów promocji']);
 
@@ -25,12 +18,7 @@ class AddSalesShowDetailsPermission extends Migration
         $owner->save();
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         $owner = Role::where('type', RoleType::OWNER)->first();
         $owner->revokePermissionTo([

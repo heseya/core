@@ -7,16 +7,10 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+return new class() extends Migration {
+    public function up(): void
     {
-        Schema::create('consents', function (Blueprint $table) {
+        Schema::create('consents', function (Blueprint $table): void {
             $table->uuid('id')->index();
             $table->string('name');
             $table->string('description_html');
@@ -24,7 +18,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('consent_user', function (Blueprint $table) {
+        Schema::create('consent_user', function (Blueprint $table): void {
             $table->foreignUuid('consent_id')->constrained('consents')->onDelete('cascade');
             $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
             $table->boolean('value');
@@ -45,12 +39,7 @@ return new class extends Migration
         ]);
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('consents');
         Schema::dropIfExists('consent_user');

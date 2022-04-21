@@ -6,27 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 class AddCoverToProductSetsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::table('product_sets', function (Blueprint $table) {
+        Schema::table('product_sets', function (Blueprint $table): void {
             $table->uuid('cover_id')->nullable();
             $table->foreign('cover_id')->references('id')->on('media')->onDelete('cascade');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('product_sets', function (Blueprint $table) {
+        Schema::table('product_sets', function (Blueprint $table): void {
             $table->dropColumn('cover_id');
         });
     }
