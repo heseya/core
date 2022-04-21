@@ -3,15 +3,12 @@
 namespace App\Exceptions;
 
 use App\Enums\ExceptionsEnums\Exceptions;
-use App\Traits\HasExceptionKey;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class StoreException extends Exception
 {
-    use HasExceptionKey;
-
     public function __construct(
         string $message = '',
         int $code = 0,
@@ -42,5 +39,11 @@ class StoreException extends Exception
     public function errors(): array
     {
         return $this->errorArray;
+    }
+
+    public function getKey(): string
+    {
+        // @phpstan-ignore-next-line
+        return Exceptions::fromValue($this->getMessage())->key;
     }
 }
