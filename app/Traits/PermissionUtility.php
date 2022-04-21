@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Models\AttributeOption;
 use App\Models\Discount;
 use App\Models\PackageTemplate;
 use Illuminate\Database\Eloquent\Model;
@@ -31,6 +32,7 @@ trait PermissionUtility
     {
         $segments = Request::segments();
         return match ($model::class) {
+            AttributeOption::class => 'attributes',
             PackageTemplate::class => 'packages',
             Discount::class => $segments[0],
             default => $model->getTable(),
