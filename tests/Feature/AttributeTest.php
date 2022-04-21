@@ -1552,12 +1552,12 @@ class AttributeTest extends TestCase
         $attrOptionOne->metadataPrivate()->create([
             'name' => 'qwe',
             'value' => 'asd',
-            'value_type' => MetadataType::STRING
+            'value_type' => MetadataType::STRING,
         ]);
         $attrOptionTwo->metadataPrivate()->create([
             'name' => 'zxc',
             'value' => 'vbn',
-            'value_type' => MetadataType::STRING
+            'value_type' => MetadataType::STRING,
         ]);
 
         $this
