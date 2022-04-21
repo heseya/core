@@ -22,7 +22,8 @@ final class Exceptions extends Enum
     public const CLIENT_INVALID_TOKEN = 'Invalid token';
     public const CLIENT_INVALID_IDENTITY_TOKEN = 'Invalid identity token';
     public const CLIENT_USER_DOESNT_EXIST = 'User doesn\'t exist';
-    public const CLIENT_TOKEN_INVALID_OR_INACTIVE = 'The token is invalid or inactive. Try to reset your password again';
+    public const CLIENT_TOKEN_INVALID_OR_INACTIVE =
+        'The token is invalid or inactive. Try to reset your password again';
 
     public const CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED = 'Discount type is not supported';
     public const CLIENT_CANNOT_APPLY_SELECTED_DISCOUNT_TYPE = 'Cannot apply selected discount type to order';
@@ -34,8 +35,10 @@ final class Exceptions extends Enum
     public const CLIENT_DELETE_ROLE_WITHOUT_PERMISSION = 'Cant update a role with permissions you don\'t have';
     public const CLIENT_UPDATE_OWNER_PERMISSION = 'Can\'t update owners permissions';
     public const CLIENT_DELETE_BUILT_IN_ROLE = 'Can\'t delete built-in roles';
-    public const CLIENT_GIVE_ROLE_THAT_USER_DOESNT_HAVE = 'Can\'t give a role with permissions you don\'t have to the user';
-    public const CLIENT_REMOVE_ROLE_THAT_USER_DOESNT_HAVE = 'Can\'t remove a role with permissions you don\'t have from the user';
+    public const CLIENT_GIVE_ROLE_THAT_USER_DOESNT_HAVE =
+        'Can\'t give a role with permissions you don\'t have to the user';
+    public const CLIENT_REMOVE_ROLE_THAT_USER_DOESNT_HAVE =
+        'Can\'t remove a role with permissions you don\'t have from the user';
     public const CLIENT_ONLY_OWNER_GRANTS_OWNER_ROLE = 'Only owner can grant the owner role';
     public const CLIENT_ONLY_OWNER_REMOVES_OWNER_ROLE = 'Only owner can remove the owner role';
     public const CLIENT_ONE_OWNER_REMAINS = 'There must always be at least one Owner left';
