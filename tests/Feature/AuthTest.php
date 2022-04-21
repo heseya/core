@@ -40,7 +40,7 @@ class AuthTest extends TestCase
     {
         parent::setUp();
 
-        $this->expectedLog = 'AuthException(code: 0): Invalid credentials at';
+        $this->expectedLog = 'ClientException(code: 422): Invalid credentials at';
         $this->oneTimeSecurityCodeService = \Illuminate\Support\Facades\App::make(OneTimeSecurityCodeContract::class);
 
         $this->expected = [
@@ -609,7 +609,7 @@ class AuthTest extends TestCase
             ->withArgs(function ($message) {
                 return str_contains(
                     $message,
-                    'AuthException(code: 0): The token is invalid or inactive. Try to reset your password again. at',
+                    'ClientException(code: 422): The token is invalid or inactive. Try to reset your password again',
                 );
             });
 

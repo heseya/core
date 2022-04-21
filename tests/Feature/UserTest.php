@@ -553,7 +553,7 @@ class UserTest extends TestCase
             ->withArgs(function ($message) {
                 return str_contains(
                     $message,
-                    'AuthException(code: 0): '
+                    'ClientException(code: 422): '
                     . "Can't give a role with permissions you don't have to the user at"
                 );
             });
