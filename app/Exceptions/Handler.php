@@ -30,7 +30,7 @@ final class Handler extends ExceptionHandler
         AppAccessException::class => ErrorCode::BAD_REQUEST,
         StoreException::class => ErrorCode::BAD_REQUEST,
 
-        AuthException::class => ErrorCode::UNPROCESSABLE_ENTITY,
+//        AuthException::class => ErrorCode::UNPROCESSABLE_ENTITY,
         ClientException::class => ErrorCode::UNPROCESSABLE_ENTITY,
         TFAException::class => ErrorCode::UNPROCESSABLE_ENTITY,
 

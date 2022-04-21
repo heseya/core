@@ -32,7 +32,9 @@ class ItemService implements ItemServiceContract
             $item = Item::find($id);
 
             if ($item === null) {
-                throw new ClientException("Item `{$id}` not found");
+                throw new ClientException(Exceptions::CLIENT_ITEM_NOT_FOUND, errorArray: [
+                    'id' => $id,
+                ]);
             }
 
             if ($item->quantity < $count) {

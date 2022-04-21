@@ -28,6 +28,7 @@ final class Exceptions extends Enum
     public const CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED = 'Discount type is not supported';
     public const CLIENT_CANNOT_APPLY_SELECTED_DISCOUNT_TYPE = 'Cannot apply selected discount type to order';
     public const CLIENT_NOT_ENOUGH_ITEMS = 'There is not enough items';
+    public const CLIENT_ITEM_NOT_FOUND = 'Item not found';
     public const CLIENT_WRONG_VALUE = 'Wrong value';
 
     public const CLIENT_CREATE_ROLE_WITHOUT_PERMISSION = 'Cant create a role with permissions you don\'t have';
@@ -70,6 +71,7 @@ final class Exceptions extends Enum
     public const CLIENT_WEBHOOK_APP_ACTION = 'Only application can use this method on this webhook';
 
     public const CLIENT_APPS_NO_ACCESS = 'Applications cannot access this endpoint';
+    public const CLIENT_NO_ACCESS = 'No access';
 
     public const SERVER_CDN_ERROR = 'CDN responded with an error';
 
