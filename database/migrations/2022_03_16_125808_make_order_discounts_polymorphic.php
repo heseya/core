@@ -7,14 +7,9 @@ use Illuminate\Support\Facades\Schema;
 
 class MakeOrderDiscountsPolymorphic extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::table('order_discounts', function (Blueprint $table) {
+        Schema::table('order_discounts', function (Blueprint $table): void {
             $table->string('model_type');
 
             $table->dropForeign('order_discounts_order_id_foreign');
@@ -28,7 +23,7 @@ class MakeOrderDiscountsPolymorphic extends Migration
             $table->primary(['discount_id', 'model_id', 'model_type'], 'model_has_order_discounts_primary');
         });
 
-        DB::table('order_discounts')->orderBy('model_id')->chunk(100, function ($orderDiscounts) {
+        DB::table('order_discounts')->orderBy('model_id')->chunk(100, function ($orderDiscounts): void {
             foreach ($orderDiscounts as $orderDiscount) {
                 DB::table('order_discounts')->where('model_id', $orderDiscount->model_id)->update([
                     'model_type' => \App\Models\Order::class,
@@ -37,14 +32,9 @@ class MakeOrderDiscountsPolymorphic extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('order_discounts', function (Blueprint $table) {
+        Schema::table('order_discounts', function (Blueprint $table): void {
             $table->dropPrimary(['order_id', 'discount_id', 'model_type']);
 
             $table->dropIndex('model_has_order_discounts_model_id_model_type_index');
@@ -56,7 +46,7 @@ class MakeOrderDiscountsPolymorphic extends Migration
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
         });
 
-        Schema::table('order_discounts', function (Blueprint $table) {
+        Schema::table('order_discounts', function (Blueprint $table): void {
             $table->primary(['order_id', 'discount_id']);
         });
     }

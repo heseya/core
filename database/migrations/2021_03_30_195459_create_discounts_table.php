@@ -1,20 +1,14 @@
 <?php
 
-use App\Enums\DiscountType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 class CreateDiscountsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::create('discounts', function (Blueprint $table) {
+        Schema::create('discounts', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('code', 64)->unique();
             $table->string('description')->nullable();
@@ -25,7 +19,7 @@ class CreateDiscountsTable extends Migration
             $table->softDeletes();
         });
 
-        Schema::create('order_discounts', function (Blueprint $table) {
+        Schema::create('order_discounts', function (Blueprint $table): void {
             $table->uuid('order_id')->index();
             $table->uuid('discount_id')->index();
             $table->double('discount', 9, 2);
@@ -38,12 +32,7 @@ class CreateDiscountsTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('discounts');
     }

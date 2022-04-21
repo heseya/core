@@ -18,7 +18,7 @@ class DiscountSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         $amount = rand(10, 15);
         $discounts = Discount::factory()->count($amount)->create();
@@ -36,7 +36,8 @@ class DiscountSeeder extends Seeder
                     [
                         DiscountTargetType::ORDER_VALUE,
                         DiscountTargetType::SHIPPING_PRICE,
-                    ])
+                    ]
+                )
                 ->random();
 
             $update = [];
@@ -81,8 +82,7 @@ class DiscountSeeder extends Seeder
         DiscountService $discountService,
         float $price,
         Discount $discount,
-    ): array
-    {
+    ): array {
         $appliedDiscount = $discountService->calc($price, $discount);
         $appliedDiscount = $discountService->calcAppliedDiscount($price, $appliedDiscount, $minimalPrice);
 

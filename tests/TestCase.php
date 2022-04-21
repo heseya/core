@@ -8,6 +8,7 @@ use App\Models\App as Application;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\TokenServiceContract;
+use Database\Seeders\InitSeeder;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
@@ -33,6 +34,9 @@ abstract class TestCase extends BaseTestCase
         ini_set('memory_limit', '4096M');
 
         $this->fakeElastic();
+
+        $seeder = new InitSeeder();
+        $seeder->run();
 
         $this->tokenService = App::make(TokenServiceContract::class);
 

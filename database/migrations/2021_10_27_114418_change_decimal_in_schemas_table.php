@@ -6,12 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 class ChangeDecimalInSchemasTable extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::table('schemas', function (Blueprint $table) {
+        Schema::table('schemas', function (Blueprint $table): void {
             $table->unsignedFLoat('step', 12, 8)->change();
             $table->float('min', 16, 8)->change();
             $table->float('max', 16, 8)->change();
