@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\DiscountTargetType;
 use App\Models\Discount;
 use App\Models\Order;
+use App\Models\Product;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\DiscountService;
 use Illuminate\Database\Seeder;
@@ -25,6 +26,8 @@ class DiscountSeeder extends Seeder
 
         /** @var DiscountService $discountService */
         $discountService = App::make(DiscountServiceContract::class);
+
+        $discountService->applyDiscountsOnProducts(Product::all());
 
         foreach (Order::inRandomOrder()->limit(30)->get() as $order) {
             $discount = $discounts

@@ -462,6 +462,39 @@ class DiscountService implements DiscountServiceContract
         return $price - $appliedDiscount < $minimalPrice ? $price - $minimalPrice : $appliedDiscount;
     }
 
+    public function activeSales(): Collection
+    {
+        $sales = Discount::where('code', null)
+            ->where('target_type', DiscountTargetType::PRODUCTS)
+            ->whereHas('conditionGroups', function ($query): void {
+                $query
+                    ->whereHas('conditions', function ($query): void {
+                        $query
+                            ->where('type', ConditionType::DATE_BETWEEN)
+                            ->orWhere('type', ConditionType::TIME_BETWEEN);
+                    });
+            })
+            ->with(['conditionGroups', 'conditionGroups.conditions'])
+            ->get();
+
+        return $sales->filter(function ($sale): bool {
+            foreach ($sale->conditionGroups as $conditionGroup) {
+                foreach ($conditionGroup->conditions as $condition) {
+                    $result = false;
+                    if ($condition->type->is(ConditionType::DATE_BETWEEN)) {
+                        $result = $this->checkConditionDateBetween($condition);
+                    } elseif ($condition->type->is(ConditionType::TIME_BETWEEN)) {
+                        $result = $this->checkConditionTimeBetween($condition);
+                    }
+                    if ($result) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
     private function calcProductPriceDiscount(Discount $discount, float $price, float $minimalProductPrice): float
     {
         $price -= $this->calc($price, $discount);
