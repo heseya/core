@@ -2,6 +2,7 @@
 
 namespace App\Rules;
 
+use App\Exceptions\GoogleProductCategoryFileException;
 use App\Models\App;
 use App\Services\Contracts\UrlServiceContract;
 use Illuminate\Contracts\Validation\Rule;
@@ -35,9 +36,16 @@ class GoogleProductCategoryExist implements Rule
         return 'Google product category do not exist';
     }
 
+    /**
+     * @throws GoogleProductCategoryFileException
+     */
     private function getGoogleProductCategoryFileContent(): array
     {
-        $path = resource_path() . '/storage/google_product_category.txt';
+        $path = resource_path('storage/google_product_category.txt');
+
+        if (!file_exists($path)) {
+            throw new GoogleProductCategoryFileException();
+        }
 
         return file_exists($path) ? file($path) : [];
     }
