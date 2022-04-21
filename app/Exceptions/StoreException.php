@@ -43,7 +43,6 @@ class StoreException extends Exception
 
     public function getKey(): string
     {
-        // @phpstan-ignore-next-line
         return Exceptions::fromValue($this->getMessage())->key;
     }
 }

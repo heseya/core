@@ -25,29 +25,21 @@ final class Handler extends ExceptionHandler
 {
     private const ERRORS = [
         AuthenticationException::class => ErrorCode::UNAUTHORIZED,
-        AccessDeniedHttpException::class => ErrorCode::FORBIDDEN,
+
         NotFoundHttpException::class => ErrorCode::NOT_FOUND,
-        ModelNotFoundException::class => ErrorCode::NOT_FOUND,
         MethodNotAllowedHttpException::class => ErrorCode::NOT_FOUND,
+
         ValidationException::class => ErrorCode::VALIDATION_ERROR,
-        StoreException::class => ErrorCode::BAD_REQUEST,
+
         AppAccessException::class => ErrorCode::BAD_REQUEST,
+        StoreException::class => ErrorCode::BAD_REQUEST,
+
         AuthException::class => ErrorCode::UNPROCESSABLE_ENTITY,
-        MediaException::class => ErrorCode::INTERNAL_SERVER_ERROR,
-        AppException::class => ErrorCode::UNPROCESSABLE_ENTITY,
         ClientException::class => ErrorCode::UNPROCESSABLE_ENTITY,
-        OrderException::class => ErrorCode::UNPROCESSABLE_ENTITY,
-        RoleException::class => ErrorCode::UNPROCESSABLE_ENTITY,
-        AuthorizationException::class => ErrorCode::FORBIDDEN,
-        WebHookCreatorException::class => ErrorCode::FORBIDDEN,
-        WebHookEventException::class => ErrorCode::UNPROCESSABLE_ENTITY,
-        TokenExpiredException::class => ErrorCode::UNAUTHORIZED,
+        TFAException::class => ErrorCode::UNPROCESSABLE_ENTITY,
+
         PackageException::class => ErrorCode::BAD_GATEWAY,
         PackageAuthException::class => ErrorCode::BAD_GATEWAY,
-        ItemException::class => ErrorCode::UNPROCESSABLE_ENTITY,
-        TFAException::class => ErrorCode::UNPROCESSABLE_ENTITY,
-        MediaCriticalException::class => ErrorCode::INTERNAL_SERVER_ERROR,
-        DiscountException::class => ErrorCode::UNPROCESSABLE_ENTITY,
     ];
 
     /**
@@ -67,7 +59,6 @@ final class Handler extends ExceptionHandler
     public function render($request, Throwable $exception): Response
     {
         $class = $exception::class;
-
         if (array_key_exists($class, self::ERRORS)) {
             if (method_exists($exception, 'isTypeSet') && $exception->isTypeSet()) {
                 if (!($exception instanceof TFAException)) {
