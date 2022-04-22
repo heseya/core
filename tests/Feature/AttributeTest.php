@@ -213,6 +213,54 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testSearch($user): void
+    {
+        $this->$user->givePermissionTo('attributes.show');
+        $first = Attribute::factory()->create(['name' => 'here will by description for test']);
+        Attribute::factory()->create([
+            'name' => 'new name',
+            'description' => 'new description',
+        ]);
+        Attribute::factory()->create([
+            'name' => 'new name test',
+            'description' => 'test',
+            'slug' => 'description',
+        ]);
+
+        Attribute::factory()->create(['name' => 'new name test ' . $first->id]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/attributes', ['search' => 'description'])
+            ->assertOk()
+            ->assertJsonCount(3, 'data');
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/attributes', ['search' => $first->id])
+            ->assertOk()
+            ->assertJsonCount(2, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchNotFound($user): void
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        Attribute::create($this->newAttribute);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/attributes', ['search' => 'abc not found in search'])
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testShow($user): void
     {
         $this->$user->givePermissionTo('attributes.show');

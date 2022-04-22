@@ -59,6 +59,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'order',
         'min_price_discounted',
         'max_price_discounted',
+        'google_product_category',
     ];
 
     protected $auditInclude = [

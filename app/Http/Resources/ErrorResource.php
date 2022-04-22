@@ -14,8 +14,9 @@ final class ErrorResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'code' => $this->resource->code,
             'message' => $this->resource->message,
+            'code' => $this->resource->code,
+            'key' => $this->resource->key,
             'errors' => $this->resource->errors,
         ];
     }

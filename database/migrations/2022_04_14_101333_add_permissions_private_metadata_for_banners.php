@@ -4,21 +4,13 @@ use App\Enums\RoleType;
 use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+return new class() extends Migration {
+    public function up(): void
     {
         Permission::create([
             'name' => 'banners.show_metadata_private',
-            'display_name' => 'Możliwość wyświetlania prywatnych metadanych bannerów'
+            'display_name' => 'Możliwość wyświetlania prywatnych metadanych bannerów',
         ]);
 
         Role::where('type', RoleType::OWNER)
@@ -26,12 +18,7 @@ return new class extends Migration
             ->givePermissionTo('banners.show_metadata_private');
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Role::where('type', RoleType::OWNER)
             ->firstOrFail()

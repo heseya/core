@@ -7,12 +7,7 @@ use Illuminate\Database\Migrations\Migration;
 
 class AddMoreMetadataPermissions extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Permission::create(['name' => 'schemas.show_metadata_private', 'display_name' => 'Możliwość wyświetlania prywatnych metadanych schematów']);
         Permission::create(['name' => 'options.show_metadata_private', 'display_name' => 'Możliwość wyświetlania prywatnych metadanych stron']);
@@ -43,12 +38,7 @@ class AddMoreMetadataPermissions extends Migration
         $owner->save();
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         $permissions = [
             'schemas.show_metadata_private',

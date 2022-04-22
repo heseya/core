@@ -6,14 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateMetadataTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::create('metadata', function (Blueprint $table) {
+        Schema::create('metadata', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('value');
@@ -24,12 +19,7 @@ class CreateMetadataTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('metadata');
     }

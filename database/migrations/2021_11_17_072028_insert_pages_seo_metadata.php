@@ -8,12 +8,7 @@ use Illuminate\Support\Facades\Schema;
 
 class InsertPagesSeoMetadata extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         if (Schema::hasTable('pages') && Schema::hasTable('seo_metadata')) {
             Page::whereDoesntHave('seo')->chunk(100, fn ($page) => $page->each(
@@ -26,12 +21,7 @@ class InsertPagesSeoMetadata extends Migration
         }
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         if (Schema::hasTable('seo_metadata')) {
             DB::table('seo_metadata')->delete();
