@@ -386,8 +386,8 @@ class DiscountService implements DiscountServiceContract
 
         $sales = $this->sortDiscounts($sales);
 
-        $minPriceDiscounted = $product->price_min;
-        $maxPriceDiscounted = $product->price_max;
+        $minPriceDiscounted = $product->price_min_initial;
+        $maxPriceDiscounted = $product->price_max_initial;
 
         $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
 
@@ -410,8 +410,8 @@ class DiscountService implements DiscountServiceContract
         }
 
         $product->update([
-            'min_price_discounted' => $minPriceDiscounted,
-            'max_price_discounted' => $maxPriceDiscounted,
+            'price_min' => $minPriceDiscounted,
+            'price_max' => $maxPriceDiscounted,
         ]);
         $product->sales()->sync($productSales->pluck('id'));
     }

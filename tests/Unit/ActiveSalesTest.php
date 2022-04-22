@@ -169,24 +169,24 @@ class ActiveSalesTest extends TestCase
             'name' => 'Product had discount',
             'public' => true,
             'price' => 1000,
-            'price_min' => 1000,
-            'price_max' => 3500,
+            'price_min_initial' => 1000,
+            'price_max_initial' => 3500,
         ]);
 
         $product2 = Product::factory()->create([
             'name' => 'Product will have discount',
             'public' => true,
             'price' => 2500,
-            'price_min' => 2000,
-            'price_max' => 4000,
+            'price_min_initial' => 2000,
+            'price_max_initial' => 4000,
         ]);
 
         $product3 = Product::factory()->create([
             'name' => 'Just the product',
             'public' => true,
             'price' => 1500,
-            'price_min' => 1200,
-            'price_max' => 2000,
+            'price_min_initial' => 1200,
+            'price_max_initial' => 2000,
         ]);
 
         $sale1 = Discount::factory()->create([
@@ -244,14 +244,14 @@ class ActiveSalesTest extends TestCase
         $product2->refresh();
         $product3->refresh();
 
-        $this->assertEquals(800, $product1->min_price_discounted);
-        $this->assertEquals(3300, $product1->max_price_discounted);
+        $this->assertEquals(800, $product1->price_min);
+        $this->assertEquals(3300, $product1->price_max);
 
-        $this->assertEquals(2000, $product2->min_price_discounted);
-        $this->assertEquals(4000, $product2->max_price_discounted);
+        $this->assertEquals(2000, $product2->price_min);
+        $this->assertEquals(4000, $product2->price_max);
 
-        $this->assertEquals(1200, $product3->min_price_discounted);
-        $this->assertEquals(2000, $product3->max_price_discounted);
+        $this->assertEquals(1200, $product3->price_min);
+        $this->assertEquals(2000, $product3->price_max);
 
         Carbon::setTestNow('2022-04-21T12:00:00');
         $this->travelTo('2022-04-21T12:00:00');
@@ -261,14 +261,14 @@ class ActiveSalesTest extends TestCase
         $product2->refresh();
         $product3->refresh();
 
-        $this->assertEquals(1000, $product1->min_price_discounted);
-        $this->assertEquals(3500, $product1->max_price_discounted);
+        $this->assertEquals(1000, $product1->price_min);
+        $this->assertEquals(3500, $product1->price_max);
 
-        $this->assertEquals(1700, $product2->min_price_discounted);
-        $this->assertEquals(3700, $product2->max_price_discounted);
+        $this->assertEquals(1700, $product2->price_min);
+        $this->assertEquals(3700, $product2->price_max);
 
-        $this->assertEquals(1200, $product3->min_price_discounted);
-        $this->assertEquals(2000, $product3->max_price_discounted);
+        $this->assertEquals(1200, $product3->price_min);
+        $this->assertEquals(2000, $product3->price_max);
 
         $activeSales = Cache::get('sales.active');
         $this->assertCount(1, $activeSales);
