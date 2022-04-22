@@ -6,26 +6,16 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateItemProductTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::create('item_product', function (Blueprint $table) {
+        Schema::create('item_product', function (Blueprint $table): void {
             $table->foreignUuid('item_id')->index()->references('id')->on('items')->onDelete('cascade');
             $table->foreignUuid('product_id')->index()->references('id')->on('products')->onDelete('cascade');
             $table->decimal('quantity', 16, 4)->default(0);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('item_product');
     }

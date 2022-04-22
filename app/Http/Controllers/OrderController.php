@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Events\AddOrderDocument;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderUpdatedStatus;
 use App\Events\RemoveOrderDocument;
 use App\Events\SendOrderDocument;
-use App\Exceptions\OrderException;
+use App\Exceptions\ClientException;
 use App\Http\Requests\CartRequest;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderDocumentRequest;
@@ -105,7 +106,7 @@ class OrderController extends Controller
     public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResponse
     {
         if ($order->status && $order->status->cancel) {
-            throw new OrderException(__('admin.error.order_change_status_canceled'));
+            throw new ClientException(Exceptions::CLIENT_CHANGE_CANCELED_ORDER_STATUS);
         }
 
         $status = Status::findOrFail($request->input('status_id'));

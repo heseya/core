@@ -23,6 +23,7 @@ class ProductResource extends Resource
             'visible' => $this->resource->public,
             'available' => $this->resource->available,
             'quantity_step' => $this->resource->quantity_step,
+            'google_product_category' => $this->resource->google_product_category,
             'cover' => MediaResource::make($this->resource->media->first()),
             'tags' => TagResource::collection($this->resource->tags),
             'items' => ProductItemResource::collection($this->resource->items),

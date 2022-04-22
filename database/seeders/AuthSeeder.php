@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Artisan;
 
 class AuthSeeder extends Seeder
 {
@@ -12,7 +11,7 @@ class AuthSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
 //        Artisan::call('passport:install');
     }

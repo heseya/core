@@ -6,26 +6,16 @@ use Illuminate\Support\Facades\Schema;
 
 class UpdateSettingsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::table('settings', function (Blueprint $table) {
+        Schema::table('settings', function (Blueprint $table): void {
             $table->string('value', 1000)->change();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('settings', function (Blueprint $table) {
+        Schema::table('settings', function (Blueprint $table): void {
             $table->string('value')->change();
         });
     }

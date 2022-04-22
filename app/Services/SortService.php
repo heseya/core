@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ClientException;
 use App\Models\Contracts\SortableContract;
 use App\Services\Contracts\SortServiceContract;
 use Exception;
@@ -19,7 +21,7 @@ class SortService implements SortServiceContract
         if ($query->model instanceof SortableContract) {
             return $this->sort($query, $sortString, $query->model->getSortable());
         }
-        throw new Exception('Model is not sortable');
+        throw new ClientException(Exceptions::CLIENT_MODEL_NOT_SORTABLE);
     }
 
     public function sort(Builder|ScoutBuilder $query, string $sortString, array $sortable): Builder|ScoutBuilder

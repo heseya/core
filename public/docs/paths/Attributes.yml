@@ -3,6 +3,11 @@ Attributes:
     tags:
       - Attributes
     parameters:
+      - name: search
+        in: query
+        description: 'Full text search'
+        schema:
+          type: string
       - name: global
         in: query
         required: false

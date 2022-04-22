@@ -28,13 +28,14 @@ use App\Dtos\WeekDayInConditionDto;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Events\CouponCreated;
 use App\Events\CouponDeleted;
 use App\Events\CouponUpdated;
 use App\Events\SaleCreated;
 use App\Events\SaleDeleted;
 use App\Events\SaleUpdated;
-use App\Exceptions\DiscountException;
+use App\Exceptions\ClientException;
 use App\Exceptions\StoreException;
 use App\Jobs\CalculateDiscount;
 use App\Models\App;
@@ -85,7 +86,9 @@ class DiscountService implements DiscountServiceContract
             return $discount->value;
         }
 
-        throw new StoreException('Discount type "' . $discount->type . '" is not supported');
+        throw new ClientException(Exceptions::CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED, errorArray: [
+            'type' => $discount->type,
+        ]);
     }
 
     public function index(SaleIndexDto|CouponIndexDto $dto): LengthAwarePaginator
@@ -237,7 +240,10 @@ class DiscountService implements DiscountServiceContract
                 $discount->code !== null
             ) {
                 [$type, $id] = $discount->code !== null ? ['coupon', $discount->code] : ['sale', $discount->getKey()];
-                throw new DiscountException("Cannot apply selected ${type} to order: ${id}");
+                throw new ClientException(Exceptions::CLIENT_CANNOT_APPLY_SELECTED_DISCOUNT_TYPE, errorArray: [
+                    'type' => $type,
+                    'id' => $id,
+                ]);
             }
         }
 
@@ -460,6 +466,39 @@ class DiscountService implements DiscountServiceContract
         $minimalPrice = $this->settingsService->getMinimalPrice($setting);
 
         return $price - $appliedDiscount < $minimalPrice ? $price - $minimalPrice : $appliedDiscount;
+    }
+
+    public function activeSales(): Collection
+    {
+        $sales = Discount::where('code', null)
+            ->where('target_type', DiscountTargetType::PRODUCTS)
+            ->whereHas('conditionGroups', function ($query): void {
+                $query
+                    ->whereHas('conditions', function ($query): void {
+                        $query
+                            ->where('type', ConditionType::DATE_BETWEEN)
+                            ->orWhere('type', ConditionType::TIME_BETWEEN);
+                    });
+            })
+            ->with(['conditionGroups', 'conditionGroups.conditions'])
+            ->get();
+
+        return $sales->filter(function ($sale): bool {
+            foreach ($sale->conditionGroups as $conditionGroup) {
+                foreach ($conditionGroup->conditions as $condition) {
+                    $result = false;
+                    if ($condition->type->is(ConditionType::DATE_BETWEEN)) {
+                        $result = $this->checkConditionDateBetween($condition);
+                    } elseif ($condition->type->is(ConditionType::TIME_BETWEEN)) {
+                        $result = $this->checkConditionTimeBetween($condition);
+                    }
+                    if ($result) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        });
     }
 
     private function calcProductPriceDiscount(Discount $discount, float $price, float $minimalProductPrice): float

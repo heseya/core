@@ -6,15 +6,10 @@ use Illuminate\Support\Facades\Schema;
 
 class RemovePriceFromShippingMethods extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         if (Schema::hasColumn('shipping_methods', 'price')) {
-            Schema::table('shipping_methods', function (Blueprint $table) {
+            Schema::table('shipping_methods', function (Blueprint $table): void {
                 $table->dropColumn('price');
             });
         }

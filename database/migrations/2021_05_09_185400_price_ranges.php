@@ -6,14 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 class PriceRanges extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::create('price_ranges', function (Blueprint $table) {
+        Schema::create('price_ranges', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->float('start', 19, 4);
             $table->uuid('shipping_method_id')->index()->nullable();
@@ -24,7 +19,7 @@ class PriceRanges extends Migration
             $table->foreign('shipping_method_id')->references('id')->on('shipping_methods')->onDelete('cascade');
         });
 
-        Schema::create('prices', function (Blueprint $table) {
+        Schema::create('prices', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->uuid('model_id')->index();
             $table->string('model_type')->index();
@@ -35,12 +30,7 @@ class PriceRanges extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('price_ranges');
         Schema::dropIfExists('prices');

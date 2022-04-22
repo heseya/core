@@ -9,7 +9,6 @@ use Illuminate\Support\Str;
 
 class OneTimeSecurityCodeFactory extends Factory
 {
-
     protected $model = OneTimeSecurityCode::class;
 
     /**

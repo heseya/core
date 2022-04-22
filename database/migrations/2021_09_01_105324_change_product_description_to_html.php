@@ -8,18 +8,13 @@ use League\HTMLToMarkdown\HtmlConverter;
 
 class ChangeProductDescriptionToHtml extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::table('products', function (Blueprint $table) {
+        Schema::table('products', function (Blueprint $table): void {
             $table->text('description_html')->nullable();
         });
 
-        DB::table('products')->orderBy('id')->chunk(100, function ($pages) {
+        DB::table('products')->orderBy('id')->chunk(100, function ($pages): void {
             foreach ($pages as $page) {
                 DB::table('products')->where('id', $page->id)->update([
                     'description_html' => $page->description_md,
@@ -27,25 +22,20 @@ class ChangeProductDescriptionToHtml extends Migration
             }
         });
 
-        Schema::table('products', function (Blueprint $table) {
+        Schema::table('products', function (Blueprint $table): void {
             $table->dropColumn('description_md');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('products', function (Blueprint $table) {
+        Schema::table('products', function (Blueprint $table): void {
             $table->text('description_md');
         });
 
         $htmlConverter = new HtmlConverter(['strip_tags' => true]);
 
-        DB::table('products')->orderBy('id')->chunk(100, function ($pages) use ($htmlConverter) {
+        DB::table('products')->orderBy('id')->chunk(100, function ($pages) use ($htmlConverter): void {
             foreach ($pages as $page) {
                 DB::table('products')->where('id', $page->id)->update([
                     'description_md' => $htmlConverter->convert($page->description_html),
@@ -53,7 +43,7 @@ class ChangeProductDescriptionToHtml extends Migration
             }
         });
 
-        Schema::table('products', function (Blueprint $table) {
+        Schema::table('products', function (Blueprint $table): void {
             $table->dropColumn('description_html');
         });
     }

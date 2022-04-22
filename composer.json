@@ -111,6 +111,12 @@
         ],
         "scout-clear": [
             "@php artisan scout:delete-index products"
+        ],
+        "seed": [
+            "@php artisan db:seed"
+        ],
+        "seed-prod": [
+            "@php artisan db:seed --class=\"Database\\Seeders\\InitSeeder\""
         ]
     },
     "repositories": [

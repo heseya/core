@@ -9,14 +9,9 @@ use Illuminate\Support\Facades\Schema;
 
 class ChangeDiscountsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::table('discounts', function (Blueprint $table) {
+        Schema::table('discounts', function (Blueprint $table): void {
             $table->string('name');
             $table->integer('priority');
             $table->string('target_type');
@@ -28,11 +23,11 @@ class ChangeDiscountsTable extends Migration
             $table->string('type')->change();
         });
 
-        Schema::table('order_discounts', function (Blueprint $table) {
+        Schema::table('order_discounts', function (Blueprint $table): void {
             $table->string('type')->change();
         });
 
-        Schema::create('discount_condition_groups', function (Blueprint $table) {
+        Schema::create('discount_condition_groups', function (Blueprint $table): void {
             $table->uuid('discount_id')->index();
             $table->uuid('condition_group_id')->index();
 
@@ -42,7 +37,7 @@ class ChangeDiscountsTable extends Migration
             $table->foreign('condition_group_id')->references('id')->on('condition_groups')->onDelete('cascade');
         });
 
-        Schema::create('model_has_discounts', function (Blueprint $table) {
+        Schema::create('model_has_discounts', function (Blueprint $table): void {
             $table->uuid('discount_id');
 
             $table->string('model_type');
@@ -60,14 +55,14 @@ class ChangeDiscountsTable extends Migration
         });
 
         Discount::chunk(100, fn ($discount) => $discount->each(
-            function (Discount $discount) {
+            function (Discount $discount): void {
                 $conditionGroup = ConditionGroup::create();
 
                 $conditionGroup->conditions()->create([
                     'type' => ConditionType::MAX_USES,
                     'value' => [
                         'max_uses' => $discount->max_uses,
-                    ]
+                    ],
                 ]);
 
                 if ($discount->starts_at !== null || $discount->expires_at !== null) {
@@ -76,7 +71,7 @@ class ChangeDiscountsTable extends Migration
                         'value' => [
                             'start_at' => $discount->starts_at,
                             'end_at' => $discount->expires_at,
-                        ]
+                        ],
                     ]);
                 }
 
@@ -84,28 +79,23 @@ class ChangeDiscountsTable extends Migration
             }
         ));
 
-        Schema::table('discounts', function (Blueprint $table) {
+        Schema::table('discounts', function (Blueprint $table): void {
             $table->dropColumn('max_uses');
             $table->dropColumn('starts_at');
             $table->dropColumn('expires_at');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('discounts', function (Blueprint $table) {
+        Schema::table('discounts', function (Blueprint $table): void {
             $table->unsignedInteger('max_uses')->default(1);
             $table->dateTime('starts_at')->nullable();
             $table->dateTime('expires_at')->nullable();
         });
 
         Discount::chunk(100, fn ($discount) => $discount->each(
-            function (Discount $discount) {
+            function (Discount $discount): void {
                 $conditionGroups = $discount->conditionGroups()->first();
 
                 $maxUsesCondition = $conditionGroups->conditions()->where('type', ConditionType::MAX_USES)->first();
@@ -134,11 +124,11 @@ class ChangeDiscountsTable extends Migration
         Schema::dropIfExists('model_has_discounts');
         Schema::dropIfExists('discount_condition_groups');
 
-        Schema::table('order_discounts', function (Blueprint $table) {
+        Schema::table('order_discounts', function (Blueprint $table): void {
             $table->unsignedInteger('type')->change();
         });
 
-        Schema::table('discounts', function (Blueprint $table) {
+        Schema::table('discounts', function (Blueprint $table): void {
             $table->dropColumn('name');
             $table->dropColumn('priority');
             $table->dropColumn('target_type');

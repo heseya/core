@@ -6,58 +6,48 @@ use Illuminate\Support\Facades\Schema;
 
 class AddOrder extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::table('categories', function (Blueprint $table) {
+        Schema::table('categories', function (Blueprint $table): void {
             $table->unsignedTinyInteger('order')->default(0);
         });
 
-        Schema::table('brands', function (Blueprint $table) {
+        Schema::table('brands', function (Blueprint $table): void {
             $table->unsignedTinyInteger('order')->default(0);
         });
 
-        Schema::table('product_schemas', function (Blueprint $table) {
+        Schema::table('product_schemas', function (Blueprint $table): void {
             $table->unsignedTinyInteger('order')->default(0);
         });
 
-        Schema::table('shipping_methods', function (Blueprint $table) {
+        Schema::table('shipping_methods', function (Blueprint $table): void {
             $table->unsignedTinyInteger('order')->default(0);
         });
 
-        Schema::table('statuses', function (Blueprint $table) {
+        Schema::table('statuses', function (Blueprint $table): void {
             $table->unsignedTinyInteger('order')->default(0);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('categories', function (Blueprint $table) {
+        Schema::table('categories', function (Blueprint $table): void {
             $table->dropColumn('order');
         });
 
-        Schema::table('brands', function (Blueprint $table) {
+        Schema::table('brands', function (Blueprint $table): void {
             $table->dropColumn('order');
         });
 
-        Schema::table('product_schemas', function (Blueprint $table) {
+        Schema::table('product_schemas', function (Blueprint $table): void {
             $table->dropColumn('order');
         });
 
-        Schema::table('shipping_methods', function (Blueprint $table) {
+        Schema::table('shipping_methods', function (Blueprint $table): void {
             $table->dropColumn('order');
         });
 
-        Schema::table('statuses', function (Blueprint $table) {
+        Schema::table('statuses', function (Blueprint $table): void {
             $table->dropColumn('order');
         });
     }

@@ -6,21 +6,16 @@ use Illuminate\Support\Facades\Schema;
 
 class CrateTagsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::create('tags', function (Blueprint $table) {
+        Schema::create('tags', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name', 30);
             $table->string('color', 6)->default('000000');
             $table->timestamps();
         });
 
-        Schema::create('product_tags', function (Blueprint $table) {
+        Schema::create('product_tags', function (Blueprint $table): void {
             $table->uuid('product_id')->index();
             $table->uuid('tag_id')->index();
 
@@ -31,12 +26,7 @@ class CrateTagsTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('product_tags');
         Schema::dropIfExists('tags');

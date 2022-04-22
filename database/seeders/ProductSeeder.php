@@ -22,9 +22,9 @@ class ProductSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
-        Product::withoutSyncingToSearch(function () {
+        Product::withoutSyncingToSearch(function (): void {
             /** @var ProductServiceContract $productService */
             $productService = App::make(ProductServiceContract::class);
 
@@ -54,7 +54,7 @@ class ProductSeeder extends Seeder
 
             $categories->each(fn ($set) => $this->seo($set));
 
-            $products->each(function ($product, $index) use ($sets, $brands, $categories, $productService) {
+            $products->each(function ($product, $index) use ($sets, $brands, $categories, $productService): void {
                 if (rand(0, 1)) {
                     $this->schemas($product);
                 }

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\MediaType;
 use App\Enums\OrderDocumentType;
 use App\Events\AddOrderDocument;
@@ -222,7 +223,7 @@ class OrderDocumentTest extends TestCase
 
         $response
             ->assertStatus(422)
-            ->assertJsonFragment(['message' => 'No access.']);
+            ->assertJsonFragment(['key' => Exceptions::coerce(Exceptions::CLIENT_NO_ACCESS)->key]);
     }
 
     /**
@@ -252,6 +253,6 @@ class OrderDocumentTest extends TestCase
 
         $response
             ->assertStatus(422)
-            ->assertJsonFragment(['message' => 'No access.']);
+            ->assertJsonFragment(['key' => Exceptions::coerce(Exceptions::CLIENT_NO_ACCESS)->key]);
     }
 }

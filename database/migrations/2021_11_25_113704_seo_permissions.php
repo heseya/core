@@ -7,12 +7,7 @@ use Illuminate\Database\Migrations\Migration;
 
 class SeoPermissions extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         // SEO
         Permission::create(['name' => 'seo.show', 'display_name' => 'Dostęp do ustawień SEO sklepu']);
@@ -30,12 +25,7 @@ class SeoPermissions extends Migration
         $owner->save();
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         $owner = Role::where('type', RoleType::OWNER)->first();
         $owner->givePermissionTo([

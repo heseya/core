@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\StoreException;
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ClientException;
 use App\Http\Requests\Payments\PaymentStoreRequest;
 use App\Http\Resources\PaymentResource;
 use App\Models\Order;
@@ -16,11 +17,11 @@ class PaymentController extends Controller
     public function store(Order $order, string $method, PaymentStoreRequest $request): JsonResource
     {
         if ($order->paid) {
-            throw new StoreException('Order is already paid.');
+            throw new ClientException(Exceptions::CLIENT_ORDER_PAID);
         }
 
         if (!array_key_exists($method, Config::get('payable.aliases'))) {
-            throw new StoreException('Unknown payment method.');
+            throw new ClientException(Exceptions::CLIENT_UNKNOWN_PAYMENT_METHOD);
         }
 
         $method_class = Config::get('payable.aliases')[$method];
@@ -35,7 +36,7 @@ class PaymentController extends Controller
         try {
             $payment->update($method_class::generateUrl($payment));
         } catch (Throwable $error) {
-            throw new StoreException('Cannot generate payment url.');
+            throw new ClientException(Exceptions::CLIENT_GENERATE_PAYMENT_URL);
         }
 
         return PaymentResource::make($payment);
@@ -44,7 +45,7 @@ class PaymentController extends Controller
     public function update(string $method, Request $request): mixed
     {
         if (!array_key_exists($method, Config::get('payable.aliases'))) {
-            throw new StoreException('Unknown payment method.');
+            throw new ClientException(Exceptions::CLIENT_UNKNOWN_PAYMENT_METHOD);
         }
 
         $method_class = Config::get('payable.aliases')[$method];

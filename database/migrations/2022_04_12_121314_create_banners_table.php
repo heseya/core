@@ -7,16 +7,10 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+return new class() extends Migration {
+    public function up(): void
     {
-        Schema::create('banners', function (Blueprint $table) {
+        Schema::create('banners', function (Blueprint $table): void {
             $table->uuid('id')->primary()->index();
             $table->string('slug')->unique()->index();
             $table->string('url');
@@ -25,7 +19,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('responsive_media', function (Blueprint $table) {
+        Schema::create('responsive_media', function (Blueprint $table): void {
             $table->uuid('id')->primary()->index();
             $table
                 ->foreignUuid('banner_id')
@@ -36,7 +30,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('media_responsive_media', function (Blueprint $table) {
+        Schema::create('media_responsive_media', function (Blueprint $table): void {
             $table
                 ->foreignUuid('responsive_media_id')
                 ->references('id')
@@ -65,12 +59,7 @@ return new class extends Migration
         ]);
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         $permissions = [
             'banners.show',

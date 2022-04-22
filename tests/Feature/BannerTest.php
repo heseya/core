@@ -111,6 +111,63 @@ class BannerTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testShow($user): void
+    {
+        $this->$user->givePermissionTo('banners.show');
+
+        Banner::factory()->count(4)->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson("/banners/id:{$this->banner->getKey()}")
+            ->assertOk()
+            ->assertJsonFragment($this->banner->only(['slug', 'url', 'name', 'active']))
+            ->assertJsonFragment(['min_screen_width' => 100])
+            ->assertJsonFragment(['min_screen_width' => 250])
+            ->assertJsonFragment(['min_screen_width' => 400]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowNotExistingObject($user): void
+    {
+        $this->$user->givePermissionTo('banners.show');
+
+        $this->banner->delete();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson("/banners/id:{$this->banner->getKey()}")
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowUnauthorized($user): void
+    {
+        $this->$user->givePermissionTo('banners.show');
+
+        $this
+            ->getJson("/banners/id:{$this->banner->getKey()}")
+            ->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWithoutPermissions($user): void
+    {
+        $this
+            ->actingAs($this->$user)
+            ->getJson("/banners/id:{$this->banner->getKey()}")
+            ->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateBanner($user): void
     {
         $this->$user->givePermissionTo('banners.add');
