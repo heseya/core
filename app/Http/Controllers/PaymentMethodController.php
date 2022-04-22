@@ -10,6 +10,7 @@ use App\Http\Resources\PaymentMethodDetailsResource;
 use App\Http\Resources\PaymentMethodResource;
 use App\Models\PaymentMethod;
 use App\Models\ShippingMethod;
+use App\Services\Contracts\PaymentMethodServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,10 @@ use Illuminate\Support\Facades\Response;
 
 class PaymentMethodController extends Controller
 {
+    public function __construct(private PaymentMethodServiceContract $paymentMethodService)
+    {
+    }
+
     public function index(PaymentMethodIndexRequest $request): JsonResource
     {
         if ($request->has('shipping_method_id')) {
@@ -33,11 +38,16 @@ class PaymentMethodController extends Controller
         return PaymentMethodResource::collection($query->get());
     }
 
+    public function show(PaymentMethod $paymentMethod): JsonResource
+    {
+        return PaymentMethodDetailsResource::make($paymentMethod);
+    }
+
     public function store(PaymentMethodStoreRequest $request): JsonResource
     {
         $dto = PaymentMethodDto::instantiateFromRequest($request);
 
-        $payment_method = PaymentMethod::create($dto->toArray());
+        $payment_method = $this->paymentMethodService->store($dto);
 
         return PaymentMethodDetailsResource::make($payment_method);
     }
@@ -46,9 +56,9 @@ class PaymentMethodController extends Controller
     {
         $dto = PaymentMethodDto::instantiateFromRequest($request);
 
-        $payment_method->update($dto->toArray());
+        $this->paymentMethodService->update($payment_method, $dto);
 
-        return PaymentMethodResource::make($payment_method);
+        return PaymentMethodDetailsResource::make($payment_method);
     }
 
     public function destroy(PaymentMethod $payment_method): JsonResponse

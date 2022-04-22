@@ -31,6 +31,7 @@ use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\OptionServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\Contracts\PageServiceContract;
+use App\Services\Contracts\PaymentMethodServiceContract;
 use App\Services\Contracts\PermissionServiceContract;
 use App\Services\Contracts\ProductSearchServiceContract;
 use App\Services\Contracts\ProductServiceContract;
@@ -57,6 +58,7 @@ use App\Services\OneTimeSecurityCodeService;
 use App\Services\OptionService;
 use App\Services\OrderService;
 use App\Services\PageService;
+use App\Services\PaymentMethodService;
 use App\Services\PermissionService;
 use App\Services\ProductSearchService;
 use App\Services\ProductService;
@@ -113,6 +115,7 @@ class AppServiceProvider extends ServiceProvider
         ProductSearchServiceContract::class => ProductSearchService::class,
         ConsentServiceContract::class => ConsentService::class,
         BannerServiceContract::class => BannerService::class,
+        PaymentMethodServiceContract::class => PaymentMethodService::class,
     ];
 
     /**
