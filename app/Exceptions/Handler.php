@@ -122,8 +122,8 @@ final class Handler extends ExceptionHandler
                 }
 
                 $validationErrors[$field][$index] = [
-                        'key' => $key,
-                    ] + $this->createValidationAttributeData($key, $attrValue);
+                    'key' => $key,
+                ] + $this->createValidationAttributeData($key, $attrValue);
 
                 if ($message !== null) {
                     $validationErrors[$field][$index] += [
