@@ -63,7 +63,7 @@ class ProductCreateRequest extends FormRequest implements SeoRequestContract, Me
                     'nullable',
                     'integer',
                     new GoogleProductCategoryExist(),
-                ]
+                ],
             ],
         );
     }

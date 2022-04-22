@@ -3,11 +3,7 @@
 namespace App\Rules;
 
 use App\Exceptions\GoogleProductCategoryFileException;
-use App\Models\App;
-use App\Services\Contracts\UrlServiceContract;
 use Illuminate\Contracts\Validation\Rule;
-use Illuminate\Support\Facades\App as AppFacade;
-use Illuminate\Support\Facades\Storage;
 
 class GoogleProductCategoryExist implements Rule
 {
