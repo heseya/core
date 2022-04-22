@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Criteria\AttributeSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Enums\AttributeType;
@@ -47,6 +48,7 @@ class Attribute extends Model
         'global',
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
+        'search' => AttributeSearch::class,
     ];
 
     public function options(): HasMany
