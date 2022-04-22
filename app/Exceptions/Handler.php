@@ -2,17 +2,17 @@
 
 namespace App\Exceptions;
 
+use App\Enums\ErrorCode;
+use App\Enums\ValidationError;
 use App\Http\Resources\ErrorResource;
 use Exception;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
@@ -20,85 +20,21 @@ use Throwable;
 final class Handler extends ExceptionHandler
 {
     private const ERRORS = [
-        AuthenticationException::class => [
-            'message' => 'Unauthenticated',
-            'code' => Response::HTTP_UNAUTHORIZED,
-        ],
-        AccessDeniedHttpException::class => [
-            'message' => 'Unauthorized',
-            'code' => Response::HTTP_FORBIDDEN,
-        ],
-        NotFoundHttpException::class => [
-            'message' => 'Page not found',
-            'code' => Response::HTTP_NOT_FOUND,
-        ],
-        ModelNotFoundException::class => [
-            'message' => 'Page not found',
-            'code' => Response::HTTP_NOT_FOUND,
-        ],
-        MethodNotAllowedHttpException::class => [
-            'message' => 'Page not found',
-            'code' => Response::HTTP_NOT_FOUND,
-        ],
-        ValidationException::class => [
-            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-        ],
-        StoreException::class => [
-            'code' => Response::HTTP_BAD_REQUEST,
-        ],
-        AppAccessException::class => [
-            'code' => Response::HTTP_BAD_REQUEST,
-        ],
-        AuthException::class => [
-            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-        ],
-        MediaException::class => [
-            'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
-        ],
-        AppException::class => [
-            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-        ],
-        OrderException::class => [
-            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-        ],
-        RoleException::class => [
-            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-        ],
-        AuthorizationException::class => [
-            'message' => 'Unauthorized',
-            'code' => Response::HTTP_FORBIDDEN,
-        ],
-        WebHookCreatorException::class => [
-            'code' => Response::HTTP_FORBIDDEN,
-        ],
-        WebHookEventException::class => [
-            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-        ],
-        TokenExpiredException::class => [
-            'message' => 'Unauthorized',
-            'code' => Response::HTTP_UNAUTHORIZED,
-        ],
-        PackageException::class => [
-            'code' => Response::HTTP_BAD_GATEWAY,
-        ],
-        PackageAuthException::class => [
-            'code' => Response::HTTP_BAD_GATEWAY,
-        ],
-        ItemException::class => [
-            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-        ],
-        TFAException::class => [
-            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-        ],
-        MediaCriticalException::class => [
-            'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
-        ],
-        DiscountException::class => [
-            'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
-        ],
-        GoogleProductCategoryFileException::class => [
-            'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
-        ],
+        AuthenticationException::class => ErrorCode::UNAUTHORIZED,
+
+        NotFoundHttpException::class => ErrorCode::NOT_FOUND,
+        MethodNotAllowedHttpException::class => ErrorCode::NOT_FOUND,
+
+        ValidationException::class => ErrorCode::VALIDATION_ERROR,
+
+        AppAccessException::class => ErrorCode::BAD_REQUEST,
+        StoreException::class => ErrorCode::BAD_REQUEST,
+
+        ClientException::class => ErrorCode::UNPROCESSABLE_ENTITY,
+        TFAException::class => ErrorCode::UNPROCESSABLE_ENTITY,
+
+        PackageException::class => ErrorCode::BAD_GATEWAY,
+        PackageAuthException::class => ErrorCode::BAD_GATEWAY,
     ];
 
     /**
@@ -129,10 +65,14 @@ final class Handler extends ExceptionHandler
                     ->response()
                     ->setStatusCode($exception->getCode());
             }
+
             $error = new Error(
-                self::ERRORS[$class]['message'] ?? $exception->getMessage(),
-                self::ERRORS[$class]['code'] ?? 500,
-                method_exists($exception, 'errors') ? $exception->errors() : [],
+                $exception->getMessage(),
+                $exception instanceof StoreException ?
+                    $exception->getCode() : ErrorCode::getCode(self::ERRORS[$class]),
+                $exception instanceof StoreException ?
+                    $exception->getKey() : ErrorCode::fromValue(self::ERRORS[$class])->key,
+                $this->getExceptionData($exception),
             );
         } else {
             if (app()->bound('sentry')) {
@@ -154,5 +94,101 @@ final class Handler extends ExceptionHandler
     public function report(Throwable $e): void
     {
         $e instanceof StoreException && $e->isSimpleLogs() ? $e->logException() : parent::report($e);
+    }
+
+    private function mapValidationErrors(Validator $validator): array
+    {
+        $validationErrors = [];
+        $errors = $validator->errors()->toArray();
+
+        foreach ($validator->failed() as $field => &$value) {
+            $value = array_change_key_case($value, CASE_UPPER);
+            $index = 0;
+
+            foreach ($value as $attribute => $attrValue) {
+                $attribute = Str::of($attribute)->afterLast('\\')->toString();
+                $key = ValidationError::coerce($attribute)->value ?? 'INTERNAL_SERVER_ERROR';
+
+                $message = array_key_exists($field, $errors) ?
+                    array_key_exists($index, $errors[$field]) ?
+                        $errors[$field][$index] : null
+                    : null;
+
+                #Workaround for Password::defaults() rule
+                if ($key === ValidationError::PASSWORD) {
+                    $key = Str::contains($message, 'data leak') ?
+                        ValidationError::PASSWORDCOMPROMISED : ValidationError::PASSWORDLENGTH;
+                }
+
+                $validationErrors[$field][$index] = [
+                        'key' => $key,
+                    ] + $this->createValidationAttributeData($key, $attrValue);
+
+                if ($message !== null) {
+                    $validationErrors[$field][$index] += [
+                        'message' => $message,
+                    ];
+                }
+
+                $index++;
+            }
+        }
+
+        return $validationErrors;
+    }
+
+    private function getExceptionData(Exception $exception): array
+    {
+        if ($exception instanceof StoreException) {
+            return $exception->errors();
+        }
+        if ($exception instanceof ValidationException) {
+            return $this->mapValidationErrors($exception->validator);
+        }
+        return [];
+    }
+
+    private function createValidationAttributeData(string $key, array $data): array
+    {
+        return match ($key) {
+            ValidationError::MIN => [
+                'min' => $data[0],
+            ],
+            ValidationError::MAX => [
+                'max' => $data[0],
+            ],
+            ValidationError::SIZE => [
+                'size' => $data[0],
+            ],
+            ValidationError::IN => [
+                'available' => $data,
+            ],
+            ValidationError::BETWEEN => [
+                'min' => $data[0],
+                'max' => $data[1],
+            ],
+            ValidationError::PASSWORDLENGTH => [
+                'min' => Config::get('validation.password_min_length'),
+            ],
+            ValidationError::BEFOREOREQUAL,
+            ValidationError::AFTEROREQUAL => [
+                'when' => $data[0],
+            ],
+            ValidationError::PROHIBITEDUNLESS => [
+                'field' => $data[0],
+                'value' => $data[1],
+            ],
+            ValidationError::MIMETYPES => [
+                'types' => $data,
+            ],
+            ValidationError::EXISTS => [
+                'table' => $data[0],
+                'field' => $data[1],
+            ],
+            ValidationError::GTE => [
+                'field' => $data[0],
+            ],
+            default => []
+        };
     }
 }
