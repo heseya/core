@@ -10,7 +10,6 @@ class PaymentMethodStoreRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'alias' => ['required', 'string', 'max:255'],
             'icon' => ['required', 'string', 'max:255'],
             'public' => ['required', 'boolean'],
             'url' => ['required', 'string', 'url'],

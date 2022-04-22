@@ -10,7 +10,6 @@ class PaymentMethodUpdateRequest extends FormRequest
     {
         return [
             'name' => ['string', 'max:255'],
-            'alias' => ['string', 'max:255'],
             'icon' => ['string', 'max:255'],
             'public' => ['boolean'],
             'url' => ['string', 'url'],
