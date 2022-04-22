@@ -69,8 +69,8 @@ class ProductService implements ProductServiceContract
         $product->seo()->save($this->seoMetadataService->create($dto->getSeo()));
 
         [$priceMin, $priceMax] = $this->getMinMaxPrices($product);
-        $product->price_min = $priceMin;
-        $product->price_max = $priceMax;
+        $product->price_min_initial = $priceMin;
+        $product->price_max_initial = $priceMax;
         $product->available = $this->availabilityService->isProductAvaiable($product);
         $this->discountService->applyDiscountsOnProduct($product);
 
@@ -139,8 +139,8 @@ class ProductService implements ProductServiceContract
     {
         $productMinMaxPrices = $this->getMinMaxPrices($product);
         $product->update([
-            'price_min' => $productMinMaxPrices[0],
-            'price_max' => $productMinMaxPrices[1],
+            'price_min_initial' => $productMinMaxPrices[0],
+            'price_max_initial' => $productMinMaxPrices[1],
         ]);
         $this->discountService->applyDiscountsOnProduct($product);
     }

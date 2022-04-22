@@ -57,8 +57,8 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'price_max',
         'available',
         'order',
-        'min_price_discounted',
-        'max_price_discounted',
+        'price_min_initial',
+        'price_max_initial',
         'google_product_category',
     ];
 

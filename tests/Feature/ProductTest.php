@@ -241,8 +241,8 @@ class ProductTest extends TestCase
                     0 => $this->expected_short,
                 ],
             ])->assertJsonFragment([
-                'min_price_discounted' => $this->product->price_min,
-                'max_price_discounted' => $this->product->price_max,
+                'price_min' => $this->product->price_min,
+                'price_max' => $this->product->price_max,
             ]);
 
         $this->assertQueryCountLessThan(20);
@@ -637,8 +637,8 @@ class ProductTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
             'price' => 3000,
-            'price_min' => 2500,
-            'price_max' => 3500,
+            'price_min_initial' => 2500,
+            'price_max_initial' => 3500,
         ]);
 
         // Applied - product is on list
@@ -730,10 +730,10 @@ class ProductTest extends TestCase
                 'id' => $product->getKey(),
                 'name' => $product->name,
                 'price' => $product->price,
-                'price_min' => $product->price_min,
-                'price_max' => $product->price_max,
-                'min_price_discounted' => 2250,
-                'max_price_discounted' => 3150,
+                'price_min_initial' => $product->price_min_initial,
+                'price_max_initial' => $product->price_max_initial,
+                'price_min' => 2250,
+                'price_max' => 3150,
             ])
             ->assertJsonFragment([
                 'id' => $sale1->getKey(),
@@ -763,8 +763,8 @@ class ProductTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
             'price' => 3000,
-            'price_min' => 2500,
-            'price_max' => 3500,
+            'price_min_initial' => 2500,
+            'price_max_initial' => 3500,
         ]);
 
         // Applied - product is not on block list
@@ -789,10 +789,10 @@ class ProductTest extends TestCase
                 'id' => $product->getKey(),
                 'name' => $product->name,
                 'price' => $product->price,
-                'price_min' => $product->price_min,
-                'price_max' => $product->price_max,
-                'min_price_discounted' => 2250,
-                'max_price_discounted' => 3150,
+                'price_min_initial' => $product->price_min_initial,
+                'price_max_initial' => $product->price_max_initial,
+                'price_min' => 2250,
+                'price_max' => 3150,
             ])
             ->assertJsonFragment([
                 'id' => $sale->getKey(),
@@ -810,8 +810,8 @@ class ProductTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
             'price' => 3000,
-            'price_min' => 2500,
-            'price_max' => 3500,
+            'price_min_initial' => 2500,
+            'price_max_initial' => 3500,
         ]);
 
         $set = ProductSet::factory()->create([
@@ -882,10 +882,10 @@ class ProductTest extends TestCase
                 'id' => $product->getKey(),
                 'name' => $product->name,
                 'price' => $product->price,
-                'price_min' => $product->price_min,
-                'price_max' => $product->price_max,
-                'min_price_discounted' => 2137.5,
-                'max_price_discounted' => 2992.5,
+                'price_min_initial' => $product->price_min_initial,
+                'price_max_initial' => $product->price_max_initial,
+                'price_min' => 2137.5,
+                'price_max' => 2992.5,
             ])
             ->assertJsonFragment([
                 'id' => $sale1->getKey(),
@@ -1867,8 +1867,8 @@ class ProductTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'id' => $productId,
-                'min_price_discounted' => 80,
-                'max_price_discounted' => 80,
+                'price_min' => 80,
+                'price_max' => 80,
             ])
             ->assertJsonFragment([
                 'id' => $saleApplied->getKey(),
@@ -1879,8 +1879,8 @@ class ProductTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $productId,
-            'min_price_discounted' => 80,
-            'max_price_discounted' => 80,
+            'price_min' => 80,
+            'price_max' => 80,
         ]);
     }
 
@@ -2373,10 +2373,10 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('products', [
             $product->getKeyName() => $product->getKey(),
             'price' => $productNewPrice,
-            'price_min' => $productNewPrice,
-            'price_max' => $productNewPrice + $schemaPrice,
-            'min_price_discounted' => $productNewPrice - $saleValue,
-            'max_price_discounted' => $productNewPrice + $schemaPrice - $saleValue,
+            'price_min_initial' => $productNewPrice,
+            'price_max_initial' => $productNewPrice + $schemaPrice,
+            'price_min' => $productNewPrice - $saleValue,
+            'price_max' => $productNewPrice + $schemaPrice - $saleValue,
         ]);
     }
 
@@ -2468,10 +2468,10 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('products', [
             $product->getKeyName() => $product->getKey(),
             'price' => $productPrice,
-            'price_min' => $productPrice,
-            'price_max' => $productPrice + $schemaNewPrice,
-            'min_price_discounted' => $productPrice - $saleValue,
-            'max_price_discounted' => $productPrice + $schemaNewPrice - $saleValue,
+            'price_min_initial' => $productPrice,
+            'price_max_initial' => $productPrice + $schemaNewPrice,
+            'price_min' => $productPrice - $saleValue,
+            'price_max' => $productPrice + $schemaNewPrice - $saleValue,
         ]);
     }
 
@@ -2583,10 +2583,10 @@ class ProductTest extends TestCase
         $this->assertDatabaseHas('products', [
             $product->getKeyName() => $product->getKey(),
             'price' => $productPrice,
-            'price_min' => $productPrice,
-            'price_max' => $productPrice,
-            'min_price_discounted' => $productPrice - $saleValue,
-            'max_price_discounted' => $productPrice - $saleValue,
+            'price_min_initial' => $productPrice,
+            'price_max_initial' => $productPrice,
+            'price_min' => $productPrice - $saleValue,
+            'price_max' => $productPrice - $saleValue,
         ]);
     }
 
