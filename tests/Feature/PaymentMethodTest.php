@@ -124,7 +124,7 @@ class PaymentMethodTest extends TestCase
             'alias' => 'test',
             'public' => true,
             'url' => 'http://test.com',
-            'icon' => 'test icon'
+            'icon' => 'test icon',
         ];
 
         $response = $this->actingAs($this->application)
@@ -144,7 +144,7 @@ class PaymentMethodTest extends TestCase
             'alias' => 'test',
             'public' => true,
             'url' => 'http://test.com',
-            'icon' => 'test icon'
+            'icon' => 'test icon',
         ];
 
         $response = $this->actingAs($this->user)
@@ -207,7 +207,8 @@ class PaymentMethodTest extends TestCase
                 'public' => $this->payment_method->public,
                 'icon' => $this->payment_method->icon,
                 'url' => $this->payment_method->url,
-            ]]);
+            ]
+            ]);
     }
 
     public function testUpdateAsUser(): void
