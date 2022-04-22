@@ -40,6 +40,10 @@ Product:
       description: 'In what increments can you increase the product quantity'
       type: number
       example: 0.05
+    google_product_category:
+      description: 'Google product category identification number'
+      type: integer
+      example: 123
     cover:
       $ref: './Media.yml#/Media'
     tags:
