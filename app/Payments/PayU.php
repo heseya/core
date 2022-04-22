@@ -2,7 +2,8 @@
 
 namespace App\Payments;
 
-use App\Exceptions\StoreException;
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ClientException;
 use App\Models\Payment;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -75,7 +76,7 @@ class PayU implements PaymentMethod
             Config::get('payu.second_key'),
             $signature['algorithm']
         )) {
-            throw new StoreException('Untrusted notification');
+            throw new ClientException(Exceptions::CLIENT_UNTRUSTED_NOTIFICATION);
         }
 
         $validated = $request->validate([

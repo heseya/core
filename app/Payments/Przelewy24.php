@@ -2,7 +2,8 @@
 
 namespace App\Payments;
 
-use App\Exceptions\StoreException;
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ClientException;
 use App\Models\Payment;
 use Exception;
 use Illuminate\Http\Request;
@@ -92,7 +93,7 @@ class Przelewy24 implements PaymentMethod
         ]);
 
         if ($validated['sign'] !== $sign) {
-            throw new StoreException('Invalid payment');
+            throw new ClientException(Exceptions::CLIENT_INVALID_PAYMENT);
         }
 
         $sign = self::sign([
@@ -117,7 +118,7 @@ class Przelewy24 implements PaymentMethod
         ]);
 
         if ($response->failed()) {
-            throw new StoreException('Cannot verify payment');
+            throw new ClientException(Exceptions::CLIENT_VERIFY_PAYMENT);
         }
 
         $payment->update([

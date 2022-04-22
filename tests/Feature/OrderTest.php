@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\MetadataType;
+use App\Enums\ValidationError;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
@@ -219,12 +220,7 @@ class OrderTest extends TestCase
             ->actingAs($this->$user)
             ->getJson('/orders?limit=30&sort=currency:desssc')
             ->assertStatus(422)
-            ->assertJsonFragment([
-                'errors' => [
-                    ['You can\'t sort by currency field.'],
-                    ['Only asc|desc sorting directions are allowed on field currency.'],
-                ],
-            ]);
+            ->assertJsonFragment(['key' => ValidationError::IN]);
     }
 
     /**

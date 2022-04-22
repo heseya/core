@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Models\Product;
 use App\Models\Tag;
 use Illuminate\Support\Facades\Config;
@@ -76,7 +77,9 @@ class AuditTest extends TestCase
             ->actingAs($this->$user)
             ->json('GET', '/audits/tags/id:' . $tag->getKey())
             ->assertStatus(400)
-            ->assertJsonFragment(['message' => 'Model not auditable']);
+            ->assertJsonFragment([
+                'key' => Exceptions::coerce(Exceptions::CLIENT_MODEL_NOT_AUDITABLE)->key,
+            ]);
     }
 
     private function createProduct(): Product

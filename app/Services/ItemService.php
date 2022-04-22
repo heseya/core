@@ -4,7 +4,8 @@ namespace App\Services;
 
 use App\Dtos\CartItemDto;
 use App\Dtos\OrderProductDto;
-use App\Exceptions\ItemException;
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ClientException;
 use App\Models\Item;
 use App\Models\Product;
 use App\Models\Schema;
@@ -31,11 +32,14 @@ class ItemService implements ItemServiceContract
             $item = Item::find($id);
 
             if ($item === null) {
-                throw new ItemException("Item `{$id}` not found");
+                throw new ClientException(Exceptions::CLIENT_ITEM_NOT_FOUND, errorArray: [
+                    'id' => $id,
+                ]);
             }
 
             if ($item->quantity < $count) {
-                throw new ItemException("There's less than {$count} of {$item->name} available");
+                //TODO dodanie danych do błędu
+                throw new ClientException(Exceptions::CLIENT_NOT_ENOUGH_ITEMS);
             }
         }
     }

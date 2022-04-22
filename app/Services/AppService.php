@@ -3,10 +3,10 @@
 namespace App\Services;
 
 use App\Dtos\AppInstallDto;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Enums\TokenType;
-use App\Exceptions\AppException;
-use App\Exceptions\AuthException;
+use App\Exceptions\ClientException;
 use App\Models\App;
 use App\Models\Permission;
 use App\Models\Role;
@@ -37,26 +37,25 @@ class AppService implements AppServiceContract
         $permissions = Collection::make($dto->getAllowedPermissions());
 
         if ($permissions->diff($allPermissions)->isNotEmpty()) {
-            throw new AuthException('Assigning invalid permissions');
+            throw new ClientException(Exceptions::CLIENT_ASSIGN_INVALID_PERMISSIONS);
         }
 
         if (!Auth::user()->hasAllPermissions($permissions->toArray())) {
-            throw new AuthException(
-                "Can't add an app with permissions you don't have",
-            );
+            throw new ClientException(Exceptions::CLIENT_ADD_APP_WITH_PERMISSIONS_USER_DONT_HAVE);
         }
 
         try {
             $response = Http::get($dto->getUrl());
         } catch (Throwable) {
-            throw new AppException('Failed to connect with application');
+            throw new ClientException(Exceptions::CLIENT_FAILED_TO_CONNECT_WITH_APP);
         }
 
         if ($response->failed()) {
-            throw new AppException(
-                'Application info responded with invalid status code',
+            throw new ClientException(
+                Exceptions::CLIENT_APP_RESPONDED_WITH_INVALID_CODE,
                 0,
                 null,
+                false,
                 [
                     "Status code: {$response->status()}",
                     "Body: {$response->body()}",
@@ -65,10 +64,11 @@ class AppService implements AppServiceContract
         }
 
         if (!$this->isAppRootValid($response)) {
-            throw new AppException(
-                'App responded with invalid info',
+            throw new ClientException(
+                Exceptions::CLIENT_APP_RESPONDED_WITH_INVALID_INFO,
                 0,
                 null,
+                false,
                 [
                     "Body: {$response->body()}",
                 ],
@@ -83,19 +83,15 @@ class AppService implements AppServiceContract
         $advertisedPerm = $requiredPerm->concat($optionalPerm)->unique();
 
         if ($advertisedPerm->diff($allPermissions)->isNotEmpty()) {
-            throw new AuthException('App wants invalid permissions');
+            throw new ClientException(Exceptions::CLIENT_APP_WANTS_INVALID_INFO);
         }
 
         if ($permissions->intersect($requiredPerm)->count() < $requiredPerm->count()) {
-            throw new AuthException(
-                "Can't add app without all required permissions",
-            );
+            throw new ClientException(Exceptions::CLIENT_ADD_APP_WITHOUT_REQUIRED_PERMISSIONS);
         }
 
         if ($permissions->intersect($advertisedPerm)->count() < $permissions->count()) {
-            throw new AuthException(
-                "Can't add any permissions application doesn't want",
-            );
+            throw new ClientException(Exceptions::CLIENT_ADD_PERMISSION_AP_DOESNT_WANT);
         }
 
         $name = $dto->getName() ?? $appConfig['name'];
@@ -144,16 +140,17 @@ class AppService implements AppServiceContract
                 'refresh_token' => $refreshToken,
             ]);
         } catch (Throwable) {
-            throw new AppException('Failed to connect with application');
+            throw new ClientException(Exceptions::CLIENT_FAILED_TO_CONNECT_WITH_APP);
         }
 
         if ($response->failed()) {
             $app->delete();
 
-            throw new AppException(
-                'App installation responded with an invalid status code',
+            throw new ClientException(
+                Exceptions::CLIENT_APP_RESPONDED_WITH_INVALID_CODE,
                 0,
                 null,
+                false,
                 [
                     "Status code: {$response->status()}",
                     "Body: {$response->body()}",
@@ -165,10 +162,11 @@ class AppService implements AppServiceContract
         ])) {
             $app->delete();
 
-            throw new AppException(
-                'App has invalid installation response',
+            throw new ClientException(
+                Exceptions::CLIENT_INVALID_INSTALLATION_RESPONSE,
                 0,
                 null,
+                false,
                 [
                     "Body: {$response->body()}",
                 ],
@@ -214,11 +212,11 @@ class AppService implements AppServiceContract
             ]);
 
             if (!$force && $response->failed()) {
-                throw new AppException('Failed to uninstall the application');
+                throw new ClientException(Exceptions::CLIENT_FAILED_TO_UNINSTALL_APP);
             }
         } catch (Throwable) {
             if (!$force) {
-                throw new AppException('Failed to connect with application');
+                throw new ClientException(Exceptions::CLIENT_FAILED_TO_CONNECT_WITH_APP);
             }
         }
 

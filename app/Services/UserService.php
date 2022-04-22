@@ -2,11 +2,12 @@
 
 namespace App\Services;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Events\UserCreated;
 use App\Events\UserDeleted;
 use App\Events\UserUpdated;
-use App\Exceptions\AuthException;
+use App\Exceptions\ClientException;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\UserServiceContract;
@@ -34,10 +35,7 @@ class UserService implements UserServiceContract
         )->unique();
 
         if (!Auth::user()->hasAllPermissions($permissions)) {
-            throw new AuthException(
-                'Can\'t give a role with permissions you don\'t have to the user',
-                simpleLogs: true,
-            );
+            throw new ClientException(Exceptions::CLIENT_GIVE_ROLE_THAT_USER_DOESNT_HAVE, simpleLogs: true);
         }
 
         $user = User::create([
@@ -68,9 +66,7 @@ class UserService implements UserServiceContract
             )->unique();
 
             if (!$authenticable->hasAllPermissions($permissions)) {
-                throw new AuthException(
-                    'Can\'t give a role with permissions you don\'t have to the user',
-                );
+                throw new ClientException(Exceptions::CLIENT_GIVE_ROLE_THAT_USER_DOESNT_HAVE);
             }
 
             $permissions = $removedRoles->flatMap(
@@ -78,20 +74,18 @@ class UserService implements UserServiceContract
             )->unique();
 
             if (!$authenticable->hasAllPermissions($permissions)) {
-                throw new AuthException(
-                    'Can\'t remove a role with permissions you don\'t have from the user',
-                );
+                throw new ClientException(Exceptions::CLIENT_REMOVE_ROLE_THAT_USER_DOESNT_HAVE);
             }
 
             $owner = Role::where('type', RoleType::OWNER)->first();
 
             if ($newRoles->contains($owner) && !$authenticable->hasRole($owner)) {
-                throw new AuthException('Only owner can grant the owner role');
+                throw new ClientException(Exceptions::CLIENT_ONLY_OWNER_GRANTS_OWNER_ROLE);
             }
 
             if ($removedRoles->contains($owner)) {
                 if (!$authenticable->hasRole($owner)) {
-                    throw new AuthException('Only owner can remove the owner role');
+                    throw new ClientException(Exceptions::CLIENT_ONLY_OWNER_REMOVES_OWNER_ROLE);
                 }
 
                 $ownerCount = User::whereHas(
@@ -100,7 +94,7 @@ class UserService implements UserServiceContract
                 )->count();
 
                 if ($ownerCount < 2) {
-                    throw new AuthException('There must always be at least one Owner left');
+                    throw new ClientException(Exceptions::CLIENT_ONE_OWNER_REMAINS);
                 }
             }
 
@@ -125,9 +119,7 @@ class UserService implements UserServiceContract
 
         if ($user->hasRole($owner)) {
             if (!$authenticable->hasRole($owner)) {
-                throw new AuthException(
-                    'You need to be an Owner to delete the Owner.',
-                );
+                throw new ClientException(Exceptions::CLIENT_ONLY_OWNER_REMOVES_OWNER_ROLE);
             }
 
             $ownerCount = User::whereHas(
@@ -136,9 +128,7 @@ class UserService implements UserServiceContract
             )->count();
 
             if ($ownerCount < 2) {
-                throw new AuthException(
-                    'There must always be at least one Owner left',
-                );
+                throw new ClientException(Exceptions::CLIENT_ONE_OWNER_REMAINS);
             }
         }
 

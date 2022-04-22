@@ -6,11 +6,12 @@ use App\Dtos\AddressDto;
 use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\SchemaType;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdated;
-use App\Exceptions\OrderException;
+use App\Exceptions\ClientException;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
 use App\Models\CartResource;
@@ -196,10 +197,7 @@ class OrderService implements OrderServiceContract
         } catch (Exception $error) {
             DB::rollBack();
 
-            throw new OrderException(
-                'Error while editing order',
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
-            );
+            throw new ClientException(Exceptions::CLIENT_ORDER_EDIT_ERROR);
         }
     }
 
