@@ -2,10 +2,11 @@
 
 namespace App\Services;
 
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ClientException;
 use App\Models\Order;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
-use Exception;
 use Illuminate\Support\Str;
 
 class NameService implements NameServiceContract
@@ -78,7 +79,7 @@ class NameService implements NameServiceContract
                 if (is_numeric($temp[1])) {
                     $param = substr($param, - $temp[1]);
                 } else {
-                    throw new Exception('Wrong value');
+                    throw new ClientException(Exceptions::CLIENT_WRONG_VALUE);
                 }
             } else {
                 $param = $params[$key] ?? '{' . $tag . '}';

@@ -3,7 +3,8 @@
 namespace App\Services;
 
 use App\Dtos\ShippingMethodDto;
-use App\Exceptions\StoreException;
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ClientException;
 use App\Models\ShippingMethod;
 use App\Services\Contracts\ShippingMethodServiceContract;
 use Illuminate\Database\Eloquent\Builder;
@@ -124,7 +125,7 @@ class ShippingMethodService implements ShippingMethodServiceContract
     public function destroy(ShippingMethod $shippingMethod): void
     {
         if ($shippingMethod->orders()->count() > 0) {
-            throw new StoreException(__('admin.error.delete_with_relations'));
+            throw new ClientException(Exceptions::CLIENT_DELETE_WHEN_RELATION_EXISTS);
         }
 
         $shippingMethod->delete();
