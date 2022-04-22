@@ -96,6 +96,9 @@ final class Handler extends ExceptionHandler
         DiscountException::class => [
             'code' => Response::HTTP_UNPROCESSABLE_ENTITY,
         ],
+        GoogleProductCategoryFileException::class => [
+            'code' => Response::HTTP_INTERNAL_SERVER_ERROR,
+        ],
     ];
 
     /**

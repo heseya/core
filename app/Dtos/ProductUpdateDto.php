@@ -16,6 +16,7 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
 
     public int|Missing $order;
     public float|Missing $quantity_step;
+    public int|Missing $google_product_category;
 
     public string|null|Missing $description_html;
     public string|null|Missing $description_short;
@@ -46,6 +47,7 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
             items: $request->input('items', new Missing()),
             seo: SeoMetadataDto::fromFormRequest($request),
             attributes: $request->input('attributes', new Missing()),
+            google_product_category: $request->input('google_product_category', new Missing()),
         );
     }
 

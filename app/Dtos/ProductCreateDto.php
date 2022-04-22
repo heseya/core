@@ -19,6 +19,7 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
 
     public int|Missing $order;
     public float|Missing $quantity_step;
+    public int|Missing $google_product_category;
 
     public ?string $description_html;
     public ?string $description_short;
@@ -51,6 +52,7 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
             seo: SeoMetadataDto::fromFormRequest($request),
             metadata: self::mapMetadata($request),
             attributes: $request->input('attributes', new Missing()),
+            google_product_category: $request->input('google_product_category', new Missing()),
         );
     }
 
