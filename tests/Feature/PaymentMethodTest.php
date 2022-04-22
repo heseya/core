@@ -207,7 +207,7 @@ class PaymentMethodTest extends TestCase
                 'public' => $this->payment_method->public,
                 'icon' => $this->payment_method->icon,
                 'url' => $this->payment_method->url,
-            ]
+            ],
             ]);
     }
 
