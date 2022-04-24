@@ -58,6 +58,28 @@ Banners:
                   $ref: './../schemas/Banners.yml#/Banner'
 
 BannersParam:
+  get:
+    tags:
+      - Banners
+    summary: 'get specific banner'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    security:
+      - BearerAuth: [ ]
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: './../schemas/Banners.yml#/Banner'
   patch:
     tags:
       - Banners

@@ -6,14 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 class UpdateAppsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::table('apps', function (Blueprint $table) {
+        Schema::table('apps', function (Blueprint $table): void {
             $table->dropColumn('key');
             $table->string('name')->nullable(false)->change();
             $table->string('microfrontend_url')->nullable();
@@ -28,14 +23,9 @@ class UpdateAppsTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('apps', function (Blueprint $table) {
+        Schema::table('apps', function (Blueprint $table): void {
             $table->string('key');
             $table->string('name')->nullable()->change();
             $table->dropColumn('microfrontend_url');

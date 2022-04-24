@@ -7,12 +7,7 @@ use Illuminate\Database\Migrations\Migration;
 
 class WebhookPermissions extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         // WebHooks
         Permission::create(['name' => 'webhooks.show', 'display_name' => 'Dostęp do listy webhooków']);
@@ -36,12 +31,7 @@ class WebhookPermissions extends Migration
         $owner->save();
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         $owner = Role::where('type', RoleType::OWNER)->first();
         $owner->revokePermissionTo([

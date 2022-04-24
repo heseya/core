@@ -7,12 +7,7 @@ use Illuminate\Database\Migrations\Migration;
 
 class AddOwnerToUsers extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         $owner = Role::where('type', RoleType::OWNER)->firstOrFail();
 
@@ -21,12 +16,7 @@ class AddOwnerToUsers extends Migration
         }
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         foreach (User::all() as $user) {
             $user->syncRoles([]);

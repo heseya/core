@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Enums\TFAType;
 use App\Enums\TokenType;
@@ -39,7 +40,7 @@ class AuthTest extends TestCase
     {
         parent::setUp();
 
-        $this->expectedLog = 'AuthException(code: 0): Invalid credentials at';
+        $this->expectedLog = 'ClientException(code: 422): Invalid credentials at';
         $this->oneTimeSecurityCodeService = \Illuminate\Support\Facades\App::make(OneTimeSecurityCodeContract::class);
 
         $this->expected = [
@@ -109,7 +110,7 @@ class AuthTest extends TestCase
 
         $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
             ->assertJsonFragment([
-                'message' => 'Two-Factor Authentication is not setup.',
+                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_NOT_SET_UP)->key,
             ]);
     }
 
@@ -213,7 +214,7 @@ class AuthTest extends TestCase
         $response
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
             ->assertJsonFragment([
-                'message' => 'Invalid Two-Factor Authentication token.',
+                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_INVALID_TOKEN)->key,
             ]);
 
         $this->assertDatabaseCount('one_time_security_codes', 1);
@@ -272,7 +273,7 @@ class AuthTest extends TestCase
         $response
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
             ->assertJsonFragment([
-                'message' => 'Invalid Two-Factor Authentication token.',
+                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_INVALID_TOKEN)->key,
             ]);
     }
 
@@ -327,7 +328,7 @@ class AuthTest extends TestCase
         ]);
 
         $responseFail->assertStatus(422)
-            ->assertJsonFragment(['message' => 'User does not exist.']);
+            ->assertJsonFragment(['key' => Exceptions::fromValue(Exceptions::CLIENT_USER_DOESNT_EXIST)->key]);
     }
 
     public function testRefreshTokenUser(): void
@@ -608,7 +609,7 @@ class AuthTest extends TestCase
             ->withArgs(function ($message) {
                 return str_contains(
                     $message,
-                    'AuthException(code: 0): The token is invalid or inactive. Try to reset your password again. at',
+                    'ClientException(code: 422): The token is invalid or inactive. Try to reset your password again',
                 );
             });
 
@@ -955,7 +956,9 @@ class AuthTest extends TestCase
             'type' => $method,
         ])
             ->assertStatus(422)
-            ->assertJsonFragment(['message' => 'Two-Factor Authentication is already setup.']);
+            ->assertJsonFragment([
+                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_ALREADY_SET_UP)->key,
+            ]);
     }
 
     /**
@@ -1162,7 +1165,7 @@ class AuthTest extends TestCase
         ])
             ->assertStatus(422)
             ->assertJsonFragment([
-                'message' => 'Two-Factor Authentication is not setup.',
+                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_NOT_SET_UP)->key,
             ]);
     }
 
@@ -1214,7 +1217,7 @@ class AuthTest extends TestCase
         ])
             ->assertStatus(422)
             ->assertJsonFragment([
-                'message' => 'Two-Factor Authentication is not setup.',
+                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_NOT_SET_UP)->key,
             ]);
     }
 
@@ -1263,7 +1266,7 @@ class AuthTest extends TestCase
         $this->actingAs($this->user)->json('POST', '/users/id:' . $otherUser->getKey() . '/2fa/remove')
             ->assertStatus(422)
             ->assertJsonFragment([
-                'message' => 'Two-Factor Authentication is not setup.',
+                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_NOT_SET_UP)->key,
             ]);
     }
 
@@ -1274,7 +1277,7 @@ class AuthTest extends TestCase
         $this->actingAs($this->user)->json('POST', '/users/id:' . $this->user->getKey() . '/2fa/remove')
             ->assertStatus(422)
             ->assertJsonFragment([
-                'message' => 'You cannot remove 2FA yourself in this way.',
+                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_CANNOT_REMOVE)->key,
             ]);
     }
 

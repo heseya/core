@@ -6,14 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateAppsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::create('apps', function (Blueprint $table) {
+        Schema::create('apps', function (Blueprint $table): void {
             $table->uuid('id');
             $table->string('name')->nullable();
             $table->string('url');
@@ -22,12 +17,7 @@ class CreateAppsTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('apps');
     }

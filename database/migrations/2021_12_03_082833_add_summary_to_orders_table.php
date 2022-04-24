@@ -9,14 +9,9 @@ use Illuminate\Support\Facades\Schema;
 
 class AddSummaryToOrdersTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
+        Schema::table('orders', function (Blueprint $table): void {
             $table->float('summary', 19, 4)->default(0);
             $table->boolean('paid')->default(false);
         });
@@ -32,14 +27,9 @@ class AddSummaryToOrdersTable extends Migration
         ));
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
+        Schema::table('orders', function (Blueprint $table): void {
             $table->dropColumn('summary');
             $table->dropColumn('paid');
         });

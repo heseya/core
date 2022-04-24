@@ -1884,6 +1884,50 @@ class ProductTest extends TestCase
         ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithGoogleProductCategory($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $response = $this->actingAs($this->$user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'description_html' => '<h1>Description</h1>',
+            'description_short' => 'So called short description...',
+            'public' => true,
+            'google_product_category' => 123,
+        ]);
+
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('products', [
+            'google_product_category' => 123,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithWrongGoogleProductCategory($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $response = $this->actingAs($this->$user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'description_html' => '<h1>Description</h1>',
+            'description_short' => 'So called short description...',
+            'public' => true,
+            'google_product_category' => 123456,
+        ]);
+
+        $response->assertUnprocessable();
+    }
+
     public function testUpdateUnauthorized(): void
     {
         Event::fake([ProductUpdated::class]);
@@ -2429,6 +2473,38 @@ class ProductTest extends TestCase
             'min_price_discounted' => $productPrice - $saleValue,
             'max_price_discounted' => $productPrice + $schemaNewPrice - $saleValue,
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithGoogleProductCategory($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
+            'google_product_category' => 123,
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'google_product_category' => 123,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithWrongGoogleProductCategory($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
+            'google_product_category' => 123456789,
+        ]);
+
+        $response->assertUnprocessable();
     }
 
     /**

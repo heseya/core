@@ -7,12 +7,7 @@ use Illuminate\Database\Migrations\Migration;
 
 class AddMetadataPermissions extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Permission::create(['name' => 'orders.show_metadata_private', 'display_name' => 'Możliwość wyświetlania prywatnych metadanych zamówień']);
         Permission::create(['name' => 'pages.show_metadata_private', 'display_name' => 'Możliwość wyświetlania prywatnych metadanych stron']);
@@ -29,12 +24,7 @@ class AddMetadataPermissions extends Migration
         $owner->save();
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         $owner = Role::query()->where('type', '=', RoleType::OWNER)->firstOrFail();
         $owner->revokePermissionTo([
