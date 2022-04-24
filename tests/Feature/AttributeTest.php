@@ -1529,4 +1529,42 @@ class AttributeTest extends TestCase
                 'max' => '2010-03-15',
             ]);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexAttributeOptionPrivateMetadata($user): void
+    {
+        $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
+
+        unset($this->newAttribute['options']);
+        $attribute = Attribute::create($this->newAttribute);
+
+        $attrOptionOne = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+        ]);
+        $attrOptionTwo = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 2,
+        ]);
+
+        $attrOptionOne->metadataPrivate()->create([
+            'name' => 'qwe',
+            'value' => 'asd',
+            'value_type' => MetadataType::STRING,
+        ]);
+        $attrOptionTwo->metadataPrivate()->create([
+            'name' => 'zxc',
+            'value' => 'vbn',
+            'value_type' => MetadataType::STRING,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes/id:' . $attribute->getKey() .'/options?metadata_private[qwe]=asd')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['qwe' => 'asd']);
+    }
 }
