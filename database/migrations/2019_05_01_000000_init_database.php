@@ -1,21 +1,14 @@
 <?php
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Str;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class InitDatabase extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('users', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('email')->unique();
@@ -24,7 +17,7 @@ class InitDatabase extends Migration
             $table->timestamps();
         });
 
-        Schema::create('oauth_clients', function (Blueprint $table) {
+        Schema::create('oauth_clients', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->uuid('user_id')->nullable()->index();
             $table->string('name');
@@ -39,7 +32,7 @@ class InitDatabase extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-        Schema::create('oauth_personal_access_clients', function (Blueprint $table) {
+        Schema::create('oauth_personal_access_clients', function (Blueprint $table): void {
             $table->bigIncrements('id');
             $table->uuid('client_id');
             $table->timestamps();
@@ -47,7 +40,7 @@ class InitDatabase extends Migration
             $table->foreign('client_id')->references('id')->on('oauth_clients')->onDelete('cascade');
         });
 
-        Schema::create('oauth_auth_codes', function (Blueprint $table) {
+        Schema::create('oauth_auth_codes', function (Blueprint $table): void {
             $table->string('id', 100)->primary();
             $table->uuid('user_id')->index();
             $table->uuid('client_id');
@@ -59,7 +52,7 @@ class InitDatabase extends Migration
             $table->foreign('client_id')->references('id')->on('oauth_clients')->onDelete('cascade');
         });
 
-        Schema::create('oauth_access_tokens', function (Blueprint $table) {
+        Schema::create('oauth_access_tokens', function (Blueprint $table): void {
             $table->string('id', 100)->primary();
             $table->uuid('user_id')->nullable()->index();
             $table->uuid('client_id');
@@ -73,20 +66,20 @@ class InitDatabase extends Migration
             $table->foreign('client_id')->references('id')->on('oauth_clients')->onDelete('cascade');
         });
 
-        Schema::create('oauth_refresh_tokens', function (Blueprint $table) {
+        Schema::create('oauth_refresh_tokens', function (Blueprint $table): void {
             $table->string('id', 100)->primary();
             $table->string('access_token_id', 100)->index();
             $table->boolean('revoked');
             $table->dateTime('expires_at')->nullable();
         });
 
-        Schema::create('password_resets', function (Blueprint $table) {
+        Schema::create('password_resets', function (Blueprint $table): void {
             $table->string('email')->index();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
-        Schema::create('brands', function (Blueprint $table) {
+        Schema::create('brands', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('slug')->unique()->index();
@@ -94,7 +87,7 @@ class InitDatabase extends Migration
             $table->timestamps();
         });
 
-        Schema::create('categories', function (Blueprint $table) {
+        Schema::create('categories', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('slug')->unique()->index();
@@ -102,7 +95,7 @@ class InitDatabase extends Migration
             $table->timestamps();
         });
 
-        Schema::create('items', function (Blueprint $table) {
+        Schema::create('items', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('sku')->index()->unique()->nullable();
@@ -110,7 +103,7 @@ class InitDatabase extends Migration
             $table->softDeletes();
         });
 
-        Schema::create('deposits', function (Blueprint $table) {
+        Schema::create('deposits', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->float('quantity', 8, 4);
             $table->uuid('item_id')->index();
@@ -119,7 +112,7 @@ class InitDatabase extends Migration
             $table->foreign('item_id')->references('id')->on('items')->onDelete('restrict');
         });
 
-        Schema::create('products', function (Blueprint $table) {
+        Schema::create('products', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('slug')->unique()->index();
@@ -135,7 +128,7 @@ class InitDatabase extends Migration
             $table->foreign('brand_id')->references('id')->on('brands')->onDelete('restrict');
         });
 
-        Schema::create('schemas', function (Blueprint $table) {
+        Schema::create('schemas', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->unsignedTinyInteger('type')->default(0);
             $table->boolean('required')->default(false);
@@ -152,7 +145,7 @@ class InitDatabase extends Migration
             $table->timestamps();
         });
 
-        Schema::create('options', function (Blueprint $table) {
+        Schema::create('options', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name');
             $table->float('price', 19, 4)->default(0);
@@ -163,7 +156,7 @@ class InitDatabase extends Migration
             $table->foreign('schema_id')->references('id')->on('schemas')->onDelete('cascade');
         });
 
-        Schema::create('option_items', function (Blueprint $table) {
+        Schema::create('option_items', function (Blueprint $table): void {
             $table->uuid('option_id')->index();
             $table->uuid('item_id')->index();
 
@@ -173,7 +166,7 @@ class InitDatabase extends Migration
             $table->foreign('item_id')->references('id')->on('items')->onDelete('cascade');
         });
 
-        Schema::create('product_schemas', function (Blueprint $table) {
+        Schema::create('product_schemas', function (Blueprint $table): void {
             $table->uuid('product_id')->index();
             $table->uuid('schema_id')->index();
 
@@ -183,14 +176,14 @@ class InitDatabase extends Migration
             $table->foreign('schema_id')->references('id')->on('schemas')->onDelete('cascade');
         });
 
-        Schema::create('media', function (Blueprint $table) {
+        Schema::create('media', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->tinyInteger('type');
             $table->string('url');
             $table->timestamps();
         });
 
-        Schema::create('product_media', function (Blueprint $table) {
+        Schema::create('product_media', function (Blueprint $table): void {
             $table->uuid('media_id')->index();
             $table->uuid('product_id')->index();
 
@@ -200,7 +193,7 @@ class InitDatabase extends Migration
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         });
 
-        Schema::create('payment_methods', function (Blueprint $table) {
+        Schema::create('payment_methods', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('alias');
@@ -208,14 +201,14 @@ class InitDatabase extends Migration
             $table->timestamps();
         });
 
-        Schema::create('shipping_methods', function (Blueprint $table) {
+        Schema::create('shipping_methods', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name');
             $table->boolean('public')->default(false);
             $table->timestamps();
         });
 
-        Schema::create('shipping_method_payment_method', function (Blueprint $table) {
+        Schema::create('shipping_method_payment_method', function (Blueprint $table): void {
             $table->uuid('shipping_method_id')->index();
             $table->uuid('payment_method_id')->index();
 
@@ -225,7 +218,7 @@ class InitDatabase extends Migration
             $table->foreign('payment_method_id')->references('id')->on('payment_methods')->onDelete('cascade');
         });
 
-        Schema::create('addresses', function (Blueprint $table) {
+        Schema::create('addresses', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name')->nullable();
             $table->string('phone', 20)->nullable();
@@ -237,7 +230,7 @@ class InitDatabase extends Migration
             $table->timestamps();
         });
 
-        Schema::create('statuses', function (Blueprint $table) {
+        Schema::create('statuses', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name', 60);
             $table->string('color', 8);
@@ -245,7 +238,7 @@ class InitDatabase extends Migration
             $table->timestamps();
         });
 
-        Schema::create('orders', function (Blueprint $table) {
+        Schema::create('orders', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('code', 16)->unique();
             $table->string('email');
@@ -266,7 +259,7 @@ class InitDatabase extends Migration
             $table->foreign('invoice_address_id')->references('id')->on('addresses')->onDelete('restrict');
         });
 
-        Schema::create('payments', function (Blueprint $table) {
+        Schema::create('payments', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->uuid('order_id')->index();
             $table->string('external_id')->index()->nullable();
@@ -280,7 +273,7 @@ class InitDatabase extends Migration
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('restrict');
         });
 
-        Schema::create('order_logs', function (Blueprint $table) {
+        Schema::create('order_logs', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->uuid('order_id')->index();
             $table->string('content');
@@ -290,7 +283,7 @@ class InitDatabase extends Migration
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
         });
 
-        Schema::create('order_notes', function (Blueprint $table) {
+        Schema::create('order_notes', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('message', 1000);
             $table->uuid('order_id')->index();
@@ -301,7 +294,7 @@ class InitDatabase extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
         });
 
-        Schema::create('order_products', function (Blueprint $table) {
+        Schema::create('order_products', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->float('quantity', 8, 4);
             $table->float('price', 19, 4);
@@ -313,7 +306,7 @@ class InitDatabase extends Migration
             $table->foreign('product_id')->references('id')->on('products')->onDelete('restrict');
         });
 
-        Schema::create('order_schemas', function (Blueprint $table) {
+        Schema::create('order_schemas', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('value');
@@ -324,7 +317,7 @@ class InitDatabase extends Migration
             $table->foreign('order_product_id')->references('id')->on('order_products')->onDelete('cascade');
         });
 
-        Schema::create('pages', function (Blueprint $table) {
+        Schema::create('pages', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('slug')->unique()->index();
             $table->boolean('public')->default(false);
@@ -333,7 +326,7 @@ class InitDatabase extends Migration
             $table->timestamps();
         });
 
-        Schema::create('package_templates', function (Blueprint $table) {
+        Schema::create('package_templates', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name');
             $table->float('weight');
@@ -343,33 +336,12 @@ class InitDatabase extends Migration
             $table->timestamps();
         });
 
-        Schema::create('settings', function (Blueprint $table) {
+        Schema::create('settings', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name')->unique()->index();
             $table->string('value');
             $table->boolean('public');
             $table->timestamps();
         });
-
-        DB::table('statuses')->insert([
-            'id' => Str::uuid(),
-            'name' => 'Nowe',
-            'color' => 'ffd600',
-            'description' => 'Twoje zamówienie zostało zapisane w systemie!',
-        ]);
-
-        DB::table('statuses')->insert([
-            'id' => Str::uuid(),
-            'name' => 'Wysłane',
-            'color' => '1faa00',
-            'description' => 'Zamówienie zostało wysłane i niedługo znajdzie się w Twoich rękach :)',
-        ]);
-
-        DB::table('statuses')->insert([
-            'id' => Str::uuid(),
-            'name' => 'Anulowane',
-            'color' => 'a30000',
-            'description' => 'Twoje zamówienie zostało anulowane, jeśli uważasz, że to błąd, skontaktuj się z nami.',
-        ]);
     }
 }

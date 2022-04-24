@@ -69,4 +69,6 @@ interface DiscountServiceContract
     public function applyDiscountOnOrder(Discount $discount, Order $order): Order;
 
     public function calcAppliedDiscount(float $price, float $appliedDiscount, string $setting): float;
+
+    public function activeSales(): Collection;
 }

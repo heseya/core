@@ -12,6 +12,7 @@ use App\Policies\OrderPolicy;
 use App\Policies\UserPolicy;
 use App\Policies\WebHookPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rules\Password;
 
@@ -39,7 +40,7 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('authenticated', [AuthenticatedPolicy::class, 'authenticated']);
 
         Password::defaults(function () {
-            return Password::min(12)
+            return Password::min(Config::get('validation.password_min_length'))
                 ->uncompromised();
         });
     }

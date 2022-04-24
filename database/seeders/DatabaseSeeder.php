@@ -11,9 +11,10 @@ class DatabaseSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         $this
+            ->call(InitSeeder::class)
             ->call(ItemSeeder::class)
             ->call(ProductSetSeeder::class)
             ->call(ProductSeeder::class)

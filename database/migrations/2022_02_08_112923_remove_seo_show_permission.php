@@ -7,12 +7,7 @@ use Illuminate\Database\Migrations\Migration;
 
 class RemoveSeoShowPermission extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         $seo_show = Permission::where('name', 'seo.show')->first();
 
@@ -23,12 +18,7 @@ class RemoveSeoShowPermission extends Migration
         $seo_show->delete();
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Permission::create(['name' => 'seo.show', 'display_name' => 'Dostęp do ustawień SEO sklepu']);
 

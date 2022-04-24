@@ -6,16 +6,15 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class() extends Migration {
     /**
      * Run the migrations.
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::table('products', function (Blueprint $table) {
+        Schema::table('products', function (Blueprint $table): void {
             $table->float('min_price_discounted', 19, 4)->nullable();
             $table->float('max_price_discounted', 19, 4)->nullable();
         });
@@ -27,7 +26,7 @@ return new class extends Migration
             ]),
         ));
 
-        Schema::create('product_sales', function (Blueprint $table) {
+        Schema::create('product_sales', function (Blueprint $table): void {
             $table->uuid('product_id')->index();
             $table->uuid('sale_id')->index();
 
@@ -43,9 +42,9 @@ return new class extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
-        Schema::table('products', function (Blueprint $table) {
+        Schema::table('products', function (Blueprint $table): void {
             $table->dropColumn('min_price_discounted');
             $table->dropColumn('max_price_discounted');
         });

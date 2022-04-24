@@ -30,6 +30,8 @@ class PaymentMethodFactory extends Factory
             'name' => $name,
             'alias' => Str::slug($name),
             'public' => $this->faker->boolean,
+            'icon' => $this->faker->word,
+            'url' => $this->faker->url,
         ];
     }
 }

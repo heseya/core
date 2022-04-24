@@ -78,7 +78,9 @@ class ConsentTest extends TestCase
         $response->assertJsonFragment($consent->toArray());
 
         $this->assertDatabaseCount('consents', 3)
-            ->assertDatabaseHas('consents', $consent->toArray());
+            ->assertDatabaseHas('consents', [
+                'id' => $response->getData()->data->id,
+            ] + $consent->toArray());
     }
 
     /**

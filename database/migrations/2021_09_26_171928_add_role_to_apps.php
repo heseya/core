@@ -6,28 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 class AddRoleToApps extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::table('apps', function (Blueprint $table) {
+        Schema::table('apps', function (Blueprint $table): void {
             $table->uuid('role_id')->nullable();
 
             $table->foreign('role_id')->references('id')->on('roles')->onDelete('set null');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('apps', function (Blueprint $table) {
+        Schema::table('apps', function (Blueprint $table): void {
             $table->dropForeign('apps_role_id_foreign');
 
             $table->dropColumn('role_id');

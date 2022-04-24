@@ -11,6 +11,7 @@ class PaymentMethodResource extends Resource
         return [
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
+            'icon' => $this->resource->icon,
             'alias' => $this->resource->alias,
             'public' => $this->resource->public,
         ];

@@ -6,14 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateAttributesTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::create('attributes', function (Blueprint $table) {
+        Schema::create('attributes', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('slug')->unique()->index();
@@ -29,12 +24,7 @@ class CreateAttributesTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('attributes');
     }

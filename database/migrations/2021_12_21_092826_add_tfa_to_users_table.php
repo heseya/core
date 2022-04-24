@@ -6,20 +6,15 @@ use Illuminate\Support\Facades\Schema;
 
 class AddTfaToUsersTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table('users', function (Blueprint $table): void {
             $table->string('tfa_type')->nullable();
             $table->string('tfa_secret')->nullable();
             $table->boolean('is_tfa_active')->default(false);
         });
 
-        Schema::create('one_time_security_codes', function (Blueprint $table) {
+        Schema::create('one_time_security_codes', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('code');
 
@@ -32,14 +27,9 @@ class AddTfaToUsersTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table('users', function (Blueprint $table): void {
             $table->dropColumn('tfa_type');
             $table->dropColumn('tfa_secret');
             $table->dropColumn('is_tfa_active');

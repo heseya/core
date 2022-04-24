@@ -6,22 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 class ChangeOrderTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::table('order_schemas', function (Blueprint $table) {
+        Schema::table('order_schemas', function (Blueprint $table): void {
             $table->renameColumn('price', 'price_initial');
         });
 
-        Schema::table('order_schemas', function (Blueprint $table) {
+        Schema::table('order_schemas', function (Blueprint $table): void {
             $table->float('price', 19, 4);
         });
 
-        Schema::table('order_discounts', function (Blueprint $table) {
+        Schema::table('order_discounts', function (Blueprint $table): void {
             $table->renameColumn('discount', 'value');
             $table->string('name');
             $table->string('code')->nullable();
@@ -29,20 +24,20 @@ class ChangeOrderTable extends Migration
             $table->float('applied_discount', 19, 4);
         });
 
-        Schema::table('order_products', function (Blueprint $table) {
+        Schema::table('order_products', function (Blueprint $table): void {
             $table->renameColumn('price', 'price_initial');
             $table->string('name');
         });
 
-        Schema::table('order_products', function (Blueprint $table) {
+        Schema::table('order_products', function (Blueprint $table): void {
             $table->float('price', 19, 4);
         });
 
-        Schema::table('orders', function (Blueprint $table) {
+        Schema::table('orders', function (Blueprint $table): void {
             $table->renameColumn('shipping_price', 'shipping_price_initial');
         });
 
-        Schema::table('orders', function (Blueprint $table) {
+        Schema::table('orders', function (Blueprint $table): void {
             $table->float('shipping_price', 19, 4);
 
             $table->renameColumn('user_id', 'buyer_id');
@@ -52,14 +47,9 @@ class ChangeOrderTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
+        Schema::table('orders', function (Blueprint $table): void {
             $table->dropColumn('shipping_price');
 
             $table->renameColumn('buyer_id', 'user_id');
@@ -68,20 +58,20 @@ class ChangeOrderTable extends Migration
             $table->dropColumn('cart_total');
         });
 
-        Schema::table('orders', function (Blueprint $table) {
+        Schema::table('orders', function (Blueprint $table): void {
             $table->renameColumn('shipping_price_initial', 'shipping_price');
         });
 
-        Schema::table('order_products', function (Blueprint $table) {
+        Schema::table('order_products', function (Blueprint $table): void {
             $table->dropColumn('price');
         });
 
-        Schema::table('order_products', function (Blueprint $table) {
+        Schema::table('order_products', function (Blueprint $table): void {
             $table->renameColumn('price_initial', 'price');
             $table->dropColumn('name');
         });
 
-        Schema::table('order_discounts', function (Blueprint $table) {
+        Schema::table('order_discounts', function (Blueprint $table): void {
             $table->renameColumn('value', 'discount');
             $table->dropColumn('name');
             $table->dropColumn('code');
@@ -89,11 +79,11 @@ class ChangeOrderTable extends Migration
             $table->dropColumn('applied_discount');
         });
 
-        Schema::table('order_schemas', function (Blueprint $table) {
+        Schema::table('order_schemas', function (Blueprint $table): void {
             $table->dropColumn('price');
         });
 
-        Schema::table('order_schemas', function (Blueprint $table) {
+        Schema::table('order_schemas', function (Blueprint $table): void {
             $table->renameColumn('price_initial', 'price');
         });
     }

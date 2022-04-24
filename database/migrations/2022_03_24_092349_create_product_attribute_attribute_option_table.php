@@ -6,14 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateProductAttributeAttributeOptionTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::table('product_attribute', function (Blueprint $table) {
+        Schema::table('product_attribute', function (Blueprint $table): void {
             $table->dropForeign('product_attribute_option_id_foreign');
 
             $table->dropColumn('option_id');
@@ -22,7 +17,7 @@ class CreateProductAttributeAttributeOptionTable extends Migration
             $table->uuid('id')->primary();
         });
 
-        Schema::create('product_attribute_attribute_option', function (Blueprint $table) {
+        Schema::create('product_attribute_attribute_option', function (Blueprint $table): void {
             $table->uuid('product_attribute_id');
             $table->uuid('attribute_option_id');
 
@@ -33,16 +28,11 @@ class CreateProductAttributeAttributeOptionTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('product_attribute_attribute_option');
 
-        Schema::table('product_attribute', function (Blueprint $table) {
+        Schema::table('product_attribute', function (Blueprint $table): void {
             $table->dropPrimary('product_attribute_id_primary');
             $table->dropColumn('id');
 

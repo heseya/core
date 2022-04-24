@@ -10,14 +10,9 @@ use Illuminate\Support\Str;
 
 class CreateProductSetsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up(): void
     {
-        Schema::create('product_sets', function (Blueprint $table) {
+        Schema::create('product_sets', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->string('name');
             $table->string('slug')->unique()->index();
@@ -29,12 +24,12 @@ class CreateProductSetsTable extends Migration
             $table->timestamps();
         });
 
-        Schema::table('products', function (Blueprint $table) {
+        Schema::table('products', function (Blueprint $table): void {
             $table->dropForeign('products_category_id_foreign');
             $table->dropForeign('products_brand_id_foreign');
         });
 
-        Schema::create('product_set_product', function (Blueprint $table) {
+        Schema::create('product_set_product', function (Blueprint $table): void {
             $table->uuid('product_id')->index();
             $table->uuid('product_set_id')->index();
 
@@ -49,7 +44,7 @@ class CreateProductSetsTable extends Migration
         $this->moveSets('Categories', 'category_id', 0);
         $this->moveSets('Brands', 'brand_id', 1);
 
-        Schema::table('products', function (Blueprint $table) {
+        Schema::table('products', function (Blueprint $table): void {
             $table->foreign('category_id')->references('id')
                 ->on('product_sets')->onDelete('set null');
             $table->foreign('brand_id')->references('id')
@@ -57,19 +52,14 @@ class CreateProductSetsTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down(): void
     {
-        Schema::table('products', function (Blueprint $table) {
+        Schema::table('products', function (Blueprint $table): void {
             $table->dropForeign('products_category_id_foreign');
             $table->dropForeign('products_brand_id_foreign');
         });
         Schema::dropIfExists('product_set_product');
-        Schema::table('products', function (Blueprint $table) {
+        Schema::table('products', function (Blueprint $table): void {
             $table->foreign('category_id')->references('id')
                 ->on('categories')->onDelete('restrict');
             $table->foreign('brand_id')->references('id')
@@ -102,12 +92,12 @@ class CreateProductSetsTable extends Migration
                 'order' => $child->order,
                 'hide_on_index' => $child->hide_on_index,
             ]);
-            $newSet->id =  $child->id;
+            $newSet->id = $child->id;
             $newSet->save();
 
             Product::where($idColumn, $newSet->getKey())->get()
-                ->each(function ($product) use ($newSet) {
-                   $product->sets()->syncWithoutDetaching($newSet->getKey());
+                ->each(function ($product) use ($newSet): void {
+                    $product->sets()->syncWithoutDetaching($newSet->getKey());
                 });
         }
     }
