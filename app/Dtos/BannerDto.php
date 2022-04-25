@@ -5,7 +5,6 @@ namespace App\Dtos;
 use App\Dtos\Contracts\InstantiateFromRequest;
 use Heseya\Dto\Dto;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
 class BannerDto extends Dto implements InstantiateFromRequest
