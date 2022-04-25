@@ -28,7 +28,7 @@ PaymentMethods:
       content:
         application/json:
           schema:
-            $ref: './../schemas/PaymentMethods.yml#/PaymentMethod'
+            $ref: './../requests/PaymentMethods.yml#/PaymentMethod'
     responses:
       201:
         description: Created
@@ -72,7 +72,7 @@ PaymentMethodsParams:
       content:
         application/json:
           schema:
-            $ref: './../schemas/PaymentMethods.yml#/PaymentMethod'
+            $ref: './../requests/PaymentMethods.yml#/PaymentMethod'
     responses:
       200:
         description: Success
