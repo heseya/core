@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
@@ -92,7 +93,7 @@ class PaymentTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'payu',
-                'paid' => false,
+                'status' => PaymentStatus::PENDING,
                 'amount' => $this->order->summary,
                 'redirect_url' => 'payment_url',
                 'continue_url' => 'continue_url',
@@ -151,7 +152,7 @@ class PaymentTest extends TestCase
         $response->assertOk();
         $this->assertDatabaseHas('payments', [
             'id' => $payment->getKey(),
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
         ]);
     }
 
@@ -182,7 +183,7 @@ class PaymentTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'offline',
-                'paid' => true,
+                'status' => PaymentStatus::SUCCESSFUL,
                 'amount' => $this->order->summary,
                 'redirect_url' => null,
                 'continue_url' => null,
@@ -191,7 +192,7 @@ class PaymentTest extends TestCase
         $this->assertDatabaseHas('payments', [
             'order_id' => $this->order->getKey(),
             'method' => 'offline',
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
             'amount' => $this->order->summary,
         ]);
 
@@ -213,10 +214,11 @@ class PaymentTest extends TestCase
 
         $amount = $this->order->summary - 1;
 
+
         $this->order->payments()->create([
             'method' => 'payu',
             'amount' => 1,
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
         ]);
 
         $code = $this->order->code;
@@ -227,7 +229,7 @@ class PaymentTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'offline',
-                'paid' => true,
+                'status' => PaymentStatus::SUCCESSFUL,
                 'amount' => $amount,
                 'redirect_url' => null,
                 'continue_url' => null,
@@ -236,7 +238,7 @@ class PaymentTest extends TestCase
         $this->assertDatabaseHas('payments', [
             'order_id' => $this->order->getKey(),
             'method' => 'offline',
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
             'amount' => $amount,
         ]);
 

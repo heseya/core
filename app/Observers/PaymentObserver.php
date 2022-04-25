@@ -2,13 +2,14 @@
 
 namespace App\Observers;
 
+use App\Enums\PaymentStatus;
 use App\Models\Payment;
 
 class PaymentObserver
 {
     public function created(Payment $payment): void
     {
-        if ($payment->paid) {
+        if ($payment->status->value === PaymentStatus::SUCCESSFUL) {
             $payment->order->update([
                 'paid' => $payment->order->isPaid(),
             ]);
@@ -17,7 +18,7 @@ class PaymentObserver
 
     public function updated(Payment $payment): void
     {
-        if ($payment->paid) {
+        if ($payment->status->value === PaymentStatus::SUCCESSFUL) {
             $payment->order->update([
                 'paid' => $payment->order->isPaid(),
             ]);

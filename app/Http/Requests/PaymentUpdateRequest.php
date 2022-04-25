@@ -14,7 +14,7 @@ class PaymentUpdateRequest extends FormRequest
             'external_id' => ['string'],
             'method_id' => ['uuid', 'exists:payment_methods,id'],
             'status' => [new EnumValue(PaymentStatus::class, false)],
-            'amount' => ['integer'],
+            'amount' => ['numeric'],
         ];
     }
 }
