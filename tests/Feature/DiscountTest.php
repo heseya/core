@@ -42,6 +42,7 @@ class DiscountTest extends TestCase
     private $conditionUser;
     private $conditionProduct;
     private $conditionProductSet;
+    private array $expectedStructure;
 
     public function setUp(): void
     {
@@ -131,6 +132,25 @@ class DiscountTest extends TestCase
                 'max_value' => 10,
             ],
         ];
+
+        $this->expectedStructure = [
+            'data' => [
+                'id',
+                'name',
+                'description',
+                'value',
+                'type',
+                'priority',
+                'uses',
+                'condition_groups',
+                'target_type',
+                'target_products',
+                'target_sets',
+                'target_shipping_methods',
+                'target_is_allow_list',
+                'metadata',
+            ],
+        ];
     }
 
     public function couponOrSaleProvider(): array
@@ -214,23 +234,7 @@ class DiscountTest extends TestCase
         $response = $this->actingAs($this->$user)->getJson('/coupons/' . $discount->code);
         $response
             ->assertOk()
-            ->assertJsonStructure([
-                'data' => [
-                    'id',
-                    'name',
-                    'description',
-                    'value',
-                    'type',
-                    'priority',
-                    'uses',
-                    'condition_groups',
-                    'target_type',
-                    'target_products',
-                    'target_sets',
-                    'target_shipping_methods',
-                    'target_is_allow_list',
-                ],
-            ])
+            ->assertJsonStructure($this->expectedStructure)
             ->assertJsonFragment(['id' => $discount->getKey()]);
     }
 
@@ -296,23 +300,7 @@ class DiscountTest extends TestCase
         $response = $this->actingAs($this->$user)->getJson('/coupons/' . $discount->code);
         $response
             ->assertOk()
-            ->assertJsonStructure([
-                'data' => [
-                    'id',
-                    'name',
-                    'description',
-                    'value',
-                    'type',
-                    'priority',
-                    'uses',
-                    'condition_groups',
-                    'target_type',
-                    'target_products',
-                    'target_sets',
-                    'target_shipping_methods',
-                    'target_is_allow_list',
-                ],
-            ])
+            ->assertJsonStructure($this->expectedStructure)
             ->assertJsonFragment([
                 'id' => $discount->getKey(),
                 'name' => $discount->name,
