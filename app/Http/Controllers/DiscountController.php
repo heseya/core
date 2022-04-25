@@ -30,12 +30,14 @@ class DiscountController extends Controller
 
     public function indexCoupons(CouponIndexRequest $request): JsonResource
     {
-        return CouponResource::collection($this->discountService->index(CouponIndexDto::fromFormRequest($request)));
+        return CouponResource::collection(
+            $this->discountService->index(CouponIndexDto::instantiateFromRequest($request))
+        );
     }
 
     public function indexSales(SaleIndexRequest $request): JsonResource
     {
-        return SaleResource::collection($this->discountService->index(SaleIndexDto::fromFormRequest($request)));
+        return SaleResource::collection($this->discountService->index(SaleIndexDto::instantiateFromRequest($request)));
     }
 
     public function showCoupon(Discount $coupon): JsonResource
@@ -52,24 +54,26 @@ class DiscountController extends Controller
 
     public function storeCoupon(CouponCreateRequest $request): JsonResource
     {
-        return CouponResource::make($this->discountService->store(CouponDto::fromFormRequest($request)));
+        return CouponResource::make($this->discountService->store(CouponDto::instantiateFromRequest($request)));
     }
 
     public function storeSale(SaleCreateRequest $request): JsonResource
     {
-        return SaleResource::make($this->discountService->store(SaleDto::fromFormRequest($request)));
+        return SaleResource::make($this->discountService->store(SaleDto::instantiateFromRequest($request)));
     }
 
     public function updateCoupon(Discount $coupon, CouponUpdateRequest $request): JsonResource
     {
         Gate::inspect('coupon', [$coupon]);
-        return CouponResource::make($this->discountService->update($coupon, CouponDto::fromFormRequest($request)));
+        return CouponResource::make(
+            $this->discountService->update($coupon, CouponDto::instantiateFromRequest($request))
+        );
     }
 
     public function updateSale(Discount $sale, SaleUpdateRequest $request): JsonResource
     {
         Gate::inspect('sale', [$sale]);
-        return SaleResource::make($this->discountService->update($sale, SaleDto::fromFormRequest($request)));
+        return SaleResource::make($this->discountService->update($sale, SaleDto::instantiateFromRequest($request)));
     }
 
     public function destroyCoupon(Discount $coupon): JsonResponse

@@ -140,23 +140,25 @@ class AuthController extends Controller
 
     public function setupTFA(TFASetupRequest $request): JsonResource
     {
-        return TFAResource::make($this->authService->setupTFA(TFASetupDto::fromFormRequest($request)));
+        return TFAResource::make($this->authService->setupTFA(TFASetupDto::instantiateFromRequest($request)));
     }
 
     public function confirmTFA(TFAConfirmRequest $request): JsonResource
     {
-        return TFARecoveryCodesResource::make($this->authService->confirmTFA(TFAConfirmDto::fromFormRequest($request)));
+        return TFARecoveryCodesResource::make(
+            $this->authService->confirmTFA(TFAConfirmDto::instantiateFromRequest($request))
+        );
     }
 
     public function generateRecoveryCodes(TFAPasswordRequest $request): JsonResource
     {
-        $dto = TFAPasswordDto::fromFormRequest($request);
+        $dto = TFAPasswordDto::instantiateFromRequest($request);
         return TFARecoveryCodesResource::make($this->authService->generateRecoveryCodes($dto));
     }
 
     public function removeTFA(TFAPasswordRequest $request): JsonResponse
     {
-        $this->authService->removeTFA(TFAPasswordDto::fromFormRequest($request));
+        $this->authService->removeTFA(TFAPasswordDto::instantiateFromRequest($request));
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
@@ -170,7 +172,7 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request): JsonResource
     {
-        return UserResource::make($this->authService->register(RegisterDto::fromFormRequest($request)));
+        return UserResource::make($this->authService->register(RegisterDto::instantiateFromRequest($request)));
     }
 
     public function updateProfile(ProfileUpdateRequest $request): JsonResource

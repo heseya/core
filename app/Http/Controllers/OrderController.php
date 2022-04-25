@@ -79,7 +79,7 @@ class OrderController extends Controller
     public function store(OrderCreateRequest $request): JsonResource
     {
         return OrderPublicResource::make(
-            $this->orderService->store(OrderDto::fromFormRequest($request)),
+            $this->orderService->store(OrderDto::instantiateFromRequest($request)),
         );
     }
 
@@ -111,7 +111,7 @@ class OrderController extends Controller
 
     public function update(OrderUpdateRequest $request, Order $order): JsonResponse
     {
-        $orderUpdateDto = OrderDto::fromFormRequest($request);
+        $orderUpdateDto = OrderDto::instantiateFromRequest($request);
 
         return $this->orderService->update($orderUpdateDto, $order);
     }
@@ -170,6 +170,6 @@ class OrderController extends Controller
 
     public function cartProcess(CartRequest $request): JsonResource
     {
-        return CartResource::make($this->orderService->cartProcess(CartDto::fromFormRequest($request)));
+        return CartResource::make($this->orderService->cartProcess(CartDto::instantiateFromRequest($request)));
     }
 }

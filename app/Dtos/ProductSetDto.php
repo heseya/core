@@ -2,12 +2,14 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\ProductSetStoreRequest;
 use App\Http\Requests\ProductSetUpdateRequest;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
+use Illuminate\Foundation\Http\FormRequest;
 
-class ProductSetDto extends Dto
+class ProductSetDto extends Dto implements InstantiateFromRequest
 {
     private string $name;
     private string|null|Missing $slug_suffix;
@@ -23,8 +25,9 @@ class ProductSetDto extends Dto
 
     private array|Missing $metadata;
 
-    public static function fromFormRequest(ProductSetStoreRequest|ProductSetUpdateRequest $request): self
-    {
+    public static function instantiateFromRequest(
+        FormRequest|ProductSetStoreRequest|ProductSetUpdateRequest $request
+    ): self {
         return new self(
             name: $request->input('name'),
             slug_suffix: $request->input('slug_suffix'),
@@ -33,7 +36,7 @@ class ProductSetDto extends Dto
             hide_on_index: $request->boolean('hide_on_index', false),
             parent_id: $request->input('parent_id', null),
             children_ids: $request->input('children_ids', []),
-            seo: SeoMetadataDto::fromFormRequest($request),
+            seo: SeoMetadataDto::instantiateFromRequest($request),
             description_html: $request->input('description_html'),
             cover_id: $request->input('cover_id'),
             attributes_ids: $request->input('attributes'),

@@ -45,7 +45,7 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
             schemas: $request->input('schemas', new Missing()),
             sets: $request->input('sets', new Missing()),
             items: $request->input('items', new Missing()),
-            seo: SeoMetadataDto::fromFormRequest($request),
+            seo: SeoMetadataDto::instantiateFromRequest($request),
             attributes: $request->input('attributes', new Missing()),
             google_product_category: $request->input('google_product_category', new Missing()),
         );

@@ -2,12 +2,14 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\SaleCreateRequest;
 use App\Http\Requests\StatusUpdateRequest;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
+use Illuminate\Foundation\Http\FormRequest;
 
-class SaleDto extends Dto
+class SaleDto extends Dto implements InstantiateFromRequest
 {
     protected string|Missing $name;
     protected string|null|Missing $description;
@@ -21,7 +23,7 @@ class SaleDto extends Dto
     protected array|Missing $target_sets;
     protected array|Missing $target_shipping_methods;
 
-    public static function fromFormRequest(SaleCreateRequest|StatusUpdateRequest $request): self
+    public static function instantiateFromRequest(FormRequest|SaleCreateRequest|StatusUpdateRequest $request): self
     {
         $conditionGroups = $request->input('condition_groups', new Missing());
         $conditionGroupDtos = [];

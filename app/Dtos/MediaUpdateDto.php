@@ -2,16 +2,18 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\MediaUpdateRequest;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
+use Illuminate\Foundation\Http\FormRequest;
 
-class MediaUpdateDto extends Dto
+class MediaUpdateDto extends Dto implements InstantiateFromRequest
 {
     private string|null|Missing $alt;
     private string|Missing $slug;
 
-    public static function instantiateFromRequest(MediaUpdateRequest $request): self
+    public static function instantiateFromRequest(FormRequest|MediaUpdateRequest $request): self
     {
         return new self(
             alt: $request->input('alt', new Missing()),

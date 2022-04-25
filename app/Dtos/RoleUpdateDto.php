@@ -2,17 +2,19 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\RoleUpdateRequest;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
+use Illuminate\Foundation\Http\FormRequest;
 
-class RoleUpdateDto extends Dto
+class RoleUpdateDto extends Dto implements InstantiateFromRequest
 {
     private string|Missing $name;
     private string|null|Missing $description;
     private array|Missing $permissions;
 
-    public static function fromRoleUpdateRequest(RoleUpdateRequest $request): self
+    public static function instantiateFromRequest(FormRequest|RoleUpdateRequest $request): self
     {
         return new self(
             name: $request->input('name', new Missing()),
