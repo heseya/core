@@ -19,7 +19,7 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
 
     public int|Missing $order;
     public float|Missing $quantity_step;
-    public int|Missing $google_product_category;
+    public int|null|Missing $google_product_category;
 
     public ?string $description_html;
     public ?string $description_short;

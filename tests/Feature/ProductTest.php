@@ -1928,6 +1928,30 @@ class ProductTest extends TestCase
         $response->assertUnprocessable();
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithNullGoogleProductCategory($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $response = $this->actingAs($this->$user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'description_html' => '<h1>Description</h1>',
+            'description_short' => 'So called short description...',
+            'public' => true,
+            'google_product_category' => null,
+        ]);
+
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('products', [
+            'google_product_category' => null,
+        ]);
+    }
+
     public function testUpdateUnauthorized(): void
     {
         Event::fake([ProductUpdated::class]);
@@ -2505,6 +2529,24 @@ class ProductTest extends TestCase
         ]);
 
         $response->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithNullGoogleProductCategory($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
+            'google_product_category' => null,
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'google_product_category' => null,
+        ]);
     }
 
     /**
