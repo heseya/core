@@ -11,6 +11,8 @@ Product:
       type: string
     public:
       type: boolean
+    google_product_category:
+      type: integer
     media:
       type: array
       items:
