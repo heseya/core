@@ -10,7 +10,6 @@ class CouponResource extends SaleResource
     {
         return parent::base($request) + [
             'code' => $this->resource->code,
-            $this->metadataResource('coupons.show_metadata_private'),
-        ];
+        ] + $this->metadataResource('coupons.show_metadata_private');
     }
 }
