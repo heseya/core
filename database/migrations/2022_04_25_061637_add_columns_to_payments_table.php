@@ -14,7 +14,9 @@ return new class extends Migration
     public function up()
     {
         Schema::table('payments', function (Blueprint $table) {
-            //
+            $table->string('status')->nullable();
+            $table->foreignUuid('method_id')->nullable()->references('id')->on('payment_methods');
+            $table->string('method')->nullable()->change();
         });
     }
 
@@ -26,7 +28,8 @@ return new class extends Migration
     public function down()
     {
         Schema::table('payments', function (Blueprint $table) {
-            //
+            $table->dropColumn('status');
+            $table->dropColumn('method_id');
         });
     }
 };

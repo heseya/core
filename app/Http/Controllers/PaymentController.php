@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\PaymentDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
-use App\Http\Requests\Payments\PaymentStoreRequest;
+use App\Http\Requests\Payments\PayRequest;
+use App\Http\Requests\PaymentStoreRequest;
+use App\Http\Requests\PaymentUpdateRequest;
 use App\Http\Resources\PaymentResource;
 use App\Models\Order;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
@@ -14,7 +18,7 @@ use Throwable;
 
 class PaymentController extends Controller
 {
-    public function store(Order $order, string $method, PaymentStoreRequest $request): JsonResource
+    public function pay(Order $order, string $method, PayRequest $request): JsonResource
     {
         if ($order->paid) {
             throw new ClientException(Exceptions::CLIENT_ORDER_PAID);
@@ -60,6 +64,33 @@ class PaymentController extends Controller
             'amount' => $order->summary - $order->paid_amount,
             'paid' => true,
         ]);
+
+        return PaymentResource::make($payment);
+    }
+
+    public function index(): JsonResource
+    {
+        return PaymentResource::collection(Payment::all());
+    }
+
+    public function show(Payment $payment): JsonResource
+    {
+        return PaymentResource::make($payment);
+    }
+
+    public function store(PaymentStoreRequest $request): JsonResource
+    {
+        /** @var PaymentDto $dto */
+        $dto = PaymentDto::instantiateFromRequest($request);
+
+        return PaymentResource::make(Payment::create($dto->toArray()));
+    }
+
+    public function updatePayment(PaymentUpdateRequest $request, Payment $payment): JsonResource
+    {
+        /** @var PaymentDto $dto */
+        $dto = PaymentDto::instantiateFromRequest($request);
+        $payment->update($dto->toArray());
 
         return PaymentResource::make($payment);
     }

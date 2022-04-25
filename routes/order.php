@@ -45,7 +45,7 @@ Route::prefix('orders')->group(function (): void {
 
     Route::post('{order:code}/pay/offline', [PaymentController::class, 'offlinePayment'])
         ->middleware('can:payments.offline');
-    Route::post('{order:code}/pay/{method}', [PaymentController::class, 'store'])
+    Route::post('{order:code}/pay/{method}', [PaymentController::class, 'pay'])
         ->middleware('can:payments.add');
 });
 

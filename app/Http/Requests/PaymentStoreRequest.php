@@ -14,7 +14,8 @@ class PaymentStoreRequest extends FormRequest
             'external_id' => ['required', 'string'],
             'method_id' => ['required', 'uuid', 'exists:payment_methods,id'],
             'status' => ['required', new EnumValue(PaymentStatus::class, false)],
-            'amount' => ['required', 'float'],
+            'amount' => ['required', 'integer'],
+            'order_id' => ['required', 'uuid', 'exists:orders,id'],
         ];
     }
 }

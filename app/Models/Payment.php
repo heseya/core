@@ -22,6 +22,8 @@ class Payment extends Model
         'continue_url',
         'created_at',
         'status',
+        'order_id',
+        'method_id',
     ];
 
     protected $casts = [
