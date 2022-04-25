@@ -71,6 +71,7 @@ final class Exceptions extends Enum
     public const CLIENT_WEBHOOK_APP_ACTION = 'Only application can use this method on this webhook';
 
     public const CLIENT_APPS_NO_ACCESS = 'Applications cannot access this endpoint';
+    public const CLIENT_USERS_NO_ACCESS = 'Users cannot access this endpoint';
     public const CLIENT_NO_ACCESS = 'No access';
 
     public const SERVER_CDN_ERROR = 'CDN responded with an error';
@@ -81,7 +82,8 @@ final class Exceptions extends Enum
             self::CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED,
             self::CLIENT_DELETE_WHEN_RELATION_EXISTS,
             self::CLIENT_MODEL_NOT_AUDITABLE,
-            self::CLIENT_APPS_NO_ACCESS => 400,
+            self::CLIENT_APPS_NO_ACCESS,
+            self::CLIENT_USERS_NO_ACCESS => 400,
             self::CLIENT_TFA_REQUIRED,
             self::CLIENT_WEBHOOK_APP_ACTION,
             self::CLIENT_WEBHOOK_USER_ACTION => 403,

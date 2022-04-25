@@ -2,18 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\PaymentMethodDto;
 use App\Http\Requests\PaymentMethodIndexRequest;
+use App\Http\Requests\PaymentMethodStoreRequest;
+use App\Http\Requests\PaymentMethodUpdateRequest;
+use App\Http\Resources\PaymentMethodDetailsResource;
 use App\Http\Resources\PaymentMethodResource;
 use App\Models\PaymentMethod;
 use App\Models\ShippingMethod;
+use App\Services\Contracts\PaymentMethodServiceContract;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 
 class PaymentMethodController extends Controller
 {
+    public function __construct(private PaymentMethodServiceContract $paymentMethodService)
+    {
+    }
+
     public function index(PaymentMethodIndexRequest $request): JsonResource
     {
         if ($request->has('shipping_method_id')) {
@@ -30,30 +38,27 @@ class PaymentMethodController extends Controller
         return PaymentMethodResource::collection($query->get());
     }
 
-    public function store(Request $request): JsonResource
+    public function show(PaymentMethod $paymentMethod): JsonResource
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'alias' => 'required|string|max:255',
-            'public' => 'boolean',
-        ]);
-
-        $payment_method = PaymentMethod::create($validated);
-
-        return PaymentMethodResource::make($payment_method);
+        return PaymentMethodDetailsResource::make($paymentMethod);
     }
 
-    public function update(PaymentMethod $payment_method, Request $request): JsonResource
+    public function store(PaymentMethodStoreRequest $request): JsonResource
     {
-        $validated = $request->validate([
-            'name' => 'string|max:255',
-            'alias' => 'string|max:255',
-            'public' => 'boolean',
-        ]);
+        $dto = PaymentMethodDto::instantiateFromRequest($request);
 
-        $payment_method->update($validated);
+        $payment_method = $this->paymentMethodService->store($dto);
 
-        return PaymentMethodResource::make($payment_method);
+        return PaymentMethodDetailsResource::make($payment_method);
+    }
+
+    public function update(PaymentMethod $payment_method, PaymentMethodUpdateRequest $request): JsonResource
+    {
+        $dto = PaymentMethodDto::instantiateFromRequest($request);
+
+        $this->paymentMethodService->update($payment_method, $dto);
+
+        return PaymentMethodDetailsResource::make($payment_method);
     }
 
     public function destroy(PaymentMethod $payment_method): JsonResponse
