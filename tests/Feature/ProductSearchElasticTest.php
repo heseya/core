@@ -282,7 +282,7 @@ class ProductSearchElasticTest extends TestCase
                 'filter' => [
                     [
                         'terms' => [
-                            'sets.slug' => [
+                            'sets_slug' => [
                                 $set->slug,
                             ],
                             'boost' => 1.0,
@@ -349,7 +349,7 @@ class ProductSearchElasticTest extends TestCase
                 'filter' => [
                     [
                         'terms' => [
-                            'sets.slug' => [
+                            'sets_slug' => [
                                 $set->slug,
                                 $set2->slug,
                             ],
@@ -438,7 +438,7 @@ class ProductSearchElasticTest extends TestCase
                 'filter' => [
                     [
                         'terms' => [
-                            'sets.slug' => [
+                            'sets_slug' => [
                                 $set->slug,
                             ],
                             'boost' => 1.0,
@@ -535,7 +535,7 @@ class ProductSearchElasticTest extends TestCase
                 'filter' => [
                     [
                         'terms' => [
-                            'tags.id' => [
+                            'tags_id' => [
                                 $tag->getKey(),
                             ],
                             'boost' => 1.0,
@@ -600,7 +600,7 @@ class ProductSearchElasticTest extends TestCase
                 'filter' => [
                     [
                         'terms' => [
-                            'tags.id' => [
+                            'tags_id' => [
                                 $tag1->getKey(),
                                 $tag2->getKey(),
                             ],
@@ -857,7 +857,7 @@ class ProductSearchElasticTest extends TestCase
                 'filter' => [
                     [
                         'terms' => [
-                            'sets.slug' => [
+                            'sets_slug' => [
                                 $parentSet->slug,
                             ],
                             'boost' => 1.0,
