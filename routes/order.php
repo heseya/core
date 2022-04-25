@@ -17,8 +17,6 @@ Route::prefix('orders')->group(function (): void {
     Route::get('my/{order:code}', [OrderController::class, 'showUserOrder'])
         ->middleware('can:orders.show_own')
         ->whereAlphaNumeric('order');
-    Route::post('verify', [OrderController::class, 'verify'])
-        ->middleware('can:cart.verify');
     Route::get('id:{order:id}', [OrderController::class, 'show'])
         ->middleware('can:orders.show_details')
         ->whereUuid('order');
