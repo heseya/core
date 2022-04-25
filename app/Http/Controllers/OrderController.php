@@ -16,7 +16,6 @@ use App\Http\Requests\CartRequest;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderDocumentRequest;
 use App\Http\Requests\OrderIndexRequest;
-use App\Http\Requests\OrderItemsRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Requests\SendDocumentRequest;
@@ -26,8 +25,6 @@ use App\Http\Resources\OrderPublicResource;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Models\OrderDocument;
-use App\Models\Product;
-use App\Models\Schema;
 use App\Models\Status;
 use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\OrderServiceContract;
@@ -84,23 +81,6 @@ class OrderController extends Controller
         return OrderPublicResource::make(
             $this->orderService->store(OrderDto::fromFormRequest($request)),
         );
-    }
-
-    public function verify(OrderItemsRequest $request): JsonResponse
-    {
-        foreach ($request->input('items', []) as $item) {
-            $product = Product::findOrFail($item['product_id']);
-            $schemas = $item['schemas'] ?? [];
-
-            /** @var Schema $schema */
-            foreach ($product->schemas as $schema) {
-                $schema->validate(
-                    $schemas[$schema->getKey()] ?? null,
-                );
-            }
-        }
-
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResponse

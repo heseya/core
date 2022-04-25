@@ -172,8 +172,6 @@ paths:
     $ref: './paths/Orders.yml#/OrdersParams'
   '/orders/{code}':
     $ref: './paths/Orders.yml#/OrdersCode'
-  /orders/verify:
-    $ref: './paths/Orders.yml#/OrdersVerify'
   '/orders/id:{id}/status':
     $ref: './paths/Orders.yml#/OrdersStatus'
   /orders/my:
