@@ -2,11 +2,13 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\ProductIndexRequest;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
+use Illuminate\Foundation\Http\FormRequest;
 
-class ProductSearchDto extends Dto
+class ProductSearchDto extends Dto implements InstantiateFromRequest
 {
     private ?string $search;
     private ?string $sort;
@@ -26,7 +28,7 @@ class ProductSearchDto extends Dto
     private float|Missing $price_min;
     private float|Missing $price_max;
 
-    public static function instantiateFromRequest(ProductIndexRequest $request): self
+    public static function instantiateFromRequest(FormRequest|ProductIndexRequest $request): self
     {
         return new self(
             search: $request->input('search'),

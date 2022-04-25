@@ -57,7 +57,7 @@ class ProductSetController extends Controller
 
     public function store(ProductSetStoreRequest $request): JsonResource
     {
-        $dto = ProductSetDto::fromFormRequest($request);
+        $dto = ProductSetDto::instantiateFromRequest($request);
         $productSet = $this->productSetService->create($dto);
 
         if ($request->has('tree') && $request->input('tree', true) !== false) {
@@ -69,7 +69,7 @@ class ProductSetController extends Controller
 
     public function update(ProductSet $productSet, ProductSetUpdateRequest $request): JsonResource
     {
-        $dto = ProductSetUpdateDto::fromFormRequest($request);
+        $dto = ProductSetUpdateDto::instantiateFromRequest($request);
         $productSet = $this->productSetService->update($productSet, $dto);
 
         if ($request->has('tree') && $request->input('tree', true) !== false) {

@@ -26,13 +26,13 @@ class SeoMetadataController extends Controller
 
     public function createOrUpdate(SeoRequest $request): JsonResource
     {
-        $seo = SeoMetadataDto::fromFormRequest($request);
+        $seo = SeoMetadataDto::instantiateFromRequest($request);
         return SeoMetadataResource::make($this->seoMetadataService->createOrUpdate($seo));
     }
 
     public function checkKeywords(SeoKeywordsRequest $request): JsonResource
     {
-        $seo_list = $this->seoMetadataService->checkKeywords(SeoKeywordsDto::fromFormRequest($request));
+        $seo_list = $this->seoMetadataService->checkKeywords(SeoKeywordsDto::instantiateFromRequest($request));
         return SeoKeywordsResource::make($seo_list);
     }
 }

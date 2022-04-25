@@ -2,9 +2,9 @@
 
 namespace App\Dtos\Contracts;
 
-use Illuminate\Http\Request;
+use Illuminate\Foundation\Http\FormRequest;
 
 interface InstantiateFromRequest
 {
-    public static function instantiateFromRequest(Request $request): self;
+    public static function instantiateFromRequest(FormRequest $request): self;
 }

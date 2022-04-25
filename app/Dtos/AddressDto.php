@@ -2,12 +2,14 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
+use Illuminate\Foundation\Http\FormRequest;
 
-class AddressDto extends Dto
+class AddressDto extends Dto implements InstantiateFromRequest
 {
     private string|Missing $name;
     private string|Missing $address;
@@ -17,8 +19,10 @@ class AddressDto extends Dto
     private string|Missing $country;
     private string|Missing $phone;
 
-    public static function fromFormRequest(OrderCreateRequest|OrderUpdateRequest $request, ?string $prefix = ''): self
-    {
+    public static function instantiateFromRequest(
+        FormRequest|OrderCreateRequest|OrderUpdateRequest $request,
+        ?string $prefix = ''
+    ): self {
         return new self(
             name: $request->input($prefix . 'name', new Missing()),
             address: $request->input($prefix . 'address', new Missing()),

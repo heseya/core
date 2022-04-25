@@ -2,11 +2,13 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use Heseya\Dto\Missing;
+use Illuminate\Foundation\Http\FormRequest;
 
-class OrderDto extends CartOrderDto
+class OrderDto extends CartOrderDto implements InstantiateFromRequest
 {
     private string|Missing $email;
     private string|null|Missing $comment;
@@ -17,7 +19,7 @@ class OrderDto extends CartOrderDto
     private array|Missing $coupons;
     private array|Missing $sale_ids;
 
-    public static function fromFormRequest(OrderCreateRequest|OrderUpdateRequest $request): self
+    public static function instantiateFromRequest(FormRequest|OrderCreateRequest|OrderUpdateRequest $request): self
     {
         $orderProducts = $request->input('items', new Missing());
         $items = [];
@@ -33,9 +35,9 @@ class OrderDto extends CartOrderDto
             shipping_method_id: $request->input('shipping_method_id', new Missing()),
             items: $orderProducts instanceof Missing ? $orderProducts : $items,
             delivery_address: $request->has('delivery_address')
-                ? AddressDto::fromFormRequest($request, 'delivery_address.') : new Missing(),
+                ? AddressDto::instantiateFromRequest($request, 'delivery_address.') : new Missing(),
             invoice_address: $request->has('invoice_address')
-                ? AddressDto::fromFormRequest($request, 'invoice_address.') : new Missing(),
+                ? AddressDto::instantiateFromRequest($request, 'invoice_address.') : new Missing(),
             coupons: $request->input('coupons', new Missing()),
             sale_ids: $request->input('sale_ids', new Missing()),
         );

@@ -2,16 +2,18 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\CartRequest;
 use Heseya\Dto\Missing;
+use Illuminate\Foundation\Http\FormRequest;
 
-class CartDto extends CartOrderDto
+class CartDto extends CartOrderDto implements InstantiateFromRequest
 {
     private array $items;
     private array|Missing $coupons;
     private string|Missing $shipping_method_id;
 
-    public static function fromFormRequest(CartRequest $request): self
+    public static function instantiateFromRequest(FormRequest|CartRequest $request): self
     {
         $items = [];
         foreach ($request->input('items', []) as $item) {

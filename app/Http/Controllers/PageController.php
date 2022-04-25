@@ -39,7 +39,7 @@ class PageController extends Controller
 
     public function store(PageStoreRequest $request): JsonResource
     {
-        $dto = PageDto::fromFormRequest($request);
+        $dto = PageDto::instantiateFromRequest($request);
         $page = $this->pageService->create($dto);
 
         return PageResource::make($page);
@@ -47,7 +47,7 @@ class PageController extends Controller
 
     public function update(Page $page, PageUpdateRequest $request): JsonResource
     {
-        $dto = PageDto::fromFormRequest($request);
+        $dto = PageDto::instantiateFromRequest($request);
         $page = $this->pageService->update($page, $dto);
 
         return PageResource::make($page);

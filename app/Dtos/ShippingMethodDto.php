@@ -2,12 +2,14 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\ShippingMethodStoreRequest;
 use App\Http\Requests\ShippingMethodUpdateRequest;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
+use Illuminate\Foundation\Http\FormRequest;
 
-class ShippingMethodDto extends Dto
+class ShippingMethodDto extends Dto implements InstantiateFromRequest
 {
     protected string|Missing $name;
     protected bool|Missing $public;
@@ -19,7 +21,7 @@ class ShippingMethodDto extends Dto
     protected int|Missing $shipping_time_max;
 
     public static function instantiateFromRequest(
-        ShippingMethodStoreRequest|ShippingMethodUpdateRequest $request,
+        FormRequest|ShippingMethodStoreRequest|ShippingMethodUpdateRequest $request,
     ): self {
         return new self(
             name: $request->input('name', new Missing()),
