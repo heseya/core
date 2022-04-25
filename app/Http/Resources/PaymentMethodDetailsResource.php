@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 
-class PaymentMethodResource extends Resource
+class PaymentMethodDetailsResource extends Resource
 {
     public function base(Request $request): array
     {
@@ -14,6 +14,8 @@ class PaymentMethodResource extends Resource
             'icon' => $this->resource->icon,
             'alias' => $this->resource->alias,
             'public' => $this->resource->public,
+            'url' => $this->resource->url,
+            'app' => AppResource::make($this->resource->app),
         ];
     }
 }

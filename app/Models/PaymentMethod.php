@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
@@ -21,6 +22,8 @@ class PaymentMethod extends Model
         'name',
         'alias',
         'public',
+        'icon',
+        'url',
     ];
 
     /**
@@ -35,5 +38,10 @@ class PaymentMethod extends Model
     public function shippingMethods(): BelongsToMany
     {
         return $this->belongsToMany(ShippingMethod::class, 'shipping_method_payment_method');
+    }
+
+    public function app(): BelongsTo
+    {
+        return $this->belongsTo(App::class);
     }
 }
