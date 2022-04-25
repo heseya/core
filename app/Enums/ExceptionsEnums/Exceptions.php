@@ -73,6 +73,8 @@ final class Exceptions extends Enum
     public const CLIENT_APPS_NO_ACCESS = 'Applications cannot access this endpoint';
     public const CLIENT_NO_ACCESS = 'No access';
 
+    public const CLIENT_REMOVE_DEFAULT_ADDRESS = 'You cannot delete default address';
+
     public const SERVER_CDN_ERROR = 'CDN responded with an error';
 
     public static function getCode($value): int

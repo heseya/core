@@ -1798,16 +1798,16 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "8.12.47",
+            "version": "8.12.47.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "e931ce8e68b6ca45a30743181fbdf0b24c1b611e"
+                "reference": "dc6bce9772404a4e4fd48ec30310f51e1b5f027f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/e931ce8e68b6ca45a30743181fbdf0b24c1b611e",
-                "reference": "e931ce8e68b6ca45a30743181fbdf0b24c1b611e",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/dc6bce9772404a4e4fd48ec30310f51e1b5f027f",
+                "reference": "dc6bce9772404a4e4fd48ec30310f51e1b5f027f",
                 "shasum": ""
             },
             "require": {
@@ -1867,7 +1867,7 @@
                 "issues": "https://github.com/giggsey/libphonenumber-for-php/issues",
                 "source": "https://github.com/giggsey/libphonenumber-for-php"
             },
-            "time": "2022-04-19T12:45:49+00:00"
+            "time": "2022-04-20T14:51:46+00:00"
         },
         {
             "name": "giggsey/locale",
@@ -3398,16 +3398,16 @@
         },
         {
             "name": "league/flysystem",
-            "version": "3.0.17",
+            "version": "3.0.18",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/flysystem.git",
-                "reference": "29eb78cac0be0c22237c5e0f6f98234d97037d79"
+                "reference": "c8e137e594948240b03372e012344b07c61b9193"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/29eb78cac0be0c22237c5e0f6f98234d97037d79",
-                "reference": "29eb78cac0be0c22237c5e0f6f98234d97037d79",
+                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/c8e137e594948240b03372e012344b07c61b9193",
+                "reference": "c8e137e594948240b03372e012344b07c61b9193",
                 "shasum": ""
             },
             "require": {
@@ -3468,7 +3468,7 @@
             ],
             "support": {
                 "issues": "https://github.com/thephpleague/flysystem/issues",
-                "source": "https://github.com/thephpleague/flysystem/tree/3.0.17"
+                "source": "https://github.com/thephpleague/flysystem/tree/3.0.18"
             },
             "funding": [
                 {
@@ -3484,7 +3484,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-04-14T14:57:13+00:00"
+            "time": "2022-04-25T18:55:04+00:00"
         },
         {
             "name": "league/html-to-markdown",
