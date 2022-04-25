@@ -67,7 +67,7 @@ class ProductSearchDto extends Dto implements InstantiateFromRequest
         return $this->price_max;
     }
 
-    private static function boolean(string $key, ProductIndexRequest $request): bool|Missing
+    private static function boolean(string $key, FormRequest|ProductIndexRequest $request): bool|Missing
     {
         if (!$request->has($key)) {
             return new Missing();
@@ -76,7 +76,7 @@ class ProductSearchDto extends Dto implements InstantiateFromRequest
         return $request->boolean($key);
     }
 
-    private static function array(string $key, ProductIndexRequest $request): array|Missing
+    private static function array(string $key, FormRequest|ProductIndexRequest $request): array|Missing
     {
         if (!$request->has($key) || $request->input($key) === null) {
             return new Missing();

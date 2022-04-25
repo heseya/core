@@ -5,7 +5,7 @@ namespace App\Dtos;
 use App\Dtos\Contracts\InstantiateFromRequest;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
-use Illuminate\Http\Request;
+use Illuminate\Foundation\Http\FormRequest;
 
 class ProductUpdateDto extends Dto implements InstantiateFromRequest
 {
@@ -29,7 +29,7 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
     public SeoMetadataDto $seo;
     public array|Missing $attributes;
 
-    public static function instantiateFromRequest(Request $request): self
+    public static function instantiateFromRequest(FormRequest $request): self
     {
         return new self(
             name: $request->input('name', new Missing()),

@@ -138,7 +138,7 @@ final class Handler extends ExceptionHandler
         return $validationErrors;
     }
 
-    private function getExceptionData(Exception $exception): array
+    private function getExceptionData(Throwable|Exception $exception): array
     {
         if ($exception instanceof StoreException) {
             return $exception->errors();
