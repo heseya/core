@@ -6,6 +6,7 @@ use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\UserSearch;
 use App\Criteria\WhereInIds;
+use App\Enums\SavedAddressType;
 use App\Models\Contracts\SortableContract;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasMetadata;
@@ -109,6 +110,18 @@ class User extends Model implements
     public function getJWTCustomClaims(): array
     {
         return [];
+    }
+
+    public function deliveryAddresses(): HasMany
+    {
+        return $this->hasMany(SavedAddress::class)
+            ->where('type', '=', SavedAddressType::DELIVERY);
+    }
+
+    public function invoiceAddresses(): HasMany
+    {
+        return $this->hasMany(SavedAddress::class)
+            ->where('type', '=', SavedAddressType::INVOICE);
     }
 
     public function orders(): MorphMany
