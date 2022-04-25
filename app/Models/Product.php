@@ -25,6 +25,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use JeroenG\Explorer\Application\Explored;
+use JeroenG\Explorer\Domain\Analysis\Analysis;
+use JeroenG\Explorer\Domain\Analysis\Analyzer\StandardAnalyzer;
 use Laravel\Scout\Searchable;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
@@ -121,9 +123,24 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         $this->searchService = app(ProductSearchServiceContract::class);
     }
 
+    public function mappableAs(): array
+    {
+        return $this->searchService->mappableAs();
+    }
+
     public function toSearchableArray(): array
     {
         return $this->searchService->mapSearchableArray($this);
+    }
+
+    public function indexSettings(): array
+    {
+        $synonymAnalyzer = new StandardAnalyzer('synonym');
+        $synonymAnalyzer->setFilters(['lowercase', 'morfologik_stem']);
+
+        return (new Analysis())
+            ->addAnalyzer($synonymAnalyzer)
+            ->build();
     }
 
     public function sets(): BelongsToMany
@@ -180,29 +197,6 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         return $this->belongsToMany(Attribute::class, 'product_attribute')
             ->withPivot('id')
             ->using(ProductAttribute::class);
-    }
-
-    public function mappableAs(): array
-    {
-        return [];
-    }
-
-    public function indexSettings(): array
-    {
-        return [
-            'analysis' => [
-                'analyzer' => [
-                    'standard_lowercase' => [
-                        'type' => 'custom',
-                        'tokenizer' => 'whitespace',
-                        'filter' => [
-                            'lowercase',
-                            'morfologik_stem',
-                        ],
-                    ],
-                ],
-            ],
-        ];
     }
 
     public function sales(): BelongsToMany
