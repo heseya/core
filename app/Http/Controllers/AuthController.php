@@ -127,12 +127,15 @@ class AuthController extends Controller
 
     public function checkIdentity(Request $request, ?string $identityToken = null): JsonResource
     {
+        /** @var User|App|null $authenticable */
+        $authenticable = $request->user();
+
         $user = $identityToken === null
             ? $this->authService->unauthenticatedUser()
             : $this->authService->userByIdentity($identityToken);
 
         $prefix = $this->authService->isAppAuthenticated()
-            ? $this->appService->appPermissionPrefix($request->user())
+            ? $this->appService->appPermissionPrefix($authenticable)
             : null;
 
         return ProfileResource::make($user)->stripedPermissionPrefix($prefix);
