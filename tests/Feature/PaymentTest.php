@@ -220,7 +220,6 @@ class PaymentTest extends TestCase
 
         $amount = $this->order->summary - 1;
 
-
         $this->order->payments()->create([
             'method' => 'payu',
             'amount' => 1,
