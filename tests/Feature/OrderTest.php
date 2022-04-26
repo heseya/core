@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\MetadataType;
+use App\Enums\PaymentStatus;
 use App\Enums\ValidationError;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
@@ -653,7 +654,7 @@ class OrderTest extends TestCase
 
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $summaryPaid,
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
         ]));
 
         $response = $this->actingAs($this->$user)
@@ -675,7 +676,7 @@ class OrderTest extends TestCase
 
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $this->order->summary * 2,
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
         ]));
 
         $response = $this->actingAs($this->$user)
@@ -1137,7 +1138,7 @@ class OrderTest extends TestCase
 
         $this->order->payments()->save(Payment::factory()->make([
             'amount' => $summaryPaid,
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
         ]));
 
         $response = $this->actingAs($this->$user)
