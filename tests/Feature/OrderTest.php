@@ -419,7 +419,7 @@ class OrderTest extends TestCase
         $order1->payments()->create([
             'method' => 'payu',
             'amount' => $order1->summary,
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
         ]);
 
         $orderId = $booleanValue ? $order1->getKey() : $this->order->getKey();
