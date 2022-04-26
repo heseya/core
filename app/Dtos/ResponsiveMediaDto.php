@@ -4,12 +4,12 @@ namespace App\Dtos;
 
 use Heseya\Dto\Dto;
 
-class ResponsiveMediaResource extends Dto
+class ResponsiveMediaDto extends Dto
 {
     private int $min_screen_width;
     private string $media;
 
-    public static function fromDataArray(array $data): ResponsiveMediaResource
+    public static function fromDataArray(array $data): ResponsiveMediaDto
     {
         return new self(
             min_screen_width: $data['min_screen_width'],
