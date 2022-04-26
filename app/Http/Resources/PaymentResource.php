@@ -12,6 +12,7 @@ class PaymentResource extends Resource
             'id' => $this->resource->getKey(),
             'external_id' => $this->resource->external_id,
             'method' => $this->resource->paymentMethod->name ?? $this->resource->method,
+            'method_id' => $this->resource->paymentMethod?->getKey() ?? null,
             'status' => $this->resource->status,
             'amount' => $this->resource->amount,
             'redirect_url' => $this->resource->redirect_url,

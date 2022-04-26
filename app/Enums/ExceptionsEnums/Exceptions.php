@@ -89,7 +89,7 @@ final class Exceptions extends Enum
             self::CLIENT_WEBHOOK_APP_ACTION,
             self::CLIENT_WEBHOOK_USER_ACTION => 403,
             self::SERVER_CDN_ERROR,
-            self::SERVER_PAYMENT_MICROSERVICE_ERROR=> 500,
+            self::SERVER_PAYMENT_MICROSERVICE_ERROR => 500,
             default => 422
         };
     }

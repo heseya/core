@@ -1,0 +1,18 @@
+Payment:
+  properties:
+    external_id:
+      type: string
+      example: D2spSDJ21LSA
+    method_id:
+      type: string
+      example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+    order_id:
+      type: string
+      example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+    amount:
+      type: number
+      example: 80.92
+    status:
+      type: string
+      example: pending
+  type: object
