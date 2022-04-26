@@ -27,7 +27,7 @@ class BannerTest extends TestCase
             'banner_id' => $this->banner->getKey(),
             'title' => 'abc',
             'subtitle' => 'cba',
-            'order' => 1
+            'order' => 1,
         ]);
         $bannerMedia->media()->sync([
             $this->media[0]->getKey() => ['min_screen_width' => 100],

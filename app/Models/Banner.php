@@ -35,7 +35,7 @@ class Banner extends Model
         'metadata_private' => MetadataPrivateSearch::class,
     ];
 
-    public function BannerMedia(): HasMany
+    public function bannerMedia(): HasMany
     {
         return $this->hasMany(BannerMedia::class, 'banner_id')
             ->orderBy('order');
