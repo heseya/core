@@ -3,6 +3,7 @@
 namespace App\Payments;
 
 use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\PaymentStatus;
 use App\Exceptions\ClientException;
 use App\Models\Payment;
 use Exception;
@@ -92,7 +93,7 @@ class PayU implements PaymentMethod
 
         if ($status === 'COMPLETED') {
             $payment->update([
-                'paid' => true,
+                'status' => PaymentStatus::SUCCESSFUL,
             ]);
         }
 

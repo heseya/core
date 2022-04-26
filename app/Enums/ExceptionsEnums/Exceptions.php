@@ -75,6 +75,7 @@ final class Exceptions extends Enum
     public const CLIENT_NO_ACCESS = 'No access';
 
     public const SERVER_CDN_ERROR = 'CDN responded with an error';
+    public const SERVER_PAYMENT_MICROSERVICE_ERROR = 'Microservice response is not OK.';
 
     public static function getCode($value): int
     {
@@ -87,7 +88,8 @@ final class Exceptions extends Enum
             self::CLIENT_TFA_REQUIRED,
             self::CLIENT_WEBHOOK_APP_ACTION,
             self::CLIENT_WEBHOOK_USER_ACTION => 403,
-            self::SERVER_CDN_ERROR => 500,
+            self::SERVER_CDN_ERROR,
+            self::SERVER_PAYMENT_MICROSERVICE_ERROR => 500,
             default => 422
         };
     }

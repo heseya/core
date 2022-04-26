@@ -11,6 +11,7 @@ use App\Criteria\OrderSearch;
 use App\Criteria\WhereCreatedAfter;
 use App\Criteria\WhereCreatedBefore;
 use App\Criteria\WhereHasStatusHidden;
+use App\Enums\PaymentStatus;
 use App\Models\Contracts\SortableContract;
 use App\Traits\HasMetadata;
 use App\Traits\HasOrderDiscount;
@@ -119,7 +120,7 @@ class Order extends Model implements AuditableContract, SortableContract
     public function getPaidAmountAttribute(): float
     {
         return $this->payments
-            ->where('paid', true)
+            ->where('status', PaymentStatus::SUCCESSFUL)
             ->sum('amount');
     }
 

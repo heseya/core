@@ -2,8 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\PaymentStatus;
+use App\Models\App;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
@@ -14,6 +18,7 @@ use Tests\TestCase;
 class PaymentTest extends TestCase
 {
     private Order $order;
+    private App $appUser;
 
     public function setUp(): void
     {
@@ -24,6 +29,8 @@ class PaymentTest extends TestCase
         $shipping_method = ShippingMethod::factory()->create();
         $status = Status::factory()->create();
         $product = Product::factory()->create();
+
+        $this->appUser = App::factory()->create();
 
         $this->order = Order::factory()->create([
             'shipping_method_id' => $shipping_method->getKey(),
@@ -92,7 +99,7 @@ class PaymentTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'payu',
-                'paid' => false,
+                'status' => PaymentStatus::PENDING,
                 'amount' => $this->order->summary,
                 'redirect_url' => 'payment_url',
                 'continue_url' => 'continue_url',
@@ -151,7 +158,7 @@ class PaymentTest extends TestCase
         $response->assertOk();
         $this->assertDatabaseHas('payments', [
             'id' => $payment->getKey(),
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
         ]);
     }
 
@@ -182,7 +189,7 @@ class PaymentTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'offline',
-                'paid' => true,
+                'status' => PaymentStatus::SUCCESSFUL,
                 'amount' => $this->order->summary,
                 'redirect_url' => null,
                 'continue_url' => null,
@@ -191,7 +198,7 @@ class PaymentTest extends TestCase
         $this->assertDatabaseHas('payments', [
             'order_id' => $this->order->getKey(),
             'method' => 'offline',
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
             'amount' => $this->order->summary,
         ]);
 
@@ -216,7 +223,7 @@ class PaymentTest extends TestCase
         $this->order->payments()->create([
             'method' => 'payu',
             'amount' => 1,
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
         ]);
 
         $code = $this->order->code;
@@ -227,7 +234,7 @@ class PaymentTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment([
                 'method' => 'offline',
-                'paid' => true,
+                'status' => PaymentStatus::SUCCESSFUL,
                 'amount' => $amount,
                 'redirect_url' => null,
                 'continue_url' => null,
@@ -236,7 +243,7 @@ class PaymentTest extends TestCase
         $this->assertDatabaseHas('payments', [
             'order_id' => $this->order->getKey(),
             'method' => 'offline',
-            'paid' => true,
+            'status' => PaymentStatus::SUCCESSFUL,
             'amount' => $amount,
         ]);
 
@@ -249,6 +256,172 @@ class PaymentTest extends TestCase
         $this->assertTrue($this->order->paid);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
+    {
+        $this->$user->givePermissionTo('payments.show');
+
+        Payment::factory()->count(10)->create([
+            'order_id' => $this->order->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->$user)->json('GET', '/payments');
+
+        $response->assertJsonCount(10, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShow($user): void
+    {
+        $this->$user->givePermissionTo('payments.show_details');
+
+        $payment = Payment::factory()->create([
+            'order_id' => $this->order->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->$user)->json('GET', '/payments/id:' . $payment->getKey());
+
+        $response->assertJson(['data' => [
+            'id' => $payment->getKey(),
+            'external_id' => $payment->external_id,
+            'method' => $payment->method,
+            'status' => $payment->status,
+            'amount' => $payment->amount,
+            'redirect_url' => $payment->redirect_url,
+            'continue_url' => $payment->continue_url,
+        ],
+        ]);
+    }
+
+    public function testStore(): void
+    {
+        $this->appUser->givePermissionTo('payments.add');
+        $paymentMethod = PaymentMethod::factory()->create([
+            'app_id' => $this->appUser->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->appUser)->json('POST', '/payments', [
+            'amount' => 100,
+            'status' => PaymentStatus::PENDING,
+            'order_id' => $this->order->id,
+            'external_id' => 'test',
+            'method_id' => $paymentMethod->getKey(),
+        ]);
+
+        $response->assertJson(['data' => [
+            'amount' => 100,
+            'status' => PaymentStatus::PENDING,
+            'external_id' => 'test',
+            'method_id' => $paymentMethod->getKey(),
+        ],
+        ]);
+
+        $this->assertDatabaseHas('payments', [
+            'amount' => 100,
+            'status' => PaymentStatus::PENDING,
+            'order_id' => $this->order->id,
+            'external_id' => 'test',
+            'method_id' => $paymentMethod->getKey(),
+        ]);
+    }
+
+    public function testStoreUnauthorized(): void
+    {
+        $paymentMethod = PaymentMethod::factory()->create([
+            'app_id' => $this->appUser->getKey(),
+        ]);
+
+        $response = $this->json('POST', '/payments', [
+            'amount' => 100,
+            'status' => PaymentStatus::PENDING,
+            'order_id' => $this->order->id,
+            'external_id' => 'test',
+            'method_id' => $paymentMethod->getKey(),
+        ]);
+
+        $response->assertForbidden();
+    }
+
+    public function testUpdate(): void
+    {
+        $this->appUser->givePermissionTo('payments.edit');
+        $paymentMethod = PaymentMethod::factory()->create([
+            'name' => 'test',
+            'app_id' => $this->appUser->getKey(),
+        ]);
+
+        $payment = Payment::factory()->create([
+            'method_id' => $paymentMethod->getKey(),
+            'order_id' => $this->order->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->appUser)->json('PATCH', '/payments/id:' . $payment->getKey(), [
+            'amount' => 100,
+            'status' => PaymentStatus::PENDING,
+        ]);
+
+        $response->assertJson(['data' => [
+            'method' => $paymentMethod->name,
+            'method_id' => $paymentMethod->getKey(),
+            'status' => PaymentStatus::PENDING,
+            'amount' => 100,
+        ],
+        ]);
+
+        $this->assertDatabaseHas('payments', [
+            'id' => $payment->getKey(),
+            'method_id' => $paymentMethod->getKey(),
+            'status' => PaymentStatus::PENDING,
+            'amount' => 100,
+        ]);
+    }
+
+    public function testUpdateOtherAppPayment(): void
+    {
+        $this->appUser->givePermissionTo('payments.edit');
+
+        $app = App::factory()->create();
+
+        $paymentMethod = PaymentMethod::factory()->create([
+            'app_id' => $app->getKey(),
+        ]);
+
+        $payment = Payment::factory()->create([
+            'method_id' => $paymentMethod->getKey(),
+            'order_id' => $this->order->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->appUser)->json('PATCH', '/payments/id:' . $payment->getKey(), [
+            'amount' => 100,
+            'status' => PaymentStatus::PENDING,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonFragment(['key' => Exceptions::coerce(Exceptions::CLIENT_NO_ACCESS)->key]);
+    }
+
+    public function testUpdateUnauthorized(): void
+    {
+        $paymentMethod = PaymentMethod::factory()->create([
+            'app_id' => $this->appUser->getKey(),
+        ]);
+
+        $payment = Payment::factory()->create([
+            'method_id' => $paymentMethod->getKey(),
+            'order_id' => $this->order->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->appUser)->json('PATCH', '/payments/id:' . $payment->getKey(), [
+            'amount' => 100,
+            'status' => PaymentStatus::PENDING,
+        ]);
+
+        $response->assertForbidden();
+    }
 //    public function testPayPalNotification(): void
 //    {
 //        Http::fake();

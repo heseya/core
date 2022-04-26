@@ -1,0 +1,89 @@
+Payments:
+  get:
+    tags:
+      - Payments
+    summary: 'list payments'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Payments.yml#/Payment'
+              type: object
+  post:
+    tags:
+      - Payments
+    summary: 'add new payment'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: './../requests/Payments.yml#/Payment'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Payments.yml#/Payment'
+              type: object
+    security:
+      - BearerAuth: [ ]
+
+PaymentParams:
+  get:
+    tags:
+      - Payments
+    summary: 'get payment'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Payments.yml#/Payment'
+              type: object
+    security:
+      - BearerAuth: [ ]
+  patch:
+    tags:
+      - Payments
+    summary: 'update payment'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: './../requests/Payments.yml#/Payment'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Payments.yml#/Payment'
+              type: object
+    security:
+      - BearerAuth: [ ]

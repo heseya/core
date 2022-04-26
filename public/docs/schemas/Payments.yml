@@ -6,11 +6,9 @@ Payment:
     external_id:
       type: string
       example: D2spSDJ21LSA
-    method:
+    method_id:
       type: string
-      example: heseya
-    paid:
-      type: boolean
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
     amount:
       type: number
       example: 80.92
@@ -20,4 +18,7 @@ Payment:
     continue_url:
       type: string
       example: 'https://store.heseya.com/done/43SYK1'
+    status:
+      type: string
+      example: pending
   type: object
