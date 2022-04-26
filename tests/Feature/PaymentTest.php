@@ -293,7 +293,8 @@ class PaymentTest extends TestCase
             'amount' => $payment->amount,
             'redirect_url' => $payment->redirect_url,
             'continue_url' => $payment->continue_url,
-        ]]);
+        ],
+        ]);
     }
 
     public function testStore(): void
@@ -316,7 +317,8 @@ class PaymentTest extends TestCase
             'status' => PaymentStatus::PENDING,
             'external_id' => 'test',
             'method_id' => $paymentMethod->getKey(),
-        ]]);
+        ],
+        ]);
 
         $this->assertDatabaseHas('payments', [
             'amount' => 100,
@@ -367,7 +369,8 @@ class PaymentTest extends TestCase
             'method_id' => $paymentMethod->getKey(),
             'status' => PaymentStatus::PENDING,
             'amount' => 100,
-        ]]);
+        ],
+        ]);
 
         $this->assertDatabaseHas('payments', [
             'id' => $payment->getKey(),
