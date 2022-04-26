@@ -6,14 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 class ProductAttribute extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::create('product_attribute', function (Blueprint $table) {
+        Schema::create('product_attribute', function (Blueprint $table): void {
             $table->foreignUuid('product_id')
                 ->index()
                 ->references('id')
@@ -36,12 +31,7 @@ class ProductAttribute extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('product_attribute');
     }

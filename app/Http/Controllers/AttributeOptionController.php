@@ -34,7 +34,7 @@ class AttributeOptionController extends Controller
     {
         $attributeOption = $this->attributeOptionService->create(
             $attribute->getKey(),
-            AttributeOptionDto::fromFormRequest($request)
+            AttributeOptionDto::instantiateFromRequest($request)
         );
 
         return AttributeOptionResource::make($attributeOption);
@@ -48,7 +48,7 @@ class AttributeOptionController extends Controller
 
         $attributeOption = $this->attributeOptionService->updateOrCreate(
             $attribute->getKey(),
-            AttributeOptionDto::fromFormRequest($request)
+            AttributeOptionDto::instantiateFromRequest($request)
         );
 
         return AttributeOptionResource::make($attributeOption);

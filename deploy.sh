@@ -17,10 +17,11 @@ rm .env
 cp .env.deploy .env
 echo "DB_DATABASE=m1457_$NAME" >> .env
 echo "APP_URL=https://$DOMAIN" >> .env
-/home/heseya-dev/composer/composer i --optimize-autoloader --no-interaction --prefer-dist --ignore-platform-reqs
-/home/heseya-dev/bin/php artisan cache:clear
+/home/heseya-dev/composer/composer i --no-interaction --prefer-dist --ignore-platform-reqs
+/home/heseya-dev/bin/php artisan config:clear
+/home/heseya-dev/bin/php artisan optimize:clear
 /home/heseya-dev/bin/php artisan key:generate
 /home/heseya-dev/bin/php artisan apps:remove --force
 /home/heseya-dev/bin/php artisan migrate:fresh --seed
 /home/heseya-dev/bin/php artisan jwt:secret --always-no
-/home/heseya-dev/bin/php artisan optimize:clear
+/home/heseya-dev/bin/php artisan optimize

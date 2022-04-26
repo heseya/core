@@ -2,11 +2,13 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\SaleIndexRequest;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
+use Illuminate\Foundation\Http\FormRequest;
 
-class SaleIndexDto extends Dto
+class SaleIndexDto extends Dto implements InstantiateFromRequest
 {
     protected string|Missing $search;
     protected string|Missing $description;
@@ -14,7 +16,7 @@ class SaleIndexDto extends Dto
     protected array|Missing $metadata_private;
     protected bool $coupon;
 
-    public static function fromFormRequest(SaleIndexRequest $request): self
+    public static function instantiateFromRequest(FormRequest|SaleIndexRequest $request): self
     {
         return new self(
             search: $request->input('search', new Missing()),

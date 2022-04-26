@@ -22,6 +22,7 @@ class AttributeIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'search' => ['nullable', 'string', 'max:255'],
             'global' => [new Boolean()],
             'metadata' => ['nullable', 'array'],
             'metadata_private' => ['nullable', 'array'],

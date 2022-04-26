@@ -2,10 +2,12 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\AppStoreRequest;
 use Heseya\Dto\Dto;
+use Illuminate\Foundation\Http\FormRequest;
 
-class AppInstallDto extends Dto
+class AppInstallDto extends Dto implements InstantiateFromRequest
 {
     private string $url;
     private ?string $name;
@@ -13,7 +15,7 @@ class AppInstallDto extends Dto
     private array $allowedPermissions;
     private array $publicAppPermissions;
 
-    public static function fromAppStoreRequest(AppStoreRequest $request): self
+    public static function instantiateFromRequest(FormRequest|AppStoreRequest $request): self
     {
         return new self(
             url: $request->input('url'),

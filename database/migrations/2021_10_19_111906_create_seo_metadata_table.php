@@ -6,14 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateSeoMetadataTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::create('seo_metadata', function (Blueprint $table) {
+        Schema::create('seo_metadata', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->boolean('global');
             $table->string('title')->nullable();
@@ -29,12 +24,7 @@ class CreateSeoMetadataTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('seo_metadata');
     }

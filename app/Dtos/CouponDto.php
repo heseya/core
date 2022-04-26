@@ -2,18 +2,20 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\CouponCreateRequest;
 use App\Http\Requests\CouponUpdateRequest;
 use App\Http\Requests\SaleCreateRequest;
 use App\Http\Requests\StatusUpdateRequest;
 use Heseya\Dto\Missing;
+use Illuminate\Foundation\Http\FormRequest;
 
-class CouponDto extends SaleDto
+class CouponDto extends SaleDto implements InstantiateFromRequest
 {
     protected string|Missing $code;
 
-    public static function fromFormRequest(
-        CouponCreateRequest|CouponUpdateRequest|StatusUpdateRequest|SaleCreateRequest $request
+    public static function instantiateFromRequest(
+        FormRequest|CouponCreateRequest|CouponUpdateRequest|StatusUpdateRequest|SaleCreateRequest $request
     ): self {
         $conditionGroups = $request->input('condition_groups', new Missing());
         $conditionGroupDtos = [];

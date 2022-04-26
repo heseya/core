@@ -2,12 +2,14 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\AttributeOptionRequest;
 use App\Traits\MapMetadata;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
+use Illuminate\Foundation\Http\FormRequest;
 
-class AttributeOptionDto extends Dto
+class AttributeOptionDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
@@ -17,7 +19,7 @@ class AttributeOptionDto extends Dto
     private float|null|Missing $value_number;
     private string|null|Missing $value_date;
 
-    public static function fromFormRequest(AttributeOptionRequest $request): self
+    public static function instantiateFromRequest(FormRequest|AttributeOptionRequest $request): self
     {
         return new self(
             id: $request->input('id', new Missing()),

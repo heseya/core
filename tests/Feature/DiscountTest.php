@@ -42,6 +42,7 @@ class DiscountTest extends TestCase
     private $conditionUser;
     private $conditionProduct;
     private $conditionProductSet;
+    private array $expectedStructure;
 
     public function setUp(): void
     {
@@ -131,6 +132,25 @@ class DiscountTest extends TestCase
                 'max_value' => 10,
             ],
         ];
+
+        $this->expectedStructure = [
+            'data' => [
+                'id',
+                'name',
+                'description',
+                'value',
+                'type',
+                'priority',
+                'uses',
+                'condition_groups',
+                'target_type',
+                'target_products',
+                'target_sets',
+                'target_shipping_methods',
+                'target_is_allow_list',
+                'metadata',
+            ],
+        ];
     }
 
     public function couponOrSaleProvider(): array
@@ -214,23 +234,7 @@ class DiscountTest extends TestCase
         $response = $this->actingAs($this->$user)->getJson('/coupons/' . $discount->code);
         $response
             ->assertOk()
-            ->assertJsonStructure([
-                'data' => [
-                    'id',
-                    'name',
-                    'description',
-                    'value',
-                    'type',
-                    'priority',
-                    'uses',
-                    'condition_groups',
-                    'target_type',
-                    'target_products',
-                    'target_sets',
-                    'target_shipping_methods',
-                    'target_is_allow_list',
-                ],
-            ])
+            ->assertJsonStructure($this->expectedStructure)
             ->assertJsonFragment(['id' => $discount->getKey()]);
     }
 
@@ -296,23 +300,7 @@ class DiscountTest extends TestCase
         $response = $this->actingAs($this->$user)->getJson('/coupons/' . $discount->code);
         $response
             ->assertOk()
-            ->assertJsonStructure([
-                'data' => [
-                    'id',
-                    'name',
-                    'description',
-                    'value',
-                    'type',
-                    'priority',
-                    'uses',
-                    'condition_groups',
-                    'target_type',
-                    'target_products',
-                    'target_sets',
-                    'target_shipping_methods',
-                    'target_is_allow_list',
-                ],
-            ])
+            ->assertJsonStructure($this->expectedStructure)
             ->assertJsonFragment([
                 'id' => $discount->getKey(),
                 'name' => $discount->name,
@@ -600,8 +588,8 @@ class DiscountTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
             'price' => 1000,
-            'price_min' => 900,
-            'price_max' => 1200,
+            'price_min_initial' => 900,
+            'price_max_initial' => 1200,
         ]);
 
         $productSet = ProductSet::factory()->create(['public' => true]);
@@ -626,8 +614,8 @@ class DiscountTest extends TestCase
                 'id' => $product->getKey(),
                 'name' => $product->name,
                 'public' => true,
-                'min_price_discounted' => $minPriceDiscounted,
-                'max_price_discounted' => $maxPriceDiscounted,
+                'price_min' => $minPriceDiscounted,
+                'price_max' => $maxPriceDiscounted,
             ])
             ->assertJsonFragment([
                 'id' => $productSet->getKey(),
@@ -1734,22 +1722,22 @@ class DiscountTest extends TestCase
         $product1 = Product::factory()->create([
             'public' => true,
             'price' => 100,
-            'price_min' => 100,
-            'price_max' => 150,
+            'price_min_initial' => 100,
+            'price_max_initial' => 150,
         ]);
 
         $product2 = Product::factory()->create([
             'public' => true,
             'price' => 200,
-            'price_min' => 190,
-            'price_max' => 250,
+            'price_min_initial' => 190,
+            'price_max_initial' => 250,
         ]);
 
         $product3 = Product::factory()->create([
             'public' => true,
             'price' => 300,
-            'price_min' => 290,
-            'price_max' => 350,
+            'price_min_initial' => 290,
+            'price_max_initial' => 350,
         ]);
 
         $discount->products()->sync([$product1->getKey(), $product2->getKey()]);
@@ -1786,18 +1774,18 @@ class DiscountTest extends TestCase
             ->assertJsonFragment([
                 'id' => $product2->getKey(),
                 'price' => 200,
-                'price_min' => 190,
-                'price_max' => 250,
-                'min_price_discounted' => 180,
-                'max_price_discounted' => 240,
+                'price_min_initial' => 190,
+                'price_max_initial' => 250,
+                'price_min' => 180,
+                'price_max' => 240,
             ])
             ->assertJsonFragment([
                 'id' => $product3->getKey(),
                 'price' => 300,
-                'price_min' => 290,
-                'price_max' => 350,
-                'min_price_discounted' => 280,
-                'max_price_discounted' => 340,
+                'price_min_initial' => 290,
+                'price_max_initial' => 350,
+                'price_min' => 280,
+                'price_max' => 340,
             ]);
 
         $this->assertDatabaseHas('discounts', $discountNew + ['id' => $discount->getKey()]);
@@ -1810,26 +1798,26 @@ class DiscountTest extends TestCase
         $this->assertDatabaseHas('products', [
             'id' => $product1->getKey(),
             'price' => 100,
+            'price_min_initial' => 100,
+            'price_max_initial' => 150,
             'price_min' => 100,
             'price_max' => 150,
-            'min_price_discounted' => 100,
-            'max_price_discounted' => 150,
         ]);
         $this->assertDatabaseHas('products', [
             'id' => $product2->getKey(),
             'price' => 200,
-            'price_min' => 190,
-            'price_max' => 250,
-            'min_price_discounted' => 180,
-            'max_price_discounted' => 240,
+            'price_min_initial' => 190,
+            'price_max_initial' => 250,
+            'price_min' => 180,
+            'price_max' => 240,
         ]);
         $this->assertDatabaseHas('products', [
             'id' => $product3->getKey(),
             'price' => 300,
-            'price_min' => 290,
-            'price_max' => 350,
-            'min_price_discounted' => 280,
-            'max_price_discounted' => 340,
+            'price_min_initial' => 290,
+            'price_max_initial' => 350,
+            'price_min' => 280,
+            'price_max' => 340,
         ]);
     }
 
@@ -2022,8 +2010,8 @@ class DiscountTest extends TestCase
         $product = Product::factory()->create([
             'public' => true,
             'price' => 100,
-            'price_min' => 100,
-            'price_max' => 200,
+            'price_min_initial' => 100,
+            'price_max_initial' => 200,
         ]);
 
         $discount->products()->attach($product);
@@ -2036,8 +2024,8 @@ class DiscountTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $product->getKey(),
-            'min_price_discounted' => 90,
-            'max_price_discounted' => 190,
+            'price_min' => 90,
+            'price_max' => 190,
         ]);
 
         $response = $this->actingAs($this->$user)->deleteJson('/sales/id:' . $discount->getKey());
@@ -2046,8 +2034,8 @@ class DiscountTest extends TestCase
 
         $this->assertDatabaseHas('products', [
             'id' => $product->getKey(),
-            'min_price_discounted' => 100,
-            'max_price_discounted' => 200,
+            'price_min' => 100,
+            'price_max' => 200,
         ]);
     }
 }

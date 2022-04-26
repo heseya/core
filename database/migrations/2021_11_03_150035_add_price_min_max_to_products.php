@@ -9,14 +9,9 @@ use Illuminate\Support\Facades\Schema;
 
 class AddPriceMinMaxToProducts extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::table('products', function (Blueprint $table) {
+        Schema::table('products', function (Blueprint $table): void {
             $table->float('price_min', 19, 4)->nullable();
             $table->float('price_max', 19, 4)->nullable();
         });
@@ -29,14 +24,9 @@ class AddPriceMinMaxToProducts extends Migration
         ));
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('products', function (Blueprint $table) {
+        Schema::table('products', function (Blueprint $table): void {
             $table->dropColumn('price_min');
             $table->dropColumn('price_max');
         });

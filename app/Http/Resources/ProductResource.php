@@ -17,17 +17,18 @@ class ProductResource extends Resource
             'slug' => $this->resource->slug,
             'name' => $this->resource->name,
             'price' => $this->resource->price,
-            'price_min' => $this->resource->price_min,
-            'price_max' => $this->resource->price_max,
+            'price_min' => $this->resource->price_min ?? $this->resource->price_min_initial,
+            'price_max' => $this->resource->price_max ?? $this->resource->price_max_initial,
             'public' => $this->resource->public,
             'visible' => $this->resource->public,
             'available' => $this->resource->available,
             'quantity_step' => $this->resource->quantity_step,
+            'google_product_category' => $this->resource->google_product_category,
             'cover' => MediaResource::make($this->resource->media->first()),
             'tags' => TagResource::collection($this->resource->tags),
             'items' => ProductItemResource::collection($this->resource->items),
-            'min_price_discounted' => $this->resource->min_price_discounted ?? $this->resource->price_min,
-            'max_price_discounted' => $this->resource->max_price_discounted ?? $this->resource->price_max,
+            'price_min_initial' => $this->resource->price_min_initial,
+            'price_max_initial' => $this->resource->price_max_initial,
         ], $this->metadataResource('products.show_metadata_private'));
     }
 

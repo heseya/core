@@ -79,12 +79,12 @@ class ProductRepository implements ProductRepositoryContract
 
     private function filterSlug(Builder $query, string $key, array $slugs): Builder
     {
-        return $query->filter(new Terms("{$key}.slug", $slugs));
+        return $query->filter(new Terms("${key}_slug", $slugs));
     }
 
     private function filterId(Builder $query, string $key, array $ids): Builder
     {
-        return $query->filter(new Terms("{$key}.id", $ids));
+        return $query->filter(new Terms("${key}_id", $ids));
     }
 
     private function filterIds(Builder $query, string $key, string $ids): Builder

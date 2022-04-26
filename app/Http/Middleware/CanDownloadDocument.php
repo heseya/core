@@ -2,7 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\AuthException;
+use App\Exceptions\ClientException;
 use App\Models\Order;
 use Closure;
 use Illuminate\Http\Request;
@@ -27,6 +29,6 @@ class CanDownloadDocument
             return $next($request);
         }
 
-        throw new AuthException('No access.');
+        throw new ClientException(Exceptions::CLIENT_NO_ACCESS);
     }
 }
