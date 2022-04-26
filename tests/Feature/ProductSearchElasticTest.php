@@ -83,6 +83,120 @@ class ProductSearchElasticTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexSortPriceAsc($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        Product::factory()->create([
+            'public' => true,
+            'price' => 1200,
+            'price_min' => 1100,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['limit' => 100, 'sort' => 'price:asc'])
+            ->assertOk();
+//            ->assertJsonCount(1, 'data');
+
+        $this->assertElasticQuery(
+            [
+                'bool' => [
+                    'must' => [],
+                    'should' => [],
+                    'filter' => [
+                        [
+                            'term' => [
+                                'public' => [
+                                    'value' => true,
+                                    'boost' => 1.0,
+                                ],
+                            ],
+                        ],
+                        [
+                            'term' => [
+                                'hide_on_index' => [
+                                    'value' => false,
+                                    'boost' => 1.0,
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            100,
+            [
+                'sort' => [
+                    [
+                        'price_min' => 'asc',
+                    ],
+                ],
+            ],
+        );
+
+        $this->assertQueryCountLessThan(20);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSortPriceDesc($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        Product::factory()->create([
+            'public' => true,
+            'price' => 1200,
+            'price_min' => 1100,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['limit' => 100, 'sort' => 'price:desc'])
+            ->assertOk();
+//            ->assertJsonCount(1, 'data');
+
+        $this->assertElasticQuery(
+            [
+                'bool' => [
+                    'must' => [],
+                    'should' => [],
+                    'filter' => [
+                        [
+                            'term' => [
+                                'public' => [
+                                    'value' => true,
+                                    'boost' => 1.0,
+                                ],
+                            ],
+                        ],
+                        [
+                            'term' => [
+                                'hide_on_index' => [
+                                    'value' => false,
+                                    'boost' => 1.0,
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            100,
+            [
+                'sort' => [
+                    [
+                        'price_max' => 'desc',
+                    ],
+                ],
+            ],
+        );
+
+        $this->assertQueryCountLessThan(20);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testSearch($user): void
     {
         $this->$user->givePermissionTo('products.show');
