@@ -251,6 +251,64 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexSortPrice($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+            'price' => 1200,
+            'price_min' => 1100,
+        ]);
+        $product2 = Product::factory()->create([
+            'public' => true,
+            'price' => 1300,
+            'price_min' => 1050,
+        ]);
+        $product3 = Product::factory()->create([
+            'public' => true,
+            'price' => 1500,
+            'price_min' => 1000,
+        ]);
+
+        $this->product->update([
+            'price' => 1500,
+            'price_min' => 1200,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['sort' => 'price:asc'])
+            ->assertOk()
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'id' => $product3->id,
+                        'name' => $product3->name,
+                        'price' => $product3->price,
+                        'price_min' => $product3->price_min,
+                    ],
+                    1 => [
+                        'id' => $product2->id,
+                        'name' => $product2->name,
+                        'price' => $product2->price,
+                        'price_min' => $product2->price_min,
+                    ],
+                    2 => [
+                        'id' => $product1->id,
+                        'name' => $product1->name,
+                        'price' => $product1->price,
+                        'price_min' => $product1->price_min,
+                    ],
+                ],
+            ]);
+
+        $this->assertQueryCountLessThan(20);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexHidden($user): void
     {
         $this->$user->givePermissionTo(['products.show', 'products.show_hidden']);

@@ -93,6 +93,8 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'order',
         'public',
         'available',
+        'price_min',
+        'price_max',
     ];
 
     protected array $criteria = [
