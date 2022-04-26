@@ -10,8 +10,8 @@ class ClientException extends StoreException
         string $message = '',
         int $code = 0,
         ?Throwable $previous = null,
-        $simpleLogs = false,
-        $errorArray = [],
+        bool $simpleLogs = false,
+        array $errorArray = [],
     ) {
         parent::__construct($message, $code, $previous, $simpleLogs, $errorArray);
     }

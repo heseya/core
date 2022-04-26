@@ -75,7 +75,7 @@ final class Exceptions extends Enum
 
     public const SERVER_CDN_ERROR = 'CDN responded with an error';
 
-    public static function getCode($value): int
+    public static function getCode(string $value): int
     {
         return match ($value) {
             self::CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED,

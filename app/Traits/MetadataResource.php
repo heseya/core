@@ -19,7 +19,7 @@ trait MetadataResource
         return $data;
     }
 
-    private function processMetadata(Collection $data)
+    private function processMetadata(Collection $data): object
     {
         /**
          * Special workaround for frond-end requirements

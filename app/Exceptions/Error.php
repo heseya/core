@@ -67,7 +67,7 @@ final class Error
      *
      * @deprecated
      */
-    public static function abort($message = 'Internal Server Error', $code = 500): JsonResponse
+    public static function abort(string $message = 'Internal Server Error', int $code = 500): JsonResponse
     {
         $error = new self(
             $message,

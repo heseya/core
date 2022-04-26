@@ -16,7 +16,7 @@ class BannerUpdateRequest extends FormRequest
         'active',
     ];
 
-    public function rules()
+    public function rules(): array
     {
         /** @var Banner $banner */
         $banner = $this->route('banner');

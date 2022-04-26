@@ -33,6 +33,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class OrderController extends Controller
 {
@@ -154,7 +155,7 @@ class OrderController extends Controller
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
-    public function downloadDocument(Order $order, OrderDocument $document)
+    public function downloadDocument(Order $order, OrderDocument $document): StreamedResponse
     {
         return $this->documentService->downloadDocument($document);
     }

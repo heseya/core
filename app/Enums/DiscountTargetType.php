@@ -12,7 +12,7 @@ final class DiscountTargetType extends Enum
     public const SHIPPING_PRICE = 'shipping-price';
     public const CHEAPEST_PRODUCT = 'cheapest-product';
 
-    public static function getPriority($value): int
+    public static function getPriority(string $value): int
     {
         return match ($value) {
             self::PRODUCTS => 0,

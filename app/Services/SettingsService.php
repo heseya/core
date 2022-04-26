@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Config;
 
 class SettingsService implements SettingsServiceContract
 {
-    public function getSettings($publicOnly = false): Collection
+    public function getSettings(bool $publicOnly = false): Collection
     {
         $settings = Setting::orderBy('name')->get();
 
