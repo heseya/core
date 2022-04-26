@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Dtos\BannerDto;
 use App\Models\Banner;
 use App\Services\Contracts\BannerServiceContract;
+use Illuminate\Support\Collection;
 
 class BannerService implements BannerServiceContract
 {
@@ -12,15 +13,19 @@ class BannerService implements BannerServiceContract
     {
         $banner = Banner::create($dto->toArray());
 
-        foreach ($dto->getResponsiveMedia()->all() as $index => $group) {
-            $responsiveMedia = $banner->responsiveMedia()->create([
+        foreach ($dto->getBannerMedia()->all() as $index => $group) {
+            $bannerMedia = $banner->bannerMedia()->create([
+                'title' => $group->getTitle(),
+                'subtitle' => $group->getSubtitle(),
+                'url' => $group->getUrl(),
                 'order' => $index + 1,
             ]);
-
-            $group->each(function ($media) use ($responsiveMedia): void {
-                $responsiveMedia->media()->attach($media->getMedia(), [
-                    'min_screen_width' => $media->getMinScreenWidth(),
-                ]);
+            $group->getMedia()->each(function ($media) use ($bannerMedia): void {
+                $media->each(function ($responsiveMedia) use ($bannerMedia): void {
+                    $bannerMedia->media()->attach($responsiveMedia->getMedia(), [
+                        'min_screen_width' => $responsiveMedia->getMinScreenWidth(),
+                    ]);
+                });
             });
         }
 
@@ -31,22 +36,29 @@ class BannerService implements BannerServiceContract
     {
         $banner->update($dto->toArray());
 
-        foreach ($dto->getResponsiveMedia()->all() as $index => $group) {
-            $responsiveMedia = $banner->responsiveMedia()->firstOrCreate([
+        foreach ($dto->getBannerMedia()->all() as $index => $group) {
+            $bannerMedia = $banner->BannerMedia()->firstOrCreate([
+                'title' => $group->getTitle(),
+                'subtitle' => $group->getSubtitle(),
+                'url' => $group->getUrl(),
                 'order' => $index + 1,
             ]);
 
-            $medias = $group->mapWithKeys(fn ($media) => [
-                $media->getMedia() => ['min_screen_width' => $media->getMinScreenWidth()],
-            ]);
+            $medias = new Collection([]);
 
-            $responsiveMedia->media()->sync($medias);
+            $group->getMedia()->each(function ($media) use (&$medias): void {
+                $medias->merge($media->mapWithKeys(fn ($media) => [
+                    $media->getMedia() => ['min_screen_width' => $media->getMinScreenWidth()],
+                ]));
+            });
+
+            $bannerMedia->media()->sync($medias);
         }
 
-        if ($dto->getResponsiveMedia()->count() < $banner->responsiveMedia()->count()) {
+        if ($dto->getBannerMedia()->count() < $banner->BannerMedia()->count()) {
             $banner
-                ->responsiveMedia()
-                ->where('order', '>', $dto->getResponsiveMedia()->count())
+                ->BannerMedia()
+                ->where('order', '>', $dto->getBannerMedia()->count())
                 ->delete();
         }
 

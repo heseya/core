@@ -7,24 +7,33 @@ Banner:
     slug:
       type: string
       example: 'spring-banner'
-    url:
-      type: string
-      example: 'https://via.placeholder.com/640x480.png/00ffff?text=excepturi'
     name:
       type: string
       example: 'Spring banner'
     active:
       type: boolean
       example: true
-    responsive_media:
-      type: array
-      items:
+      banner_media:
         type: array
-        items:
-          type: object
-          properties:
-            min_screen_width:
-              type: integer
-              example: 200
-            media:
-              $ref: './Media.yml#/Media'
+          items:
+            title:
+              type: string
+              example: 'Spring banner'
+            subtitle:
+              type: string
+              example: 'Spring spring spring'
+            url:
+              type: string
+              example: 'https://via.placeholder.com/640x480.png/00ffff?text=excepturi'
+            responsive_media:
+              type: array
+              items:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    min_screen_width:
+                      type: integer
+                      example: 200
+                    media:
+                      $ref: './Media.yml#/Media'

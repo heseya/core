@@ -18,14 +18,17 @@ class BannerStoreRequest extends FormRequest
     {
         return [
             'slug' => ['required', 'string', 'max:255', 'unique:banners', 'alpha_dash'],
-            'url' => ['required', 'string', 'max:255'],
             'name' => ['required', 'string', 'max:255'],
             'active' => ['required', new Boolean()],
 
-            'responsive_media' => ['required', 'array'],
-            'responsive_media.*' => ['required', 'array'],
-            'responsive_media.*.*.min_screen_width' => ['required', 'numeric'],
-            'responsive_media.*.*.media' => ['required', 'uuid', 'exists:media,id'],
+            'banner_media' => ['required', 'array'],
+            'banner_media.*.title' => ['required', 'string', 'max:255'],
+            'banner_media.*.subtitle' => ['required', 'string', 'max:255'],
+            'banner_media.*.url' => ['required', 'string', 'max:255'],
+            'banner_media.*.responsive_media' => ['required', 'array'],
+            'banner_media.*.responsive_media.*' => ['required', 'array'],
+            'banner_media.*.responsive_media.*.*.min_screen_width' => ['required', 'numeric'],
+            'banner_media.*.responsive_media.*.*.media' => ['required', 'uuid', 'exists:media,id'],
         ];
     }
 }

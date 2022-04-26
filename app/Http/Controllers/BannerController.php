@@ -23,7 +23,7 @@ class BannerController extends Controller
     public function index(BannerIndexRequest $request): JsonResource
     {
         $query = Banner::searchByCriteria($request->validated())
-            ->with(['responsiveMedia', 'responsiveMedia.media', 'metadata', 'metadataPrivate']);
+            ->with(['bannerMedia', 'bannerMedia.media', 'metadata', 'metadataPrivate']);
 
         return BannerResource::collection(
             $query->paginate(Config::get('pagination.per_page'))
@@ -32,7 +32,7 @@ class BannerController extends Controller
 
     public function show(Banner $banner): JsonResource
     {
-        $banner->load(['responsiveMedia', 'responsiveMedia.media', 'metadata', 'metadataPrivate']);
+        $banner->load(['bannerMedia', 'bannerMedia.media', 'metadata', 'metadataPrivate']);
 
         return BannerResource::make($banner);
     }

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Banner;
+use App\Models\BannerMedia;
 use App\Models\Media;
 use Illuminate\Database\Eloquent\Collection;
 use Tests\TestCase;
@@ -11,6 +12,7 @@ class BannerTest extends TestCase
 {
     public Banner $banner;
     public array $newBanner = [];
+    public array $newBannerMedia = [];
     public array $medias = [];
     public Collection $media;
 
@@ -21,16 +23,23 @@ class BannerTest extends TestCase
         $this->banner = Banner::factory()->create();
         $this->media = Media::factory()->count(3)->create();
 
-        $rMedia1 = $this->banner->responsiveMedia()->create(['order' => 1]);
-        $rMedia1->media()->sync([
+        $bannerMedia = BannerMedia::factory()->create([
+            'banner_id' => $this->banner->getKey(),
+            'title' => 'abc',
+            'subtitle' => 'cba',
+            'order' => 1
+        ]);
+        $bannerMedia->media()->sync([
             $this->media[0]->getKey() => ['min_screen_width' => 100],
             $this->media[1]->getKey() => ['min_screen_width' => 250],
         ]);
 
-        $rMedia2 = $this->banner->responsiveMedia()->create(['order' => 2]);
+        $rMedia2 = $this->banner->BannerMedia()->create(['order' => 2]);
         $rMedia2->media()->sync([$this->media[2]->getKey() => ['min_screen_width' => 400]]);
 
         $this->newBanner = Banner::factory()->definition();
+
+        $this->newBannerMedia = BannerMedia::factory()->definition();
 
         $this->medias = [
             'responsive_media' => [
@@ -59,7 +68,7 @@ class BannerTest extends TestCase
             ->getJson('/banners')
             ->assertOk()
             ->assertJsonCount(5, 'data')
-            ->assertJsonFragment($this->banner->only(['slug', 'url', 'name', 'active']))
+            ->assertJsonFragment($this->banner->only(['slug', 'name', 'active']))
             ->assertJsonFragment(['min_screen_width' => 100])
             ->assertJsonFragment(['min_screen_width' => 250])
             ->assertJsonFragment(['min_screen_width' => 400]);
@@ -79,7 +88,7 @@ class BannerTest extends TestCase
             ->getJson('/banners?slug=' . $this->banner->slug)
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonFragment($this->banner->only(['slug', 'url', 'name', 'active']))
+            ->assertJsonFragment($this->banner->only(['slug', 'name', 'active']))
             ->assertJsonFragment(['min_screen_width' => 100])
             ->assertJsonFragment(['min_screen_width' => 250])
             ->assertJsonFragment(['min_screen_width' => 400]);
@@ -121,7 +130,7 @@ class BannerTest extends TestCase
             ->actingAs($this->$user)
             ->getJson("/banners/id:{$this->banner->getKey()}")
             ->assertOk()
-            ->assertJsonFragment($this->banner->only(['slug', 'url', 'name', 'active']))
+            ->assertJsonFragment($this->banner->only(['slug', 'name', 'active']))
             ->assertJsonFragment(['min_screen_width' => 100])
             ->assertJsonFragment(['min_screen_width' => 250])
             ->assertJsonFragment(['min_screen_width' => 400]);
@@ -174,7 +183,7 @@ class BannerTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->postJson('/banners', $this->newBanner + $this->medias)
+            ->postJson('/banners', $this->newBanner + ['banner_media' => [$this->newBannerMedia + $this->medias]])
             ->assertCreated()
             ->assertJsonFragment($this->newBanner)
             ->assertJsonFragment([
@@ -244,9 +253,14 @@ class BannerTest extends TestCase
 
         $banner = [
             'slug' => 'super-spring-banner',
-            'url' => 'https://picsum.photos/200',
             'name' => 'Super spring banner',
             'active' => true,
+        ];
+
+        $bannerMedia = [
+            'title' => 'changed title',
+            'subtitle' => 'new subtitle',
+            'url' => 'https://picsum.photos/200',
         ];
 
         $medias = [
@@ -263,7 +277,10 @@ class BannerTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->patchJson("/banners/id:{$this->banner->getKey()}", $banner + $medias)
+            ->patchJson(
+                "/banners/id:{$this->banner->getKey()}",
+                $banner + ['banner_media' => [$bannerMedia + $medias]]
+            )
             ->assertOk()
             ->assertJsonFragment($banner);
     }
@@ -277,7 +294,7 @@ class BannerTest extends TestCase
 
         $banner = [
             'slug' => 'super-spring-banner',
-            'url' => 'https://picsum.photos/200',
+ //           'url' => 'https://picsum.photos/200',
             'name' => 'Super spring banner',
             'active' => true,
         ];
@@ -294,7 +311,7 @@ class BannerTest extends TestCase
     {
         $banner = [
             'slug' => 'super-spring-banner',
-            'url' => 'https://picsum.photos/200',
+ //           'url' => 'https://picsum.photos/200',
             'name' => 'Super spring banner',
             'active' => true,
         ];
@@ -314,7 +331,7 @@ class BannerTest extends TestCase
 
         $banner = [
             'slug' => 'super-spring-banner',
-            'url' => 'https://picsum.photos/200',
+  //          'url' => 'https://picsum.photos/200',
             'name' => 'Super spring banner',
             'active' => true,
         ];

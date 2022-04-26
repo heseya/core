@@ -18,7 +18,7 @@ class BannerFactory extends Factory
     {
         return [
             'slug' => $this->faker->slug,
-            'url' => $this->faker->imageUrl(),
+//            'url' => $this->faker->imageUrl(),
             'name' => $this->faker->word,
             'active' => $this->faker->boolean,
         ];
