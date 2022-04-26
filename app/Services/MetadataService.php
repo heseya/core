@@ -36,9 +36,13 @@ class MetadataService implements MetadataServiceContract
 
     public function returnModel(array $routeSegments): Model|Role|null
     {
-        $segment = Collection::make($routeSegments)->first();
+        $segments = Collection::make($routeSegments);
+
+        $segment = $segments->first();
+
         $segment = match ($segment) {
             'sales', 'coupons' => 'discounts',
+            'attributes' => $this->isAttributeOption($segments->toArray()) ? 'attribute_options' : 'attributes',
             default => $segment,
         };
         $className = 'App\\Models\\' . Str::studly(Str::singular($segment));
@@ -54,5 +58,10 @@ class MetadataService implements MetadataServiceContract
         }
 
         return null;
+    }
+
+    private function isAttributeOption(array $segments): bool
+    {
+        return $segments[2] === 'options';
     }
 }
