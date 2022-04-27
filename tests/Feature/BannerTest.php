@@ -32,6 +32,7 @@ class BannerTest extends TestCase
         $bannerMedia->media()->sync([
             $this->media[0]->getKey() => ['min_screen_width' => 100],
             $this->media[1]->getKey() => ['min_screen_width' => 250],
+            $this->media[2]->getKey() => ['min_screen_width' => 400],
         ]);
 
         $rMedia2 = $this->banner->BannerMedia()->create(['order' => 2]);
@@ -45,6 +46,7 @@ class BannerTest extends TestCase
             'responsive_media' => [
                 ['min_screen_width' => 200, 'media' => $this->media[0]->getKey()],
                 ['min_screen_width' => 300, 'media' => $this->media[1]->getKey()],
+                ['min_screen_width' => 450, 'media' => $this->media[2]->getKey()],
             ],
         ];
     }
@@ -182,19 +184,19 @@ class BannerTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment($this->newBanner)
             ->assertJsonFragment([
-                'min_screen_width' => $this->medias['responsive_media'][0][0]['min_screen_width'],
+                'min_screen_width' => $this->medias['responsive_media'][0]['min_screen_width'],
             ])
             ->assertJsonFragment([
                 'url' => $this->media[0]->url,
             ])
             ->assertJsonFragment([
-                'min_screen_width' => $this->medias['responsive_media'][0][1]['min_screen_width'],
+                'min_screen_width' => $this->medias['responsive_media'][1]['min_screen_width'],
             ])
             ->assertJsonFragment([
                 'url' => $this->media[1]->url,
             ])
             ->assertJsonFragment([
-                'min_screen_width' => $this->medias['responsive_media'][1][0]['min_screen_width'],
+                'min_screen_width' => $this->medias['responsive_media'][2]['min_screen_width'],
             ])
             ->assertJsonFragment([
                 'url' => $this->media[2]->url,

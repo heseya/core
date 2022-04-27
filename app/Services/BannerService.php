@@ -20,12 +20,11 @@ class BannerService implements BannerServiceContract
                 'url' => $group->getUrl(),
                 'order' => $index + 1,
             ]);
+
             $group->getMedia()->each(function ($media) use ($bannerMedia): void {
-                $media->each(function ($responsiveMedia) use ($bannerMedia): void {
-                    $bannerMedia->media()->attach($responsiveMedia->getMedia(), [
-                        'min_screen_width' => $responsiveMedia->getMinScreenWidth(),
-                    ]);
-                });
+                $bannerMedia->media()->attach($media->getMedia(), [
+                    'min_screen_width' => $media->getMinScreenWidth(),
+                ]);
             });
         }
 
@@ -45,12 +44,8 @@ class BannerService implements BannerServiceContract
             ]);
 
             $medias = [];
-            /*$medias = $group->getMedia()->mapWithKeys(fn ($media) => [
-                $media => ['min_screen_width' => $media->getMinScreenWidth()],
-            ]);
-dd($medias);*/
             $group->getMedia()->each(function ($media) use (&$medias): void {
-                $medias[] = [$media->getMedia() => ['min_screen_width' => $media->getMinScreenWidth()]];
+                $medias[$media->getMedia()] = ['min_screen_width' => $media->getMinScreenWidth()];
             });
 
             $bannerMedia->media()->sync($medias);
