@@ -14,12 +14,9 @@ class BannerResource extends Resource
         return array_merge([
             'id' => $this->resource->getKey(),
             'slug' => $this->resource->slug,
-            'url' => $this->resource->url,
             'name' => $this->resource->name,
             'active' => $this->resource->active,
-            'responsive_media' => $this->resource->responsiveMedia->map(
-                fn ($item) => ResponsiveMediaResource::collection($item->media)
-            ),
+            'banner_media' => BannerMediaResource::collection($this->resource->bannerMedia),
         ], $this->metadataResource('banners.show_metadata_private'));
     }
 }

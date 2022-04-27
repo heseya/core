@@ -12,13 +12,16 @@ class BannerService implements BannerServiceContract
     {
         $banner = Banner::create($dto->toArray());
 
-        foreach ($dto->getResponsiveMedia()->all() as $index => $group) {
-            $responsiveMedia = $banner->responsiveMedia()->create([
+        foreach ($dto->getBannerMedia()->all() as $index => $group) {
+            $bannerMedia = $banner->bannerMedia()->create([
+                'title' => $group->getTitle(),
+                'subtitle' => $group->getSubtitle(),
+                'url' => $group->getUrl(),
                 'order' => $index + 1,
             ]);
 
-            $group->each(function ($media) use ($responsiveMedia): void {
-                $responsiveMedia->media()->attach($media->getMedia(), [
+            $group->getMedia()->each(function ($media) use ($bannerMedia): void {
+                $bannerMedia->media()->attach($media->getMedia(), [
                     'min_screen_width' => $media->getMinScreenWidth(),
                 ]);
             });
@@ -31,22 +34,26 @@ class BannerService implements BannerServiceContract
     {
         $banner->update($dto->toArray());
 
-        foreach ($dto->getResponsiveMedia()->all() as $index => $group) {
-            $responsiveMedia = $banner->responsiveMedia()->firstOrCreate([
+        foreach ($dto->getBannerMedia()->all() as $index => $group) {
+            $bannerMedia = $banner->BannerMedia()->firstOrCreate([
+                'title' => $group->getTitle(),
+                'subtitle' => $group->getSubtitle(),
+                'url' => $group->getUrl(),
                 'order' => $index + 1,
             ]);
 
-            $medias = $group->mapWithKeys(fn ($media) => [
-                $media->getMedia() => ['min_screen_width' => $media->getMinScreenWidth()],
-            ]);
+            $medias = [];
+            $group->getMedia()->each(function ($media) use (&$medias): void {
+                $medias[$media->getMedia()] = ['min_screen_width' => $media->getMinScreenWidth()];
+            });
 
-            $responsiveMedia->media()->sync($medias);
+            $bannerMedia->media()->sync($medias);
         }
 
-        if ($dto->getResponsiveMedia()->count() < $banner->responsiveMedia()->count()) {
+        if ($dto->getBannerMedia()->count() < $banner->BannerMedia()->count()) {
             $banner
-                ->responsiveMedia()
-                ->where('order', '>', $dto->getResponsiveMedia()->count())
+                ->BannerMedia()
+                ->where('order', '>', $dto->getBannerMedia()->count())
                 ->delete();
         }
 
