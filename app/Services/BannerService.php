@@ -44,12 +44,13 @@ class BannerService implements BannerServiceContract
                 'order' => $index + 1,
             ]);
 
-            $medias = new Collection([]);
-
+            $medias = [];
+            /*$medias = $group->getMedia()->mapWithKeys(fn ($media) => [
+                $media => ['min_screen_width' => $media->getMinScreenWidth()],
+            ]);
+dd($medias);*/
             $group->getMedia()->each(function ($media) use (&$medias): void {
-                $medias->merge($media->mapWithKeys(fn ($media) => [
-                    $media->getMedia() => ['min_screen_width' => $media->getMinScreenWidth()],
-                ]));
+                $medias[] = [$media->getMedia() => ['min_screen_width' => $media->getMinScreenWidth()]];
             });
 
             $bannerMedia->media()->sync($medias);

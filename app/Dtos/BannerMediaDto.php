@@ -19,9 +19,7 @@ class BannerMediaDto extends Dto
             title: $data['title'],
             subtitle: $data['subtitle'],
             media: Collection::make($data['responsive_media'])
-                ->map(function ($group) {
-                    return Collection::make($group)->map(fn ($media) => ResponsiveMediaDto::fromDataArray($media));
-                })
+                ->map(fn ($media) => ResponsiveMediaDto::fromDataArray($media))
         );
     }
 

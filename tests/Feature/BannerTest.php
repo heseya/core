@@ -43,13 +43,8 @@ class BannerTest extends TestCase
 
         $this->medias = [
             'responsive_media' => [
-                [
-                    ['min_screen_width' => 200, 'media' => $this->media[0]->getKey()],
-                    ['min_screen_width' => 300, 'media' => $this->media[1]->getKey()],
-                ],
-                [
-                    ['min_screen_width' => 150, 'media' => $this->media[2]->getKey()],
-                ],
+                ['min_screen_width' => 200, 'media' => $this->media[0]->getKey()],
+                ['min_screen_width' => 300, 'media' => $this->media[1]->getKey()],
             ],
         ];
     }
@@ -265,13 +260,8 @@ class BannerTest extends TestCase
 
         $medias = [
             'responsive_media' => [
-                [
-                    ['min_screen_width' => 150, 'media' => $this->media[2]->getKey()],
-                    ['min_screen_width' => 200, 'media' => $this->media[0]->getKey()],
-                ],
-                [
-                    ['min_screen_width' => 300, 'media' => $this->media[1]->getKey()],
-                ],
+                ['min_screen_width' => 150, 'media' => $this->media[2]->getKey()],
+                ['min_screen_width' => 200, 'media' => $this->media[0]->getKey()],
             ],
         ];
 

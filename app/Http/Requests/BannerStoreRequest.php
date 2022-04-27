@@ -26,9 +26,8 @@ class BannerStoreRequest extends FormRequest
             'banner_media.*.subtitle' => ['required', 'string', 'max:255'],
             'banner_media.*.url' => ['required', 'string', 'max:255'],
             'banner_media.*.responsive_media' => ['required', 'array'],
-            'banner_media.*.responsive_media.*' => ['required', 'array'],
-            'banner_media.*.responsive_media.*.*.min_screen_width' => ['required', 'numeric'],
-            'banner_media.*.responsive_media.*.*.media' => ['required', 'uuid', 'exists:media,id'],
+            'banner_media.*.responsive_media.*.min_screen_width' => ['required', 'numeric'],
+            'banner_media.*.responsive_media.*.media' => ['required', 'uuid', 'exists:media,id'],
         ];
     }
 }

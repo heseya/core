@@ -16,24 +16,26 @@ Banner:
     banner_media:
       type: array
       items:
-        title:
-          type: string
-          example: 'Spring banner'
-        subtitle:
-          type: string
-          example: 'Spring spring spring'
-        url:
-          type: string
-          example: 'https://via.placeholder.com/640x480.png/00ffff?text=excepturi'
-        responsive_media:
-          type: array
-          items:
+        type: object
+        properties:
+          title:
+            type: string
+            example: 'Spring banner'
+          subtitle:
+            type: string
+            example: 'Spring spring spring'
+          url:
+            type: string
+            example: 'https://via.placeholder.com/640x480.png/00ffff?text=excepturi'
+          responsive_media:
             type: array
             items:
-              type: object
-              properties:
-                min_screen_width:
-                  type: integer
-                  example: 200
-                media:
-                  $ref: './Media.yml#/Media'
+              type: array
+              items:
+                type: object
+                properties:
+                  min_screen_width:
+                    type: integer
+                    example: 200
+                  media:
+                    $ref: './Media.yml#/Media'
