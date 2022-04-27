@@ -24,6 +24,11 @@ Products:
         description: 'Is public search'
         schema:
           type: boolean
+      - name: full
+        in: query
+        description: 'Return full data'
+        schema:
+          type: boolean
       - name: 'sets[]'
         in: query
         description: 'Product set array slug search'

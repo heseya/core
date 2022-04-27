@@ -25,6 +25,11 @@ Users:
         schema:
           type: string
         example: 'name:desc'
+      - name: full
+        in: query
+        description: 'Return full data'
+        schema:
+          type: boolean
       - name: limit
         in: query
         description: 'Number of elements per page'
