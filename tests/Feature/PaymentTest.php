@@ -422,6 +422,49 @@ class PaymentTest extends TestCase
 
         $response->assertForbidden();
     }
+
+    public function testCreatePaymentWithPaymentMethod(): void
+    {
+        $this->user->givePermissionTo('payments.add');
+        Http::fake(['*' => Http::response([
+            'payment_id' => 'test',
+            'status' => PaymentStatus::SUCCESSFUL,
+            'amount' => 100,
+            'redirect_url' => 'redirect_url',
+            'continue_url' => 'continue_url',
+        ]),
+        ]);
+
+        $paymentMethod = PaymentMethod::factory()->create();
+
+        $response = $this->actingAs($this->user)->json(
+            'POST',
+            'orders/' . $this->order->code . '/pay/' . $paymentMethod->getKey(),
+            [
+                'continue_url' => 'continue_url',
+            ]
+        );
+
+        $response
+            ->assertJson(['data' => [
+                'method_id' => $paymentMethod->getKey(),
+                'status' => PaymentStatus::SUCCESSFUL,
+                'amount' => 100,
+                'redirect_url' => 'redirect_url',
+                'continue_url' => 'continue_url',
+            ],
+            ])->assertCreated();
+
+        $this->assertDatabaseHas('payments', [
+            'id' => $response->getData()->data->id,
+            'order_id' => $this->order->getKey(),
+            'amount' => 100,
+            'redirect_url' => 'redirect_url',
+            'continue_url' => 'continue_url',
+            'status' => PaymentStatus::SUCCESSFUL,
+            'method_id' => $paymentMethod->getKey(),
+        ]);
+    }
 //    public function testPayPalNotification(): void
 //    {
 //        Http::fake();

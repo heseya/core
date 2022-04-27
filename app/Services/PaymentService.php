@@ -23,7 +23,6 @@ class PaymentService implements PaymentServiceContract
     public function getPayment(Order $order, string $method, Request $request): Payment
     {
         $paymentMethod = PaymentMethod::where('id', $method)->first();
-
         return $paymentMethod === null ?
             $this->createPayment($method, $order, $request)
             : $this->requestPaymentFromMicroservice($paymentMethod, $order, $request);
@@ -41,7 +40,16 @@ class PaymentService implements PaymentServiceContract
             throw new ServerException(Exceptions::SERVER_PAYMENT_MICROSERVICE_ERROR);
         }
 
-        return Payment::create(['order_id' => $order->getKey()] + $response->json());
+        return Payment::create(
+            [
+                'order_id' => $order->getKey(),
+                'method_id' => $method->getKey(),
+                'status' => $response->json('status'),
+                'amount' => $response->json('amount'),
+                'redirect_url' => $response->json('redirect_url'),
+                'continue_url' => $response->json('continue_url'),
+            ]
+        );
     }
 
     private function createPayment(string $method, Order $order, Request $request): Payment
