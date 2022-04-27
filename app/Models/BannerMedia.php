@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
- * @mixin IdeHelperResponsiveMedia
+ * @mixin IdeHelperBannerMedia
  */
 class BannerMedia extends Model
 {

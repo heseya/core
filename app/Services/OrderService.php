@@ -12,6 +12,7 @@ use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdated;
 use App\Exceptions\ClientException;
+use App\Exceptions\ServerException;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
 use App\Models\CartResource;
@@ -73,6 +74,12 @@ class OrderService implements OrderServiceContract
             $invoiceAddress = Address::firstOrCreate($dto->getInvoiceAddress()->toArray());
         }
 
+        $status = Status::select('id')->orderBy('order')->first();
+
+        if ($status === null) {
+            throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED);
+        }
+
         $order = Order::create(
             $dto->toArray() + [
                 'code' => $this->nameService->generate(),
@@ -81,7 +88,7 @@ class OrderService implements OrderServiceContract
                 'shipping_price' => 0.0,
                 'cart_total_initial' => 0.0,
                 'cart_total' => 0.0,
-                'status_id' => Status::select('id')->orderBy('order')->first()->getKey(),
+                'status_id' => $status->getKey(),
                 'delivery_address_id' => $deliveryAddress->getKey(),
                 'invoice_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
                 'buyer_id' => Auth::user()->getKey(),
