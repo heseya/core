@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Dtos\BannerDto;
 use App\Models\Banner;
 use App\Services\Contracts\BannerServiceContract;
-use Illuminate\Support\Collection;
 
 class BannerService implements BannerServiceContract
 {
