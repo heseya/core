@@ -12,6 +12,7 @@ use App\Traits\HasMetadata;
 use App\Traits\HasUuid;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
@@ -44,4 +45,11 @@ class Role extends SpatieRole implements AuditableContract
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
     ];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope('order', function (Builder $builder): void {
+            $builder->orderByRaw('type = ' . RoleType::OWNER . ' DESC, type ASC');
+        });
+    }
 }
