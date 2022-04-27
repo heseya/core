@@ -20,14 +20,14 @@ class MetadataController extends Controller
 
     public function updateOrCreate($modelId, Request $request): JsonResponse | JsonResource
     {
-        $model = $this->metadataService->returnModel($request->segments());
-        if ($model === null) {
+        $modelClass = $this->metadataService->returnModel($request->segments());
+        if ($modelClass === null) {
             return Response::json(null, JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         # Workaround for attribute option metadata
-        $model instanceof AttributeOption ?
-            $model = $model->findOrFail($request->route('option')) : $model = $model->findOrFail($modelId);
+        $model = $modelClass instanceof AttributeOption ?
+            $modelClass->findOrFail($request->route('option')) : $modelClass->findOrFail($modelId);
 
         $public = Collection::make($request->segments())->last() === 'metadata';
         foreach ($request->all() as $key => $value) {

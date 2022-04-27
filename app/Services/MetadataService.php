@@ -40,18 +40,18 @@ class MetadataService implements MetadataServiceContract
 
         $segment = $segments->first();
 
-        $segment = match ($segment) {
+        $class = match ($segment) {
             'sales', 'coupons' => 'discounts',
             'attributes' => $this->isAttributeOption($segments->toArray()) ? 'attribute_options' : 'attributes',
             default => $segment,
         };
-        $className = 'App\\Models\\' . Str::studly(Str::singular($segment));
+        $className = 'App\\Models\\' . Str::studly(Str::singular($class));
 
         if (class_exists($className)) {
             return new $className();
         }
 
-        $className = 'App\\Models\\' . Str::studly($segment);
+        $className = 'App\\Models\\' . Str::studly($class);
 
         if (class_exists($className)) {
             return new $className();
