@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Services\Contracts\UserServiceContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -56,9 +57,11 @@ class UserService implements UserServiceContract
         $authenticable = Auth::user();
 
         if ($roles !== null) {
+            /** @var Collection<int, Role> $roleModels */
             $roleModels = Role::whereIn('id', $roles)->orWhere('type', RoleType::AUTHENTICATED)->get();
 
             $newRoles = $roleModels->diff($user->roles);
+            /** @var Collection<int, Role> $removedRoles */
             $removedRoles = $user->roles->diff($roleModels);
 
             $permissions = $newRoles->flatMap(
