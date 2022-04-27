@@ -43,6 +43,25 @@ PaymentMethods:
       - BearerAuth: [ ]
 
 PaymentMethodsParams:
+  get:
+    tags:
+      - Payments
+    summary: 'get payment method'
+    parameters:
+      - name: id
+        in: query
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/PaymentMethods.yml#/PaymentMethod'
+              type: object
   delete:
     tags:
       - Payments
