@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\RegisterDto;
+use App\Dtos\SavedAddressDto;
 use App\Dtos\TFAConfirmDto;
 use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
@@ -12,23 +13,30 @@ use App\Http\Requests\PasswordResetRequest;
 use App\Http\Requests\PasswordResetSaveRequest;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\SavedAddressStoreRequest;
+use App\Http\Requests\SavedAddressUpdateRequest;
 use App\Http\Requests\TFAConfirmRequest;
 use App\Http\Requests\TFAPasswordRequest;
 use App\Http\Requests\TFASetupRequest;
 use App\Http\Requests\TokenRefreshRequest;
-use App\Http\Resources\AppResource;
+use App\Http\Resources\AppWithSavedAddressesResource;
 use App\Http\Resources\AuthResource;
 use App\Http\Resources\ProfileResource;
+use App\Http\Resources\SavedAddressResource;
 use App\Http\Resources\TFARecoveryCodesResource;
 use App\Http\Resources\TFAResource;
 use App\Http\Resources\UserResource;
+use App\Http\Resources\UserWithSavedAddressesResource;
 use App\Models\App;
+use App\Models\SavedAddress;
 use App\Models\User;
 use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\AuthServiceContract;
+use App\Services\Contracts\SavedAddressServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 
@@ -37,6 +45,7 @@ class AuthController extends Controller
     public function __construct(
         private AuthServiceContract $authService,
         private AppServiceContract $appService,
+        private SavedAddressServiceContract $savedAddresService,
     ) {
     }
 
@@ -117,8 +126,8 @@ class AuthController extends Controller
         $authenticable = $request->user();
 
         $resource = $authenticable instanceof App
-            ? AppResource::make($authenticable)
-            : UserResource::make($authenticable);
+            ? AppWithSavedAddressesResource::make($authenticable)
+            : UserWithSavedAddressesResource::make($authenticable);
 
         return $resource
             ->response()
@@ -156,12 +165,14 @@ class AuthController extends Controller
     public function generateRecoveryCodes(TFAPasswordRequest $request): JsonResource
     {
         $dto = TFAPasswordDto::instantiateFromRequest($request);
+
         return TFARecoveryCodesResource::make($this->authService->generateRecoveryCodes($dto));
     }
 
     public function removeTFA(TFAPasswordRequest $request): JsonResponse
     {
         $this->authService->removeTFA(TFAPasswordDto::instantiateFromRequest($request));
+
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
@@ -170,12 +181,59 @@ class AuthController extends Controller
         Gate::inspect('removeUserTFA', [User::class, $user]);
 
         $this->authService->removeUsersTFA($user);
+
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
     public function register(RegisterRequest $request): JsonResource
     {
         return UserResource::make($this->authService->register(RegisterDto::instantiateFromRequest($request)));
+    }
+
+    public function storeSavedAddress(SavedAddressStoreRequest $request, int $type): JsonResource
+    {
+        $this->savedAddresService->storeAddress(
+            SavedAddressDto::instantiateFromRequest($request),
+            $type
+        );
+
+        return SavedAddressResource::collection(
+            SavedAddress::where([
+                'user_id' => Auth::id(),
+                'type' => $type,
+            ])->get()
+        );
+    }
+
+    public function updateSavedAddress(
+        SavedAddressUpdateRequest $request,
+        SavedAddress $address,
+        int $type
+    ): JsonResource {
+        $this->savedAddresService->updateAddress(
+            $address,
+            SavedAddressDto::instantiateFromRequest($request),
+            $type
+        );
+
+        return SavedAddressResource::collection(
+            SavedAddress::where([
+                'user_id' => Auth::id(),
+                'type' => $type,
+            ])->get()
+        );
+    }
+
+    public function deleteSavedAddress(SavedAddress $address, int $type): JsonResource
+    {
+        $this->savedAddresService->deleteSavedAddress($address);
+
+        return SavedAddressResource::collection(
+            SavedAddress::where([
+                'user_id' => Auth::id(),
+                'type' => $type,
+            ])->get()
+        );
     }
 
     public function updateProfile(ProfileUpdateRequest $request): JsonResource

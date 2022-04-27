@@ -81,7 +81,12 @@ class ItemService implements ItemServiceContract
 
         /** @var CartItemDto $item */
         foreach ($items as $item) {
-            $product = Product::findOrFail($item->getProductId());
+            $product = Product::find($item->getProductId());
+
+            if ($product === null) {
+                continue;
+            }
+
             $schemas = $item->getSchemas();
             $available = true;
 

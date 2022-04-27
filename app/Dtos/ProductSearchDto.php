@@ -7,6 +7,7 @@ use App\Http\Requests\ProductIndexRequest;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 
 class ProductSearchDto extends Dto implements InstantiateFromRequest
 {
@@ -30,9 +31,14 @@ class ProductSearchDto extends Dto implements InstantiateFromRequest
 
     public static function instantiateFromRequest(FormRequest|ProductIndexRequest $request): self
     {
+        $sort = $request->input('sort');
+        $sort = Str::contains($sort, 'price:asc')
+            ? Str::replace('price:asc', 'price_min:asc', $sort) : $sort;
+        $sort = Str::contains($sort, 'price:desc')
+            ? Str::replace('price:desc', 'price_max:desc', $sort) : $sort;
         return new self(
             search: $request->input('search'),
-            sort: $request->input('sort'),
+            sort: $sort,
             ids: $request->input('ids', new Missing()),
             slug: $request->input('slug', new Missing()),
             name: $request->input('name', new Missing()),

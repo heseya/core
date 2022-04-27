@@ -8,7 +8,7 @@ use Illuminate\Validation\Rule;
 
 class MediaUpdateRequest extends FormRequest
 {
-    public function rules()
+    public function rules(): array
     {
         /** @var Media $media */
         $media = $this->route('media');

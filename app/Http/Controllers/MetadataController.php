@@ -17,7 +17,7 @@ class MetadataController extends Controller
     {
     }
 
-    public function updateOrCreate(int $modelId, Request $request): JsonResponse | JsonResource
+    public function updateOrCreate(int|string $modelId, Request $request): JsonResponse | JsonResource
     {
         $model = $this->metadataService->returnModel($request->segments());
 

@@ -11,11 +11,11 @@ class SaleResource extends Resource
 
     public function base(Request $request): array
     {
-        if (isset($this->resource->pivot)) {
+        if (isset($this->resource->pivot) && isset($this->resource->pivot->type)) {
             // @phpstan-ignore-next-line
             $this->resource->type = $this->resource->pivot->type;
             // @phpstan-ignore-next-line
-            $this->resource->discount = $this->resource->pivot->discount;
+            $this->resource->value = $this->resource->pivot->value;
         }
 
         return array_merge([

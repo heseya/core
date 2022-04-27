@@ -251,6 +251,64 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexSortPrice($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+            'price' => 1200,
+            'price_min' => 1100,
+        ]);
+        $product2 = Product::factory()->create([
+            'public' => true,
+            'price' => 1300,
+            'price_min' => 1050,
+        ]);
+        $product3 = Product::factory()->create([
+            'public' => true,
+            'price' => 1500,
+            'price_min' => 1000,
+        ]);
+
+        $this->product->update([
+            'price' => 1500,
+            'price_min' => 1200,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['sort' => 'price:asc'])
+            ->assertOk()
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'id' => $product3->id,
+                        'name' => $product3->name,
+                        'price' => $product3->price,
+                        'price_min' => $product3->price_min,
+                    ],
+                    1 => [
+                        'id' => $product2->id,
+                        'name' => $product2->name,
+                        'price' => $product2->price,
+                        'price_min' => $product2->price_min,
+                    ],
+                    2 => [
+                        'id' => $product1->id,
+                        'name' => $product1->name,
+                        'price' => $product1->price,
+                        'price_min' => $product1->price_min,
+                    ],
+                ],
+            ]);
+
+        $this->assertQueryCountLessThan(20);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexHidden($user): void
     {
         $this->$user->givePermissionTo(['products.show', 'products.show_hidden']);
@@ -1928,6 +1986,30 @@ class ProductTest extends TestCase
         $response->assertUnprocessable();
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithNullGoogleProductCategory($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $response = $this->actingAs($this->$user)->postJson('/products', [
+            'name' => 'Test',
+            'slug' => 'test',
+            'price' => 100.00,
+            'description_html' => '<h1>Description</h1>',
+            'description_short' => 'So called short description...',
+            'public' => true,
+            'google_product_category' => null,
+        ]);
+
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('products', [
+            'google_product_category' => null,
+        ]);
+    }
+
     public function testUpdateUnauthorized(): void
     {
         Event::fake([ProductUpdated::class]);
@@ -2505,6 +2587,24 @@ class ProductTest extends TestCase
         ]);
 
         $response->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithNullGoogleProductCategory($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
+            'google_product_category' => null,
+        ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('products', [
+            'google_product_category' => null,
+        ]);
     }
 
     /**

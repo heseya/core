@@ -81,7 +81,6 @@ This project uses [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.htm
 
 - [ ] Check if migrations work,
 - [ ] Check if all tests pass,
-- [ ] Write down all changes to `changelog.md`,
 - [ ] Change version in `config/app.php`,
 - [ ] Change version in `app/Http/Controllers/Controller.php` (Swagger),
 - [ ] Create a version tag on the master branch.

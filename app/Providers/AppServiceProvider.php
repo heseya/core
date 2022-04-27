@@ -37,6 +37,7 @@ use App\Services\Contracts\ProductServiceContract;
 use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
 use App\Services\Contracts\RoleServiceContract;
+use App\Services\Contracts\SavedAddressServiceContract;
 use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
@@ -63,6 +64,7 @@ use App\Services\ProductService;
 use App\Services\ProductSetService;
 use App\Services\ReorderService;
 use App\Services\RoleService;
+use App\Services\SavedAddressService;
 use App\Services\SchemaService;
 use App\Services\SeoMetadataService;
 use App\Services\SettingsService;
@@ -104,6 +106,7 @@ class AppServiceProvider extends ServiceProvider
         UrlServiceContract::class => UrlService::class,
         ItemServiceContract::class => ItemService::class,
         OneTimeSecurityCodeContract::class => OneTimeSecurityCodeService::class,
+        SavedAddressServiceContract::class => SavedAddressService::class,
         AvailabilityServiceContract::class => AvailabilityService::class,
         DocumentServiceContract::class => DocumentService::class,
         MetadataServiceContract::class => MetadataService::class,

@@ -4,14 +4,15 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 
-class TagResource extends Resource
+class SavedAddressResource extends Resource
 {
     public function base(Request $request): array
     {
         return [
             'id' => $this->resource->getKey(),
+            'default' => $this->resource->default,
             'name' => $this->resource->name,
-            'color' => $this->resource->color,
+            'address' => AddressResource::make($this->resource->address),
         ];
     }
 }
