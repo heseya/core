@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\IssuerType;
 use App\Enums\RoleType;
 use App\Enums\SchemaType;
@@ -24,6 +25,7 @@ use App\Models\ProductSet;
 use App\Models\Role;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
+use App\Models\Status;
 use App\Models\WebHook;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -1019,5 +1021,32 @@ class OrderCreateTest extends TestCase
         ]);
 
         Event::assertDispatched(OrderCreated::class);
+    }
+
+    public function testCreateOrderWithoutAnyStatuses(): void
+    {
+        Status::query()->delete();
+
+        $this->user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $response = $this->actingAs($this->user)->postJson('/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertStatus(500)
+            ->assertJsonFragment(['message' => Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED]);
+
+        Event::assertNotDispatched(OrderCreated::class);
     }
 }

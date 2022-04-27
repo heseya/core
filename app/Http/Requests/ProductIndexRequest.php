@@ -23,9 +23,10 @@ class ProductIndexRequest extends FormRequest
         $setsExist = Rule::exists('product_sets', 'slug');
 
         if (Gate::denies('product_sets.show_hidden')) {
+            // Ignored for phpstan because laravel have bad types
             $setsExist = $setsExist
-                ->where('public', 1)
-                ->where('public_parent', 1);
+                ->where('public', true) // @phpstan-ignore-line
+                ->where('public_parent', true); // @phpstan-ignore-line
         }
 
         return [
