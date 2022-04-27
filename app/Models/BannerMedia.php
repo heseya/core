@@ -2,17 +2,21 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @mixin IdeHelperResponsiveMedia
  */
-class ResponsiveMedia extends Model
+class BannerMedia extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'title',
+        'subtitle',
+        'url',
         'order',
     ];
 
@@ -21,5 +25,11 @@ class ResponsiveMedia extends Model
         return $this->belongsToMany(Media::class, 'media_responsive_media')
             ->withPivot('min_screen_width')
             ->using(MediaResponsiveMedia::class);
+    }
+
+    public function scopeReversed($query): Builder
+    {
+        return $query->withoutGlobalScope('ordered')
+            ->orderBy('order', 'desc');
     }
 }
