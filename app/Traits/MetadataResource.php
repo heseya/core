@@ -19,6 +19,9 @@ trait MetadataResource
         return $data;
     }
 
+    /**
+     * @param Collection<int, Metadata> $data
+     */
     private function processMetadata(Collection $data)
     {
         /**

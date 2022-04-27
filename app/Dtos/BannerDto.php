@@ -4,7 +4,7 @@ namespace App\Dtos;
 
 use App\Dtos\Contracts\InstantiateFromRequest;
 use Heseya\Dto\Dto;
-use Illuminate\Http\Request;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Collection;
 
 class BannerDto extends Dto implements InstantiateFromRequest
@@ -14,7 +14,7 @@ class BannerDto extends Dto implements InstantiateFromRequest
     private bool $active;
     private Collection $banner_media;
 
-    public static function instantiateFromRequest(Request $request): InstantiateFromRequest
+    public static function instantiateFromRequest(FormRequest $request): self
     {
         return new self(
             slug: $request->input('slug'),

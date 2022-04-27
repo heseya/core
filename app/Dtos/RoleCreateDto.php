@@ -4,7 +4,7 @@ namespace App\Dtos;
 
 use App\Dtos\Contracts\DtoContract;
 use App\Dtos\Contracts\InstantiateFromRequest;
-use Illuminate\Http\Request;
+use Illuminate\Foundation\Http\FormRequest;
 
 class RoleCreateDto implements DtoContract, InstantiateFromRequest
 {
@@ -15,7 +15,7 @@ class RoleCreateDto implements DtoContract, InstantiateFromRequest
     ) {
     }
 
-    public static function instantiateFromRequest(Request $request): self
+    public static function instantiateFromRequest(FormRequest $request): self
     {
         return new self(
             $request->input('name'),

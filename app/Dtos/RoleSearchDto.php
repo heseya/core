@@ -4,7 +4,7 @@ namespace App\Dtos;
 
 use App\Dtos\Contracts\DtoContract;
 use App\Dtos\Contracts\InstantiateFromRequest;
-use Illuminate\Http\Request;
+use Illuminate\Foundation\Http\FormRequest;
 
 class RoleSearchDto implements DtoContract, InstantiateFromRequest
 {
@@ -49,7 +49,7 @@ class RoleSearchDto implements DtoContract, InstantiateFromRequest
         return $data;
     }
 
-    public static function instantiateFromRequest(Request $request): self
+    public static function instantiateFromRequest(FormRequest $request): self
     {
         return new self(
             $request->input('search', null),
