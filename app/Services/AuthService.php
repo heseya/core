@@ -26,6 +26,7 @@ use App\Services\Contracts\ConsentServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
 use Carbon\Carbon;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -33,6 +34,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use PHPGangsta_GoogleAuthenticator;
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
 class AuthService implements AuthServiceContract
 {
@@ -96,6 +98,7 @@ class AuthService implements AuthServiceContract
         }
 
         $uuid = Str::uuid()->toString();
+        /** @var JWTSubject|Authenticatable|null $user */
         $user = $this->tokenService->getUser($refreshToken);
         $this->tokenService->invalidateToken($refreshToken);
 

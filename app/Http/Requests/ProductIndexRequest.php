@@ -24,8 +24,8 @@ class ProductIndexRequest extends FormRequest
 
         if (Gate::denies('product_sets.show_hidden')) {
             $setsExist = $setsExist
-                ->where('public', true)
-                ->where('public_parent', true);
+                ->where('public', 1)
+                ->where('public_parent', 1);
         }
 
         return [
