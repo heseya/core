@@ -7,36 +7,36 @@ use Illuminate\Support\Collection;
 
 class BannerMediaDto extends Dto
 {
-    private string $url;
-    private string $title;
-    private string $subtitle;
+    private ?string $url;
+    private ?string $title;
+    private ?string $subtitle;
     private Collection $media;
 
     public static function fromDataArray(array $data): BannerMediaDto
     {
         /** @var Collection<int, mixed> $responsiveMedia */
-        $responsiveMedia = $data['responsive_media'];
+        $responsiveMedia = $data['media'];
 
         return new self(
-            url: $data['url'],
-            title: $data['title'],
-            subtitle: $data['subtitle'],
+            url: $data['url'] ?? null,
+            title: $data['title'] ?? null,
+            subtitle: $data['subtitle'] ?? null,
             media: Collection::make($responsiveMedia)
                 ->map(fn ($media) => ResponsiveMediaDto::fromDataArray($media))
         );
     }
 
-    public function getUrl(): string
+    public function getUrl(): ?string
     {
         return $this->url;
     }
 
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         return $this->title;
     }
 
-    public function getSubtitle(): string
+    public function getSubtitle(): ?string
     {
         return $this->subtitle;
     }

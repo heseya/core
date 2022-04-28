@@ -24,7 +24,7 @@ class BannerMedia extends Model
     {
         return $this->belongsToMany(Media::class, 'media_responsive_media')
             ->withPivot('min_screen_width')
-            ->using(MediaResponsiveMedia::class);
+            ->using(MediaBannerMedia::class);
     }
 
     public function scopeReversed(Builder $query): Builder

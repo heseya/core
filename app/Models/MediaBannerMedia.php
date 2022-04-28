@@ -5,9 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
- * @mixin IdeHelperMediaResponsiveMedia
+ * @mixin IdeHelperMediaBannerMedia
  */
-class MediaResponsiveMedia extends Pivot
+class MediaBannerMedia extends Pivot
 {
     protected $fillable = [
         'min_screen_width',
