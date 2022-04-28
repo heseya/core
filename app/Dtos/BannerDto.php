@@ -17,11 +17,14 @@ class BannerDto extends Dto implements InstantiateFromRequest
 
     public static function instantiateFromRequest(Request $request): InstantiateFromRequest
     {
+        /** @var Collection<int, mixed> $bannerMedias */
+        $bannerMedias = $request->input('banner_media');
+
         return new self(
             slug: $request->input('slug', new Missing()),
             name: $request->input('name', new Missing()),
             active: $request->input('active', new Missing()),
-            banner_media: Collection::make($request->input('banner_media'))
+            banner_media: Collection::make($bannerMedias)
                 ->map(function ($group) {
                     return BannerMediaDto::fromDataArray($group);
                 })

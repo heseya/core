@@ -73,17 +73,17 @@ class ProductSet extends Model
             Str::after($this->slug, $this->parent->slug . '-');
     }
 
-    public function scopePublic($query)
+    public function scopePublic(Builder $query): Builder
     {
         return $query->where('public', true)->where('public_parent', true);
     }
 
-    public function scopeRoot($query): Builder
+    public function scopeRoot(Builder $query): Builder
     {
         return $query->whereNull('parent_id');
     }
 
-    public function scopeReversed($query): Builder
+    public function scopeReversed(Builder $query): Builder
     {
         return $query->withoutGlobalScope('ordered')
             ->orderBy('order', 'desc');

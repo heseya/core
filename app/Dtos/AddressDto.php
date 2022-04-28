@@ -11,13 +11,13 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class AddressDto extends Dto implements InstantiateFromRequest
 {
-    private string|Missing $name;
-    private string|Missing $address;
-    private string|Missing $vat;
-    private string|Missing $zip;
-    private string|Missing $city;
-    private string|Missing $country;
-    private string|Missing $phone;
+    private string|null|Missing $name;
+    private string|null|Missing $address;
+    private string|null|Missing $vat;
+    private string|null|Missing $zip;
+    private string|null|Missing $city;
+    private string|null|Missing $country;
+    private string|null|Missing $phone;
 
     public static function instantiateFromRequest(
         FormRequest|OrderCreateRequest|OrderUpdateRequest $request,
@@ -34,37 +34,37 @@ class AddressDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    public function getName(): Missing|string
+    public function getName(): Missing|string|null
     {
         return $this->name;
     }
 
-    public function getAddress(): Missing|string
+    public function getAddress(): Missing|string|null
     {
         return $this->address;
     }
 
-    public function getVat(): Missing|string
+    public function getVat(): Missing|string|null
     {
         return $this->vat;
     }
 
-    public function getZip(): Missing|string
+    public function getZip(): Missing|string|null
     {
         return $this->zip;
     }
 
-    public function getCity(): Missing|string
+    public function getCity(): Missing|string|null
     {
         return $this->city;
     }
 
-    public function getCountry(): Missing|string
+    public function getCountry(): Missing|string|null
     {
         return $this->country;
     }
 
-    public function getPhone(): Missing|string
+    public function getPhone(): Missing|string|null
     {
         return $this->phone;
     }

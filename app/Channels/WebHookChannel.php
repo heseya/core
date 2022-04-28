@@ -7,7 +7,7 @@ use Spatie\WebhookServer\WebhookCall;
 
 class WebHookChannel
 {
-    public function send($notifiable, WebHookNotification $notification): void
+    public function send(mixed $notifiable, WebHookNotification $notification): void
     {
         $data = $notification->toWebHook($notifiable);
 

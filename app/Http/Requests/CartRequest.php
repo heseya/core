@@ -13,7 +13,7 @@ class CartRequest extends FormRequest
             'shipping_method_id' => ['nullable', 'uuid', 'exists:shipping_methods,id'],
 
             'coupons' => ['nullable', 'array'],
-            'coupons.*' => ['string', 'max:64', 'exists:discounts,code'],
+            'coupons.*' => ['string', 'max:64'],
 
             'items' => ['required', 'array', 'min:1'],
             'items.*.cartitem_id' => ['required', 'string'],

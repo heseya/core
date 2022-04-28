@@ -32,4 +32,10 @@ class BannerMedia extends Model
         return $query->withoutGlobalScope('ordered')
             ->orderBy('order', 'desc');
     }
+
+    public function scopeReversed(Builder $query): Builder
+    {
+        return $query->withoutGlobalScope('ordered')
+            ->orderBy('order', 'desc');
+    }
 }

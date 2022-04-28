@@ -13,6 +13,7 @@ use App\Traits\Sortable;
 use BenSampo\Enum\Exceptions\InvalidEnumKeyException;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -53,7 +54,7 @@ class Schema extends Model implements SortableContract
         'type' => SchemaType::class,
     ];
 
-    protected $criteria = [
+    protected array $criteria = [
         'search' => SchemaSearch::class,
         'name' => Like::class,
         'hidden',
@@ -126,7 +127,7 @@ class Schema extends Model implements SortableContract
         }
     }
 
-    public function getItems($value, float $quantity = 0): array
+    public function getItems(int|string|null $value, float $quantity = 0): array
     {
         $items = [];
 
@@ -154,7 +155,7 @@ class Schema extends Model implements SortableContract
     /**
      * @throws InvalidEnumKeyException
      */
-    public function setTypeAttribute($value): void
+    public function setTypeAttribute(mixed $value): void
     {
         if (!is_integer($value)) {
             $value = SchemaType::fromKey(Str::upper($value));
@@ -168,7 +169,14 @@ class Schema extends Model implements SortableContract
         return $this->belongsToMany(Product::class, 'product_schemas');
     }
 
-    public function getPrice($value, $schemas): float
+    /**
+     * @template TMakeKey of array-key
+     * @template TMakeValue
+     *
+     * @param mixed $value
+     * @param Arrayable<TMakeKey, TMakeValue>|iterable<TMakeKey, TMakeValue>|null $schemas
+     */
+    public function getPrice(mixed $value, $schemas): float
     {
         $schemaKeys = Collection::make($schemas)->keys();
 
@@ -199,7 +207,14 @@ class Schema extends Model implements SortableContract
         );
     }
 
-    private function getUsedPrice($value, $schemas): float
+    /**
+     * @template TMakeKey of array-key
+     * @template TMakeValue
+     *
+     * @param mixed $value
+     * @param Arrayable<TMakeKey, TMakeValue>|iterable<TMakeKey, TMakeValue>|null $schemas
+     */
+    private function getUsedPrice(mixed $value, $schemas): float
     {
         $price = $this->price;
 

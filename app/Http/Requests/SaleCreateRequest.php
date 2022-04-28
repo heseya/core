@@ -8,6 +8,7 @@ use App\Enums\DiscountType;
 use App\Rules\Boolean;
 use App\Traits\BooleanRules;
 use BenSampo\Enum\Rules\EnumValue;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SaleCreateRequest extends FormRequest
@@ -61,7 +62,7 @@ class SaleCreateRequest extends FormRequest
         ];
     }
 
-    public function withValidator($validator): void
+    public function withValidator(Validator $validator): void
     {
         $validator->sometimes('value', ['max:100'], function ($input, $item) {
             return $input->type === DiscountType::PERCENTAGE;

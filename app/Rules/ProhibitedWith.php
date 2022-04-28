@@ -8,7 +8,7 @@ class ProhibitedWith implements Rule
 {
     private string $field;
 
-    public function __construct($field)
+    public function __construct(string $field)
     {
         $this->field = $field;
     }

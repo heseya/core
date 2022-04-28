@@ -66,6 +66,7 @@ class BannerTest extends TestCase
             ->assertOk()
             ->assertJsonCount(5, 'data')
             ->assertJsonFragment($this->banner->only(['slug', 'name', 'active']))
+            ->assertJsonFragment($this->bannerMedia->only(['title', 'subtitle', 'url']))
             ->assertJsonFragment(['min_screen_width' => 100])
             ->assertJsonFragment(['min_screen_width' => 250])
             ->assertJsonFragment(['min_screen_width' => 400]);
@@ -86,6 +87,7 @@ class BannerTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment($this->banner->only(['slug', 'name', 'active']))
+            ->assertJsonFragment($this->bannerMedia->only(['title', 'subtitle', 'url']))
             ->assertJsonFragment(['min_screen_width' => 100])
             ->assertJsonFragment(['min_screen_width' => 250])
             ->assertJsonFragment(['min_screen_width' => 400]);
@@ -128,6 +130,7 @@ class BannerTest extends TestCase
             ->getJson("/banners/id:{$this->banner->getKey()}")
             ->assertOk()
             ->assertJsonFragment($this->banner->only(['slug', 'name', 'active']))
+            ->assertJsonFragment($this->bannerMedia->only(['title', 'subtitle', 'url']))
             ->assertJsonFragment(['min_screen_width' => 100])
             ->assertJsonFragment(['min_screen_width' => 250])
             ->assertJsonFragment(['min_screen_width' => 400]);
@@ -200,6 +203,11 @@ class BannerTest extends TestCase
             ])
             ->assertJsonFragment([
                 'url' => $this->media[2]->url,
+            ])
+            ->assertJsonFragment([
+                'title' => $this->newBannerMedia['title'],
+                'subtitle' => $this->newBannerMedia['subtitle'],
+                'url' => $this->newBannerMedia['url'],
             ]);
     }
 
@@ -286,7 +294,6 @@ class BannerTest extends TestCase
 
         $banner = [
             'slug' => 'super-spring-banner',
- //           'url' => 'https://picsum.photos/200',
             'name' => 'Super spring banner',
             'active' => true,
         ];
@@ -303,7 +310,6 @@ class BannerTest extends TestCase
     {
         $banner = [
             'slug' => 'super-spring-banner',
- //           'url' => 'https://picsum.photos/200',
             'name' => 'Super spring banner',
             'active' => true,
         ];

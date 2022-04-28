@@ -1154,4 +1154,81 @@ class RoleTest extends TestCase
             $role->getKeyName() => $role->getKey(),
         ]);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexOwnerFirst($user): void
+    {
+        $this->$user->givePermissionTo('roles.show');
+
+        Role::factory()->create([
+            'type' => RoleType::REGULAR,
+        ]);
+
+        Role::factory()->create([
+            'name' => 'unauthenticated',
+            'type' => RoleType::UNAUTHENTICATED,
+        ]);
+
+        Role::factory()->create([
+            'name' => 'owner',
+            'type' => RoleType::OWNER,
+        ]);
+
+        Role::factory()->create([
+            'name' => 'authenticated',
+            'type' => RoleType::AUTHENTICATED,
+        ]);
+
+        $response = $this->actingAs($this->$user)->getJson('/roles');
+
+        $response
+            ->assertJson(['data' => [
+                0 => [
+                    'name' => 'owner',
+                ],
+            ],
+            ])
+            ->assertOk();
+    }
+
+    public function testUserRolesOwnerFirst(): void
+    {
+        $this->user->givePermissionTo('roles.show');
+
+        $regularRole = Role::factory()->create([
+            'type' => RoleType::REGULAR,
+        ]);
+
+        $unauthenticatedRole = Role::factory()->create([
+            'name' => 'unauthenticated',
+            'type' => RoleType::UNAUTHENTICATED,
+        ]);
+
+        $ownerRole = Role::factory()->create([
+            'name' => 'owner',
+            'type' => RoleType::OWNER,
+        ]);
+
+        $authenticatedRole = Role::factory()->create([
+            'name' => 'authenticated',
+            'type' => RoleType::AUTHENTICATED,
+        ]);
+
+        $this->user->roles()->saveMany([$regularRole, $unauthenticatedRole, $ownerRole, $authenticatedRole]);
+
+        $response = $this->actingAs($this->user)->getJson('/auth/profile');
+
+        $response
+            ->assertJson(['data' => [
+                'roles' => [
+                    0 => [
+                        'name' => 'owner',
+                    ],
+                ],
+            ],
+            ])
+            ->assertOk();
+    }
 }

@@ -61,12 +61,12 @@ class WebHook extends Model implements AuditableContract, SortableContract
         return $this->hasMany(WebHookEventLogEntry::class);
     }
 
-    public function getEventsAttribute($value)
+    public function getEventsAttribute(string $value): mixed
     {
         return json_decode($value);
     }
 
-    public function setEventsAttribute($value): void
+    public function setEventsAttribute(mixed $value): void
     {
         $this->attributes['events'] = json_encode($value);
     }

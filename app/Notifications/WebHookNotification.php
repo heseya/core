@@ -20,12 +20,12 @@ class WebHookNotification extends Notification
         $this->issuer = $issuer;
     }
 
-    public function via($notifiable)
+    public function via(mixed $notifiable): array
     {
         return [WebHookChannel::class];
     }
 
-    public function toWebHook($notifiable)
+    public function toWebHook(mixed $notifiable): array
     {
         if ($notifiable->with_issuer) {
             $this->data['issuer'] = match ($this->data['issuer_type']) {

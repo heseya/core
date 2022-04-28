@@ -10,7 +10,10 @@ class SeoKeywordsResource extends Resource
 {
     public function base(Request $request): array
     {
-        $duplicates = Collection::make($this->resource)->map(fn ($item) => [
+        /** @var Collection<int, mixed> $resource */
+        $resource = $this->resource;
+
+        $duplicates = Collection::make($resource)->map(fn ($item) => [
             'id' => $item['model_id'],
             'model_type' => Str::afterLast($item['model_type'], '\\'),
         ]);

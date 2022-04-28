@@ -26,7 +26,10 @@ class CheckActiveSales implements ShouldQueue
      */
     public function handle(DiscountService $discountService): void
     {
-        $oldActiveSales = Collection::make(Cache::get('sales.active', Collection::make()));
+        /** @var Collection<int, mixed> $activeSales */
+        $activeSales = Cache::get('sales.active', Collection::make());
+
+        $oldActiveSales = Collection::make($activeSales);
 
         $products = Collection::make();
 

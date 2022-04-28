@@ -7,9 +7,10 @@ parameters:
         - app
 
     # The level 9 is the highest level
-    level: 4
+    level: 6
 
     checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
 
     ignoreErrors:
         - '#PHPDoc tag @mixin contains unknown class .*IdeHelper.*#'

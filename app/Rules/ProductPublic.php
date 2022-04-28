@@ -19,7 +19,7 @@ class ProductPublic implements Rule
         $product = Product::find($value);
 
         if ($product === null) {
-            return false;
+            return true;
         }
 
         return $product->public;

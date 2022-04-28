@@ -64,7 +64,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'google_product_category',
     ];
 
-    protected $auditInclude = [
+    protected array $auditInclude = [
         'name',
         'slug',
         'description_html',
@@ -93,6 +93,8 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'order',
         'public',
         'available',
+        'price_min',
+        'price_max',
     ];
 
     protected array $criteria = [
@@ -187,7 +189,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
             ->orderByPivot('order');
     }
 
-    public function scopePublic($query): Builder
+    public function scopePublic(Builder $query): Builder
     {
         return $query->where('public', true);
     }
