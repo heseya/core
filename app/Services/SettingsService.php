@@ -14,7 +14,7 @@ class SettingsService implements SettingsServiceContract
     {
         $settings = Setting::orderBy('name')->get();
 
-        /** @var Collection<int, mixed> $settings */
+        /** @var Collection<int, mixed> $configSettings */
         $configSettings = Config::get('settings');
 
         Collection::make($configSettings)->each(function ($setting, $key) use ($settings): void {
