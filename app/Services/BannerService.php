@@ -33,6 +33,7 @@ class BannerService implements BannerServiceContract
     public function update(Banner $banner, BannerDto $dto): Banner
     {
         $banner->update($dto->toArray());
+        $banner->bannerMedia()->delete();
 
         foreach ($dto->getBannerMedia()->all() as $index => $group) {
             $bannerMedia = $banner->BannerMedia()->firstOrCreate([
@@ -46,15 +47,7 @@ class BannerService implements BannerServiceContract
             $group->getMedia()->each(function ($media) use (&$medias): void {
                 $medias[$media->getMedia()] = ['min_screen_width' => $media->getMinScreenWidth()];
             });
-
             $bannerMedia->media()->sync($medias);
-        }
-
-        if ($dto->getBannerMedia()->count() < $banner->BannerMedia()->count()) {
-            $banner
-                ->BannerMedia()
-                ->where('order', '>', $dto->getBannerMedia()->count())
-                ->delete();
         }
 
         return $banner->refresh();
