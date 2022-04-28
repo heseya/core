@@ -313,6 +313,50 @@ class SavedAddressTest extends TestCase
             ->assertUnauthorized();
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateEmptyVat($user): void
+    {
+        $this->$user->givePermissionTo('profile.addresses_manage');
+
+        $savedAddress = SavedAddress::create([
+            'name' => 'test',
+            'default' => false,
+            'user_id' => $this->$user->getKey(),
+            'address_id' => $this->address->getKey(),
+            'type' => SavedAddressType::DELIVERY,
+        ]);
+
+        $this->actingAs($this->$user)
+            ->patchJson('/auth/profile/delivery-addresses/id:' . $savedAddress->getKey(), [
+                'name' => 'test2',
+                'default' => true,
+                'type' => SavedAddressType::DELIVERY,
+                'address' => [
+                    'name' => 'test',
+                    'phone' => '123456789',
+                    'address' => 'testest',
+                    'zip' => '123',
+                    'city' => 'testcity',
+                    'country' => 'ts',
+                    'vat' => '',
+                ],
+            ])
+            ->assertOk();
+
+        $this
+            ->assertDatabaseHas('addresses', [
+                'name' => 'test',
+                'phone' => '123456789',
+                'address' => 'testest',
+                'zip' => '123',
+                'city' => 'testcity',
+                'country' => 'ts',
+                'vat' => null,
+            ]);
+    }
+
     public function testDeleteUnauthorized(): void
     {
         $savedAddress = SavedAddress::create([
