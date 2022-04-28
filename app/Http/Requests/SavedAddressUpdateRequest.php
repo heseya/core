@@ -23,7 +23,7 @@ class SavedAddressUpdateRequest extends FormRequest
             'address.zip' => ['string', 'max:16'],
             'address.city' => ['string', 'max:255'],
             'address.country' => ['string', 'size:2'],
-            'address.vat' => ['string', 'max:15'],
+            'address.vat' => ['nullable', 'string', 'max:15'],
         ];
     }
 }
