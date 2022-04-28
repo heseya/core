@@ -29,12 +29,12 @@ class Metadata extends Model
         'updated_at' => 'datetime',
     ];
 
-    public function scopePublic($query): Builder
+    public function scopePublic(Builder $query): Builder
     {
         return $query->where('public', true);
     }
 
-    public function scopePrivate($query): Builder
+    public function scopePrivate(Builder $query): Builder
     {
         return $query->where('public', false);
     }

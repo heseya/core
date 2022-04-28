@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Services\Contracts\AppServiceContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UrlServiceContract;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
@@ -234,7 +235,7 @@ class AppService implements AppServiceContract
         return 'app.' . $app->slug . '.';
     }
 
-    protected function isAppRootValid($response)
+    protected function isAppRootValid(Response $response): bool
     {
         return $this->isResponseValid($response, [
             'name' => ['required', 'string'],
@@ -256,7 +257,7 @@ class AppService implements AppServiceContract
         ]);
     }
 
-    protected function isResponseValid($response, $rules)
+    protected function isResponseValid(Response $response, array $rules): bool
     {
         if ($response->json() === null) {
             return false;

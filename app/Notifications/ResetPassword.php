@@ -16,12 +16,12 @@ class ResetPassword extends Notification
     /**
      * The password reset token.
      */
-    public $token;
+    public string $token;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct($token)
+    public function __construct(string $token)
     {
         $this->token = $token;
     }
@@ -29,7 +29,7 @@ class ResetPassword extends Notification
     /**
      * Get the notification's delivery channels.
      */
-    public function via($notifiable): array
+    public function via(mixed $notifiable): array
     {
         return ['mail'];
     }
@@ -37,7 +37,7 @@ class ResetPassword extends Notification
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail($notifiable): MailMessage
+    public function toMail(mixed $notifiable): MailMessage
     {
         $param = http_build_query([
             'token' => $this->token,
@@ -51,7 +51,7 @@ class ResetPassword extends Notification
     /**
      * Get the reset password notification mail message for the given URL.
      */
-    protected function buildMailMessage($url): MailMessage
+    protected function buildMailMessage(string $url): MailMessage
     {
         return (new MailMessage())
             ->subject(Lang::get('Reset Password Notification'))

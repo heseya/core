@@ -10,12 +10,12 @@ class UserRegistered extends Notification
 {
     use Queueable;
 
-    public function via($notifiable)
+    public function via(mixed $notifiable): array
     {
         return ['mail'];
     }
 
-    public function toMail($notifiable)
+    public function toMail(mixed $notifiable): MailMessage
     {
         return (new MailMessage())
             ->subject('Account created')
