@@ -11,6 +11,7 @@ use Tests\TestCase;
 class BannerTest extends TestCase
 {
     public Banner $banner;
+    public BannerMedia $bannerMedia;
     public array $newBanner = [];
     public array $newBannerMedia = [];
     public array $medias = [];
@@ -23,17 +24,18 @@ class BannerTest extends TestCase
         $this->banner = Banner::factory()->create();
         $this->media = Media::factory()->count(3)->create();
 
-        $bannerMedia = BannerMedia::factory()->create([
+        $this->bannerMedia = BannerMedia::factory()->create([
             'banner_id' => $this->banner->getKey(),
             'title' => 'abc',
             'subtitle' => 'cba',
             'order' => 1,
         ]);
-        $bannerMedia->media()->sync([
+        $this->bannerMedia->media()->sync([
             $this->media[0]->getKey() => ['min_screen_width' => 100],
             $this->media[1]->getKey() => ['min_screen_width' => 250],
             $this->media[2]->getKey() => ['min_screen_width' => 400],
         ]);
+
 
         $rMedia2 = $this->banner->BannerMedia()->create(['order' => 2]);
         $rMedia2->media()->sync([$this->media[2]->getKey() => ['min_screen_width' => 400]]);
