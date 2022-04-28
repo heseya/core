@@ -9,7 +9,10 @@ class AnalyticsPaymentsResource extends Resource
 {
     public function base(Request $request): array
     {
-        return Collection::make($this->resource)->map(fn ($item) => [
+        /** @var Collection<int, mixed> $resource */
+        $resource = $this->resource;
+
+        return Collection::make($resource)->map(fn ($item) => [
             'amount' => $item['amount'],
             'count' => $item['count'],
         ])->toArray();

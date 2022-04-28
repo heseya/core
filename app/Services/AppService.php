@@ -76,9 +76,12 @@ class AppService implements AppServiceContract
             );
         }
 
+        /** @var Collection<int, mixed>|array $appConfig */
         $appConfig = $response->json();
+        /** @var Collection<int, mixed> $requiredPermissions */
+        $requiredPermissions = $appConfig['required_permissions'];
 
-        $requiredPerm = Collection::make($appConfig['required_permissions']);
+        $requiredPerm = Collection::make($requiredPermissions);
         $optionalPerm = key_exists('optional_permissions', $appConfig) ?
             $appConfig['optional_permissions'] : [];
         $advertisedPerm = $requiredPerm->concat($optionalPerm)->unique();
@@ -178,7 +181,10 @@ class AppService implements AppServiceContract
             'uninstall_token' => $response->json('uninstall_token'),
         ]);
 
-        $internalPermissions = Collection::make($appConfig['internal_permissions'])
+        /** @var Collection<int, mixed> $internalPermissions */
+        $internalPermissions = $appConfig['internal_permissions'];
+
+        $internalPermissions = Collection::make($internalPermissions)
             ->map(fn ($permission) => Permission::create([
                 'name' => "app.{$app->slug}.{$permission['name']}",
                 'display_name' => $permission['display_name'] ?? null,
