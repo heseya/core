@@ -15,7 +15,7 @@ class BannerDto extends Dto implements InstantiateFromRequest
     private bool|Missing $active;
     private Collection|Missing $banner_media;
 
-    public static function instantiateFromRequest(Request $request): InstantiateFromRequest
+    public static function instantiateFromRequest(Request $request): self
     {
         /** @var Collection<int, mixed> $bannerMedias */
         $bannerMedias = $request->input('banner_media');
