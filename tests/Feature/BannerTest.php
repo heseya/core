@@ -36,7 +36,6 @@ class BannerTest extends TestCase
             $this->media[2]->getKey() => ['min_screen_width' => 400],
         ]);
 
-
         $rMedia2 = $this->banner->BannerMedia()->create(['order' => 2]);
         $rMedia2->media()->sync([$this->media[2]->getKey() => ['min_screen_width' => 400]]);
 
