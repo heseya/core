@@ -59,7 +59,7 @@ class User extends Model implements
         HasDiscountConditions;
 
     // Bez tego nie działały testy, w których jako aplikacja tworzy się użytkownika z określoną rolą
-    protected $guard_name = 'api';
+    protected string $guard_name = 'api';
 
     protected $fillable = [
         'name',

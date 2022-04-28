@@ -14,11 +14,14 @@ class BannerMediaDto extends Dto
 
     public static function fromDataArray(array $data): BannerMediaDto
     {
+        /** @var Collection<int, mixed> $responsiveMedia */
+        $responsiveMedia = $data['responsive_media'];
+
         return new self(
             url: $data['url'],
             title: $data['title'],
             subtitle: $data['subtitle'],
-            media: Collection::make($data['responsive_media'])
+            media: Collection::make($responsiveMedia)
                 ->map(fn ($media) => ResponsiveMediaDto::fromDataArray($media))
         );
     }

@@ -6,6 +6,7 @@ use App\Enums\IssuerType;
 use App\Models\Model;
 use Carbon\Carbon;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -17,8 +18,8 @@ abstract class WebHookEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    protected $triggered_at;
-    protected $issuer;
+    protected string $triggered_at;
+    protected Authenticatable|Model|Pivot|null $issuer;
 
     public function __construct()
     {

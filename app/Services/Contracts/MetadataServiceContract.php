@@ -8,7 +8,7 @@ use App\Models\Role;
 
 interface MetadataServiceContract
 {
-    public function updateOrCreate(Model|Role $model, MetadataDto $dto);
+    public function updateOrCreate(Model|Role $model, MetadataDto $dto): void;
 
     public function sync(Model|Role $model, array $metadata): void;
 

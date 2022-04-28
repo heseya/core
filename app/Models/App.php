@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\Access\Authorizable;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App as AppFacade;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use Spatie\Permission\Contracts\Permission;
@@ -38,7 +39,7 @@ class App extends Model implements
         HasWebHooks,
         HasMetadata;
 
-    protected $guard_name = 'api';
+    protected string $guard_name = 'api';
     protected $fillable = [
         'url',
         'microfrontend_url',
@@ -99,8 +100,10 @@ class App extends Model implements
         return $this->belongsTo(Role::class);
     }
 
-    public function hasRole($roles, ?string $guard = null): bool
-    {
+    public function hasRole(
+        string|int|array|\Spatie\Permission\Contracts\Role|Collection $roles,
+        ?string $guard = null
+    ): bool {
         return false;
     }
 

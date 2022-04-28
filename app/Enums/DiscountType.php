@@ -10,7 +10,7 @@ final class DiscountType extends Enum
     public const PERCENTAGE = 'percentage';
     public const AMOUNT = 'amount';
 
-    public static function getPriority($value): int
+    public static function getPriority(string $value): int
     {
         return match ($value) {
             self::AMOUNT => 0,

@@ -11,6 +11,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DocumentService implements DocumentServiceContract
 {
@@ -31,7 +32,7 @@ class DocumentService implements DocumentServiceContract
         ])->first();
     }
 
-    public function downloadDocument(OrderDocument $document)
+    public function downloadDocument(OrderDocument $document): StreamedResponse
     {
         $mime = Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
             ->get($document->media->url . '/info')->json('mime');

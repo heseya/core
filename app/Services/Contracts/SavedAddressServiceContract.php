@@ -16,5 +16,5 @@ interface SavedAddressServiceContract
         SavedAddressDto $addressDto,
         int $type
     ): SavedAddress;
-    public function deleteSavedAddress(SavedAddress $address);
+    public function deleteSavedAddress(SavedAddress $address): void;
 }

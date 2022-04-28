@@ -205,7 +205,7 @@ class FurgonetkaController extends Controller
         ], 201);
     }
 
-    private function getApiKey($refresh = false): string
+    private function getApiKey(bool $refresh = false): string
     {
         if (Storage::missing('furgonetka.key') || $refresh) {
             $response = Http::withBasicAuth(

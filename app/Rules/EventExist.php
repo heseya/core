@@ -7,7 +7,7 @@ use Illuminate\Contracts\Validation\Rule;
 
 class EventExist implements Rule
 {
-    private $event;
+    private mixed $event;
 
     /**
      * Determine if the validation rule passes.

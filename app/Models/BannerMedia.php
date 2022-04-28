@@ -27,7 +27,7 @@ class BannerMedia extends Model
             ->using(MediaResponsiveMedia::class);
     }
 
-    public function scopeReversed($query): Builder
+    public function scopeReversed(Builder $query): Builder
     {
         return $query->withoutGlobalScope('ordered')
             ->orderBy('order', 'desc');

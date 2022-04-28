@@ -24,7 +24,7 @@ trait BooleanRules
         $this->merge($data);
     }
 
-    private function toBooleanArrayInPath(string $fieldPath, string $fieldAfter, $data): array
+    private function toBooleanArrayInPath(string $fieldPath, string $fieldAfter, array $data): array
     {
         // Check if request array has given field
         if (Arr::has($data, $fieldPath)) {

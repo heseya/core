@@ -57,7 +57,7 @@ class Order extends Model implements AuditableContract, SortableContract
         'cart_total',
     ];
 
-    protected $auditInclude = [
+    protected array $auditInclude = [
         'code',
         'email',
         'currency',
@@ -70,7 +70,7 @@ class Order extends Model implements AuditableContract, SortableContract
         'invoice_address_id',
     ];
 
-    protected $attributeModifiers = [
+    protected array $attributeModifiers = [
         'status_id' => StatusRedactor::class,
         'shipping_method_id' => ShippingMethodRedactor::class,
         'delivery_address_id' => AddressRedactor::class,
