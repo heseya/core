@@ -27,7 +27,7 @@ Banner:
           url:
             type: string
             example: 'https://via.placeholder.com/640x480.png/00ffff?text=excepturi'
-          responsive_media:
+          media:
             type: array
             items:
               type: array

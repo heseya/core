@@ -43,7 +43,7 @@ class BannerTest extends TestCase
         $this->newBannerMedia = BannerMedia::factory()->definition();
 
         $this->medias = [
-            'responsive_media' => [
+            'media' => [
                 ['min_screen_width' => 200, 'media' => $this->media[0]->getKey()],
                 ['min_screen_width' => 300, 'media' => $this->media[1]->getKey()],
                 ['min_screen_width' => 450, 'media' => $this->media[2]->getKey()],
@@ -184,19 +184,19 @@ class BannerTest extends TestCase
             ->assertCreated()
             ->assertJsonFragment($this->newBanner)
             ->assertJsonFragment([
-                'min_screen_width' => $this->medias['responsive_media'][0]['min_screen_width'],
+                'min_screen_width' => $this->medias['media'][0]['min_screen_width'],
             ])
             ->assertJsonFragment([
                 'url' => $this->media[0]->url,
             ])
             ->assertJsonFragment([
-                'min_screen_width' => $this->medias['responsive_media'][1]['min_screen_width'],
+                'min_screen_width' => $this->medias['media'][1]['min_screen_width'],
             ])
             ->assertJsonFragment([
                 'url' => $this->media[1]->url,
             ])
             ->assertJsonFragment([
-                'min_screen_width' => $this->medias['responsive_media'][2]['min_screen_width'],
+                'min_screen_width' => $this->medias['media'][2]['min_screen_width'],
             ])
             ->assertJsonFragment([
                 'url' => $this->media[2]->url,
@@ -261,7 +261,7 @@ class BannerTest extends TestCase
         ];
 
         $medias = [
-            'responsive_media' => [
+            'media' => [
                 ['min_screen_width' => 150, 'media' => $this->media[2]->getKey()],
                 ['min_screen_width' => 200, 'media' => $this->media[0]->getKey()],
             ],
@@ -322,16 +322,102 @@ class BannerTest extends TestCase
         $this->$user->givePermissionTo('banners.edit');
 
         $banner = [
-            'slug' => 'super-spring-banner',
-  //          'url' => 'https://picsum.photos/200',
             'name' => 'Super spring banner',
             'active' => true,
         ];
 
-        $this
+        $response = $this
             ->actingAs($this->$user)
-            ->patchJson("/banners/id:{$this->banner->getKey()}", $banner)
-            ->assertUnprocessable();
+            ->patchJson("/banners/id:{$this->banner->getKey()}", $banner);
+
+        $response
+            ->assertJson(['data' => [
+                'id' => $response->getData()->data->id,
+                'name' => $banner['name'],
+                'slug' => $this->banner->slug,
+                'active' => $banner['active'],
+            ],
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('banners', [
+            'id' => $response->getData()->data->id,
+            'name' => $banner['name'],
+            'slug' => $this->banner->slug,
+            'active' => $banner['active'],
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateBannerIncompleteDataWithBannerMedia($user): void
+    {
+        $this->$user->givePermissionTo('banners.edit');
+
+        BannerMedia::query()->delete();
+
+        $bannerMedia = BannerMedia::factory()->create([
+            'banner_id' => $this->banner->id,
+            'title' => 'existingmedia',
+        ]);
+
+        $media = Media::factory()->create();
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->patchJson("/banners/id:{$this->banner->getKey()}", [
+                'banner_media' => [
+                    [
+                        'title' => 'test',
+                        'media' => [
+                            ['min_screen_width' => 150, 'media' => $media->getKey()],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $response
+            ->assertJson([
+                'data' => [
+                    'slug' => $this->banner->slug,
+                    'name' => $this->banner->name,
+                    'active' => $this->banner->active,
+                    'banner_media' => [
+                        [
+                            'url' => null,
+                            'title' => 'test',
+                            'media' => [
+                                [
+                                    'min_screen_width' => 150,
+                                    'media' => [
+                                        'id' => $media->id,
+                                        'url' => $media->url,
+                                        'slug' => $media->slug,
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ])
+            ->assertOk();
+
+        $data = $response->getData()->data;
+
+        $this
+            ->assertDatabaseMissing('banner_media', $bannerMedia->toArray())
+            ->assertDatabaseHas('banners', [
+                'id' => $data->id,
+                'slug' => $data->slug,
+                'name' => $data->name,
+                'active' => $data->active,
+            ])
+            ->assertDatabaseHas('banner_media', [
+                'id' => $data->banner_media[0]->id,
+                'url' => $data->banner_media[0]->url,
+                'title' => $data->banner_media[0]->title,
+            ]);
     }
 
     /**

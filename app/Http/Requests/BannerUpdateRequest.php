@@ -23,22 +23,21 @@ class BannerUpdateRequest extends FormRequest
 
         return [
             'slug' => [
-                'required',
                 'string',
                 'max:255',
                 'alpha_dash',
                 Rule::unique('banners')->ignore($banner->slug, 'slug'),
             ],
-            'name' => ['required', 'string', 'max:255'],
-            'active' => ['required', new Boolean()],
+            'name' => ['string', 'max:255'],
+            'active' => [new Boolean()],
 
-            'banner_media' => ['required', 'array'],
-            'banner_media.*.title' => ['required', 'string', 'max:255'],
-            'banner_media.*.subtitle' => ['required', 'string', 'max:255'],
-            'banner_media.*.url' => ['required', 'string', 'max:255'],
-            'banner_media.*.responsive_media' => ['required', 'array'],
-            'banner_media.*.responsive_media.*.min_screen_width' => ['required', 'numeric'],
-            'banner_media.*.responsive_media.*.media' => ['required', 'uuid', 'exists:media,id'],
+            'banner_media' => ['array'],
+            'banner_media.*.title' => ['string', 'max:255'],
+            'banner_media.*.subtitle' => ['string', 'max:255'],
+            'banner_media.*.url' => ['string', 'max:255'],
+            'banner_media.*.media' => ['array'],
+            'banner_media.*.media.*.min_screen_width' => ['required', 'numeric'],
+            'banner_media.*.media.*.media' => ['required', 'uuid', 'exists:media,id'],
         ];
     }
 }

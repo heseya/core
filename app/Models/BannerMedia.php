@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
- * @mixin IdeHelperResponsiveMedia
+ * @mixin IdeHelperBannerMedia
  */
 class BannerMedia extends Model
 {
@@ -24,7 +24,7 @@ class BannerMedia extends Model
     {
         return $this->belongsToMany(Media::class, 'media_responsive_media')
             ->withPivot('min_screen_width')
-            ->using(MediaResponsiveMedia::class);
+            ->using(MediaBannerMedia::class);
     }
 
     public function scopeReversed($query): Builder
