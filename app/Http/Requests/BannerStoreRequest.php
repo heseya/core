@@ -14,7 +14,7 @@ class BannerStoreRequest extends FormRequest
         'active',
     ];
 
-    public function rules()
+    public function rules(): array
     {
         return [
             'slug' => ['required', 'string', 'max:255', 'unique:banners', 'alpha_dash'],
