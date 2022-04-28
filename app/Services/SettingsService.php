@@ -14,10 +14,10 @@ class SettingsService implements SettingsServiceContract
     {
         $settings = Setting::orderBy('name')->get();
 
-        /** @var Collection<int, mixed>|array $settings */
-        $settings = Config::get('settings');
+        /** @var Collection<int, mixed> $settings */
+        $configSettings = Config::get('settings');
 
-        Collection::make($settings)->each(function ($setting, $key) use ($settings): void {
+        Collection::make($configSettings)->each(function ($setting, $key) use ($settings): void {
             if (!$settings->contains('name', $key)) {
                 $settings->push(new Setting($setting + [
                     'name' => $key,
