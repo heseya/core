@@ -135,7 +135,7 @@ class ProductSetService implements ProductSetServiceContract
 
     public function update(ProductSet $set, ProductSetUpdateDto $dto): ProductSet
     {
-        $parentId = $set->parent ? $set->parent->getKey() : null;
+        $parentId = $set->parent?->getKey();
 
         if ($dto->getParentId() !== null) {
             $parent = ProductSet::findOrFail($dto->getParentId());
@@ -214,6 +214,9 @@ class ProductSetService implements ProductSetServiceContract
     public function attach(ProductSet $set, array $products): Collection
     {
         $set->products()->sync($products);
+
+        // @phpstan-ignore-next-line
+        $set->products()->searchable();
 
         return $set->products;
     }

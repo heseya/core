@@ -80,6 +80,7 @@ class Kernel extends HttpKernel
      */
     protected $middlewarePriority = [
         HandleCors::class,
+        UndotParams::class,
         SecureHeaders::class,
         SubstituteBindings::class,
         Authenticate::class,

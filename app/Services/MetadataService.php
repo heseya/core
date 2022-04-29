@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Dtos\MetadataDto;
 use App\Models\Model;
+use App\Models\Product;
 use App\Models\Role;
 use App\Services\Contracts\MetadataServiceContract;
 use Illuminate\Support\Collection;
@@ -32,6 +33,10 @@ class MetadataService implements MetadataServiceContract
             ['name' => $dto->getName()],
             $dto->toArray(),
         );
+
+        if ($model instanceof Product) {
+            $model->searchable();
+        }
     }
 
     public function returnModel(array $routeSegments): Model|Role|null

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\AttributeSearch;
 use App\Rules\Boolean;
 use App\Rules\CanShowPrivateMetadata;
 use App\Traits\BooleanRules;
@@ -51,6 +52,9 @@ class ProductIndexRequest extends FormRequest
             'price' => ['nullable', 'array'],
             'price.min' => ['nullable', 'numeric', 'min:0'],
             'price.max' => ['nullable', 'numeric'],
+
+            'attribute' => ['nullable', 'array'],
+            'attribute.*' => [new AttributeSearch()],
 
             'full' => [new Boolean()],
         ];

@@ -8,6 +8,7 @@ use App\Events\UserCreated;
 use App\Events\UserDeleted;
 use App\Events\UserUpdated;
 use App\Listeners\WebHookEventListener;
+use App\Models\Metadata;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
@@ -35,6 +36,7 @@ class UserTest extends TestCase
     {
         parent::setUp();
 
+        /** @var Metadata $metadata */
         $metadata = $this->user->metadata()->create([
             'name' => 'Metadata',
             'value' => 'metadata test',
@@ -87,6 +89,7 @@ class UserTest extends TestCase
     {
         $this->$user->givePermissionTo('users.show');
 
+        /** @var User $otherUser */
         $otherUser = User::factory()->create();
         $otherUser->created_at = Carbon::now()->addHour();
         $otherUser->save();
@@ -115,13 +118,14 @@ class UserTest extends TestCase
     {
         $this->$user->givePermissionTo('users.show');
 
+        /** @var User $otherUser */
         $otherUser = User::factory()->create();
         $otherUser->created_at = Carbon::now()->addHour();
         $otherUser->save();
 
-        $response = $this->actingAs($this->$user)->getJson('/users?full');
-
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/users?full')
             ->assertOk()
             ->assertJsonCount(2, 'data')
             ->assertJson(['data' => [
@@ -145,6 +149,7 @@ class UserTest extends TestCase
     {
         $this->$user->givePermissionTo('users.show');
 
+        /** @var User $otherUser */
         $otherUser = User::factory()->create();
         $otherUser->created_at = Carbon::now()->addHour();
         $otherUser->save();
@@ -173,10 +178,12 @@ class UserTest extends TestCase
     {
         $this->$user->givePermissionTo('users.show');
 
+        /** @var User $firstUser */
         $firstUser = User::factory()->create();
         $firstUser->created_at = Carbon::now()->addHour();
         $firstUser->save();
 
+        /** @var User $secondUser */
         $secondUser = User::factory()->create();
         $secondUser->created_at = Carbon::now()->addHour();
         $secondUser->save();
@@ -198,6 +205,7 @@ class UserTest extends TestCase
     {
         $this->$user->givePermissionTo('users.show');
 
+        /** @var User $otherUser */
         $otherUser = User::factory([
             'is_tfa_active' => false,
         ])->create();
@@ -232,7 +240,7 @@ class UserTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->getJson('/users?email=' . $otherUser->email)
+            ->getJson("/users?email={$otherUser->email}")
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0', [
