@@ -106,7 +106,7 @@ class ProductRepository implements ProductRepositoryContract
             'google_product_category',
         ]));
 
-        if (isset($hit['_source']['cover']) && $hit['_source']['cover'] !== null) {
+        if ($hit['_source']['cover'] !== null) {
             $media = new Media();
             $media->forceFill(Arr::except($hit['_source']['cover'], ['metadata', 'metadata_private']));
             $media->setRelation(
@@ -123,47 +123,43 @@ class ProductRepository implements ProductRepositoryContract
         }
 
         $tags = new Collection();
-        if (isset($hit['_source']['tags'])) {
-            foreach ($hit['_source']['tags'] as $raw) {
-                $tag = new Tag();
-                $tag->forceFill($raw);
-                $tags->push($tag);
-            }
+        foreach ($hit['_source']['tags'] as $raw) {
+            $tag = new Tag();
+            $tag->forceFill($raw);
+            $tags->push($tag);
         }
         $product->setRelation('tags', $tags);
 
         $attributes = new Collection();
-        if (isset($hit['_source']['attributes'])) {
-            foreach ($hit['_source']['attributes'] as $raw) {
-                $attribute = new Attribute();
-                $attribute->forceFill(Arr::except($raw, ['values', 'metadata', 'metadata_private']));
+        foreach ($hit['_source']['attributes'] as $raw) {
+            $attribute = new Attribute();
+            $attribute->forceFill(Arr::except($raw, ['values', 'metadata', 'metadata_private']));
 
-                $options = new Collection();
-                foreach ($raw['values'] as $value) {
-                    $option = new AttributeOption();
-                    $option->forceFill(Arr::except($value, ['metadata', 'metadata_private']));
-                    $option->setRelation(
-                        'metadata',
-                        $this->mapMetadata($value['metadata'], true),
-                    );
-                    $option->setRelation(
-                        'metadata_private',
-                        $this->mapMetadata($value['metadata_private'], false),
-                    );
-                    $options->push($option);
-                }
-                $attribute->setRelation('options', $options);
-                $attribute->setRelation(
+            $options = new Collection();
+            foreach ($raw['values'] as $value) {
+                $option = new AttributeOption();
+                $option->forceFill(Arr::except($value, ['metadata', 'metadata_private']));
+                $option->setRelation(
                     'metadata',
-                    $this->mapMetadata($raw['metadata'], true),
+                    $this->mapMetadata($value['metadata'], true),
                 );
-                $attribute->setRelation(
+                $option->setRelation(
                     'metadata_private',
-                    $this->mapMetadata($raw['metadata_private'], false),
+                    $this->mapMetadata($value['metadata_private'], false),
                 );
-
-                $attributes->push($attribute);
+                $options->push($option);
             }
+            $attribute->setRelation('options', $options);
+            $attribute->setRelation(
+                'metadata',
+                $this->mapMetadata($raw['metadata'], true),
+            );
+            $attribute->setRelation(
+                'metadata_private',
+                $this->mapMetadata($raw['metadata_private'], false),
+            );
+
+            $attributes->push($attribute);
         }
         $product->setRelation('attributes', $attributes);
 

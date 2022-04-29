@@ -349,7 +349,6 @@ class DiscountService implements DiscountServiceContract
     {
         foreach ($products as $product) {
             $this->applyDiscountsOnProduct($product);
-            $product->save();
         }
     }
 
@@ -417,6 +416,7 @@ class DiscountService implements DiscountServiceContract
             'price_max' => $maxPriceDiscounted,
         ]);
         $product->sales()->sync($productSales->pluck('id'));
+        $product->searchable();
     }
 
     public function applyDiscountOnOrderProduct(OrderProduct $orderProduct, Discount $discount): OrderProduct
