@@ -40,4 +40,9 @@ class CartItemDto extends Dto
     {
         return $this->schemas;
     }
+
+    public function setQuantity(float $quantity): void
+    {
+        $this->quantity = $quantity;
+    }
 }

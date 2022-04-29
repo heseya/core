@@ -6,6 +6,7 @@ use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\CartRequest;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Collection;
 
 class CartDto extends CartOrderDto implements InstantiateFromRequest
 {
@@ -15,12 +16,8 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
 
     public static function instantiateFromRequest(FormRequest|CartRequest $request): self
     {
-        $items = [];
-        foreach ($request->input('items', []) as $item) {
-            array_push($items, CartItemDto::fromArray($item));
-        }
         return new self(
-            items: $items,
+            items: self::prepareItems($request->input('items', [])),
             coupons: $request->input('coupons', new Missing()),
             shipping_method_id: $request->input('shipping_method_id', new Missing()),
         );
@@ -28,12 +25,8 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
 
     public static function fromArray(array $array): self
     {
-        $items = [];
-        foreach ($array['items'] as $item) {
-            array_push($items, CartItemDto::fromArray($item));
-        }
         return new self(
-            items: $items,
+            items: self::prepareItems($array['items']),
             coupons: $array['coupons'],
             shipping_method_id: $array['shipping_method_id'],
         );
@@ -72,5 +65,25 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
             $length += $item->getQuantity();
         }
         return $length;
+    }
+
+    private static function prepareItems(array $items): array
+    {
+        $result = Collection::make();
+        foreach ($items as $item) {
+            $existingItem = $result->first(function ($cartItem) use ($item) {
+                $schemas = array_key_exists('schemas', $item) ? $item['schemas'] : [];
+                return $cartItem->getCartitemId() === $item['cartitem_id']
+                    && $cartItem->getProductId() === $item['product_id']
+                    && count(array_diff($cartItem->getSchemas(), $schemas)) === 0;
+            });
+            // @phpstan-ignore-next-line
+            if ($existingItem) {
+                $existingItem->setQuantity($existingItem->getQuantity() + $item['quantity']);
+            } else {
+                $result->push(CartItemDto::fromArray($item));
+            }
+        }
+        return $result->toArray();
     }
 }
