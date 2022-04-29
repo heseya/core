@@ -279,7 +279,6 @@ class DiscountService implements DiscountServiceContract
 
                 $price += $schema->getPrice($value, $cartItem->getSchemas());
             }
-
             $cartValue += $price * $cartItem->getQuantity();
             array_push($cartItems, new CartItemResponse($cartItem->getCartitemId(), $price, $price));
         }
@@ -297,6 +296,10 @@ class DiscountService implements DiscountServiceContract
             $shippingPrice,
             $summary,
         );
+
+        if ($cartResource->items->isEmpty()) {
+            return $cartResource;
+        }
 
         foreach ($discounts as $discount) {
             if ($this->checkConditionGroups($discount, $cart, $cartResource->cart_total)) {

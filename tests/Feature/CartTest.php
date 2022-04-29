@@ -11,6 +11,7 @@ use App\Models\Item;
 use App\Models\Option;
 use App\Models\PriceRange;
 use App\Models\Product;
+use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use Carbon\Carbon;
@@ -282,6 +283,12 @@ class CartTest extends TestCase
     {
         $this->$user->givePermissionTo('cart.verify');
 
+        Discount::factory()->create([
+            'target_type' => DiscountTargetType::CHEAPEST_PRODUCT,
+            'code' => null,
+            'value' => 10,
+        ]);
+
         $this->item->deposits()->create([
             'quantity' => 1,
         ]);
@@ -291,22 +298,8 @@ class CartTest extends TestCase
             'items' => [
                 [
                     'cartitem_id' => '1',
-                    'product_id' => $this->product->getKey(),
-                    'quantity' => 2,
-                    'schemas' => [],
-                ],
-                [
-                    'cartitem_id' => '2',
-                    'product_id' => $this->productWithSchema->getKey(),
-                    'quantity' => 2,
-                    'schemas' => [
-                        $this->schema->getKey() => $this->option->getKey(),
-                    ],
-                ],
-                [
-                    'cartitem_id' => '3',
-                    'product_id' => 'ad6ed64b-67f5-4e10-bb87-ec65cecf8af9',
-                    'quantity' => 2,
+                    'product_id' => 'ad6ed111-6111-4e11-bb11-ec65cecf8a11',
+                    'quantity' => 1,
                     'schemas' => [],
                 ],
             ],
@@ -315,22 +308,10 @@ class CartTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonFragment([
-                'cart_total_initial' => 9200,
-                'cart_total' => 9200,
-                'shipping_price_initial' => 0,
-                'shipping_price' => 0,
-                'summary' => 9200,
+                'cart_total_initial' => 0,
+                'cart_total' => 0,
                 'coupons' => [],
                 'sales' => [],
-            ])
-            ->assertJsonFragment([
-                'cartitem_id' => '1',
-                'price' => 4600,
-                'price_discounted' => 4600,
-            ])->assertJsonMissing([
-                'cartitem_id' => '2',
-                'price' => 100,
-                'price_discounted' => 100,
             ]);
     }
 
