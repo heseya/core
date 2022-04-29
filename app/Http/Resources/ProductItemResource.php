@@ -11,7 +11,7 @@ class ProductItemResource extends Resource
         return [
             'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
-            'required_quantity' => $this->resource->pivot->quantity,
+            'required_quantity' => $this->resource->pivot->required_quantity,
         ];
     }
 }

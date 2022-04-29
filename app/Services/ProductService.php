@@ -150,7 +150,7 @@ class ProductService implements ProductServiceContract
         $items = Collection::make($items)->mapWithKeys(function (array $item): array {
             return [
                 $item['id'] => [
-                    'quantity' => $item['quantity'],
+                    'required_quantity' => $item['required_quantity'],
                 ],
             ];
         });
