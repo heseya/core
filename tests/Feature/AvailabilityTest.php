@@ -423,7 +423,7 @@ class AvailabilityTest extends TestCase
             'items' => [
                 [
                     'id' => $item->getKey(),
-                    'quantity' => 2,
+                    'required_quantity' => 2,
                 ],
             ],
         ]);
@@ -435,7 +435,7 @@ class AvailabilityTest extends TestCase
             ->assertDatabaseHas('item_product', [
                 'product_id' => $product->getKey(),
                 'item_id' => $item->getKey(),
-                'quantity' => 2,
+                'required_quantity' => 2,
             ]);
 
         Event::assertDispatched(ProductUpdated::class);
@@ -463,7 +463,7 @@ class AvailabilityTest extends TestCase
             'items' => [
                 [
                     'id' => $item->getKey(),
-                    'quantity' => 20,
+                    'required_quantity' => 20,
                 ],
             ],
         ]);
@@ -475,7 +475,7 @@ class AvailabilityTest extends TestCase
             ->assertDatabaseHas('item_product', [
                 'product_id' => $product->getKey(),
                 'item_id' => $item->getKey(),
-                'quantity' => 20,
+                'required_quantity' => 20,
             ]);
 
         Event::assertDispatched(ProductUpdated::class);
@@ -535,7 +535,7 @@ class AvailabilityTest extends TestCase
             'quantity' => $itemQuantity,
         ]);
 
-        $this->product->items()->attach($item->getKey(), ['quantity' => 10]);
+        $this->product->items()->attach($item->getKey(), ['required_quantity' => 10]);
 
         $availabilityService->calculateProductAvailability($this->product->refresh());
     }

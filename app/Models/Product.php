@@ -154,7 +154,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
     {
         return $this
             ->belongsToMany(Item::class, 'item_product')
-            ->withPivot('quantity')
+            ->withPivot('required_quantity')
             ->using(ItemProduct::class);
     }
 

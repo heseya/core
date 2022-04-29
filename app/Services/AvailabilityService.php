@@ -84,7 +84,7 @@ class AvailabilityService implements AvailabilityServiceContract
         if (
             $product->schemas->isEmpty() ||
             ($product->items->isNotEmpty() &&
-                $product->items->every(fn (Item $item) => $item->pivot->quantity <= $item->quantity))
+                $product->items->every(fn (Item $item) => $item->pivot->required_quantity <= $item->quantity))
         ) {
             return true;
         }
