@@ -280,7 +280,10 @@ class DiscountService implements DiscountServiceContract
                 $price += $schema->getPrice($value, $cartItem->getSchemas());
             }
             $cartValue += $price * $cartItem->getQuantity();
-            array_push($cartItems, new CartItemResponse($cartItem->getCartitemId(), $price, $price));
+            array_push(
+                $cartItems,
+                new CartItemResponse($cartItem->getCartitemId(), $price, $price, $cartItem->getQuantity()),
+            );
         }
 
         $shippingPrice = $shippingMethod !== null ? $shippingMethod->getPrice($cartValue) : 0;
@@ -632,13 +635,37 @@ class DiscountService implements DiscountServiceContract
 
     private function applyDiscountOnOrderCheapestProduct(Order $order, Discount $discount): Order
     {
-        $product = $order->products->sortBy('price')->first();
+        $product = $order->products->sortBy([
+            ['price', 'asc'],
+            ['quantity', 'asc'],
+        ])->first();
+
+        if ($product->quantity > 1) {
+            $product->update(['quantity' => $product->quantity - 1]);
+
+            /** @var OrderProduct $newProduct */
+            $newProduct = $order->products()->create([
+                'product_id' => $product->product_id,
+                'quantity' => 1,
+                'price' => $product->price,
+                'price_initial' => $product->price_initial,
+                'name' => $product->name,
+            ]);
+
+            $product->discounts->each(function (Discount $discount) use ($newProduct): void {
+                // @phpstan-ignore-next-line
+                $this->attachDiscount($newProduct, $discount, $discount->pivot->applied_discount);
+            });
+
+            $product = $newProduct;
+        }
 
         $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
         $price = $product->price;
 
         if ($price !== $minimalProductPrice) {
             $this->calcOrderProductDiscount($product, $discount);
+            $product->save();
         }
 
         $order->cart_total -= ($price - $product->price) * $product->quantity;
@@ -652,7 +679,7 @@ class DiscountService implements DiscountServiceContract
             DiscountTargetType::PRODUCTS => $this->applyDiscountOnCartItems($discount, $cartDto, $cart),
             DiscountTargetType::ORDER_VALUE => $this->applyDiscountOnCartTotal($discount, $cart),
             DiscountTargetType::SHIPPING_PRICE => $this->applyDiscountOnCartShipping($discount, $cartDto, $cart),
-            DiscountTargetType::CHEAPEST_PRODUCT => $this->applyDiscountOnCartCheapestItem($discount, $cartDto, $cart),
+            DiscountTargetType::CHEAPEST_PRODUCT => $this->applyDiscountOnCartCheapestItem($discount, $cart),
             default => throw new StoreException('Unknown discount target type'),
         };
     }
@@ -717,16 +744,27 @@ class DiscountService implements DiscountServiceContract
 
     private function applyDiscountOnCartCheapestItem(
         Discount $discount,
-        CartDto $cartDto,
         CartResource $cart,
     ): CartResource {
         /** @var CartItemResponse $cartItem */
-        $cartItem = $cart->items->sortBy('price_discounted')->first();
+        $cartItem = $cart->items->sortBy([
+            ['price_discounted', 'asc'],
+            ['quantity', 'asc'],
+        ])->first();
 
-        /** @var CartItemDto $cartItemDto */
-        $cartItemDto = Arr::first($cartDto->getItems(), function ($value, $key) use ($cartItem) {
-            return $value->getCartitemId() === $cartItem->cartitem_id;
-        });
+        if ($cartItem->quantity > 1) {
+            $cart->items->first(function ($value) use ($cartItem): bool {
+                return $value->cartitem_id === $cartItem->cartitem_id && $value->quantity === $cartItem->quantity;
+            })->quantity = $cartItem->quantity - 1;
+
+            $cartItem = new CartItemResponse(
+                $cartItem->cartitem_id,
+                $cartItem->price,
+                $cartItem->price_discounted,
+                1,
+            );
+            $cart->items->push($cartItem);
+        }
 
         $price = $cartItem->price_discounted;
 
@@ -737,7 +775,7 @@ class DiscountService implements DiscountServiceContract
 
             $cartItem->price_discounted = $newPrice < $minimalProductPrice ? $minimalProductPrice : $newPrice;
 
-            $cart->cart_total -= ($price - $cartItem->price_discounted) * $cartItemDto->getQuantity();
+            $cart->cart_total -= ($price - $cartItem->price_discounted) * $cartItem->quantity;
         }
 
         return $cart;

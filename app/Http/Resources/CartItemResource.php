@@ -12,6 +12,7 @@ class CartItemResource extends Resource
             'cartitem_id' => $this->resource->cartitem_id,
             'price' => $this->resource->price,
             'price_discounted' => $this->resource->price_discounted,
+            'quantity' => $this->resource->quantity,
         ];
     }
 }

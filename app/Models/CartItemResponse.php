@@ -8,6 +8,7 @@ class CartItemResponse
         public string $cartitem_id,
         public float $price,
         public float $price_discounted,
+        public float $quantity,
     ) {
     }
 }

@@ -8,6 +8,7 @@ use App\Enums\DiscountType;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
 use App\Models\Order;
+use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use Illuminate\Support\Facades\Notification;
@@ -371,6 +372,91 @@ class DiscountOrderTest extends TestCase
             'order_id' => $orderId,
             'product_id' => $product2->getKey(),
             'price' => 180.0,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOrderCreateDiscountCheapestProduct($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        $sale = Discount::factory()->create([
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'value' => 10,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        $sale->products()->attach($this->product);
+
+        $cheapestDiscount = Discount::factory()->create([
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::CHEAPEST_PRODUCT,
+            'value' => 5,
+            'code' => null,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => 'info@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address,
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 2,
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment(['summary' => 185.5]); // 90 (first product) + 85,5 (second product) + 10 (delivery)
+
+        $order = Order::find($response->getData()->data->id);
+
+        $products = $order->products;
+
+        $cheapestProduct = $products->sortBy('price')->first();
+        $product = $products->sortBy('price')->last();
+
+        $this->assertDatabaseCount('order_products', 2); // one for each product
+
+        $this->assertDatabaseHas('order_products', [
+            'order_id' => $order->getKey(),
+            'product_id' => $this->product->getKey(),
+            'price' => 85.5,
+        ]);
+
+        $this->assertDatabaseHas('order_products', [
+            'order_id' => $order->getKey(),
+            'product_id' => $this->product->getKey(),
+            'price' => 90,
+        ]);
+
+        $this->assertDatabaseCount('order_discounts', 3);
+
+        $this->assertDatabaseHas('order_discounts', [
+            'model_id' => $cheapestProduct->getKey(),
+            'model_type' => OrderProduct::class,
+            'discount_id' => $cheapestDiscount->getKey(),
+            'applied_discount' => 4.5,
+        ]);
+
+        $this->assertDatabaseHas('order_discounts', [
+            'model_id' => $product->getKey(),
+            'model_type' => OrderProduct::class,
+            'discount_id' => $sale->getKey(),
+            'applied_discount' => 10,
+        ]);
+
+        $this->assertDatabaseHas('order_discounts', [
+            'model_id' => $cheapestProduct->getKey(),
+            'model_type' => OrderProduct::class,
+            'discount_id' => $sale->getKey(),
+            'applied_discount' => 10,
         ]);
     }
 }

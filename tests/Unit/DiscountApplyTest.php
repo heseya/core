@@ -67,7 +67,7 @@ class DiscountApplyTest extends TestCase
             'schemas' => [],
         ]);
 
-        $this->cartItemResponse = new CartItemResponse(1, 120.0, 120.0);
+        $this->cartItemResponse = new CartItemResponse(1, 120.0, 120.0, 1);
 
         $this->cart = new CartResource(
             Collection::make([$this->cartItemResponse]),
@@ -214,8 +214,8 @@ class DiscountApplyTest extends TestCase
             ->discountService
             ->calcCartDiscounts($cartDto, Collection::make([$product1, $product2, $product3]));
 
-        $this->assertTrue($cartResource->cart_total === 153.0);
-        $this->assertTrue($cartResource->summary === 153.0);
+        $this->assertTrue($cartResource->cart_total === 162.0);
+        $this->assertTrue($cartResource->summary === 162.0);
         $this->assertTrue(count($cartResource->sales) === 1);
         $this->assertTrue(count($cartResource->coupons) === 3);
     }
@@ -1168,6 +1168,6 @@ class DiscountApplyTest extends TestCase
 
         $discountedOrder = $this->discountService->applyDiscountOnOrder($discount, $order);
 
-        $this->assertTrue($discountedOrder->cart_total === 450.0); // 120.0 * 3 + (80 - 50) * 3
+        $this->assertTrue($discountedOrder->cart_total === 550.0); // 120.0 * 3 + (80 - 50) * 3
     }
 }
