@@ -4,19 +4,31 @@ namespace Database\Seeders;
 
 use App\Models\SeoMetadata;
 use App\Models\Status;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
 
 class InitSeeder extends Seeder
 {
     public function run(): void
     {
+//        $this->createUser();
         $this->createStatuses();
 
         $seeder = new CountriesSeeder();
         $seeder->run();
 
         $this->createGlobalSeo();
+    }
+
+    private function createUser(): void
+    {
+        User::factory()->create([
+            'name' => 'Admin',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('secret'),
+        ]);
     }
 
     private function createStatuses(): void

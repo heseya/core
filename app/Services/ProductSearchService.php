@@ -2,10 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\Attribute;
 use App\Models\AttributeOption;
+use App\Models\Media;
 use App\Models\Metadata;
 use App\Models\Product;
-use App\Models\ProductAttribute;
 use App\Models\ProductSet;
 use App\Models\Tag;
 use App\Services\Contracts\ProductSearchServiceContract;
@@ -39,14 +40,13 @@ class ProductSearchService implements ProductSearchServiceContract
             'created_at' => $product->created_at->toIso8601String(),
             'updated_at' => $product->updated_at->toIso8601String(),
             'order' => $product->order,
+            'cover' => $this->mapCover($product),
             'tags_id' => $product->tags->map(fn (Tag $tag): string => $tag->getKey())->toArray(),
-            'tags_name' => $product->tags->map(fn (Tag $tag): string => $tag->name)->toArray(),
+            'tags' => $product->tags->map(fn (Tag $tag): array => $this->mapTag($tag))->toArray(),
             'sets_slug' => $this->mapSetsSlugs($product),
             'sets' => $this->mapSets($product),
-            'attributes' => ProductAttribute::where('product_id', $product->getKey())
-                ->with('options')
-                ->get()
-                ->map(fn (ProductAttribute $attribute): array => $this->mapAttribute($attribute))
+            'attributes' => $product->attributes
+                ->map(fn (Attribute $attribute): array => $this->mapAttribute($attribute))
                 ->toArray(),
             'metadata' => $product->metadata
                 ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
@@ -79,8 +79,10 @@ class ProductSearchService implements ProductSearchServiceContract
             'updated_at' => 'date',
             'order' => 'integer',
 
+            'cover' => 'flattened',
+
             'tags_id' => 'keyword',
-            'tags_name' => 'text',
+            'tags' => 'flattened',
 
             'sets_slug' => 'keyword',
             'sets' => 'flattened',
@@ -98,6 +100,28 @@ class ProductSearchService implements ProductSearchServiceContract
         return $sets->contains(fn (ProductSet $set) => $set->hide_on_index);
     }
 
+    private function mapCover(Product $product): ?array
+    {
+        /** @var ?Media $cover */
+        $cover = $product->media()->first();
+
+        if ($cover === null) {
+            return null;
+        }
+
+        return [
+            'id' => $cover->getKey(),
+            'url' => $cover->url,
+            'type' => $cover->type,
+            'metadata' => $cover->metadata
+                ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
+                ->toArray(),
+            'metadata_private' => $cover->metadataPrivate
+                ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
+                ->toArray(),
+        ];
+    }
+
     private function mapSetsSlugs(Product $product): array
     {
         $sets = $this->productSetService->flattenParentsSetsTree($product->sets);
@@ -112,6 +136,15 @@ class ProductSearchService implements ProductSearchServiceContract
         return $sets->map(fn (ProductSet $set): array => $this->mapSet($set))->toArray();
     }
 
+    private function mapTag(Tag $tag): array
+    {
+        return [
+            'id' => $tag->getKey(),
+            'name' => $tag->name,
+            'color' => $tag->color,
+        ];
+    }
+
     private function mapSet(ProductSet $set): array
     {
         return [
@@ -122,19 +155,31 @@ class ProductSearchService implements ProductSearchServiceContract
         ];
     }
 
-    private function mapAttribute(ProductAttribute $attribute): array
+    private function mapAttribute(Attribute $attribute): array
     {
         return [
-            'id' => $attribute->attribute->getKey(),
-            'name' => $attribute->attribute->name,
-            'slug' => $attribute->attribute->slug,
-            'type' => $attribute->attribute->type,
-            'values' => $attribute->options->map(fn (AttributeOption $option): array => [
+            'id' => $attribute->getKey(),
+            'name' => $attribute->name,
+            'slug' => $attribute->slug,
+            'type' => $attribute->type,
+            'values' => $attribute->pivot->options->map(fn (AttributeOption $option): array => [
                 'id' => $option->getKey(),
                 'name' => $option->name,
                 'value_number' => $option->value_number,
                 'value_date' => $option->value_date,
+                'metadata' => $option->metadata
+                    ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
+                    ->toArray(),
+                'metadata_private' => $option->metadataPrivate
+                    ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
+                    ->toArray(),
             ])->toArray(),
+            'metadata' => $attribute->metadata
+                ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
+                ->toArray(),
+            'metadata_private' => $attribute->metadataPrivate
+                ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
+                ->toArray(),
         ];
     }
 

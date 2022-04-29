@@ -5,10 +5,17 @@ declare(strict_types=1);
 namespace App\Repositories\Elastic;
 
 use App\Dtos\ProductSearchDto;
+use App\Models\Attribute;
+use App\Models\AttributeOption;
+use App\Models\Media;
+use App\Models\Metadata;
 use App\Models\Product;
+use App\Models\Tag;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\SortServiceContract;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
@@ -32,6 +39,7 @@ class ProductRepository implements ProductRepositoryContract
         'metadata_private' => 'filterMeta',
         'price_min' => 'filterPriceMin',
         'price_max' => 'filterPriceMax',
+        'attributes' => 'filterAttributes',
     ];
 
     public function __construct(
@@ -64,7 +72,130 @@ class ProductRepository implements ProductRepositoryContract
             }
         }
 
-        return $query->paginate(Config::get('pagination.per_page'));
+        $results = $query->paginateRaw(Config::get('pagination.per_page'));
+        $products = new Collection();
+
+        foreach ($results->items() as $item) {
+            if (!isset($item['hits']) || !isset($item['hits']['hits'])) {
+                continue;
+            }
+            foreach ($item['hits']['hits'] as $hit) {
+                $products->push($this->mapProduct($hit));
+            }
+        }
+
+        $results->setCollection($products);
+
+        return $results;
+    }
+
+    private function mapProduct(array $hit): Product
+    {
+        $product = new Product();
+        $product->forceFill(Arr::only($hit['_source'], [
+            'id',
+            'name',
+            'slug',
+            'price',
+            'price_min',
+            'price_max',
+            'price_min_initial',
+            'price_max_initial',
+            'public',
+            'available',
+            'google_product_category',
+        ]));
+
+        if (isset($hit['_source']['cover']) && $hit['_source']['cover'] !== null) {
+            $media = new Media();
+            $media->forceFill(Arr::except($hit['_source']['cover'], ['metadata', 'metadata_private']));
+            $media->setRelation(
+                'metadata',
+                $this->mapMetadata($hit['_source']['cover']['metadata'], true),
+            );
+            $media->setRelation(
+                'metadata_private',
+                $this->mapMetadata($hit['_source']['cover']['metadata_private'], false),
+            );
+            $product->setRelation('media', Collection::make([$media]));
+        } else {
+            $product->setRelation('media', new Collection());
+        }
+
+        $tags = new Collection();
+        if (isset($hit['_source']['tags'])) {
+            foreach ($hit['_source']['tags'] as $raw) {
+                $tag = new Tag();
+                $tag->forceFill($raw);
+                $tags->push($tag);
+            }
+        }
+        $product->setRelation('tags', $tags);
+
+        $attributes = new Collection();
+        if (isset($hit['_source']['attributes'])) {
+            foreach ($hit['_source']['attributes'] as $raw) {
+                $attribute = new Attribute();
+                $attribute->forceFill(Arr::except($raw, ['values', 'metadata', 'metadata_private']));
+
+                $options = new Collection();
+                foreach ($raw['values'] as $value) {
+                    $option = new AttributeOption();
+                    $option->forceFill(Arr::except($value, ['metadata', 'metadata_private']));
+                    $option->setRelation(
+                        'metadata',
+                        $this->mapMetadata($value['metadata'], true),
+                    );
+                    $option->setRelation(
+                        'metadata_private',
+                        $this->mapMetadata($value['metadata_private'], false),
+                    );
+                    $options->push($option);
+                }
+                $attribute->setRelation('options', $options);
+                $attribute->setRelation(
+                    'metadata',
+                    $this->mapMetadata($raw['metadata'], true),
+                );
+                $attribute->setRelation(
+                    'metadata_private',
+                    $this->mapMetadata($raw['metadata_private'], false),
+                );
+
+                $attributes->push($attribute);
+            }
+        }
+        $product->setRelation('attributes', $attributes);
+
+        $product->setRelation(
+            'metadata',
+            $this->mapMetadata($hit['_source']['metadata'], true),
+        );
+        $product->setRelation(
+            'metadata_private',
+            $this->mapMetadata($hit['_source']['metadata_private'], false),
+        );
+
+        return $product;
+    }
+
+    private function mapMetadata(array $metaList, bool $public): Collection
+    {
+        $collection = new Collection();
+
+        foreach ($metaList as $meta) {
+            $metadata = new Metadata();
+            $metadata->forceFill([
+                'id' => $meta['id'],
+                'name' => $meta['name'],
+                'value' => $meta['value'],
+                'value_type' => $meta['value_type'],
+                'public' => $public,
+            ]);
+            $collection->push($metadata);
+        }
+
+        return $collection;
     }
 
     private function must(Builder $query, string $key, string|int|float|bool $value): Builder
