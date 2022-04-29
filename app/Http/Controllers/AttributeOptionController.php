@@ -20,9 +20,9 @@ class AttributeOptionController extends Controller
     {
     }
 
-    public function index(AttributeOptionIndexRequest $request): JsonResource
+    public function index(AttributeOptionIndexRequest $request, Attribute $attribute): JsonResource
     {
-        $query = AttributeOption::searchByCriteria($request->validated())
+        $query = $attribute->options()->searchByCriteria($request->validated())
             ->with(['metadata', 'metadataPrivate']);
 
         return AttributeOptionResource::collection(

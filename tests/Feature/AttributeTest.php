@@ -1615,4 +1615,54 @@ class AttributeTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['qwe' => 'asd']);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexAttributeHasOnlyItsOwnOptions($user): void
+    {
+        $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
+
+        $attributeOne = Attribute::create([
+            'name' => 'testone',
+            'slug' => 't1',
+            'type' => 'single-option',
+            'global' => true,
+            'sortable' => true,
+        ]);
+
+        $attrOptionOne = AttributeOption::factory()->create([
+            'attribute_id' => $attributeOne->getKey(),
+            'index' => 1,
+        ]);
+
+        $attributeTwo = Attribute::create([
+            'name' => 'testtwo',
+            'slug' => 't2',
+            'type' => 'single-option',
+            'global' => true,
+            'sortable' => true,
+        ]);
+
+        AttributeOption::factory()->create([
+            'attribute_id' => $attributeTwo->getKey(),
+            'index' => 2,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/attributes/id:' . $attributeOne->getKey() . '/options')
+            ->assertJsonCount(1, 'data')
+            ->assertJson([
+                'data' => [
+                    [
+                        'id' => $attrOptionOne->getKey(),
+                        'name' => $attrOptionOne->name,
+                        'value_number' => $attrOptionOne->value_number,
+                        'value_date' => $attrOptionOne->value_date,
+                        'attribute_id' => $attributeOne->getKey(),
+                    ],
+                ],
+            ]);
+    }
 }
