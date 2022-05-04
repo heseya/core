@@ -54,6 +54,42 @@ class ConsentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testShow($user): void
+    {
+        $this->$user->givePermissionTo('consents.show_details');
+
+        Consent::factory()->count(10)->create();
+        $consent = Consent::factory()->create();
+
+        $response = $this->actingAs($this->$user)->json('get', '/consents/id:' . $consent->getKey());
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $consent->getKey(),
+                'name' => $consent->name,
+                'description_html' => $consent->description_html,
+                'required' => $consent->required,
+            ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowUnauthorized($user): void
+    {
+        Consent::factory()->count(10)->create();
+        $consent = Consent::factory()->create();
+
+        $response = $this->actingAs($this->$user)->json('get', '/consents/id:' . $consent->getKey());
+
+        $response->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testStoreUnauthorized($user): void
     {
         $consent = Consent::factory()->make();
