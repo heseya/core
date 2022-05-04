@@ -29,6 +29,8 @@ return [
         EventType::COUPON_CREATED => ['coupons.show_details', 'coupons.show'],
         EventType::COUPON_UPDATED => ['coupons.show_details', 'coupons.show'],
         EventType::COUPON_DELETED => ['coupons.show_details', 'coupons.show'],
+        EventType::ADD_ORDER_DOCUMENT => ['orders.show_details', 'orders.show'],
+        EventType::REMOVE_ORDER_DOCUMENT => ['orders.show_details', 'orders.show'],
     ],
 
     'permissions_hidden' => [

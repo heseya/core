@@ -33,6 +33,8 @@ final class EventType extends Enum implements LocalizedEnum
     public const COUPON_CREATED = 'CouponCreated';
     public const COUPON_UPDATED = 'CouponUpdated';
     public const COUPON_DELETED = 'CouponDeleted';
+    public const ADD_ORDER_DOCUMENT = 'AddOrderDocument';
+    public const REMOVE_ORDER_DOCUMENT = 'RemoveOrderDocument';
 
     public static function getEventList(): array
     {
