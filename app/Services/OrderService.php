@@ -70,7 +70,7 @@ class OrderService implements OrderServiceContract
         $shippingMethod = ShippingMethod::findOrFail($dto->getShippingMethodId());
         $deliveryAddress = Address::firstOrCreate($dto->getDeliveryAddress()->toArray());
 
-        if (!$dto->getInvoiceAddress() instanceof Missing) {
+        if ($this->checkAddress($dto->getInvoiceAddress())) {
             $invoiceAddress = Address::firstOrCreate($dto->getInvoiceAddress()->toArray());
         }
 
@@ -234,10 +234,10 @@ class OrderService implements OrderServiceContract
         return $this->discountService->calcCartDiscounts($cartDto, $products);
     }
 
-    private function modifyAddress(Order $order, string $attribute, AddressDto|Missing $addressDto): ?Address
+    private function checkAddress(AddressDto|Missing $addressDto): bool
     {
         if ($addressDto instanceof Missing) {
-            return null;
+            return false;
         }
 
         $address = $addressDto->toArray();
@@ -248,6 +248,15 @@ class OrderService implements OrderServiceContract
         }
 
         if (!isset($exsistAddress)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function modifyAddress(Order $order, string $attribute, AddressDto|Missing $addressDto): ?Address
+    {
+        if (!$this->checkAddress($addressDto)) {
             return null;
         }
 

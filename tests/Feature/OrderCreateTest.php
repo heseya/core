@@ -444,6 +444,98 @@ class OrderCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateOrderNullInvoiceAddress($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        $schema = Schema::factory()->create([
+            'type' => 'string',
+            'price' => 10,
+            'hidden' => false,
+        ]);
+
+        $this->product->schemas()->sync([$schema->getKey()]);
+        $this->product->update([
+            'price' => 100,
+        ]);
+
+        $productQuantity = 2;
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->postJson('/orders', [
+                'email' => $this->email,
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'delivery_address' => $this->address->toArray(),
+                'invoice_address' => null,
+                'items' => [
+                    [
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => $productQuantity,
+                        'schemas' => [
+                            $schema->getKey() => 'Test',
+                        ],
+                    ],
+                ],
+            ]);
+
+        $response->assertCreated();
+        $order = Order::find($response->getData()->data->id);
+
+        $this->assertEmpty($order->invoiceAddress);
+    }
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderInvoiceAddress($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        $schema = Schema::factory()->create([
+            'type' => 'string',
+            'price' => 10,
+            'hidden' => false,
+        ]);
+
+        $this->product->schemas()->sync([$schema->getKey()]);
+        $this->product->update([
+            'price' => 100,
+        ]);
+
+        $productQuantity = 2;
+
+        $invoiceAddress = Address::factory()->make();
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->postJson('/orders', [
+                'email' => $this->email,
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'delivery_address' => $this->address->toArray(),
+                'invoice_address' => $invoiceAddress->toArray(),
+                'items' => [
+                    [
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => $productQuantity,
+                        'schemas' => [
+                            $schema->getKey() => 'Test',
+                        ],
+                    ],
+                ],
+            ]);
+
+        $response->assertCreated();
+        $order = Order::find($response->getData()->data->id);
+
+        $this->assertEquals(
+            $invoiceAddress->toArray(),
+            $order->invoiceAddress->only('name', 'phone', 'address', 'zip', 'city', 'country')
+        );
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateOrderWithWebHook($user): void
     {
         $this->$user->givePermissionTo('orders.add');
