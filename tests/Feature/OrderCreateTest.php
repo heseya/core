@@ -414,12 +414,17 @@ class OrderCreateTest extends TestCase
             $schema->getKey() => 'Test',
         ]);
 
+        $shippingPrice = $this->shippingMethod->getPrice(
+            ($this->product->price + $schemaPrice) * $productQuantity,
+        );
+
         $this->assertDatabaseHas('orders', [
             'id' => $order->getKey(),
             'email' => $this->email,
             'shipping_price' => $this->shippingMethod->getPrice(
                 ($this->product->price + $schemaPrice) * $productQuantity,
             ),
+            'summary' => ($this->product->price + $schemaPrice) * $productQuantity + $shippingPrice,
         ]);
         $this->assertDatabaseHas('addresses', $this->address->toArray());
         $this->assertDatabaseHas('order_products', [
