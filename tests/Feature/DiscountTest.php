@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Enums\ValidationError;
 use App\Events\CouponCreated;
 use App\Events\CouponDeleted;
 use App\Events\CouponUpdated;
@@ -494,6 +495,50 @@ class DiscountTest extends TestCase
         $listener->handle($event);
 
         Queue::assertNotPushed(CallWebhookJob::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateSimpleWrongCode($user): void
+    {
+        $this->$user->givePermissionTo('coupons.add');
+
+        $event = CouponCreated::class;
+
+        Event::fake($event);
+
+        $discount = [
+            'name' => 'Kupon',
+            'description' => 'Testowy kupon',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'priority' => 1,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+            'code' => 'test as #',
+        ];
+
+        $conditions = [
+            'condition_groups' => [
+                [
+                    'conditions' => [
+                        [
+                            'type' => ConditionType::MAX_USES,
+                            'max_uses' => 150,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('POST', '/coupons', $discount + $conditions);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonFragment(['key' => ValidationError::ALPHADASH]);
     }
 
     /**
