@@ -141,7 +141,7 @@ class OrderService implements OrderServiceContract
                         'price' => $price,
                     ]);
 
-                    $cartValueInitial += $price;
+                    $cartValueInitial += $price * $item->getQuantity();
                 }
             }
         } catch (Throwable $exception) {
