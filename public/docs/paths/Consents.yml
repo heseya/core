@@ -37,6 +37,28 @@ Consents:
       - BearerAuth: [ ]
 
 ConsentsParam:
+  get:
+    tags:
+      - Consents
+    summary: 'get consent'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Consents.yml#/Consent'
+              type: object
+    security:
+      - BearerAuth: [ ]
   delete:
     tags:
       - Consents

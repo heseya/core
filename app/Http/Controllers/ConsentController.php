@@ -18,6 +18,11 @@ class ConsentController extends Controller
     {
     }
 
+    public function show(Consent $consent): JsonResource
+    {
+        return ConsentResource::make($consent);
+    }
+
     public function index(): JsonResource
     {
         return ConsentResource::collection(Consent::all());
