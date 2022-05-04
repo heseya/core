@@ -247,6 +247,8 @@ class DiscountService implements DiscountServiceContract
             }
         }
 
+        $order->cart_total = round($order->cart_total, 2);
+        $order->shipping_price = round($order->shipping_price, 2);
         $order->summary = $order->cart_total + $order->shipping_price;
         $order->paid = $order->summary <= 0;
 
@@ -458,6 +460,13 @@ class DiscountService implements DiscountServiceContract
 
     public function applyDiscountOnOrder(Discount $discount, Order $order): Order
     {
+        $refreshedOrder = $order->fresh();
+        if (
+            ($discount->target_type->value === DiscountTargetType::ORDER_VALUE
+                || $discount->target_type->value === DiscountTargetType::SHIPPING_PRICE)
+            && $refreshedOrder->discounts->count() === 0) {
+            $order = $this->roundProductPrices($order);
+        }
         return match ($discount->target_type->value) {
             DiscountTargetType::PRODUCTS => $this->applyDiscountOnOrderProducts($order, $discount),
             DiscountTargetType::ORDER_VALUE => $this->applyDiscountOnOrderValue($order, $discount),
@@ -505,6 +514,19 @@ class DiscountService implements DiscountServiceContract
             }
             return false;
         });
+    }
+
+    private function roundProductPrices(Order $order): Order
+    {
+        $totalPrice = 0;
+        foreach ($order->products as $product) {
+            $product->price = round($product->price, 2);
+            $totalPrice += $product->price * $product->quantity;
+        }
+
+        $order->cart_total = round($totalPrice, 2);
+
+        return $order;
     }
 
     private function calcProductPriceDiscount(Discount $discount, float $price, float $minimalProductPrice): float
