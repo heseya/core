@@ -171,7 +171,7 @@ class OrderController extends Controller
                         'price' => $price,
                     ]);
 
-                    $summary += $price;
+                    $summary += $price * $item['quantity'];
                 }
             }
         } catch (Throwable $exception) {
