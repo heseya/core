@@ -20,7 +20,7 @@ class OrderPublicResource extends Resource
             'shipping_price' => $this->resource->shipping_price,
             'summary' => $this->resource->summary,
             'currency' => $this->resource->currency,
-            'shipping_method_id' => ShippingMethodResource::make($this->resource->shippingMethod),
+            'shipping_method' => ShippingMethodResource::make($this->resource->shippingMethod),
             'created_at' => $this->resource->created_at,
         ];
     }
