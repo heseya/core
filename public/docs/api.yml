@@ -197,7 +197,6 @@ paths:
       parameters:
         - name: code
           in: path
-          required: false
           schema:
             type: string
       responses:

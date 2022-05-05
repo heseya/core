@@ -10,7 +10,7 @@ Media:
             properties:
               file:
                 description: 'File. Accepted extensions: jpeg, png, gif, bmp, svg, mp4, webm, ogg, avi, mov, wmv'
-                type: binary
+                type: string
             type: object
     responses:
       201:
