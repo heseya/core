@@ -207,6 +207,24 @@ class PaymentTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testPaymentHasDate($user): void
+    {
+        $this->$user->givePermissionTo('payments.offline');
+
+        $code = $this->order->code;
+        $response = $this->actingAs($this->$user)
+            ->postJson("/orders/${code}/pay/offline");
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'date' => Payment::find($response->getData()->data->id)->created_at,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testOfflinePaymentOverpaid($user): void
     {
         $this->$user->givePermissionTo('payments.offline');
