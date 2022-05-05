@@ -13,15 +13,15 @@ Product:
       example: 'White socks'
     price:
       description: 'Base price of the product excluding schemas'
-      type: numeric
+      type: number
       example: 10.99
     price_min:
       description: 'Minimum available product price acounting for schemas'
-      type: numeric
+      type: number
       example: 12.99
     price_max:
       description: 'Maximum available product price acounting for schemas'
-      type: numeric
+      type: number
       example: 20.99
     public:
       description: 'Whether product is not set to be hidden.'
@@ -37,7 +37,7 @@ Product:
       example: true
     quantity_step:
       description: 'In what increments can you increase the product quantity'
-      type: numeric
+      type: number
       example: 0.05
     cover:
       $ref: './Media.yml#/Media'

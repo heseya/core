@@ -11,5 +11,5 @@ Item:
       type: string
       example: K121
     quantity:
-      type: float
+      type: number
       example: '20'

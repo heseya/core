@@ -37,7 +37,6 @@ OrderCreate:
             $ref: './../schemas/Addresses.yml#/Address'
           discounts:
             type: array
-            items: [ ]
         type: object
 
 OrderUpdate:

@@ -990,7 +990,7 @@ components:
           example: 026bc5f6-8373-4aeb-972e-e78d72a67121
         triggered_at:
           description: 'Displayed webhook event triggered time'
-          type: datetime
+          type: string
           example: '2021-10-07T08:49'
         url:
           description: 'Displayed webhook event url'
@@ -1059,22 +1059,22 @@ components:
           type: number
           example: '0'
         discount:
-          type: float
+          type: number
           example: '50'
         uses:
-          type: float
+          type: number
           example: '41'
         max_uses:
-          type: float
+          type: number
           example: '100'
         available:
           type: boolean
           example: 'true'
         starts_at:
-          type: datetime
+          type: string
           example: '2021-09-13T11:11'
         expires_at:
-          type: datetime
+          type: string
           example: '2021-09-13T11:11'
       type: object
     Item:
@@ -1091,7 +1091,7 @@ components:
           example: XL
         price:
           description: 'Additional price the customer will have to pay after selecting this option (can be negative)'
-          type: float
+          type: number
           example: 3.99
         disabled:
           description: 'Shows if the option has been disabled manually'
@@ -1131,7 +1131,7 @@ components:
           type: string
           enum:
             - string
-            - numeric
+            - number
             - boolean
             - date
             - select
@@ -1146,7 +1146,7 @@ components:
           type: string
         price:
           description: "Additional price the customer will have to pay after selecting the option\n     *     (can be negative)"
-          type: float
+          type: number
           example: 9.99
         hidden:
           type: boolean
@@ -1257,7 +1257,6 @@ components:
             properties:
               pages:
                 type: array
-                items: [ ]
             type: object
     PageStore:
       content:

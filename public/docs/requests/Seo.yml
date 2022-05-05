@@ -2,10 +2,10 @@ SeoStore:
   content:
     application/json:
       schema:
-        required:
-        allOf:
-          - $ref: './../schemas/Seo.yml#/SeoStore'
         type: object
+        properties:
+          data:
+            $ref: './../schemas/Seo.yml#/SeoStore'
 
 SeoKeywordsCheck:
   content:

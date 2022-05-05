@@ -34,12 +34,12 @@ Orders:
         in: query
         description: 'Date datetime from'
         schema:
-          type: datetime
+          type: string
       - name: to
         in: query
         description: 'Date datetime to'
         schema:
-          type: datetime
+          type: string
     responses:
       200:
         description: Success
@@ -246,12 +246,12 @@ OrdersMy:
         in: query
         description: 'Date datetime from'
         schema:
-          type: datetime
+          type: string
       - name: to
         in: query
         description: 'Date datetime to'
         schema:
-          type: datetime
+          type: string
     responses:
       200:
         description: Success

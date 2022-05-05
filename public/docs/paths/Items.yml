@@ -34,7 +34,7 @@ Items:
         in: query
         description: 'Items status as at day. If present cannot search by sold_out field and sort by quantity'
         schema:
-          type: datetime
+          type: string
     responses:
       200:
         description: Success

@@ -34,28 +34,28 @@ Tags:
               type: object
     security:
       - oauth: [ ]
-    post:
-      tags:
-        - Tags
-      summary: 'add new tag'
-      operationId: e1447504105c65e449965cb5db17c0ad
-      requestBody:
+  post:
+    tags:
+      - Tags
+    summary: 'add new tag'
+    operationId: e1447504105c65e449965cb5db17c0ad
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: './../schemas/Tags.yml#/Tag'
+    responses:
+      201:
+        description: Created
         content:
           application/json:
             schema:
-              $ref: './../schemas/Tags.yml#/Tag'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: './../schemas/Tags.yml#/Tag'
-                type: object
-      security:
-        - oauth: [ ]
+              properties:
+                data:
+                  $ref: './../schemas/Tags.yml#/Tag'
+              type: object
+    security:
+      - oauth: [ ]
 
 TagsParams:
   delete:
@@ -75,32 +75,32 @@ TagsParams:
         description: Success
     security:
       - oauth: [ ]
-    patch:
-      tags:
-        - Tags
-      summary: 'update tag'
-      operationId: 39aca1d5ee43dd11c54ff3cd25a4541a
-      parameters:
-        - name: id
-          in: path
-          required: true
+  patch:
+    tags:
+      - Tags
+    summary: 'update tag'
+    operationId: 39aca1d5ee43dd11c54ff3cd25a4541a
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
+    requestBody:
+      content:
+        application/json:
           schema:
-            type: string
-            example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
-      requestBody:
+            $ref: './../schemas/Tags.yml#/Tag'
+    responses:
+      200:
+        description: Success
         content:
           application/json:
             schema:
-              $ref: './../schemas/Tags.yml#/Tag'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: './../schemas/Tags.yml#/Tag'
-                type: object
-      security:
-        - oauth: [ ]
+              properties:
+                data:
+                  $ref: './../schemas/Tags.yml#/Tag'
+              type: object
+    security:
+      - oauth: [ ]
