@@ -589,6 +589,16 @@ class AuthTest extends TestCase
         $this->assertFalse(Password::tokenExists($user, $token));
     }
 
+    public function testShowResetPasswordForm(): void
+    {
+        $this->user->givePermissionTo('auth.password_reset');
+
+        $token = Password::createToken($this->user);
+        $response = $this->actingAs($this->user)
+            ->json('get', '/users/reset-password/' . $token . '/' . $this->user->email);
+        $response->assertOk();
+    }
+
     public function testSaveResetPasswordInvalidToken(): void
     {
         $this->user->givePermissionTo('auth.password_reset');

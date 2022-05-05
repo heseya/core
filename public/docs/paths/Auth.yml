@@ -98,10 +98,41 @@ ResetPasswordParams:
   get:
     tags:
       - Auth
-    summary: 'Show reset password form'
+    summary: 'Checks if token belongs to user with email'
+    parameters:
+      - in: path
+        name: token
+        required: true
+        schema:
+          type: string
+          example: be55ec43d8f58c85b333605f06be1163091a697f2460d86755ca4324cf56cccc
+        description: User token
+      - in: path
+        name: email
+        required: true
+        schema:
+          type: string
+          example: test@test.test
+        description: User email
     responses:
       200:
         description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  properties:
+                    token:
+                      type: string
+                    identity_token:
+                      type: string
+                    refresh_token:
+                      type: string
+                    user:
+                      $ref: './../schemas/Users.yml#/User'
+                  type: object
+              type: object
     security:
       - BearerAuth: [ ]
 
