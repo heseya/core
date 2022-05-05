@@ -30,5 +30,7 @@ return [
         EventType::COUPON_CREATED => 'Zdarzenie wyzwalane po utworzeniu nowych kodów rabatowych',
         EventType::COUPON_UPDATED => 'Zdarzenie wyzwalane po aktualizacji kodów rabatowych',
         EventType::COUPON_DELETED => 'Zdarzenie wyzwalane po usunięciu kodów rabatowych',
+        EventType::ADD_ORDER_DOCUMENT => 'Zdarzenie wyzwalane po utworzeniu nowych dokumentów zamówienia',
+        EventType::REMOVE_ORDER_DOCUMENT => 'Zdarzenie wyzwalane po usunięciu dokumentu zamówienia',
     ]
 ];
