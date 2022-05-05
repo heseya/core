@@ -1370,11 +1370,9 @@ components:
                   example: OrderCreated
             type: object
   securitySchemes:
-    oauth:
-      type: apiKey
-      description: 'Use /login and past token in value field below in format (Bearer <token>)'
+    BearerAuth:
+      description: 'Use /login and paste token in value field below'
+      type: http
       scheme: bearer
-      name: Authorization
-      in: header
 security:
-  - oauth: [ ]
+  - BearerAuth: [ ]
