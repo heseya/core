@@ -22,7 +22,7 @@ Media:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Media.yml#Media'
+                    $ref: './../schemas/Media.yml#/Media'
               type: object
     security:
       - oauth: [ ]
@@ -39,7 +39,7 @@ MediaParams:
         schema:
           type: string
     requestBody:
-      $ref: './../requests/Media.yml#MediaUpdate'
+      $ref: './../requests/Media.yml#/MediaUpdate'
     responses:
       200:
         description: OK
@@ -48,7 +48,7 @@ MediaParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Media.yml#Media'
+                  $ref: './../schemas/Media.yml#/Media'
               type: object
     security:
       - oauth: [ ]

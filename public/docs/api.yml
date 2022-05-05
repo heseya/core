@@ -125,7 +125,7 @@ paths:
   /auth/2fa/remove:
     $ref: './paths/Auth.yml#/TFARemove'
   /countries:
-    $ref: './paths/Countries.yml#Countries'
+    $ref: './paths/Countries.yml#/Countries'
   /deposits:
     $ref: './paths/Deposits.yml#/Deposits'
   '/items/id:{id}/deposits':
@@ -282,9 +282,9 @@ paths:
   '/items/id:{id}':
     $ref: './paths/Items.yml#/ItemsParams'
   /media:
-    $ref: './paths/Media.yml#Media'
+    $ref: './paths/Media.yml#/Media'
   '/media/id:{id}':
-    $ref: './paths/Media.yml#MediaParams'
+    $ref: './paths/Media.yml#/MediaParams'
   /orders:
     $ref: './paths/Orders.yml#/Orders'
   '/orders/id:{id}':
@@ -572,23 +572,23 @@ paths:
       security:
         - oauth: [ ]
   /products:
-    $ref: './paths/Products.yml#Products'
+    $ref: './paths/Products.yml#/Products'
   '/products/{slug}':
-    $ref: './paths/Products.yml#ProductsSlug'
+    $ref: './paths/Products.yml#/ProductsSlug'
   '/products/id:{id}':
-    $ref: './paths/Products.yml#ProductsParams'
+    $ref: './paths/Products.yml#/ProductsParams'
   /product-sets:
-    $ref: './paths/ProductSets.yml#ProductSets'
+    $ref: './paths/ProductSets.yml#/ProductSets'
   '/product-sets/{slug}':
-    $ref: './paths/ProductSets.yml#ProductSetsSlug'
+    $ref: './paths/ProductSets.yml#/ProductSetsSlug'
   '/product-sets/id:{id}':
-    $ref: './paths/ProductSets.yml#ProductSetsParams'
+    $ref: './paths/ProductSets.yml#/ProductSetsParams'
   /product-sets/reorder:
-    $ref: './paths/ProductSets.yml#ProductSetsReorder'
+    $ref: './paths/ProductSets.yml#/ProductSetsReorder'
   '/product-sets/reorder/id:{id}':
-    $ref: './paths/ProductSets.yml#ProductSetsReorderParams'
+    $ref: './paths/ProductSets.yml#/ProductSetsReorderParams'
   '/product-sets/id:{id}/products':
-    $ref: './paths/ProductSets.yml#ProductSetsProducts'
+    $ref: './paths/ProductSets.yml#/ProductSetsProducts'
   /roles:
     $ref: './paths/Roles.yml#/Roles'
   '/roles/id:{id}':
@@ -698,9 +698,9 @@ paths:
       security:
         - oauth: [ ]
   /seo:
-    $ref: './paths/Seo.yml#Seo'
+    $ref: './paths/Seo.yml#/Seo'
   /seo/check:
-    $ref: './paths/Seo.yml#SeoCheck'
+    $ref: './paths/Seo.yml#/SeoCheck'
   /settings:
     $ref: './paths/Settings.yml#/Settings'
   '/settings/{name}':
@@ -716,11 +716,11 @@ paths:
   '/statuses/id:{id}':
     $ref: './paths/Statuses.yml#/StatusesParams'
   /statuses/reorder:
-    $ref: './paths/Statuses.yml#StatusesReorder'
+    $ref: './paths/Statuses.yml#/StatusesReorder'
   /tags:
-    $ref: './paths/Tags.yml#Tags'
+    $ref: './paths/Tags.yml#/Tags'
   '/tags/id:{id}':
-    $ref: './paths/Tags.yml#TagsParams'
+    $ref: './paths/Tags.yml#/TagsParams'
   /users:
     $ref: './paths/Users.yml#/Users'
   '/users/id:{id}':
@@ -831,7 +831,7 @@ paths:
             type: string
             example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
       requestBody:
-        $ref: './requests/WebHookUpdate.yml#WebHookUpdate'
+        $ref: './requests/WebHookUpdate.yml#/WebHookUpdate'
       responses:
         200:
           description: Updated
@@ -970,7 +970,7 @@ components:
     ProductView:
       $ref: './schemas/Products.yml#/ProductView'
     ProfileView:
-      $ref: './schemas/Auth.yml#/Profile'
+      $ref: './schemas/Auth.yml#/ProfileView'
     Role:
       $ref: './schemas/Roles.yml#/Role'
     RoleView:
@@ -1080,7 +1080,7 @@ components:
     Item:
       $ref: './schemas/Items.yml#/Item'
     Media:
-      $ref: './schemas/Media.yml#Media'
+      $ref: './schemas/Media.yml#/Media'
     Option:
       properties:
         id:
@@ -1210,21 +1210,21 @@ components:
           example: 30
       type: object
     Tag:
-      $ref: './schemas/Tags.yml#Tag'
+      $ref: './schemas/Tags.yml#/Tag'
     ProductSet:
-      $ref: './schemas/ProductSets.yml#ProductSet'
+      $ref: './schemas/ProductSets.yml#/ProductSet'
     ProductSetChildren:
-      $ref: './schemas/ProductSets.yml#ProductSetChildren'
+      $ref: './schemas/ProductSets.yml#/ProductSetChildren'
     ProductSetParent:
-      $ref: './schemas/ProductSets.yml#ProductSetParent'
+      $ref: './schemas/ProductSets.yml#/ProductSetParent'
     ProductSetParentChildren:
-      $ref: './schemas/ProductSets.yml#ProductSetParentChildren'
+      $ref: './schemas/ProductSets.yml#/ProductSetParentChildren'
     SeoStore:
-      $ref: './schemas/Seo.yml#SeoStore'
+      $ref: './schemas/Seo.yml#/SeoStore'
     SeoView:
-      $ref: './schemas/Seo.yml#SeoView'
+      $ref: './schemas/Seo.yml#/SeoView'
     SeoKeywordsResponse:
-      $ref: './schemas/Seo.yml#SeoKeywordsResponse'
+      $ref: './schemas/Seo.yml#/SeoKeywordsResponse'
   requestBodies:
     AppStore:
       $ref: './requests/Apps.yml#/AppStore'
@@ -1316,9 +1316,9 @@ components:
     PasswordResetSave:
       $ref: './requests/Auth.yml#/PasswordResetSave'
     ProductStore:
-      $ref: './requests/Products.yml#ProductStore'
+      $ref: './requests/Products.yml#/ProductStore'
     ProductUpdate:
-      $ref: './requests/Products.yml#ProductUpdate'
+      $ref: './requests/Products.yml#/ProductUpdate'
     RoleStore:
       $ref: './requests/Roles.yml#/RoleStore'
     RoleUpdate:

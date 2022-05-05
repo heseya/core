@@ -30,7 +30,7 @@ Tags:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Tags.yml#Tag'
+                    $ref: './../schemas/Tags.yml#/Tag'
               type: object
     security:
       - oauth: [ ]
@@ -43,7 +43,7 @@ Tags:
         content:
           application/json:
             schema:
-              $ref: './../schemas/Tags.yml#Tag'
+              $ref: './../schemas/Tags.yml#/Tag'
       responses:
         201:
           description: Created
@@ -52,7 +52,7 @@ Tags:
               schema:
                 properties:
                   data:
-                    $ref: './../schemas/Tags.yml#Tag'
+                    $ref: './../schemas/Tags.yml#/Tag'
                 type: object
       security:
         - oauth: [ ]
@@ -91,7 +91,7 @@ TagsParams:
         content:
           application/json:
             schema:
-              $ref: './../schemas/Tags.yml#Tag'
+              $ref: './../schemas/Tags.yml#/Tag'
       responses:
         200:
           description: Success
@@ -100,7 +100,7 @@ TagsParams:
               schema:
                 properties:
                   data:
-                    $ref: './../schemas/Tags.yml#Tag'
+                    $ref: './../schemas/Tags.yml#/Tag'
                 type: object
       security:
         - oauth: [ ]

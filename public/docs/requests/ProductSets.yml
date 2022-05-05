@@ -45,7 +45,7 @@ ProductSetStore:
               type: string
               example: 026bc5f6-8373-4aeb-972e-e78d72a67121
           seo:
-            $ref: './../schemas/Seo.yml#SeoStore'
+            $ref: './../schemas/Seo.yml#/SeoStore'
         type: object
 ProductSetUpdate:
   content:
@@ -94,7 +94,7 @@ ProductSetUpdate:
               type: string
               example: 026bc5f6-8373-4aeb-972e-e78d72a67121
           seo:
-            $ref: './../schemas/Seo.yml#SeoStore'
+            $ref: './../schemas/Seo.yml#/SeoStore'
         type: object
 ProductSetAttach:
   content:

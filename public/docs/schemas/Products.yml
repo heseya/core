@@ -51,7 +51,7 @@ Product:
 ProductView:
   type: object
   allOf:
-    - $ref: '#Product'
+    - $ref: '#/Product'
     - properties:
         user_id:
           type: string
@@ -71,7 +71,7 @@ ProductView:
           description: 'Ids of assigned subsets'
           type: array
           items:
-            $ref: './Media.yml#Media'
+            $ref: './Media.yml#/Media'
         schemas:
           description: 'Ids of assigned subsets'
           type: array

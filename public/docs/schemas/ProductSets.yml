@@ -30,7 +30,7 @@ ProductSet:
         type: string
         example: 026bc5f6-8373-4aeb-972e-e78d72a67121
     cover:
-      $ref: './../schemas/Media.yml#Media'
+      $ref: './Media.yml#/Media'
   type: object
 
 ProductSetParent:
@@ -63,9 +63,9 @@ ProductSetParent:
       type: string
       example: '<h1>Lorem ipsum dolor sit amet</h1>'
     cover:
-      $ref: './../schemas/Media.yml#Media'
+      $ref: './../schemas/Media.yml#/Media'
     parent:
-      $ref: '#ProductSet'
+      $ref: '#/ProductSet'
     children_ids:
       description: 'Ids of assigned subsets'
       type: array
@@ -73,7 +73,7 @@ ProductSetParent:
         type: string
         example: 026bc5f6-8373-4aeb-972e-e78d72a67121
     seo:
-      $ref: './Seo.yml#SeoView'
+      $ref: './Seo.yml#/SeoView'
   type: object
 
 ProductSetChildren:
@@ -106,7 +106,7 @@ ProductSetChildren:
       items:
 #        Odwołanie do siebie nie działa poprawnie, chociaż przed rozbiciem na pliki działało
 #        $ref: '#ProductSetChildren'
-        $ref: '#ProductSetChildrenEmpty'
+        $ref: '#/ProductSetChildrenEmpty'
   type: object
 
 ProductSetParentChildren:
@@ -135,12 +135,12 @@ ProductSetParentChildren:
       type: boolean
       example: false
     parent:
-      $ref: '#ProductSet'
+      $ref: '#/ProductSet'
     children:
       description: 'Ids of assigned subsets'
       type: array
       items:
-        $ref: '#ProductSetChildren'
+        $ref: '#/ProductSetChildren'
   type: object
 
 ProductSetChildrenEmpty:

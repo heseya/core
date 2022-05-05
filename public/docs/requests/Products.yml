@@ -32,7 +32,7 @@ Product:
         type: string
         example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
     seo:
-      $ref: './../schemas/Seo.yml#SeoStore'
+      $ref: './../schemas/Seo.yml#/SeoStore'
 
 ProductStore:
   content:
@@ -44,7 +44,7 @@ ProductStore:
           - price
           - public
         allOf:
-          - $ref: '#Product'
+          - $ref: '#/Product'
         properties:
           description_short:
             type: string
@@ -60,5 +60,5 @@ ProductUpdate:
           - price
           - public
         allOf:
-          - $ref: '#Product'
+          - $ref: '#/Product'
         type: object
