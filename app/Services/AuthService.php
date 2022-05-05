@@ -135,13 +135,13 @@ class AuthService implements AuthServiceContract
         $this->tokenService->invalidateToken(Auth::getToken());
     }
 
-    public function resetPassword(string $email): void
+    public function resetPassword(string $email, string $redirect_url): void
     {
         $user = User::whereEmail($email)->first();
         if ($user) {
             $token = Password::createToken($user);
 
-            $user->notify(new ResetPassword($token));
+            $user->notify(new ResetPassword($token, $redirect_url));
         }
     }
 

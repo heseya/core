@@ -16,7 +16,7 @@ interface AuthServiceContract
 
     public function logout(): void;
 
-    public function resetPassword(string $email): void;
+    public function resetPassword(string $email, string $redirect_url): void;
 
     public function showResetPasswordForm(?string $email, ?string $token): User;
 

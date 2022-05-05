@@ -3,6 +3,9 @@ PasswordReset:
     application/json:
       schema:
         properties:
+          redirect_url:
+            type: string
+            example: https://example.com
           email:
             type: string
             example: admin@example.com

@@ -17,13 +17,15 @@ class ResetPassword extends Notification
      * The password reset token.
      */
     public string $token;
+    public string $redirect_url;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(string $token)
+    public function __construct(string $token, string $redirect_url)
     {
         $this->token = $token;
+        $this->redirect_url = $redirect_url;
     }
 
     /**
@@ -43,7 +45,7 @@ class ResetPassword extends Notification
             'token' => $this->token,
             'email' => $notifiable->getEmailForPasswordReset(),
         ]);
-        $url = Config::get('app.admin_url') . '/new-password?' . $param;
+        $url = $this->redirect_url . '?' . $param;
 
         return $this->buildMailMessage($url);
     }

@@ -11,6 +11,7 @@ use App\Models\OneTimeSecurityCode;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use App\Notifications\ResetPassword;
 use App\Notifications\TFAInitialization;
 use App\Notifications\TFARecoveryCodes;
 use App\Notifications\TFASecurityCode;
@@ -494,7 +495,7 @@ class AuthTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testResetPassword(): void
+    public function testResetPassword11(): void
     {
         $this->user->givePermissionTo('auth.password_reset');
 
@@ -507,12 +508,14 @@ class AuthTest extends TestCase
             'password' => Hash::make($password),
         ]);
 
-        Mail::fake();
-        Mail::assertNothingSent();
+        Notification::fake();
 
         $response = $this->actingAs($this->user)->postJson('/users/reset-password', [
             'email' => $user->email,
+            'redirect_url' => 'https://test.com',
         ]);
+
+        Notification::assertSentTo($user, ResetPassword::class);
 
         $response->assertNoContent();
     }
@@ -535,6 +538,7 @@ class AuthTest extends TestCase
 
         $response = $this->actingAs($this->user)->postJson('/users/reset-password', [
             'email' => $this->faker->unique()->safeEmail,
+            'redirect_url' => 'https://test.com',
         ]);
 
         Mail::assertNothingSent();
