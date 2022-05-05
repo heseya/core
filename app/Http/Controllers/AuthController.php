@@ -87,11 +87,11 @@ class AuthController extends Controller
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 
-    public function showResetPasswordForm(Request $request): JsonResource
+    public function showResetPasswordForm(?string $token = null, ?string $email = null): JsonResource
     {
         $user = $this->authService->showResetPasswordForm(
-            $request->input('email'),
-            $request->input('token')
+            $email,
+            $token
         );
 
         return UserResource::make($user);
