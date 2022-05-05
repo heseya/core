@@ -15,6 +15,7 @@ class PaymentResource extends Resource
             'amount' => $this->resource->amount,
             'redirect_url' => $this->resource->redirect_url,
             'continue_url' => $this->resource->continue_url,
+            'date' => $this->resource->created_at,
         ];
     }
 }
