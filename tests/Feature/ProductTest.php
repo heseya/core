@@ -347,6 +347,7 @@ class ProductTest extends TestCase
 
         $response = $this->actingAs($this->$user)
             ->getJson('/products/' . $this->product->slug);
+
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
@@ -356,6 +357,33 @@ class ProductTest extends TestCase
         $response
             ->assertOk()
             ->assertJson(['data' => $this->expected]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWithAttributeMetadata($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $this->product->attributes->first()->metadata()->create([
+            'name' => 'testMeta',
+            'value' => 'testValue',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/' . $this->product->slug);
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => $this->expected])
+            ->assertJsonFragment([
+                'metadata' => [
+                    'testMeta' => 'testValue',
+                ],
+            ]);
     }
 
     /**

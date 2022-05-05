@@ -2,10 +2,13 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
 class ProductAttributeResource extends ProductAttributeShortResource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
         return array_merge(
@@ -17,7 +20,8 @@ class ProductAttributeResource extends ProductAttributeShortResource
                 'type' => $this->resource->type->value,
                 'global' => $this->resource->global,
                 'sortable' => $this->resource->sortable,
-            ]
+            ],
+            $this->metadataResource('products.show_metadata_private'),
         );
     }
 }
