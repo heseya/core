@@ -15,7 +15,7 @@ final class Exceptions extends Enum
     public const CLIENT_APP_RESPONDED_WITH_INVALID_INFO = 'App responded with invalid info';
     public const CLIENT_APP_WANTS_INVALID_INFO = 'App wants invalid permissions';
     public const CLIENT_ADD_APP_WITHOUT_REQUIRED_PERMISSIONS = 'Can\'t add app without all required permissions';
-    public const CLIENT_ADD_PERMISSION_AP_DOESNT_WANT = 'Can\'t add any permissions application doesn\'t want';
+    public const CLIENT_ADD_PERMISSION_APP_DOESNT_WANT = 'Can\'t add any permissions application doesn\'t want';
 
     public const CLIENT_MODEL_NOT_AUDITABLE = 'Model not auditable';
     public const CLIENT_INVALID_CREDENTIALS = 'Invalid credentials';

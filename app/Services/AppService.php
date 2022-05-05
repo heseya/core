@@ -95,7 +95,7 @@ class AppService implements AppServiceContract
         }
 
         if ($permissions->intersect($advertisedPerm)->count() < $permissions->count()) {
-            throw new ClientException(Exceptions::CLIENT_ADD_PERMISSION_AP_DOESNT_WANT);
+            throw new ClientException(Exceptions::CLIENT_ADD_PERMISSION_APP_DOESNT_WANT);
         }
 
         $name = $dto->getName() ?? $appConfig['name'];
