@@ -176,8 +176,8 @@ paths:
     $ref: './paths/Orders.yml#/OrdersStatus'
   /orders/my:
     $ref: './paths/Orders.yml#/OrdersMy'
-  '/orders/my/id:{id}':
-    $ref: './paths/Orders.yml#/OrdersMyId'
+  '/orders/my/{code}':
+    $ref: './paths/Orders.yml#/OrdersMySingle'
   '/orders/id:{id}/docs':
     $ref: './paths/Orders.yml#/OrderAddDocument'
   '/orders/id:{order_id}/docs/id:{doc_id}':

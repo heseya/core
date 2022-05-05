@@ -251,18 +251,18 @@ OrdersMy:
     security:
       - BearerAuth: [ ]
 
-OrdersMyId:
+OrdersMySingle:
   get:
     tags:
       - Orders
     summary: 'user order view'
     parameters:
-      - name: id
+      - name: code
         in: path
         required: true
         schema:
           type: string
-          example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
+          example: 5B32FD
     responses:
       200:
         description: Success
