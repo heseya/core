@@ -108,12 +108,15 @@ class OrderService implements OrderServiceContract
                     'quantity' => $item->getQuantity(),
                     'price_initial' => $product->price,
                     'price' => $product->price,
+                    'base_price_initial' => $product->price,
+                    'base_price' => $product->price,
                     'name' => $product->name,
                 ]);
 
                 $order->products()->save($orderProduct);
                 $cartValueInitial += $product->price * $item->getQuantity();
 
+                $schemaProductPrice = 0;
                 # Add schemas to products
                 foreach ($item->getSchemas() as $schemaId => $value) {
                     $schema = $product->schemas()->findOrFail($schemaId);
@@ -141,7 +144,14 @@ class OrderService implements OrderServiceContract
                         'price' => $price,
                     ]);
 
+                    $schemaProductPrice += $price;
                     $cartValueInitial += $price * $item->getQuantity();
+                }
+
+                if ($schemaProductPrice) {
+                    $orderProduct->price += $schemaProductPrice;
+                    $orderProduct->price_initial += $schemaProductPrice;
+                    $orderProduct->save();
                 }
             }
         } catch (Throwable $exception) {

@@ -26,6 +26,8 @@ class OrderProductFactory extends Factory
             'quantity' => rand(1, 4),
             'price' => $price,
             'price_initial' => $price,
+            'base_price' => $price,
+            'base_price_initial' => $price,
             'product_id' => Product::select('id')->inRandomOrder()->first()->getKey(),
         ];
     }

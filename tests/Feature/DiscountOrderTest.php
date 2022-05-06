@@ -5,11 +5,13 @@ namespace Tests\Feature;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Enums\SchemaType;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
+use App\Models\Schema;
 use App\Models\ShippingMethod;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
@@ -513,5 +515,244 @@ class DiscountOrderTest extends TestCase
             'id' => $orderId,
             'summary' => 1826.35,
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOrderCreateMultiItemWithDiscountValueAmount($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 10,
+        ]);
+
+        $items = [[
+            'product_id' => $product->getKey(),
+            'quantity' => 3,
+        ],
+        ];
+
+        $sale = Discount::factory()->create([
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'value' => 2,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        $sale->products()->attach($product);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => 'info@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address,
+            'items' => $items,
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment(['summary' => 34]); // 3 * (10 - 2) + 10 (delivery)
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOrderCreateItemWithDiscountValueAmountExtendPrice($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 10,
+        ]);
+
+        $items = [
+            [
+                'product_id' => $product->getKey(),
+                'quantity' => 1,
+            ],
+            [
+                'product_id' => $this->product->getKey(),
+                'quantity' => 1,
+            ],
+        ];
+
+        $sale = Discount::factory()->create([
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'value' => 20,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        $sale->products()->attach($product);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => 'info@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address,
+            'items' => $items,
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment(['summary' => 110]); // (10 (price) - 20 (discount)) + 100 + 10 (delivery)
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOrderCreateSchemaProductWithDiscountValueAmount($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 10,
+        ]);
+
+        $schema = Schema::factory()->create([
+            'type' => 'string',
+            'price' => 20,
+            'hidden' => false,
+        ]);
+
+        $product->schemas()->save($schema);
+
+        $sale = Discount::factory()->create([
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'value' => 20,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        $sale->products()->attach($product);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => 'info@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address,
+            'items' => [
+                [
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [
+                        $schema->getKey() => 'Test',
+                    ],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment(['summary' => 20]); // (10 + 20 - 20) + 10 (delivery)
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOrderCreateMultiSchemaProductWithDiscountValueAmount($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 10,
+        ]);
+
+        $schema = Schema::factory()->create([
+            'type' => SchemaType::BOOLEAN,
+            'price' => 20,
+            'hidden' => false,
+        ]);
+
+        $product->schemas()->sync([$schema->getKey()]);
+
+        $sale = Discount::factory()->create([
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'value' => 10,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        $sale->products()->attach($product);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => 'info@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address,
+            'items' => [
+                [
+                    'product_id' => $product->getKey(),
+                    'quantity' => 3,
+                    'schemas' => [
+                        $schema->getKey() => true,
+                    ],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment(['summary' => 70]); // 3 * (30 - 10) + 10 (delivery)
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOrderCreateSchemaProductWithDiscountValueAmountExtendPrice($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 10,
+        ]);
+
+        $schema = Schema::factory()->create([
+            'type' => SchemaType::BOOLEAN,
+            'price' => 10,
+            'hidden' => false,
+        ]);
+
+        $product->schemas()->sync([$schema->getKey()]);
+
+        $sale = Discount::factory()->create([
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'value' => 30,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        $sale->products()->attach($product);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => 'info@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address,
+            'items' => [
+                [
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [
+                        $schema->getKey() => true,
+                    ],
+                ],
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment(['summary' => 110]); // (20 (schema price) - 30 (discount)) + 100 + 10 (delivery)
     }
 }
