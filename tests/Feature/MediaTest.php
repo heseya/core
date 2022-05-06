@@ -61,6 +61,35 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUploadPdf($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        Http::fake(['*' => Http::response([0 => ['path' => 'doc.pdf']])]);
+
+        $file = UploadedFile::fake()->createWithContent('doc.pdf', 'test pdf content');
+
+        $response = $this->actingAs($this->$user)->postJson('/media', [
+            'file' => $file,
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment(['type' => Str::lower(MediaType::getKey(0))])
+            ->assertJsonStructure(['data' => [
+                'id',
+                'type',
+                'url',
+                'slug',
+                'alt',
+                'metadata',
+            ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUploadPagesAdd($user): void
     {
         $this->$user->givePermissionTo('pages.add');
