@@ -289,6 +289,7 @@ class ConsentTest extends TestCase
             'value' => false,
         ]);
     }
+
     public function testUpdateUserConsents(): void
     {
         $consent = Consent::factory()->create([
@@ -331,5 +332,23 @@ class ConsentTest extends TestCase
                 'user_id' => $this->user->getKey(),
                 'value' => true,
             ]);
+    }
+
+    public function testCanUpdateProfileWithoutConsents(): void
+    {
+        $response = $this->actingAs($this->user)->json('PATCH', '/auth/profile', [
+            'name' => 'test test',
+        ]);
+        $response->assertOk()
+            ->assertJson(['data' => [
+                'consents' => [],
+            ],
+            ])
+            ->assertJsonFragment(['name' => 'test test']);
+
+        $this->assertDatabaseMissing('consent_user', [
+            'user_id' => $this->user->getKey(),
+            'consent_id' => $this->requiredConsent->getKey(),
+        ]);
     }
 }
