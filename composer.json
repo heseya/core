@@ -90,18 +90,31 @@
         "insights": [
             "@php artisan insights ./ ./tests --fix --no-interaction"
         ],
+        "style": [
+          "@ide-helper",
+          "@insights"
+        ],
         "phpstan": [
-            "./vendor/bin/phpstan analyse --memory-limit=2G"
+            "@stan"
         ],
         "stan": [
-            "@phpstan"
+            "./vendor/bin/phpstan analyse --memory-limit=2G"
         ],
-        "style": [
-            "@ide-helper",
-            "@insights"
+        "check": [
+            "composer-require-checker"
+        ],
+        "cp": [
+            "phpcpd ./app ./tests ./database"
+        ],
+        "arch": [
+            "deptrac"
         ],
         "pre-commit": [
-            "@composer style"
+            "@style",
+            "@phpstan",
+            "@check",
+            "@cp",
+            "@arch"
         ],
         "test": [
             "@php artisan test --env=.env"
