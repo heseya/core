@@ -8,7 +8,6 @@ use App\Models\AttributeOption;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Ramsey\Uuid\Uuid;
 
 class AttributeSearch implements Rule
 {
@@ -89,7 +88,7 @@ class AttributeSearch implements Rule
         $value = explode(',', $value);
 
         foreach ($value as $option) {
-            if (!Uuid::isValid($option)) {
+            if (!Str::isUuid($option)) {
                 $this->message = "Option `{$option}` for attribute `{$this->attributeName}` must be a valid UUID.";
                 return false;
             }
