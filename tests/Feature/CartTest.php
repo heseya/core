@@ -691,6 +691,105 @@ class CartTest extends TestCase
             ] + $discountCode2);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessWithDiscountValueAmountExtendPrice($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 10,
+        ]);
+        $schema = Schema::factory()->create([
+            'type' => 'string',
+            'price' => 20,
+            'hidden' => false,
+        ]);
+        $product->schemas()->save($schema);
+        $product2 = Product::factory()->create([
+            'public' => true,
+            'price' => 100,
+        ]);
+        $sale = Discount::factory()->create([
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'value' => 500,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+        $sale->products()->attach($product->getKey());
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [
+                        $schema->getKey() => 'Test',
+                    ],
+                ],
+                [
+                    'cartitem_id' => '2',
+                    'product_id' => $product2->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['summary' => 108.11]); // (10 (price) - 20 (discount)) + 100 + 8.11 (shipping)
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessWithPromotionOnMultiProductWithSchema($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 10,
+        ]);
+        $schema = Schema::factory()->create([
+            'type' => 'string',
+            'price' => 20,
+            'hidden' => false,
+        ]);
+        $product->schemas()->save($schema);
+        $sale = Discount::factory()->create([
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'value' => 25,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+        $sale->products()->attach($product->getKey());
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 3,
+                    'schemas' => [
+                        $schema->getKey() => 'Test',
+                    ],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['summary' => 23.11]); // 3*((10(price) +20(schema)) -20(discount)) +8.11(shipping)
+    }
+
     private function prepareDataForCouponTest($coupon): array
     {
         $code = $coupon ? [] : ['code' => null];
