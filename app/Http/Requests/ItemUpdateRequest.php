@@ -14,7 +14,7 @@ class ItemUpdateRequest extends FormRequest
         $item = $this->route('item');
 
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['string', 'max:255'],
             'sku' => [
                 'string',
                 'max:255',

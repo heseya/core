@@ -97,7 +97,7 @@ Items:
       content:
         application/json:
           schema:
-            $ref: './../requests/Items.yml#/Item'
+            $ref: './../requests/Items.yml#/ItemCreate'
     responses:
       201:
         description: Created
@@ -168,7 +168,7 @@ ItemsParams:
       content:
         application/json:
           schema:
-            $ref: './../requests/Items.yml#/Item'
+            $ref: './../requests/Items.yml#/ItemUpdate'
     responses:
       200:
         description: Success
