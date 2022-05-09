@@ -7,22 +7,26 @@ ProductSets:
         in: query
         description: 'Return only root lists'
         allowEmptyValue: true
+        required: false
         schema:
           type: boolean
       - name: tree
         in: query
         description: 'Return sets starting from root with recursively nested children instead of id''s'
         allowEmptyValue: true
+        required: false
         schema:
           type: boolean
       - name: search
         in: query
         description: 'Full text search'
+        required: false
         schema:
           type: string
       - name: name
         in: query
         description: 'Name search'
+        required: false
         schema:
           type: string
       - name: slug
@@ -33,6 +37,7 @@ ProductSets:
       - name: public
         in: query
         description: 'Is public search'
+        required: false
         schema:
           type: boolean
       - name: metadata
