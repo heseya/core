@@ -53,6 +53,10 @@ class AuthTest extends TestCase
                 'email',
                 'name',
                 'avatar',
+                'roles',
+                'delivery_addresses',
+                'invoice_addresses',
+                'permissions',
             ],
         ];
     }
