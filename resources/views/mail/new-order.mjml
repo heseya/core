@@ -36,16 +36,16 @@
           </tr> @foreach ($order->products as $item) <tr>
             <td style="padding: 0 15px 0 0;">{{ $item->product->name }}</td>
             <td style="padding: 0 15px;">{{ $item->quantity }}</td>
-            <td style="padding: 0 0 0 15px;">{{ $item->price }} {{ $order->currency }}</td>
+            <td style="padding: 0 0 0 15px;">{{ number_format($item->price, 2, '.', '') }} {{ $order->currency }}</td>
           </tr> @endforeach
         </mj-table>
       </mj-column>
     </mj-section>
     <mj-section background-color="#fff" background-repeat="repeat" background-size="auto" padding-bottom="0px" text-align="center">
       <mj-column>
-        <mj-text align="right" color="#000" font-family="Arial, sans-serif" font-size="14px" line-height="22px"> @if ($order->shippingMethod) <p> Delivery: <b>{{ $order->shippingMethod->name }}</b><br /> @endif Delivery price: <b>{{ $order->shipping_price }} {{ $order->currency }}</b><br /> Cart: <b>{{ $order->summary - $order->shipping_price }} {{ $order->currency }}</b><br />
+        <mj-text align="right" color="#000" font-family="Arial, sans-serif" font-size="14px" line-height="22px"> @if ($order->shippingMethod) <p> Delivery: <b>{{ $order->shippingMethod->name }}</b><br /> @endif Delivery price: <b>{{ number_format($order->shipping_price, 2, '.', '') }} {{ $order->currency }}</b><br /> Cart: <b>{{ number_format($order->cart_total, 2, '.', '') }} {{ $order->currency }}</b><br />
           </p>
-          <p style="font-size: 20px">Summary: <b>{{ $order->summary }} {{ $order->currency }}</b><br /></p>
+          <p style="font-size: 20px">Summary: <b>{{ number_format($order->summary, 2, '.', '') }} {{ $order->currency }}</b><br /></p>
         </mj-text>
       </mj-column>
     </mj-section>
