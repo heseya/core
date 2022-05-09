@@ -52,6 +52,16 @@ Users:
         required: false
         schema:
           $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: consent_name
+        in: query
+        description: 'Accepted Consent name search'
+        schema:
+          type: string
+      - name: consent_id
+        in: query
+        description: 'Accepted Consent id search'
+        schema:
+          type: string
     responses:
       200:
         description: Success

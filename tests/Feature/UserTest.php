@@ -8,6 +8,7 @@ use App\Events\UserCreated;
 use App\Events\UserDeleted;
 use App\Events\UserUpdated;
 use App\Listeners\WebHookEventListener;
+use App\Models\Consent;
 use App\Models\Metadata;
 use App\Models\Permission;
 use App\Models\Role;
@@ -305,6 +306,88 @@ class UserTest extends TestCase
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
                 'consents' => [],
+                'metadata' => [],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexConsentNameSearch($user): void
+    {
+        $this->$user->givePermissionTo('users.show');
+
+        /** @var User $otherUser */
+        $otherUser = User::factory([
+            'is_tfa_active' => false,
+        ])->create();
+
+        $consent = Consent::factory()->create(['required' => false]);
+
+        $otherUser->consents()->save($consent, ['value' => true]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/users?consent_name=' . $consent->name)
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0', [
+                'id' => $otherUser->getKey(),
+                'email' => $otherUser->email,
+                'name' => $otherUser->name,
+                'avatar' => $otherUser->avatar,
+                'roles' => [],
+                'is_tfa_active' => $otherUser->is_tfa_active,
+                'consents' => [
+                    [
+                        'id' => $consent->getKey(),
+                        'name' => $consent->name,
+                        'description_html' => $consent->description_html,
+                        'required' => $consent->required,
+                        'value' => true,
+                    ],
+                ],
+                'metadata' => [],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexConsentIdSearch($user): void
+    {
+        $this->$user->givePermissionTo('users.show');
+
+        /** @var User $otherUser */
+        $otherUser = User::factory([
+            'is_tfa_active' => false,
+        ])->create();
+
+        $consent = Consent::factory()->create(['required' => false]);
+
+        $otherUser->consents()->save($consent, ['value' => true]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/users?consent_id=' . $consent->getKey())
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0', [
+                'id' => $otherUser->getKey(),
+                'email' => $otherUser->email,
+                'name' => $otherUser->name,
+                'avatar' => $otherUser->avatar,
+                'roles' => [],
+                'is_tfa_active' => $otherUser->is_tfa_active,
+                'consents' => [
+                    [
+                        'id' => $consent->getKey(),
+                        'name' => $consent->name,
+                        'description_html' => $consent->description_html,
+                        'required' => $consent->required,
+                        'value' => true,
+                    ],
+                ],
                 'metadata' => [],
             ]);
     }
