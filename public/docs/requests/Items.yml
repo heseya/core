@@ -1,4 +1,21 @@
-Item:
+ItemCreate:
+  type: object
+  required:
+    - name
+    - sku
+  properties:
+    name:
+      type: string
+      example: Chain
+    sku:
+      type: string
+      example: K121
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+
+ItemUpdate:
   type: object
   properties:
     name:

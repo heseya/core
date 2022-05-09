@@ -2,6 +2,8 @@
 
 namespace App\Services\Contracts;
 
+use App\Dtos\ItemDto;
+use App\Models\Item;
 use Illuminate\Support\Collection;
 
 interface ItemServiceContract
@@ -13,4 +15,10 @@ interface ItemServiceContract
     public function checkOrderItems(array $items): Collection;
 
     public function checkCartItems(array $items): Collection;
+
+    public function store(ItemDto $dto): Item;
+
+    public function update(Item $item, ItemDto $dto): Item;
+
+    public function destroy(Item $item): void;
 }
