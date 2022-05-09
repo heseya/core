@@ -32,8 +32,6 @@ ShippingMethods:
         required: false
         schema:
           $ref: '../schemas/Metadata.yml#/MetadataQuery'
-    requestBody:
-      $ref: './../requests/ShippingMethods.yml#/ShippingMethodIndex'
     responses:
       200:
         description: Success

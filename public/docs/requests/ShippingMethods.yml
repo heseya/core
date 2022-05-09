@@ -40,17 +40,6 @@ ShippingMethod:
       type: number
       example: 3
 
-ShippingMethodIndex:
-  content:
-    application/json:
-      schema:
-        properties:
-          country:
-            type: string
-          cart_value:
-            type: number
-        type: object
-
 ShippingMethodReorder:
   content:
     application/json:

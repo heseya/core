@@ -5,7 +5,7 @@ down:
 	- docker-compose down
 
 bash:
-	- docker exec -it store-api-app-1 bash
+	- docker exec -it store-api_app_1 bash || docker exec -it store-api-app-1 bash
 
 build:
 	- cp .env.example .env
