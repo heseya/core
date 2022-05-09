@@ -11,7 +11,7 @@ use Illuminate\Foundation\Http\FormRequest;
 class MediaUpdateDto extends Dto implements InstantiateFromRequest
 {
     private string|null|Missing $alt;
-    private string|Missing $slug;
+    private string|null|Missing $slug;
 
     public static function instantiateFromRequest(FormRequest|MediaUpdateRequest $request): self
     {
@@ -26,7 +26,7 @@ class MediaUpdateDto extends Dto implements InstantiateFromRequest
         return $this->alt;
     }
 
-    public function getSlug(): string|Missing
+    public function getSlug(): string|null|Missing
     {
         return $this->slug;
     }
