@@ -2,15 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\Product;
 use App\Models\ProductSet;
-use App\Models\Tag;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Repositories\Elastic\ProductRepository;
-use Carbon\Carbon;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Testing\TestResponse;
 use Tests\Support\ElasticTest;
 use Tests\TestCase;
 
@@ -37,20 +32,10 @@ class ProductSearchElasticTest extends TestCase
     {
         $this->$user->givePermissionTo('products.show');
 
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
-        $set = ProductSet::factory()->create([
-            'public' => true,
-            'hide_on_index' => true,
-        ]);
-        $product->sets()->sync([$set->getKey()]);
-
         $this
             ->actingAs($this->$user)
             ->json('GET', '/products', ['limit' => 100])
             ->assertOk();
-//            ->assertJsonCount(1, 'data'); // Should show only public products.
 
         $this->assertElasticQuery([
             'bool' => [
@@ -87,17 +72,10 @@ class ProductSearchElasticTest extends TestCase
     {
         $this->$user->givePermissionTo('products.show');
 
-        Product::factory()->create([
-            'public' => true,
-            'price' => 1200,
-            'price_min' => 1100,
-        ]);
-
         $this
             ->actingAs($this->$user)
             ->json('GET', '/products', ['limit' => 100, 'sort' => 'price:asc'])
             ->assertOk();
-//            ->assertJsonCount(1, 'data');
 
         $this->assertElasticQuery(
             [
@@ -144,17 +122,10 @@ class ProductSearchElasticTest extends TestCase
     {
         $this->$user->givePermissionTo('products.show');
 
-        Product::factory()->create([
-            'public' => true,
-            'price' => 1200,
-            'price_min' => 1100,
-        ]);
-
         $this
             ->actingAs($this->$user)
             ->json('GET', '/products', ['limit' => 100, 'sort' => 'price:desc'])
             ->assertOk();
-//            ->assertJsonCount(1, 'data');
 
         $this->assertElasticQuery(
             [
@@ -199,25 +170,21 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearch($user): void
     {
-        $this->$user->givePermissionTo('products.show');
+        $searchQuery = 'search';
 
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
+        $this->$user->givePermissionTo('products.show');
 
         $this
             ->actingAs($this->$user)
-            ->json('GET', '/products', ['search' => $product->name])
+            ->json('GET', '/products', ['search' => $searchQuery])
             ->assertOk();
-//            ->assertJsonCount(1, 'data')
-//            ->assertJsonFragment(['id' => $product->getKey()]);
 
         $this->assertElasticQuery([
             'bool' => [
                 'must' => [
                     [
                         'multi_match' => [
-                            'query' => $product->name,
+                            'query' => $searchQuery,
                             'fuzziness' => 'auto',
                         ],
                     ],
@@ -242,30 +209,17 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testIndexIdsSearch($user): void
     {
+        $uuid1 = '123e4567-e89b-12d3-a456-426655440000';
+        $uuid2 = '123e4567-e89b-12d3-a456-426655440001';
+
         $this->$user->givePermissionTo('products.show');
-
-        $firstProduct = Product::factory()->create([
-            'public' => true,
-        ]);
-
-        $secondProduct = Product::factory()->create([
-            'public' => true,
-            'created_at' => Carbon::now()->addHour(),
-        ]);
-
-        // Dummy product to check if response will return only 2 products created above
-        Product::factory()->create([
-            'public' => true,
-            'created_at' => Carbon::now()->addHour(),
-        ]);
 
         $this
             ->actingAs($this->$user)
             ->json('GET', '/products', [
-                'ids' => "{$firstProduct->getKey()},{$secondProduct->getKey()}",
+                'ids' => "${uuid1},${uuid2}",
             ])
             ->assertOk();
-//            ->assertJsonCount(2, 'data');
 
         $this->assertElasticQuery([
             'bool' => [
@@ -275,8 +229,8 @@ class ProductSearchElasticTest extends TestCase
                     [
                         'terms' => [
                             'id' => [
-                                $firstProduct->getKey(),
-                                $secondProduct->getKey(),
+                                $uuid1,
+                                $uuid2,
                             ],
                             'boost' => 1.0,
                         ],
@@ -322,16 +276,10 @@ class ProductSearchElasticTest extends TestCase
     {
         $this->$user->givePermissionTo('products.show');
 
-        Product::factory()->create([
-            'public' => true,
-        ]);
-
         $this
             ->actingAs($this->$user)
             ->json('GET', '/products', ['public' => $boolean])
             ->assertOk();
-//            ->assertJsonCount(1, 'data')
-//            ->assertJsonFragment(['id' => $product->getKey()]);
 
         $this->assertElasticQuery([
             'bool' => [
@@ -364,30 +312,17 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchBySet($user): void
     {
-        $this->$user->givePermissionTo('products.show');
-
         $set = ProductSet::factory()->create([
             'public' => true,
             'hide_on_index' => false,
         ]);
 
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
-
-        // Product not in set
-        Product::factory()->create([
-            'public' => true,
-        ]);
-
-        $set->products()->attach($product);
+        $this->$user->givePermissionTo('products.show');
 
         $this
             ->actingAs($this->$user)
             ->json('GET', '/products', ['sets' => [$set->slug]])
             ->assertOk();
-//            ->assertJsonCount(1, 'data')
-//            ->assertJsonFragment(['id' => $product->getKey()]);
 
         $this->assertElasticQuery([
             'bool' => [
@@ -420,31 +355,17 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchBySets($user): void
     {
-        $this->$user->givePermissionTo('products.show');
-
         $set = ProductSet::factory()->create([
             'public' => true,
+            'hide_on_index' => false,
         ]);
 
         $set2 = ProductSet::factory()->create([
             'public' => true,
+            'hide_on_index' => false,
         ]);
 
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
-
-        $product2 = Product::factory()->create([
-            'public' => true,
-        ]);
-
-        // Product not in set
-        Product::factory()->create([
-            'public' => true,
-        ]);
-
-        $set->products()->attach($product);
-        $set2->products()->attach($product2);
+        $this->$user->givePermissionTo('products.show');
 
         $this
             ->actingAs($this->$user)
@@ -452,9 +373,6 @@ class ProductSearchElasticTest extends TestCase
                 'sets' => [$set->slug, $set2->slug],
             ])
             ->assertOk();
-//            ->assertJsonCount(2, 'data')
-//            ->assertJsonFragment(['id' => $product->getKey()])
-//            ->assertJsonFragment(['id' => $product2->getKey()]);
 
         $this->assertElasticQuery([
             'bool' => [
@@ -488,22 +406,11 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchBySetHiddenUnauthorized($user): void
     {
-        $this->$user->givePermissionTo('products.show');
-
         $set = ProductSet::factory()->create([
             'public' => false,
         ]);
 
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
-
-        // Product not in set
-        Product::factory()->create([
-            'public' => true,
-        ]);
-
-        $set->products()->attach($product);
+        $this->$user->givePermissionTo('products.show');
 
         $this
             ->actingAs($this->$user)
@@ -514,36 +421,33 @@ class ProductSearchElasticTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testSearchByNonExistingSet($user): void
+    {
+        $slug = 'non-existing-set';
+
+        $this->$user->givePermissionTo('products.show');
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['sets' => [$slug]])
+            ->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testSearchBySetHidden($user): void
     {
-        $this->$user->givePermissionTo(['products.show', 'product_sets.show_hidden']);
-
         $set = ProductSet::factory()->create([
             'public' => true,
         ]);
 
-        // Private set
-        ProductSet::factory()->create([
-            'public' => false,
-        ]);
-
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
-
-        // Product not in set
-        Product::factory()->create([
-            'public' => true,
-        ]);
-
-        $set->products()->attach($product);
+        $this->$user->givePermissionTo(['products.show', 'product_sets.show_hidden']);
 
         $this
             ->actingAs($this->$user)
             ->json('GET', '/products', ['sets' => [$set->slug]])
             ->assertOk();
-//            ->assertJsonCount(1, 'data')
-//            ->assertJsonFragment(['id' => $product->getKey()]);
 
         $this->assertElasticQuery([
             'bool' => [
@@ -574,73 +478,16 @@ class ProductSearchElasticTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testSearchByParentSet($user): void
-    {
-        $this->$user->givePermissionTo('products.show');
-
-        $this
-            ->getProductsByParentSet($this->$user, true, $product)
-            ->assertOk();
-//            ->assertJsonCount(1, 'data')
-//            ->assertJsonFragment(['id' => $product->getKey()]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testSearchByParentSetWithPrivateChildUnauthorized($user): void
-    {
-        $this->$user->givePermissionTo('products.show');
-
-        $this
-            ->getProductsByParentSet($this->$user, false);
-//            ->assertOk()
-//            ->assertJsonCount(0, 'data');
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testSearchByParentSetWithPrivateChild($user): void
-    {
-        $this->$user->givePermissionTo([
-            'products.show',
-            'product_sets.show_hidden',
-        ]);
-
-        $this
-            ->getProductsByParentSet($this->$user, false, $product)
-            ->assertOk();
-//            ->assertJsonCount(1, 'data')
-//            ->assertJsonFragment(['id' => $product->getKey()]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testSearchByTag($user): void
     {
+        $uuid = 'a2f4f8b0-f8c9-11e9-9eb6-2a2ae2dbcce4';
+
         $this->$user->givePermissionTo('products.show');
-
-        $tag = Tag::factory()->create();
-
-        $product = Product::factory()->create([
-            'public' => true,
-        ]);
-
-        // Product not in tag
-        Product::factory()->create([
-            'public' => true,
-        ]);
-
-        $tag->products()->attach($product);
 
         $this
             ->actingAs($this->$user)
-            ->json('GET', '/products', ['tags' => [$tag->getKey()]])
+            ->json('GET', '/products', ['tags' => [$uuid]])
             ->assertOk();
-//            ->assertJsonCount(1, 'data')
-//            ->assertJsonFragment(['id' => $product->getKey()]);
 
         $this->assertElasticQuery([
             'bool' => [
@@ -650,7 +497,7 @@ class ProductSearchElasticTest extends TestCase
                     [
                         'terms' => [
                             'tags_id' => [
-                                $tag->getKey(),
+                                $uuid,
                             ],
                             'boost' => 1.0,
                         ],
@@ -673,39 +520,19 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchByTags($user): void
     {
+        $uuid1 = 'a2f4f8b0-f8c9-11e9-9eb6-2a2ae2dbcce4';
+        $uuid2 = 'a2f4f8b1-f8c9-11e9-9eb6-2a2ae2dbcce4';
+
         $this->$user->givePermissionTo('products.show');
-
-        $tag1 = Tag::factory()->create();
-
-        $product1 = Product::factory()->create([
-            'public' => true,
-        ]);
-
-        $tag2 = Tag::factory()->create();
-
-        $product2 = Product::factory()->create([
-            'public' => true,
-        ]);
-
-        // Product not in tag
-        Product::factory()->create([
-            'public' => true,
-        ]);
-
-        $tag1->products()->attach($product1);
-        $tag2->products()->attach($product2);
 
         $this->actingAs($this->$user)
             ->json('GET', '/products', [
                 'tags' => [
-                    $tag1->getKey(),
-                    $tag2->getKey(),
+                    $uuid1,
+                    $uuid2,
                 ],
             ])
             ->assertOk();
-//            ->assertJsonCount(2, 'data')
-//            ->assertJsonFragment(['id' => $product1->getKey()])
-//            ->assertJsonFragment(['id' => $product2->getKey()]);
 
         $this->assertElasticQuery([
             'bool' => [
@@ -715,8 +542,8 @@ class ProductSearchElasticTest extends TestCase
                     [
                         'terms' => [
                             'tags_id' => [
-                                $tag1->getKey(),
-                                $tag2->getKey(),
+                                $uuid1,
+                                $uuid2,
                             ],
                             'boost' => 1.0,
                         ],
@@ -739,11 +566,14 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchByMetadata($user): void
     {
+        $erpId = 'a2f4f8b0-f8c9-11e9-9eb6-2a2ae2dbcce4';
+        $sku = 123456789;
+
         $this->$user->givePermissionTo('products.show');
 
         $this
             ->actingAs($this->$user)
-            ->json('GET', '/products?metadata.erp_id=1000&metadata.sku=S001')
+            ->json('GET', "/products?metadata.erp_id=${erpId}&metadata.sku=${sku}")
             ->assertOk();
 
         $this->assertElasticQuery([
@@ -763,8 +593,8 @@ class ProductSearchElasticTest extends TestCase
                     [
                         'terms' => [
                             'metadata.value' => [
-                                1000,
-                                'S001',
+                                $erpId,
+                                $sku,
                             ],
                             'boost' => 1.0,
                         ],
@@ -787,11 +617,14 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchByMetadataClassicArray($user): void
     {
+        $erpId = 'a2f4f8b0-f8c9-11e9-9eb6-2a2ae2dbcce4';
+        $sku = 123456789;
+
         $this->$user->givePermissionTo('products.show');
 
         $this
             ->actingAs($this->$user)
-            ->json('GET', '/products?metadata[erp_id]=1000&metadata[sku]=S001')
+            ->json('GET', "/products?metadata[erp_id]=${erpId}&metadata[sku]=${sku}")
             ->assertOk();
 
         $this->assertElasticQuery([
@@ -811,8 +644,8 @@ class ProductSearchElasticTest extends TestCase
                     [
                         'terms' => [
                             'metadata.value' => [
-                                1000,
-                                'S001',
+                                $erpId,
+                                $sku,
                             ],
                             'boost' => 1.0,
                         ],
@@ -835,11 +668,13 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchByMetadataPrivate($user): void
     {
+        $sku = 123456789;
+
         $this->$user->givePermissionTo(['products.show', 'products.show_metadata_private']);
 
         $this
             ->actingAs($this->$user)
-            ->json('GET', '/products?metadata_private.sku=S001')
+            ->json('GET', "/products?metadata_private.sku=${sku}")
             ->assertOk();
 
         $this->assertElasticQuery([
@@ -858,7 +693,7 @@ class ProductSearchElasticTest extends TestCase
                     [
                         'terms' => [
                             'metadata_private.value' => [
-                                'S001',
+                                $sku,
                             ],
                             'boost' => 1.0,
                         ],
@@ -881,11 +716,13 @@ class ProductSearchElasticTest extends TestCase
      */
     public function testSearchByMetadataPrivateUnauthorized($user): void
     {
+        $sku = 123456789;
+
         $this->$user->givePermissionTo('products.show');
 
         $this
             ->actingAs($this->$user)
-            ->json('GET', '/products?metadata_private.sku=S001')
+            ->json('GET', "/products?metadata_private.sku=${sku}")
             ->assertUnprocessable();
     }
 
@@ -933,62 +770,5 @@ class ProductSearchElasticTest extends TestCase
                 ],
             ],
         ]);
-    }
-
-    private function getProductsByParentSet(
-        Authenticatable $user,
-        bool $isChildSetPublic,
-        ?Product &$productRef = null,
-    ): TestResponse {
-        $parentSet = ProductSet::factory()->create([
-            'public' => true,
-        ]);
-
-        $childSet = ProductSet::factory()->create([
-            'parent_id' => $parentSet->getKey(),
-            'public' => $isChildSetPublic,
-        ]);
-
-        $productRef = Product::factory()->create([
-            'public' => true,
-        ]);
-
-        // Product not in set
-        Product::factory()->create([
-            'public' => true,
-        ]);
-
-        $childSet->products()->attach($productRef);
-
-        $request = $this
-            ->actingAs($user)
-            ->getJson("/products?sets[]={$parentSet->slug}");
-
-        $this->assertElasticQuery([
-            'bool' => [
-                'must' => [],
-                'should' => [],
-                'filter' => [
-                    [
-                        'terms' => [
-                            'sets_slug' => [
-                                $parentSet->slug,
-                            ],
-                            'boost' => 1.0,
-                        ],
-                    ],
-                    [
-                        'term' => [
-                            'public' => [
-                                'value' => true,
-                                'boost' => 1.0,
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-        ]);
-
-        return $request;
     }
 }
