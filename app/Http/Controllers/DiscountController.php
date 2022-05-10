@@ -17,9 +17,7 @@ use App\Http\Resources\SaleResource;
 use App\Models\Discount;
 use App\Services\Contracts\DiscountServiceContract;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 
