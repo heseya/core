@@ -91,7 +91,13 @@ class ProductSet extends Model
 
     public function allChildren(): HasMany
     {
-        return $this->children()->with('allChildren');
+        return $this->children()->with([
+            'allChildren',
+            'metadata',
+            'metadataPrivate',
+            'attributes',
+            'parent',
+        ]);
     }
 
     public function children(): HasMany
@@ -106,7 +112,12 @@ class ProductSet extends Model
 
     public function allChildrenPublic(): HasMany
     {
-        return $this->childrenPublic()->with('allChildrenPublic');
+        return $this->childrenPublic()->with([
+            'allChildrenPublic',
+            'metadata',
+            'attributes',
+            'parent',
+        ]);
     }
 
     public function childrenPublic(): HasMany

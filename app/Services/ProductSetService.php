@@ -32,7 +32,7 @@ class ProductSetService implements ProductSetServiceContract
     public function authorize(ProductSet $set): void
     {
         if (
-            !Auth::user()->can('product_sets.show_hidden') &&
+            Gate::denies('product_sets.show_hidden') &&
             !ProductSet::public()->where('id', $set->getKey())->exists()
         ) {
             throw new NotFoundHttpException();
@@ -47,7 +47,7 @@ class ProductSetService implements ProductSetServiceContract
         if (Gate::denies('product_sets.show_hidden')) {
             $query->with('childrenPublic')->public();
         } else {
-            $query->with('children');
+            $query->with(['children', 'metadataPrivate', 'media.metadataPrivate']);
         }
 
         if ($root) {
