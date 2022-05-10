@@ -17,7 +17,9 @@ use App\Http\Resources\SaleResource;
 use App\Models\Discount;
 use App\Services\Contracts\DiscountServiceContract;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 
@@ -40,8 +42,9 @@ class DiscountController extends Controller
         return SaleResource::collection($this->discountService->index(SaleIndexDto::instantiateFromRequest($request)));
     }
 
-    public function showCoupon(Discount $coupon): JsonResource
+    public function showCoupon(string $coupon): JsonResource
     {
+        $coupon = Discount::query()->where('code', '=', $coupon)->first();
         Gate::inspect('coupon', [$coupon]);
         return CouponResource::make($coupon);
     }
