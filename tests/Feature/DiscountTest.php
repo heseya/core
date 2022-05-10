@@ -350,6 +350,21 @@ class DiscountTest extends TestCase
     }
 
     /**
+     * @dataProvider authProvider
+     */
+    public function testShowWithSpecialCharInCode($user): void
+    {
+        $this->$user->givePermissionTo('coupons.show_details');
+        $discount = Discount::factory()->create(['code' => 'test10%']);
+
+        $response = $this->actingAs($this->$user)->getJson('/coupons/' . $discount->code);
+        $response
+            ->assertOk()
+            ->assertJsonStructure($this->expectedStructure)
+            ->assertJsonFragment(['id' => $discount->getKey()]);
+    }
+
+    /**
      * @dataProvider couponOrSaleProvider
      */
     public function testShowByIdUnauthorized($discountKind): void
