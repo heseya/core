@@ -611,6 +611,7 @@ paths:
           required: true
           schema:
             type: string
+            example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
       responses:
         200:
           description: Success
@@ -633,6 +634,7 @@ paths:
           required: true
           schema:
             type: string
+            example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
       responses:
         204:
           description: Success
@@ -642,6 +644,13 @@ paths:
       tags:
         - Schemas
       summary: 'update schema'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
       operationId: 809f90ba94d09b70423a5d7ceeedb2ff
       requestBody:
         content:
@@ -1357,8 +1366,6 @@ components:
       $ref: './requests/Roles.yml#/RoleStore'
     RoleUpdate:
       $ref: './requests/Roles.yml#/RoleUpdate'
-    ShippingMethodIndex:
-      $ref: './requests/ShippingMethods.yml#/ShippingMethodIndex'
     ShippingMethodReorder:
       $ref: './requests/ShippingMethods.yml#/ShippingMethodReorder'
     ShippingMethodStore:

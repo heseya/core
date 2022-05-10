@@ -281,6 +281,13 @@ CheckParams:
     tags:
       - Auth
     summary: 'get profile resource from identity token'
+    parameters:
+      - name: identity_token
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
     responses:
       200:
         description: Success
