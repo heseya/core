@@ -4,9 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\ProductSet;
 use Tests\TestCase;
+use Tests\Traits\JsonQueryCounter;
 
 class ProductSetIndexTest extends TestCase
 {
+    use JsonQueryCounter;
+
     private ProductSet $set;
     private ProductSet $privateSet;
     private ProductSet $childSet;
@@ -32,12 +35,14 @@ class ProductSetIndexTest extends TestCase
             'public' => true,
             'public_parent' => true,
             'parent_id' => $this->set->getKey(),
+            'order' => 12,
         ]);
 
         $this->subChildSet = ProductSet::factory()->create([
             'public' => false,
             'public_parent' => true,
             'parent_id' => $this->childSet->getKey(),
+            'order' => 13,
         ]);
     }
 
@@ -95,6 +100,23 @@ class ProductSetIndexTest extends TestCase
                 ],
             ],
             ]);
+    }
+
+    public function testIndexPerformance(): void
+    {
+        $this->user->givePermissionTo('product_sets.show');
+
+        ProductSet::factory()->count(498)->create([
+            'public' => true,
+        ]);
+
+        $this
+            ->actingAs($this->user)
+            ->getJson('/product-sets?limit=500')
+            ->assertOk()
+            ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(10);
     }
 
     /**
