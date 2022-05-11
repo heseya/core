@@ -48,13 +48,9 @@ ProductSet:
       items:
         $ref: './Attributes.yml#/Attribute'
     metadata:
-      type: array
-      items:
-        $ref: './Metadata.yml#/Metadata'
+      $ref: './../schemas/Metadata.yml#/Metadata'
     metadata_private:
-      type: array
-      items:
-        $ref: './Metadata.yml#/Metadata'
+      $ref: './../schemas/Metadata.yml#/Metadata'
   type: object
 
 ProductSetParent:
@@ -89,7 +85,7 @@ ProductSetParent:
     cover:
       $ref: './../schemas/Media.yml#/Media'
     parent:
-      $ref: '#ProductSet'
+      $ref: '#/ProductSet'
     children_ids:
       description: 'Ids of assigned subsets'
       type: array
@@ -98,6 +94,10 @@ ProductSetParent:
         example: 026bc5f6-8373-4aeb-972e-e78d72a67121
     seo:
       $ref: './Seo.yml#/SeoView'
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
   type: object
 
 ProductSetChildren:
@@ -183,12 +183,12 @@ ProductSetParentChildren:
       type: boolean
       example: false
     parent:
-      $ref: '#ProductSet'
+      $ref: '#/ProductSet'
     children:
       description: 'Ids of assigned subsets'
       type: array
       items:
-        $ref: '#ProductSetChildren'
+        $ref: '#/ProductSetChildren'
   type: object
 
 ProductSetChildrenEmpty:

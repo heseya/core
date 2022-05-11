@@ -6,13 +6,19 @@ use App\Dtos\ShippingMethodDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Models\ShippingMethod;
+use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ShippingMethodServiceContract;
+use Heseya\Dto\Missing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 
 class ShippingMethodService implements ShippingMethodServiceContract
 {
+    public function __construct(private MetadataServiceContract $metadataService)
+    {
+    }
+
     public function index(?array $search, ?string $country, float $cartValue): Collection
     {
         $query = ShippingMethod::query()
@@ -73,6 +79,10 @@ class ShippingMethodService implements ShippingMethodServiceContract
 
         if ($shippingMethodDto->getCountries() !== null) {
             $shippingMethod->countries()->sync($shippingMethodDto->getCountries());
+        }
+
+        if (!($shippingMethodDto->getMetadata() instanceof Missing)) {
+            $this->metadataService->sync($shippingMethod, $shippingMethodDto->getMetadata());
         }
 
         foreach ($shippingMethodDto->getPriceRanges() as $range) {

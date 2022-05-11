@@ -153,6 +153,84 @@ class OrderCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateSimpleOrderWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        Event::fake([OrderCreated::class]);
+
+        $this->product->update([
+            'price' => 10,
+        ]);
+
+        $productQuantity = 20;
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/orders', [
+                'email' => $this->email,
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'delivery_address' => $this->address->toArray(),
+                'items' => [
+                    [
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => $productQuantity,
+                    ],
+                ],
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateSimpleOrderWithMetadataPrivate($user): void
+    {
+        $this->$user->givePermissionTo(['orders.add', 'orders.show_metadata_private']);
+
+        Event::fake([OrderCreated::class]);
+
+        $this->product->update([
+            'price' => 10,
+        ]);
+
+        $productQuantity = 20;
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/orders', [
+                'email' => $this->email,
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'delivery_address' => $this->address->toArray(),
+                'items' => [
+                    [
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => $productQuantity,
+                    ],
+                ],
+                'metadata_private' => [
+                    'attributeMetaPriv' => 'attributeValue',
+                ],
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'metadata_private' => [
+                    'attributeMetaPriv' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateSimpleOrderPaid($user): void
     {
         $this->$user->givePermissionTo('orders.add');

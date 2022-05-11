@@ -61,14 +61,19 @@ ShippingMethodStore:
           - price_ranges
           - shipping_time_min
           - shipping_time_max
-        allOf:
-          - $ref: '#ShippingMethod'
         type: object
+        allOf:
+          - $ref: '#/ShippingMethod'
+          - properties:
+              metadata:
+                $ref: './../schemas/Metadata.yml#/Metadata'
+              metadata_private:
+                $ref: './../schemas/Metadata.yml#/Metadata'
 
 ShippingMethodUpdate:
   content:
     application/json:
       schema:
         allOf:
-          - $ref: '#ShippingMethod'
+          - $ref: '#/ShippingMethod'
         type: object

@@ -41,10 +41,11 @@ Attributes:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Attributes.yml#/Attribute'
+                    $ref: './../schemas/Attributes.yml#/AttributeMetadata'
               type: object
     security:
       - BearerAuth: [ ]
+
   post:
     tags:
       - Attributes
@@ -59,7 +60,7 @@ Attributes:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Attributes.yml#/Attribute'
+                  $ref: './../schemas/Attributes.yml#/AttributeMetadata'
               type: object
     security:
       - BearerAuth: [ ]
@@ -83,7 +84,7 @@ AttributesParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Attributes.yml#/Attribute'
+                  $ref: './../schemas/Attributes.yml#/AttributeMetadata'
               type: object
     security:
       - BearerAuth: [ ]
@@ -102,6 +103,7 @@ AttributesParams:
         description: Success
     security:
       - BearerAuth: [ ]
+
   patch:
     tags:
       - Attributes
@@ -125,7 +127,7 @@ AttributesParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Attributes.yml#/Attribute'
+                  $ref: './../schemas/Attributes.yml#/AttributeMetadata'
               type: object
     security:
       - BearerAuth: [ ]
@@ -168,6 +170,7 @@ AttributeOption:
                     $ref: './../schemas/Attributes.yml#/AttributeOption'
     security:
       - BearerAuth: [ ]
+
   post:
     tags:
       - Attributes
@@ -188,10 +191,11 @@ AttributeOption:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Attributes.yml#/AttributeOption'
+                  $ref: './../schemas/Attributes.yml#/AttributeOptionMetadata'
               type: object
     security:
       - BearerAuth: [ ]
+
 AttributeOptionParams:
   patch:
     tags:
@@ -221,10 +225,11 @@ AttributeOptionParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Attributes.yml#/AttributeOption'
+                  $ref: './../schemas/Attributes.yml#/AttributeOptionMetadata'
               type: object
     security:
       - BearerAuth: [ ]
+
   delete:
     tags:
       - Attributes

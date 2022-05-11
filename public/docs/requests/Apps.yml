@@ -5,6 +5,7 @@ AppStore:
         required:
           - url
           - allowed_permissions
+        type: object
         properties:
           url:
             description: 'Url of the applications microfrontend configuration page'
@@ -30,4 +31,7 @@ AppStore:
             items:
               type: string
               example: review.add
-        type: object
+          metadata:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+          metadata_private:
+            $ref: './../schemas/Metadata.yml#/Metadata'

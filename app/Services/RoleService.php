@@ -9,6 +9,7 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Exceptions\ClientException;
 use App\Models\Role;
+use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\RoleServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -16,6 +17,10 @@ use Illuminate\Support\Facades\Auth;
 
 class RoleService implements RoleServiceContract
 {
+    public function __construct(private MetadataServiceContract $metadataService)
+    {
+    }
+
     public function search(RoleSearchDto $searchDto, int $limit): LengthAwarePaginator
     {
         return Role::searchByCriteria($searchDto->toArray())->paginate($limit);
@@ -29,6 +34,11 @@ class RoleService implements RoleServiceContract
 
         $role = Role::create($dto->toArray());
         $role->syncPermissions($dto->getPermissions());
+
+        if (!($dto->getMetadata() instanceof Missing)) {
+            $this->metadataService->sync($role, $dto->getMetadata());
+        }
+
         $role->refresh();
 
         return $role;

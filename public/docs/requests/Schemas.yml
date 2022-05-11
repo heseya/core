@@ -1,0 +1,21 @@
+SchemaStore:
+  content:
+    application/json:
+      schema:
+        type: object
+        allOf:
+          - $ref: '../schemas/Schemas.yml#/SchemaMetadata'
+        properties:
+          options:
+            type: array
+            items:
+              allOf:
+                - $ref: '../schemas/Schemas.yml#/OptionMetadata'
+
+SchemaUpdate:
+  content:
+    application/json:
+      schema:
+        type: object
+        allOf:
+          - $ref: '../schemas/Schemas.yml#/Schema'

@@ -5,11 +5,14 @@ namespace App\Dtos;
 use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderUpdateRequest;
+use App\Traits\MapMetadata;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 
 class OrderDto extends CartOrderDto implements InstantiateFromRequest
 {
+    use MapMetadata;
+
     private string|Missing $email;
     private string|null|Missing $comment;
     private string|Missing $shipping_method_id;
@@ -18,6 +21,8 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
     private AddressDto|Missing $invoice_address;
     private array|Missing $coupons;
     private array|Missing $sale_ids;
+
+    private array|Missing $metadata;
 
     public static function instantiateFromRequest(FormRequest|OrderCreateRequest|OrderUpdateRequest $request): self
     {
@@ -40,6 +45,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
                 ? AddressDto::instantiateFromRequest($request, 'invoice_address.') : new Missing(),
             coupons: $request->input('coupons', new Missing()),
             sale_ids: $request->input('sale_ids', new Missing()),
+            metadata: self::mapMetadata($request),
         );
     }
 

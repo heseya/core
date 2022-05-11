@@ -502,6 +502,60 @@ class UserTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('users.add');
+
+        Event::fake([UserCreated::class]);
+
+        $data = User::factory()->raw() + [
+            'password' => $this->validPassword,
+            'metadata' => [
+                'attributeMeta' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/users', $data)
+            ->assertCreated()
+            ->assertJsonFragment([
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadataPrivate($user): void
+    {
+        $this->$user->givePermissionTo(['users.add', 'users.show_metadata_private']);
+
+        Event::fake([UserCreated::class]);
+
+        $data = User::factory()->raw() + [
+            'password' => $this->validPassword,
+            'metadata_private' => [
+                'attributeMetaPriv' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/users', $data)
+            ->assertCreated()
+            ->assertJsonFragment([
+                'metadata_private' => [
+                    'attributeMetaPriv' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateWithWebHook($user): void
     {
         $this->$user->givePermissionTo('users.add');

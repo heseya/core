@@ -5,12 +5,15 @@ namespace App\Dtos;
 use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\SaleCreateRequest;
 use App\Http\Requests\StatusUpdateRequest;
+use App\Traits\MapMetadata;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SaleDto extends Dto implements InstantiateFromRequest
 {
+    use MapMetadata;
+
     protected string|Missing $name;
     protected string|null|Missing $description;
     protected float|Missing $value;
@@ -22,6 +25,8 @@ class SaleDto extends Dto implements InstantiateFromRequest
     protected array|Missing $target_products;
     protected array|Missing $target_sets;
     protected array|Missing $target_shipping_methods;
+
+    protected array|Missing $metadata;
 
     public static function instantiateFromRequest(FormRequest|SaleCreateRequest|StatusUpdateRequest $request): self
     {
@@ -45,6 +50,7 @@ class SaleDto extends Dto implements InstantiateFromRequest
             target_products: $request->input('target_products', new Missing()),
             target_sets: $request->input('target_sets', new Missing()),
             target_shipping_methods: $request->input('target_shipping_methods', new Missing()),
+            metadata: self::mapMetadata($request),
         );
     }
 

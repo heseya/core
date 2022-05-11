@@ -5,12 +5,15 @@ namespace App\Dtos;
 use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\ShippingMethodStoreRequest;
 use App\Http\Requests\ShippingMethodUpdateRequest;
+use App\Traits\MapMetadata;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ShippingMethodDto extends Dto implements InstantiateFromRequest
 {
+    use MapMetadata;
+
     protected string|Missing $name;
     protected bool|Missing $public;
     protected bool|Missing $black_list;
@@ -19,6 +22,8 @@ class ShippingMethodDto extends Dto implements InstantiateFromRequest
     protected ?array $price_ranges;
     protected int|Missing $shipping_time_min;
     protected int|Missing $shipping_time_max;
+
+    protected array|Missing $metadata;
 
     public static function instantiateFromRequest(
         FormRequest|ShippingMethodStoreRequest|ShippingMethodUpdateRequest $request,
@@ -32,6 +37,7 @@ class ShippingMethodDto extends Dto implements InstantiateFromRequest
             price_ranges: $request->input('price_ranges'),
             shipping_time_min: $request->input('shipping_time_min', new Missing()),
             shipping_time_max: $request->input('shipping_time_max', new Missing()),
+            metadata: self::mapMetadata($request),
         );
     }
 

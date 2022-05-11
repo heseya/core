@@ -277,6 +277,68 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        Event::fake([PageCreated::class]);
+
+        $html = '<h1>hello world</h1>';
+        $page = [
+            'name' => 'Test',
+            'slug' => 'test-test',
+            'public' => true,
+            'content_html' => $html,
+            'metadata' => [
+                'attributeMeta' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/pages', $page)
+            ->assertJson([
+                'data' => $page,
+            ])
+            ->assertCreated();
+
+        Event::assertDispatched(PageCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadataPrivate($user): void
+    {
+        $this->$user->givePermissionTo(['pages.add', 'pages.show_metadata_private']);
+
+        Event::fake([PageCreated::class]);
+
+        $html = '<h1>hello world</h1>';
+        $page = [
+            'name' => 'Test',
+            'slug' => 'test-test',
+            'public' => true,
+            'content_html' => $html,
+            'metadata_private' => [
+                'attributeMetaPriv' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/pages', $page)
+            ->assertJson([
+                'data' => $page,
+            ])
+            ->assertCreated();
+
+        Event::assertDispatched(PageCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateWithWebHook($user): void
     {
         $this->$user->givePermissionTo('pages.add');

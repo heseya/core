@@ -7,12 +7,16 @@ use App\Http\Requests\CouponCreateRequest;
 use App\Http\Requests\CouponUpdateRequest;
 use App\Http\Requests\SaleCreateRequest;
 use App\Http\Requests\StatusUpdateRequest;
+use App\Traits\MapMetadata;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CouponDto extends SaleDto implements InstantiateFromRequest
 {
+    use MapMetadata;
+
     protected string|Missing $code;
+    protected array|Missing $metadata;
 
     public static function instantiateFromRequest(
         FormRequest|CouponCreateRequest|CouponUpdateRequest|StatusUpdateRequest|SaleCreateRequest $request
@@ -38,6 +42,7 @@ class CouponDto extends SaleDto implements InstantiateFromRequest
             target_sets: $request->input('target_sets', new Missing()),
             target_shipping_methods: $request->input('target_shipping_methods', new Missing()),
             code: $request->input('code', new Missing()),
+            metadata: self::mapMetadata($request),
         );
     }
 
