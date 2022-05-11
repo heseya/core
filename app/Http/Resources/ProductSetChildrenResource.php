@@ -13,8 +13,8 @@ class ProductSetChildrenResource extends Resource
     public function base(Request $request): array
     {
         $children = Gate::denies('product_sets.show_hidden')
-            ? $this->resource->childrenPublic
-            : $this->resource->children;
+            ? $this->resource->allChildrenPublic
+            : $this->resource->allChildren;
 
         return array_merge([
             'id' => $this->resource->getKey(),

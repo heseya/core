@@ -34,7 +34,7 @@ class ProductSetController extends Controller
         $sets = $this->productSetService->searchAll(
             $request->validated(),
             $request->has('tree') && $request->input('tree', true) !== false ||
-            $request->has('root') && $request->input('root', true) !== false
+            $request->has('root') && $request->input('root', true) !== false,
         );
 
         if ($request->has('tree') && $request->input('tree', true) !== false) {

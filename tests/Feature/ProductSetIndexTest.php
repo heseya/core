@@ -112,11 +112,46 @@ class ProductSetIndexTest extends TestCase
 
         $this
             ->actingAs($this->user)
-            ->getJson('/product-sets?limit=500')
+            ->json('GET', '/product-sets', ['limit' => 500])
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
         $this->assertQueryCountLessThan(10);
+    }
+
+    /**
+     * Test first level sets.
+     */
+    public function testIndexPerformanceTree(): void
+    {
+        $this->user->givePermissionTo('product_sets.show');
+
+        ProductSet::factory()->count(249)->create([
+            'public' => true,
+            'parent_id' => $this->set->getKey(),
+        ]);
+
+        ProductSet::factory()->count(249)->create([
+            'public' => true,
+            'parent_id' => $this->childSet->getKey(),
+        ]);
+
+        $this->subChildSet->update(['public' => true]);
+        ProductSet::factory()->count(250)->create([
+            'public' => true,
+            'parent_id' => $this->subChildSet->getKey(),
+        ]);
+
+        $this
+            ->actingAs($this->user)
+            ->json('GET', '/product-sets', ['limit' => 500, 'tree' => true])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonCount(250, 'data.0.children')
+            ->assertJsonCount(250, 'data.0.children.249.children')
+            ->assertJsonCount(250, 'data.0.children.249.children.249.children');
+
+        $this->assertQueryCountLessThan(23);
     }
 
     /**
