@@ -40,6 +40,13 @@ ProductSets:
         required: false
         schema:
           type: boolean
+      - name: parent_id
+        in: query
+        description: 'UUID of parent set'
+        required: false
+        schema:
+          type: string
+          example: ' 019fc7e8-af32-476f-ba04-068b86833830'
       - name: metadata
         in: query
         description: search by metadata
