@@ -215,6 +215,62 @@ class BannerTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateBannerWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('banners.add');
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson(
+                '/banners',
+                $this->newBanner +
+                [
+                    'banner_media' => [$this->newBannerMedia + $this->medias],
+                    'metadata' => [
+                        'attributeMeta' => 'attributeValue',
+                    ],
+                ]
+            )
+            ->assertCreated()
+            ->assertJsonFragment($this->newBanner)
+            ->assertJsonFragment([
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateBannerWithMetadataPrivate($user): void
+    {
+        $this->$user->givePermissionTo(['banners.add', 'banners.show_metadata_private']);
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson(
+                '/banners',
+                $this->newBanner +
+                [
+                    'banner_media' => [$this->newBannerMedia + $this->medias],
+                    'metadata_private' => [
+                        'attributeMetaPriv' => 'attributeValue',
+                    ],
+                ]
+            )
+            ->assertCreated()
+            ->assertJsonFragment($this->newBanner)
+            ->assertJsonFragment([
+                'metadata_private' => [
+                    'attributeMetaPriv' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateBannerUnauthorized($user): void
     {
         $this->$user->givePermissionTo('banners.add');

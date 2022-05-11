@@ -37,7 +37,8 @@ Banners:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Banners.yml#/Banner'
+                    $ref: './../schemas/Banners.yml#/BannerMetadata'
+
   post:
     tags:
       - Banners
@@ -45,7 +46,7 @@ Banners:
     security:
       - BearerAuth: [ ]
     requestBody:
-      $ref: './../requests/Banners.yml#/Banner'
+      $ref: './../requests/Banners.yml#/BannerStore'
     responses:
       201:
         description: Created
@@ -55,7 +56,7 @@ Banners:
               type: object
               properties:
                 data:
-                  $ref: './../schemas/Banners.yml#/Banner'
+                  $ref: './../schemas/Banners.yml#/BannerMetadata'
 
 BannersParam:
   get:
@@ -79,7 +80,8 @@ BannersParam:
               type: object
               properties:
                 data:
-                  $ref: './../schemas/Banners.yml#/Banner'
+                  $ref: './../schemas/Banners.yml#/BannerMetadata'
+
   patch:
     tags:
       - Banners
@@ -93,7 +95,7 @@ BannersParam:
     security:
       - BearerAuth: [ ]
     requestBody:
-      $ref: './../requests/Banners.yml#/Banner'
+      $ref: './../requests/Banners.yml#/BannerUpdate'
     responses:
       200:
         description: Success
@@ -103,7 +105,8 @@ BannersParam:
               type: object
               properties:
                 data:
-                  $ref: './../schemas/Banners.yml#/Banner'
+                  $ref: './../schemas/Banners.yml#/BannerMetadata'
+
   delete:
     tags:
       - Banners

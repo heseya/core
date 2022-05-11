@@ -13,7 +13,7 @@ class AttributeOptionDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    public array|Missing $metadata;
+    private array|Missing $metadata;
     private string|null|Missing $id;
     private string|null|Missing $name;
     private float|null|Missing $value_number;

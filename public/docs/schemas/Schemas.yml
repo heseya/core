@@ -1,0 +1,105 @@
+Schema:
+  description: "Schema allows a product to take on new optional characteristics that can be\n *   chosen by the userand influences the price based on said choices. Schemas can use other\n *   schemas for their price calculation e.g. multiply_schema multiplies price of different\n *   schema based on it's own value. SCHEMAS USED BY OTHERS SHOULD NOT AFFECT THE PRICE\n *   (schema multiplied by multiply_schema adds 0 to the price while multiply_schema adds\n *   the multiplied value)"
+  type: object
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    type:
+      description: "multiply_schema(min, max, step) type uses one schema and multiplies\n     *     it's price by own numeric value"
+      type: string
+      enum:
+        - string
+        - numeric
+        - boolean
+        - date
+        - select
+        - file
+        - multiply
+        - multiply_schema
+    name:
+      type: string
+      example: Size
+    description:
+      description: 'Short description, no html or md allowed'
+      type: string
+    price:
+      description: "Additional price the customer will have to pay after selecting the option\n     *     (can be negative)"
+      type: number
+      example: 9.99
+    hidden:
+      type: boolean
+      example: false
+    required:
+      type: boolean
+      example: false
+    min:
+      type: string
+    max:
+      type: string
+    step:
+      type: string
+    default:
+      type: string
+    pattern:
+      type: string
+    validation:
+      type: string
+    options:
+      type: array
+      items:
+        $ref: '#/Option'
+    used_schemas:
+      description: "Array of schema id's given schema uses e.g.\n     *   multiply_schema type uses one schema of which price it miltiplies"
+      type: array
+      items:
+        type: string
+        example: used-schema-ids
+
+Option:
+  type: object
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    name:
+      type: string
+      example: XL
+    price:
+      description: 'Additional price the customer will have to pay after selecting this option (can be negative)'
+      type: number
+      example: 3.99
+    disabled:
+      description: 'Shows if the option has been disabled manually'
+      type: boolean
+      example: false
+    available:
+      description: 'Shows whether the option is available for purchase (in stock and not disabled)'
+      type: boolean
+      example: true
+    items:
+      type: array
+      items:
+        $ref: './Items.yml#/Item'
+
+SchemaMetadata:
+  allOf:
+    - $ref: '#/Schema'
+    - properties:
+        options:
+          type: array
+          items:
+            $ref: '#/OptionMetadata'
+        metadata:
+          $ref: './../schemas/Metadata.yml#/Metadata'
+        metadata_private:
+          $ref: './../schemas/Metadata.yml#/Metadata'
+
+OptionMetadata:
+  allOf:
+    - $ref: '#/Option'
+    - properties:
+        metadata:
+          $ref: './../schemas/Metadata.yml#/Metadata'
+        metadata_private:
+          $ref: './../schemas/Metadata.yml#/Metadata'

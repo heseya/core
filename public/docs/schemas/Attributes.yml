@@ -40,16 +40,23 @@ Attribute:
       description: 'Array options of attribute'
       type: array
       items:
-        type: object
-        properties:
-          value_text:
-            description: 'Text of attribute option'
-            type: string
-            example: 'inch'
-          value:
-            description: 'Value of attribute option'
-            type: number
-            example: '27'
+        allOf:
+          - $ref: '#/AttributeOption'
+
+AttributeMetadata:
+  allOf:
+    - $ref: '#/Attribute'
+    - properties:
+        options:
+          description: 'Array options of attribute'
+          type: array
+          items:
+            allOf:
+              - $ref: '#/AttributeOptionMetadata'
+        metadata:
+          $ref: './../schemas/Metadata.yml#/Metadata'
+        metadata_private:
+          $ref: './../schemas/Metadata.yml#/Metadata'
 
 AttributeOption:
   type: object
@@ -78,6 +85,15 @@ AttributeOption:
       type: string
       example: 026bc5f6-8373-4aeb-972e-e78d72a67121
 
+AttributeOptionMetadata:
+  allOf:
+    - $ref: '#/AttributeOption'
+    - properties:
+        metadata:
+          $ref: './../schemas/Metadata.yml#/Metadata'
+        metadata_private:
+          $ref: './../schemas/Metadata.yml#/Metadata'
+
 AttributeProductList:
   type: object
   properties:
@@ -87,12 +103,12 @@ AttributeProductList:
       example: 'Screen size'
     selected_options:
       description: 'Array options of attribute'
-      $ref: '#AttributeOption'
+      $ref: '#/AttributeOption'
 
 AttributeProduct:
   type: object
   allOf:
-    - $ref: '#AttributeProductList'
+    - $ref: '#/AttributeProductList'
     - properties:
         id:
           type: string

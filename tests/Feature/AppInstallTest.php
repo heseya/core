@@ -319,6 +319,169 @@ class AppInstallTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testInstallWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo([
+            'apps.install',
+            'products.show',
+        ]);
+
+        $uninstallToken = Str::random(128);
+
+        Http::fake([
+            $this->url => Http::response([
+                'name' => 'App name',
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
+                'description' => 'Cool description',
+                'microfrontend_url' => 'https://front.example.com',
+                'icon' => 'https://picsum.photos/200',
+                'licence_required' => false,
+                'required_permissions' => [
+                    'products.show',
+                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'with_description_and_display_name',
+                        'display_name' => 'Permission name',
+                        'description' => 'Permission description',
+                    ],
+                    [
+                        'name' => 'with_description_and_no_display_name',
+                        'display_name' => null,
+                        'description' => 'Permission description',
+                    ],
+                    [
+                        'name' => 'with_description',
+                        'description' => 'Permission description',
+                    ],
+                    [
+                        'name' => 'null_description',
+                        'description' => null,
+                    ],
+                    [
+                        'name' => 'no_description',
+                    ],
+                ],
+            ]),
+            $this->url . '/install' => Http::response([
+                'uninstall_token' => $uninstallToken,
+            ]),
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/apps', [
+                'url' => $this->url,
+                'allowed_permissions' => [
+                    'products.show',
+                ],
+                'public_app_permissions' => [],
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ])->assertCreated()
+            ->assertJsonFragment([
+                'url' => $this->url,
+                'microfrontend_url' => 'https://front.example.com',
+                'name' => 'App name',
+                'slug' => Str::slug('App name'),
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'description' => 'Cool description',
+                'icon' => 'https://picsum.photos/200',
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testInstallWithMetadataPrivate($user): void
+    {
+        $this->$user->givePermissionTo([
+            'apps.install',
+            'apps.show_metadata_private',
+            'products.show',
+        ]);
+
+        $uninstallToken = Str::random(128);
+
+        Http::fake([
+            $this->url => Http::response([
+                'name' => 'App name',
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'api_version' => '^1.4.0', // '^1.2.0' [TODO]
+                'description' => 'Cool description',
+                'microfrontend_url' => 'https://front.example.com',
+                'icon' => 'https://picsum.photos/200',
+                'licence_required' => false,
+                'required_permissions' => [
+                    'products.show',
+                ],
+                'internal_permissions' => [
+                    [
+                        'name' => 'with_description_and_display_name',
+                        'display_name' => 'Permission name',
+                        'description' => 'Permission description',
+                    ],
+                    [
+                        'name' => 'with_description_and_no_display_name',
+                        'display_name' => null,
+                        'description' => 'Permission description',
+                    ],
+                    [
+                        'name' => 'with_description',
+                        'description' => 'Permission description',
+                    ],
+                    [
+                        'name' => 'null_description',
+                        'description' => null,
+                    ],
+                    [
+                        'name' => 'no_description',
+                    ],
+                ],
+            ]),
+            $this->url . '/install' => Http::response([
+                'uninstall_token' => $uninstallToken,
+            ]),
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/apps', [
+                'url' => $this->url,
+                'allowed_permissions' => [
+                    'products.show',
+                ],
+                'public_app_permissions' => [],
+                'metadata_private' => [
+                    'attributeMetaPriv' => 'attributeValue',
+                ],
+            ])->assertCreated()
+            ->assertJsonFragment([
+                'url' => $this->url,
+                'microfrontend_url' => 'https://front.example.com',
+                'name' => 'App name',
+                'slug' => Str::slug('App name'),
+                'author' => 'Mr. Author',
+                'version' => '1.0.0',
+                'description' => 'Cool description',
+                'icon' => 'https://picsum.photos/200',
+                'metadata_private' => [
+                    'attributeMetaPriv' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testInstallWithOptionalPermissions($user): void
     {
         $this->$user->givePermissionTo([

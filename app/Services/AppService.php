@@ -12,8 +12,10 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\AppServiceContract;
+use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UrlServiceContract;
+use Heseya\Dto\Missing;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
@@ -29,6 +31,7 @@ class AppService implements AppServiceContract
     public function __construct(
         protected TokenServiceContract $tokenService,
         protected UrlServiceContract $urlService,
+        protected MetadataServiceContract $metadataService,
     ) {
     }
 
@@ -204,6 +207,10 @@ class AppService implements AppServiceContract
                 $internalPermissions,
                 Collection::make($dto->getPublicAppPermissions()),
             );
+        }
+
+        if (!($dto->getMetadata() instanceof Missing)) {
+            $this->metadataService->sync($app, $dto->getMetadata());
         }
 
         return $app;

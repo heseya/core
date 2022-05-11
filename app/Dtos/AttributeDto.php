@@ -14,7 +14,7 @@ class AttributeDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    public array|Missing $metadata;
+    private array|Missing $metadata;
     private string $name;
     private string $slug;
     private string|null|Missing $description;

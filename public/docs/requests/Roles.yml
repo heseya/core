@@ -4,6 +4,7 @@ RoleStore:
       schema:
         required:
           - name
+        type: object
         properties:
           name:
             description: 'Name of the role'
@@ -19,7 +20,10 @@ RoleStore:
             items:
               type: string
               example: roles.add
-        type: object
+          metadata:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+          metadata_private:
+            $ref: './../schemas/Metadata.yml#/Metadata'
 
 RoleUpdate:
   content:

@@ -36,6 +36,10 @@ User:
       type: array
       items:
         $ref: './../schemas/Addresses.yml#/Address'
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
 
 
 UserView:

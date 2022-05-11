@@ -85,6 +85,56 @@ class StatusTest extends TestCase
     }
 
     /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('statuses.add');
+
+        $status = [
+            'name' => 'Test Status',
+            'color' => 'ffffff',
+            'description' => 'To jest status testowy.',
+            'hidden' => true,
+            'no_notifications' => true,
+            'metadata' => [
+                'attributeMeta' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/statuses', $status)
+            ->assertCreated()
+            ->assertJson(['data' => $status]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadataPrivate($user): void
+    {
+        $this->$user->givePermissionTo(['statuses.add', 'statuses.show_metadata_private']);
+
+        $status = [
+            'name' => 'Test Status',
+            'color' => 'ffffff',
+            'description' => 'To jest status testowy.',
+            'hidden' => true,
+            'no_notifications' => true,
+            'metadata_private' => [
+                'attributeMetaPriv' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/statuses', $status)
+            ->assertCreated()
+            ->assertJson(['data' => $status]);
+    }
+
+    /**
      * @dataProvider booleanProvider
      */
     public function testCreateBooleanValues($user, $boolean, $booleanValue): void

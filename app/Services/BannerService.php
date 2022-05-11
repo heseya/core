@@ -5,9 +5,15 @@ namespace App\Services;
 use App\Dtos\BannerDto;
 use App\Models\Banner;
 use App\Services\Contracts\BannerServiceContract;
+use App\Services\Contracts\MetadataServiceContract;
+use Heseya\Dto\Missing;
 
 class BannerService implements BannerServiceContract
 {
+    public function __construct(private MetadataServiceContract $metadataService)
+    {
+    }
+
     public function create(BannerDto $dto): Banner
     {
         $banner = Banner::create($dto->toArray());
@@ -25,6 +31,10 @@ class BannerService implements BannerServiceContract
                     'min_screen_width' => $media->getMinScreenWidth(),
                 ]);
             });
+        }
+
+        if (!($dto->getMetadata() instanceof Missing)) {
+            $this->metadataService->sync($banner, $dto->getMetadata());
         }
 
         return $banner;

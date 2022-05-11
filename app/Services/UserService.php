@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Dtos\UserDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Events\UserCreated;
@@ -10,7 +11,9 @@ use App\Events\UserUpdated;
 use App\Exceptions\ClientException;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\UserServiceContract;
+use Heseya\Dto\Missing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -19,6 +22,10 @@ use Illuminate\Support\Facades\Hash;
 
 class UserService implements UserServiceContract
 {
+    public function __construct(private MetadataServiceContract $metadataService)
+    {
+    }
+
     public function index(array $search, ?string $sort, int $limit): LengthAwarePaginator
     {
         return User::searchByCriteria($search)
@@ -27,9 +34,13 @@ class UserService implements UserServiceContract
             ->paginate($limit);
     }
 
-    public function create(string $name, string $email, string $password, array $roles): User
+    public function create(UserDto $dto): User
     {
-        $roleModels = Role::whereIn('id', $roles)->orWhere('type', RoleType::AUTHENTICATED)->get();
+        if (!$dto->getRoles() instanceof Missing) {
+            $roleModels = Role::whereIn('id', $dto->getRoles())->orWhere('type', RoleType::AUTHENTICATED)->get();
+        } else {
+            $roleModels = Role::where('type', RoleType::AUTHENTICATED)->get();
+        }
 
         $permissions = $roleModels->flatMap(
             fn ($role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
@@ -40,25 +51,29 @@ class UserService implements UserServiceContract
         }
 
         $user = User::create([
-            'name' => $name,
-            'email' => $email,
-            'password' => Hash::make($password),
+            'name' => $dto->getName(),
+            'email' => $dto->getEmail(),
+            'password' => Hash::make($dto->getPassword()),
         ]);
 
         $user->syncRoles($roleModels);
+
+        if (!($dto->getMetadata() instanceof Missing)) {
+            $this->metadataService->sync($user, $dto->getMetadata());
+        }
 
         UserCreated::dispatch($user);
 
         return $user;
     }
 
-    public function update(User $user, ?string $name, ?string $email, ?array $roles): User
+    public function update(User $user, UserDto $dto): User
     {
         $authenticable = Auth::user();
 
-        if ($roles !== null) {
+        if (!$dto->getRoles() instanceof Missing && $dto->getRoles() !== null) {
             /** @var Collection<int, Role> $roleModels */
-            $roleModels = Role::whereIn('id', $roles)->orWhere('type', RoleType::AUTHENTICATED)->get();
+            $roleModels = Role::whereIn('id', $dto->getRoles())->orWhere('type', RoleType::AUTHENTICATED)->get();
 
             $newRoles = $roleModels->diff($user->roles);
             /** @var Collection<int, Role> $removedRoles */
@@ -104,10 +119,7 @@ class UserService implements UserServiceContract
             $user->syncRoles($roleModels);
         }
 
-        $user->update([
-            'name' => $name ?? $user->name,
-            'email' => $email ?? $user->email,
-        ]);
+        $user->update($dto->toArray());
 
         UserUpdated::dispatch($user);
 

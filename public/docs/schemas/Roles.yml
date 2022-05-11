@@ -20,6 +20,10 @@ Role:
       description: 'Whether the role can be deleted with appropreiate permissions.'
       type: boolean
       example: true
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
 
 RoleView:
   type: object

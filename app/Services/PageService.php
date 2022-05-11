@@ -7,8 +7,10 @@ use App\Events\PageCreated;
 use App\Events\PageDeleted;
 use App\Events\PageUpdated;
 use App\Models\Page;
+use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\PageServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
+use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -18,6 +20,7 @@ class PageService implements PageServiceContract
 {
     public function __construct(
         protected SeoMetadataServiceContract $seoMetadataService,
+        protected MetadataServiceContract $metadataService,
     ) {
     }
 
@@ -52,6 +55,10 @@ class PageService implements PageServiceContract
         $page = Page::create($attributes);
 
         $page->seo()->save($this->seoMetadataService->create($dto->getSeo()));
+
+        if (!($dto->getMetadata() instanceof Missing)) {
+            $this->metadataService->sync($page, $dto->getMetadata());
+        }
 
         PageCreated::dispatch($page);
 

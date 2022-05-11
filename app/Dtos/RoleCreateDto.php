@@ -2,35 +2,29 @@
 
 namespace App\Dtos;
 
-use App\Dtos\Contracts\DtoContract;
 use App\Dtos\Contracts\InstantiateFromRequest;
+use App\Traits\MapMetadata;
+use Heseya\Dto\Dto;
+use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 
-class RoleCreateDto implements DtoContract, InstantiateFromRequest
+class RoleCreateDto extends Dto implements InstantiateFromRequest
 {
-    public function __construct(
-        private string $name,
-        private ?string $description,
-        private array $permissions,
-    ) {
-    }
+    use MapMetadata;
+
+    private string $name;
+    private ?string $description;
+    private array $permissions;
+    private array|Missing $metadata;
 
     public static function instantiateFromRequest(FormRequest $request): self
     {
         return new self(
-            $request->input('name'),
-            $request->input('description'),
-            $request->input('permissions', []),
+            name: $request->input('name'),
+            description: $request->input('description'),
+            permissions: $request->input('permissions', []),
+            metadata: self::mapMetadata($request),
         );
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'name' => $this->getName(),
-            'description' => $this->getDescription(),
-            'permissions' => $this->getPermissions(),
-        ];
     }
 
     public function getName(): string

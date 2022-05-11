@@ -365,6 +365,82 @@ class ShippingMethodTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('shipping_methods.add');
+
+        ShippingMethod::query()->delete();
+
+        $shipping_method = [
+            'name' => 'Test',
+            'public' => true,
+            'black_list' => false,
+            'shipping_time_min' => 2,
+            'shipping_time_max' => 3,
+            'metadata' => [
+                'attributeMeta' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/shipping-methods', $shipping_method + [
+                'price_ranges' => [
+                    [
+                        'start' => 0,
+                        'value' => 10.37,
+                    ],
+                    [
+                        'start' => 200,
+                        'value' => 0,
+                    ],
+                ],
+            ])
+            ->assertCreated()
+            ->assertJson(['data' => $shipping_method]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadataPrivate($user): void
+    {
+        $this->$user->givePermissionTo(['shipping_methods.add', 'shipping_methods.show_metadata_private']);
+
+        ShippingMethod::query()->delete();
+
+        $shipping_method = [
+            'name' => 'Test',
+            'public' => true,
+            'black_list' => false,
+            'shipping_time_min' => 2,
+            'shipping_time_max' => 3,
+            'metadata_private' => [
+                'attributeMetaPriv' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/shipping-methods', $shipping_method + [
+                'price_ranges' => [
+                    [
+                        'start' => 0,
+                        'value' => 10.37,
+                    ],
+                    [
+                        'start' => 200,
+                        'value' => 0,
+                    ],
+                ],
+            ])
+            ->assertCreated()
+            ->assertJson(['data' => $shipping_method]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateShippingTime($user): void
     {
         $this->$user->givePermissionTo('shipping_methods.add');
