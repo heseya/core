@@ -52,6 +52,7 @@ class ProductSet extends Model
         'public',
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
+        'parent_id',
     ];
 
     public function getSlugOverrideAttribute(): bool

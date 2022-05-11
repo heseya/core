@@ -374,4 +374,28 @@ class ProductSetIndexTest extends TestCase
             ],
             ]);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByParentId($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.show');
+
+        $parent = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $set = ProductSet::factory()->create([
+            'public' => true,
+            'parent_id' => $parent->getKey(),
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/product-sets', ['parent_id' => $parent->getKey()])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $set->getKey()]);
+    }
 }
