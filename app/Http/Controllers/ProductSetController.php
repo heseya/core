@@ -97,19 +97,14 @@ class ProductSetController extends Controller
         );
 
         // @phpstan-ignore-next-line
-        $products->searchable();
+        $productSet->products()->searchable();
 
         return ProductResource::collection($products);
     }
 
     public function destroy(ProductSet $productSet): JsonResponse
     {
-        $products = clone $productSet->products;
-
         $this->productSetService->delete($productSet);
-
-        // @phpstan-ignore-next-line
-        $products->seachable();
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
