@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Option;
 use App\Models\Product;
-use App\Models\ProductSet;
 use App\Models\Schema;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -13,7 +12,7 @@ class PerformanceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testIndexPerformanceAttribute500(): void
+    public function testIndexPerformanceSchema500(): void
     {
         $this->user->givePermissionTo('products.show_details');
 
@@ -39,13 +38,13 @@ class PerformanceTest extends TestCase
         $product->schemas()->save($schema3);
 
         Option::factory()->count(500)->create([
-            'schema_id' => $schema1->getKey()
+            'schema_id' => $schema1->getKey(),
         ]);
         Option::factory()->count(500)->create([
-            'schema_id' => $schema2->getKey()
+            'schema_id' => $schema2->getKey(),
         ]);
         Option::factory()->count(500)->create([
-            'schema_id' => $schema3->getKey()
+            'schema_id' => $schema3->getKey(),
         ]);
 
         $this
@@ -55,5 +54,4 @@ class PerformanceTest extends TestCase
 
         $this->assertQueryCountLessThan(30);
     }
-
 }

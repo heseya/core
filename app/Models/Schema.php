@@ -147,6 +147,7 @@ class Schema extends Model implements SortableContract
     public function options(): HasMany
     {
         return $this->hasMany(Option::class)
+            ->with(['items', 'metadata', 'metadataPrivate'])
             ->orderBy('order')
             ->orderBy('created_at')
             ->orderBy('name', 'DESC');
