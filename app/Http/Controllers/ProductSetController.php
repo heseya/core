@@ -76,6 +76,9 @@ class ProductSetController extends Controller
             return ProductSetParentChildrenResource::make($productSet);
         }
 
+        // @phpstan-ignore-next-line
+        $productSet->products()->searchable();
+
         return ProductSetParentResource::make($productSet);
     }
 
@@ -93,12 +96,20 @@ class ProductSetController extends Controller
             $request->input('products', []),
         );
 
+        // @phpstan-ignore-next-line
+        $products->searchable();
+
         return ProductResource::collection($products);
     }
 
     public function destroy(ProductSet $productSet): JsonResponse
     {
+        $products = clone $productSet->products;
+
         $this->productSetService->delete($productSet);
+
+        // @phpstan-ignore-next-line
+        $products->seachable();
 
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
