@@ -6,6 +6,7 @@ use App\Enums\ErrorCode;
 use App\Enums\ValidationError;
 use App\Http\Resources\ErrorResource;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
@@ -21,6 +23,8 @@ final class Handler extends ExceptionHandler
 {
     private const ERRORS = [
         AuthenticationException::class => ErrorCode::UNAUTHORIZED,
+        AccessDeniedHttpException::class => ErrorCode::UNAUTHORIZED,
+        AuthorizationException::class => ErrorCode::FORBIDDEN,
 
         NotFoundHttpException::class => ErrorCode::NOT_FOUND,
         MethodNotAllowedHttpException::class => ErrorCode::NOT_FOUND,

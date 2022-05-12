@@ -34,7 +34,7 @@ class ProductSetController extends Controller
         $sets = $this->productSetService->searchAll(
             $request->validated(),
             $request->has('tree') && $request->input('tree', true) !== false ||
-            $request->has('root') && $request->input('root', true) !== false
+            $request->has('root') && $request->input('root', true) !== false,
         );
 
         if ($request->has('tree') && $request->input('tree', true) !== false) {
@@ -76,6 +76,9 @@ class ProductSetController extends Controller
             return ProductSetParentChildrenResource::make($productSet);
         }
 
+        // @phpstan-ignore-next-line
+        $productSet->products()->searchable();
+
         return ProductSetParentResource::make($productSet);
     }
 
@@ -92,6 +95,9 @@ class ProductSetController extends Controller
             $productSet,
             $request->input('products', []),
         );
+
+        // @phpstan-ignore-next-line
+        $productSet->products()->searchable();
 
         return ProductResource::collection($products);
     }

@@ -7,22 +7,26 @@ ProductSets:
         in: query
         description: 'Return only root lists'
         allowEmptyValue: true
+        required: false
         schema:
           type: boolean
       - name: tree
         in: query
         description: 'Return sets starting from root with recursively nested children instead of id''s'
         allowEmptyValue: true
+        required: false
         schema:
           type: boolean
       - name: search
         in: query
         description: 'Full text search'
+        required: false
         schema:
           type: string
       - name: name
         in: query
         description: 'Name search'
+        required: false
         schema:
           type: string
       - name: slug
@@ -33,8 +37,16 @@ ProductSets:
       - name: public
         in: query
         description: 'Is public search'
+        required: false
         schema:
           type: boolean
+      - name: parent_id
+        in: query
+        description: 'UUID of parent set'
+        required: false
+        schema:
+          type: string
+          example: ' 019fc7e8-af32-476f-ba04-068b86833830'
       - name: metadata
         in: query
         description: search by metadata
@@ -238,6 +250,12 @@ ProductSetsProducts:
         description: 'Pagination limit'
         schema:
           type: number
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
     responses:
       200:
         description: Success

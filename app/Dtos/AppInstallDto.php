@@ -4,16 +4,21 @@ namespace App\Dtos;
 
 use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\AppStoreRequest;
+use App\Traits\MapMetadata;
 use Heseya\Dto\Dto;
+use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AppInstallDto extends Dto implements InstantiateFromRequest
 {
+    use MapMetadata;
+
     private string $url;
     private ?string $name;
     private ?string $licenceKey;
     private array $allowedPermissions;
     private array $publicAppPermissions;
+    private array|Missing $metadata;
 
     public static function instantiateFromRequest(FormRequest|AppStoreRequest $request): self
     {
@@ -23,6 +28,7 @@ class AppInstallDto extends Dto implements InstantiateFromRequest
             licenceKey: $request->input('licence_key'),
             allowedPermissions: $request->input('allowed_permissions'),
             publicAppPermissions: $request->input('public_app_permissions'),
+            metadata: self::mapMetadata($request),
         );
     }
 

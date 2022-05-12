@@ -67,7 +67,8 @@ class ProductRepository implements ProductRepositoryContract
         if (Gate::denies('products.show_hidden')) {
             $query->filter(new Term('public', true));
 
-            if ($hide_on_index && $dto->getSearch() === null) {
+            // If no criteria are set, toArray() will return sort and search.
+            if ($hide_on_index && $dto->getSearch() === null && count($dto->toArray()) < 3) {
                 $query->filter(new Term('hide_on_index', false));
             }
         }
@@ -114,7 +115,7 @@ class ProductRepository implements ProductRepositoryContract
                 $this->mapMetadata($hit['_source']['cover']['metadata'], true),
             );
             $media->setRelation(
-                'metadata_private',
+                'metadataPrivate',
                 $this->mapMetadata($hit['_source']['cover']['metadata_private'], false),
             );
             $product->setRelation('media', Collection::make([$media]));
@@ -144,7 +145,7 @@ class ProductRepository implements ProductRepositoryContract
                     $this->mapMetadata($value['metadata'], true),
                 );
                 $option->setRelation(
-                    'metadata_private',
+                    'metadataPrivate',
                     $this->mapMetadata($value['metadata_private'], false),
                 );
                 $options->push($option);
@@ -155,7 +156,7 @@ class ProductRepository implements ProductRepositoryContract
                 $this->mapMetadata($raw['metadata'], true),
             );
             $attribute->setRelation(
-                'metadata_private',
+                'metadataPrivate',
                 $this->mapMetadata($raw['metadata_private'], false),
             );
 
@@ -168,7 +169,7 @@ class ProductRepository implements ProductRepositoryContract
             $this->mapMetadata($hit['_source']['metadata'], true),
         );
         $product->setRelation(
-            'metadata_private',
+            'metadataPrivate',
             $this->mapMetadata($hit['_source']['metadata_private'], false),
         );
 

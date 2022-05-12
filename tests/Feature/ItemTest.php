@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ErrorCode;
 use App\Events\ItemCreated;
 use App\Events\ItemDeleted;
 use App\Events\ItemUpdated;
@@ -342,6 +343,87 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateWithoutPermission($user): void
+    {
+        Event::fake(ItemCreated::class);
+
+        $item = [
+            'name' => 'Test',
+            'sku' => 'TES/T1',
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/items', $item);
+
+        $response
+            ->assertJsonFragment([
+                'code' => 403,
+                'key' => ErrorCode::getKey(ErrorCode::FORBIDDEN),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('items.add');
+
+        Event::fake(ItemCreated::class);
+
+        $item = [
+            'name' => 'Test',
+            'sku' => 'TES/T1',
+        ];
+
+        $metadata = [
+            'metadata' => [
+                'attributeMeta' => 'attributeValue',
+            ],
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/items', $item + $metadata);
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $item + $metadata]);
+
+        $this->assertDatabaseHas('items', $item);
+
+        Event::assertDispatched(ItemCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadataPrivate($user): void
+    {
+        $this->$user->givePermissionTo(['items.add', 'items.show_metadata_private']);
+
+        Event::fake(ItemCreated::class);
+
+        $item = [
+            'name' => 'Test',
+            'sku' => 'TES/T1',
+        ];
+
+        $metadata = [
+            'metadata_private' => [
+                'attributeMetaPriv' => 'attributeValuePriv',
+            ],
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/items', $item + $metadata);
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $item + $metadata]);
+
+        $this->assertDatabaseHas('items', $item);
+
+        Event::assertDispatched(ItemCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateWithWebHook($user): void
     {
         $this->$user->givePermissionTo('items.add');
@@ -459,6 +541,41 @@ class ItemTest extends TestCase
             'id' => $this->item->getKey(),
             'sku' => $this->item->sku,
             'name' => 'Test 2',
+        ]);
+
+        Event::assertDispatched(ItemUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithPartialDataSku($user): void
+    {
+        $this->$user->givePermissionTo('items.edit');
+
+        Event::fake(ItemUpdated::class);
+
+        $item = [
+            'sku' => 'TES/T3',
+        ];
+
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        );
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'name' => $this->item->name,
+                'sku' => $item['sku'],
+            ],
+            ]);
+
+        $this->assertDatabaseHas('items', [
+            'id' => $this->item->getKey(),
+            'sku' => $item['sku'],
+            'name' => $this->item->name,
         ]);
 
         Event::assertDispatched(ItemUpdated::class);

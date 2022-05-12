@@ -52,11 +52,12 @@ class ProductSet extends Model
         'public',
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
+        'parent_id',
     ];
 
     public function getSlugOverrideAttribute(): bool
     {
-        return $this->parent()->exists() && !Str::startsWith(
+        return $this->parent !== null && !Str::startsWith(
             $this->slug,
             $this->parent->slug . '-',
         );
@@ -69,7 +70,7 @@ class ProductSet extends Model
 
     public function getSlugSuffixAttribute(): string
     {
-        return $this->slugOverride || $this->parent()->doesntExist() ? $this->slug :
+        return $this->slugOverride || $this->parent === null ? $this->slug :
             Str::after($this->slug, $this->parent->slug . '-');
     }
 
@@ -91,7 +92,13 @@ class ProductSet extends Model
 
     public function allChildren(): HasMany
     {
-        return $this->children()->with('allChildren');
+        return $this->children()->with([
+            'allChildren',
+            'metadata',
+            'metadataPrivate',
+            'attributes',
+            'parent',
+        ]);
     }
 
     public function children(): HasMany
@@ -106,7 +113,12 @@ class ProductSet extends Model
 
     public function allChildrenPublic(): HasMany
     {
-        return $this->childrenPublic()->with('allChildrenPublic');
+        return $this->childrenPublic()->with([
+            'allChildrenPublic',
+            'metadata',
+            'attributes',
+            'parent',
+        ]);
     }
 
     public function childrenPublic(): HasMany

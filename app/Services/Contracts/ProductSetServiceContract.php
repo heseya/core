@@ -5,13 +5,14 @@ namespace App\Services\Contracts;
 use App\Dtos\ProductSetDto;
 use App\Dtos\ProductSetUpdateDto;
 use App\Models\ProductSet;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 interface ProductSetServiceContract
 {
     public function authorize(ProductSet $set): void;
 
-    public function searchAll(array $attributes, bool $root): Collection;
+    public function searchAll(array $attributes, bool $root): LengthAwarePaginator;
 
     public function create(ProductSetDto $dto): ProductSet;
 

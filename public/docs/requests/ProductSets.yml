@@ -5,6 +5,7 @@ ProductSetStore:
         required:
           - name
           - slug
+          - slug_suffix
         properties:
           name:
             description: 'Name displayed to the user'
@@ -57,13 +58,11 @@ ProductSetStore:
           metadata_private:
             $ref: './../schemas/Metadata.yml#/Metadata'
         type: object
+
 ProductSetUpdate:
   content:
     application/json:
       schema:
-        required:
-          - name
-          - slug
         properties:
           name:
             description: 'Name displayed to the user'
@@ -111,11 +110,8 @@ ProductSetUpdate:
             items:
               type: string
               example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-          metadata:
-            $ref: './../schemas/Metadata.yml#/Metadata'
-          metadata_private:
-            $ref: './../schemas/Metadata.yml#/Metadata'
         type: object
+
 ProductSetAttach:
   content:
     application/json:
@@ -131,6 +127,7 @@ ProductSetAttach:
               type: string
               example: 026bc5f6-8373-4aeb-972e-e78d72a67121
         type: object
+
 ProductSetReorder:
   content:
     application/json:

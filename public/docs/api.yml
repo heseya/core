@@ -189,262 +189,17 @@ paths:
   /cart/process:
     $ref: './paths/Orders.yml#/CartProcess'
   /package-templates:
-    get:
-      tags:
-        - Packages
-      parameters:
-        - name: metadata
-          in: query
-          description: search by metadata
-          style: deepObject
-          explode: true
-          required: false
-          schema:
-            $ref: './schemas/Metadata.yml#/MetadataQuery'
-        - name: metadata_private
-          in: query
-          description: search by metadata private
-          style: deepObject
-          explode: true
-          required: false
-          schema:
-            $ref: './schemas/Metadata.yml#/MetadataQuery'
-      summary: 'list packages'
-      operationId: 521fda12b023dd7945d369e3c30599c5
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/PackageTemplateSwagger'
-                type: object
-      security:
-        - BearerAuth: [ ]
-    post:
-      tags:
-        - Packages
-      summary: 'add new package'
-      operationId: 3691fc47dd8ccedc165fba9f01cc7e48
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PackageTemplateSwagger'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/PackageTemplateSwagger'
-                type: object
-      security:
-        - BearerAuth: [ ]
+    $ref: './paths/PackageTemplates.yml#/PackageTemplates'
   '/package-templates/id:{id}':
-    delete:
-      tags:
-        - Packages
-      summary: 'delete package'
-      operationId: 0b01c1ca12327aac13892b9e5b103c0f
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        204:
-          description: Success
-      security:
-        - BearerAuth: [ ]
-    patch:
-      tags:
-        - Packages
-      summary: 'update package'
-      operationId: c52220735d551c071d0d4e04ddc13a8e
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PackageTemplateSwagger'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/PackageTemplateSwagger'
-                type: object
-      security:
-        - BearerAuth: [ ]
+    $ref: './paths/PackageTemplates.yml#/PackageTemplatesParam'
   /pages:
-    get:
-      tags:
-        - Pages
-      parameters:
-        - name: metadata
-          in: query
-          description: search by metadata
-          style: deepObject
-          explode: true
-          required: false
-          schema:
-            $ref: './schemas/Metadata.yml#/MetadataQuery'
-        - name: metadata_private
-          in: query
-          description: search by metadata private
-          style: deepObject
-          explode: true
-          required: false
-          schema:
-            $ref: './schemas/Metadata.yml#/MetadataQuery'
-      summary: 'list page'
-      operationId: 82fdf932ecaac31515345d77358bcbe7
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Page'
-                type: object
-    post:
-      tags:
-        - Pages
-      summary: 'add new page'
-      operationId: e8d6c6d7cc98ba67b75a91855dbb0e1b
-      requestBody:
-        $ref: '#/components/requestBodies/PageStore'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/PageView'
-                type: object
-      security:
-        - BearerAuth: [ ]
+    $ref: './paths/Pages.yml#/Pages'
   '/pages/{slug}':
-    get:
-      tags:
-        - Pages
-      summary: 'single page view'
-      parameters:
-        - name: slug
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/PageView'
-                type: object
+    $ref: './paths/Pages.yml#/PagesSlug'
   '/pages/id:{id}':
-    get:
-      tags:
-        - Pages
-      summary: alias
-      operationId: ba0bd4e0f9d4ce9c18da285fd3c93bcc
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/PageView'
-                type: object
-      security:
-        - BearerAuth: [ ]
-    delete:
-      tags:
-        - Pages
-      summary: 'delete page'
-      operationId: 5284a2b1e29dda6d65eb3a091e592c8b
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        204:
-          description: Success
-      security:
-        - BearerAuth: [ ]
-    patch:
-      tags:
-        - Pages
-      summary: 'update page'
-      operationId: 692a2573c6f6f2da427600913c1e29f7
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        $ref: '#/components/requestBodies/PageUpdate'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/PageView'
-                type: object
-      security:
-        - BearerAuth: [ ]
+    $ref: './paths/Pages.yml#/PagesParam'
   /pages/reorder:
-    post:
-      tags:
-        - Pages
-      summary: 'change pages order'
-      operationId: 85d901e3118685015dc71cc1543d25a9
-      requestBody:
-        $ref: '#/components/requestBodies/PageReorder'
-      responses:
-        204:
-          description: Success
-      security:
-        - BearerAuth: [ ]
+    $ref: './paths/Pages.yml#/PagesReorder'
   '/orders/{code}/pay/{payment_method}':
     $ref: './paths/Orders.yml#/OrdersCodePay'
   '/payments/{payment_method}':
@@ -517,149 +272,9 @@ paths:
   '/roles/id:{id}':
     $ref: './paths/Roles.yml#/RolesParams'
   /schemas:
-    get:
-      tags:
-        - Schemas
-      summary: 'all schemas list'
-      operationId: 170c0b7f342ea07d3a8a3049dd252ca4
-      parameters:
-        - name: name
-          in: query
-          schema:
-            type: string
-            example: test
-        - name: hidden
-          in: query
-          schema:
-            type: boolean
-            example: true
-        - name: required
-          in: query
-          schema:
-            type: boolean
-            example: true
-        - name: search
-          in: query
-          schema:
-            type: string
-            example: test
-        - name: sort
-          in: query
-          schema:
-            type: string
-            example: test
-        - name: metadata
-          in: query
-          description: search by metadata
-          style: deepObject
-          explode: true
-          required: false
-          schema:
-            $ref: './schemas/Metadata.yml#/MetadataQuery'
-        - name: metadata_private
-          in: query
-          description: search by metadata private
-          style: deepObject
-          explode: true
-          required: false
-          schema:
-            $ref: './schemas/Metadata.yml#/MetadataQuery'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Schema'
-                type: object
-      security:
-        - BearerAuth: [ ]
-    post:
-      tags:
-        - Schemas
-      summary: 'create schema'
-      operationId: d103be543bfb100b60eaa7b27eb5e150
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Schema'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Schema'
-                type: object
-      security:
-        - BearerAuth: [ ]
+    $ref: './paths/Schemas.yml#/Schemas'
   '/schemas/id:{id}':
-    get:
-      tags:
-        - Schemas
-      operationId: 73d12dd89ba8210a22b5240704e63ee8
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Schema'
-                type: object
-      security:
-        - BearerAuth: [ ]
-    delete:
-      tags:
-        - Schemas
-      operationId: 459ce0314ef100d188cd1d1d04025e99
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        204:
-          description: Success
-      security:
-        - BearerAuth: [ ]
-    patch:
-      tags:
-        - Schemas
-      summary: 'update schema'
-      operationId: 809f90ba94d09b70423a5d7ceeedb2ff
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Schema'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Schema'
-                type: object
-      security:
-        - BearerAuth: [ ]
+    $ref: './paths/Schemas.yml#/SchemasParam'
   /seo:
     $ref: './paths/Seo.yml#/Seo'
   /seo/check:
@@ -969,35 +584,6 @@ components:
       type: object
     OrderSummary:
       $ref: './schemas/Orders.yml#/OrderSummary'
-    Page:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        slug:
-          description: 'Name used in the URL path'
-          type: string
-          example: terms-and-conditions
-        name:
-          description: 'Name displayed as a page header'
-          type: string
-          example: 'Terms & Conditions'
-        public:
-          description: 'Whether page is visible to unauthorized users'
-          type: boolean
-          example: true
-      type: object
-    PageView:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/Page'
-        - properties:
-            content_html:
-              description: 'HTML formated text to be displayed as a main content under the page header'
-              type: string
-              example: '<h1>Lorem ipsum dolor sit amet</h1>'
-            seo:
-              $ref: '#/components/schemas/SeoView'
     Permission:
       properties:
         id:
@@ -1107,30 +693,7 @@ components:
     Media:
       $ref: './schemas/Media.yml#/Media'
     Option:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        name:
-          type: string
-          example: XL
-        price:
-          description: 'Additional price the customer will have to pay after selecting this option (can be negative)'
-          type: number
-          example: 3.99
-        disabled:
-          description: 'Shows if the option has been disabled manually'
-          type: boolean
-          example: false
-        available:
-          description: 'Shows whether the option is available for purchase (in stock and not disabled)'
-          type: boolean
-          example: true
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/Item'
-      type: object
+      $ref: './schemas/Schemas.yml#/Option'
     Order:
       $ref: './schemas/Orders.yml#/Order'
     OrderDiscount:
@@ -1148,62 +711,7 @@ components:
     PriceRange:
       $ref: './schemas/PriceRanges.yml#/PriceRange'
     Schema:
-      description: "Schema allows a product to take on new optional characteristics that can be\n *   chosen by the userand influences the price based on said choices. Schemas can use other\n *   schemas for their price calculation e.g. multiply_schema multiplies price of different\n *   schema based on it's own value. SCHEMAS USED BY OTHERS SHOULD NOT AFFECT THE PRICE\n *   (schema multiplied by multiply_schema adds 0 to the price while multiply_schema adds\n *   the multiplied value)"
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        type:
-          description: "multiply_schema(min, max, step) type uses one schema and multiplies\n     *     it's price by own numeric value"
-          type: string
-          enum:
-            - string
-            - numeric
-            - boolean
-            - date
-            - select
-            - file
-            - multiply
-            - multiply_schema
-        name:
-          type: string
-          example: Size
-        description:
-          description: 'Short description, no html or md allowed'
-          type: string
-        price:
-          description: "Additional price the customer will have to pay after selecting the option\n     *     (can be negative)"
-          type: number
-          example: 9.99
-        hidden:
-          type: boolean
-          example: false
-        required:
-          type: boolean
-          example: false
-        min:
-          type: string
-        max:
-          type: string
-        step:
-          type: string
-        default:
-          type: string
-        pattern:
-          type: string
-        validation:
-          type: string
-        options:
-          type: array
-          items:
-            $ref: '#/components/schemas/Option'
-        used_schemas:
-          description: "Array of schema id's given schema uses e.g.\n     *   multiply_schema type uses one schema of which price it miltiplies"
-          type: array
-          items:
-            type: string
-            example: used-schema-ids
-      type: object
+      $ref: './schemas/Schemas.yml#/Schema'
     Setting:
       $ref: './schemas/Settings.yml#/Setting'
     ShippingMethod:
@@ -1211,31 +719,7 @@ components:
     Status:
       $ref: './schemas/Statuses.yml#/Status'
     PackageTemplateSwagger:
-      title: PackageTemplate
-      properties:
-        id:
-          type: string
-          example: 5fb4a472-b5fd-4e9a-a4ee-bf42bde86a73
-        name:
-          type: string
-          example: 'Small package'
-        wieght:
-          description: 'Weight in kg'
-          type: number
-          example: 5.7
-        width:
-          description: 'Width in cm'
-          type: integer
-          example: 10
-        height:
-          description: 'Height in cm'
-          type: integer
-          example: 20
-        depth:
-          description: 'Depth in cm'
-          type: integer
-          example: 30
-      type: object
+      $ref: './schemas/PackageTemplate.yml#/PackageTemplate'
     Tag:
       $ref: './schemas/Tags.yml#/Tag'
     ProductSet:
@@ -1283,68 +767,6 @@ components:
       $ref: './requests/Orders.yml#/OrderCreate'
     OrderUpdate:
       $ref: './requests/Orders.yml#/OrderUpdate'
-    PageReorder:
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              pages:
-                type: array
-                items:
-                  type: string
-    PageStore:
-      content:
-        application/json:
-          schema:
-            required:
-              - name
-              - slug
-              - content_html
-            properties:
-              name:
-                description: 'Name displayed as a page header'
-                type: string
-                example: 'Terms & Conditions'
-              slug:
-                description: 'Name used in the URL path'
-                type: string
-                example: terms-and-conditions
-              public:
-                description: 'Whether page is visible to unauthorized users'
-                type: boolean
-                example: true
-              content_html:
-                description: 'HTML formated text to be displayed as a main content under the page header'
-                type: string
-                example: '<h1>Lorem ipsum dolor sit amet</h1>'
-              seo:
-                $ref: '#/components/schemas/SeoStore'
-            type: object
-    PageUpdate:
-      content:
-        application/json:
-          schema:
-            properties:
-              name:
-                description: 'Name displayed as a page header'
-                type: string
-                example: 'Terms & Conditions'
-              slug:
-                description: 'Name used in the URL path'
-                type: string
-                example: terms-and-conditions
-              public:
-                description: 'Whether page is visible to unauthorized users'
-                type: boolean
-                example: true
-              content_html:
-                description: 'HTML formated text to be displayed as a main content under the page header'
-                type: string
-                example: '<h1>Lorem ipsum dolor sit amet</h1>'
-              seo:
-                $ref: '#/components/schemas/SeoStore'
-            type: object
     PasswordReset:
       $ref: './requests/Auth.yml#/PasswordReset'
     PasswordResetSave:
@@ -1357,8 +779,6 @@ components:
       $ref: './requests/Roles.yml#/RoleStore'
     RoleUpdate:
       $ref: './requests/Roles.yml#/RoleUpdate'
-    ShippingMethodIndex:
-      $ref: './requests/ShippingMethods.yml#/ShippingMethodIndex'
     ShippingMethodReorder:
       $ref: './requests/ShippingMethods.yml#/ShippingMethodReorder'
     ShippingMethodStore:

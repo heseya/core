@@ -82,6 +82,56 @@ class PackageTemplateTest extends TestCase
         $this->assertDatabaseHas('package_templates', $package);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('packages.add');
+
+        $package = [
+            'name' => 'Small package',
+            'weight' => 1.2,
+            'width' => 10,
+            'height' => 6,
+            'depth' => 2,
+            'metadata' => [
+                'attributeMeta' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/package-templates', $package)
+            ->assertCreated()
+            ->assertJson(['data' => $package]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadataPrivate($user): void
+    {
+        $this->$user->givePermissionTo(['packages.add', 'packages.show_metadata_private']);
+
+        $package = [
+            'name' => 'Small package',
+            'weight' => 1.2,
+            'width' => 10,
+            'height' => 6,
+            'depth' => 2,
+            'metadata_private' => [
+                'attributeMetaPriv' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/package-templates', $package)
+            ->assertCreated()
+            ->assertJson(['data' => $package]);
+    }
+
     public function testUpdateUnauthorized(): void
     {
         $response = $this->patchJson('/package-templates/id:' . $this->package->getKey());

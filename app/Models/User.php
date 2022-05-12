@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Criteria\ConsentIdSearch;
+use App\Criteria\ConsentNameSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\UserSearch;
@@ -82,6 +84,8 @@ class User extends Model implements
         'ids' => WhereInIds::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
+        'consent_name' => ConsentNameSearch::class,
+        'consent_id' => ConsentIdSearch::class,
     ];
 
     protected array $sortable = [

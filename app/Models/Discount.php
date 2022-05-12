@@ -67,7 +67,7 @@ class Discount extends Model implements AuditableContract
             Product::class,
             'model',
             'model_has_discounts'
-        );
+        )->with(['metadata', 'metadataPrivate', 'attributes', 'media', 'tags']);
     }
 
     public function productSets(): MorphToMany
@@ -76,7 +76,7 @@ class Discount extends Model implements AuditableContract
             ProductSet::class,
             'model',
             'model_has_discounts'
-        );
+        )->with(['metadata', 'metadataPrivate']);
     }
 
     public function shippingMethods(): MorphToMany
@@ -85,7 +85,7 @@ class Discount extends Model implements AuditableContract
             ShippingMethod::class,
             'model',
             'model_has_discounts',
-        );
+        )->with(['metadata', 'metadataPrivate']);
     }
 
     public function conditionGroups(): BelongsToMany

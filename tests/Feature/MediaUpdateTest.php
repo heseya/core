@@ -97,6 +97,49 @@ class MediaUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateAltWithNullSlug($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/media/id:{$this->media->getKey()}", [
+                'alt' => 'Test alt description',
+                'slug' => null,
+            ])
+            ->assertOk()
+            ->assertJsonFragment(['alt' => 'Test alt description']);
+
+        $this->assertDatabaseHas('media', [
+            'id' => $this->media->getKey(),
+            'alt' => 'Test alt description',
+            'slug' => null,
+        ]);
+
+        Http::assertNothingSent();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateMediaSlugToNull($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+        $this->media->update(['slug' => 'test']);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/media/id:{$this->media->getKey()}", [
+                'slug' => null,
+            ])
+            ->assertUnprocessable();
+
+        Http::assertNothingSent();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCantUpdateSlugNotUnique($user): void
     {
         $this->$user->givePermissionTo('pages.add');

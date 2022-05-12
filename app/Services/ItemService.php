@@ -3,17 +3,27 @@
 namespace App\Services;
 
 use App\Dtos\CartItemDto;
+use App\Dtos\ItemDto;
 use App\Dtos\OrderProductDto;
 use App\Enums\ExceptionsEnums\Exceptions;
+use App\Events\ItemCreated;
+use App\Events\ItemDeleted;
+use App\Events\ItemUpdated;
 use App\Exceptions\ClientException;
 use App\Models\Item;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Services\Contracts\ItemServiceContract;
+use App\Services\Contracts\MetadataServiceContract;
+use Heseya\Dto\Missing;
 use Illuminate\Support\Collection;
 
 class ItemService implements ItemServiceContract
 {
+    public function __construct(private MetadataServiceContract $metadataService)
+    {
+    }
+
     public function addItemArrays(array $items1, array $items2): array
     {
         $totalItems = $items1;
@@ -115,6 +125,34 @@ class ItemService implements ItemServiceContract
         }
 
         return $products;
+    }
+
+    public function store(ItemDto $dto): Item
+    {
+        $item = Item::create($dto->toArray());
+
+        if (!($dto->getMetadata() instanceof Missing)) {
+            $this->metadataService->sync($item, $dto->getMetadata());
+        }
+
+        ItemCreated::dispatch($item);
+
+        return $item;
+    }
+
+    public function update(Item $item, ItemDto $dto): Item
+    {
+        $item->update($dto->toArray());
+
+        ItemUpdated::dispatch($item);
+        return $item;
+    }
+
+    public function destroy(Item $item): void
+    {
+        if ($item->delete()) {
+            ItemDeleted::dispatch($item);
+        }
     }
 
     private function checkItems(array $items): array

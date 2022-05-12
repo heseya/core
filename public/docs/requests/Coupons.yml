@@ -27,5 +27,5 @@ CouponUpdate:
           - target_type
           - target_is_allow_list
         allOf:
-          - $ref: './../schemas/Coupons.yml#/CouponStore'
+          - $ref: './../schemas/Coupons.yml#/CouponUpdate'
         type: object

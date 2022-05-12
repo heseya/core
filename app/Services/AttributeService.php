@@ -53,7 +53,7 @@ class AttributeService implements AttributeServiceContract
         $attributes = Arr::divide($data)[0];
 
         $product->attributes()->sync($attributes);
-        $product->attributes->each(
+        $product->attributes()->get()->each(
             fn (Attribute $attribute) => $attribute->pivot->options()->sync($data[$attribute->getKey()])
         );
     }

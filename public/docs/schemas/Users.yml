@@ -26,6 +26,20 @@ User:
       type: array
       items:
         $ref: './Consents.yml#/ConsentUser'
+    delivery_address:
+      description: 'Saved user delivery addresses'
+      type: array
+      items:
+        $ref: './../schemas/Addresses.yml#/Address'
+    invoice_address:
+      description: 'Saved user invoice addresses'
+      type: array
+      items:
+        $ref: './../schemas/Addresses.yml#/Address'
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
 
 
 UserView:

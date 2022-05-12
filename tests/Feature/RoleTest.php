@@ -645,6 +645,90 @@ class RoleTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('roles.add');
+
+        $permission1 = Permission::create(['name' => 'test.custom1']);
+        $permission2 = Permission::create(['name' => 'test.custom2']);
+        $this->$user->givePermissionTo([$permission1, $permission2]);
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/roles', [
+                'name' => 'test_role',
+                'description' => 'Test role',
+                'permissions' => [
+                    'test.custom1',
+                    'test.custom2',
+                ],
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ])
+            ->assertCreated()
+            ->assertJson([
+                'data' => [
+                    'name' => 'test_role',
+                    'description' => 'Test role',
+                    'assignable' => true,
+                    'deletable' => true,
+                    'permissions' => [
+                        'test.custom1',
+                        'test.custom2',
+                    ],
+                    'metadata' => [
+                        'attributeMeta' => 'attributeValue',
+                    ],
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadataPrivate($user): void
+    {
+        $this->$user->givePermissionTo(['roles.add', 'roles.show_metadata_private']);
+
+        $permission1 = Permission::create(['name' => 'test.custom1']);
+        $permission2 = Permission::create(['name' => 'test.custom2']);
+        $this->$user->givePermissionTo([$permission1, $permission2]);
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/roles', [
+                'name' => 'test_role',
+                'description' => 'Test role',
+                'permissions' => [
+                    'test.custom1',
+                    'test.custom2',
+                ],
+                'metadata_private' => [
+                    'attributeMetaPriv' => 'attributeValue',
+                ],
+            ])
+            ->assertCreated()
+            ->assertJson([
+                'data' => [
+                    'name' => 'test_role',
+                    'description' => 'Test role',
+                    'assignable' => true,
+                    'deletable' => true,
+                    'permissions' => [
+                        'test.custom1',
+                        'test.custom2',
+                    ],
+                    'metadata_private' => [
+                        'attributeMetaPriv' => 'attributeValue',
+                    ],
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateWithoutDescription($user): void
     {
         $this->$user->givePermissionTo('roles.add');

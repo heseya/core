@@ -30,10 +30,11 @@ Statuses:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Statuses.yml#/Status'
+                    $ref: './../schemas/Statuses.yml#/StatusMetadata'
               type: object
     security:
       - BearerAuth: [ ]
+
   post:
     tags:
       - Statuses
@@ -42,7 +43,7 @@ Statuses:
       content:
         application/json:
           schema:
-            $ref: './../schemas/Statuses.yml#/Status'
+            $ref: './../schemas/Statuses.yml#/StatusMetadata'
     responses:
       201:
         description: Created
@@ -51,7 +52,7 @@ Statuses:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Statuses.yml#/Status'
+                  $ref: './../schemas/Statuses.yml#/StatusMetadata'
               type: object
     security:
       - BearerAuth: [ ]
@@ -72,6 +73,7 @@ StatusesParams:
         description: Success
     security:
       - BearerAuth: [ ]
+
   patch:
     tags:
       - Statuses
@@ -95,7 +97,7 @@ StatusesParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Statuses.yml#/Status'
+                  $ref: './../schemas/Statuses.yml#/StatusMetadata'
               type: object
     security:
       - BearerAuth: [ ]

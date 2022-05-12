@@ -8,6 +8,7 @@ use App\Events\UserCreated;
 use App\Events\UserDeleted;
 use App\Events\UserUpdated;
 use App\Listeners\WebHookEventListener;
+use App\Models\Consent;
 use App\Models\Metadata;
 use App\Models\Permission;
 use App\Models\Role;
@@ -309,6 +310,88 @@ class UserTest extends TestCase
             ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexConsentNameSearch($user): void
+    {
+        $this->$user->givePermissionTo('users.show');
+
+        /** @var User $otherUser */
+        $otherUser = User::factory([
+            'is_tfa_active' => false,
+        ])->create();
+
+        $consent = Consent::factory()->create(['required' => false]);
+
+        $otherUser->consents()->save($consent, ['value' => true]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/users?consent_name=' . $consent->name)
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0', [
+                'id' => $otherUser->getKey(),
+                'email' => $otherUser->email,
+                'name' => $otherUser->name,
+                'avatar' => $otherUser->avatar,
+                'roles' => [],
+                'is_tfa_active' => $otherUser->is_tfa_active,
+                'consents' => [
+                    [
+                        'id' => $consent->getKey(),
+                        'name' => $consent->name,
+                        'description_html' => $consent->description_html,
+                        'required' => $consent->required,
+                        'value' => true,
+                    ],
+                ],
+                'metadata' => [],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexConsentIdSearch($user): void
+    {
+        $this->$user->givePermissionTo('users.show');
+
+        /** @var User $otherUser */
+        $otherUser = User::factory([
+            'is_tfa_active' => false,
+        ])->create();
+
+        $consent = Consent::factory()->create(['required' => false]);
+
+        $otherUser->consents()->save($consent, ['value' => true]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/users?consent_id=' . $consent->getKey())
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0', [
+                'id' => $otherUser->getKey(),
+                'email' => $otherUser->email,
+                'name' => $otherUser->name,
+                'avatar' => $otherUser->avatar,
+                'roles' => [],
+                'is_tfa_active' => $otherUser->is_tfa_active,
+                'consents' => [
+                    [
+                        'id' => $consent->getKey(),
+                        'name' => $consent->name,
+                        'description_html' => $consent->description_html,
+                        'required' => $consent->required,
+                        'value' => true,
+                    ],
+                ],
+                'metadata' => [],
+            ]);
+    }
+
     public function testShowUnauthorized(): void
     {
         $response = $this->getJson('/users/id:' . $this->user->getKey());
@@ -414,6 +497,60 @@ class UserTest extends TestCase
         $this->assertTrue($user->hasAllRoles([$this->authenticated]));
 
         Event::assertDispatched(UserCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('users.add');
+
+        Event::fake([UserCreated::class]);
+
+        $data = User::factory()->raw() + [
+            'password' => $this->validPassword,
+            'metadata' => [
+                'attributeMeta' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/users', $data)
+            ->assertCreated()
+            ->assertJsonFragment([
+                'metadata' => [
+                    'attributeMeta' => 'attributeValue',
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadataPrivate($user): void
+    {
+        $this->$user->givePermissionTo(['users.add', 'users.show_metadata_private']);
+
+        Event::fake([UserCreated::class]);
+
+        $data = User::factory()->raw() + [
+            'password' => $this->validPassword,
+            'metadata_private' => [
+                'attributeMetaPriv' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/users', $data)
+            ->assertCreated()
+            ->assertJsonFragment([
+                'metadata_private' => [
+                    'attributeMetaPriv' => 'attributeValue',
+                ],
+            ]);
     }
 
     /**

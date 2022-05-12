@@ -22,6 +22,7 @@ use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\ItemServiceContract;
+use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Exception;
@@ -40,6 +41,7 @@ class OrderService implements OrderServiceContract
         private DiscountServiceContract $discountService,
         private ItemServiceContract $itemService,
         private NameServiceContract $nameService,
+        private MetadataServiceContract $metadataService
     ) {
     }
 
@@ -168,6 +170,10 @@ class OrderService implements OrderServiceContract
             'shipping_price_initial' => $shippingPrice,
             'shipping_price' => $shippingPrice,
         ]);
+
+        if (!($dto->getMetadata() instanceof Missing)) {
+            $this->metadataService->sync($order, $dto->getMetadata());
+        }
 
         # Apply discounts to order
         $order = $this->discountService->calcOrderDiscounts($order, $dto);

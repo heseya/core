@@ -39,3 +39,12 @@ Banner:
                     example: 200
                   media:
                     $ref: './Media.yml#/Media'
+
+BannerMetadata:
+  allOf:
+    - $ref: '#/Banner'
+    - properties:
+        metadata:
+          $ref: './../schemas/Metadata.yml#/Metadata'
+        metadata_private:
+          $ref: './../schemas/Metadata.yml#/Metadata'

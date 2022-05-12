@@ -12,9 +12,11 @@ use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use Heseya\Dto\Missing;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -30,27 +32,29 @@ class ProductSetService implements ProductSetServiceContract
     public function authorize(ProductSet $set): void
     {
         if (
-            !Auth::user()->can('product_sets.show_hidden') &&
+            Gate::denies('product_sets.show_hidden') &&
             !ProductSet::public()->where('id', $set->getKey())->exists()
         ) {
             throw new NotFoundHttpException();
         }
     }
 
-    public function searchAll(array $attributes, bool $root): Collection
+    public function searchAll(array $attributes, bool $root): LengthAwarePaginator
     {
         $query = ProductSet::searchByCriteria($attributes)
-            ->with('metadata');
+            ->with(['metadata', 'media', 'media.metadata']);
 
-        if (!Auth::user()->can('product_sets.show_hidden')) {
-            $query->public();
+        if (Gate::denies('product_sets.show_hidden')) {
+            $query->with('childrenPublic')->public();
+        } else {
+            $query->with(['children', 'metadataPrivate', 'media.metadataPrivate']);
         }
 
         if ($root) {
             $query->root();
         }
 
-        return $query->get();
+        return $query->paginate(Config::get('pagination.per_page'));
     }
 
     public function create(ProductSetDto $dto): ProductSet

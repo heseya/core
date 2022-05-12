@@ -16,6 +16,8 @@ class UserIndexRequest extends FormRequest
             'limit' => ['nullable', 'integer', 'min:1'],
             'metadata' => ['nullable', 'array'],
             'metadata_private' => ['nullable', 'array'],
+            'consent_name' => ['nullable', 'string'],
+            'consent_id' => ['nullable', 'string'],
         ];
     }
 }

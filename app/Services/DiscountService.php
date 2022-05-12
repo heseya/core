@@ -53,6 +53,7 @@ use App\Models\SalesShortResource;
 use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Services\Contracts\DiscountServiceContract;
+use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Database\Eloquent\Builder;
@@ -68,6 +69,7 @@ class DiscountService implements DiscountServiceContract
 {
     public function __construct(
         private SettingsServiceContract $settingsService,
+        private MetadataServiceContract $metadataService
     ) {
     }
 
@@ -110,6 +112,10 @@ class DiscountService implements DiscountServiceContract
         $conditionGroup = $dto->getConditionGroups();
         if (!$conditionGroup instanceof Missing && count($conditionGroup) > 0) {
             $discount->conditionGroups()->attach($this->createConditionGroupsToAttach($conditionGroup));
+        }
+
+        if (!($dto->getMetadata() instanceof Missing)) {
+            $this->metadataService->sync($discount, $dto->getMetadata());
         }
 
         if ($dto instanceof CouponDto) {

@@ -2,6 +2,7 @@ OrderCreate:
   content:
     application/json:
       schema:
+        type: object
         properties:
           email:
             type: string
@@ -45,7 +46,10 @@ OrderCreate:
             items:
               type: string
               example: '16277176-d819-417b-90af-8d8534995786'
-        type: object
+          metadata:
+            $ref: './../schemas/Metadata.yml#/Metadata'
+          metadata_private:
+            $ref: './../schemas/Metadata.yml#/Metadata'
 
 OrderUpdate:
   content:

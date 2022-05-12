@@ -544,6 +544,80 @@ class DiscountTest extends TestCase
     /**
      * @dataProvider authWithDiscountProvider
      */
+    public function testCreateWithMetadata($user, $discountKind): void
+    {
+        $this->$user->givePermissionTo("${discountKind}.add");
+
+        $event = $discountKind === 'coupons' ? CouponCreated::class : SaleCreated::class;
+
+        Event::fake($event);
+
+        $discount = [
+            'name' => 'Kupon',
+            'description' => 'Testowy kupon',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'priority' => 1,
+            'target_type' => DiscountTargetType::SHIPPING_PRICE,
+            'target_is_allow_list' => true,
+            'metadata' => [
+                'attributeMeta' => 'attributeValue',
+            ],
+        ];
+
+        if ($discountKind === 'coupons') {
+            $discount['code'] = 'S43SA2';
+        }
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('POST', "/${discountKind}", $discount);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment($discount);
+    }
+
+    /**
+     * @dataProvider authWithDiscountProvider
+     */
+    public function testCreateWithMetadataPrivate($user, $discountKind): void
+    {
+        $this->$user->givePermissionTo(["${discountKind}.add", "${discountKind}.show_metadata_private"]);
+
+        $event = $discountKind === 'coupons' ? CouponCreated::class : SaleCreated::class;
+
+        Event::fake($event);
+
+        $discount = [
+            'name' => 'Kupon',
+            'description' => 'Testowy kupon',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'priority' => 1,
+            'target_type' => DiscountTargetType::SHIPPING_PRICE,
+            'target_is_allow_list' => true,
+            'metadata_private' => [
+                'attributeMetaPriv' => 'attributeValue',
+            ],
+        ];
+
+        if ($discountKind === 'coupons') {
+            $discount['code'] = 'S43SA2';
+        }
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('POST', "/${discountKind}", $discount);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment($discount);
+    }
+
+    /**
+     * @dataProvider authWithDiscountProvider
+     */
     public function testCreateWithShippingMethod($user, $discountKind): void
     {
         $this->$user->givePermissionTo("${discountKind}.add");
