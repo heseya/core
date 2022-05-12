@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ErrorCode;
 use App\Events\ItemCreated;
 use App\Events\ItemDeleted;
 use App\Events\ItemUpdated;
@@ -337,6 +338,27 @@ class ItemTest extends TestCase
         $this->assertDatabaseHas('items', $item);
 
         Event::assertDispatched(ItemCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithoutPermission($user): void
+    {
+        Event::fake(ItemCreated::class);
+
+        $item = [
+            'name' => 'Test',
+            'sku' => 'TES/T1',
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/items', $item);
+
+        $response
+            ->assertJsonFragment([
+                'code' => 403,
+                'key' => ErrorCode::getKey(ErrorCode::FORBIDDEN),
+            ]);
     }
 
     /**
