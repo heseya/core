@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Attribute;
+use App\Models\AttributeOption;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
@@ -52,6 +54,53 @@ class PerformanceTest extends TestCase
             ->json('GET', '/products/id:' . $product->getKey())
             ->assertOk();
 
-        $this->assertQueryCountLessThan(30);
+        $this->assertQueryCountLessThan(24);
+    }
+
+    public function testIndexPerformanceListAttribute500(): void
+    {
+        $this->user->givePermissionTo('attributes.show');
+
+        $attribute1 = Attribute::factory()->create();
+        $attribute2 = Attribute::factory()->create();
+        $attribute3 = Attribute::factory()->create();
+
+        AttributeOption::factory()->count(500)->create([
+            'index' => 1,
+            'attribute_id' => $attribute1->getKey(),
+        ]);
+        AttributeOption::factory()->count(500)->create([
+            'index' => 1,
+            'attribute_id' => $attribute2->getKey(),
+        ]);
+        AttributeOption::factory()->count(500)->create([
+            'index' => 1,
+            'attribute_id' => $attribute3->getKey(),
+        ]);
+
+        $this
+            ->actingAs($this->user)
+            ->getJson('/attributes')
+            ->assertOk();
+
+        $this->assertQueryCountLessThan(11);
+    }
+
+    public function testIndexPerformanceAttribute500(): void
+    {
+        $this->user->givePermissionTo('attributes.show');
+
+        $attribute = Attribute::factory()->create();
+
+        AttributeOption::factory()->count(500)->create([
+            'index' => 1,
+            'attribute_id' => $attribute->getKey(),
+        ]);
+        $this
+            ->actingAs($this->user)
+            ->getJson('/attributes/id:'. $attribute->getKey())
+            ->assertOk();
+
+        $this->assertQueryCountLessThan(9);
     }
 }
