@@ -53,7 +53,7 @@ class Attribute extends Model
 
     public function options(): HasMany
     {
-        return $this->hasMany(AttributeOption::class);
+        return $this->hasMany(AttributeOption::class)->with('metadata', 'metadataPrivate');
     }
 
     public function products(): BelongsToMany

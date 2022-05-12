@@ -186,6 +186,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
     {
         return $this
             ->belongsToMany(Schema::class, 'product_schemas')
+            ->with(['options', 'metadata', 'metadataPrivate'])
             ->orderByPivot('order');
     }
 
