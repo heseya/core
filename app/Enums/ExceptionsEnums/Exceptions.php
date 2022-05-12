@@ -19,6 +19,7 @@ final class Exceptions extends Enum
 
     public const CLIENT_MODEL_NOT_AUDITABLE = 'Model not auditable';
     public const CLIENT_INVALID_CREDENTIALS = 'Invalid credentials';
+    public const CLIENT_INVALID_PASSWORD = 'Invalid password';
     public const CLIENT_INVALID_TOKEN = 'Invalid token';
     public const CLIENT_INVALID_IDENTITY_TOKEN = 'Invalid identity token';
     public const CLIENT_USER_DOESNT_EXIST = 'User doesn\'t exist';
