@@ -23,6 +23,7 @@ class BannerMedia extends Model
     public function media(): BelongsToMany
     {
         return $this->belongsToMany(Media::class, 'media_responsive_media')
+            ->with('metadata', 'metadataPrivate')
             ->withPivot('min_screen_width')
             ->using(MediaBannerMedia::class);
     }

@@ -4,6 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Attribute;
 use App\Models\AttributeOption;
+use App\Models\Banner;
+use App\Models\BannerMedia;
+use App\Models\Media;
 use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
@@ -102,5 +105,48 @@ class PerformanceTest extends TestCase
             ->assertOk();
 
         $this->assertQueryCountLessThan(9);
+    }
+
+    public function testIndexPerformanceBanner100(): void
+    {
+        $this->user->givePermissionTo('banners.show');
+
+        $banner = Banner::factory()->create();
+        $medias = Media::factory()->count(100)->create();
+
+        $bannerMedia = BannerMedia::factory()->create([
+            'banner_id' => $banner->getKey(),
+            'title' => 'abc',
+            'subtitle' => 'cba',
+            'order' => 1,
+        ]);
+        $bannerMedia1 = BannerMedia::factory()->create([
+            'banner_id' => $banner->getKey(),
+            'title' => 'abc',
+            'subtitle' => 'cba',
+            'order' => 1,
+        ]);
+        $bannerMedia2 = BannerMedia::factory()->create([
+            'banner_id' => $banner->getKey(),
+            'title' => 'abc',
+            'subtitle' => 'cba',
+            'order' => 1,
+        ]);
+
+        $sync = [];
+        foreach ($medias as $media) {
+            $sync[$media->getKey()] = ['min_screen_width' => 100];
+        }
+
+        $bannerMedia->media()->sync($sync);
+        $bannerMedia1->media()->sync($sync);
+        $bannerMedia2->media()->sync($sync);
+
+        $this
+            ->actingAs($this->user)
+            ->getJson('/banners')
+            ->assertOk();
+
+        $this->assertQueryCountLessThan(12);
     }
 }
