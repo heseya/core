@@ -21,6 +21,7 @@ use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\BannerServiceContract;
 use App\Services\Contracts\ConsentServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
+use App\Services\Contracts\DiscountStoreServiceContract;
 use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\EventServiceContract;
 use App\Services\Contracts\ItemServiceContract;
@@ -48,6 +49,7 @@ use App\Services\Contracts\UrlServiceContract;
 use App\Services\Contracts\UserServiceContract;
 use App\Services\Contracts\WebHookServiceContract;
 use App\Services\DiscountService;
+use App\Services\DiscountStoreService;
 use App\Services\DocumentService;
 use App\Services\EventService;
 use App\Services\ItemService;
@@ -116,6 +118,7 @@ class AppServiceProvider extends ServiceProvider
         ProductSearchServiceContract::class => ProductSearchService::class,
         ConsentServiceContract::class => ConsentService::class,
         BannerServiceContract::class => BannerService::class,
+        DiscountStoreServiceContract::class => DiscountStoreService::class,
     ];
 
     /**

@@ -111,7 +111,7 @@
             "composer-require-checker"
         ],
         "cp": [
-            "phpcpd ./app ./tests ./database"
+            "phpcpd ./app ./database"
         ],
         "arch": [
             "deptrac"
@@ -119,9 +119,7 @@
         "pre-commit": [
             "@style",
             "@phpstan",
-            "@check",
-            "@cp",
-            "@arch"
+            "@check"
         ],
         "test": [
             "@php artisan test --env=.env"

@@ -5,9 +5,11 @@ namespace App\Dtos;
 use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\SaleCreateRequest;
 use App\Http\Requests\StatusUpdateRequest;
+use App\Services\Contracts\DiscountStoreServiceContract;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\App;
 
 class SaleDto extends Dto implements InstantiateFromRequest
 {
@@ -25,8 +27,8 @@ class SaleDto extends Dto implements InstantiateFromRequest
 
     public static function instantiateFromRequest(FormRequest|SaleCreateRequest|StatusUpdateRequest $request): self
     {
-        $conditionGroups = $request->input('condition_groups', new Missing());
-        $conditionGroupDtos = [];
+        $conditionGroups = App::make(DiscountStoreServiceContract::class)
+            ->mapConditionGroups($request->input('condition_groups', new Missing()));
         if (!$conditionGroups instanceof Missing) {
             foreach ($conditionGroups as $conditionGroup) {
                 array_push($conditionGroupDtos, ConditionGroupDto::fromArray($conditionGroup['conditions']));
@@ -41,7 +43,7 @@ class SaleDto extends Dto implements InstantiateFromRequest
             priority: $request->input('priority', new Missing()),
             target_type: $request->input('target_type', new Missing()),
             target_is_allow_list: $request->input('target_is_allow_list', new Missing()),
-            condition_groups: $conditionGroups instanceof Missing ? $conditionGroups : $conditionGroupDtos,
+            condition_groups: $conditionGroups,
             target_products: $request->input('target_products', new Missing()),
             target_sets: $request->input('target_sets', new Missing()),
             target_shipping_methods: $request->input('target_shipping_methods', new Missing()),
