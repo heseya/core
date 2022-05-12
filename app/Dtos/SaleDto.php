@@ -29,11 +29,6 @@ class SaleDto extends Dto implements InstantiateFromRequest
     {
         $conditionGroups = App::make(DiscountStoreServiceContract::class)
             ->mapConditionGroups($request->input('condition_groups', new Missing()));
-        if (!$conditionGroups instanceof Missing) {
-            foreach ($conditionGroups as $conditionGroup) {
-                array_push($conditionGroupDtos, ConditionGroupDto::fromArray($conditionGroup['conditions']));
-            }
-        }
 
         return new self(
             name: $request->input('name', new Missing()),

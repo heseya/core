@@ -21,11 +21,6 @@ final class CouponDto extends SaleDto implements InstantiateFromRequest
     ): self {
         $conditionGroups = App::make(DiscountStoreServiceContract::class)
             ->mapConditionGroups($request->input('condition_groups', new Missing()));
-        if (!$conditionGroups instanceof Missing) {
-            foreach ($conditionGroups as $conditionGroup) {
-                array_push($conditionGroupDtos, ConditionGroupDto::fromArray($conditionGroup['conditions']));
-            }
-        }
 
         return new self(
             code: $request->input('code', new Missing()),
