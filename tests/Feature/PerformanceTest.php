@@ -169,7 +169,7 @@ class PerformanceTest extends TestCase
             'shipping_method_id' => $shippingMethod->getKey(),
             'status_id' => $status->getKey(),
         ]);
-        $products = OrderProduct::factory()->count('100')->create([
+        OrderProduct::factory()->count('100')->create([
             'order_id' => $order->getKey(),
         ]);
 
