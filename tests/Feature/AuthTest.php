@@ -689,7 +689,7 @@ class AuthTest extends TestCase
         Log::shouldReceive('error')
             ->once()
             ->withArgs(function ($message) {
-                return str_contains($message, $this->expectedLog);
+                return str_contains($message, 'App\Exceptions\ClientException(code: 422): Invalid password at');
             });
 
         $response = $this->actingAs($user)->json('PUT', '/users/password', [
@@ -1172,7 +1172,7 @@ class AuthTest extends TestCase
         ])
             ->assertStatus(422)
             ->assertJsonFragment([
-                'message' => 'Invalid credentials',
+                'key' => Exceptions::getKey(Exceptions::CLIENT_INVALID_PASSWORD),
             ]);
     }
 
