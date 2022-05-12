@@ -30,7 +30,7 @@ class OrderCreated extends Notification
     public function toMail(mixed $notifiable): MailMessage
     {
         return (new MailMessage())
-            ->subject('Order confirmation')
+            ->subject('Meldujemy potwierdzenie zamówienia '. $this->order->code)
             ->view('mail.new-order', [
                 'order' => $this->order,
             ]);

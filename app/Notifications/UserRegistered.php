@@ -18,7 +18,7 @@ class UserRegistered extends Notification
     public function toMail(mixed $notifiable): MailMessage
     {
         return (new MailMessage())
-            ->subject('Account created')
+            ->subject('Witamy na pokładzie! Konto utworzono')
             ->view('mail.user-registered');
     }
 }

@@ -30,7 +30,7 @@ class OrderStatusUpdated extends Notification
     public function toMail(mixed $notifiable): MailMessage
     {
         return (new MailMessage())
-            ->subject('Your order status has changed')
+            ->subject('Twoja przesyłka '. $this->order->code . ' bezpiecznie wyruszyła w drogę')
             ->view('mail.status-change', [
                 'order' => $this->order,
             ]);
