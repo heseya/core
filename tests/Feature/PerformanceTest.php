@@ -2,14 +2,22 @@
 
 namespace Tests\Feature;
 
+use App\Enums\DiscountTargetType;
+use App\Enums\MetadataType;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Models\Banner;
 use App\Models\BannerMedia;
+use App\Models\Country;
+use App\Models\Discount;
 use App\Models\Media;
 use App\Models\Option;
+use App\Models\Order;
+use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\Schema;
+use App\Models\ShippingMethod;
+use App\Models\Status;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -148,5 +156,69 @@ class PerformanceTest extends TestCase
             ->assertOk();
 
         $this->assertQueryCountLessThan(12);
+    }
+
+    public function testIndexPerformanceOrder500(): void
+    {
+        $this->user->givePermissionTo('orders.show');
+
+        $shippingMethod = ShippingMethod::factory()->create();
+        $status = Status::factory()->create();
+        Product::factory()->count('500')->create();
+        $order = Order::factory()->create([
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+        $products = OrderProduct::factory()->count('100')->create([
+            'order_id' => $order->getKey(),
+        ]);
+
+        $order->metadata()->create([
+            'name' => 'Metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
+        $this
+            ->actingAs($this->user)
+            ->getJson('/orders')
+            ->assertOk();
+
+        $this->assertQueryCountLessThan(20);
+    }
+
+    public function testIndexPerformanceShippingMethode(): void
+    {
+        $this->user->givePermissionTo('shipping_methods.show');
+
+        $shippingMethod = ShippingMethod::factory()->create();
+        $shippingMethod->countries()->sync(Country::query()->select('code as country_code')->get()->toArray());
+
+        $this->actingAs($this->user)->getJson('/shipping-methods')
+            ->assertOk();
+
+        $this->assertQueryCountLessThan(5);
+    }
+
+    public function testIndexPerformanceDiscount(): void
+    {
+        $this->user->givePermissionTo('sales.show_details');
+        $discount = Discount::factory(['target_type' => DiscountTargetType::PRODUCTS, 'code' => null])->create();
+
+        $products = Product::factory()->count(500)->create([
+            'public' => true,
+            'price' => 100,
+            'price_min_initial' => 100,
+            'price_max_initial' => 150,
+        ]);
+
+        $discount->products()->sync($products);
+
+        $this->actingAs($this->user)
+            ->json('GET', '/sales/id:' . $discount->getKey())
+            ->assertOk();
+
+        $this->assertQueryCountLessThan(15);
     }
 }
