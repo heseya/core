@@ -219,6 +219,6 @@ class PerformanceTest extends TestCase
             ->json('GET', '/sales/id:' . $discount->getKey())
             ->assertOk();
 
-        $this->assertQueryCountLessThan(15);
+        $this->assertQueryCountLessThan(16);
     }
 }
