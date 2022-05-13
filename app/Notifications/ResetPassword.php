@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Lang;
 
 /**
@@ -56,18 +55,14 @@ class ResetPassword extends Notification
     protected function buildMailMessage(string $url): MailMessage
     {
         return (new MailMessage())
-            ->subject(Lang::get('Reset Password Notification'))
-            ->line(Lang::get(
-                'You are receiving this email because we received a password reset request for your account.'
-            ))
-            ->action(Lang::get('Reset Password'), $url)
+            ->subject(Lang::get('Wniosek o zmianę hasła'))
+            ->line('Witaj,')
+            ->line('Otrzymaliśmy informację o potrzebie zmiany hasła do Twojego konta.')
+            ->line('Aby zmienić hasło kliknij w link ')
+            ->action(Lang::get('zmień hasło'), $url)
             ->line(
-                Lang::get('This password reset link will expire in :count minutes.', [
-                    'count' => Config::get('auth.passwords.' . Config::get('auth.defaults.passwords') . '.expire'),
-                ])
-            )
-            ->line(
-                Lang::get('If you did not request a password reset, no further action is required.')
+                'Jeśli zgłoszenie nie pochodzi od Ciebie zignoruj tego maila,
+                a Twoje hasło dostępu pozostanie bez zmian.'
             );
     }
 }

@@ -53,15 +53,16 @@ class NewOrderMailTest extends TestCase
         $rendered = $notification->toMail($this->order)->render();
 
         $orderCode = $this->order->code;
+        $date = $this->order->created_at->format('d-m-Y');
         $productPrice = number_format($this->orderProduct->price, 2, '.', ''); // 250.20
         $orderSummary = number_format($this->order->summary, 2, '.', ''); // 1261.90
         $shippingPrice = number_format($this->order->shipping_price, 2, '.', ''); // 10.90
         $cartTotal = number_format($this->order->cart_total, 2, '.', ''); // 1251
 
-        $this->assertStringContainsString("Order <b>${orderCode}</b> Confirmation", $rendered);
+        $this->assertStringContainsString("Zamówienie numer ${orderCode} z dnia ${date}", $rendered);
         $this->assertStringContainsString(">${productPrice} PLN</td>", $rendered);
-        $this->assertStringContainsString("Delivery price: <b>${shippingPrice} PLN</b>", $rendered);
-        $this->assertStringContainsString("Cart: <b>${cartTotal} PLN</b>", $rendered);
-        $this->assertStringContainsString("Summary: <b>${orderSummary} PLN</b>", $rendered);
+        $this->assertStringContainsString("Koszt przesyłki: <b>${shippingPrice} PLN</b>", $rendered);
+        $this->assertStringContainsString("Wartość produktów: <b>${cartTotal} PLN</b>", $rendered);
+        $this->assertStringContainsString("Do zapłaty: <b>${orderSummary} PLN</b>", $rendered);
     }
 }
