@@ -16,6 +16,8 @@ class Deposit extends Model
         'quantity',
         'item_id',
         'order_product_id',
+        'shipping_time',
+        'shipping_date',
     ];
 
     public function item(): BelongsTo
