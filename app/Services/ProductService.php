@@ -87,6 +87,8 @@ class ProductService implements ProductServiceContract
 
         DB::commit();
         ProductCreated::dispatch($product);
+        Product::where($product->getKeyName(), $product->getKey())
+            ->searchable();
 
         return $product;
     }
@@ -114,6 +116,8 @@ class ProductService implements ProductServiceContract
 
         DB::commit();
         ProductUpdated::dispatch($product);
+        Product::where($product->getKeyName(), $product->getKey())
+            ->searchable();
 
         return $product;
     }
