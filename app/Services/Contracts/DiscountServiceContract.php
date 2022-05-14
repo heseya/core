@@ -71,4 +71,8 @@ interface DiscountServiceContract
     public function calcAppliedDiscount(float $price, float $appliedDiscount, string $setting): float;
 
     public function activeSales(): Collection;
+
+    public function checkDiscountHasTimeConditions(Discount $discount): bool;
+
+    public function checkDiscountTimeConditions(Discount $discount): bool;
 }

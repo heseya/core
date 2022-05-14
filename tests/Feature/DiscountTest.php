@@ -28,6 +28,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
@@ -1265,6 +1266,142 @@ class DiscountTest extends TestCase
         ]);
     }
 
+    public function timeConditionProvider(): array
+    {
+        return [
+            'as user date between' => [
+                'user',
+                [
+                    'type' => ConditionType::DATE_BETWEEN,
+                    'is_in_range' => true,
+                    'start_at' => '2022-05-09',
+                    'end_at' => '2022-05-13',
+                ],
+            ],
+            'as user time between' => [
+                'user',
+                [
+                    'type' => ConditionType::TIME_BETWEEN,
+                    'is_in_range' => true,
+                    'start_at' => '10:00:00',
+                    'end_at' => '14:00:00',
+                ],
+            ],
+            'as user weekday in' => [
+                'user',
+                [
+                    'type' => ConditionType::WEEKDAY_IN,
+                    'weekday' => [0, 0, 0, 0, 1, 0, 0],
+                ],
+            ],
+            'as app date between' => [
+                'application',
+                [
+                    'type' => ConditionType::DATE_BETWEEN,
+                    'is_in_range' => true,
+                    'start_at' => '2022-05-09',
+                    'end_at' => '2022-05-13',
+                ],
+            ],
+            'as app time between' => [
+                'application',
+                [
+                    'type' => ConditionType::TIME_BETWEEN,
+                    'is_in_range' => true,
+                    'start_at' => '10:00:00',
+                    'end_at' => '14:00:00',
+                ],
+            ],
+            'as app weekday in' => [
+                'application',
+                [
+                    'type' => ConditionType::WEEKDAY_IN,
+                    'weekday' => [0, 0, 0, 0, 1, 0, 0],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider timeConditionProvider
+     */
+    public function testCreateSaleAddToCache($user, $condition): void
+    {
+        Carbon::setTestNow('2022-05-12T12:00:00'); // Thursday
+        $this->$user->givePermissionTo('sales.add');
+
+        $discount = [
+            'name' => 'Sale',
+            'description' => 'Test sale',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'priority' => 1,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ];
+
+        $conditions = [
+            'condition_groups' => [
+                [
+                    'conditions' => [
+                        $condition,
+                    ],
+                ],
+            ],
+        ];
+
+        $response = $this->actingAs($this->$user)->json('POST', 'sales', $discount + $conditions);
+
+        $response->assertCreated();
+
+        $discountModel = Discount::find($response->getData()->data->id);
+
+        $activeSales = Cache::get('sales.active');
+        $this->assertCount(1, $activeSales);
+        $this->assertTrue($activeSales->contains($discountModel->getKey()));
+    }
+
+    /**
+     * @dataProvider timeConditionProvider
+     */
+    public function testCreateSaleNoAddToCache($user, $condition): void
+    {
+        Carbon::setTestNow('2022-05-20T16:00:00'); // Friday
+        $this->$user->givePermissionTo('sales.add');
+
+        $discount = [
+            'name' => 'Sale',
+            'description' => 'Test sale',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'priority' => 1,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ];
+
+        $conditions = [
+            'condition_groups' => [
+                [
+                    'conditions' => [
+                        $condition,
+                    ],
+                ],
+            ],
+        ];
+
+        $response = $this->actingAs($this->$user)->json('POST', 'sales', $discount + $conditions);
+
+        $response->assertCreated();
+
+        $discountModel = Discount::find($response->getData()->data->id);
+
+        $activeSales = Cache::get('sales.active');
+        $this->assertCount(0, $activeSales);
+        $this->assertFalse($activeSales->contains($discountModel->getKey()));
+    }
+
     /**
      * @dataProvider authWithDiscountProvider
      */
@@ -2156,5 +2293,80 @@ class DiscountTest extends TestCase
             'price_min' => 100,
             'price_max' => 200,
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateActiveSaleAndExpiredAfter($user): void
+    {
+        Carbon::setTestNow('2022-05-12T12:00:00'); // Thursday
+        $this->$user->givePermissionTo('sales.add');
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 1000,
+            'price_min_initial' => 1000,
+            'price_max_initial' => 1000,
+        ]);
+
+        $discount = [
+            'name' => 'Sale',
+            'description' => 'Test sale',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'priority' => 1,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+            'target_products' => [
+                $product->getKey(),
+            ],
+        ];
+
+        $conditions = [
+            'condition_groups' => [
+                [
+                    'conditions' => [
+                        [
+                            'type' => ConditionType::TIME_BETWEEN,
+                            'is_in_range' => true,
+                            'start_at' => '10:00:00',
+                            'end_at' => '14:00:00',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $response = $this->actingAs($this->$user)->json('POST', 'sales', $discount + $conditions);
+
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'price_min' => 900,
+            'price_max' => 900,
+        ]);
+
+        $discountModel = Discount::find($response->getData()->data->id);
+
+        $activeSales = Cache::get('sales.active');
+        $this->assertCount(1, $activeSales);
+        $this->assertTrue($activeSales->contains($discountModel->getKey()));
+
+        Carbon::setTestNow('2022-05-12T19:00:00');
+        $this->travelTo('2022-05-12T19:00:00');
+        $this->artisan('schedule:run');
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'price_min' => 1000,
+            'price_max' => 1000,
+        ]);
+
+        $activeSales = Cache::get('sales.active');
+        $this->assertCount(0, $activeSales);
+        $this->assertFalse($activeSales->contains($discountModel->getKey()));
     }
 }
