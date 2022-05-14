@@ -77,6 +77,7 @@ final class Exceptions extends Enum
     public const CLIENT_REMOVE_DEFAULT_ADDRESS = 'You cannot delete default address';
 
     public const SERVER_CDN_ERROR = 'CDN responded with an error';
+    public const SERVER_ERROR = 'Server responded with an error';
     public const SERVER_ORDER_STATUSES_NOT_CONFIGURED = 'Order statuses are not configured';
 
     public static function getCode(string $value): int
@@ -90,6 +91,7 @@ final class Exceptions extends Enum
             self::CLIENT_WEBHOOK_APP_ACTION,
             self::CLIENT_WEBHOOK_USER_ACTION => 403,
             self::SERVER_CDN_ERROR,
+            self::SERVER_ERROR,
             self::SERVER_ORDER_STATUSES_NOT_CONFIGURED => 500,
             default => 422
         };
