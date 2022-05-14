@@ -27,11 +27,14 @@ RUN wget https://github.com/qossmic/deptrac/releases/latest/download/deptrac.pha
     -O /usr/bin/deptrac
 RUN wget https://github.com/vimeo/psalm/releases/latest/download/psalm.phar \
     -O /usr/bin/psalm
+RUN wget https://github.com/composer-unused/composer-unused/releases/latest/download/composer-unused.phar \
+    -O /usr/bin/composer-unused
 
 RUN chmod 777 /usr/bin/composer-require-checker \
     /usr/bin/phpcpd \
     /usr/bin/deptrac \
-    /usr/bin/psalm
+    /usr/bin/psalm \
+    /usr/bin/composer-unused
 
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
