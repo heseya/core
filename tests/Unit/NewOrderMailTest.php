@@ -36,6 +36,7 @@ class NewOrderMailTest extends TestCase
             'cart_total' => 1251,
             'summary' => 1261.9,
             'status_id' => $status->getKey(),
+            'currency' => 'PLN',
         ]);
 
         $this->orderProduct = $this->order->products()->create([

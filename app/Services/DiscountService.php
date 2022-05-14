@@ -498,7 +498,8 @@ class DiscountService implements DiscountServiceContract
                     ->whereHas('conditions', function ($query): void {
                         $query
                             ->where('type', ConditionType::DATE_BETWEEN)
-                            ->orWhere('type', ConditionType::TIME_BETWEEN);
+                            ->orWhere('type', ConditionType::TIME_BETWEEN)
+                            ->orWhere('type', ConditionType::WEEKDAY_IN);
                     });
             })
             ->with(['conditionGroups', 'conditionGroups.conditions'])
@@ -507,12 +508,12 @@ class DiscountService implements DiscountServiceContract
         return $sales->filter(function ($sale): bool {
             foreach ($sale->conditionGroups as $conditionGroup) {
                 foreach ($conditionGroup->conditions as $condition) {
-                    $result = false;
-                    if ($condition->type->is(ConditionType::DATE_BETWEEN)) {
-                        $result = $this->checkConditionDateBetween($condition);
-                    } elseif ($condition->type->is(ConditionType::TIME_BETWEEN)) {
-                        $result = $this->checkConditionTimeBetween($condition);
-                    }
+                    $result = match ($condition->type->value) {
+                        ConditionType::DATE_BETWEEN => $this->checkConditionDateBetween($condition),
+                        ConditionType::TIME_BETWEEN => $this->checkConditionTimeBetween($condition),
+                        ConditionType::WEEKDAY_IN => $this->checkConditionWeekdayIn($condition),
+                        default => false,
+                    };
                     if ($result) {
                         return true;
                     }
@@ -520,6 +521,43 @@ class DiscountService implements DiscountServiceContract
             }
             return false;
         });
+    }
+
+    public function checkDiscountHasTimeConditions(Discount $discount): bool
+    {
+        $conditionsGroups = $discount->conditionGroups;
+        foreach ($conditionsGroups as $conditionGroup) {
+            foreach ($conditionGroup->conditions as $condition) {
+                if ($condition->type->in(
+                    [
+                        ConditionType::DATE_BETWEEN,
+                        ConditionType::TIME_BETWEEN,
+                        ConditionType::WEEKDAY_IN,
+                    ]
+                )) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public function checkDiscountTimeConditions(Discount $discount): bool
+    {
+        foreach ($discount->conditionGroups as $conditionGroup) {
+            foreach ($conditionGroup->conditions as $condition) {
+                $result = match ($condition->type->value) {
+                    ConditionType::DATE_BETWEEN => $this->checkConditionDateBetween($condition),
+                    ConditionType::TIME_BETWEEN => $this->checkConditionTimeBetween($condition),
+                    ConditionType::WEEKDAY_IN => $this->checkConditionWeekdayIn($condition),
+                    default => false,
+                };
+                if ($result) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private function roundProductPrices(Order $order): Order
