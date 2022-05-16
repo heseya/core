@@ -20,6 +20,7 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
     public int|Missing $order;
     public float|Missing $quantity_step;
     public int|null|Missing $google_product_category;
+    public float|Missing $vat_rate;
 
     public ?string $description_html;
     public ?string $description_short;
@@ -42,6 +43,8 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
             public: $request->boolean('public'),
             order: $request->input('order', new Missing()),
             quantity_step: $request->input('quantity_step', new Missing()),
+            google_product_category: $request->input('google_product_category', new Missing()),
+            vat_rate: $request->input('vat_rate', new Missing()),
             description_html: $request->input('description_html'),
             description_short: $request->input('description_short'),
             media: $request->input('media', new Missing()),
@@ -52,7 +55,6 @@ class ProductCreateDto extends Dto implements InstantiateFromRequest
             seo: SeoMetadataDto::instantiateFromRequest($request),
             metadata: self::mapMetadata($request),
             attributes: $request->input('attributes', new Missing()),
-            google_product_category: $request->input('google_product_category', new Missing()),
         );
     }
 

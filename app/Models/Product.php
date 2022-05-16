@@ -55,13 +55,14 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'description_short',
         'public',
         'quantity_step',
+        'google_product_category',
+        'vat_rate',
         'price_min',
         'price_max',
         'available',
         'order',
         'price_min_initial',
         'price_max_initial',
-        'google_product_category',
     ];
 
     protected array $auditInclude = [

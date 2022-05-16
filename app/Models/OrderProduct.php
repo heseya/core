@@ -23,6 +23,7 @@ class OrderProduct extends Model
         'order_id',
         'product_id',
         'name',
+        'vat_rate',
     ];
 
     public function schemas(): HasMany
