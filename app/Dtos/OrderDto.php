@@ -21,6 +21,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
     private AddressDto|Missing $invoice_address;
     private array|Missing $coupons;
     private array|Missing $sale_ids;
+    private string|null|Missing $shipping_number;
 
     private array|Missing $metadata;
 
@@ -46,6 +47,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
             coupons: $request->input('coupons', new Missing()),
             sale_ids: $request->input('sale_ids', new Missing()),
             metadata: self::mapMetadata($request),
+            shipping_number: $request->input('shipping_number', new Missing()),
         );
     }
 
