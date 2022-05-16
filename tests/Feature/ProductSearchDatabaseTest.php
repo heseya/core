@@ -5,8 +5,8 @@ namespace Tests\Feature;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Tag;
-use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Carbon;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 

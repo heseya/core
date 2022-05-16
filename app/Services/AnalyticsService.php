@@ -4,8 +4,8 @@ namespace App\Services;
 
 use App\Models\Payment;
 use App\Services\Contracts\AnalyticsServiceContract;
-use Carbon\Carbon;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class AnalyticsService implements AnalyticsServiceContract

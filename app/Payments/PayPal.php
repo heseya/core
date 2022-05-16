@@ -7,11 +7,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Redirect;
 use Omnipay\Omnipay;
+use Omnipay\PayPal\RestGateway;
 
 class PayPal implements PaymentMethod
 {
     public static function generateUrl(Payment $payment): array
     {
+        /**
+         * @var RestGateway $gateway
+         */
         $gateway = Omnipay::create('PayPal_Rest');
         $gateway->setClientId(Config::get('paypal.client_id'));
         $gateway->setSecret(Config::get('paypal.client_secret'));
@@ -40,6 +44,9 @@ class PayPal implements PaymentMethod
 
     public static function translateNotification(Request $request): mixed
     {
+        /**
+         * @var RestGateway $gateway
+         */
         $gateway = Omnipay::create('PayPal_Rest');
         $gateway->setClientId(Config::get('paypal.client_id'));
         $gateway->setSecret(Config::get('paypal.client_secret'));

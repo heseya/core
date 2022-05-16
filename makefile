@@ -10,7 +10,7 @@ bash:
 build:
 	- cp .env.example .env
 	- docker-compose up -d
-	- docker exec store-api-app-1 php artisan key:generate
+	- docker exec store-api_app_1 php artisan key:generate || docker exec store-api-app-1 php artisan key:generate
 
 hooks:
 	- cp ./git_hooks/docker/* ./.git/hooks/
