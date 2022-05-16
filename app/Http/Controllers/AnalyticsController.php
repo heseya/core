@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AnalyticsPaymentsRequest;
 use App\Http\Resources\AnalyticsPaymentsResource;
 use App\Services\Contracts\AnalyticsServiceContract;
-use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Carbon;
 
 class AnalyticsController extends Controller
 {

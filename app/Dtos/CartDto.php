@@ -4,16 +4,20 @@ namespace App\Dtos;
 
 use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\CartRequest;
+use Heseya\Dto\DtoException;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Collection;
 
-class CartDto extends CartOrderDto implements InstantiateFromRequest
+final class CartDto extends CartOrderDto implements InstantiateFromRequest
 {
     private array $items;
     private array|Missing $coupons;
     private string|Missing $shipping_method_id;
 
+    /**
+     * @throws DtoException
+     */
     public static function instantiateFromRequest(FormRequest|CartRequest $request): self
     {
         return new self(
@@ -23,6 +27,9 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
         );
     }
 
+    /**
+     * @throws DtoException
+     */
     public static function fromArray(array $array): self
     {
         return new self(
@@ -73,7 +80,7 @@ class CartDto extends CartOrderDto implements InstantiateFromRequest
         foreach ($items as $item) {
             $existingItem = $result->first(function ($cartItem) use ($item) {
                 $schemas = array_key_exists('schemas', $item) ? $item['schemas'] : [];
-                return $cartItem->getCartitemId() === $item['cartitem_id']
+                return $cartItem->getCartItemId() === $item['cartitem_id']
                     && $cartItem->getProductId() === $item['product_id']
                     && count(array_diff($cartItem->getSchemas(), $schemas)) === 0;
             });

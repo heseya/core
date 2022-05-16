@@ -6,7 +6,7 @@ use App\Enums\AttributeType;
 use App\Enums\MetadataType;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class AttributeTest extends TestCase
