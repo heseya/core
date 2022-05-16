@@ -13,6 +13,7 @@ class OrderProductResource extends Resource
             'quantity' => $this->resource->quantity,
             'price' => $this->resource->price,
             'price_initial' => $this->resource->price_initial,
+            'vat_rate' => $this->resource->vat_rate,
             'product' => ProductResource::make($this->resource->product),
             'schemas' => OrderSchemaResource::collection($this->resource->schemas),
             'deposits' => DepositResource::collection($this->resource->deposits),
