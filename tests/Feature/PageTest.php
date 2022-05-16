@@ -483,6 +483,47 @@ class PageTest extends TestCase
         Event::assertDispatched(PageCreated::class);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteAndCreateWithTheSameSlug($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+        $this->$user->givePermissionTo('pages.remove');
+
+        Event::fake([PageDeleted::class]);
+        $this->page->slug = 'test';
+        $this->page->save();
+
+        $this->actingAs($this->$user)
+            ->deleteJson('/pages/id:' . $this->page->getKey())
+            ->assertNoContent();
+        $this->assertSoftDeleted($this->page);
+
+        $this->page->refresh();
+
+        $this->assertEquals('test_'.$this->page->deleted_at, $this->page->slug);
+
+        Event::assertDispatched(PageDeleted::class);
+
+        Event::fake([PageCreated::class]);
+        $page = [
+            'name' => 'Test',
+            'slug' => 'test',
+            'public' => true,
+            'content_html' => '<h1>hello world</h1>',
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/pages', $page);
+        $response->assertJson([
+            'data' => $page,
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('pages', $page);
+
+        Event::assertDispatched(PageCreated::class);
+    }
+
     public function testUpdateUnauthorized(): void
     {
         Event::fake(PageUpdated::class);

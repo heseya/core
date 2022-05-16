@@ -30,8 +30,8 @@ use App\Models\Status;
 use App\Models\Tag;
 use App\Models\Token;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Tests\TestCase;
 

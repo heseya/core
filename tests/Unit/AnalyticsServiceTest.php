@@ -5,8 +5,8 @@ namespace Tests\Unit;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\Contracts\AnalyticsServiceContract;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class AnalyticsServiceTest extends TestCase

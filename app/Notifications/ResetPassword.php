@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Lang;
 
 /**
  * @see https://laracasts.com/discuss/channels/laravel/trying-to-setup-a-new-notification-for-updating-user-password
@@ -46,23 +45,10 @@ class ResetPassword extends Notification
         ]);
         $url = $this->redirect_url . '?' . $param;
 
-        return $this->buildMailMessage($url);
-    }
-
-    /**
-     * Get the reset password notification mail message for the given URL.
-     */
-    protected function buildMailMessage(string $url): MailMessage
-    {
         return (new MailMessage())
-            ->subject(Lang::get('Wniosek o zmianę hasła'))
-            ->line('Witaj,')
-            ->line('Otrzymaliśmy informację o potrzebie zmiany hasła do Twojego konta.')
-            ->line('Aby zmienić hasło kliknij w link ')
-            ->action(Lang::get('zmień hasło'), $url)
-            ->line(
-                'Jeśli zgłoszenie nie pochodzi od Ciebie zignoruj tego maila,
-                a Twoje hasło dostępu pozostanie bez zmian.'
-            );
+            ->subject('Wniosek o zmianę hasła')
+            ->view('mail.user-password-reset', [
+                'url' => $url,
+            ]);
     }
 }

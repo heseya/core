@@ -55,11 +55,11 @@ use App\Models\User;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
-use Carbon\Carbon;
 use Heseya\Dto\Missing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -290,7 +290,7 @@ class DiscountService implements DiscountServiceContract
             $cartValue += $price * $cartItem->getQuantity();
             array_push(
                 $cartItems,
-                new CartItemResponse($cartItem->getCartitemId(), $price, $price, $cartItem->getQuantity()),
+                new CartItemResponse($cartItem->getCartItemId(), $price, $price, $cartItem->getQuantity()),
             );
         }
 
@@ -452,7 +452,7 @@ class DiscountService implements DiscountServiceContract
     ): CartItemResponse {
         /** @var CartItemResponse $result */
         $result = $cart->items->filter(
-            fn ($value) => $value->cartitem_id === $cartItem->getCartitemId(),
+            fn ($value) => $value->cartitem_id === $cartItem->getCartItemId(),
         )->first();
 
         $result->price_discounted = $this->calcPrice(
@@ -498,7 +498,8 @@ class DiscountService implements DiscountServiceContract
                     ->whereHas('conditions', function ($query): void {
                         $query
                             ->where('type', ConditionType::DATE_BETWEEN)
-                            ->orWhere('type', ConditionType::TIME_BETWEEN);
+                            ->orWhere('type', ConditionType::TIME_BETWEEN)
+                            ->orWhere('type', ConditionType::WEEKDAY_IN);
                     });
             })
             ->with(['conditionGroups', 'conditionGroups.conditions'])
@@ -507,12 +508,12 @@ class DiscountService implements DiscountServiceContract
         return $sales->filter(function ($sale): bool {
             foreach ($sale->conditionGroups as $conditionGroup) {
                 foreach ($conditionGroup->conditions as $condition) {
-                    $result = false;
-                    if ($condition->type->is(ConditionType::DATE_BETWEEN)) {
-                        $result = $this->checkConditionDateBetween($condition);
-                    } elseif ($condition->type->is(ConditionType::TIME_BETWEEN)) {
-                        $result = $this->checkConditionTimeBetween($condition);
-                    }
+                    $result = match ($condition->type->value) {
+                        ConditionType::DATE_BETWEEN => $this->checkConditionDateBetween($condition),
+                        ConditionType::TIME_BETWEEN => $this->checkConditionTimeBetween($condition),
+                        ConditionType::WEEKDAY_IN => $this->checkConditionWeekdayIn($condition),
+                        default => false,
+                    };
                     if ($result) {
                         return true;
                     }
@@ -520,6 +521,43 @@ class DiscountService implements DiscountServiceContract
             }
             return false;
         });
+    }
+
+    public function checkDiscountHasTimeConditions(Discount $discount): bool
+    {
+        $conditionsGroups = $discount->conditionGroups;
+        foreach ($conditionsGroups as $conditionGroup) {
+            foreach ($conditionGroup->conditions as $condition) {
+                if ($condition->type->in(
+                    [
+                        ConditionType::DATE_BETWEEN,
+                        ConditionType::TIME_BETWEEN,
+                        ConditionType::WEEKDAY_IN,
+                    ]
+                )) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public function checkDiscountTimeConditions(Discount $discount): bool
+    {
+        foreach ($discount->conditionGroups as $conditionGroup) {
+            foreach ($conditionGroup->conditions as $condition) {
+                $result = match ($condition->type->value) {
+                    ConditionType::DATE_BETWEEN => $this->checkConditionDateBetween($condition),
+                    ConditionType::TIME_BETWEEN => $this->checkConditionTimeBetween($condition),
+                    ConditionType::WEEKDAY_IN => $this->checkConditionWeekdayIn($condition),
+                    default => false,
+                };
+                if ($result) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private function roundProductPrices(Order $order): Order
@@ -750,7 +788,7 @@ class DiscountService implements DiscountServiceContract
         /** @var CartItemDto $item */
         foreach ($cartDto->getItems() as $item) {
             $cartItem = $cart->items->filter(function ($value, $key) use ($item) {
-                return $value->cartitem_id === $item->getCartitemId();
+                return $value->cartitem_id === $item->getCartItemId();
             })->first();
 
             if ($cartItem === null) {
@@ -1093,7 +1131,7 @@ class DiscountService implements DiscountServiceContract
     {
         $conditionDto = WeekDayInConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
-        // W Carbon niedziela jest pod indeksem 0
+        // In Carbon week starts with sunday (index - 0)
         return $conditionDto->getWeekday()[Carbon::now()->dayOfWeek];
     }
 
@@ -1101,35 +1139,30 @@ class DiscountService implements DiscountServiceContract
     {
         $conditionDto = CartLengthConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
-        if (!$conditionDto->getMinValue() instanceof Missing && !$conditionDto->getMaxValue() instanceof Missing) {
-            return $cartLength >= $conditionDto->getMinValue() && $cartLength <= $conditionDto->getMaxValue();
-        }
-
-        if (!$conditionDto->getMinValue() instanceof Missing) {
-            return $cartLength >= $conditionDto->getMinValue();
-        }
-
-        if (!$conditionDto->getMaxValue() instanceof Missing) {
-            return $cartLength <= $conditionDto->getMaxValue();
-        }
-
-        return false;
+        return $this->checkConditionLenght($conditionDto, $cartLength);
     }
 
     private function checkConditionCouponsCount(DiscountCondition $condition, int $couponsCount): bool
     {
         $conditionDto = CouponsCountConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
+        return $this->checkConditionLenght($conditionDto, $couponsCount);
+    }
+
+    private function checkConditionLenght(
+        CartLengthConditionDto|CouponsCountConditionDto $conditionDto,
+        int $count,
+    ): bool {
         if (!$conditionDto->getMinValue() instanceof Missing && !$conditionDto->getMaxValue() instanceof Missing) {
-            return $couponsCount >= $conditionDto->getMinValue() && $couponsCount <= $conditionDto->getMaxValue();
+            return $count >= $conditionDto->getMinValue() && $count <= $conditionDto->getMaxValue();
         }
 
         if (!$conditionDto->getMinValue() instanceof Missing) {
-            return $couponsCount >= $conditionDto->getMinValue();
+            return $count >= $conditionDto->getMinValue();
         }
 
         if (!$conditionDto->getMaxValue() instanceof Missing) {
-            return $couponsCount <= $conditionDto->getMaxValue();
+            return $count <= $conditionDto->getMaxValue();
         }
 
         return false;

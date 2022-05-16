@@ -24,28 +24,21 @@ class OrderSearch extends Criterion
                         ->where('id', 'LIKE', '%' . $this->value . '%')
                         ->orWhere('name', 'LIKE', '%' . $this->value . '%');
                 })
-                ->orWhereHas('deliveryAddress', function (Builder $query): void {
-                    $query
-                        ->where('id', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('name', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('phone', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('address', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('vat', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('zip', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('city', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('country', 'LIKE', '%' . $this->value . '%');
-                })
-                ->orWhereHas('invoiceAddress', function (Builder $query): void {
-                    $query
-                        ->where('id', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('name', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('phone', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('address', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('vat', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('zip', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('city', 'LIKE', '%' . $this->value . '%')
-                        ->orWhere('country', 'LIKE', '%' . $this->value . '%');
-                });
+                ->orWhereHas('deliveryAddress', fn (Builder $query) => $this->whereAddress($query))
+                ->orWhereHas('invoiceAddress', fn (Builder $query) => $this->whereAddress($query));
         });
+    }
+
+    private function whereAddress(Builder $query): void
+    {
+        $query
+            ->where('id', 'LIKE', '%' . $this->value . '%')
+            ->orWhere('name', 'LIKE', '%' . $this->value . '%')
+            ->orWhere('phone', 'LIKE', '%' . $this->value . '%')
+            ->orWhere('address', 'LIKE', '%' . $this->value . '%')
+            ->orWhere('vat', 'LIKE', '%' . $this->value . '%')
+            ->orWhere('zip', 'LIKE', '%' . $this->value . '%')
+            ->orWhere('city', 'LIKE', '%' . $this->value . '%')
+            ->orWhere('country', 'LIKE', '%' . $this->value . '%');
     }
 }

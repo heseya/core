@@ -2,7 +2,7 @@
 
 namespace App\Services\Contracts;
 
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 
 interface AnalyticsServiceContract
 {
