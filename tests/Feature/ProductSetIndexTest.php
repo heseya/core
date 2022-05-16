@@ -346,6 +346,8 @@ class ProductSetIndexTest extends TestCase
                 ],
             ],
             ]);
+
+        $this->assertArrayNotHasKey('attributes', (array) $response->getData()->data[0]);
     }
 
     /**
