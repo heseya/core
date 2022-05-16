@@ -16,6 +16,9 @@ Order:
     comment:
       type: string
       example: 'asap plz'
+    shipping_number:
+      type: string
+      example: '630552359128340015809770'
     cart_total_initial:
       type: number
       example: 38.7
@@ -130,9 +133,6 @@ OrderView:
   allOf:
     - $ref: '#/Order'
     - properties:
-        shipping_number:
-          type: string
-          example: '630552359128340015809770'
         invoice_address:
           $ref: './Addresses.yml#/Address'
         products:

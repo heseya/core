@@ -772,6 +772,64 @@ class OrderUpdateTest extends TestCase
         Event::assertDispatched(OrderUpdated::class);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderByShippingNumber($user): void
+    {
+        $this->$user->givePermissionTo('orders.edit');
+
+        Event::fake([OrderUpdated::class]);
+
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+            'shipping_number' => '1234567890',
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'shipping_number' => '1234567890',
+            ]);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'shipping_number' => '1234567890',
+        ]);
+
+        Event::assertDispatched(OrderUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderByEmptyShippingNumber($user): void
+    {
+        $this->$user->givePermissionTo('orders.edit');
+
+        Event::fake([OrderUpdated::class]);
+
+        $this->order->update([
+            'shipping_number' => '1234567890',
+        ]);
+
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
+            'shipping_number' => null,
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'shipping_number' => null,
+            ]);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $this->order->getKey(),
+            'shipping_number' => null,
+        ]);
+
+        Event::assertDispatched(OrderUpdated::class);
+    }
+
     private function checkAddress(Address $address): void
     {
         $this->assertDatabaseHas('addresses', [
