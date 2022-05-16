@@ -17,6 +17,7 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
     public int|Missing $order;
     public float|Missing $quantity_step;
     public int|null|Missing $google_product_category;
+    public float|Missing $vat_rate;
 
     public string|null|Missing $description_html;
     public string|null|Missing $description_short;
@@ -38,6 +39,8 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
             public: $request->input('public', new Missing()),
             order: $request->input('order', new Missing()),
             quantity_step: $request->input('quantity_step', new Missing()),
+            google_product_category: $request->input('google_product_category', new Missing()),
+            vat_rate: $request->input('vat_rate', new Missing()),
             description_html: $request->input('description_html', new Missing()),
             description_short: $request->input('description_short', new Missing()),
             media: $request->input('media', new Missing()),
@@ -47,7 +50,6 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
             items: $request->input('items', new Missing()),
             seo: SeoMetadataDto::instantiateFromRequest($request),
             attributes: $request->input('attributes', new Missing()),
-            google_product_category: $request->input('google_product_category', new Missing()),
         );
     }
 
