@@ -1,0 +1,9 @@
+GoogleCategory:
+  type: object
+  properties:
+    id:
+      type: number
+      example: 1623
+    name:
+      type: string
+      example: test
