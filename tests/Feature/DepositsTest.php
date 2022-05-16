@@ -7,7 +7,9 @@ use App\Listeners\WebHookEventListener;
 use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\WebHook;
+use App\Services\Contracts\DepositServiceContract;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Spatie\WebhookServer\CallWebhookJob;
@@ -410,5 +412,26 @@ class DepositsTest extends TestCase
         $this->assertDatabaseHas('deposits', $deposit);
 
         Event::assertDispatched(ItemUpdatedQuantity::class);
+    }
+
+    public function testCountShippingTime(): void
+    {
+        $depositService = App::make(DepositServiceContract::class);
+
+        $item = Item::factory()->create();
+
+        /*Deposit::factory()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => 2.0,
+            'shipping_date' => Carbon::now()->addDays(4)->toDateTimeString(),
+        ]);
+
+        Deposit::factory()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => 3.0,
+            'shipping_time' => 6,
+        ]);*/
+
+        $depositService->getShippingTimeDateForQuantity($item, 4);
     }
 }
