@@ -102,6 +102,7 @@ class OrderCreateTest extends TestCase
 
         $this->product->update([
             'price' => 10,
+            'vat_rate' => 23,
         ]);
 
         $productQuantity = 20;
@@ -135,6 +136,7 @@ class OrderCreateTest extends TestCase
             'order_id' => $order->id,
             'product_id' => $this->product->getKey(),
             'quantity' => 20,
+            'vat_rate' => 23,
         ]);
 
         Event::assertDispatched(OrderCreated::class);

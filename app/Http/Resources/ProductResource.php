@@ -26,6 +26,7 @@ class ProductResource extends Resource
             'available' => $this->resource->available,
             'quantity_step' => $this->resource->quantity_step,
             'google_product_category' => $this->resource->google_product_category,
+            'vat_rate' => $this->resource->vat_rate,
             'cover' => MediaResource::make($this->resource->media->first()),
             'tags' => TagResource::collection($this->resource->tags),
         ], $this->metadataResource('products.show_metadata_private'));
