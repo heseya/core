@@ -1,0 +1,106 @@
+Category:
+  get:
+    tags:
+      - Categories
+    summary: 'google category list'
+    parameters:
+      - name: 'lang'
+        in: query
+        required: false
+        schema:
+          type: string
+          example: 'pl-PL'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: './../schemas/Categories.yml#/GoogleCategory'
+
+  post:
+    tags:
+      - Banners
+    summary: 'adding new banner'
+    security:
+      - BearerAuth: [ ]
+    requestBody:
+      $ref: './../requests/Banners.yml#/BannerStore'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: './../schemas/Banners.yml#/BannerMetadata'
+
+BannersParam:
+  get:
+    tags:
+      - Banners
+    summary: 'get specific banner'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    security:
+      - BearerAuth: [ ]
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: './../schemas/Banners.yml#/BannerMetadata'
+
+  patch:
+    tags:
+      - Banners
+    summary: 'update banner'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    security:
+      - BearerAuth: [ ]
+    requestBody:
+      $ref: './../requests/Banners.yml#/BannerUpdate'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: './../schemas/Banners.yml#/BannerMetadata'
+
+  delete:
+    tags:
+      - Banners
+    summary: 'update banner'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    security:
+      - BearerAuth: [ ]
+    responses:
+      204:
+        description: No content

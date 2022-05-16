@@ -4,7 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use League\HTMLToMarkdown\HtmlConverter;
 
 class ChangePageContentToHtml extends Migration
 {
@@ -33,12 +32,10 @@ class ChangePageContentToHtml extends Migration
             $table->text('content_md');
         });
 
-        $htmlConverter = new HtmlConverter(['strip_tags' => true]);
-
-        DB::table('pages')->orderBy('id')->chunk(100, function ($pages) use ($htmlConverter): void {
+        DB::table('pages')->orderBy('id')->chunk(100, function ($pages): void {
             foreach ($pages as $page) {
                 DB::table('pages')->where('id', $page->id)->update([
-                    'content_md' => $htmlConverter->convert($page->content_html),
+                    'content_md' => $page->content_html,
                 ]);
             }
         });

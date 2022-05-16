@@ -9,8 +9,8 @@ use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Role;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class DiscountConditionModelTest extends TestCase

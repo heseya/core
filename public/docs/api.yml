@@ -514,6 +514,8 @@ paths:
     $ref: './paths/Banners.yml#/Banners'
   '/banners/id:{id}':
     $ref: './paths/Banners.yml#/BannersParam'
+  '/google-categories/{lang}':
+    $ref: './paths/Category.yml#/Category'
 components:
   schemas:
     Error:

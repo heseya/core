@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Services\Contracts\AnalyticsServiceContract;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class AnalyticsControllerTest extends TestCase

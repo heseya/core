@@ -14,9 +14,9 @@ use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class CartTest extends TestCase

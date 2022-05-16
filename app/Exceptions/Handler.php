@@ -35,6 +35,7 @@ final class Handler extends ExceptionHandler
         StoreException::class => ErrorCode::BAD_REQUEST,
 
         ClientException::class => ErrorCode::UNPROCESSABLE_ENTITY,
+        ServerException::class => ErrorCode::INTERNAL_SERVER_ERROR,
         TFAException::class => ErrorCode::UNPROCESSABLE_ENTITY,
         GoogleProductCategoryFileException::class => ErrorCode::UNPROCESSABLE_ENTITY,
 
@@ -70,7 +71,6 @@ final class Handler extends ExceptionHandler
                     ->response()
                     ->setStatusCode($exception->getCode());
             }
-
             $error = new Error(
                 $exception->getMessage(),
                 $exception instanceof StoreException ?

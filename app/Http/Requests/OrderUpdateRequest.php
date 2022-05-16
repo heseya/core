@@ -11,6 +11,7 @@ class OrderUpdateRequest extends FormRequest
         return [
             'email' => ['nullable', 'email'],
             'comment' => ['nullable', 'string', 'max:1000'],
+            'shipping_number' => ['nullable', 'string'],
 
             'delivery_address' => ['nullable', 'array'],
             'delivery_address.name' => ['string', 'max:255'],

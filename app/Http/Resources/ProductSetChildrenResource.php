@@ -28,7 +28,13 @@ class ProductSetChildrenResource extends Resource
             'parent_id' => $this->resource->parent_id,
             'children' => ProductSetChildrenResource::collection($children),
             'cover' => MediaResource::make($this->resource->media),
-            'attributes' => AttributeResource::collection($this->resource->attributes),
         ], $this->metadataResource('product_sets.show_metadata_private'));
+    }
+
+    public function view(Request $request): array
+    {
+        return [
+            'attributes' => AttributeResource::collection($this->resource->attributes),
+        ];
     }
 }

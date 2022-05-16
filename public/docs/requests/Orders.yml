@@ -62,6 +62,9 @@ OrderUpdate:
           comment:
             type: string
             example: 'asap plz'
+          shipping_number:
+            type: string
+            example: '630552359128340015809770'
           delivery_address:
             $ref: './../schemas/Addresses.yml#/Address'
           invoice_address:
