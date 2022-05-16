@@ -113,6 +113,7 @@ class OrderService implements OrderServiceContract
                     'base_price_initial' => $product->price,
                     'base_price' => $product->price,
                     'name' => $product->name,
+                    'vat_rate' => $product->vat_rate,
                 ]);
 
                 $order->products()->save($orderProduct);

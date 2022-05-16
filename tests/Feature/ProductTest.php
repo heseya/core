@@ -1014,6 +1014,7 @@ class ProductTest extends TestCase
             'description_html' => '<h1>Description</h1>',
             'description_short' => 'So called short description...',
             'public' => true,
+            'vat_rate' => 23,
         ]);
 
         $response
@@ -1023,6 +1024,7 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
+                'vat_rate' => 23,
                 'description_html' => '<h1>Description</h1>',
                 'description_short' => 'So called short description...',
                 'cover' => null,
@@ -1035,6 +1037,7 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 100,
             'public' => true,
+            'vat_rate' => 23,
             'description_html' => '<h1>Description</h1>',
             'description_short' => 'So called short description...',
         ]);
@@ -2062,6 +2065,7 @@ class ProductTest extends TestCase
             'description_html' => '<h1>New description</h1>',
             'description_short' => 'New so called short description',
             'public' => false,
+            'vat_rate' => 5,
         ]);
 
         $response->assertOk();
@@ -2074,6 +2078,7 @@ class ProductTest extends TestCase
             'description_html' => '<h1>New description</h1>',
             'description_short' => 'New so called short description',
             'public' => false,
+            'vat_rate' => 5,
         ]);
 
         Queue::assertPushed(CallQueuedListener::class, function ($job) {
