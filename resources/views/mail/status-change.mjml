@@ -2,7 +2,7 @@
   <mj-body background-color="#F4F4F4">
     <mj-section background-color="#fff" background-repeat="repeat" text-align="center" padding-top="50px">
       <mj-column>
-        <mj-image height="50px" width="50px" src="{{ $settingsService->getSetting('store_logo')->value }}"></mj-image>
+        <mj-image height="50px" width="50px" src="{{ $settingsService->getSetting('mail_logo')->value ?? $settingsService->getSetting('store_logo')->value }}"></mj-image>
       </mj-column>
     </mj-section>
     <mj-section background-color="#fff" background-repeat="repeat" padding-bottom="0px" text-align="center">
