@@ -3,7 +3,9 @@
 namespace App\Rules;
 
 use App\Models\Item;
+use App\Services\Contracts\DepositServiceContract;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Support\Facades\App;
 
 class UnlimitedShippingTime implements Rule
 {
@@ -19,7 +21,11 @@ class UnlimitedShippingTime implements Rule
      */
     public function passes($attribute, $value): bool
     {
-        return $this->item->unlimited_stock_shipping_time >= $value;
+        $depositService = App::make(DepositServiceContract::class);
+        $depositsTime = $depositService->getDepositsGroupByTimeForItem($this->item, 'DESC');
+
+        return !isset($depositsTime[0]) ||
+            $this->item->unlimited_stock_shipping_time >= $depositsTime[0]['shipping_time'];
     }
 
     public function message(): string

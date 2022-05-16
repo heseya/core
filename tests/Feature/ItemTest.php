@@ -808,6 +808,60 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateValidationUnlimitedShippingDateLesserThenShippingDate($user): void
+    {
+        $this->$user->givePermissionTo('items.edit');
+
+        Event::fake(ItemUpdated::class);
+        Deposit::factory()->create([
+            'item_id' => $this->item->getKey(),
+            'quantity' => 2.0,
+            'shipping_date' => Carbon::now()->addDays(4)->toDateTimeString(),
+        ]);
+
+        $item = [
+            'sku' => 'TES/T3',
+            'unlimited_stock_shipping_date' => Carbon::tomorrow()->toDateTimeString(),
+        ];
+
+        $this->actingAs($this->$user)->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        )->assertStatus(422);
+
+        Event::assertNotDispatched(ItemUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateValidationUnlimitedShippingTimeLesserThenShippingTime($user): void
+    {
+        $this->$user->givePermissionTo('items.edit');
+
+        Event::fake(ItemUpdated::class);
+        Deposit::factory()->create([
+            'item_id' => $this->item->getKey(),
+            'quantity' => 2.0,
+            'shipping_time' => 4,
+        ]);
+
+        $item = [
+            'sku' => 'TES/T3',
+            'unlimited_stock_shipping_time' => 1,
+        ];
+
+        $this->actingAs($this->$user)->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        )->assertStatus(422);
+
+        Event::assertNotDispatched(ItemUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateShippingDateGraterThenItemUnlimitedShippingDateOlderThenNow($user): void
     {
         $this->$user->givePermissionTo('items.edit');

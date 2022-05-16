@@ -20,6 +20,7 @@ use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\BannerServiceContract;
 use App\Services\Contracts\ConsentServiceContract;
+use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\EventServiceContract;
@@ -50,6 +51,7 @@ use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UrlServiceContract;
 use App\Services\Contracts\UserServiceContract;
 use App\Services\Contracts\WebHookServiceContract;
+use App\Services\DepositService;
 use App\Services\DiscountService;
 use App\Services\DocumentService;
 use App\Services\EventService;
@@ -125,6 +127,7 @@ class AppServiceProvider extends ServiceProvider
         BannerServiceContract::class => BannerService::class,
         StatusServiceContract::class => StatusService::class,
         PackageTemplateServiceContract::class => PackageTemplateService::class,
+        DepositServiceContract::class => DepositService::class,
     ];
 
     /**

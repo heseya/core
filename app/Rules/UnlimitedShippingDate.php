@@ -3,7 +3,9 @@
 namespace App\Rules;
 
 use App\Models\Item;
+use App\Services\Contracts\DepositServiceContract;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Support\Facades\App;
 
 class UnlimitedShippingDate implements Rule
 {
@@ -19,7 +21,11 @@ class UnlimitedShippingDate implements Rule
      */
     public function passes($attribute, $value): bool
     {
-        return $this->item->unlimited_stock_shipping_date >= $value;
+        $depositService = App::make(DepositServiceContract::class);
+        $depositsDate = $depositService->getDepositsGroupByDateForItem($this->item, 'DESC');
+
+        return !isset($depositsDate[0]) ||
+            $this->item->unlimited_stock_shipping_date >= $depositsDate[0]['shipping_date'];
     }
 
     public function message(): string
