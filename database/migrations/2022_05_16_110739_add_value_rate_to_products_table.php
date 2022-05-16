@@ -16,6 +16,10 @@ return new class extends Migration
         Schema::table('products', function (Blueprint $table) {
             $table->unsignedDecimal('vat_rate', 8, 4)->default(0);
         });
+
+        Schema::table('order_products', function (Blueprint $table) {
+            $table->unsignedDecimal('vat_rate', 8, 4)->default(0);
+        });
     }
 
     /**
@@ -25,6 +29,10 @@ return new class extends Migration
      */
     public function down()
     {
+        Schema::table('order_products', function (Blueprint $table) {
+            $table->dropColumn('vat_rate');
+        });
+
         Schema::table('products', function (Blueprint $table) {
             $table->dropColumn('vat_rate');
         });
