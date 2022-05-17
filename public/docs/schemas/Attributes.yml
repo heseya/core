@@ -103,7 +103,7 @@ AttributeProductList:
       example: 'Screen size'
     selected_options:
       description: 'Array options of attribute'
-      $ref: '#/AttributeOption'
+      $ref: '#/AttributeOptionMetadata'
 
 AttributeProduct:
   type: object
@@ -133,3 +133,7 @@ AttributeProduct:
           description: 'Parameter for storefront'
           type: boolean
           example: 'true'
+        metadata:
+          $ref: './../schemas/Metadata.yml#/Metadata'
+        metadata_private:
+          $ref: './../schemas/Metadata.yml#/Metadata'
