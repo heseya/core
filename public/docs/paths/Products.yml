@@ -70,7 +70,7 @@ Products:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Products.yml#/Product'
+                    $ref: './../schemas/Products.yml#/ProductIndex'
               type: object
   post:
     tags:
@@ -123,7 +123,7 @@ ProductsParams:
         in: path
         required: true
         schema:
-          type: integer
+          type: string
     responses:
       200:
         description: Success
@@ -136,6 +136,7 @@ ProductsParams:
               type: object
     security:
       - BearerAuth: [ ]
+
   delete:
     tags:
       - Products
@@ -145,12 +146,13 @@ ProductsParams:
         in: path
         required: true
         schema:
-          type: integer
+          type: string
     responses:
       204:
         description: Success
     security:
       - BearerAuth: [ ]
+
   patch:
     tags:
       - Products
@@ -160,7 +162,7 @@ ProductsParams:
         in: path
         required: true
         schema:
-          type: integer
+          type: string
     requestBody:
       $ref: './../requests/Products.yml#/ProductUpdate'
     responses:
