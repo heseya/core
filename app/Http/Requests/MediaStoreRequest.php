@@ -12,6 +12,7 @@ class MediaStoreRequest extends FormRequest
         $videos = 'video/mp4,video/webm,video/ogg,video/quicktime,video/x-ms-wmv,video/x-ms-asf,';
         $documents = 'application/pdf';
         return [
+            'alt' => ['nullable', 'string', 'max:100'],
             'file' => [
                 'required',
                 'file',

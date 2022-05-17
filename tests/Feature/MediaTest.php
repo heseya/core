@@ -42,11 +42,21 @@ class MediaTest extends TestCase
         $file = UploadedFile::fake()->image('image.jpeg');
         $response = $this->actingAs($this->$user)->postJson('/media', [
             'file' => $file,
+            'alt' => 'test',
+            'metadata' => [
+                'test' => 'value',
+            ],
         ]);
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['type' => Str::lower(MediaType::getKey(1))])
+            ->assertJsonFragment([
+                'type' => Str::lower(MediaType::getKey(1)),
+                'alt' => 'test',
+                'metadata' => [
+                    'test' => 'value',
+                ],
+            ])
             ->assertJsonStructure(['data' => [
                 'id',
                 'type',

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Dtos\MediaUpdateDto;
+use App\Dtos\MediaDto;
 use App\Http\Requests\MediaStoreRequest;
 use App\Http\Requests\MediaUpdateRequest;
 use App\Http\Resources\MediaResource;
@@ -23,7 +23,7 @@ class MediaController extends Controller
 
     public function store(MediaStoreRequest $request): JsonResource
     {
-        $media = $this->mediaServiceContract->store($request->file('file'));
+        $media = $this->mediaServiceContract->store(MediaDto::instantiateFromRequest($request));
 
         return MediaResource::make($media);
     }
@@ -32,7 +32,7 @@ class MediaController extends Controller
     {
         $media = $this->mediaServiceContract->update(
             $media,
-            MediaUpdateDto::instantiateFromRequest($request),
+            MediaDto::instantiateFromRequest($request),
         );
 
         return MediaResource::make($media);
