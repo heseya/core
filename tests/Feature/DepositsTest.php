@@ -146,8 +146,8 @@ class DepositsTest extends TestCase
             ->assertCreated()
             ->assertJson([
                 'data' => $deposit + [
-                        'item_id' => $this->item->getKey(),
-                    ],
+                    'item_id' => $this->item->getKey(),
+                ],
             ]);
 
         $this->assertDatabaseHas('deposits', ['item_id' => $this->item->getKey()] + $deposit);
@@ -192,8 +192,8 @@ class DepositsTest extends TestCase
             ->assertCreated()
             ->assertJson([
                 'data' => $deposit + [
-                        'item_id' => $this->item->getKey(),
-                    ],
+                    'item_id' => $this->item->getKey(),
+                ],
             ]);
 
         $this->assertDatabaseHas('deposits', ['item_id' => $this->item->getKey()] + $deposit);
@@ -514,14 +514,20 @@ class DepositsTest extends TestCase
         $item->update(['unlimited_stock_shipping_time' => null]);
 
         $testCountTimeDate5 = $depositService->getShippingTimeDateForQuantity($item, 11);
-        $this->assertEquals(['shipping_time' => null, 'shipping_date' => $deposit2->shipping_date],
-            $testCountTimeDate5);
+        $this->assertEquals(
+            ['shipping_time' => null, 'shipping_date' => $deposit2->shipping_date],
+            $testCountTimeDate5
+        );
         $testCountTimeDate6 = $depositService->getShippingTimeDateForQuantity($item, 12);
-        $this->assertEquals(['shipping_time' => null, 'shipping_date' => $deposit1->shipping_date],
-            $testCountTimeDate6);
+        $this->assertEquals(
+            ['shipping_time' => null, 'shipping_date' => $deposit1->shipping_date],
+            $testCountTimeDate6
+        );
         $testCountTimeDate7 = $depositService->getShippingTimeDateForQuantity($item, 14);
-        $this->assertEquals(['shipping_time' => null, 'shipping_date' => $deposit3->shipping_date],
-            $testCountTimeDate7);
+        $this->assertEquals(
+            ['shipping_time' => null, 'shipping_date' => $deposit3->shipping_date],
+            $testCountTimeDate7
+        );
         $testCountTimeDate8 = $depositService->getShippingTimeDateForQuantity($item, 20);
         $this->assertEquals(
             ['shipping_time' => null, 'shipping_date' => $item->unlimited_stock_shipping_date],

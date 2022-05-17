@@ -8,11 +8,13 @@ use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Services\Contracts\AvailabilityServiceContract;
+use App\Services\Contracts\DepositServiceContract;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
 class AvailabilityService implements AvailabilityServiceContract
 {
-    public function __construct()
+    public function __construct(protected DepositServiceContract $depositService)
     {
     }
 
@@ -34,21 +36,34 @@ class AvailabilityService implements AvailabilityServiceContract
             ->whereIn('id', $options->pluck('schema_id'))
             ->get();
         $schemas->each(fn ($schema) => $this->calculateSchemaAvailability($schema));
-
+        //TODO dlaczego to idze ze schematu ? dlaczego nie idzie $this->calculateProductAvailability($product) dla produktu bez schematu ?
         $products = $schemas->pluck('products')->flatten()->unique('id');
         $products->each(fn ($product) => $this->calculateProductAvailability($product));
     }
 
     public function calculateOptionAvailability(Option $option): void
     {
-        if ($option->available && $option->items->every(fn ($item) => $item->quantity <= 0)) {
+        //TODO scheduler sprawdzający czy $item->unlimited_stock_date jest juź mniejszy od Carbon::now()
+        if ($option->available && $option->items->every(
+                fn ($item) => $item->quantity <= 0 && is_null($item->unlimited_stock_time) &&
+                    (is_null($item->unlimited_stock_date) || $item->unlimited_stock_date < Carbon::now())
+            )
+        ) {
             $option->update([
                 'available' => false,
+                'shipping_time' => null,
+                'shipping_date' => null,
             ]);
-        } elseif (!$option->available && $option->items->some(fn ($item) => $item->quantity > 0)) {
+            //TODO czy tutaj nie powinno być every a u góry some ? bo jeśli brakuje jakiegoś itema to opcja powinna być niedostępna
+            //TODO a some wystarczy że jeden będzie dostępny to już zadziała i do available na true
+        } elseif (!$option->available && $option->items->some(
+                fn ($item) => $item->quantity > 0 || !is_null($item->unlimited_stock_time) ||
+                    (!is_null($item->unlimited_stock_date) && $item->unlimited_stock_date >= Carbon::now())
+            )
+        ) {
             $option->update([
                 'available' => true,
-            ]);
+            ] + $this->depositService->getMaxShippingTimeDateForItems($option->items));
         }
     }
 
@@ -57,16 +72,20 @@ class AvailabilityService implements AvailabilityServiceContract
         if (!$schema->required) {
             $schema->update([
                 'available' => true,
+                'shipping_time' => null,
+                'shipping_date' => null,
             ]);
         }
         if ($schema->available && $schema->options->every(fn ($option) => !$option->available)) {
             $schema->update([
                 'available' => false,
+                'shipping_time' => null,
+                'shipping_date' => null,
             ]);
         } elseif (!$schema->available && $schema->options->some(fn ($option) => $option->available)) {
             $schema->update([
                 'available' => true,
-            ]);
+            ] + $this->depositService->getMinShippingTimeDateForOptions($schema->options));
         }
     }
 
@@ -74,7 +93,7 @@ class AvailabilityService implements AvailabilityServiceContract
     {
         $product->update([
             'available' => $this->isProductAvaiable($product),
-        ]);
+        ] + $this->depositService->getProductShippingTimeDate($product));
     }
 
     public function isProductAvaiable(Product $product): bool
@@ -84,17 +103,22 @@ class AvailabilityService implements AvailabilityServiceContract
         if (
             $product->schemas->isEmpty() ||
             ($product->items->isNotEmpty() &&
-                $product->items->every(fn (Item $item) => $item->pivot->required_quantity <= $item->quantity))
+                $product->items->every(
+                    fn (Item $item) => $item->pivot->required_quantity <= $item->quantity ||
+                        !is_null($item->unlimited_stock_time) ||
+                        (!is_null($item->unlimited_stock_date) && $item->unlimited_stock_date >= Carbon::now())
+                )
+            )
         ) {
             return true;
         }
 
         $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
-
+//TODO krz - A co w przypadku gdy mamy schema kóry nie jest required a $item->quantity jest na 0 ?
         if ($requiredSelectSchemas->isEmpty()) {
             return true;
         }
-
+//TODO dlaczego robimy permutacje skoro mamy informcje o schema że są dostępne ? nie musimy przechodzić po wszystkich opcjach bo wystarczy że przynajmniej jedna opcja w schema jest dostępna i już da się kupić produkt (chyba że się myle)
         $hasAvailablePermutations = $this->checkPermutations($requiredSelectSchemas);
 
         if ($hasAvailablePermutations) {
