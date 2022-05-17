@@ -2,27 +2,26 @@
 
 namespace App\Services;
 
-use App\Dtos\MediaUpdateDto;
+use App\Dtos\MediaDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\MediaType;
 use App\Exceptions\ServerException;
 use App\Models\Media;
 use App\Models\Product;
 use App\Services\Contracts\MediaServiceContract;
+use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
 use Heseya\Dto\Missing;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
 
 class MediaService implements MediaServiceContract
 {
-    protected ReorderServiceContract $reorderService;
-
-    public function __construct(ReorderServiceContract $reorderService)
-    {
-        $this->reorderService = $reorderService;
+    public function __construct(
+        private ReorderServiceContract $reorderService,
+        private MetadataServiceContract $metadataService
+    ) {
     }
 
     public function sync(Product $product, array $media): void
@@ -53,11 +52,11 @@ class MediaService implements MediaServiceContract
         $media->forceDelete();
     }
 
-    public function store(UploadedFile $file, bool $private = false): Media
+    public function store(MediaDto $dto, bool $private = false): Media
     {
         $private = $private ? '?private' : '';
 
-        $response = Http::attach('file', $file->getContent(), 'file')
+        $response = Http::attach('file', $dto->getFile()->getContent(), 'file')
             ->withHeaders(['x-api-key' => Config::get('silverbox.key')])
             ->post(Config::get('silverbox.host') . '/' . Config::get('silverbox.client') . $private);
 
@@ -65,13 +64,20 @@ class MediaService implements MediaServiceContract
             throw new ServerException(Exceptions::SERVER_CDN_ERROR);
         }
 
-        return Media::create([
-            'type' => $this->getMediaType($file->extension()),
+        $media = Media::create([
+            'type' => $this->getMediaType($dto->getFile()->extension()),
             'url' => Config::get('silverbox.host') . '/' . $response->json('0.path'),
+            'alt' => $dto->getAlt() instanceof Missing ? null : $dto->getAlt(),
         ]);
+
+        if (!($dto->getMetadata() instanceof Missing)) {
+            $this->metadataService->sync($media, $dto->getMetadata());
+        }
+
+        return $media;
     }
 
-    public function update(Media $media, MediaUpdateDto $dto): Media
+    public function update(Media $media, MediaDto $dto): Media
     {
         if (!($dto->getSlug() instanceof Missing) && $media->slug !== $dto->getSlug()) {
             $media->url = $this->updateSlug($media, $dto->getSlug());
