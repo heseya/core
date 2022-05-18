@@ -26,6 +26,10 @@ class OrderProduct extends Model
         'vat_rate',
     ];
 
+    protected $casts = [
+        'vat_rate' => 'float',
+    ];
+
     public function schemas(): HasMany
     {
         return $this->hasMany(OrderSchema::class);
