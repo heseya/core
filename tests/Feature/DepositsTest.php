@@ -268,7 +268,7 @@ class DepositsTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateValidationProhibitedUnless($user): void
+    public function testCreateValidationInvalidBothShippingTimeAndDate($user): void
     {
         $this->$user->givePermissionTo('deposits.add');
 
@@ -298,12 +298,13 @@ class DepositsTest extends TestCase
         $this->$user->givePermissionTo('deposits.add');
 
         Event::fake(ItemUpdatedQuantity::class);
-        $this->item->unlimited_stock_shipping_date = Carbon::tomorrow()->toDateTimeString();
+        $date = Carbon::tomorrow();
+        $this->item->unlimited_stock_shipping_date = $date->toDateTimeString();
         $this->item->save();
-
+        
         $deposit = [
             'quantity' => 1200000.50,
-            'shipping_date' => Carbon::now()->addDays(4)->toDateTimeString(),
+            'shipping_date' => $date->addDays(4)->toDateTimeString(),
         ];
 
         $response = $this->actingAs($this->$user)->postJson(
@@ -324,12 +325,13 @@ class DepositsTest extends TestCase
         $this->$user->givePermissionTo('deposits.add');
 
         Event::fake(ItemUpdatedQuantity::class);
-        $this->item->unlimited_stock_shipping_date = Carbon::now()->addDays(-4)->toDateTimeString();
+        $date = Carbon::now();
+        $this->item->unlimited_stock_shipping_date = $date->addDays(-4)->toDateTimeString();
         $this->item->save();
 
         $deposit = [
             'quantity' => 1200000.50,
-            'shipping_date' => Carbon::now()->addDays(4)->toDateTimeString(),
+            'shipping_date' => $date->addDays(8)->toDateTimeString(),
         ];
 
         $response = $this->actingAs($this->$user)->postJson(
@@ -351,12 +353,13 @@ class DepositsTest extends TestCase
         $this->$user->givePermissionTo('deposits.add');
 
         Event::fake(ItemUpdatedQuantity::class);
-        $this->item->unlimited_stock_shipping_time = 5;
+        $time = 5;
+        $this->item->unlimited_stock_shipping_time = $time;
         $this->item->save();
 
         $deposit = [
             'quantity' => 1200000.50,
-            'shipping_time' => 10,
+            'shipping_time' => $time + 5,
         ];
 
         $response = $this->actingAs($this->$user)->postJson(
