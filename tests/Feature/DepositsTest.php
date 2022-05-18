@@ -294,8 +294,7 @@ class DepositsTest extends TestCase
         $date = Carbon::tomorrow();
         $this->item->unlimited_stock_shipping_date = $date->toDateTimeString();
         $this->item->save();
-
-
+        
         $deposit = [
             'quantity' => 1200000.50,
             'shipping_date' => $date->addDays(4)->toDateTimeString(),
