@@ -26,16 +26,6 @@ class ItemCreateRequest extends FormRequest
                     'date',
                     'prohibited_unless:unlimited_stock_shipping_time,null',
                 ],
-                'shipping_time' => [
-                    'nullable',
-                    'integer',
-                    'prohibited_unless:shipping_date,null',
-                ],
-                'shipping_date' => [
-                    'nullable',
-                    'date',
-                    'prohibited_unless:shipping_time,null',
-                ],
             ],
         );
     }

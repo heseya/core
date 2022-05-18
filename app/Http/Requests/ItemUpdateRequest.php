@@ -3,8 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Models\Item;
-use App\Rules\ShippingDate;
-use App\Rules\ShippingTime;
 use App\Rules\UnlimitedShippingDate;
 use App\Rules\UnlimitedShippingTime;
 use Illuminate\Foundation\Http\FormRequest;
@@ -35,18 +33,6 @@ class ItemUpdateRequest extends FormRequest
                 'date',
                 'prohibited_unless:unlimited_stock_shipping_time,null',
                 new UnlimitedShippingDate($item),
-            ],
-            'shipping_time' => [
-                'nullable',
-                'integer',
-                'prohibited_unless:shipping_date,null',
-                new ShippingTime($item),
-            ],
-            'shipping_date' => [
-                'nullable',
-                'date',
-                'prohibited_unless:shipping_time,null',
-                new ShippingDate($item),
             ],
         ];
     }

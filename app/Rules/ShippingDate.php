@@ -3,8 +3,8 @@
 namespace App\Rules;
 
 use App\Models\Item;
-use Carbon\Carbon;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Support\Carbon;
 
 class ShippingDate implements Rule
 {

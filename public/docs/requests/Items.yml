@@ -10,13 +10,6 @@ ItemCreate:
     sku:
       type: string
       example: K121
-    shipping_time:
-      type: integer
-      example: 5
-    shipping_date:
-      type: string
-      format: date-time
-      example: '2021-09-13T11:11'
     unlimited_shipping_time:
       type: integer
       example: 5
@@ -38,13 +31,6 @@ ItemUpdate:
     sku:
       type: string
       example: K121
-    shipping_time:
-      type: integer
-      example: 5
-    shipping_date:
-      type: string
-      format: date-time
-      example: '2021-09-13T11:11'
     unlimited_shipping_time:
       type: integer
       example: 5

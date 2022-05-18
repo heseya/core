@@ -729,15 +729,6 @@ class ItemTest extends TestCase
         $item = [
             'name' => 'Test',
             'sku' => 'TES/T1',
-            'shipping_time' => 10,
-            'shipping_date' => '1999-02-01 10:10:10',
-        ];
-
-        $this->actingAs($this->$user)->postJson('/items', $item)->assertStatus(422);
-
-        $item = [
-            'name' => 'Test',
-            'sku' => 'TES/T1',
             'unlimited_stock_shipping_time' => 10,
             'unlimited_stock_shipping_date' => '1999-02-01 10:10:10',
         ];
@@ -758,43 +749,8 @@ class ItemTest extends TestCase
 
         $item = [
             'sku' => 'TES/T3',
-            'shipping_time' => 10,
-            'shipping_date' => '1999-02-01 10:10:10',
-        ];
-
-        $this->actingAs($this->$user)->patchJson(
-            '/items/id:' . $this->item->getKey(),
-            $item,
-        )->assertStatus(422);
-
-        $item = [
-            'sku' => 'TES/T3',
             'unlimited_stock_shipping_time' => 10,
             'unlimited_stock_shipping_date' => '1999-02-01 10:10:10',
-        ];
-
-        $this->actingAs($this->$user)->patchJson(
-            '/items/id:' . $this->item->getKey(),
-            $item,
-        )->assertStatus(422);
-
-        Event::assertNotDispatched(ItemUpdated::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateValidationShippingDateGraterThenItemUnlimitedShippingDate($user): void
-    {
-        $this->$user->givePermissionTo('items.edit');
-
-        Event::fake(ItemUpdated::class);
-        $this->item->unlimited_stock_shipping_date = Carbon::tomorrow()->toDateTimeString();
-        $this->item->save();
-
-        $item = [
-            'sku' => 'TES/T3',
-            'shipping_date' => Carbon::now()->addDays(4)->toDateTimeString(),
         ];
 
         $this->actingAs($this->$user)->patchJson(
@@ -857,140 +813,5 @@ class ItemTest extends TestCase
         )->assertStatus(422);
 
         Event::assertNotDispatched(ItemUpdated::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateShippingDateGraterThenItemUnlimitedShippingDateOlderThenNow($user): void
-    {
-        $this->$user->givePermissionTo('items.edit');
-
-        Event::fake(ItemUpdated::class);
-        $this->item->unlimited_stock_shipping_date = Carbon::now()->addDays(-4)->toDateTimeString();
-        $this->item->save();
-
-        $item = [
-            'sku' => 'TES/T3',
-            'shipping_date' => Carbon::now()->addDays(4)->toDateTimeString(),
-        ];
-
-        $this->actingAs($this->$user)->patchJson(
-            '/items/id:' . $this->item->getKey(),
-            $item,
-        )->assertOk()->assertJson(['data' => $item]);
-        $this->assertDatabaseHas('items', $item);
-
-        Event::assertDispatched(ItemUpdated::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateValidationShippingTimeGraterThenItemUnlimitedShippingTime($user): void
-    {
-        $this->$user->givePermissionTo('items.edit');
-
-        Event::fake(ItemUpdated::class);
-        $this->item->unlimited_stock_shipping_time = 5;
-        $this->item->save();
-
-        $item = [
-            'sku' => 'TES/T3',
-            'shipping_time' => 10,
-        ];
-
-        $this->actingAs($this->$user)->patchJson(
-            '/items/id:' . $this->item->getKey(),
-            $item,
-        )->assertStatus(422);
-
-        Event::assertNotDispatched(ItemUpdated::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateWithShippingTime($user): void
-    {
-        $this->$user->givePermissionTo('items.add');
-
-        Event::fake(ItemCreated::class);
-
-        $item = [
-            'name' => 'Test',
-            'sku' => 'TES/T1',
-            'shipping_time' => 10,
-        ];
-
-        $this->actingAs($this->$user)->postJson('/items', $item)->assertCreated();
-        $this->assertDatabaseHas('items', $item);
-
-        Event::assertDispatched(ItemCreated::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testCreateWithShippingDate($user): void
-    {
-        $this->$user->givePermissionTo('items.add');
-
-        Event::fake(ItemCreated::class);
-
-        $item = [
-            'name' => 'Test',
-            'sku' => 'TES/T1',
-            'shipping_date' => '1999-02-01 10:10:10',
-        ];
-
-        $this->actingAs($this->$user)->postJson('/items', $item)->assertCreated();
-        $this->assertDatabaseHas('items', $item);
-
-        Event::assertDispatched(ItemCreated::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateWithShippingTime($user): void
-    {
-        $this->$user->givePermissionTo('items.edit');
-
-        Event::fake(ItemUpdated::class);
-
-        $item = [
-            'shipping_time' => 10,
-        ];
-
-        $this->actingAs($this->$user)->patchJson(
-            '/items/id:' . $this->item->getKey(),
-            $item,
-        )->assertOk()->assertJson(['data' => $item]);
-        $this->assertDatabaseHas('items', $item);
-
-        Event::assertDispatched(ItemUpdated::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateWithShippingDate($user): void
-    {
-        $this->$user->givePermissionTo('items.edit');
-
-        Event::fake(ItemUpdated::class);
-
-        $item = [
-            'shipping_date' => '1999-02-01 10:10:10',
-        ];
-
-        $this->actingAs($this->$user)->patchJson(
-            '/items/id:' . $this->item->getKey(),
-            $item,
-        )->assertOk()->assertJson(['data' => $item]);
-        $this->assertDatabaseHas('items', $item);
-
-        Event::assertDispatched(ItemUpdated::class);
     }
 }
