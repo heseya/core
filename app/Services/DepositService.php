@@ -6,40 +6,42 @@ use App\Enums\SchemaType;
 use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\Product;
+use App\Models\Schema;
 use App\Services\Contracts\DepositServiceContract;
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 class DepositService implements DepositServiceContract
 {
     public function getProductShippingTimeDate(Product $product): array
     {
-//get max shipping time/date form items
+        //get max shipping time/date form items
         $maxProductItemsTimeDate = ['shipping_time' => null, 'shipping_date' => null];
         foreach ($product->items as $item) {
             $timeDate = $this->getShippingTimeDateForQuantity($item, $item->pivot->required_quantity);
-//if missing item return time/date as null
+            //if missing item return time/date as null
             if (is_null($timeDate['shipping_time']) && is_null($timeDate['shipping_date'])) {
                 return $timeDate;
             }
             $maxProductItemsTimeDate = $this->maxShippingTimeAndDate($timeDate, $maxProductItemsTimeDate);
         }
-//if product do not have required schema then return max shipping time/date form items
+        //if product do not have required schema then return max shipping time/date form items
         $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
         if ($requiredSelectSchemas->isEmpty() && $product->items->isNotEmpty()) {
             return $maxProductItemsTimeDate;
         }
-//if product got required schema then get max shipping time/date
+        //if product got required schema then get max shipping time/date
         $maxSchemaTimeDate = ['shipping_time' => null, 'shipping_date' => null];
+        /** @var Schema $schema */
         foreach ($requiredSelectSchemas as $schema) {
             $timeDate = ['shipping_time' => $schema->shipping_time, 'shipping_date' => $schema->shipping_date];
-//if required schema is not available return time/date as null
+            //if required schema is not available return time/date as null
             if (is_null($timeDate['shipping_time']) && is_null($timeDate['shipping_date'])) {
                 return $timeDate;
             }
             $maxSchemaTimeDate = $this->maxShippingTimeAndDate($timeDate, $maxSchemaTimeDate);
         }
-//from product items shipping time/date and required schema shipping time/date return max shipping time/date
+        //from product items shipping time/date and required schema shipping time/date return max shipping time/date
         return $this->maxShippingTimeAndDate($maxProductItemsTimeDate, $maxSchemaTimeDate);
     }
 

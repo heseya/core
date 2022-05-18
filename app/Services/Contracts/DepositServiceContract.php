@@ -3,10 +3,13 @@
 namespace App\Services\Contracts;
 
 use App\Models\Item;
+use App\Models\Product;
 use Illuminate\Support\Collection;
 
 interface DepositServiceContract
 {
+    public function getProductShippingTimeDate(Product $product): array;
+
     public function getMinShippingTimeDateForOptions(Collection $options): array;
 
     public function getMaxShippingTimeDateForItems(Collection $items, int $quantity = 1): array;

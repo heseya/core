@@ -2,12 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Events\ItemUpdatedQuantity;
 use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\Product;
 use App\Services\Contracts\AvailabilityServiceContract;
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
 class ShippingTimeDateTest extends TestCase
@@ -17,7 +19,10 @@ class ShippingTimeDateTest extends TestCase
         parent::setUp();
     }
 
-    public function testProductWithShippingTimeAndDateAndCountQuantityNeed(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductWithShippingTimeAndDateAndCountQuantityNeed($user): void
     {
         $availabilityService = App::make(AvailabilityServiceContract::class);
 
@@ -61,7 +66,7 @@ class ShippingTimeDateTest extends TestCase
 
         $this->assertEquals($deposit2->shipping_date, $product->shipping_date);
 
-        $deposit3 = Deposit::factory()->create([
+        Deposit::factory()->create([
             'item_id' => $item->getKey(),
             'quantity' => 2.0,
             'shipping_date' => Carbon::now()->addDays(6)->toDateTimeString(),
@@ -137,5 +142,24 @@ class ShippingTimeDateTest extends TestCase
         $product->refresh();
 
         $this->assertEquals(4, $product->shipping_time);
+
+        $this->$user->givePermissionTo('deposits.add');
+
+        $deposit = [
+            'quantity' => 120,
+            'shipping_time' => 3,
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson(
+            "/items/id:{$item2->getKey()}/deposits",
+            $deposit,
+        );
+
+        $response->assertCreated();
+        $this->assertDatabaseHas('deposits', $deposit);
+
+        Event::assertDispatched(ItemUpdatedQuantity::class);
+
+        $this->assertEquals(3, $product->shipping_time);
     }
 }

@@ -4,7 +4,7 @@ namespace App\Observers;
 
 use App\Models\Deposit;
 use App\Services\Contracts\DepositServiceContract;
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 
 class DepositObserver
