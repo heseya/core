@@ -15,6 +15,10 @@ Media:
               alt:
                 type: string
                 example: 'alt'
+              metadata.*:
+                type: string
+                example: 'value'
+                description: 'asterisk has to be replaced with metadata key'
             type: object
     responses:
       201:

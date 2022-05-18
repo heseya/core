@@ -43,9 +43,7 @@ class MediaTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/media', [
             'file' => $file,
             'alt' => 'test',
-            'metadata' => [
-                'test' => 'value',
-            ],
+            'metadata.test' => 'value',
         ]);
 
         $response

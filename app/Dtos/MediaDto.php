@@ -14,7 +14,7 @@ class MediaDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    private array|Missing $metadata;
+    public array|Missing $metadata;
     private UploadedFile|Missing|null $file;
     private string|null|Missing $alt;
     private string|null|Missing $slug;
