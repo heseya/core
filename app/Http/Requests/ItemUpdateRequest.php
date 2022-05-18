@@ -3,8 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Models\Item;
-use App\Rules\ShippingDate;
-use App\Rules\ShippingTime;
 use App\Rules\UnlimitedShippingDate;
 use App\Rules\UnlimitedShippingTime;
 use Illuminate\Foundation\Http\FormRequest;
