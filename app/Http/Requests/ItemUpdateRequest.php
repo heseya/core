@@ -36,18 +36,6 @@ class ItemUpdateRequest extends FormRequest
                 'prohibited_unless:unlimited_stock_shipping_time,null',
                 new UnlimitedShippingDate($item),
             ],
-            'shipping_time' => [
-                'nullable',
-                'integer',
-                'prohibited_unless:shipping_date,null',
-                new ShippingTime($item),
-            ],
-            'shipping_date' => [
-                'nullable',
-                'date',
-                'prohibited_unless:shipping_time,null',
-                new ShippingDate($item),
-            ],
         ];
     }
 }
