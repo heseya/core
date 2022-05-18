@@ -16,6 +16,10 @@ class ItemResource extends Resource
             'name' => $this->resource->name,
             'sku' => $this->resource->sku,
             'quantity' => $this->resource->getQuantity($request->input('day')),
+            'unlimited_stock_shipping_time' => $this->resource->unlimited_stock_shipping_time,
+            'unlimited_stock_shipping_date' => $this->resource->unlimited_stock_shipping_date,
+            'shipping_time' => $this->resource->shipping_time,
+            'shipping_date' => $this->resource->shipping_date,
         ], $this->metadataResource('items.show_metadata_private'));
     }
 }

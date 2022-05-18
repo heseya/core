@@ -33,6 +33,10 @@ class Item extends Model implements AuditableContract, SortableContract
         'name',
         'sku',
         'quantity',
+        'unlimited_stock_shipping_time',
+        'unlimited_stock_shipping_date',
+        'shipping_time',
+        'shipping_date',
     ];
 
     protected array $criteria = [
@@ -51,6 +55,10 @@ class Item extends Model implements AuditableContract, SortableContract
         'created_at',
         'updated_at',
         'quantity',
+        'unlimited_stock_shipping_time',
+        'unlimited_stock_shipping_date',
+        'shipping_time',
+        'shipping_date',
     ];
 
     protected $casts = [

@@ -13,3 +13,10 @@ Deposit:
     order_product_id:
       type: string
       example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    shipping_time:
+      type: integer
+      example: 5
+    shipping_date:
+      type: string
+      format: date-time
+      example: '2021-09-13T11:11'

@@ -7,6 +7,7 @@ use App\Listeners\WebHookEventListener;
 use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\WebHook;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Spatie\WebhookServer\CallWebhookJob;
@@ -255,5 +256,159 @@ class DepositsTest extends TestCase
         $response->assertStatus(422);
 
         Event::assertNotDispatched(ItemUpdatedQuantity::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateValidationProhibitedUnless($user): void
+    {
+        $this->$user->givePermissionTo('deposits.add');
+
+        Event::fake(ItemUpdatedQuantity::class);
+
+        $deposit = [
+            'quantity' => 1200000.50,
+            'shipping_time' => 10,
+            'shipping_date' => '1999-02-01 10:10:10',
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson(
+            "/items/id:{$this->item->getKey()}/deposits",
+            $deposit,
+        );
+
+        $response->assertStatus(422);
+
+        Event::assertNotDispatched(ItemUpdatedQuantity::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateValidationShippingDateGraterThenItemUnlimitedShippingDate($user): void
+    {
+        $this->$user->givePermissionTo('deposits.add');
+
+        Event::fake(ItemUpdatedQuantity::class);
+        $this->item->unlimited_stock_shipping_date = Carbon::tomorrow()->toDateTimeString();
+        $this->item->save();
+
+        $deposit = [
+            'quantity' => 1200000.50,
+            'shipping_date' => Carbon::now()->addDays(4)->toDateTimeString(),
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson(
+            "/items/id:{$this->item->getKey()}/deposits",
+            $deposit,
+        );
+
+        $response->assertStatus(422);
+
+        Event::assertNotDispatched(ItemUpdatedQuantity::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateShippingDateGraterThenItemUnlimitedShippingDateOlderThenNow($user): void
+    {
+        $this->$user->givePermissionTo('deposits.add');
+
+        Event::fake(ItemUpdatedQuantity::class);
+        $this->item->unlimited_stock_shipping_date = Carbon::now()->addDays(-4)->toDateTimeString();
+        $this->item->save();
+
+        $deposit = [
+            'quantity' => 1200000.50,
+            'shipping_date' => Carbon::now()->addDays(4)->toDateTimeString(),
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson(
+            "/items/id:{$this->item->getKey()}/deposits",
+            $deposit,
+        );
+
+        $response->assertCreated();
+        $this->assertDatabaseHas('deposits', $deposit);
+
+        Event::assertDispatched(ItemUpdatedQuantity::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateValidationShippingTimeGraterThenItemUnlimitedShippingTime($user): void
+    {
+        $this->$user->givePermissionTo('deposits.add');
+
+        Event::fake(ItemUpdatedQuantity::class);
+        $this->item->unlimited_stock_shipping_time = 5;
+        $this->item->save();
+
+        $deposit = [
+            'quantity' => 1200000.50,
+            'shipping_time' => 10,
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson(
+            "/items/id:{$this->item->getKey()}/deposits",
+            $deposit,
+        );
+
+        $response->assertStatus(422);
+
+        Event::assertNotDispatched(ItemUpdatedQuantity::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithShippingTime($user): void
+    {
+        $this->$user->givePermissionTo('deposits.add');
+
+        Event::fake(ItemUpdatedQuantity::class);
+
+        $deposit = [
+            'quantity' => 1200000.50,
+            'shipping_time' => 10,
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson(
+            "/items/id:{$this->item->getKey()}/deposits",
+            $deposit,
+        );
+
+        $response->assertCreated();
+        $this->assertDatabaseHas('deposits', $deposit);
+
+        Event::assertDispatched(ItemUpdatedQuantity::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithShippingDate($user): void
+    {
+        $this->$user->givePermissionTo('deposits.add');
+
+        Event::fake(ItemUpdatedQuantity::class);
+
+        $deposit = [
+            'quantity' => 1200000.50,
+            'shipping_date' => '1999-02-01 10:10:10',
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson(
+            "/items/id:{$this->item->getKey()}/deposits",
+            $deposit,
+        );
+
+        $response->assertCreated();
+        $this->assertDatabaseHas('deposits', $deposit);
+
+        Event::assertDispatched(ItemUpdatedQuantity::class);
     }
 }
