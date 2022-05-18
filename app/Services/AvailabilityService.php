@@ -104,17 +104,14 @@ class AvailabilityService implements AvailabilityServiceContract
         //then product is available
         $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
         if (
-            $requiredSelectSchemas->isEmpty() ||
-            (
-                $product->items->isNotEmpty() &&
+            $requiredSelectSchemas->isEmpty() || ($product->items->isNotEmpty() &&
                 $product->items->every(
                     fn (Item $item) => $item->pivot->required_quantity <= $item->quantity ||
                         !is_null($item->unlimited_stock_shipping_time) ||
                         (!is_null($item->unlimited_stock_shipping_date) &&
                             $item->unlimited_stock_shipping_date >= Carbon::now())
                 )
-            )
-        ) {
+            )) {
             return true;
         }
 
