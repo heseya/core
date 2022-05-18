@@ -1,4 +1,4 @@
-Attribute:
+AttributeShort:
   type: object
   properties:
     id:
@@ -36,12 +36,26 @@ Attribute:
       description: 'Parameter for storefront'
       type: boolean
       example: 'true'
-    options:
-      description: 'Array options of attribute'
-      type: array
-      items:
-        allOf:
-          - $ref: '#/AttributeOption'
+
+AttributeShortMetadata:
+  allOf:
+    - $ref: '#/AttributeShort'
+    - properties:
+        metadata:
+          $ref: './../schemas/Metadata.yml#/Metadata'
+        metadata_private:
+          $ref: './../schemas/Metadata.yml#/Metadata'
+
+Attribute:
+  allOf:
+    - $ref: '#/AttributeShort'
+    - properties:
+        options:
+          description: 'Array options of attribute'
+          type: array
+          items:
+            allOf:
+              - $ref: '#/AttributeOption'
 
 AttributeMetadata:
   allOf:
