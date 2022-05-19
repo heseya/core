@@ -15,11 +15,6 @@ use Tests\TestCase;
 
 class ShippingTimeDateTest extends TestCase
 {
-    public function setUp(): void
-    {
-        parent::setUp();
-    }
-
     /**
      * @dataProvider authProvider
      */
@@ -187,5 +182,4 @@ class ShippingTimeDateTest extends TestCase
 
         $this->assertNull($product->shipping_date);
     }
-
 }

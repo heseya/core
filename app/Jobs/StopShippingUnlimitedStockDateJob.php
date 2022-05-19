@@ -13,12 +13,7 @@ class StopShippingUnlimitedStockDateJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    /**
-     * Execute the job.
-     *
-     * @return void
-     */
-    public function handle()
+    public function handle(): void
     {
         $shippingTimeDate = app(ShippingTimeDateServiceContract::class);
         $shippingTimeDate->stopShippingUnlimitedStockDate();
