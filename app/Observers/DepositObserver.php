@@ -14,13 +14,6 @@ class DepositObserver
         $depositService = App::make(DepositServiceContract::class);
 
         $deposit->item->increment('quantity', $deposit->quantity);
-        $deposit->item->update([
-            'shipping_time' => $depositService->getShippingTimeForQuantity($deposit->item)['shipping_time'] ??
-                $deposit->item->unlimited_stock_shipping_time,
-            'shipping_date' => $depositService->getShippingDateForQuantity($deposit->item)['shipping_date'] ??
-                ($deposit->item->unlimited_stock_shipping_date >= Carbon::now() ?
-                    $deposit->item->unlimited_stock_shipping_date :
-                    null),
-        ]);
+        $deposit->item->update($depositService->getShippingTimeDateForQuantity($deposit->item));
     }
 }

@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Events\ItemUpdatedQuantity;
 use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\Product;
@@ -10,7 +9,6 @@ use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\ShippingTimeDateServiceContract;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
 class ShippingTimeDateTest extends TestCase
@@ -139,11 +137,13 @@ class ShippingTimeDateTest extends TestCase
 
         $this->assertEquals(4, $product->shipping_time);
 
+        $product->items()->detach($item->getKey());
+
         $this->$user->givePermissionTo('deposits.add');
 
         $deposit = [
             'quantity' => 120,
-            'shipping_time' => 3,
+            'shipping_time' => 1,
         ];
 
         $response = $this->actingAs($this->$user)->postJson(
@@ -153,10 +153,9 @@ class ShippingTimeDateTest extends TestCase
 
         $response->assertCreated();
         $this->assertDatabaseHas('deposits', $deposit);
+        $product->refresh();
 
-        Event::assertDispatched(ItemUpdatedQuantity::class);
-
-        $this->assertEquals(3, $product->shipping_time);
+        $this->assertEquals(1, $product->shipping_time);
     }
 
     public function testStopUnlimitedStockShippingDate(): void

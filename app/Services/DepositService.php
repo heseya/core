@@ -160,6 +160,8 @@ class DepositService implements DepositServiceContract
             $timeDate2['shipping_time'] = null;
             $timeDate2['shipping_date'] = !is_null($timeDate2['shipping_date']) ?
                 max($timeDate2['shipping_date'], $timeDate1['shipping_date']) : $timeDate1['shipping_date'];
+        } elseif (!is_null($timeDate2['shipping_date'])) {
+            return $timeDate2;
         } elseif (!is_null($timeDate1['shipping_time'])) {
             $timeDate2['shipping_time'] = !is_null($timeDate2['shipping_time']) ?
                 max($timeDate2['shipping_time'], $timeDate1['shipping_time']) : $timeDate1['shipping_time'];
