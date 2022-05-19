@@ -16,4 +16,17 @@ class MetadataResource extends Resource
 
         return $resource;
     }
+
+    /**
+     * Transform the resource into json.
+     * Rewrite to send empty object instead of empty array.
+     */
+    public function toJson($options = 0): string
+    {
+        if ($this->resource->empty() === []) {
+            return '{}';
+        }
+
+        return parent::toJson($options);
+    }
 }
