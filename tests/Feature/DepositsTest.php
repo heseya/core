@@ -427,8 +427,7 @@ class DepositsTest extends TestCase
         $depositService = App::make(DepositServiceContract::class);
 
         $itemData = [
-            'unlimited_stock_shipping_date' => Carbon::now()->addDays(10)->toDateTimeString(),
-            'unlimited_stock_shipping_time' => 10,
+            'unlimited_stock_shipping_date' => Carbon::now()->addDays(10)->toDateTimeString()
         ];
 
         $item = Item::factory()->create($itemData);
@@ -494,6 +493,8 @@ class DepositsTest extends TestCase
 
         $this->assertEquals(4, $item->shipping_time);
         $this->assertEquals(15, $item->quantity);
+
+        $item->update(['unlimited_stock_shipping_time' => 10]);
 
         /*
         [time = 4 quantity = 3],  sum = 3
