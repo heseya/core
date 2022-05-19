@@ -466,6 +466,106 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testShowPrivateSetsNoPermission($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $set1 = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+        $set2 = ProductSet::factory()->create([
+            'public' => false,
+        ]);
+
+        $product->sets()->sync([$set1->getKey(), $set2->getKey()]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/products/' . $product->slug)
+            ->assertOk()
+            ->assertJsonFragment(['sets' => [
+                [
+                    'id' => $set1->getKey(),
+                    'name' => $set1->name,
+                    'slug' => $set1->slug,
+                    'slug_suffix' => $set1->slugSuffix,
+                    'slug_override' => $set1->slugOverride,
+                    'public' => $set1->public,
+                    'visible' => $set1->public_parent && $set1->public,
+                    'hide_on_index' => $set1->hide_on_index,
+                    'parent_id' => $set1->parent_id,
+                    'children_ids' => [],
+                    'cover' => null,
+                    'metadata' => [],
+                ],
+            ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowPrivateSetsWithPermission($user): void
+    {
+        $this->$user->givePermissionTo(['products.show_details', 'product_sets.show_hidden']);
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $set1 = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+        $set2 = ProductSet::factory()->create([
+            'public' => false,
+        ]);
+
+        $product->sets()->sync([$set1->getKey(), $set2->getKey()]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/products/' . $product->slug)
+            ->assertOk()
+            ->assertJsonFragment(['sets' => [
+                [
+                    'id' => $set1->getKey(),
+                    'name' => $set1->name,
+                    'slug' => $set1->slug,
+                    'slug_suffix' => $set1->slugSuffix,
+                    'slug_override' => $set1->slugOverride,
+                    'public' => $set1->public,
+                    'visible' => $set1->public_parent && $set1->public,
+                    'hide_on_index' => $set1->hide_on_index,
+                    'parent_id' => $set1->parent_id,
+                    'children_ids' => [],
+                    'cover' => null,
+                    'metadata' => [],
+                ],
+                [
+                    'id' => $set2->getKey(),
+                    'name' => $set2->name,
+                    'slug' => $set2->slug,
+                    'slug_suffix' => $set2->slugSuffix,
+                    'slug_override' => $set2->slugOverride,
+                    'public' => $set2->public,
+                    'visible' => $set2->public_parent && $set2->public,
+                    'hide_on_index' => $set2->hide_on_index,
+                    'parent_id' => $set2->parent_id,
+                    'children_ids' => [],
+                    'cover' => null,
+                    'metadata' => [],
+                ],
+            ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testShowSetsWithCover($user): void
     {
         $this->$user->givePermissionTo('products.show_details');

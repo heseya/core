@@ -85,6 +85,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'public' => 'bool',
         'available' => 'bool',
         'quantity_step' => 'float',
+        'vat_rate' => 'float',
     ];
 
     protected array $sortable = [

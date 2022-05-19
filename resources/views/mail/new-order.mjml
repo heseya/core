@@ -39,8 +39,8 @@
             <th style="padding: 0 0 0 15px; width: 20%;">Cena</th>
           </tr> @foreach ($order->products as $item) <tr>
             <td style="padding: 0 15px 0 0;">{{ $item->product->name }}</td>
-            <td style="padding: 0 15px; width: 15%;">{{ $item->quantity }}</td>
-            <td style="padding: 0 0 0 15px; width: 20%;">{{ number_format($item->price, 2, '.', '') }} {{ $order->currency }}</td>
+            <td style="padding: 0 15px; width: 20%;">{{ $item->quantity }}</td>
+            <td style="padding: 0 0 0 15px; width: 25%;">{{ number_format($item->price, 2, '.', '') }} {{ $order->currency }}</td>
           </tr> @endforeach
         </mj-table>
       </mj-column>
@@ -59,6 +59,8 @@
             Miejscowość: {{ $order?->invoiceAddress?->city ?? $order?->deliveryAddress?->city ?? '-' }} <br />
             Telefon kontaktowy: {{ $order?->invoiceAddress?->phone ?? $order?->deliveryAddress?->phone ?? '-' }} <br />
           </p>
+          <p>Tak - akceptuję <a href="https://ksiązki.pl/regulamin">regulamin</a> sklepu <a href="https://ksiązki.pl">ksiązki.pl</a></p>
+          <p>Tak - oświadczam, że niniejszy zakup towarów dotyczy bezpośrednio mojej działalności gospodarczej lecz nie ma dla mnie charakteru zawodowego (zakup nie ma związku z branżą/zawodem, w której/ym prowadzę działalność gospodarczą)</p>
           <p>Pozdrawiamy,<br />Zespół {{ $settingsService->getSetting('store_name')->value }}</p>
         </mj-text>
       </mj-column>
