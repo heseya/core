@@ -14,7 +14,7 @@ class DepositService implements DepositServiceContract
             ->whereNotNull('shipping_date')
             ->where('item_id', '=', $item->getKey())
             ->groupBy('shipping_date')
-            ->orderBy('shipping_date', $order)
+            ->orderBY('shipping_date', $order)
             ->get()->toArray();
     }
 
@@ -24,7 +24,7 @@ class DepositService implements DepositServiceContract
             ->whereNotNull('shipping_time')
             ->where('item_id', '=', $item->getKey())
             ->groupBy('shipping_time')
-            ->orderBy('shipping_time', $order)
+            ->orderBY('shipping_time', $order)
             ->get()->toArray();
     }
 }

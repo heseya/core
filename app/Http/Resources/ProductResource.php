@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class ProductResource extends Resource
 {
@@ -34,7 +34,8 @@ class ProductResource extends Resource
 
     public function view(Request $request): array
     {
-        $sets = Auth::check() ? $this->resource->sets : $this->resource->sets()->public()->get();
+        $sets = Gate::denies('product_sets.show_hidden')
+            ? $this->resource->sets()->public()->get() : $this->resource->sets;
 
         $sales = $this->resource->sales ? ['sales' => SaleResource::collection($this->resource->sales)] : [];
 

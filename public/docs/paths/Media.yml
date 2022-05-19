@@ -12,6 +12,13 @@ Media:
                 description: 'File. Accepted extensions: jpeg, png, gif, bmp, svg, mp4, webm, ogg, avi, mov, wmv'
                 type: string
                 format: binary
+              alt:
+                type: string
+                example: 'alt'
+              metadata.*:
+                type: string
+                example: 'value'
+                description: 'asterisk has to be replaced with metadata key'
             type: object
     responses:
       201:

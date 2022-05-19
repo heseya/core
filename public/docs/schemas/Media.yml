@@ -16,3 +16,7 @@ Media:
     slug:
       type: string
       example: 'test-slug'
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'

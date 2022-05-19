@@ -16,6 +16,14 @@ Product:
       description: 'Base price of the product excluding schemas'
       type: number
       example: 10.99
+    price_min:
+      description: 'Min price after applied all sales'
+      type: number
+      example: 11.99
+    price_max:
+      description: 'Max price after applied all sales'
+      type: number
+      example: 19.99
     price_min_initial:
       description: 'Minimum available product price accounting for schemas'
       type: number
@@ -44,6 +52,10 @@ Product:
       description: 'Google product category identification number'
       type: integer
       example: 123
+    vat_rate:
+      description: 'Value represent tax value'
+      type: number
+      example: 23
     cover:
       $ref: './Media.yml#/Media'
     tags:
@@ -51,30 +63,19 @@ Product:
       type: array
       items:
         $ref: './Tags.yml#/Tag'
-    attributes:
-      description: 'Array of assigned attributes'
-      type: array
-      items:
-        $ref: './Attributes.yml#/AttributeProductList'
-    items:
-      description: 'Ids of assigned items'
-      type: array
-      items:
-        $ref: './Items.yml#/ItemWithRequiredQuantity'
-    price_min:
-      description: 'Min price after applied all sales'
-      type: number
-      example: 11.99
-    price_max:
-      description: 'Max price after applied all sales'
-      type: number
-      example: 19.99
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
 
 ProductView:
   type: object
   allOf:
-    - $ref: '#Product'
+    - $ref: '#/Product'
     - properties:
+        order:
+          type: integer
+          example: 8
         user_id:
           type: string
           example: 026bc5f6-8373-4aeb-972e-e78d72a67121
@@ -82,6 +83,11 @@ ProductView:
           description: 'HTML formatted text to be displayed as a product description'
           type: string
           example: '<h1>Lorem ipsum dolor sit amet</h1>'
+        description_short:
+          description: 'Plain text short product description'
+          type: string
+        items:
+          $ref: './Items.yml#/ItemWithRequiredQuantity'
         gallery:
           description: 'Ids of assigned subsets'
           type: array
@@ -97,17 +103,26 @@ ProductView:
           type: array
           items:
             $ref: './ProductSets.yml#/ProductSet'
-        seo:
-          $ref: './Seo.yml#/SeoView'
         attributes:
           description: 'Array of assigned attributes'
           type: array
           items:
             $ref: './Attributes.yml#/AttributeProduct'
-        items:
-          $ref: './Items.yml#/ItemWithRequiredQuantity'
+        seo:
+          $ref: './Seo.yml#/SeoView'
         sales:
           description: 'List of all applied sales'
           type: array
           items:
             $ref: './Sales.yml#/Sale'
+
+ProductIndex:
+  type: object
+  allOf:
+    - $ref: '#/Product'
+    - properties:
+        attributes:
+          description: 'Array of assigned attributes'
+          type: array
+          items:
+            $ref: './Attributes.yml#/AttributeProductList'

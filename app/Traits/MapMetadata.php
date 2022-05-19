@@ -11,9 +11,15 @@ trait MapMetadata
 {
     public static function mapMetadata(Request $request): array|Missing
     {
+        #mapping form data
+        $data = [];
+        foreach ($request->input() as $key => $value) {
+            data_set($data, $key, $value);
+        }
+
         $metadata = Collection::make();
-        if ($request->has('metadata')) {
-            foreach ($request->input('metadata') as $key => $value) {
+        if (array_key_exists('metadata', $data)) {
+            foreach ($data['metadata'] as $key => $value) {
                 $metadata->push(MetadataDto::manualInit($key, $value, true));
             }
         }

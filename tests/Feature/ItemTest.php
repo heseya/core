@@ -720,7 +720,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateValidationInvalidBothShippingTimeAndDate($user): void
+    public function testCreateValidationProhibitedUnless($user): void
     {
         $this->$user->givePermissionTo('items.add');
 
@@ -741,7 +741,7 @@ class ItemTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateValidationInvalidBothShippingTimeAndDate($user): void
+    public function testUpdateValidationProhibitedUnless($user): void
     {
         $this->$user->givePermissionTo('items.edit');
 
@@ -769,16 +769,15 @@ class ItemTest extends TestCase
         $this->$user->givePermissionTo('items.edit');
 
         Event::fake(ItemUpdated::class);
-        $date = Carbon::now();
         Deposit::factory()->create([
             'item_id' => $this->item->getKey(),
             'quantity' => 2.0,
-            'shipping_date' => $date->addDays(4)->toDateTimeString(),
+            'shipping_date' => Carbon::now()->addDays(4)->toDateTimeString(),
         ]);
 
         $item = [
             'sku' => 'TES/T3',
-            'unlimited_stock_shipping_date' => $date->addDays(1)->toDateTimeString(),
+            'unlimited_stock_shipping_date' => Carbon::tomorrow()->toDateTimeString(),
         ];
 
         $this->actingAs($this->$user)->patchJson(
@@ -797,16 +796,15 @@ class ItemTest extends TestCase
         $this->$user->givePermissionTo('items.edit');
 
         Event::fake(ItemUpdated::class);
-        $time = 4;
         Deposit::factory()->create([
             'item_id' => $this->item->getKey(),
             'quantity' => 2.0,
-            'shipping_time' => $time,
+            'shipping_time' => 4,
         ]);
 
         $item = [
             'sku' => 'TES/T3',
-            'unlimited_stock_shipping_time' => $time - 3,
+            'unlimited_stock_shipping_time' => 1,
         ];
 
         $this->actingAs($this->$user)->patchJson(

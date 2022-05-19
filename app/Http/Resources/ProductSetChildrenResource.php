@@ -34,7 +34,7 @@ class ProductSetChildrenResource extends Resource
     public function view(Request $request): array
     {
         return [
-            'attributes' => AttributeResource::collection($this->resource->attributes),
+            'attributes' => AttributeShortResource::collection($this->resource->attributes),
         ];
     }
 }

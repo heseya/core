@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Dtos\MediaDto;
 use App\Models\Media;
 use App\Models\Order;
 use App\Models\OrderDocument;
@@ -19,9 +20,14 @@ class DocumentService implements DocumentServiceContract
     {
     }
 
+    /**
+     * @throws \Heseya\Dto\DtoException
+     */
     public function storeDocument(Order $order, ?string $name, string $type, UploadedFile $file): OrderDocument
     {
-        $media = $this->mediaService->store($file, true);
+        $mediaDto = MediaDto::instantiateFromFile($file);
+
+        $media = $this->mediaService->store($mediaDto, true);
         $order->documents()->attach($media, ['type' => $type, 'name' => $name ?? null]);
 
         return OrderDocument::where([
