@@ -108,7 +108,7 @@ class AvailabilityService implements AvailabilityServiceContract
                         (!is_null($item->unlimited_stock_shipping_date) &&
                             $item->unlimited_stock_shipping_date >= Carbon::now())
                 )
-        )) {
+            )) {
             return true;
         }
 
