@@ -427,7 +427,7 @@ class DepositsTest extends TestCase
         $depositService = App::make(DepositServiceContract::class);
 
         $itemData = [
-            'unlimited_stock_shipping_date' => Carbon::now()->addDays(10)->toDateTimeString()
+            'unlimited_stock_shipping_date' => Carbon::now()->addDays(10)->toDateTimeString(),
         ];
 
         $item = Item::factory()->create($itemData);
