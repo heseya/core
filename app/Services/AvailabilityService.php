@@ -100,15 +100,13 @@ class AvailabilityService implements AvailabilityServiceContract
         //If every product's item quantity is greater or equal to pivot quantity or product has no schemas
         //then product is available
         $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
-        if ($requiredSelectSchemas->isEmpty() || (
-                $product->items->isNotEmpty() &&
+        if ($requiredSelectSchemas->isEmpty() || ($product->items->isNotEmpty() &&
                 $product->items->every(
                     fn (Item $item) => $item->pivot->required_quantity <= $item->quantity ||
                         !is_null($item->unlimited_stock_shipping_time) ||
                         (!is_null($item->unlimited_stock_shipping_date) &&
                             $item->unlimited_stock_shipping_date >= Carbon::now())
-                )
-            )) {
+                ))) {
             return true;
         }
 
