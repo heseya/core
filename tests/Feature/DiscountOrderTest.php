@@ -465,7 +465,7 @@ class DiscountOrderTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateOrderPriceRound($user): void
+    public function testCreateOrderPriceRoundWithOrderValueDiscount($user): void
     {
         $this->$user->givePermissionTo('orders.add');
         $product1 = Product::factory()->create([
@@ -489,6 +489,14 @@ class DiscountOrderTest extends TestCase
             'code' => null,
         ]);
 
+        $sale3 = Discount::factory()->create([
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::CHEAPEST_PRODUCT,
+            'value' => 35,
+            'target_is_allow_list' => false,
+            'code' => null,
+        ]);
+
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
@@ -502,18 +510,67 @@ class DiscountOrderTest extends TestCase
             'sales_ids' => [
                 $sale1->getKey(),
                 $sale2->getKey(),
+                $sale3->getKey(),
             ],
         ]);
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['summary' => 1826.35]);
+            ->assertJsonFragment(['summary' => 1817.6]);
 
         $orderId = $response->getData()->data->id;
 
         $this->assertDatabaseHas('orders', [
             'id' => $orderId,
-            'summary' => 1826.35,
+            'summary' => 1817.6,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderPriceRound($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+        $product1 = Product::factory()->create([
+            'public' => true,
+            'price' => 5588.75,
+        ]);
+
+        $sale1 = Discount::factory()->create([
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'value' => 35,
+            'target_is_allow_list' => false,
+            'code' => null,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => 'info@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address,
+            'items' => [
+                [
+                    'product_id' => $product1->getKey(),
+                    'quantity' => 2,
+                ],
+            ],
+            'sales_ids' => [
+                $sale1->getKey(),
+            ],
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment(['summary' => 7275.38]);
+
+        $orderId = $response->getData()->data->id;
+
+        $this->assertDatabaseHas('order_products', [
+            'order_id' => $orderId,
+            'product_id' => $product1->getKey(),
+            'price' => 3632.69,
+            'quantity' => 2,
         ]);
     }
 
