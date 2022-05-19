@@ -184,7 +184,7 @@ class DepositService implements DepositServiceContract
             ->get()->toArray();
     }
 
-    public function getDepositWithoutShipping($item): array
+    public function getDepositWithoutShipping(Item $item): array
     {
         return Deposit::query()->selectRaw('SUM(quantity) as quantity')
             ->whereNull('shipping_time')
@@ -332,7 +332,7 @@ class DepositService implements DepositServiceContract
 
         if ($quantity > 0) {
             $deposit = $this->getDepositWithoutShipping($item);
-            if (isset($deposits[0]['quantity'])) {
+            if (isset($deposit[0]['quantity'])) {
                 $this->removeFromWarehouse(
                     $orderProduct,
                     $item,
