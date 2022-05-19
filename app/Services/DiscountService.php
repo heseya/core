@@ -55,6 +55,7 @@ use App\Models\User;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
+use App\Services\Contracts\ShippingTimeDateServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -69,7 +70,8 @@ class DiscountService implements DiscountServiceContract
 {
     public function __construct(
         private SettingsServiceContract $settingsService,
-        private MetadataServiceContract $metadataService
+        private MetadataServiceContract $metadataService,
+        private ShippingTimeDateServiceContract $shippingTimeDateService
     ) {
     }
 
@@ -293,6 +295,7 @@ class DiscountService implements DiscountServiceContract
                 new CartItemResponse($cartItem->getCartItemId(), $price, $price, $cartItem->getQuantity()),
             );
         }
+        $cartShippingTimeAndDate = $this->shippingTimeDateService->getTimeAndDateForCart($cart, $products);
 
         $shippingPrice = $shippingMethod !== null ? $shippingMethod->getPrice($cartValue) : 0;
         $summary = $cartValue + $shippingPrice;
@@ -305,6 +308,8 @@ class DiscountService implements DiscountServiceContract
             $cartValue,
             $shippingPrice,
             $shippingPrice,
+            $cartShippingTimeAndDate['shipping_time'] ?? null,
+            $cartShippingTimeAndDate['shipping_date'] ?? null,
             $summary,
         );
 
