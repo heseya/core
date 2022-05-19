@@ -7,6 +7,7 @@ use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\Product;
 use App\Services\Contracts\AvailabilityServiceContract;
+use App\Services\Contracts\ShippingTimeDateServiceContract;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Event;
@@ -162,4 +163,29 @@ class ShippingTimeDateTest extends TestCase
 
         $this->assertEquals(3, $product->shipping_time);
     }
+
+    public function testStopUnlimitedStockShippingDate(): void
+    {
+        $shippingTimeDateService = App::make(ShippingTimeDateServiceContract::class);
+
+        $itemData = ['unlimited_stock_shipping_date' => Carbon::now()->addHours(-12)->toDateTimeString()];
+
+        $item = Item::factory()->create($itemData);
+
+        $product = Product::factory()->create();
+        $product->items()->attach($item->getKey(), ['required_quantity' => 1]);
+
+        $this->assertNull($product->shipping_date);
+        $now = Carbon::now()->addDays(2)->toDateTimeString();
+        $product->update(['shipping_date' => $now]);
+        $product->refresh();
+
+        $this->assertEquals($now, $product->shipping_date);
+
+        $shippingTimeDateService->stopShippingUnlimitedStockDate();
+        $product->refresh();
+
+        $this->assertNull($product->shipping_date);
+    }
+
 }
