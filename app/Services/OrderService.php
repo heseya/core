@@ -29,6 +29,7 @@ use Exception;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
@@ -65,10 +66,16 @@ class OrderService implements OrderServiceContract
     public function store(OrderDto $dto): Order
     {
         DB::beginTransaction();
-        # Schema values and warehouse items validation
+
+        // Schema values and warehouse items validation
         $products = $this->itemService->checkOrderItems($dto->getItems());
 
-        # Creating order
+        /**
+         * Items related with bought products
+         */
+        $items = new Collection();
+
+        // Creating order
         $shippingMethod = ShippingMethod::findOrFail($dto->getShippingMethodId());
         $deliveryAddress = Address::firstOrCreate($dto->getDeliveryAddress()->toArray());
 
@@ -98,7 +105,7 @@ class OrderService implements OrderServiceContract
             ]
         );
 
-        # Add products to order
+        // Add products to order
         $cartValueInitial = 0;
 
         try {
@@ -120,7 +127,7 @@ class OrderService implements OrderServiceContract
                 $cartValueInitial += $product->price * $item->getQuantity();
 
                 $schemaProductPrice = 0;
-                # Add schemas to products
+                // Add schemas to products
                 foreach ($item->getSchemas() as $schemaId => $value) {
                     $schema = $product->schemas()->findOrFail($schemaId);
 
@@ -136,7 +143,7 @@ class OrderService implements OrderServiceContract
                                 'item_id' => $optionItem->getKey(),
                                 'quantity' => -1 * $item->getQuantity(),
                             ]);
-                            ItemUpdatedQuantity::dispatch($optionItem);
+                            $items->push($optionItem);
                         }
                     }
 
@@ -176,12 +183,16 @@ class OrderService implements OrderServiceContract
             $this->metadataService->sync($order, $dto->getMetadata());
         }
 
-        # Apply discounts to order
+        // Apply discounts to order
         $order = $this->discountService->calcOrderDiscounts($order, $dto);
         $order->push();
 
         DB::commit();
         OrderCreated::dispatch($order);
+
+        foreach ($items->unique() as $item) {
+            ItemUpdatedQuantity::dispatch($item);
+        }
 
         return $order;
     }
