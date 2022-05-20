@@ -20,6 +20,7 @@ class ItemResource extends Resource
             'unlimited_stock_shipping_date' => $this->resource->unlimited_stock_shipping_date,
             'shipping_time' => $this->resource->shipping_time,
             'shipping_date' => $this->resource->shipping_date,
+            'availability' => ItemDepositResource::collection($this->resource->groupedDeposits),
         ], $this->metadataResource('items.show_metadata_private'));
     }
 }

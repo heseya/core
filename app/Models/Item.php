@@ -70,6 +70,14 @@ class Item extends Model implements AuditableContract, SortableContract
         return $this->hasMany(Deposit::class);
     }
 
+    public function groupedDeposits(): HasMany
+    {
+        return $this->hasMany(Deposit::class)
+            ->selectRaw('SUM(quantity) as quantity, shipping_time, shipping_date')
+            ->groupBy(['shipping_time', 'shipping_date'])
+            ->having('quantity', '>', '0');
+    }
+
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class);
