@@ -31,7 +31,6 @@ use Exception;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
@@ -72,11 +71,6 @@ class OrderService implements OrderServiceContract
 
         // Schema values and warehouse items validation
         $products = $this->itemService->checkOrderItems($dto->getItems());
-
-        /**
-         * Items related with bought products
-         */
-        $items = new Collection();
 
         // Creating order
         $shippingMethod = ShippingMethod::findOrFail($dto->getShippingMethodId());
@@ -152,7 +146,7 @@ class OrderService implements OrderServiceContract
                     $cartValueInitial += $price * $item->getQuantity();
                 }
 
-                # Remove items from warehouse
+                // Remove items from warehouse
                 if (!$this->removeItemsFromWarehouse($product, $orderProduct, $item)) {
                     //not every item quantity was removed from warehouse
                     throw new \Exception('Not every item quantity was removed from warehouse');

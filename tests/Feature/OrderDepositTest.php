@@ -11,6 +11,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Models\Status;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 use Tests\Traits\CreateShippingMethod;
@@ -256,5 +257,127 @@ class OrderDepositTest extends TestCase
             ->assertUnprocessable();
 
         Event::assertNotDispatched(OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderWithProductThatGotItemsAndSchema($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        $this->item->deposits()->create([
+            'quantity' => 6,
+            'shipping_time' => 4,
+        ]);
+
+        $this->product->items()->attach($this->item->getKey(), ['required_quantity' => 2]);
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('POST', '/orders', $this->request);
+
+        $response->assertCreated();
+        $order = Order::find($response->getData()->data->id);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->getKey(),
+            'email' => 'test@example.com',
+        ]);
+        $this->assertDatabaseHas('addresses', $this->address->toArray());
+        $this->assertDatabaseHas('order_products', [
+            'order_id' => $order->getKey(),
+            'product_id' => $this->product->getKey(),
+            'quantity' => 2,
+        ]);
+        $this->assertDatabaseHas('order_schemas', [
+            'order_product_id' => $order->products->first()->getKey(),
+            'name' => $this->schema->name,
+            'value' => 'XL',
+        ]);
+        $this->assertDatabaseHas('deposits', [
+            'quantity' => -6,
+            'item_id' => $this->item->getKey(),
+            'order_product_id' => $order->products->first()->getKey(),
+            'shipping_time' => 4,
+        ]);
+        $this->assertDatabaseHas('items', [
+            'id' => $this->item->getKey(),
+            'quantity' => 0,
+        ]);
+
+        Event::assertDispatched(OrderCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteOrderCheckDeposits($user): void
+    {
+        $this->$user->givePermissionTo('orders.edit.status');
+
+        $date = Carbon::now()->addDays(4)->toDateTimeString();
+
+        $this->item->deposits()->create([
+            'quantity' => 6,
+            'shipping_date' => $date,
+        ]);
+
+        $this->product->items()->attach($this->item->getKey(), ['required_quantity' => 2]);
+
+        $order = Order::factory()->create();
+        $orderProduct = $order->products()->create([
+            'product_id' => $this->product->getKey(),
+            'quantity' => 2,
+            'price_initial' => 100,
+            'price' => 100,
+            'name' => $this->product->name,
+        ]);
+        $orderProduct->schemas()->create([
+            'order_product_id' => $orderProduct->getKey(),
+            'name' => 'Size',
+            'value' => 'XL',
+            'price_initial' => 0,
+            'price' => 0,
+        ]);
+        $deposit = $orderProduct->deposits()->create([
+            'order_product_id' => $orderProduct->getKey(),
+            'item_id' => $this->item->getKey(),
+            'quantity' => -6,
+            'shipping_date' => $date,
+        ]);
+
+        $status = Status::factory()->create([
+            'cancel' => true,
+        ]);
+
+        $this->assertEquals(0, $this->item->quantity);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/orders/id:{$order->getKey()}/status", [
+                'status_id' => $status->getKey(),
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+        $this->assertDatabaseMissing('deposits', [
+            'id' => $deposit->getKey(),
+            'quantity' => -6,
+            'shipping_date' => $date,
+        ]);
+        $this->assertDatabaseHas('items', [
+            'id' => $this->item->getKey(),
+            'quantity' => 6,
+            'shipping_date' => $date,
+        ]);
+
+        $this->item->refresh();
+        $this->assertEquals(6, $this->item->quantity);
+
+        Event::assertDispatched(OrderUpdatedStatus::class);
     }
 }
