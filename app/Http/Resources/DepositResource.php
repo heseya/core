@@ -12,6 +12,7 @@ class DepositResource extends Resource
             'id' => $this->resource->getKey(),
             'quantity' => $this->resource->quantity,
             'item_id' => $this->resource->item_id,
+            'sku' => $this->resource->item->sku,
             'shipping_time' => $this->resource->shipping_time,
             'shipping_date' => $this->resource->shipping_date,
         ];

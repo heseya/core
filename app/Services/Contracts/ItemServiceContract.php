@@ -21,4 +21,6 @@ interface ItemServiceContract
     public function update(Item $item, ItemDto $dto): Item;
 
     public function destroy(Item $item): void;
+
+    public function refreshSerchable(Item $item): void;
 }

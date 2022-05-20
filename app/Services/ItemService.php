@@ -11,6 +11,7 @@ use App\Events\ItemDeleted;
 use App\Events\ItemUpdated;
 use App\Exceptions\ClientException;
 use App\Models\Item;
+use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Services\Contracts\ItemServiceContract;
@@ -20,8 +21,9 @@ use Illuminate\Support\Collection;
 
 class ItemService implements ItemServiceContract
 {
-    public function __construct(private MetadataServiceContract $metadataService)
-    {
+    public function __construct(
+        private MetadataServiceContract $metadataService,
+    ) {
     }
 
     public function addItemArrays(array $items1, array $items2): array
@@ -153,6 +155,22 @@ class ItemService implements ItemServiceContract
         if ($item->delete()) {
             ItemDeleted::dispatch($item);
         }
+    }
+
+    /**
+     * Refresh serchable index on all related products.
+     */
+    public function refreshSerchable(Item $item): void
+    {
+        $ids = $item->products()->select('id')->pluck('id');
+
+        foreach ($item->options as $option) {
+            /** @var Option $option */
+            $ids->concat($option->schema->products()->select('id')->pluck('id')->toArray());
+        }
+
+        // @phpstan-ignore-next-line
+        Product::whereIn('id', $ids->unique())->searchable();
     }
 
     private function checkItems(array $items): array

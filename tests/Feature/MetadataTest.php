@@ -500,4 +500,26 @@ class MetadataTest extends TestCase
                 $metadata2->name => $metadata2->value,
             ]);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexEmptyObject($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                "/products/id:{$product->getKey()}",
+            )
+            ->assertOk();
+
+        $this->assertStringContainsString('"metadata":{}', $response->getContent());
+    }
 }

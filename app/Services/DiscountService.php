@@ -255,6 +255,11 @@ class DiscountService implements DiscountServiceContract
             }
         }
 
+        $refreshed = $order->fresh();
+        if ($refreshed->discounts->count() === 0) {
+            $order = $this->roundProductPrices($order);
+        }
+
         $order->cart_total = round($order->cart_total, 2);
         $order->shipping_price = round($order->shipping_price, 2);
         $order->summary = $order->cart_total + $order->shipping_price;
@@ -321,7 +326,7 @@ class DiscountService implements DiscountServiceContract
             if ($this->checkConditionGroups($discount, $cart, $cartResource->cart_total)) {
                 $cartResource = $this->applyDiscountOnCart($discount, $cart, $cartResource);
                 $newSummary = $cartResource->cart_total + $cartResource->shipping_price;
-                $appliedDiscount = $summary - $newSummary;
+                $appliedDiscount = round($summary - $newSummary, 2);
 
                 if ($discount->code !== null) {
                     $cartResource->coupons->push(
@@ -336,6 +341,9 @@ class DiscountService implements DiscountServiceContract
                 $summary = $newSummary;
             }
         }
+
+        $cartResource->cart_total = round($cartResource->cart_total, 2);
+        $cartResource->shipping_price = round($cartResource->shipping_price, 2);
 
         $cartResource->summary = $cartResource->cart_total + $cartResource->shipping_price;
         return $cartResource;
@@ -567,6 +575,11 @@ class DiscountService implements DiscountServiceContract
 
     private function roundProductPrices(Order $order): Order
     {
+        // If cheapest product has been split, it will not be returned by $order->products,
+        // and $order->products()->get() has products without discount, if order will be saved at this moment,
+        // all products in database should be updated, and split product will be returned by $order->products
+        $order->push();
+        $order->refresh();
         $totalPrice = 0;
         foreach ($order->products as $product) {
             $product->price = round($product->price, 2);
@@ -721,6 +734,9 @@ class DiscountService implements DiscountServiceContract
                 'price' => $product->price,
                 'price_initial' => $product->price_initial,
                 'name' => $product->name,
+                'base_price_initial' => $product->price,
+                'base_price' => $product->price,
+                'vat_rate' => $product->vat_rate,
             ]);
 
             $product->discounts->each(function (Discount $discount) use ($newProduct): void {
@@ -771,6 +787,8 @@ class DiscountService implements DiscountServiceContract
                 $this->calc($cartResource->shipping_price, $discount),
                 'minimal_shipping_price',
             );
+
+            $cartResource->shipping_price = round($cartResource->shipping_price, 2);
         }
         return $cartResource;
     }
@@ -782,6 +800,7 @@ class DiscountService implements DiscountServiceContract
             $this->calc($cartResource->cart_total, $discount),
             'minimal_order_price',
         );
+        $cartResource->cart_total = round($cartResource->cart_total, 2);
         return $cartResource;
     }
 
@@ -889,7 +908,7 @@ class DiscountService implements DiscountServiceContract
             $price = $price < $minimalProductPrice ? $minimalProductPrice : $price;
         }
 
-        return $price;
+        return round($price, 2);
     }
 
     private function checkIsProductInDiscount(string $productId, Discount $discount): bool

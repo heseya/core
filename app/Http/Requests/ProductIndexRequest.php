@@ -47,7 +47,9 @@ class ProductIndexRequest extends FormRequest
             'tags.*' => ['string', 'uuid'],
 
             'metadata' => ['nullable', 'array'],
+            'metadata.*' => ['filled'],
             'metadata_private' => ['nullable', 'array', new CanShowPrivateMetadata()],
+            'metadata_private.*' => ['filled'],
 
             'price' => ['nullable', 'array'],
             'price.min' => ['nullable', 'numeric', 'min:0'],
