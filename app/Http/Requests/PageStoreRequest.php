@@ -25,7 +25,7 @@ class PageStoreRequest extends FormRequest implements SeoRequestContract
             $this->metadataRules(),
             [
                 'name' => ['required', 'string', 'max:255'],
-                'slug' => ['required', 'string', 'max:255'],
+                'slug' => ['required', 'unique:pages', 'string', 'max:255'],
                 'public' => [new Boolean()],
                 'content_html' => ['required', 'string', 'min:1'],
             ],
