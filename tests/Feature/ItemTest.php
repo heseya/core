@@ -816,4 +816,180 @@ class ItemTest extends TestCase
 
         Event::assertNotDispatched(ItemUpdated::class);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateUnlimitedShippingTime($user): void
+    {
+        $this->$user->givePermissionTo('items.edit');
+
+        $item = [
+            'sku' => 'TES/T3',
+            'unlimited_stock_shipping_time' => 5,
+        ];
+
+        $this->actingAs($this->$user)->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        )->assertOk()
+            ->assertJson(['data' => $item]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateUnlimitedShippingTimeNull($user): void
+    {
+        $this->$user->givePermissionTo('items.edit');
+
+        $item = [
+            'sku' => 'TES/T3',
+            'unlimited_stock_shipping_time' => null,
+        ];
+
+        $this->actingAs($this->$user)->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        )->assertOk()
+            ->assertJson(['data' => $item]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateUnlimitedShippingDate($user): void
+    {
+        $this->$user->givePermissionTo('items.edit');
+
+        $item = [
+            'sku' => 'TES/T3',
+            'unlimited_stock_shipping_date' => Carbon::now()->toDateTimeString(),
+        ];
+
+        $this->actingAs($this->$user)->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        )->assertOk()
+            ->assertJson(['data' => $item]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateUnlimitedShippingDateNull($user): void
+    {
+        $this->$user->givePermissionTo('items.edit');
+
+        $item = [
+            'sku' => 'TES/T3',
+            'unlimited_stock_shipping_date' => null,
+        ];
+
+        $this->actingAs($this->$user)->patchJson(
+            '/items/id:' . $this->item->getKey(),
+            $item,
+        )->assertOk()
+            ->assertJson(['data' => $item]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateUnlimitedShippingTime($user): void
+    {
+        $this->$user->givePermissionTo('items.add');
+
+        $item = [
+            'name' => 'Test',
+            'sku' => 'TES/T1',
+            'unlimited_stock_shipping_time' => 5,
+            'unlimited_stock_shipping_date' => null,
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/items', $item);
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $item]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateUnlimitedShippingDate($user): void
+    {
+        $this->$user->givePermissionTo('items.add');
+
+        $item = [
+            'name' => 'Test',
+            'sku' => 'TES/T1',
+            'unlimited_stock_shipping_time' => null,
+            'unlimited_stock_shipping_date' => Carbon::now()->addDays(5)->toDateTimeString(),
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/items', $item);
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $item]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWhitAvailability($user): void
+    {
+        $this->$user->givePermissionTo('items.show_details');
+
+        $item = Item::factory()->create();
+
+        $time = 4;
+        Deposit::factory()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => 2.0,
+            'shipping_time' => $time,
+        ]);
+        Deposit::factory()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => 2.0,
+            'shipping_time' => $time,
+        ]);
+        Deposit::factory()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => 2.0,
+            'shipping_time' => $time + 5,
+        ]);
+        $date = Carbon::now()->addDays(5)->toDateTimeString();
+        Deposit::factory()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => 2.0,
+            'shipping_date' => $date,
+        ]);
+        Deposit::factory()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => 2.0,
+        ]);
+        Deposit::factory()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => 2.0,
+            'shipping_time' => $time + 1,
+        ]);
+        Deposit::factory()->create([
+            'item_id' => $item->getKey(),
+            'quantity' => -2.0,
+            'shipping_time' => $time + 1,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/items/id:' . $item->getKey())
+            ->assertOk()
+            ->assertJsonFragment([
+                'availability' => [
+                    ['quantity' => '2.0000', 'shipping_time' => null, 'shipping_date' => null],
+                    ['quantity' => '2.0000', 'shipping_time' => null, 'shipping_date' => $date],
+                    ['quantity' => '4.0000', 'shipping_time' => 4, 'shipping_date' => null],
+                    ['quantity' => '2.0000', 'shipping_time' => 9, 'shipping_date' => null],
+                ],
+            ]);
+    }
 }

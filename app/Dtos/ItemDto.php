@@ -14,8 +14,8 @@ class ItemDto extends Dto implements InstantiateFromRequest
 
     public string|Missing $name;
     public string|Missing $sku;
-    public int|Missing $unlimited_stock_shipping_time;
-    public string|Missing $unlimited_stock_shipping_date;
+    public int|null|Missing $unlimited_stock_shipping_time;
+    public string|null|Missing $unlimited_stock_shipping_date;
     public array|Missing $metadata;
 
     public static function instantiateFromRequest(FormRequest $request): self
@@ -39,12 +39,12 @@ class ItemDto extends Dto implements InstantiateFromRequest
         return $this->sku;
     }
 
-    public function getUnlimitedStockShippingTime(): Missing|int
+    public function getUnlimitedStockShippingTime(): Missing|null|int
     {
         return $this->unlimited_stock_shipping_time;
     }
 
-    public function getUnlimitedStockShippingDate(): Missing|string
+    public function getUnlimitedStockShippingDate(): Missing|null|string
     {
         return $this->unlimited_stock_shipping_date;
     }
