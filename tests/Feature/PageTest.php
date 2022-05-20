@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\MetadataType;
+use App\Enums\ValidationError;
 use App\Events\PageCreated;
 use App\Events\PageDeleted;
 use App\Events\PageUpdated;
@@ -272,6 +273,28 @@ class PageTest extends TestCase
         $this->assertDatabaseHas('pages', $page);
 
         Event::assertDispatched(PageCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithSameSlug($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        $html = '<h1>hello world</h1>';
+        $page = [
+            'name' => 'Test',
+            'slug' => $this->page->slug,
+            'public' => true,
+            'content_html' => $html,
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/pages', $page);
+
+        $response->assertJsonFragment([
+            'key' => ValidationError::UNIQUE,
+        ]);
     }
 
     /**
