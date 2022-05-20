@@ -2,7 +2,7 @@
   <mj-body background-color="#F4F4F4">
     <mj-section background-color="#fff" background-repeat="repeat" text-align="center" padding-top="50px">
       <mj-column>
-        <mj-image height="50px" width="50px" src="{{ $settingsService->getSetting('mail_logo')->value ?? $settingsService->getSetting('store_logo')->value }}"></mj-image>
+        <mj-image height="50px" src="{{ $settingsService->getSetting('mail_logo')->value ?? $settingsService->getSetting('store_logo')->value }}"></mj-image>
       </mj-column>
     </mj-section>
     <mj-section background-color="#fff" background-repeat="repeat" padding-bottom="0px" text-align="center">
@@ -35,11 +35,11 @@
         <mj-table>
           <tr style="border-bottom:1px solid #ecedee;text-align:left;padding:15px 0;">
             <th style="padding: 0 15px 0 0;">Nazwa</th>
-            <th style="padding: 0 15px; width: 15%;">Ilość</th>
-            <th style="padding: 0 0 0 15px; width: 20%;">Cena</th>
+            <th style="padding: 0 15px; width: 30px;">Ilość</th>
+            <th style="padding: 0 0 0 15px; width: 25%;">Cena</th>
           </tr> @foreach ($order->products as $item) <tr>
             <td style="padding: 0 15px 0 0;">{{ $item->product->name }}</td>
-            <td style="padding: 0 15px; width: 20%;">{{ $item->quantity }}</td>
+            <td style="padding: 0 15px; width: 30px;">{{ $item->quantity }}</td>
             <td style="padding: 0 0 0 15px; width: 25%;">{{ number_format($item->price, 2, '.', '') }} {{ $order->currency }}</td>
           </tr> @endforeach
         </mj-table>
@@ -59,8 +59,12 @@
             Miejscowość: {{ $order?->invoiceAddress?->city ?? $order?->deliveryAddress?->city ?? '-' }} <br />
             Telefon kontaktowy: {{ $order?->invoiceAddress?->phone ?? $order?->deliveryAddress?->phone ?? '-' }} <br />
           </p>
+        </mj-text>
+        <mj-text align="left" color="#000" font-family="Arial, sans-serif" font-size="10px" line-height="14px">
           <p>Tak - akceptuję <a href="https://ksiązki.pl/regulamin">regulamin</a> sklepu <a href="https://ksiązki.pl">ksiązki.pl</a></p>
           <p>Tak - oświadczam, że niniejszy zakup towarów dotyczy bezpośrednio mojej działalności gospodarczej lecz nie ma dla mnie charakteru zawodowego (zakup nie ma związku z branżą/zawodem, w której/ym prowadzę działalność gospodarczą)</p>
+        </mj-text>
+        <mj-text align="left" color="#000" font-family="Arial, sans-serif" font-size="14px" line-height="22px">
           <p>Pozdrawiamy,<br />Zespół {{ $settingsService->getSetting('store_name')->value }}</p>
         </mj-text>
       </mj-column>
