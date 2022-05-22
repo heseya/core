@@ -91,6 +91,10 @@ final class Handler extends ExceptionHandler
             $error = new Error();
         }
 
+        if (Config::get('app.debug') === true) {
+            $error->setStack($this->convertExceptionToArray($exception));
+        }
+
         return ErrorResource::make($error)
             ->response()
             ->setStatusCode($error->code);
