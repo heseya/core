@@ -12,18 +12,19 @@ class WebHookEventListener implements ShouldQueue
 {
     public function handle(WebHookEvent $event): void
     {
-        $event_data = $event->getData();
-        $issuer = $event->getIssuer();
+        $webHooks = WebHook::whereJsonContains('events', $event->getEvent());
 
         if ($event->isHidden()) {
-            $web_hooks = WebHook::whereJsonContains('events', $event_data['event'])
-                ->where('with_hidden', '=', true)
-                ->get();
-        } else {
-            $web_hooks = WebHook::whereJsonContains('events', $event_data['event'])
-                ->get();
+            $webHooks->where('with_hidden', true);
         }
 
-        Notification::send($web_hooks, new WebHookNotification($event_data, $issuer));
+        $webHooks = $webHooks->get();
+
+        if ($webHooks->count() > 0) {
+            Notification::send($webHooks, new WebHookNotification(
+                $event->getData(),
+                $event->getIssuer(),
+            ));
+        }
     }
 }
