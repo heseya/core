@@ -76,9 +76,6 @@ class ProductSetController extends Controller
             return ProductSetParentChildrenResource::make($productSet);
         }
 
-        // @phpstan-ignore-next-line
-        $productSet->products()->searchable();
-
         return ProductSetParentResource::make($productSet);
     }
 
