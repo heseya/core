@@ -47,7 +47,7 @@ When writing the code for this project, follow rules from [Laravel best practice
 
 You can test your code with [PHP Insights](https://phpinsights.com/).
 ```
-php artisan insights
+composer style
 ```
 
 Additional:
