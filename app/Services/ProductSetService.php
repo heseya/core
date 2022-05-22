@@ -139,13 +139,11 @@ class ProductSetService implements ProductSetServiceContract
 
     public function update(ProductSet $set, ProductSetUpdateDto $dto): ProductSet
     {
-        $parentId = $set->parent?->getKey();
-
         if ($dto->getParentId() !== null) {
             $parent = ProductSet::findOrFail($dto->getParentId());
-            $lastChild = $parent->children()->reversed()->first();
 
-            if ($parentId !== $dto->getParentId()) {
+            if ($set->parent_id !== $dto->getParentId()) {
+                $lastChild = $parent->children()->reversed()->first();
                 $order = $lastChild ? $lastChild->order + 1 : 0;
             } else {
                 $order = $set->order;
@@ -155,9 +153,8 @@ class ProductSetService implements ProductSetServiceContract
             $slug = $dto->isSlugOverridden() ? $dto->getSlugSuffix() :
                 $parent->slug . '-' . $dto->getSlugSuffix();
         } else {
-            $last = ProductSet::reversed()->first();
-
-            if ($parentId !== $dto->getParentId()) {
+            if ($set->parent_id !== null) {
+                $last = ProductSet::reversed()->first();
                 $order = $last ? $last->order + 1 : 0;
             } else {
                 $order = $set->order;
@@ -171,7 +168,7 @@ class ProductSetService implements ProductSetServiceContract
             'slug' => Rule::unique('product_sets', 'slug')->ignoreModel($set),
         ])->validate();
 
-        $children = Collection::make($dto->getChildrenIds())->map(fn ($id) => ProductSet::findOrFail($id));
+        $children = ProductSet::whereIn('id', $dto->getChildrenIds())->get();
         $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->isPublic());
 
         $rootOrder = ProductSet::reversed()->first()->order + 1;
@@ -193,10 +190,12 @@ class ProductSetService implements ProductSetServiceContract
             $set->attributes()->sync($attributes);
         }
 
-        $seo = $set->seo;
-        if ($seo !== null) {
-            $this->seoMetadataService->update($dto->getSeo(), $seo);
+        if ($set->seo !== null) {
+            $this->seoMetadataService->update($dto->getSeo(), $set->seo);
         }
+
+        // @phpstan-ignore-next-line
+        $set->products()->searchable();
 
         ProductSetUpdated::dispatch($set);
 
