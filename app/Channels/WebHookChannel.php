@@ -12,10 +12,17 @@ class WebHookChannel
         $data = $notification->toWebHook($notifiable);
 
         $webhook = WebhookCall::create()
+            ->meta([
+                'web_hook_id' => $notifiable->getKey(),
+                'event' => $data['event'] ?? null,
+                'triggered_at' => $data['triggered_at'] ?? null,
+            ])
+            ->throwExceptionOnFailure()
             ->url($notifiable->url)
             ->payload($data);
 
         $secret = $notifiable->secret;
+
         if ($secret !== null) {
             $webhook
                 ->signUsing(WebHookSigner::class)

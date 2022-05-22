@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\WebHookController;
+use App\Http\Controllers\WebHookLogController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('webhooks')->group(function (): void {
@@ -19,4 +20,7 @@ Route::prefix('webhooks')->group(function (): void {
 
     Route::get('events', [EventController::class, 'index'])
         ->middleware('permission:events.show');
+
+    Route::get('logs', [WebHookLogController::class, 'index'])
+        ->middleware('permission:webhooks.show_details');
 });

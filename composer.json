@@ -116,7 +116,8 @@
         "pre-commit": [
             "@style",
             "@phpstan",
-            "@check"
+            "@check",
+            "swagger-cli validate ./public/docs/api.yml"
         ],
         "test": [
             "@php artisan test --env=.env"

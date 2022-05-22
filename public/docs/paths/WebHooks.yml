@@ -1,0 +1,17 @@
+Logs:
+  get:
+    tags:
+      - WebHooks
+    summary: 'list with logs of failed webhooks'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/WebHookLog.yml#/WebHookLog'
+              type: object
