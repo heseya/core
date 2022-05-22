@@ -136,6 +136,8 @@ paths:
     $ref: './paths/Coupons.yml#/CouponsParams'
   '/coupons/{code}':
     $ref: './paths/Coupons.yml#/CouponCode'
+  /webhooks/logs:
+    $ref: './paths/WebHooks.yml#/Logs'
   /webhooks/events:
     get:
       tags:
@@ -622,25 +624,6 @@ components:
       $ref: './schemas/Users.yml#/User'
     UserView:
       $ref: './schemas/Users.yml#/UserView'
-    WebHookEventLogEntry:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        triggered_at:
-          description: 'Displayed webhook event triggered time'
-          type: string
-          format: date-time
-          example: '2021-10-07T08:49'
-        url:
-          description: 'Displayed webhook event url'
-          type: string
-          example: 'https://app.heseya.com'
-        status_code:
-          description: 'Webhook event status code'
-          type: number
-          example: 200
-      type: object
     WebHook:
       properties:
         id:
@@ -672,11 +655,6 @@ components:
           items:
             type: string
             example: OrderCreated
-        logs:
-          description: 'List of WebHooks logs'
-          type: array
-          items:
-            $ref: '#/components/schemas/WebHookEventLogEntry'
       type: object
     Address:
       $ref: './schemas/Addresses.yml#/Address'

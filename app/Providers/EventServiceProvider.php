@@ -33,6 +33,7 @@ use App\Listeners\ItemUpdatedQuantityListener;
 use App\Listeners\OrderCreatedListener;
 use App\Listeners\OrderUpdatedStatusListener;
 use App\Listeners\WebHookEventListener;
+use App\Listeners\WebHookFailedListener;
 use App\Models\AttributeOption;
 use App\Models\Deposit;
 use App\Models\ItemProduct;
@@ -44,6 +45,7 @@ use App\Observers\ItemProductObserver;
 use App\Observers\PageObserver;
 use App\Observers\PaymentObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Spatie\WebhookServer\Events\FinalWebhookCallFailedEvent;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -66,6 +68,9 @@ class EventServiceProvider extends ServiceProvider
         OrderUpdatedStatus::class => [
             OrderUpdatedStatusListener::class,
             WebHookEventListener::class,
+        ],
+        FinalWebhookCallFailedEvent::class => [
+            WebHookFailedListener::class,
         ],
         // WebHookEvents
         SaleCreated::class => [

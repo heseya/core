@@ -1,0 +1,25 @@
+WebHookLog:
+  type: object
+  properties:
+    id:
+      type: string
+      example: "be1186e6-4bb4-4e36-a304-d8425b4de7fc"
+    web_hook:
+      $ref: './../api.yml#/components/schemas/WebHook'
+    triggered_at:
+      description: 'Displayed webhook event triggered time'
+      type: string
+      format: date-time
+      example: '2021-10-07T08:49'
+    url:
+      description: 'Displayed webhook event url'
+      type: string
+      example: 'https://heseya.com'
+    status_code:
+      description: 'Webhook event status code'
+      type: number
+      example: 404
+    payload:
+      type: object
+    response:
+      type: string

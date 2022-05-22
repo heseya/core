@@ -36,7 +36,6 @@ class WebHookTest extends TestCase
             'with_issuer' => $this->webHook->with_issuer,
             'with_hidden' => $this->webHook->with_hidden,
             'events' => $this->webHook->events,
-            'logs' => $this->webHook->logs,
         ];
 
         $this->expected_structure = [
@@ -47,7 +46,6 @@ class WebHookTest extends TestCase
             'with_issuer',
             'with_hidden',
             'events',
-            'logs',
         ];
     }
 
