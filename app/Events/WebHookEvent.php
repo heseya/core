@@ -32,7 +32,7 @@ abstract class WebHookEvent
         return [
             'data' => $this->getDataContent(),
             'data_type' => $this->getDataType(),
-            'event' => Str::remove('App\\Events\\', $this::class),
+            'event' => $this->getEvent(),
             'triggered_at' => $this->triggered_at,
             'issuer_type' => $this->issuer ? IssuerType::getValue(strtoupper($this->getModelClass($this->issuer)))
                 : IssuerType::UNAUTHENTICATED,
@@ -52,6 +52,11 @@ abstract class WebHookEvent
     public function isHidden(): bool
     {
         return false;
+    }
+
+    public function getEvent(): string
+    {
+        return Str::remove('App\\Events\\', $this::class);
     }
 
     protected function getModelClass(Model|Pivot $model): string
