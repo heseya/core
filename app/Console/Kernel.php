@@ -21,6 +21,6 @@ class Kernel extends ConsoleKernel
     {
         $schedule->job(new CheckActiveSales())->everyFifteenMinutes();
 
-        $schedule->job(new StopShippingUnlimitedStockDateJob())->dailyAt('23:59:59');
+        $schedule->job(new StopShippingUnlimitedStockDateJob())->hourly();
     }
 }
