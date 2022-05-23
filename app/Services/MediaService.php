@@ -46,7 +46,10 @@ class MediaService implements MediaServiceContract
             ->delete($media->url);
 
         if ($response->failed()) {
-            throw new ServerException(Exceptions::SERVER_CDN_ERROR);
+            throw new ServerException(
+                message: Exceptions::SERVER_CDN_ERROR,
+                errorArray: $response->json(),
+            );
         }
 
         $media->forceDelete();
@@ -61,7 +64,10 @@ class MediaService implements MediaServiceContract
             ->post(Config::get('silverbox.host') . '/' . Config::get('silverbox.client') . $private);
 
         if ($response->failed()) {
-            throw new ServerException(Exceptions::SERVER_CDN_ERROR);
+            throw new ServerException(
+                message: Exceptions::SERVER_CDN_ERROR,
+                errorArray: $response->json(),
+            );
         }
 
         $media = Media::create([
@@ -112,7 +118,10 @@ class MediaService implements MediaServiceContract
             ]);
 
         if ($response->failed() || !isset($response['path'])) {
-            throw new ServerException(Exceptions::SERVER_CDN_ERROR);
+            throw new ServerException(
+                message: Exceptions::SERVER_CDN_ERROR,
+                errorArray: $response->json(),
+            );
         }
 
         return Config::get('silverbox.host') . '/' . $response['path'];

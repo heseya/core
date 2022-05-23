@@ -148,6 +148,9 @@ final class Handler extends ExceptionHandler
 
     private function getExceptionData(Throwable|Exception $exception): array
     {
+        if ($exception instanceof ServerException && Config::get('app.debug') === true) {
+            return $exception->errors();
+        }
         if ($exception instanceof StoreException) {
             return $exception->errors();
         }
