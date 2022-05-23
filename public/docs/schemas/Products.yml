@@ -56,6 +56,13 @@ Product:
       description: 'Value represent tax value'
       type: number
       example: 23
+    shipping_time:
+      type: integer
+      example: 5
+    shipping_date:
+      type: string
+      format: date-time
+      example: '2021-09-13T11:11'
     cover:
       $ref: './Media.yml#/Media'
     tags:
