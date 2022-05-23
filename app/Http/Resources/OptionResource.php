@@ -17,6 +17,8 @@ class OptionResource extends Resource
             'price' => $this->resource->price,
             'disabled' => $this->resource->disabled,
             'available' => $this->resource->available,
+            'shipping_time' => $this->resource->shipping_time,
+            'shipping_date' => $this->resource->shipping_date,
             'items' => ItemPublicResource::collection($this->resource->items),
         ], $this->metadataResource('options.show_metadata_private'));
     }

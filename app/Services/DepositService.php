@@ -13,6 +13,23 @@ use Illuminate\Support\Collection;
 
 class DepositService implements DepositServiceContract
 {
+    public function getTimeAndDateForCartItems(array $cartItems): array
+    {
+        $maxProductItemsTimeDate = ['shipping_time' => null, 'shipping_date' => null];
+        foreach ($cartItems as $cartItem) {
+            /** @var Item $item */
+            $item = $cartItem['item'];
+            $timeDate = $this->getShippingTimeDateForQuantity($item, $cartItem['quantity']);
+            //if missing item return time/date as null
+            if (is_null($timeDate['shipping_time']) && is_null($timeDate['shipping_date'])) {
+                return $timeDate;
+            }
+            $maxProductItemsTimeDate = $this->maxShippingTimeAndDate($timeDate, $maxProductItemsTimeDate);
+        }
+
+        return $maxProductItemsTimeDate;
+    }
+
     public function getProductShippingTimeDate(Product $product): array
     {
         //get max shipping time/date form items
