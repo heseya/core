@@ -63,6 +63,8 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'order',
         'price_min_initial',
         'price_max_initial',
+        'shipping_time',
+        'shipping_date',
     ];
 
     protected array $auditInclude = [

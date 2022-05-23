@@ -8,11 +8,13 @@ use App\Models\Option;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Services\Contracts\AvailabilityServiceContract;
+use App\Services\Contracts\DepositServiceContract;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 class AvailabilityService implements AvailabilityServiceContract
 {
-    public function __construct()
+    public function __construct(protected DepositServiceContract $depositService)
     {
     }
 
@@ -37,18 +39,30 @@ class AvailabilityService implements AvailabilityServiceContract
 
         $products = $schemas->pluck('products')->flatten()->unique('id');
         $products->each(fn ($product) => $this->calculateProductAvailability($product));
+
+        $item->products->each(fn ($product) => $this->calculateProductAvailability($product));
     }
 
     public function calculateOptionAvailability(Option $option): void
     {
-        if ($option->available && $option->items->every(fn ($item) => $item->quantity <= 0)) {
+        if ($option->available && $option->items->some(
+            fn ($item) => $item->quantity <= 0 && is_null($item->unlimited_stock_shipping_time) &&
+                (is_null($item->unlimited_stock_shipping_date) ||
+                    $item->unlimited_stock_shipping_date < Carbon::now())
+        )) {
             $option->update([
                 'available' => false,
+                'shipping_time' => null,
+                'shipping_date' => null,
             ]);
-        } elseif (!$option->available && $option->items->some(fn ($item) => $item->quantity > 0)) {
+        } elseif (!$option->available && $option->items->every(
+            fn ($item) => $item->quantity > 0 || !is_null($item->unlimited_stock_shipping_time) ||
+                (!is_null($item->unlimited_stock_shipping_date) &&
+                    $item->unlimited_stock_shipping_date >= Carbon::now())
+        )) {
             $option->update([
                 'available' => true,
-            ]);
+            ] + $this->depositService->getMaxShippingTimeDateForItems($option->items));
         }
     }
 
@@ -57,16 +71,20 @@ class AvailabilityService implements AvailabilityServiceContract
         if (!$schema->required) {
             $schema->update([
                 'available' => true,
+                'shipping_time' => null,
+                'shipping_date' => null,
             ]);
         }
         if ($schema->available && $schema->options->every(fn ($option) => !$option->available)) {
             $schema->update([
                 'available' => false,
+                'shipping_time' => null,
+                'shipping_date' => null,
             ]);
         } elseif (!$schema->available && $schema->options->some(fn ($option) => $option->available)) {
             $schema->update([
                 'available' => true,
-            ]);
+            ] + $this->depositService->getMinShippingTimeDateForOptions($schema->options));
         }
     }
 
@@ -74,24 +92,21 @@ class AvailabilityService implements AvailabilityServiceContract
     {
         $product->update([
             'available' => $this->isProductAvaiable($product),
-        ]);
+        ] + $this->depositService->getProductShippingTimeDate($product));
     }
 
     public function isProductAvaiable(Product $product): bool
     {
         //If every product's item quantity is greater or equal to pivot quantity or product has no schemas
         //then product is available
-        if (
-            $product->schemas->isEmpty() ||
-            ($product->items->isNotEmpty() &&
-                $product->items->every(fn (Item $item) => $item->pivot->required_quantity <= $item->quantity))
-        ) {
-            return true;
-        }
-
         $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
-
-        if ($requiredSelectSchemas->isEmpty()) {
+        if ($requiredSelectSchemas->isEmpty() || ($product->items->isNotEmpty() &&
+                $product->items->every(
+                    fn (Item $item) => $item->pivot->required_quantity <= $item->quantity ||
+                        !is_null($item->unlimited_stock_shipping_time) ||
+                        (!is_null($item->unlimited_stock_shipping_date) &&
+                            $item->unlimited_stock_shipping_date >= Carbon::now())
+                ))) {
             return true;
         }
 
