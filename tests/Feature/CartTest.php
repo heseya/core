@@ -6,6 +6,7 @@ use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Models\ConditionGroup;
+use App\Models\Deposit;
 use App\Models\Discount;
 use App\Models\Item;
 use App\Models\Option;
@@ -874,6 +875,358 @@ class CartTest extends TestCase
                 'name' => $discountApplied2->name,
                 'value' => 897.2,
             ] + $discountCode2);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessShippingTimeAndDateWhitUnlimitedStockShippingDate($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $shipping_date = Carbon::now()->addDays(10)->toDateTimeString();
+
+        $itemData = ['unlimited_stock_shipping_date' => $shipping_date];
+
+        $item = Item::factory()->create($itemData);
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 4600.0,
+        ]);
+        $product->items()->attach($item->getKey(), ['required_quantity' => 100]);
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'shipping_time' => null,
+                'shipping_date' => $shipping_date,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessShippingTimeAndDateWhitMultiProductsAndOneItem($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $shippingDate = Carbon::now()->addDays(10)->toDateTimeString();
+
+        $item = Item::factory()->create();
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 4600.0,
+        ]);
+
+        Deposit::factory([
+            'quantity' => 150,
+            'shipping_date' => $shippingDate,
+        ])->create([
+            'item_id' => $item->getKey(),
+        ]);
+
+        $product->items()->attach($item->getKey(), ['required_quantity' => 100]);
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'shipping_time' => null,
+                'shipping_date' => $shippingDate,
+            ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'shipping_time' => null,
+                'shipping_date' => null,
+            ]);
+
+        $shippingDate2 = Carbon::now()->addDays(20)->toDateTimeString();
+
+        Deposit::factory([
+            'quantity' => 150,
+            'shipping_date' => $shippingDate2,
+        ])->create([
+            'item_id' => $item->getKey(),
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+                [
+                    'cartitem_id' => '2',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'shipping_time' => null,
+                'shipping_date' => $shippingDate2,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessShippingTimeAndDateWhitMultiProductsAndOneNotAvailable($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $shippingDate = Carbon::now()->addDays(10)->toDateTimeString();
+
+        $item = Item::factory()->create();
+        $item2 = Item::factory()->create();
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 4600.0,
+        ]);
+        $product2 = Product::factory()->create([
+            'public' => true,
+            'price' => 4600.0,
+        ]);
+
+        Deposit::factory([
+            'quantity' => 150,
+            'shipping_date' => $shippingDate,
+        ])->create([
+            'item_id' => $item->getKey(),
+        ]);
+
+        $product->items()->attach($item->getKey(), ['required_quantity' => 100]);
+
+        Deposit::factory([
+            'quantity' => 1,
+            'shipping_time' => 4,
+        ])->create([
+            'item_id' => $item2->getKey(),
+        ]);
+
+        $product2->items()->attach($item2->getKey(), ['required_quantity' => 1]);
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+                [
+                    'cartitem_id' => '2',
+                    'product_id' => $product2->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+                [
+                    'cartitem_id' => '3',
+                    'product_id' => $this->productWithSchema->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [
+                        $this->schema->getKey() => $this->option->getKey(),
+                    ],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'shipping_time' => null,
+                'shipping_date' => $shippingDate,
+            ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product2->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+                [
+                    'cartitem_id' => '2',
+                    'product_id' => $this->productWithSchema->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [
+                        $this->schema->getKey() => $this->option->getKey(),
+                    ],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'shipping_time' => 4,
+                'shipping_date' => null,
+            ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+                [
+                    'cartitem_id' => '2',
+                    'product_id' => $product2->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'shipping_time' => null,
+                'shipping_date' => null,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessProductWithSchemaAndItemNotAvailable($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $this->item->deposits()->create([
+            'quantity' => 2,
+        ]);
+
+        $this->productWithSchema->items()->attach($this->item->getKey(), ['required_quantity' => 2]);
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->productWithSchema->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [
+                        $this->schema->getKey() => $this->option->getKey(),
+                    ],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 0,
+                'cart_total' => 0,
+                'shipping_price_initial' => 8.11,
+                'shipping_price' => 8.11,
+                'summary' => 8.11,
+                'coupons' => [],
+                'sales' => [],
+            ])
+            ->assertJsonMissing([
+                'cartitem_id' => '1',
+                'price' => 100,
+                'price_discounted' => 100,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessProductWithSchemaAndItemAvailable($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $this->item->deposits()->create([
+            'quantity' => 6,
+        ]);
+
+        $this->productWithSchema->items()->attach($this->item->getKey(), ['required_quantity' => 2]);
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->productWithSchema->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [
+                        $this->schema->getKey() => $this->option->getKey(),
+                    ],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 200,
+                'cart_total' => 200,
+                'shipping_price_initial' => 8.11,
+                'shipping_price' => 8.11,
+                'summary' => 208.11,
+                'coupons' => [],
+                'sales' => [],
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => 100,
+                'price_discounted' => 100,
+            ]);
     }
 
     private function prepareDataForCouponTest($coupon): array

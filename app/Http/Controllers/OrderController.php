@@ -26,6 +26,7 @@ use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Models\OrderDocument;
 use App\Models\Status;
+use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Illuminate\Http\JsonResponse;
@@ -40,6 +41,7 @@ class OrderController extends Controller
     public function __construct(
         private OrderServiceContract $orderService,
         private DocumentServiceContract $documentService,
+        private DepositServiceContract $depositService
     ) {
     }
 
@@ -101,6 +103,7 @@ class OrderController extends Controller
             foreach ($deposits as $deposit) {
                 $item = $deposit->item;
                 $item->decrement('quantity', $deposit->quantity);
+                $deposit->item->update($this->depositService->getShippingTimeDateForQuantity($item));
                 ItemUpdatedQuantity::dispatch($item);
             }
         }

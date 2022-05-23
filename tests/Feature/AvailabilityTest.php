@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\SchemaType;
 use App\Events\ProductUpdated;
 use App\Models\Address;
+use App\Models\Deposit;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Order;
@@ -259,9 +260,12 @@ class AvailabilityTest extends TestCase
 
         $data = $this->createDataPatternOne();
 
-        $data->get('item')->update([
+        Deposit::factory()->create([
+            'item_id' => $data->get('item')->getKey(),
             'quantity' => 2,
         ]);
+
+        $data->get('item')->refresh();
 
         $data->get('item')->options()->saveMany([$data->get('optionOne'), $data->get('optionTwo')]);
 
@@ -317,7 +321,8 @@ class AvailabilityTest extends TestCase
     {
         $data = $this->createDataPatternOne();
 
-        $data->get('item')->update([
+        Deposit::factory()->create([
+            'item_id' => $data->get('item')->getKey(),
             'quantity' => 2,
         ]);
 

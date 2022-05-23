@@ -46,6 +46,7 @@ use App\Services\Contracts\SchemaServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use App\Services\Contracts\SettingsServiceContract;
 use App\Services\Contracts\ShippingMethodServiceContract;
+use App\Services\Contracts\ShippingTimeDateServiceContract;
 use App\Services\Contracts\SortServiceContract;
 use App\Services\Contracts\StatusServiceContract;
 use App\Services\Contracts\TokenServiceContract;
@@ -78,6 +79,7 @@ use App\Services\SchemaService;
 use App\Services\SeoMetadataService;
 use App\Services\SettingsService;
 use App\Services\ShippingMethodService;
+use App\Services\ShippingTimeDateService;
 use App\Services\SortService;
 use App\Services\StatusService;
 use App\Services\TokenService;
@@ -131,6 +133,7 @@ class AppServiceProvider extends ServiceProvider
         PackageTemplateServiceContract::class => PackageTemplateService::class,
         DepositServiceContract::class => DepositService::class,
         DiscountStoreServiceContract::class => DiscountStoreService::class,
+        ShippingTimeDateServiceContract::class => ShippingTimeDateService::class,
     ];
 
     /**
