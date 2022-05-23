@@ -44,6 +44,8 @@ class Schema extends Model implements SortableContract
         'pattern',
         'validation',
         'available',
+        'shipping_time',
+        'shipping_date',
     ];
 
     protected $casts = [

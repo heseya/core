@@ -6,9 +6,9 @@ use App\Dtos\AddressDto;
 use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
+use App\Dtos\OrderProductDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\SchemaType;
-use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdated;
 use App\Exceptions\ClientException;
@@ -18,8 +18,10 @@ use App\Models\Address;
 use App\Models\CartResource;
 use App\Models\Order;
 use App\Models\OrderProduct;
+use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
@@ -29,7 +31,6 @@ use Exception;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
@@ -42,7 +43,8 @@ class OrderService implements OrderServiceContract
         private DiscountServiceContract $discountService,
         private ItemServiceContract $itemService,
         private NameServiceContract $nameService,
-        private MetadataServiceContract $metadataService
+        private MetadataServiceContract $metadataService,
+        private DepositServiceContract $depositService
     ) {
     }
 
@@ -69,11 +71,6 @@ class OrderService implements OrderServiceContract
 
         // Schema values and warehouse items validation
         $products = $this->itemService->checkOrderItems($dto->getItems());
-
-        /**
-         * Items related with bought products
-         */
-        $items = new Collection();
 
         // Creating order
         $shippingMethod = ShippingMethod::findOrFail($dto->getShippingMethodId());
@@ -136,15 +133,6 @@ class OrderService implements OrderServiceContract
                     if ($schema->type->is(SchemaType::SELECT)) {
                         $option = $schema->options()->findOrFail($value);
                         $value = $option->name;
-
-                        # Remove items from warehouse
-                        foreach ($option->items as $optionItem) {
-                            $orderProduct->deposits()->create([
-                                'item_id' => $optionItem->getKey(),
-                                'quantity' => -1 * $item->getQuantity(),
-                            ]);
-                            $items->push($optionItem);
-                        }
                     }
 
                     $orderProduct->schemas()->create([
@@ -156,6 +144,12 @@ class OrderService implements OrderServiceContract
 
                     $schemaProductPrice += $price;
                     $cartValueInitial += $price * $item->getQuantity();
+                }
+
+                // Remove items from warehouse
+                if (!$this->removeItemsFromWarehouse($product, $orderProduct, $item)) {
+                    //not every item quantity was removed from warehouse
+                    throw new \Exception('Not every item quantity was removed from warehouse');
                 }
 
                 if ($schemaProductPrice) {
@@ -189,10 +183,6 @@ class OrderService implements OrderServiceContract
 
         DB::commit();
         OrderCreated::dispatch($order);
-
-        foreach ($items->unique() as $item) {
-            ItemUpdatedQuantity::dispatch($item);
-        }
 
         return $order;
     }
@@ -292,5 +282,38 @@ class OrderService implements OrderServiceContract
         Cache::add('address.' . $order->$attribute, $old ? ((string) $old) : null);
         $order->forceAudit($attribute);
         return Address::updateOrCreate(['id' => $order->$attribute], $addressDto->toArray());
+    }
+
+    private function removeItemsFromWarehouse(Product $product, OrderProduct $orderProduct, OrderProductDto $item): bool
+    {
+        $itemsToRemove = [];
+        $productItems = $product->items;
+        foreach ($productItems as $productItem) {
+            $quantity = $productItem->pivot->required_quantity * $item->getQuantity();
+
+            if (!isset($itemsToRemove[$productItem->getKey()])) {
+                $itemsToRemove[$productItem->getKey()] = ['item' => $productItem,'quantity' => $quantity];
+            } else {
+                $itemsToRemove[$productItem->getKey()]['quantity'] += $quantity;
+            }
+        }
+
+        foreach ($item->getSchemas() as $schemaId => $value) {
+            $schema = $product->schemas()->findOrFail($schemaId);
+
+            if ($schema->type->is(SchemaType::SELECT)) {
+                $option = $schema->options()->findOrFail($value);
+                foreach ($option->items as $optionItem) {
+                    $quantity = $item->getQuantity();
+                    if (!isset($itemsToRemove[$optionItem->getKey()])) {
+                        $itemsToRemove[$optionItem->getKey()] = ['item' => $optionItem, 'quantity' => $quantity];
+                    } else {
+                        $itemsToRemove[$optionItem->getKey()]['quantity'] += $quantity;
+                    }
+                }
+            }
+        }
+
+        return !$itemsToRemove || $this->depositService->removeItemsFromWarehouse($itemsToRemove, $orderProduct);
     }
 }

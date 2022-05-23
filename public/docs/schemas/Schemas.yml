@@ -45,6 +45,13 @@ Schema:
       type: string
     validation:
       type: string
+    shipping_time:
+      type: integer
+      example: 5
+    shipping_date:
+      type: string
+      format: date-time
+      example: '2021-09-13T11:11'
     options:
       type: array
       items:
@@ -77,6 +84,13 @@ Option:
       description: 'Shows whether the option is available for purchase (in stock and not disabled)'
       type: boolean
       example: true
+    shipping_time:
+      type: integer
+      example: 5
+    shipping_date:
+      type: string
+      format: date-time
+      example: '2021-09-13T11:11'
     items:
       type: array
       items:

@@ -21,6 +21,8 @@ class Option extends Model
         'schema_id',
         'order',
         'available',
+        'shipping_time',
+        'shipping_date',
     ];
 
     protected $casts = [
