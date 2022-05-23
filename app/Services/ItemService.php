@@ -102,6 +102,13 @@ class ItemService implements ItemServiceContract
             $schemas = $item->getSchemas();
             $available = true;
 
+            $productItems = [];
+            /** @var Item $productItem */
+            foreach ($product->items as $productItem) {
+                $productItems[$productItem->getKey()] = $productItem->pivot->required_quantity * $item->getQuantity();
+            }
+            $selectedItems = $this->addItemArrays($selectedItems, $productItems);
+
             /** @var Schema $schema */
             foreach ($product->schemas as $schema) {
                 $value = $schemas[$schema->getKey()] ?? null;

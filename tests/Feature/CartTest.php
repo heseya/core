@@ -1113,7 +1113,6 @@ class CartTest extends TestCase
                 'shipping_date' => null,
             ]);
 
-        //TODO FIX TEST one item not should be not available
         $response = $this->actingAs($this->$user)->postJson('/cart/process', [
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'items' => [
@@ -1137,6 +1136,96 @@ class CartTest extends TestCase
             ->assertJsonFragment([
                 'shipping_time' => null,
                 'shipping_date' => null,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessProductWithSchemaAndItemNotAvailable($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $this->item->deposits()->create([
+            'quantity' => 2,
+        ]);
+
+        $this->productWithSchema->items()->attach($this->item->getKey(), ['required_quantity' => 2]);
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->productWithSchema->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [
+                        $this->schema->getKey() => $this->option->getKey(),
+                    ],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 0,
+                'cart_total' => 0,
+                'shipping_price_initial' => 8.11,
+                'shipping_price' => 8.11,
+                'summary' => 8.11,
+                'coupons' => [],
+                'sales' => [],
+            ])
+            ->assertJsonMissing([
+                'cartitem_id' => '1',
+                'price' => 100,
+                'price_discounted' => 100,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessProductWithSchemaAndItemAvailable($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $this->item->deposits()->create([
+            'quantity' => 6,
+        ]);
+
+        $this->productWithSchema->items()->attach($this->item->getKey(), ['required_quantity' => 2]);
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->productWithSchema->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [
+                        $this->schema->getKey() => $this->option->getKey(),
+                    ],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 200,
+                'cart_total' => 200,
+                'shipping_price_initial' => 8.11,
+                'shipping_price' => 8.11,
+                'summary' => 208.11,
+                'coupons' => [],
+                'sales' => [],
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => 100,
+                'price_discounted' => 100,
             ]);
     }
 
