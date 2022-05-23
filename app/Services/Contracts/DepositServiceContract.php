@@ -8,6 +8,8 @@ use Illuminate\Support\Collection;
 
 interface DepositServiceContract
 {
+    public function getTimeAndDateForCartItems(array $cartItems): array;
+
     public function getProductShippingTimeDate(Product $product): array;
 
     public function getMinShippingTimeDateForOptions(Collection $options): array;
