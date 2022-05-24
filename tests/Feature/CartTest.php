@@ -878,6 +878,99 @@ class CartTest extends TestCase
     }
 
     /**
+     * @dataProvider couponOrSaleProvider
+     */
+    public function testCartProcessRoundedValuesCheapestProduct($user, $coupon): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $code = $coupon ? [] : ['code' => null];
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 45,
+        ]);
+
+        $discountApplied = Discount::factory()->create([
+            'description' => 'Testowy kupon obowiązujący',
+            'name' => 'Testowy kupon obowiązujący',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::CHEAPEST_PRODUCT,
+            'target_is_allow_list' => true,
+            'priority' => 1,
+        ] + $code);
+
+        $discountApplied->products()->attach($product->getKey());
+
+        $discountApplied2 = Discount::factory()->create([
+            'description' => 'Order value discount',
+            'name' => 'Order value discount',
+            'value' => 5,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::CHEAPEST_PRODUCT,
+            'target_is_allow_list' => true,
+            'priority' => 0,
+        ] + $code);
+
+        $coupons = $coupon ? [
+            'coupons' => [
+                $discountApplied->code,
+                $discountApplied2->code,
+            ],
+        ] : [];
+
+        $response = $this->actingAs($this->$user)->postJson(
+            '/cart/process',
+            [
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'items' => [
+                    [
+                        'cartitem_id' => '1',
+                        'product_id' => $product->getKey(),
+                        'quantity' => 2,
+                        'schemas' => [],
+                    ],
+                ],
+            ] + $coupons,
+        );
+
+        $result = $coupon ? ['sales' => []] : ['coupons' => []];
+        $discountCode = $coupon ? ['code' => $discountApplied->code] : [];
+        $discountCode2 = $coupon ? ['code' => $discountApplied2->code] : [];
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 90,
+                'cart_total' => 83.48,
+                'shipping_price_initial' => 8.11,
+                'shipping_price' => 8.11,
+                'summary' => 91.59,
+            ] + $result)
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => 45,
+                'price_discounted' => 45,
+            ])
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => 45,
+                'price_discounted' => 38.48,
+            ])
+            ->assertJsonFragment([
+                'id' => $discountApplied->getKey(),
+                'name' => $discountApplied->name,
+                'value' => 4.5,
+            ] + $discountCode)
+            ->assertJsonFragment([
+                'id' => $discountApplied2->getKey(),
+                'name' => $discountApplied2->name,
+                'value' => 2.02,
+            ] + $discountCode2);
+    }
+
+    /**
      * @dataProvider authProvider
      */
     public function testCartProcessShippingTimeAndDateWhitUnlimitedStockShippingDate($user): void
