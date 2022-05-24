@@ -693,6 +693,90 @@ class CartTest extends TestCase
     }
 
     /**
+     * @dataProvider couponOrSaleProvider
+     */
+    public function testCartProcessCheapestProductWithSamePrice($user, $coupon): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $code = $coupon ? [] : ['code' => null];
+
+        $productDiscount = Discount::factory()
+            ->create([
+                'description' => 'Discount on product',
+                'name' => 'Discount on product',
+                'value' => 100,
+                'type' => DiscountType::PERCENTAGE,
+                'target_type' => DiscountTargetType::PRODUCTS,
+                'target_is_allow_list' => false,
+            ] + $code);
+
+        $discount = Discount::factory()
+            ->create([
+                'description' => 'Discount on cheapest product',
+                'name' => 'Discount on cheapest product',
+                'value' => 5,
+                'type' => DiscountType::PERCENTAGE,
+                'target_type' => DiscountTargetType::CHEAPEST_PRODUCT,
+                'target_is_allow_list' => true,
+            ] + $code);
+
+        $coupons = $coupon ? [
+            'coupons' => [
+                $discount->code,
+                $productDiscount->code,
+            ],
+        ] : [];
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->postJson(
+                '/cart/process',
+                [
+                    'shipping_method_id' => $this->shippingMethod->getKey(),
+                    'items' => [
+                        [
+                            'cartitem_id' => '1',
+                            'product_id' => $this->product->getKey(),
+                            'quantity' => 2,
+                            'schemas' => [],
+                        ],
+                    ],
+                ] + $coupons
+            );
+
+        $result = $coupon ? ['sales' => []] : ['coupons' => []];
+        $discountCode1 = $coupon ? ['code' => $productDiscount->code] : [];
+        $discountCode2 = $coupon ? ['code' => $discount->code] : [];
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 9200,
+                'cart_total' => 0,
+                'shipping_price_initial' => 0,
+                'shipping_price' => 0,
+                'summary' => 0,
+            ] + $result)
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => 4600,
+                'price_discounted' => 0,
+                'quantity' => 2,
+            ])
+            ->assertJsonFragment([
+                'id' => $productDiscount->getKey(),
+                'name' => $productDiscount->name,
+                'value' => 9200,
+            ] + $discountCode1)
+            ->assertJsonFragment([
+                'id' => $discount->getKey(),
+                'name' => $discount->name,
+                'value' => 0,
+            ] + $discountCode2);
+    }
+
+    /**
      * @dataProvider authProvider
      */
     public function testCartProcessWithDiscountValueAmountExtendPrice($user): void

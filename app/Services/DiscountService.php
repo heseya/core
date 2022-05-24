@@ -724,7 +724,9 @@ class DiscountService implements DiscountServiceContract
             ['quantity', 'asc'],
         ])->first();
 
-        if ($product->quantity > 1) {
+        $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
+
+        if ($product->quantity > 1 && $product->price !== $minimalProductPrice) {
             $product->update(['quantity' => $product->quantity - 1]);
 
             /** @var OrderProduct $newProduct */
@@ -747,7 +749,6 @@ class DiscountService implements DiscountServiceContract
             $product = $newProduct;
         }
 
-        $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
         $price = $product->price;
 
         if ($price !== $minimalProductPrice) {
@@ -842,7 +843,9 @@ class DiscountService implements DiscountServiceContract
             ['quantity', 'asc'],
         ])->first();
 
-        if ($cartItem->quantity > 1) {
+        $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
+
+        if ($cartItem->quantity > 1 && $cartItem->price_discounted !== $minimalProductPrice) {
             $cart->items->first(function ($value) use ($cartItem): bool {
                 return $value->cartitem_id === $cartItem->cartitem_id && $value->quantity === $cartItem->quantity;
             })->quantity = $cartItem->quantity - 1;
@@ -857,8 +860,6 @@ class DiscountService implements DiscountServiceContract
         }
 
         $price = $cartItem->price_discounted;
-
-        $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
 
         if ($price !== $minimalProductPrice) {
             $newPrice = round($price - $this->calc($price, $discount), 2);
