@@ -169,6 +169,7 @@ class DepositService implements DepositServiceContract
         return Deposit::query()->selectRaw('SUM(quantity) as quantity, shipping_date')
             ->whereNotNull('shipping_date')
             ->where('item_id', '=', $item->getKey())
+            ->having('quantity', '>', '0')
             ->groupBy('shipping_date')
             ->orderBy('shipping_date', $order)
             ->get()->toArray();
@@ -179,6 +180,7 @@ class DepositService implements DepositServiceContract
         return Deposit::query()->selectRaw('SUM(quantity) as quantity, shipping_time')
             ->whereNotNull('shipping_time')
             ->where('item_id', '=', $item->getKey())
+            ->having('quantity', '>', '0')
             ->groupBy('shipping_time')
             ->orderBy('shipping_time', $order)
             ->get()->toArray();
@@ -189,6 +191,7 @@ class DepositService implements DepositServiceContract
         return Deposit::query()->selectRaw('SUM(quantity) as quantity')
             ->whereNull('shipping_time')
             ->whereNull('shipping_date')
+            ->having('quantity', '>', '0')
             ->where('item_id', '=', $item->getKey())
             ->groupBy('shipping_time')
             ->get()->toArray();

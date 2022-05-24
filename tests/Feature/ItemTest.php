@@ -769,16 +769,16 @@ class ItemTest extends TestCase
         $this->$user->givePermissionTo('items.edit');
 
         Event::fake(ItemUpdated::class);
-        $date = Carbon::now();
+
         Deposit::factory()->create([
             'item_id' => $this->item->getKey(),
             'quantity' => 2.0,
-            'shipping_date' => $date->addDays(4)->toDateTimeString(),
+            'shipping_date' => Carbon::now()->addDays(4)->toDateTimeString(),
         ]);
 
         $item = [
             'sku' => 'TES/T3',
-            'unlimited_stock_shipping_date' => $date->addDays(1)->toDateTimeString(),
+            'unlimited_stock_shipping_date' => Carbon::now()->addDays(1)->toDateTimeString(),
         ];
 
         $this->actingAs($this->$user)->patchJson(
@@ -824,9 +824,26 @@ class ItemTest extends TestCase
     {
         $this->$user->givePermissionTo('items.edit');
 
+        $time = 4;
+        Deposit::factory()->create([
+            'item_id' => $this->item->getKey(),
+            'quantity' => 2.0,
+            'shipping_time' => $time,
+        ]);
+        Deposit::factory()->create([
+            'item_id' => $this->item->getKey(),
+            'quantity' => -2.0,
+            'shipping_time' => $time,
+        ]);
+        Deposit::factory()->create([
+            'item_id' => $this->item->getKey(),
+            'quantity' => 2.0,
+            'shipping_time' => $time - 2,
+        ]);
+
         $item = [
             'sku' => 'TES/T3',
-            'unlimited_stock_shipping_time' => 5,
+            'unlimited_stock_shipping_time' => $time - 1,
         ];
 
         $this->actingAs($this->$user)->patchJson(
@@ -862,9 +879,24 @@ class ItemTest extends TestCase
     {
         $this->$user->givePermissionTo('items.edit');
 
+        Deposit::factory()->create([
+            'item_id' => $this->item->getKey(),
+            'quantity' => 2.0,
+            'shipping_date' => Carbon::now()->addDays(4)->toDateTimeString(),
+        ]);
+        Deposit::factory()->create([
+            'item_id' => $this->item->getKey(),
+            'quantity' => -2.0,
+            'shipping_date' => Carbon::now()->addDays(4)->toDateTimeString(),
+        ]);
+        Deposit::factory()->create([
+            'item_id' => $this->item->getKey(),
+            'quantity' => 2.0,
+            'shipping_date' => Carbon::now()->addDays(2)->toDateTimeString(),
+        ]);
         $item = [
             'sku' => 'TES/T3',
-            'unlimited_stock_shipping_date' => Carbon::now()->toDateTimeString(),
+            'unlimited_stock_shipping_date' => Carbon::now()->addDays(3)->toDateTimeString(),
         ];
 
         $this->actingAs($this->$user)->patchJson(
@@ -989,6 +1021,48 @@ class ItemTest extends TestCase
                     ['quantity' => '2.0000', 'shipping_time' => null, 'shipping_date' => $date],
                     ['quantity' => '4.0000', 'shipping_time' => 4, 'shipping_date' => null],
                     ['quantity' => '2.0000', 'shipping_time' => 9, 'shipping_date' => null],
+                ],
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexWhitAvailability($user): void
+    {
+        $this->$user->givePermissionTo('items.show');
+        $this->$user->givePermissionTo('items.show_details');
+        $this->$user->givePermissionTo('deposits.add');
+
+        $item = Item::factory()->create();
+
+        $deposit = [
+            'quantity' => 10,
+            'shipping_time' => 10,
+        ];
+
+        $this->actingAs($this->$user)->postJson(
+            "/items/id:{$item->getKey()}/deposits",
+            $deposit,
+        )->assertCreated();
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/items/id:' . $item->getKey())
+            ->assertOk()
+            ->assertJsonFragment([
+                'availability' => [
+                    ['quantity' => '10.0000', 'shipping_time' => 10, 'shipping_date' => null],
+                ],
+            ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/items')
+            ->assertOk()
+            ->assertJsonFragment([
+                'availability' => [
+                    ['quantity' => '10.0000', 'shipping_time' => 10, 'shipping_date' => null],
                 ],
             ]);
     }

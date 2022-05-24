@@ -21,11 +21,14 @@ class UnlimitedShippingDate implements Rule
      */
     public function passes($attribute, $value): bool
     {
+        if (is_null($value)) {
+            return true;
+        }
         $depositService = App::make(DepositServiceContract::class);
         $depositsDate = $depositService->getDepositsGroupByDateForItem($this->item, 'DESC');
 
         return !isset($depositsDate[0]) ||
-            $this->item->unlimited_stock_shipping_date >= $depositsDate[0]['shipping_date'];
+            $value >= $depositsDate[0]['shipping_date'];
     }
 
     public function message(): string
