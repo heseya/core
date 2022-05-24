@@ -2,12 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Events\OrderUpdatedPaid;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -127,6 +129,8 @@ class PaymentTest extends TestCase
      */
     public function testPayuNotification($user): void
     {
+        Event::fake(OrderUpdatedPaid::class);
+
         $this->$user->givePermissionTo('payments.edit');
 
         $payment = Payment::factory()->make([
@@ -153,6 +157,8 @@ class PaymentTest extends TestCase
             'id' => $payment->getKey(),
             'paid' => true,
         ]);
+
+        Event::assertDispatched(OrderUpdatedPaid::class);
     }
 
     /**
@@ -172,6 +178,8 @@ class PaymentTest extends TestCase
      */
     public function testOfflinePayment($user): void
     {
+        Event::fake(OrderUpdatedPaid::class);
+
         $this->$user->givePermissionTo('payments.offline');
 
         $code = $this->order->code;
@@ -202,6 +210,8 @@ class PaymentTest extends TestCase
 
         $this->order->refresh();
         $this->assertTrue($this->order->paid);
+
+        Event::assertDispatched(OrderUpdatedPaid::class);
     }
 
     /**
