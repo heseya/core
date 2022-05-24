@@ -861,7 +861,7 @@ class DiscountService implements DiscountServiceContract
         $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
 
         if ($price !== $minimalProductPrice) {
-            $newPrice = $price - $this->calc($price, $discount);
+            $newPrice = round($price - $this->calc($price, $discount), 2);
 
             $cartItem->price_discounted = $newPrice < $minimalProductPrice ? $minimalProductPrice : $newPrice;
 
