@@ -21,11 +21,14 @@ class UnlimitedShippingTime implements Rule
      */
     public function passes($attribute, $value): bool
     {
+        if (is_null($value)) {
+            return true;
+        }
         $depositService = App::make(DepositServiceContract::class);
         $depositsTime = $depositService->getDepositsGroupByTimeForItem($this->item, 'DESC');
 
         return !isset($depositsTime[0]) ||
-            $this->item->unlimited_stock_shipping_time >= $depositsTime[0]['shipping_time'];
+            $value >= $depositsTime[0]['shipping_time'];
     }
 
     public function message(): string
