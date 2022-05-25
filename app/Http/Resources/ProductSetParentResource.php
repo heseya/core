@@ -30,7 +30,7 @@ class ProductSetParentResource extends Resource
             'seo' => SeoMetadataResource::make($this->resource->seo),
             'description_html' => $this->resource->description_html,
             'cover' => MediaResource::make($this->resource->media),
-            'attributes' => AttributeShortResource::collection($this->resource->attributes),
+            'attributes' => AttributeResource::collection($this->resource->attributes),
         ], $this->metadataResource('product_sets.show_metadata_private'));
     }
 }
