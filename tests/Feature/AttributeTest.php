@@ -883,6 +883,32 @@ class AttributeTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexOptionsWithPagination($user): void
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        AttributeOption::factory()
+            ->count(20)
+            ->sequence(fn ($sequence) => ['index' => $sequence->index])
+            ->create([
+                'attribute_id' => $this->attribute->getKey(),
+            ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', "/attributes/id:{$this->attribute->getKey()}/options", ['limit' => 10])
+            ->assertOk()
+            ->assertJsonCount(10, 'data')
+            ->assertJsonFragment([
+                'per_page' => 10,
+                'to' => 10,
+                'total' => 21,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testIndexOptionsWrongId($user): void
     {
         $this->$user->givePermissionTo('attributes.show');
@@ -1627,5 +1653,35 @@ class AttributeTest extends TestCase
                     ],
                 ],
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexAttributeOptionName($user): void
+    {
+        $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
+
+        unset($this->newAttribute['options']);
+        $attribute = Attribute::create($this->newAttribute);
+
+        AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'name' => 'Searched name',
+        ]);
+        AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 2,
+            'name' => 'Another name',
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/attributes/id:' . $attribute->getKey() .'/options', ['name' => 'Searched name'])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['name' => 'Searched name'])
+            ->assertJsonMissing(['name' => 'Another name']);
     }
 }
