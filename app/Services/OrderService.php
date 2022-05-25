@@ -62,7 +62,7 @@ class OrderService implements OrderServiceContract
 
         $value = ($value < 0 ? 0 : $value) + $order->shipping_price;
 
-        return round($value, 2);
+        return round($value, 2, PHP_ROUND_HALF_UP);
     }
 
     public function store(OrderDto $dto): Order
