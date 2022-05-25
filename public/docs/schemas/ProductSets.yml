@@ -46,7 +46,7 @@ ProductSet:
     attributes:
       type: array
       items:
-        $ref: './Attributes.yml#/AttributeShortMetadata'
+        $ref: './Attributes.yml#/AttributeMetadata'
     metadata:
       $ref: './../schemas/Metadata.yml#/Metadata'
     metadata_private:
@@ -146,7 +146,7 @@ ProductSetChildren:
     attributes:
       type: array
       items:
-        $ref: './Attributes.yml#/AttributeShort'
+        $ref: './Attributes.yml#/Attribute'
     metadata:
       type: array
       items:
