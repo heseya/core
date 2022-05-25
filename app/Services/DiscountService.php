@@ -260,8 +260,8 @@ class DiscountService implements DiscountServiceContract
             $order = $this->roundProductPrices($order);
         }
 
-        $order->cart_total = round($order->cart_total, 2);
-        $order->shipping_price = round($order->shipping_price, 2);
+        $order->cart_total = round($order->cart_total, 2, PHP_ROUND_HALF_UP);
+        $order->shipping_price = round($order->shipping_price, 2, PHP_ROUND_HALF_UP);
         $order->summary = $order->cart_total + $order->shipping_price;
         $order->paid = $order->summary <= 0;
 
@@ -326,7 +326,7 @@ class DiscountService implements DiscountServiceContract
             if ($this->checkConditionGroups($discount, $cart, $cartResource->cart_total)) {
                 $cartResource = $this->applyDiscountOnCart($discount, $cart, $cartResource);
                 $newSummary = $cartResource->cart_total + $cartResource->shipping_price;
-                $appliedDiscount = round($summary - $newSummary, 2);
+                $appliedDiscount = round($summary - $newSummary, 2, PHP_ROUND_HALF_UP);
 
                 if ($discount->code !== null) {
                     $cartResource->coupons->push(
@@ -342,8 +342,8 @@ class DiscountService implements DiscountServiceContract
             }
         }
 
-        $cartResource->cart_total = round($cartResource->cart_total, 2);
-        $cartResource->shipping_price = round($cartResource->shipping_price, 2);
+        $cartResource->cart_total = round($cartResource->cart_total, 2, PHP_ROUND_HALF_UP);
+        $cartResource->shipping_price = round($cartResource->shipping_price, 2, PHP_ROUND_HALF_UP);
 
         $cartResource->summary = $cartResource->cart_total + $cartResource->shipping_price;
         return $cartResource;
@@ -582,11 +582,11 @@ class DiscountService implements DiscountServiceContract
         $order->refresh();
         $totalPrice = 0;
         foreach ($order->products as $product) {
-            $product->price = round($product->price, 2);
+            $product->price = round($product->price, 2, PHP_ROUND_HALF_UP);
             $totalPrice += $product->price * $product->quantity;
         }
 
-        $order->cart_total = round($totalPrice, 2);
+        $order->cart_total = round($totalPrice, 2, PHP_ROUND_HALF_UP);
 
         return $order;
     }
@@ -789,7 +789,7 @@ class DiscountService implements DiscountServiceContract
                 'minimal_shipping_price',
             );
 
-            $cartResource->shipping_price = round($cartResource->shipping_price, 2);
+            $cartResource->shipping_price = round($cartResource->shipping_price, 2, PHP_ROUND_HALF_UP);
         }
         return $cartResource;
     }
@@ -801,7 +801,7 @@ class DiscountService implements DiscountServiceContract
             $this->calc($cartResource->cart_total, $discount),
             'minimal_order_price',
         );
-        $cartResource->cart_total = round($cartResource->cart_total, 2);
+        $cartResource->cart_total = round($cartResource->cart_total, 2, PHP_ROUND_HALF_UP);
         return $cartResource;
     }
 
@@ -862,7 +862,7 @@ class DiscountService implements DiscountServiceContract
         $price = $cartItem->price_discounted;
 
         if ($price !== $minimalProductPrice) {
-            $newPrice = round($price - $this->calc($price, $discount), 2);
+            $newPrice = round($price - $this->calc($price, $discount), 2, PHP_ROUND_HALF_UP);
 
             $cartItem->price_discounted = $newPrice < $minimalProductPrice ? $minimalProductPrice : $newPrice;
 
@@ -909,7 +909,7 @@ class DiscountService implements DiscountServiceContract
             $price = $price < $minimalProductPrice ? $minimalProductPrice : $price;
         }
 
-        return round($price, 2);
+        return round($price, 2, PHP_ROUND_HALF_UP);
     }
 
     private function checkIsProductInDiscount(string $productId, Discount $discount): bool

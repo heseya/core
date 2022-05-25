@@ -11,7 +11,7 @@ class SalesShortResource extends Resource
         return [
             'id' => $this->resource->id,
             'name' => $this->resource->name,
-            'value' => $this->resource->value,
+            'value' => round($this->resource->value, 2, PHP_ROUND_HALF_UP),
         ];
     }
 }
