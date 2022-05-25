@@ -48,7 +48,6 @@ class AttributeTest extends TestCase
                 'type',
                 'global',
                 'sortable',
-                'options',
                 'metadata',
             ],
         ];
@@ -83,13 +82,6 @@ class AttributeTest extends TestCase
                 'type' => $this->attribute->type,
                 'global' => $this->attribute->global,
                 'sortable' => $this->attribute->sortable,
-                'metadata' => [],
-            ])
-            ->assertJsonFragment([
-                'index' => $this->option->index,
-                'name' => $this->option->name,
-                'value_number' => $this->option->value_number,
-                'value_date' => $this->option->value_date,
                 'metadata' => [],
             ])
             ->assertJsonFragment($this->newAttribute);
@@ -276,12 +268,6 @@ class AttributeTest extends TestCase
                 'type' => $this->attribute->type,
                 'global' => $this->attribute->global,
                 'sortable' => $this->attribute->sortable,
-            ])
-            ->assertJsonFragment([
-                'index' => $this->option->index,
-                'name' => $this->option->name,
-                'value_number' => $this->option->value_number,
-                'value_date' => $this->option->value_date,
             ]);
     }
 
@@ -348,20 +334,6 @@ class AttributeTest extends TestCase
                 'type' => $attribute->type,
                 'global' => $attribute->global,
                 'sortable' => $attribute->sortable,
-            ])
-            ->assertJsonFragment([
-                'index' => $option1->index,
-                'name' => $option1->name,
-                'value_number' => $option1->value_number,
-                'value_date' => $option1->value_date,
-                'attribute_id' => $option1->attribute_id,
-            ])
-            ->assertJsonFragment([
-                'index' => $option2->index,
-                'name' => $option2->name,
-                'value_number' => $option2->value_number,
-                'value_date' => $option2->value_date,
-                'attribute_id' => $option2->attribute_id,
             ]);
 
         //checking rest of min/max fields in attribute
@@ -423,20 +395,6 @@ class AttributeTest extends TestCase
                 'type' => $attribute->type,
                 'global' => $attribute->global,
                 'sortable' => $attribute->sortable,
-            ])
-            ->assertJsonFragment([
-                'index' => $option1->index,
-                'name' => $option1->name,
-                'value_number' => $option1->value_number,
-                'value_date' => $option1->value_date,
-                'attribute_id' => $option1->attribute_id,
-            ])
-            ->assertJsonFragment([
-                'index' => $option2->index,
-                'name' => $option2->name,
-                'value_number' => $option2->value_number,
-                'value_date' => $option2->value_date,
-                'attribute_id' => $option2->attribute_id,
             ]);
 
         //checking rest of min/max fields in attribute
@@ -472,9 +430,7 @@ class AttributeTest extends TestCase
                 'type' => $this->newAttribute['type'],
                 'global' => $this->newAttribute['global'],
                 'sortable' => $this->newAttribute['sortable'],
-            ])
-            ->assertJsonFragment(['index' => 1] + $this->newAttribute['options'][0])
-            ->assertJsonFragment(['index' => 2] + $this->newAttribute['options'][1]);
+            ]);
     }
 
     /**
@@ -567,9 +523,7 @@ class AttributeTest extends TestCase
                 'type' => $this->newAttribute['type'],
                 'global' => $booleanValue,
                 'sortable' => $booleanValue,
-            ])
-            ->assertJsonFragment(['index' => 1] + $this->newAttribute['options'][0])
-            ->assertJsonFragment(['index' => 2] + $this->newAttribute['options'][1]);
+            ]);
     }
 
     /**
@@ -675,8 +629,7 @@ class AttributeTest extends TestCase
                 'type' => $attributeUpdate['type'],
                 'global' => $attributeUpdate['global'],
                 'sortable' => $attributeUpdate['sortable'],
-            ])
-            ->assertJsonFragment($attributeUpdate['options'][0]);
+            ]);
     }
 
     /**
@@ -715,8 +668,7 @@ class AttributeTest extends TestCase
                 'type' => $attributeUpdate['type'],
                 'global' => $attributeUpdate['global'],
                 'sortable' => $attributeUpdate['sortable'],
-            ])
-            ->assertJsonFragment($attributeUpdate['options'][0]);
+            ]);
     }
 
     /**
@@ -829,9 +781,14 @@ class AttributeTest extends TestCase
                 'type' => $attributeUpdate['type'],
                 'global' => $attributeUpdate['global'],
                 'sortable' => $attributeUpdate['sortable'],
-            ])
-            ->assertJsonFragment($attributeUpdate['options'][0])
-            ->assertJsonMissing(['id' => $this->option->getKey()]);
+            ]);
+
+        $this->assertDatabaseHas('attribute_options', [
+            'attribute_id' => $this->attribute->getKey(),
+            'name' => 'Totally different option',
+            'value_number' => $this->option->value_number,
+            'value_date' => $this->option->value_date,
+        ]);
     }
 
     /**
@@ -1399,9 +1356,7 @@ class AttributeTest extends TestCase
                 'type' => $this->newAttribute['type'],
                 'global' => $this->newAttribute['global'],
                 'sortable' => $this->newAttribute['sortable'],
-            ])
-            ->assertJsonFragment(['index' => 1] + $this->newAttribute['options'][0])
-            ->assertJsonFragment(['index' => 2] + $this->newAttribute['options'][1]);
+            ]);
 
         AttributeOption::query()
             ->where('attribute_id', '=', $response['data']['id'])
@@ -1430,10 +1385,18 @@ class AttributeTest extends TestCase
                 'type' => $this->newAttribute['type'],
                 'global' => $this->newAttribute['global'],
                 'sortable' => $this->newAttribute['sortable'],
-            ])
-            ->assertJsonFragment(['index' => 1])
-            ->assertJsonMissing(['index' => 2])
-            ->assertJsonFragment(['index' => 3]);
+            ]);
+
+        $this->assertDatabaseHas('attribute_options', [
+            'attribute_id' => $response['data']['id'],
+            'index' => 1,
+            'deleted_at' => null,
+        ]);
+        $this->assertDatabaseHas('attribute_options', [
+            'attribute_id' => $response['data']['id'],
+            'index' => 3,
+            'deleted_at' => null,
+        ]);
     }
 
     /**
