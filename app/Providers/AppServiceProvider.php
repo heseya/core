@@ -10,6 +10,7 @@ use App\Services\AuditService;
 use App\Services\AuthService;
 use App\Services\AvailabilityService;
 use App\Services\BannerService;
+use App\Services\CategoryService;
 use App\Services\ConsentService;
 use App\Services\Contracts\AnalyticsServiceContract;
 use App\Services\Contracts\AppServiceContract;
@@ -19,6 +20,7 @@ use App\Services\Contracts\AuditServiceContract;
 use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\BannerServiceContract;
+use App\Services\Contracts\CategoryServiceContract;
 use App\Services\Contracts\ConsentServiceContract;
 use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
@@ -134,6 +136,7 @@ class AppServiceProvider extends ServiceProvider
         DepositServiceContract::class => DepositService::class,
         DiscountStoreServiceContract::class => DiscountStoreService::class,
         ShippingTimeDateServiceContract::class => ShippingTimeDateService::class,
+        CategoryServiceContract::class => CategoryService::class,
     ];
 
     /**
