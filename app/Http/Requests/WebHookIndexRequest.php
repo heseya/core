@@ -9,8 +9,9 @@ class WebHookIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['nullable', 'string', 'max:255'],
-            'url' => ['nullable', 'string', 'max:255'],
+            'status_code' => ['nullable', 'numeric'],
+            'web_hook_id' => ['nullable', 'string'],
+            'event' => ['nullable', 'string'],
         ];
     }
 }
