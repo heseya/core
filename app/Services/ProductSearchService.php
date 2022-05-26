@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\AttributeType;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Models\Media;
@@ -48,6 +49,10 @@ class ProductSearchService implements ProductSearchServiceContract
             'attributes' => $product->attributes
                 ->map(fn (Attribute $attribute): array => $this->mapAttribute($attribute))
                 ->toArray(),
+            'attributes_text' => $product->attributes
+                ->map(fn (Attribute $attribute): array => $this->getAttributeValue($attribute))
+                ->flatten()
+                ->toArray(),
             'metadata' => $product->metadata
                 ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
                 ->toArray(),
@@ -87,7 +92,21 @@ class ProductSearchService implements ProductSearchServiceContract
             'sets_slug' => 'keyword',
             'sets' => 'flattened',
 
-            'attributes' => 'flattened',
+            'attributes' => [
+                'id' => 'keyword',
+                'name' => 'text',
+                'slug' => 'text',
+                'attribute_type' => 'text',
+                'values' => [
+                    'id' => 'keyword',
+                    'name' => 'text',
+                    'value_number' => 'float',
+                    'value_date' => 'date',
+                    'metadata' => 'flattened',
+                    'metadata_private' => 'flattened',
+                ],
+            ],
+            'attributes_text' => 'text',
             'metadata' => 'flattened',
             'metadata_private' => 'flattened',
         ];
@@ -161,7 +180,7 @@ class ProductSearchService implements ProductSearchServiceContract
             'id' => $attribute->getKey(),
             'name' => $attribute->name,
             'slug' => $attribute->slug,
-            'type' => $attribute->type,
+            'attribute_type' => $attribute->type,
             'values' => $attribute->pivot->options->map(fn (AttributeOption $option): array => [
                 'id' => $option->getKey(),
                 'name' => $option->name,
@@ -181,6 +200,15 @@ class ProductSearchService implements ProductSearchServiceContract
                 ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
                 ->toArray(),
         ];
+    }
+
+    private function getAttributeValue(Attribute $attribute): array
+    {
+        return match ($attribute->type->value) {
+            AttributeType::NUMBER => $attribute->pivot->options->pluck('value_number')->toArray(),
+            AttributeType::DATE => $attribute->pivot->options->pluck('value_date')->toArray(),
+            default => $attribute->pivot->options->pluck('name')->toArray(),
+        };
     }
 
     private function mapMeta(Metadata $meta): array

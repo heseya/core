@@ -241,4 +241,12 @@ class ProductRepository implements ProductRepositoryContract
     {
         return $query->filter(new Range('price_max', ['lte' => $value]));
     }
+
+    private function filterAttributes(Builder $query, string $key, string|int|float|bool $value): Builder
+    {
+        $matching = new Matching($key, $value);
+        $matching->setBoost(5);
+
+        return $query->must($matching);
+    }
 }
