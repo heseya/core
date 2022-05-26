@@ -284,16 +284,16 @@
         },
         {
             "name": "composer/ca-bundle",
-            "version": "1.3.1",
+            "version": "1.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/ca-bundle.git",
-                "reference": "4c679186f2aca4ab6a0f1b0b9cf9252decb44d0b"
+                "reference": "fd5dd441932a7e10ca6e5b490e272d34c8430640"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/4c679186f2aca4ab6a0f1b0b9cf9252decb44d0b",
-                "reference": "4c679186f2aca4ab6a0f1b0b9cf9252decb44d0b",
+                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/fd5dd441932a7e10ca6e5b490e272d34c8430640",
+                "reference": "fd5dd441932a7e10ca6e5b490e272d34c8430640",
                 "shasum": ""
             },
             "require": {
@@ -340,7 +340,7 @@
             "support": {
                 "irc": "irc://irc.freenode.org/composer",
                 "issues": "https://github.com/composer/ca-bundle/issues",
-                "source": "https://github.com/composer/ca-bundle/tree/1.3.1"
+                "source": "https://github.com/composer/ca-bundle/tree/1.3.2"
             },
             "funding": [
                 {
@@ -356,7 +356,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-10-28T20:44:15+00:00"
+            "time": "2022-05-24T11:56:16+00:00"
         },
         {
             "name": "composer/composer",
@@ -686,16 +686,16 @@
         },
         {
             "name": "composer/spdx-licenses",
-            "version": "1.5.6",
+            "version": "1.5.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/spdx-licenses.git",
-                "reference": "a30d487169d799745ca7280bc90fdfa693536901"
+                "reference": "c848241796da2abf65837d51dce1fae55a960149"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/spdx-licenses/zipball/a30d487169d799745ca7280bc90fdfa693536901",
-                "reference": "a30d487169d799745ca7280bc90fdfa693536901",
+                "url": "https://api.github.com/repos/composer/spdx-licenses/zipball/c848241796da2abf65837d51dce1fae55a960149",
+                "reference": "c848241796da2abf65837d51dce1fae55a960149",
                 "shasum": ""
             },
             "require": {
@@ -746,7 +746,7 @@
             "support": {
                 "irc": "irc://irc.freenode.org/composer",
                 "issues": "https://github.com/composer/spdx-licenses/issues",
-                "source": "https://github.com/composer/spdx-licenses/tree/1.5.6"
+                "source": "https://github.com/composer/spdx-licenses/tree/1.5.7"
             },
             "funding": [
                 {
@@ -762,7 +762,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-11-18T10:14:14+00:00"
+            "time": "2022-05-23T07:37:50+00:00"
         },
         {
             "name": "composer/xdebug-handler",
@@ -2418,16 +2418,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v9.13.0",
+            "version": "v9.14.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "87b6cc8bc41d1cf85c7c1401cddde8570a3b95bb"
+                "reference": "2ca86f96118635a79ee3389013ccab110ae14bea"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/87b6cc8bc41d1cf85c7c1401cddde8570a3b95bb",
-                "reference": "87b6cc8bc41d1cf85c7c1401cddde8570a3b95bb",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/2ca86f96118635a79ee3389013ccab110ae14bea",
+                "reference": "2ca86f96118635a79ee3389013ccab110ae14bea",
                 "shasum": ""
             },
             "require": {
@@ -2593,7 +2593,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2022-05-17T14:07:43+00:00"
+            "time": "2022-05-25T18:18:07+00:00"
         },
         {
             "name": "laravel/scout",
@@ -3051,16 +3051,16 @@
         },
         {
             "name": "league/flysystem",
-            "version": "3.0.19",
+            "version": "3.0.20",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/flysystem.git",
-                "reference": "670df21225d68d165a8df38587ac3f41caf608f8"
+                "reference": "42a2f47dcf39944e2aee1b660ee55ab6ef69b535"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/670df21225d68d165a8df38587ac3f41caf608f8",
-                "reference": "670df21225d68d165a8df38587ac3f41caf608f8",
+                "url": "https://api.github.com/repos/thephpleague/flysystem/zipball/42a2f47dcf39944e2aee1b660ee55ab6ef69b535",
+                "reference": "42a2f47dcf39944e2aee1b660ee55ab6ef69b535",
                 "shasum": ""
             },
             "require": {
@@ -3121,7 +3121,7 @@
             ],
             "support": {
                 "issues": "https://github.com/thephpleague/flysystem/issues",
-                "source": "https://github.com/thephpleague/flysystem/tree/3.0.19"
+                "source": "https://github.com/thephpleague/flysystem/tree/3.0.20"
             },
             "funding": [
                 {
@@ -3137,7 +3137,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-05-03T21:19:02+00:00"
+            "time": "2022-05-25T19:18:39+00:00"
         },
         {
             "name": "league/iso3166",
@@ -4266,16 +4266,16 @@
         },
         {
             "name": "php-http/discovery",
-            "version": "1.14.1",
+            "version": "1.14.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-http/discovery.git",
-                "reference": "de90ab2b41d7d61609f504e031339776bc8c7223"
+                "reference": "c8d48852fbc052454af42f6de27635ddd916b959"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-http/discovery/zipball/de90ab2b41d7d61609f504e031339776bc8c7223",
-                "reference": "de90ab2b41d7d61609f504e031339776bc8c7223",
+                "url": "https://api.github.com/repos/php-http/discovery/zipball/c8d48852fbc052454af42f6de27635ddd916b959",
+                "reference": "c8d48852fbc052454af42f6de27635ddd916b959",
                 "shasum": ""
             },
             "require": {
@@ -4288,8 +4288,7 @@
                 "graham-campbell/phpspec-skip-example-extension": "^5.0",
                 "php-http/httplug": "^1.0 || ^2.0",
                 "php-http/message-factory": "^1.0",
-                "phpspec/phpspec": "^5.1 || ^6.1",
-                "puli/composer-plugin": "1.0.0-beta10"
+                "phpspec/phpspec": "^5.1 || ^6.1"
             },
             "suggest": {
                 "php-http/message": "Allow to use Guzzle, Diactoros or Slim Framework factories"
@@ -4328,9 +4327,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-http/discovery/issues",
-                "source": "https://github.com/php-http/discovery/tree/1.14.1"
+                "source": "https://github.com/php-http/discovery/tree/1.14.2"
             },
-            "time": "2021-09-18T07:57:46+00:00"
+            "time": "2022-05-25T07:26:05+00:00"
         },
         {
             "name": "php-http/guzzle7-adapter",
@@ -5709,21 +5708,21 @@
         },
         {
             "name": "sentry/sdk",
-            "version": "3.1.1",
+            "version": "3.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/getsentry/sentry-php-sdk.git",
-                "reference": "2de7de3233293f80d1e244bd950adb2121a3731c"
+                "reference": "6d78bd83b43efbb52f81d6824f4af344fa9ba292"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/getsentry/sentry-php-sdk/zipball/2de7de3233293f80d1e244bd950adb2121a3731c",
-                "reference": "2de7de3233293f80d1e244bd950adb2121a3731c",
+                "url": "https://api.github.com/repos/getsentry/sentry-php-sdk/zipball/6d78bd83b43efbb52f81d6824f4af344fa9ba292",
+                "reference": "6d78bd83b43efbb52f81d6824f4af344fa9ba292",
                 "shasum": ""
             },
             "require": {
                 "http-interop/http-factory-guzzle": "^1.0",
-                "sentry/sentry": "^3.1",
+                "sentry/sentry": "^3.5",
                 "symfony/http-client": "^4.3|^5.0|^6.0"
             },
             "type": "metapackage",
@@ -5749,7 +5748,8 @@
                 "sentry"
             ],
             "support": {
-                "source": "https://github.com/getsentry/sentry-php-sdk/tree/3.1.1"
+                "issues": "https://github.com/getsentry/sentry-php-sdk/issues",
+                "source": "https://github.com/getsentry/sentry-php-sdk/tree/3.2.0"
             },
             "funding": [
                 {
@@ -5761,7 +5761,7 @@
                     "type": "custom"
                 }
             ],
-            "time": "2021-11-30T11:54:41+00:00"
+            "time": "2022-05-21T11:10:11+00:00"
         },
         {
             "name": "sentry/sentry",
@@ -10659,16 +10659,16 @@
         },
         {
             "name": "nunomaduro/larastan",
-            "version": "v2.1.4",
+            "version": "v2.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nunomaduro/larastan.git",
-                "reference": "93722b81dff6322eaeb171564f18afc9dbbbd2b2"
+                "reference": "d0d5114e757f516bb2a2679ee03b7102db61d587"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nunomaduro/larastan/zipball/93722b81dff6322eaeb171564f18afc9dbbbd2b2",
-                "reference": "93722b81dff6322eaeb171564f18afc9dbbbd2b2",
+                "url": "https://api.github.com/repos/nunomaduro/larastan/zipball/d0d5114e757f516bb2a2679ee03b7102db61d587",
+                "reference": "d0d5114e757f516bb2a2679ee03b7102db61d587",
                 "shasum": ""
             },
             "require": {
@@ -10684,7 +10684,7 @@
                 "mockery/mockery": "^1.4.4",
                 "php": "^8.0.2",
                 "phpmyadmin/sql-parser": "^5.5",
-                "phpstan/phpstan": "^1.4.7"
+                "phpstan/phpstan": "^1.7.0"
             },
             "require-dev": {
                 "nikic/php-parser": "^4.13.2",
@@ -10733,7 +10733,7 @@
             ],
             "support": {
                 "issues": "https://github.com/nunomaduro/larastan/issues",
-                "source": "https://github.com/nunomaduro/larastan/tree/v2.1.4"
+                "source": "https://github.com/nunomaduro/larastan/tree/v2.1.6"
             },
             "funding": [
                 {
@@ -10753,7 +10753,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2022-03-30T14:23:50+00:00"
+            "time": "2022-05-23T20:17:50+00:00"
         },
         {
             "name": "nunomaduro/phpinsights",
@@ -11490,16 +11490,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.6.9",
+            "version": "1.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "8c98899c7c54251a098befd23b50a983594a20f9"
+                "reference": "e3baed2ee2ef322e0f9b8fe8f87fdbe024c7c719"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/8c98899c7c54251a098befd23b50a983594a20f9",
-                "reference": "8c98899c7c54251a098befd23b50a983594a20f9",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/e3baed2ee2ef322e0f9b8fe8f87fdbe024c7c719",
+                "reference": "e3baed2ee2ef322e0f9b8fe8f87fdbe024c7c719",
                 "shasum": ""
             },
             "require": {
@@ -11525,7 +11525,7 @@
             "description": "PHPStan - PHP Static Analysis Tool",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan/issues",
-                "source": "https://github.com/phpstan/phpstan/tree/1.6.9"
+                "source": "https://github.com/phpstan/phpstan/tree/1.7.1"
             },
             "funding": [
                 {
@@ -11545,7 +11545,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-05-21T11:34:44+00:00"
+            "time": "2022-05-24T09:05:09+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -13059,16 +13059,16 @@
         },
         {
             "name": "slevomat/coding-standard",
-            "version": "7.2.0",
+            "version": "7.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/slevomat/coding-standard.git",
-                "reference": "b4f96a8beea515d2d89141b7b9ad72f526d84071"
+                "reference": "aff06ae7a84e4534bf6f821dc982a93a5d477c90"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/b4f96a8beea515d2d89141b7b9ad72f526d84071",
-                "reference": "b4f96a8beea515d2d89141b7b9ad72f526d84071",
+                "url": "https://api.github.com/repos/slevomat/coding-standard/zipball/aff06ae7a84e4534bf6f821dc982a93a5d477c90",
+                "reference": "aff06ae7a84e4534bf6f821dc982a93a5d477c90",
                 "shasum": ""
             },
             "require": {
@@ -13080,7 +13080,7 @@
             "require-dev": {
                 "phing/phing": "2.17.3",
                 "php-parallel-lint/php-parallel-lint": "1.3.2",
-                "phpstan/phpstan": "1.4.10|1.6.7",
+                "phpstan/phpstan": "1.4.10|1.7.1",
                 "phpstan/phpstan-deprecation-rules": "1.0.0",
                 "phpstan/phpstan-phpunit": "1.0.0|1.1.1",
                 "phpstan/phpstan-strict-rules": "1.2.3",
@@ -13104,7 +13104,7 @@
             "description": "Slevomat Coding Standard for PHP_CodeSniffer complements Consistence Coding Standard by providing sniffs with additional checks.",
             "support": {
                 "issues": "https://github.com/slevomat/coding-standard/issues",
-                "source": "https://github.com/slevomat/coding-standard/tree/7.2.0"
+                "source": "https://github.com/slevomat/coding-standard/tree/7.2.1"
             },
             "funding": [
                 {
@@ -13116,7 +13116,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-05-06T10:58:42+00:00"
+            "time": "2022-05-25T10:58:12+00:00"
         },
         {
             "name": "spatie/backtrace",

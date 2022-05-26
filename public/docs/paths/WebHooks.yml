@@ -3,6 +3,27 @@ Logs:
     tags:
       - WebHooks
     summary: 'list with logs of failed webhooks'
+    parameters:
+      - name: status
+        in: query
+        description: 'Status code search'
+        schema:
+          type: number
+      - name: event
+        in: query
+        description: 'Event search'
+        schema:
+          type: string
+      - name: web_hook_id
+        in: query
+        description: 'Webhook ID search'
+        schema:
+          type: string
+      - name: successful
+        in: query
+        description: 'Is successful'
+        schema:
+          type: boolean
     responses:
       200:
         description: Success
