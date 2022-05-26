@@ -9,7 +9,7 @@ class ItemDepositResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'quantity' => $this->resource->quantity,
+            'quantity' => (float) $this->resource->quantity,
             'shipping_time' => $this->resource->shipping_time,
             'shipping_date' => $this->resource->shipping_date,
         ];

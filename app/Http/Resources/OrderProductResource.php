@@ -10,7 +10,7 @@ class OrderProductResource extends Resource
     {
         return [
             'name' => $this->resource->name,
-            'quantity' => $this->resource->quantity,
+            'quantity' => (float) $this->resource->quantity,
             'price' => $this->resource->price,
             'price_initial' => $this->resource->price_initial,
             'vat_rate' => $this->resource->vat_rate,

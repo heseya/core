@@ -10,7 +10,7 @@ class DepositResource extends Resource
     {
         return [
             'id' => $this->resource->getKey(),
-            'quantity' => $this->resource->quantity,
+            'quantity' => (float) $this->resource->quantity,
             'item_id' => $this->resource->item_id,
             'sku' => $this->resource->item->sku,
             'shipping_time' => $this->resource->shipping_time,
