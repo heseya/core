@@ -2,24 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\ExceptionsEnums\Exceptions;
-use App\Exceptions\ServerException;
 use App\Http\Resources\CategoryResource;
+use App\Services\Contracts\CategoryServiceContract;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Http;
 
 class CategoryController extends Controller
 {
+    public function __construct(private CategoryServiceContract $categoryService)
+    {
+    }
+
     public function index(string $lang): JsonResource
     {
-        $response = Http::get('https://www.google.com/basepages/producttype/taxonomy-with-ids.' . $lang . '.txt');
-
-        if ($response->failed()) {
-            throw new ServerException(Exceptions::SERVER_ERROR);
-        }
-
-        $data = explode("\n", $response->body());
+        $data = $this->categoryService->getGoogleProductCategory($lang);
 
         # Removing google header from text and last empty line then reindexing.
         unset($data[0]);

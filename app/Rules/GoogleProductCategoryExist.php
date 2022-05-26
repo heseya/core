@@ -2,8 +2,9 @@
 
 namespace App\Rules;
 
-use App\Exceptions\GoogleProductCategoryFileException;
+use App\Services\Contracts\CategoryServiceContract;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Support\Facades\App;
 
 class GoogleProductCategoryExist implements Rule
 {
@@ -16,7 +17,8 @@ class GoogleProductCategoryExist implements Rule
      */
     public function passes($attribute, $value): bool
     {
-        $content = $this->getGoogleProductCategoryFileContent();
+        $categoryService = App::make(CategoryServiceContract::class);
+        $content = $categoryService->getGoogleProductCategoryFileContent();
 
         foreach ($content as $item) {
             if ((int) $item === $value) {
@@ -30,19 +32,5 @@ class GoogleProductCategoryExist implements Rule
     public function message(): string
     {
         return 'Google product category do not exist';
-    }
-
-    /**
-     * @throws GoogleProductCategoryFileException
-     */
-    private function getGoogleProductCategoryFileContent(): array
-    {
-        $path = resource_path('storage/google_product_category.txt');
-
-        if (!file_exists($path)) {
-            throw new GoogleProductCategoryFileException();
-        }
-
-        return file($path);
     }
 }
