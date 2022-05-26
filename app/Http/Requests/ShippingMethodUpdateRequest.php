@@ -12,7 +12,7 @@ class ShippingMethodUpdateRequest extends FormRequest
         return [
             'name' => ['string', 'max:255'],
             'public' => 'boolean',
-            'black_list' => 'boolean',
+            'block_list' => 'boolean',
             'payment_methods' => 'array',
             'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
             'countries' => 'array',

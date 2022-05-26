@@ -36,11 +36,11 @@ class ShippingMethodService implements ShippingMethodServiceContract
             $query->where(function (Builder $query) use ($country): void {
                 $query->where(function (Builder $query) use ($country): void {
                     $query
-                        ->where('black_list', false)
+                        ->where('block_list', false)
                         ->whereHas('countries', fn ($query) => $query->where('code', $country));
                 })->orWhere(function (Builder $query) use ($country): void {
                     $query
-                        ->where('black_list', true)
+                        ->where('block_list', true)
                         ->whereDoesntHave(
                             'countries',
                             fn ($query) => $query->where('code', $country),

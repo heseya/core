@@ -7,7 +7,7 @@ ShippingMethod:
     public:
       type: boolean
       example: 'true'
-    black_list:
+    block_list:
       type: boolean
       example: 'false'
     payment_methods:
