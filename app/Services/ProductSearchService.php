@@ -46,6 +46,9 @@ class ProductSearchService implements ProductSearchServiceContract
             'tags' => $product->tags->map(fn (Tag $tag): array => $this->mapTag($tag))->toArray(),
             'sets_slug' => $this->mapSetsSlugs($product),
             'sets' => $this->mapSets($product),
+            'attributes_slug' => $product->attributes
+                ->map(fn (Attribute $attribute): string => $attribute->slug)
+                ->toArray(),
             'attributes' => $product->attributes
                 ->map(fn (Attribute $attribute): array => $this->mapAttribute($attribute))
                 ->toArray(),
@@ -67,7 +70,10 @@ class ProductSearchService implements ProductSearchServiceContract
         return [
             'id' => 'keyword',
             'name' => 'keyword',
-            'name_text' => 'text',
+            'name_text' => [
+                'type' => 'text',
+                'analyzer' => 'morfologik',
+            ],
             'slug' => 'text',
             'google_product_category' => 'integer',
             'hide_on_index' => 'boolean',
@@ -78,8 +84,14 @@ class ProductSearchService implements ProductSearchServiceContract
             'price_max' => 'float',
             'price_min_initial' => 'float',
             'price_max_initial' => 'float',
-            'description' => 'text',
-            'description_short' => 'text',
+            'description' => [
+                'type' => 'text',
+                'analyzer' => 'morfologik',
+            ],
+            'description_short' => [
+                'type' => 'text',
+                'analyzer' => 'morfologik',
+            ],
             'created_at' => 'date',
             'updated_at' => 'date',
             'order' => 'integer',
@@ -87,28 +99,45 @@ class ProductSearchService implements ProductSearchServiceContract
             'cover' => 'flattened',
 
             'tags_id' => 'keyword',
-            'tags' => 'flattened',
+            'tags' => [
+                'type' => 'flattened',
+                'analyzer' => 'morfologik',
+            ],
 
             'sets_slug' => 'keyword',
-            'sets' => 'flattened',
+            'sets' => [
+                'type' => 'flattened',
+                'analyzer' => 'morfologik',
+            ],
 
             'attributes' => [
+                'analyzer' => 'morfologik',
                 'id' => 'keyword',
                 'name' => 'text',
                 'slug' => 'text',
                 'attribute_type' => 'text',
                 'values' => [
                     'id' => 'keyword',
-                    'name' => 'text',
+                    'name' => 'keyword',
                     'value_number' => 'float',
                     'value_date' => 'date',
                     'metadata' => 'flattened',
                     'metadata_private' => 'flattened',
                 ],
             ],
-            'attributes_text' => 'text',
-            'metadata' => 'flattened',
-            'metadata_private' => 'flattened',
+            'attributes_text' => [
+                'analyzer' => 'morfologik',
+                'type' => 'text',
+            ],
+            'attributes_slug' => 'keyword',
+            'metadata' => [
+                'type' => 'flattened',
+                'analyzer' => 'morfologik',
+            ],
+            'metadata_private' => [
+                'type' => 'flattened',
+                'analyzer' => 'morfologik',
+            ],
         ];
     }
 

@@ -30,7 +30,7 @@ class ProductRepository implements ProductRepositoryContract
     private const CRITERIA = [
         'ids' => 'filterIds',
         'slug' => 'must',
-        'name' => 'must',
+        'name' => 'filterName',
         'public' => 'filter',
         'available' => 'filter',
         'sets' => 'filterSlug',
@@ -134,7 +134,9 @@ class ProductRepository implements ProductRepositoryContract
         $attributes = new Collection();
         foreach ($hit['_source']['attributes'] as $raw) {
             $attribute = new Attribute();
-            $attribute->forceFill(Arr::except($raw, ['values', 'metadata', 'metadata_private']));
+            $properties = Arr::except($raw, ['values', 'metadata', 'metadata_private', 'attribute_type']);
+            $properties['type'] = $raw['attribute_type'];
+            $attribute->forceFill($properties);
 
             $options = new Collection();
             foreach ($raw['values'] as $value) {
@@ -200,6 +202,14 @@ class ProductRepository implements ProductRepositoryContract
         return $query->must(new Matching($key, $value));
     }
 
+    private function filterName(Builder $query, string $key, string|int|float|bool $value): Builder
+    {
+        $matching = new Matching($key, $value);
+        $matching->setBoost(10);
+
+        return $query->must($matching);
+    }
+
     private function filter(Builder $query, string $key, string|int|float|bool $value): Builder
     {
         return $query->filter(new Term($key, $value));
@@ -242,11 +252,15 @@ class ProductRepository implements ProductRepositoryContract
         return $query->filter(new Range('price_max', ['lte' => $value]));
     }
 
-    private function filterAttributes(Builder $query, string $key, string|int|float|bool $value): Builder
+    private function filterAttributes(Builder $query, string $key, array $attributes): Builder
     {
-        $matching = new Matching($key, $value);
-        $matching->setBoost(5);
+        $values = array_values($attributes);
 
-        return $query->must($matching);
+        $query->filter(new Terms('attributes_slug', array_keys($attributes)));
+        $query->should(new Terms('attributes.values.id', $values));
+        $query->should(new Terms('attributes.values.value_number', $values));
+        $query->should(new Terms('attributes.values.value_date', $values));
+
+        return $query;
     }
 }
