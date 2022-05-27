@@ -141,11 +141,11 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
 
     public function indexSettings(): array
     {
-        $synonymAnalyzer = new StandardAnalyzer('synonym');
-        $synonymAnalyzer->setFilters(['lowercase', 'morfologik_stem']);
+        $analyzer = new StandardAnalyzer('morfologik');
+        $analyzer->setFilters(['lowercase', 'morfologik_stem']);
 
         return (new Analysis())
-            ->addAnalyzer($synonymAnalyzer)
+            ->addAnalyzer($analyzer)
             ->build();
     }
 
