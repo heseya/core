@@ -19,10 +19,15 @@ class PaymentObserver
 
     private function process(Payment $payment): void
     {
-        $payment->order->update([
-            'paid' => $payment->order->isPaid(),
-        ]);
+        $isPaid = $payment->order->isPaid();
 
-        OrderUpdatedPaid::dispatch($payment->order);
+        // update only if paid status changed
+        if ($payment->order->paid !== $isPaid) {
+            $payment->order->update([
+                'paid' => $isPaid,
+            ]);
+
+            OrderUpdatedPaid::dispatch($payment->order);
+        }
     }
 }
