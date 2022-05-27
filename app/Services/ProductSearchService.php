@@ -70,10 +70,7 @@ class ProductSearchService implements ProductSearchServiceContract
         return [
             'id' => 'keyword',
             'name' => 'keyword',
-            'name_text' => [
-                'type' => 'text',
-                'analyzer' => 'morfologik',
-            ],
+            'name_text' => 'text',
             'slug' => 'text',
             'google_product_category' => 'integer',
             'hide_on_index' => 'boolean',
@@ -84,14 +81,8 @@ class ProductSearchService implements ProductSearchServiceContract
             'price_max' => 'float',
             'price_min_initial' => 'float',
             'price_max_initial' => 'float',
-            'description' => [
-                'type' => 'text',
-                'analyzer' => 'morfologik',
-            ],
-            'description_short' => [
-                'type' => 'text',
-                'analyzer' => 'morfologik',
-            ],
+            'description' => 'text',
+            'description_short' => 'text',
             'created_at' => 'date',
             'updated_at' => 'date',
             'order' => 'integer',
@@ -99,19 +90,12 @@ class ProductSearchService implements ProductSearchServiceContract
             'cover' => 'flattened',
 
             'tags_id' => 'keyword',
-            'tags' => [
-                'type' => 'flattened',
-                'analyzer' => 'morfologik',
-            ],
+            'tags' => 'flattened',
 
             'sets_slug' => 'keyword',
-            'sets' => [
-                'type' => 'flattened',
-                'analyzer' => 'morfologik',
-            ],
+            'sets' =>  'flattened',
 
             'attributes' => [
-                'analyzer' => 'morfologik',
                 'id' => 'keyword',
                 'name' => 'text',
                 'slug' => 'text',
@@ -125,19 +109,10 @@ class ProductSearchService implements ProductSearchServiceContract
                     'metadata_private' => 'flattened',
                 ],
             ],
-            'attributes_text' => [
-                'analyzer' => 'morfologik',
-                'type' => 'text',
-            ],
+            'attributes_text' =>  'text',
             'attributes_slug' => 'keyword',
-            'metadata' => [
-                'type' => 'flattened',
-                'analyzer' => 'morfologik',
-            ],
-            'metadata_private' => [
-                'type' => 'flattened',
-                'analyzer' => 'morfologik',
-            ],
+            'metadata' =>'flattened',
+            'metadata_private' =>  'flattened',
         ];
     }
 
