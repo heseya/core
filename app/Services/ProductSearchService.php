@@ -93,7 +93,7 @@ class ProductSearchService implements ProductSearchServiceContract
             'tags' => 'flattened',
 
             'sets_slug' => 'keyword',
-            'sets' =>  'flattened',
+            'sets' => 'flattened',
 
             'attributes' => [
                 'id' => 'keyword',
@@ -109,10 +109,10 @@ class ProductSearchService implements ProductSearchServiceContract
                     'metadata_private' => 'flattened',
                 ],
             ],
-            'attributes_text' =>  'text',
+            'attributes_text' => 'text',
             'attributes_slug' => 'keyword',
-            'metadata' =>'flattened',
-            'metadata_private' =>  'flattened',
+            'metadata' => 'flattened',
+            'metadata_private' => 'flattened',
         ];
     }
 
