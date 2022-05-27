@@ -340,6 +340,7 @@ class OrderUpdateTest extends TestCase
         Event::fake([OrderUpdated::class]);
 
         $email = $this->faker->email();
+
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'email' => $email
         ]);
@@ -693,7 +694,6 @@ class OrderUpdateTest extends TestCase
             'public' => true,
             'shipping_type' => ShippingType::NONE,
         ]);
-
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
@@ -704,7 +704,7 @@ class OrderUpdateTest extends TestCase
         $order = Order::find($response->getData()->data->id);
 
         $this->assertDatabaseHas('orders', [
-            'id' => $order->getKey(),
+            'id' => $this->order->getKey(),
             'invoice_requested' => true,
             'shipping_place' => null,
             'shipping_address_id' => null,

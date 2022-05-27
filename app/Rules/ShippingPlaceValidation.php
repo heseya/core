@@ -23,7 +23,7 @@ class ShippingPlaceValidation implements ImplicitRule, DataAwareRule
      */
     public function passes($attribute, $value): bool
     {
-        if (!array_key_exists('shipping_method_id', $this->data)) {
+        if (!array_key_exists('shipping_method_id', $this->data) || $this->data['shipping_method_id'] === null) {
             return true;
         }
 
