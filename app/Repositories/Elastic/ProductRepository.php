@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use JeroenG\Explorer\Domain\Syntax\Matching;
+use JeroenG\Explorer\Domain\Syntax\Nested;
 use JeroenG\Explorer\Domain\Syntax\Range;
 use JeroenG\Explorer\Domain\Syntax\Term;
 use JeroenG\Explorer\Domain\Syntax\Terms;
@@ -257,7 +258,7 @@ class ProductRepository implements ProductRepositoryContract
         $values = array_values($attributes);
 
         $query->filter(new Terms('attributes_slug', array_keys($attributes)));
-        $query->should(new Terms('attributes.values.id', $values));
+        $query->must(new Nested('attributes.values', new Terms('attributes.values.id', $values)));
         //TODO: transform values min&max to search by value range
         // $query->should(new Terms('attributes.values.value_number', $values));
         // $query->should(new Terms('attributes.values.value_date', $values));
