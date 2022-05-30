@@ -11,6 +11,7 @@ use App\Enums\SchemaType;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdated;
 use App\Exceptions\ClientException;
+use App\Exceptions\OrderException;
 use App\Exceptions\ServerException;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
@@ -63,6 +64,11 @@ class OrderService implements OrderServiceContract
         return round($value, 2, PHP_ROUND_HALF_UP);
     }
 
+    /**
+     * @throws Throwable
+     * @throws OrderException
+     * @throws ServerException
+     */
     public function store(OrderDto $dto): Order
     {
         DB::beginTransaction();
@@ -171,8 +177,7 @@ class OrderService implements OrderServiceContract
             foreach ($order->products as $orderProduct) {
                 // Remove items from warehouse
                 if (!$this->removeItemsFromWarehouse($orderProduct, $tempSchemaOrderProduct)) {
-                    //not every item quantity was removed from warehouse
-                    throw new \Exception('Not every item quantity was removed from warehouse');
+                    throw new OrderException(Exceptions::ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE);
                 }
             }
             $order->push();
