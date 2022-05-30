@@ -258,10 +258,26 @@ class ProductRepository implements ProductRepositoryContract
         $values = array_values($attributes);
 
         $query->filter(new Terms('attributes_slug', array_keys($attributes)));
+
+        if (is_array($values[0])) {
+            $range = new Collection();
+
+            if (array_key_exists('min', $values[0])) {
+                $range->put('gte', $values[0]['min']);
+            }
+
+            if (array_key_exists('max', $values[0])) {
+                $range->put('lte', $values[0]['max']);
+            }
+
+            // @phpstan-ignore-next-line
+            $field = is_numeric($range->first()) ? 'attributes.values.value_number' : 'attributes.values.value_date';
+            $query->filter(new Nested('attributes.values', new Range($field, $range->toArray())));
+
+            return $query;
+        }
+
         $query->must(new Nested('attributes.values', new Terms('attributes.values.id', $values)));
-        //TODO: transform values min&max to search by value range
-        // $query->should(new Terms('attributes.values.value_number', $values));
-        // $query->should(new Terms('attributes.values.value_date', $values));
 
         return $query;
     }
