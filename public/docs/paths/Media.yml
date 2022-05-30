@@ -1,4 +1,34 @@
 Media:
+  get:
+    tags:
+      - Media
+    summary: 'List of media'
+    parameters:
+      - name: type
+        in: query
+        required: false
+        schema:
+          type: number
+          example: 0
+      - name: has_relationships
+        in: query
+        required: false
+        allowEmptyValue: true
+        schema:
+          type: boolean
+          example: false
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Media.yml#/MediaDetail'
+              type: object
   post:
     tags:
       - Media
@@ -9,7 +39,7 @@ Media:
           schema:
             properties:
               file:
-                description: 'File. Accepted extensions: jpeg, png, gif, bmp, svg, mp4, webm, ogg, avi, mov, wmv'
+                description: 'File. Accepted extensions: jpeg, png, gif, bmp, svg, mp4``````, webm, ogg, avi, mov, wmv'
                 type: string
                 format: binary
               alt:

@@ -3,7 +3,11 @@
 namespace Tests\Feature;
 
 use App\Enums\MediaType;
+use App\Enums\OrderDocumentType;
+use App\Models\Banner;
+use App\Models\BannerMedia;
 use App\Models\Media;
+use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
@@ -28,6 +32,98 @@ class MediaTest extends TestCase
     {
         $response = $this->postJson('/media');
         $response->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndex($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        Media::query()->delete();
+
+        Media::factory()->create([
+            'type' => MediaType::OTHER,
+        ]);
+
+        Media::factory()->create([
+            'type' => MediaType::VIDEO,
+        ]);
+
+        $response = $this->actingAs($this->$user)->json('GET', '/media');
+
+        $response->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'relations_count' => 0,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexFilteredByType($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        Media::query()->delete();
+
+        Media::factory()->create([
+            'type' => MediaType::OTHER,
+        ]);
+        Media::factory()->create([
+            'type' => MediaType::VIDEO,
+        ]);
+
+        $response = $this->actingAs($this->$user)->json('GET', '/media', [
+            'type' => MediaType::OTHER,
+        ]);
+
+        $response->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'relations_count' => 0,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexFilteredByRelations($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        Media::query()->delete();
+
+        $product = Product::factory()->create();
+
+        $media = Media::factory()->create([
+            'type' => MediaType::OTHER,
+        ]);
+
+        Media::factory()->create([
+            'type' => MediaType::VIDEO,
+        ]);
+
+        $order = Order::factory()->create();
+        $order->documents()->save($media, ['type' => OrderDocumentType::INVOICE]);
+
+        $media->products()->save($product);
+
+        $banner = Banner::factory()->create();
+
+        $bannerMedia = BannerMedia::factory()->create([
+            'banner_id' => $banner->getKey(),
+        ]);
+        $bannerMedia->media()->attach($media->getKey(), ['min_screen_width' => 100]);
+
+        $response = $this->actingAs($this->$user)->json('GET', '/media', [
+            'has_relationships' => true,
+        ]);
+
+        $response->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'relations_count' => 3,
+            ]);
     }
 
     /**
