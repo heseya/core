@@ -14,12 +14,12 @@ class InsertProductsSeoMetadata extends Migration
             Product::whereDoesntHave('seo')->chunk(
                 100,
                 fn ($products) => $products->each(
-                fn (Product $product) => SeoMetadata::create([
-                    'global' => false,
-                    'model_id' => $product->id,
-                    'model_type' => Product::class,
-                ])
-            )
+                    fn (Product $product) => SeoMetadata::create([
+                        'global' => false,
+                        'model_id' => $product->id,
+                        'model_type' => Product::class,
+                    ])
+                )
             );
         }
     }

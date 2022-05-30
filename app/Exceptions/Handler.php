@@ -38,6 +38,7 @@ final class Handler extends ExceptionHandler
         ServerException::class => ErrorCode::INTERNAL_SERVER_ERROR,
         TFAException::class => ErrorCode::UNPROCESSABLE_ENTITY,
         GoogleProductCategoryFileException::class => ErrorCode::UNPROCESSABLE_ENTITY,
+        OrderException::class => ErrorCode::UNPROCESSABLE_ENTITY,
 
         PackageException::class => ErrorCode::BAD_GATEWAY,
         PackageAuthException::class => ErrorCode::BAD_GATEWAY,
