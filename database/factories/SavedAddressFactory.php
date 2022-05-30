@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Enums\SavedAddressType;
 use App\Models\Address;
 use App\Models\SavedAddress;
 use App\Models\User;

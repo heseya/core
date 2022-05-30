@@ -17,7 +17,6 @@ class RemoveUserIdFromOrders extends Migration
     public function down(): void
     {
         Schema::table('orders', function (Blueprint $table): void {
-            
         });
     }
 }

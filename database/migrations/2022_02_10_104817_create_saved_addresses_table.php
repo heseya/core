@@ -11,9 +11,9 @@ class CreateSavedAddressesTable extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('saved_addresses', function (Blueprint $table) {
+        Schema::create('saved_addresses', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->boolean('default');
             $table->string('name');
@@ -29,7 +29,7 @@ class CreateSavedAddressesTable extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('saved_addresses');
     }
