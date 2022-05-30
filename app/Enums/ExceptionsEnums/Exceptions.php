@@ -80,6 +80,8 @@ final class Exceptions extends Enum
     public const SERVER_ERROR = 'Server responded with an error';
     public const SERVER_ORDER_STATUSES_NOT_CONFIGURED = 'Order statuses are not configured';
 
+    public const ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE = 'Not every item is available';
+
     public static function getCode(string $value): int
     {
         return match ($value) {

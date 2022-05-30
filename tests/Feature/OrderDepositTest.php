@@ -310,6 +310,207 @@ class OrderDepositTest extends TestCase
     }
 
     /**
+     * Sample example deposit stock
+     * - 1 item in 1 days shipping time
+     * - 4 items in 3 days shipping time
+     * - unlimited number of items in 10 days shipping time
+     *
+     * The user wants to order 20 items, so the following deposits are created for the order:
+     * - 20 items with a time of 10 days shipping time (from unlimited stock)
+     * in this case, the item will still have the information that it is available within 1 day
+     * Another user orders the same product only in the amount of 3 pieces, so created
+     * the following deposits are included in the order:
+     * - 3 items in 3 days
+     * We have the product again available for 1 day shipping time
+     * The next user only buys 1 product, so the following deposits are created for the order:
+     * - 1 item in 1 day
+     * now this product is available within 3 days shipping time
+     *
+     * @dataProvider authProvider
+     */
+    public function testCreateOrdersAndCheckDeposits($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+        $this->$user->givePermissionTo('cart.verify');
+
+        $this->item->deposits()->create([
+            'quantity' => 1,
+            'shipping_time' => 1,
+        ]);
+        $this->item->deposits()->create([
+            'quantity' => 4,
+            'shipping_time' => 3,
+        ]);
+        $this->item->update([
+            'unlimited_stock_shipping_time' => 10,
+        ]);
+
+        $product = Product::factory()->create([
+            'price' => 100,
+            'public' => true,
+        ]);
+
+        $product->items()->attach($this->item->getKey(), ['required_quantity' => 1]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'shipping_time' => 1, //product got 1 days shipping time
+        ]);
+        //first order 20 product
+        $request = [
+            'email' => 'test@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $product->getKey(),
+                    'quantity' => 20,
+                    'schemas' => [],
+                ],
+            ],
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 20,
+                    'schemas' => [],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'shipping_time' => 10,
+            ]);
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('POST', '/orders', $request);
+
+        $response->assertCreated();
+        $order = Order::find($response->getData()->data->id); //order created
+
+        $this->assertDatabaseHas('deposits', [ //was taken from the deposit of 20 items in shipping time 10
+            'quantity' => -20,
+            'item_id' => $this->item->getKey(),
+            'order_product_id' => $order->products->first()->getKey(),
+            'shipping_time' => 10,
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'shipping_time' => 1, //product now got 1 days shipping time
+        ]);
+
+        // second order 3 product
+        $request = [
+            'email' => 'test1@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $product->getKey(),
+                    'quantity' => 3,
+                    'schemas' => [],
+                ],
+            ],
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 3,
+                    'schemas' => [],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'shipping_time' => 3,
+            ]);
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('POST', '/orders', $request);
+
+        $response->assertCreated();
+        $order = Order::find($response->getData()->data->id); //order created
+
+        $this->assertDatabaseHas('deposits', [ //was taken from the deposit of 3 items in shipping time 3
+            'quantity' => -3,
+            'item_id' => $this->item->getKey(),
+            'order_product_id' => $order->products->first()->getKey(),
+            'shipping_time' => 3,
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'shipping_time' => 1, //product now got 1 days shipping time
+        ]);
+
+        //third order 1 product
+        $request = [
+            'email' => 'test1@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'shipping_time' => 1,
+            ]);
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('POST', '/orders', $request);
+
+        $response->assertCreated();
+        $order = Order::find($response->getData()->data->id); //order created
+
+        $this->assertDatabaseHas('deposits', [ //was taken from the deposit of 1 items in shipping time 1
+            'quantity' => -1,
+            'item_id' => $this->item->getKey(),
+            'order_product_id' => $order->products->first()->getKey(),
+            'shipping_time' => 1,
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'shipping_time' => 3, //product now got 3 days shipping time
+        ]);
+    }
+
+    /**
      * @dataProvider authProvider
      */
     public function testDeleteOrderCheckDeposits($user): void
@@ -379,5 +580,82 @@ class OrderDepositTest extends TestCase
         $this->assertEquals(6, $this->item->quantity);
 
         Event::assertDispatched(OrderUpdatedStatus::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrdersWithPreOrderItemAndCheckDeposits($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+        $this->$user->givePermissionTo('cart.verify');
+
+        $date = Carbon::now()->addDays(10)->toDateTimeString();
+
+        $this->item->update([
+            'unlimited_stock_shipping_date' => $date,
+        ]);
+
+        $product = Product::factory()->create([
+            'price' => 100,
+            'public' => true,
+        ]);
+
+        $product->items()->attach($this->item->getKey(), ['required_quantity' => 1]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'shipping_date' => $date,
+        ]);
+
+        $request = [
+            'email' => 'test@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $product->getKey(),
+                    'quantity' => 3,
+                    'schemas' => [],
+                ],
+            ],
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $product->getKey(),
+                    'quantity' => 3,
+                    'schemas' => [],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'shipping_date' => $date,
+            ]);
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('POST', '/orders', $request);
+
+        $response->assertCreated();
+        $order = Order::find($response->getData()->data->id);
+
+        $this->assertDatabaseHas('deposits', [
+            'quantity' => -3,
+            'item_id' => $this->item->getKey(),
+            'order_product_id' => $order->products->first()->getKey(),
+            'shipping_date' => $date,
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'shipping_date' => $date,
+        ]);
     }
 }
