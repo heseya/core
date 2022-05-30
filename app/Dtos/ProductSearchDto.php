@@ -23,6 +23,7 @@ class ProductSearchDto extends Dto implements InstantiateFromRequest
 
     private array|Missing $sets;
     private array|Missing $tags;
+    private array|Missing $attribute;
     private array|Missing $metadata;
     private array|Missing $metadata_private;
 
@@ -46,6 +47,7 @@ class ProductSearchDto extends Dto implements InstantiateFromRequest
             available: self::boolean('available', $request),
             sets: self::array('sets', $request),
             tags: self::array('tags', $request),
+            attribute: self::array('attribute', $request),
             metadata: self::array('metadata', $request),
             metadata_private: self::array('metadata_private', $request),
             price_min: $request->input('price.min', new Missing()),

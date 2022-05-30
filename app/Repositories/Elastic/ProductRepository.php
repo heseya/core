@@ -39,7 +39,7 @@ class ProductRepository implements ProductRepositoryContract
         'metadata_private' => 'filterMeta',
         'price_min' => 'filterPriceMin',
         'price_max' => 'filterPriceMax',
-        'attributes' => 'filterAttributes',
+        'attribute' => 'filterAttributes',
     ];
 
     public function __construct(
@@ -258,8 +258,9 @@ class ProductRepository implements ProductRepositoryContract
 
         $query->filter(new Terms('attributes_slug', array_keys($attributes)));
         $query->should(new Terms('attributes.values.id', $values));
-        $query->should(new Terms('attributes.values.value_number', $values));
-        $query->should(new Terms('attributes.values.value_date', $values));
+        //TODO: transform values min&max to search by value range
+        // $query->should(new Terms('attributes.values.value_number', $values));
+        // $query->should(new Terms('attributes.values.value_date', $values));
 
         return $query;
     }
