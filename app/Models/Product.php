@@ -10,6 +10,7 @@ use App\Criteria\ProductSearch;
 use App\Criteria\WhereHasId;
 use App\Criteria\WhereHasSlug;
 use App\Criteria\WhereInIds;
+use App\Enums\DiscountTargetType;
 use App\Models\Contracts\SortableContract;
 use App\Services\Contracts\ProductSearchServiceContract;
 use App\Traits\HasDiscountConditions;
@@ -24,6 +25,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use JeroenG\Explorer\Application\Explored;
 use JeroenG\Explorer\Domain\Analysis\Analysis;
 use JeroenG\Explorer\Domain\Analysis\Analyzer\StandardAnalyzer;
@@ -216,5 +218,52 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
             'product_id',
             'sale_id',
         );
+    }
+
+    public function productSetSales(): Collection
+    {
+        $sales = Collection::make();
+        $sets = $this
+            ->sets()
+            ->get();
+
+        /** @var ProductSet $set */
+        foreach ($sets as $set) {
+            $sales = $sales->merge($set->allProductsSales());
+        }
+
+        return $sales->unique('id');
+    }
+
+    public function allProductSales(): Collection
+    {
+        $sales = Discount::where('code', null)
+            ->where('target_type', DiscountTargetType::PRODUCTS)
+            ->where('target_is_allow_list', true)
+            ->whereHas('products', function ($query): void {
+                $query->where('id', $this->getKey());
+            })
+            ->orWhere(function ($query): void {
+                $query->where('code', null)
+                    ->where('target_type', DiscountTargetType::PRODUCTS)
+                    ->where('target_is_allow_list', false)
+                    ->whereDoesntHave('products', function ($query): void {
+                        $query->where('id', $this->getKey());
+                    })
+                    ->whereDoesntHave('productSets', function ($query): void {
+                        $query->whereHas('products', function ($query): void {
+                            $query->where('id', $this->getKey());
+                        });
+                    });
+            })
+            ->with(['products', 'productSets', 'conditionGroups', 'shippingMethods'])
+            ->get();
+
+        $productSetSales = $this->productSetSales();
+
+        $sales = $sales->merge($productSetSales->where('target_is_allow_list', true));
+        $sales = $sales->diff($productSetSales->where('target_is_allow_list', false));
+
+        return $sales->unique('id');
     }
 }

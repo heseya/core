@@ -534,6 +534,45 @@ class DiscountConditionsCheckTest extends TestCase
         $this->assertTrue($this->discountService->checkCondition($discountCondition, $cart));
     }
 
+    public function testCheckConditionProductInChildrenSetPass(): void
+    {
+        $product = Product::factory()->create();
+        $set1 = ProductSet::factory()->create();
+        $childrenSet = ProductSet::factory()->create([
+            'parent_id' => $set1->getKey(),
+        ]);
+        $subChildrenSet = ProductSet::factory()->create([
+            'parent_id' => $childrenSet->getKey(),
+        ]);
+
+        $product->sets()->sync([$subChildrenSet->getKey()]);
+
+        $cart = CartDto::fromArray([
+            'items' => [
+                [
+                    'cartitem_id' => 0,
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+            'coupons' => [],
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+        ]);
+
+        $discountCondition = $this->conditionGroup->conditions()->create([
+            'type' => ConditionType::PRODUCT_IN_SET,
+            'value' => [
+                'product_sets' => [
+                    $set1->getKey(),
+                ],
+                'is_allow_list' => true,
+            ],
+        ]);
+
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, $cart));
+    }
+
     public function testCheckConditionProductInSetFail(): void
     {
         $product = Product::factory()->create();
@@ -541,6 +580,46 @@ class DiscountConditionsCheckTest extends TestCase
         $set2 = ProductSet::factory()->create();
 
         $product->sets()->sync([$set1->getKey()]);
+
+        $cart = CartDto::fromArray([
+            'items' => [
+                [
+                    'cartitem_id' => 0,
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+            'coupons' => [],
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+        ]);
+
+        $discountCondition = $this->conditionGroup->conditions()->create([
+            'type' => ConditionType::PRODUCT_IN_SET,
+            'value' => [
+                'product_sets' => [
+                    $set2->getKey(),
+                ],
+                'is_allow_list' => true,
+            ],
+        ]);
+
+        $this->assertFalse($this->discountService->checkCondition($discountCondition, $cart));
+    }
+
+    public function testCheckConditionProductInChildrenSetFail(): void
+    {
+        $product = Product::factory()->create();
+        $set1 = ProductSet::factory()->create();
+        $childrenSet = ProductSet::factory()->create([
+            'parent_id' => $set1->getKey(),
+        ]);
+        $subChildrenSet = ProductSet::factory()->create([
+            'parent_id' => $childrenSet->getKey(),
+        ]);
+        $set2 = ProductSet::factory()->create();
+
+        $product->sets()->sync([$subChildrenSet->getKey()]);
 
         $cart = CartDto::fromArray([
             'items' => [
@@ -602,6 +681,46 @@ class DiscountConditionsCheckTest extends TestCase
         $this->assertTrue($this->discountService->checkCondition($discountCondition, $cart));
     }
 
+    public function testCheckConditionProductInChildrenSetAllowListFalsePass(): void
+    {
+        $product = Product::factory()->create();
+        $set1 = ProductSet::factory()->create();
+        $childrenSet = ProductSet::factory()->create([
+            'parent_id' => $set1->getKey(),
+        ]);
+        $subChildrenSet = ProductSet::factory()->create([
+            'parent_id' => $childrenSet->getKey(),
+        ]);
+        $set2 = ProductSet::factory()->create();
+
+        $product->sets()->sync([$subChildrenSet->getKey()]);
+
+        $cart = CartDto::fromArray([
+            'items' => [
+                [
+                    'cartitem_id' => 0,
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+            'coupons' => [],
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+        ]);
+
+        $discountCondition = $this->conditionGroup->conditions()->create([
+            'type' => ConditionType::PRODUCT_IN_SET,
+            'value' => [
+                'product_sets' => [
+                    $set2->getKey(),
+                ],
+                'is_allow_list' => false,
+            ],
+        ]);
+
+        $this->assertTrue($this->discountService->checkCondition($discountCondition, $cart));
+    }
+
     public function testCheckConditionProductInSetAllowListFalseFail(): void
     {
         $product = Product::factory()->create();
@@ -628,6 +747,45 @@ class DiscountConditionsCheckTest extends TestCase
             'value' => [
                 'product_sets' => [
                     $set2->getKey(),
+                ],
+                'is_allow_list' => false,
+            ],
+        ]);
+
+        $this->assertFalse($this->discountService->checkCondition($discountCondition, $cart));
+    }
+
+    public function testCheckConditionProductInChildrenSetAllowListFalseFail(): void
+    {
+        $product = Product::factory()->create();
+        $set1 = ProductSet::factory()->create();
+        $childrenSet = ProductSet::factory()->create([
+            'parent_id' => $set1->getKey(),
+        ]);
+        $subChildrenSet = ProductSet::factory()->create([
+            'parent_id' => $childrenSet->getKey(),
+        ]);
+
+        $product->sets()->sync([$subChildrenSet->getKey()]);
+
+        $cart = CartDto::fromArray([
+            'items' => [
+                [
+                    'cartitem_id' => 0,
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                    'schemas' => [],
+                ],
+            ],
+            'coupons' => [],
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+        ]);
+
+        $discountCondition = $this->conditionGroup->conditions()->create([
+            'type' => ConditionType::PRODUCT_IN_SET,
+            'value' => [
+                'product_sets' => [
+                    $set1->getKey(),
                 ],
                 'is_allow_list' => false,
             ],
