@@ -441,21 +441,6 @@ class AttributeTest extends TestCase
         $this->$user->givePermissionTo('attributes.add');
 
         $attribute = Attribute::factory()->make()->toArray();
-        $attribute['options'] = [
-            AttributeOption::factory()->make(['name' => 'optionOne'])->toArray() + [
-                'metadata' => [
-                    'optionOne' => 'optionOneValue',
-                ],
-                'metadata_private' => [
-                    'optionOnePriv' => 'optionOneValuePriv',
-                ],
-            ],
-            AttributeOption::factory()->make(['name' => 'optionTwo'])->toArray() + [
-                'metadata' => [
-                    'optionTwo' => 'optionTwoValue',
-                ],
-            ],
-        ];
 
         $response = $this->actingAs($this->$user)
             ->postJson('/attributes', $attribute + [
@@ -468,10 +453,8 @@ class AttributeTest extends TestCase
             ]);
 
         $createdAttribute = Attribute::find($response->getData()->data->id);
-        $optionOne = $createdAttribute->options()->where('name', 'optionOne')->first();
-        $optionTwo = $createdAttribute->options()->where('name', 'optionTwo')->first();
 
-        $this->assertDatabaseCount('metadata', 5)
+        $this->assertDatabaseCount('metadata', 2)
             ->assertDatabaseHas('metadata', [
                 'name' => 'attributeMeta',
                 'value' => 'attributeValueOne',
@@ -483,24 +466,6 @@ class AttributeTest extends TestCase
                 'value' => 'attributeValueOnePriv',
                 'model_id' => $createdAttribute->getKey(),
                 'public' => false,
-            ])
-            ->assertDatabaseHas('metadata', [
-                'name' => 'optionOne',
-                'value' => 'optionOneValue',
-                'model_id' => $optionOne->getKey(),
-                'public' => true,
-            ])
-            ->assertDatabaseHas('metadata', [
-                'name' => 'optionOnePriv',
-                'value' => 'optionOneValuePriv',
-                'model_id' => $optionOne->getKey(),
-                'public' => false,
-            ])
-            ->assertDatabaseHas('metadata', [
-                'name' => 'optionTwo',
-                'value' => 'optionTwoValue',
-                'model_id' => $optionTwo->getKey(),
-                'public' => true,
             ]);
     }
 
@@ -744,51 +709,6 @@ class AttributeTest extends TestCase
             ->actingAs($this->$user)
             ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
             ->assertNotFound();
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateWithoutAssignedOption($user): void
-    {
-        $this->$user->givePermissionTo('attributes.edit');
-
-        $attributeUpdate = [
-            'name' => 'Test ' . $this->attribute->name,
-            'slug' => 'test-' . $this->attribute->slug,
-            'description' => 'Test ' . $this->attribute->description,
-            'type' => $this->attribute->type,
-            'global' => true,
-            'sortable' => true,
-            'options' => [
-                [
-                    'name' => 'Totally different option',
-                    'value_number' => $this->option->value_number,
-                    'value_date' => $this->option->value_date,
-                ],
-            ],
-        ];
-
-        $this
-            ->actingAs($this->$user)
-            ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
-            ->assertOk()
-            ->assertJsonStructure($this->expectedStructure)
-            ->assertJsonFragment([
-                'name' => $attributeUpdate['name'],
-                'slug' => $attributeUpdate['slug'],
-                'description' => $attributeUpdate['description'],
-                'type' => $attributeUpdate['type'],
-                'global' => $attributeUpdate['global'],
-                'sortable' => $attributeUpdate['sortable'],
-            ]);
-
-        $this->assertDatabaseHas('attribute_options', [
-            'attribute_id' => $this->attribute->getKey(),
-            'name' => 'Totally different option',
-            'value_number' => $this->option->value_number,
-            'value_date' => $this->option->value_date,
-        ]);
     }
 
     /**
@@ -1383,6 +1303,15 @@ class AttributeTest extends TestCase
                 'global' => $this->newAttribute['global'],
                 'sortable' => $this->newAttribute['sortable'],
             ]);
+
+        AttributeOption::factory()->create([
+            'index' => 1,
+            'attribute_id' => $response['data']['id'],
+        ]);
+        AttributeOption::factory()->create([
+            'index' => 2,
+            'attribute_id' => $response['data']['id'],
+        ]);
 
         AttributeOption::query()
             ->where('attribute_id', '=', $response['data']['id'])
