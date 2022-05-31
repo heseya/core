@@ -44,6 +44,7 @@ class OrderDepositTest extends TestCase
             'type' => 'select',
             'price' => 0,
             'hidden' => false,
+            'required' => true,
         ]);
         $this->product->schemas()->sync([$this->schema->getKey()]);
         $this->option = $this->schema->options()->create([
@@ -279,6 +280,10 @@ class OrderDepositTest extends TestCase
 
         $response->assertCreated();
         $order = Order::find($response->getData()->data->id);
+
+        $this->product->refresh();
+
+        $this->assertEquals(0, $this->product->available);
 
         $this->assertDatabaseHas('orders', [
             'id' => $order->getKey(),
