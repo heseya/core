@@ -117,7 +117,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'price_min' => MoreOrEquals::class,
     ];
 
-    protected string $defaultSortBy = 'order';
+    protected string $defaultSortBy = 'products.order';
 
     protected string $defaultSortDirection = 'desc';
 

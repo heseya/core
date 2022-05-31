@@ -140,7 +140,7 @@ class ProductSet extends Model
     {
         static::addGlobalScope(
             'ordered',
-            fn (Builder $builder) => $builder->orderBy('order'),
+            fn (Builder $builder) => $builder->orderBy('product_sets.order'),
         );
     }
 }
