@@ -84,10 +84,18 @@ class PerformanceTest extends TestCase
             'index' => 1,
             'attribute_id' => $attribute2->getKey(),
         ]);
-        AttributeOption::factory()->count(500)->create([
+        $attributes = AttributeOption::factory()->count(2500)->create([
             'index' => 1,
             'attribute_id' => $attribute3->getKey(),
         ]);
+        foreach ($attributes as $attribute) {
+            $attribute->metadata()->create([
+                'name' => 'test1',
+                'value' => 0,
+                'value_type' => MetadataType::NUMBER,
+                'public' => true,
+            ]);
+        }
 
         $this
             ->actingAs($this->user)
