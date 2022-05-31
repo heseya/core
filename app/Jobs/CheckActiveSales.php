@@ -53,6 +53,9 @@ class CheckActiveSales implements ShouldQueue
 
         $discountService->applyDiscountsOnProducts($products);
 
+        // @phpstan-ignore-next-line
+        Product::whereIn('id', $products->pluck('id'))->searchable();
+
         Cache::put('sales.active', $activeSalesIds);
     }
 }

@@ -68,14 +68,17 @@ class CalculateDiscount implements ShouldQueue
                 }
             } else {
                 if ($activeSales->contains($this->discount->getKey())) {
-                    $activeSales = $activeSales->reject(function ($value, $key) {
-                        return $value === $this->discount->getKey();
-                    });
+                    $activeSales = $activeSales->reject(
+                        fn ($value, $key) => $value === $this->discount->getKey(),
+                    );
                 }
             }
             Cache::put('sales.active', $activeSales);
         }
 
         $discountService->applyDiscountsOnProducts($products);
+
+        // @phpstan-ignore-next-line
+        Product::whereIn('id', $products->pluck('id'))->searchable();
     }
 }
