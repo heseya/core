@@ -33,6 +33,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
  * @mixin IdeHelperProduct
+ * @property mixed $pivot
  */
 class Product extends Model implements AuditableContract, Explored, SortableContract
 {

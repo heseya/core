@@ -128,7 +128,7 @@ class ProductSet extends Model
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'product_set_product');
+        return $this->belongsToMany(Product::class, 'product_set_product')->withPivot('order');
     }
 
     public function media(): HasOne

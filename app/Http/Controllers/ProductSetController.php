@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Dtos\ProductSetDto;
 use App\Dtos\ProductSetUpdateDto;
+use App\Dtos\ProductsReorderDto;
 use App\Http\Requests\ProductSetAttachRequest;
 use App\Http\Requests\ProductSetIndexRequest;
+use App\Http\Requests\ProductSetProductReorderRequest;
 use App\Http\Requests\ProductSetProductsRequest;
 use App\Http\Requests\ProductSetReorderRequest;
 use App\Http\Requests\ProductSetShowRequest;
@@ -111,5 +113,12 @@ class ProductSetController extends Controller
         $products = $this->productSetService->products($productSet);
 
         return ProductResource::collection($products);
+    }
+
+    public function reorderProducts(ProductSet $productSet, ProductSetProductReorderRequest $request): JsonResponse
+    {
+        $dto = ProductsReorderDto::instantiateFromRequest($request);
+        $this->productSetService->reorderProducts($productSet, $dto);
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }
