@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\ProductSetSearch;
+use App\Enums\DiscountTargetType;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
 use App\Traits\HasMetadata;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**
@@ -134,6 +136,22 @@ class ProductSet extends Model
     public function media(): HasOne
     {
         return $this->hasOne(Media::class, 'id', 'cover_id');
+    }
+
+    public function allProductsSales(): Collection
+    {
+        $sales = $this
+            ->discounts()
+            ->with(['products', 'productSets', 'conditionGroups', 'shippingMethods'])
+            ->where('code', '=', null)
+            ->where('target_type', '=', DiscountTargetType::PRODUCTS)
+            ->get();
+
+        if ($this->parent) {
+            $sales = $sales->merge($this->parent->allProductsSales());
+        }
+
+        return $sales->unique('id');
     }
 
     protected static function booted(): void

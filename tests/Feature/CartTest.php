@@ -1406,6 +1406,120 @@ class CartTest extends TestCase
             ]);
     }
 
+    /**
+     * @dataProvider couponOrSaleProvider
+     */
+    public function testCartProcessProductInChildrenSet($user, $coupon): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $code = $coupon ? [] : ['code' => null];
+
+        $parentSet = ProductSet::factory()->create([
+            'public' => true,
+            'name' => 'parent',
+        ]);
+
+        $childrenSet = ProductSet::factory()->create([
+            'public' => true,
+            'name' => 'children',
+            'public_parent' => true,
+            'parent_id' => $parentSet->getKey(),
+        ]);
+
+        $subChildrenSet = ProductSet::factory()->create([
+            'public' => true,
+            'name' => 'sub children',
+            'public_parent' => true,
+            'parent_id' => $childrenSet->getKey(),
+        ]);
+
+        $this->product->sets()->sync([$subChildrenSet->getKey()]);
+
+        $discountApplied = Discount::factory()->create(
+            [
+                'description' => 'Testowy kupon obowiązujący',
+                'name' => 'Testowy kupon obowiązujący',
+                'value' => 10,
+                'type' => DiscountType::PERCENTAGE,
+                'target_type' => DiscountTargetType::PRODUCTS,
+                'target_is_allow_list' => true,
+            ] + $code
+        );
+
+        $discountApplied->productSets()->attach($parentSet);
+
+        $discount = Discount::factory()->create(
+            [
+                'description' => 'Testowy kupon',
+                'name' => 'Testowy kupon',
+                'value' => 5,
+                'type' => DiscountType::PERCENTAGE,
+                'target_type' => DiscountTargetType::PRODUCTS,
+                'target_is_allow_list' => false,
+            ] + $code
+        );
+
+        $discount->productSets()->attach($parentSet);
+
+        $coupons = $coupon ? [
+            'coupons' => [
+                $discount->code,
+                $discountApplied->code,
+            ],
+        ] : [];
+
+        $response = $this->actingAs($this->$user)->postJson(
+            '/cart/process',
+            [
+                'shipping_method_id' => $this->shippingMethod->getKey(),
+                'items' => [
+                    [
+                        'cartitem_id' => '1',
+                        'product_id' => $this->product->getKey(),
+                        'quantity' => 1,
+                        'schemas' => [],
+                    ],
+                ],
+            ] + $coupons
+        );
+
+        $result = $coupon ? ['sales' => []] : ['coupons' => []];
+        $discountCode1 = $coupon ? ['code' => $discountApplied->code] : [];
+        $discountCode2 = $coupon ? ['code' => $discount->code] : [];
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment(
+                [
+                    'cart_total_initial' => 4600,
+                    'cart_total' => 4140,
+                    'shipping_price_initial' => 0,
+                    'shipping_price' => 0,
+                    'summary' => 4140,
+                ] + $result
+            )
+            ->assertJsonFragment([
+                'cartitem_id' => '1',
+                'price' => 4600,
+                'price_discounted' => 4140,
+            ])
+            ->assertJsonFragment(
+                [
+                    'id' => $discountApplied->getKey(),
+                    'name' => $discountApplied->name,
+                    'value' => 460,
+                ] + $discountCode1
+            )
+            ->assertJsonFragment(
+                [
+                    'id' => $discount->getKey(),
+                    'name' => $discount->name,
+                    'value' => 0,
+                ] + $discountCode2
+            );
+    }
+
     private function prepareDataForCouponTest($coupon): array
     {
         $code = $coupon ? [] : ['code' => null];
