@@ -21,7 +21,6 @@ class AttributeDto extends Dto implements InstantiateFromRequest
     private string $type;
     private bool $global;
     private bool $sortable;
-    private array $options;
 
     public static function instantiateFromRequest(
         FormRequest|AttributeStoreRequest|AttributeUpdateRequest $request
@@ -33,10 +32,6 @@ class AttributeDto extends Dto implements InstantiateFromRequest
             type: $request->input('type'),
             global: $request->input('global'),
             sortable: $request->input('sortable'),
-            options: $request->has('options') ? array_map(
-                fn ($data) => AttributeOptionDto::fromDataArray($data),
-                $request->input('options')
-            ) : [],
             metadata: self::mapMetadata($request),
         );
     }
@@ -69,13 +64,5 @@ class AttributeDto extends Dto implements InstantiateFromRequest
     public function isSortable(): bool
     {
         return $this->sortable;
-    }
-
-    /**
-     * @return array
-     */
-    public function getOptions(): array
-    {
-        return $this->options;
     }
 }
