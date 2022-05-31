@@ -20,6 +20,7 @@ use Spatie\Permission\Models\Role as SpatieRole;
 
 /**
  * @property RoleType $type
+ * @property string $name
  *
  * @mixin IdeHelperRole
  */
