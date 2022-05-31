@@ -4,9 +4,11 @@ namespace App\Services;
 
 use App\Dtos\ProductSetDto;
 use App\Dtos\ProductSetUpdateDto;
+use App\Dtos\ProductsReorderDto;
 use App\Events\ProductSetCreated;
 use App\Events\ProductSetDeleted;
 use App\Events\ProductSetUpdated;
+use App\Models\Product;
 use App\Models\ProductSet;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ProductSetServiceContract;
@@ -16,6 +18,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -274,5 +277,42 @@ class ProductSetService implements ProductSetServiceContract
         }
 
         return $subsets->flatten()->concat($sets);
+    }
+
+    public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void
+    {
+        $product = $set->products()->where('id', $dto->getProducts()[0]['id'])->first();
+        $order = $dto->getProducts()[0]['order'];
+
+        if ($order > $set->products->count()) {
+            $order = $set->products->count();
+        }
+
+        if ($order < $product->pivot->order) {
+            $this->setHigherOrder($product, $order);
+        } else {
+            $this->setLowerOrder($product, $order);
+        }
+
+        $product->pivot->order = $order;
+        $product->pivot->save();
+    }
+
+    private function setHigherOrder(Product $product, int $order): void
+    {
+        DB::table('product_set_product')->where([
+            ['order', '>=', $order],
+            ['order', '<', $product->pivot->order],
+        ])
+            ->increment('order');
+    }
+
+    private function setLowerOrder(Product $product, int $order): void
+    {
+        DB::table('product_set_product')->where([
+            ['order', '<=', $order],
+            ['order', '>', $product->pivot->order],
+        ])
+            ->decrement('order');
     }
 }

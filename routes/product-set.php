@@ -33,4 +33,6 @@ Route::prefix('product-sets')->group(function (): void {
         ->whereUuid('product_set');
     Route::post('id:{product_set:id}/products', [ProductSetController::class, 'attach'])
         ->middleware('can:product_sets.edit');
+    Route::post('id:{product_set:id}/products/reorder', [ProductSetController::class, 'reorderProducts'])
+        ->middleware('can:product_sets.edit');
 });

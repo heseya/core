@@ -4,6 +4,7 @@ namespace App\Services\Contracts;
 
 use App\Dtos\ProductSetDto;
 use App\Dtos\ProductSetUpdateDto;
+use App\Dtos\ProductsReorderDto;
 use App\Models\ProductSet;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
@@ -36,4 +37,6 @@ interface ProductSetServiceContract
     public function flattenParentsSetsTree(Collection $sets): Collection;
 
     public function attach(ProductSet $set, array $products): Collection;
+
+    public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void;
 }
