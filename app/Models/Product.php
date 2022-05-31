@@ -32,6 +32,8 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
+ * @property mixed $pivot
+ *
  * @mixin IdeHelperProduct
  */
 class Product extends Model implements AuditableContract, Explored, SortableContract
@@ -116,7 +118,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'price_min' => MoreOrEquals::class,
     ];
 
-    protected string $defaultSortBy = 'order';
+    protected string $defaultSortBy = 'products.order';
 
     protected string $defaultSortDirection = 'desc';
 

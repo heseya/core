@@ -128,7 +128,7 @@ class ProductSet extends Model
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'product_set_product');
+        return $this->belongsToMany(Product::class, 'product_set_product')->withPivot('order');
     }
 
     public function media(): HasOne
@@ -140,7 +140,7 @@ class ProductSet extends Model
     {
         static::addGlobalScope(
             'ordered',
-            fn (Builder $builder) => $builder->orderBy('order'),
+            fn (Builder $builder) => $builder->orderBy('product_sets.order'),
         );
     }
 }

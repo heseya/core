@@ -496,4 +496,216 @@ class ProductSetOtherTest extends TestCase
                 'slug' => $product2->slug,
             ]);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductReorderInSetHigherOrder($user): void
+    {
+        $this->$user->givePermissionTo(['product_sets.edit']);
+
+        $set = $this->prepareOrderData();
+
+        /** @var Product $product */
+        $product = $set->products->where('name', 'five')->first();
+
+        $this->actingAs($this->$user)->json(
+            'POST',
+            '/product-sets/id:' . $set->getKey() . '/products/reorder',
+            [
+                'products' => [
+                    [
+                        'id' => $product->getKey(),
+                        'order' => 1,
+                    ],
+                ],
+            ]
+        );
+
+        $this
+            ->assertDatabaseHas('product_set_product', [
+                'product_id' => $product->getKey(),
+                'order' => 1,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 2,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 3,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 4,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 5,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductReorderInSetLowerOrder($user): void
+    {
+        $this->$user->givePermissionTo(['product_sets.edit']);
+
+        $set = $this->prepareOrderData();
+
+        /** @var Product $product */
+        $product = $set->products->where('name', 'one')->first();
+
+        $this->actingAs($this->$user)->json(
+            'POST',
+            '/product-sets/id:' . $set->getKey() . '/products/reorder',
+            [
+                'products' => [
+                    [
+                        'id' => $product->getKey(),
+                        'order' => 5,
+                    ],
+                ],
+            ]
+        );
+
+        $this
+            ->assertDatabaseHas('product_set_product', [
+                'product_id' => $product->getKey(),
+                'order' => 5,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 2,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 3,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 4,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 1,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductReorderInSetSameOrder($user): void
+    {
+        $this->$user->givePermissionTo(['product_sets.edit']);
+
+        $set = $this->prepareOrderData();
+
+        /** @var Product $product */
+        $product = $set->products->where('name', 'three')->first();
+
+        $this->actingAs($this->$user)->json(
+            'POST',
+            '/product-sets/id:' . $set->getKey() . '/products/reorder',
+            [
+                'products' => [
+                    [
+                        'id' => $product->getKey(),
+                        'order' => 3,
+                    ],
+                ],
+            ]
+        );
+
+        $this
+            ->assertDatabaseHas('product_set_product', [
+                'product_id' => $product->getKey(),
+                'order' => 3,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 2,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 1,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 4,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 5,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductReorderInSetOrderOutOfSize($user): void
+    {
+        $this->$user->givePermissionTo(['product_sets.edit']);
+
+        $set = $this->prepareOrderData();
+
+        /** @var Product $product */
+        $product = $set->products->where('name', 'three')->first();
+
+        $this->actingAs($this->$user)->json(
+            'POST',
+            '/product-sets/id:' . $set->getKey() . '/products/reorder',
+            [
+                'products' => [
+                    [
+                        'id' => $product->getKey(),
+                        'order' => 9999,
+                    ],
+                ],
+            ]
+        );
+
+        $this
+            ->assertDatabaseHas('product_set_product', [
+                'product_id' => $product->getKey(),
+                'order' => 5,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 2,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 1,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 4,
+            ])
+            ->assertDatabaseHas('product_set_product', [
+                'order' => 3,
+            ]);
+    }
+
+    private function prepareOrderData(): ProductSet
+    {
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+            'name' => 'one',
+        ]);
+        $product2 = Product::factory()->create([
+            'public' => false,
+            'name' => 'two',
+        ]);
+        $product3 = Product::factory()->create([
+            'public' => false,
+            'name' => 'three',
+        ]);
+        $product4 = Product::factory()->create([
+            'public' => false,
+            'name' => 'four',
+        ]);
+        $product5 = Product::factory()->create([
+            'public' => false,
+            'name' => 'five',
+        ]);
+
+        $set->products()->attach($product1->getKey(), ['order' => 1]);
+        $set->products()->attach($product2->getKey(), ['order' => 2]);
+        $set->products()->attach($product3->getKey(), ['order' => 3]);
+        $set->products()->attach($product4->getKey(), ['order' => 4]);
+        $set->products()->attach($product5->getKey(), ['order' => 5]);
+
+        return $set;
+    }
 }
