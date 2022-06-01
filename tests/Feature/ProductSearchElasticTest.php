@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Attribute;
+use App\Models\AttributeOption;
 use App\Models\ProductSet;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Repositories\Elastic\ProductRepository;
@@ -808,5 +810,518 @@ class ProductSearchElasticTest extends TestCase
                 ],
             ],
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByAttributeId($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $attribute = Attribute::factory()->create([
+            'name' => 'Serie',
+            'slug' => 'serie',
+            'sortable' => 1,
+            'type' => 'multi-choice-option',
+        ]);
+
+        $option = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['attribute' => [$attribute->slug => $option->getKey()]])
+            ->assertOk();
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' => [
+                    [
+                        'nested' => [
+                            'path' => 'attributes.values',
+                            'query' => [
+                                'terms' => [
+                                    'attributes.values.id' => [
+                                        $option->getKey(),
+                                    ],
+                                    'boost' => 1.0,
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'should' => [],
+                'filter' => [
+                    [
+                        'terms' => [
+                            'attributes_slug' => [
+                                $attribute->slug,
+                            ],
+                            'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByAttributeIdInvalidOption($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $optionId = 'a2f4f8b0-f8c9-11e9-9eb6-2a2ae2dbcce4';
+
+        $attribute = Attribute::factory()->create([
+            'name' => 'Serie',
+            'slug' => 'serie',
+            'sortable' => 1,
+            'type' => 'multi-choice-option',
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['attribute' => [$attribute->slug => $optionId]])
+            ->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByAttributeIdInvalidAttribute($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $slug = 'serie';
+        $attribute = Attribute::factory()->create([
+            'sortable' => 1,
+        ]);
+
+        $option = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['attribute' => [$slug => $option->getKey()]])
+            ->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByAttributeNumber($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $attribute = Attribute::factory()->create([
+            'sortable' => 1,
+            'type' => 'number',
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => [
+                            'min' => 1337,
+                            'max' => 2137,
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk();
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' => [],
+                'should' => [],
+                'filter' => [
+                    [
+                        'terms' => [
+                            'attributes_slug' => [
+                                $attribute->slug,
+                            ],
+                            'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'nested' => [
+                            'path' => 'attributes.values',
+                            'query' => [
+                                'range' => [
+                                    'attributes.values.value_number' => [
+                                        'gte' => 1337,
+                                        'lte' => 2137,
+                                        'boost' => 1.0,
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => [
+                            'min' => 1337,
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk();
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' => [],
+                'should' => [],
+                'filter' => [
+                    [
+                        'terms' => [
+                            'attributes_slug' => [
+                                $attribute->slug,
+                            ],
+                            'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'nested' => [
+                            'path' => 'attributes.values',
+                            'query' => [
+                                'range' => [
+                                    'attributes.values.value_number' => [
+                                        'gte' => 1337,
+                                        'boost' => 1.0,
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => [
+                            'max' => 2137,
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk();
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' => [],
+                'should' => [],
+                'filter' => [
+                    [
+                        'terms' => [
+                            'attributes_slug' => [
+                                $attribute->slug,
+                            ],
+                            'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'nested' => [
+                            'path' => 'attributes.values',
+                            'query' => [
+                                'range' => [
+                                    'attributes.values.value_number' => [
+                                        'lte' => 2137,
+                                        'boost' => 1.0,
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByAttributeInvalidNumber($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $attribute = Attribute::factory()->create([
+            'sortable' => 1,
+            'type' => 'number',
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => [
+                            'min' => '2022-01-01',
+                        ],
+                    ],
+                ]
+            )
+            ->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByAttributeDate($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $attribute = Attribute::factory()->create([
+            'sortable' => 1,
+            'type' => 'date',
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => [
+                            'min' => '2020-01-01',
+                            'max' => '2022-01-01',
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk();
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' => [],
+                'should' => [],
+                'filter' => [
+                    [
+                        'terms' => [
+                            'attributes_slug' => [
+                                $attribute->slug,
+                            ],
+                            'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'nested' => [
+                            'path' => 'attributes.values',
+                            'query' => [
+                                'range' => [
+                                    'attributes.values.value_date' => [
+                                        'gte' => '2020-01-01',
+                                        'lte' => '2022-01-01',
+                                        'boost' => 1.0,
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => [
+                            'min' => '2020-01-01',
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk();
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' => [],
+                'should' => [],
+                'filter' => [
+                    [
+                        'terms' => [
+                            'attributes_slug' => [
+                                $attribute->slug,
+                            ],
+                            'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'nested' => [
+                            'path' => 'attributes.values',
+                            'query' => [
+                                'range' => [
+                                    'attributes.values.value_date' => [
+                                        'gte' => '2020-01-01',
+                                        'boost' => 1.0,
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => [
+                            'max' => '2022-01-01',
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk();
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' => [],
+                'should' => [],
+                'filter' => [
+                    [
+                        'terms' => [
+                            'attributes_slug' => [
+                                $attribute->slug,
+                            ],
+                            'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'nested' => [
+                            'path' => 'attributes.values',
+                            'query' => [
+                                'range' => [
+                                    'attributes.values.value_date' => [
+                                        'lte' => '2022-01-01',
+                                        'boost' => 1.0,
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByAttributeInvalidDate($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $attribute = Attribute::factory()->create([
+            'sortable' => 1,
+            'type' => 'date',
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => [
+                            'min' => 1337,
+                        ],
+                    ],
+                ]
+            )
+            ->assertUnprocessable();
     }
 }
