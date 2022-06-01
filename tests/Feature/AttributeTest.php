@@ -800,6 +800,14 @@ class AttributeTest extends TestCase
             ]);
     }
 
+    public function testIndexOptionsUnauthorized(): void
+    {
+        $this
+            ->getJson("/attributes/id:{$this->attribute->getKey()}/options")
+            ->assertForbidden()
+            ->assertJsonFragment(['message' => 'This action is unauthorized.']);
+    }
+
     /**
      * @dataProvider authProvider
      */
