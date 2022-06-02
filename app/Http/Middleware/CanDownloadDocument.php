@@ -29,6 +29,6 @@ class CanDownloadDocument
             return $next($request);
         }
 
-        throw new ClientException(Exceptions::CLIENT_NO_ACCESS);
+        throw new ClientException(Exceptions::CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT);
     }
 }

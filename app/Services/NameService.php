@@ -79,7 +79,7 @@ class NameService implements NameServiceContract
                 if (is_numeric($temp[1])) {
                     $param = substr($param, - $temp[1]);
                 } else {
-                    throw new ClientException(Exceptions::CLIENT_WRONG_VALUE);
+                    throw new ClientException(Exceptions::CLIENT_NON_NUMERIC_VALUE);
                 }
             } else {
                 $param = $params[$key] ?? '{' . $tag . '}';

@@ -8,15 +8,15 @@ final class Exceptions extends Enum
 {
     public const CLIENT_INVALID_INSTALLATION_RESPONSE = 'App has invalid installation response';
     public const CLIENT_FAILED_TO_CONNECT_WITH_APP = 'Failed to connect with application';
-    public const CLIENT_FAILED_TO_UNINSTALL_APP = 'Failed to uninstall the application';
-    public const CLIENT_ASSIGN_INVALID_PERMISSIONS = 'Assigning invalid permissions';
+    public const CLIENT_FAILED_TO_UNINSTALL_APP = 'Failed to uninstall the application. Failed response from app';
+    public const CLIENT_ASSIGN_INVALID_PERMISSIONS =
+        'Assigning invalid permissions, there is no difference between all possible permissions and assigned ones';
     public const CLIENT_ADD_APP_WITH_PERMISSIONS_USER_DONT_HAVE = 'Can\'t add an app with permissions you don\'t have';
     public const CLIENT_APP_RESPONDED_WITH_INVALID_CODE = 'Application info responded with invalid status code';
     public const CLIENT_APP_RESPONDED_WITH_INVALID_INFO = 'App responded with invalid info';
-    public const CLIENT_APP_WANTS_INVALID_INFO = 'App wants invalid permissions';
+    public const CLIENT_APP_WANTS_INVALID_PERMISSION = 'App wants invalid permissions';
     public const CLIENT_ADD_APP_WITHOUT_REQUIRED_PERMISSIONS = 'Can\'t add app without all required permissions';
     public const CLIENT_ADD_PERMISSION_APP_DOESNT_WANT = 'Can\'t add any permissions application doesn\'t want';
-
     public const CLIENT_MODEL_NOT_AUDITABLE = 'Model not auditable';
     public const CLIENT_INVALID_CREDENTIALS = 'Invalid credentials';
     public const CLIENT_INVALID_PASSWORD = 'Invalid password';
@@ -26,15 +26,16 @@ final class Exceptions extends Enum
     public const CLIENT_TOKEN_INVALID_OR_INACTIVE =
         'The token is invalid or inactive. Try to reset your password again';
 
-    public const CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED = 'Discount type is not supported';
+    public const CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED =
+        'Discount type is not supported, discount value cannot be calculated.';
     public const CLIENT_CANNOT_APPLY_SELECTED_DISCOUNT_TYPE = 'Cannot apply selected discount type to order';
-    public const CLIENT_NOT_ENOUGH_ITEMS = 'There is not enough items';
+    public const CLIENT_NOT_ENOUGH_ITEMS = 'There is not enough items to order the product';
     public const CLIENT_ITEM_NOT_FOUND = 'Item not found';
-    public const CLIENT_WRONG_VALUE = 'Wrong value';
+    public const CLIENT_NON_NUMERIC_VALUE = 'Value must be numeric';
 
     public const CLIENT_CREATE_ROLE_WITHOUT_PERMISSION = 'Cant create a role with permissions you don\'t have';
     public const CLIENT_UPDATE_ROLE_WITHOUT_PERMISSION = 'Cant update a role with permissions you don\'t have';
-    public const CLIENT_DELETE_ROLE_WITHOUT_PERMISSION = 'Cant update a role with permissions you don\'t have';
+    public const CLIENT_DELETE_ROLE_WITHOUT_PERMISSION = 'Cant delete a role with permissions you don\'t have';
     public const CLIENT_UPDATE_OWNER_PERMISSION = 'Can\'t update owners permissions';
     public const CLIENT_DELETE_BUILT_IN_ROLE = 'Can\'t delete built-in roles';
     public const CLIENT_GIVE_ROLE_THAT_USER_DOESNT_HAVE =
@@ -51,15 +52,16 @@ final class Exceptions extends Enum
     public const CLIENT_MODEL_NOT_SORTABLE = 'Model is not sortable';
     public const CLIENT_ORDER_PAID = 'Order is already paid';
     public const CLIENT_UNKNOWN_PAYMENT_METHOD = 'Unknown payment method';
-    public const CLIENT_INVALID_PAYMENT = 'Invalid payment';
+    public const CLIENT_INVALID_PAYMENT = 'Payment\'s signature doesn\'t match correct signature';
     public const CLIENT_GENERATE_PAYMENT_URL = 'Cannot generate payment url';
     public const CLIENT_VERIFY_PAYMENT = 'Cannot verify payment';
 
-    public const CLIENT_UNTRUSTED_NOTIFICATION = 'Untrusted notification';
+    public const CLIENT_UNTRUSTED_NOTIFICATION = 'Cannot verify payment\'s signature';
 
-    public const CLIENT_NO_REQUIRED_PERMISSIONS_TO_EVENTS = 'No required permissions to events';
+    public const CLIENT_NO_REQUIRED_PERMISSIONS_TO_EVENTS =
+        'Client has no required permissions to perform any action on this event';
 
-    public const CLIENT_TFA_SELECT_TYPE = 'First select Two-Factor Authentication type';
+    public const CLIENT_DOESNT_HAVE_TFA_TYPE_SELECTED = 'Client does not have 2FA type selected';
     public const CLIENT_TFA_CANNOT_REMOVE = 'You cannot remove 2FA yourself in this way';
     public const CLIENT_TFA_REQUIRED = 'Two-Factor Authentication is required';
     public const CLIENT_ONLY_USER_CAN_SET_TFA = 'Only users can set up Two-Factor Authentication';
@@ -72,7 +74,7 @@ final class Exceptions extends Enum
     public const CLIENT_WEBHOOK_APP_ACTION = 'Only application can use this method on this webhook';
 
     public const CLIENT_APPS_NO_ACCESS = 'Applications cannot access this endpoint';
-    public const CLIENT_NO_ACCESS = 'No access';
+    public const CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT = 'No access';
 
     public const CLIENT_REMOVE_DEFAULT_ADDRESS = 'You cannot delete default address';
 
