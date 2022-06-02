@@ -1296,7 +1296,7 @@ class CartTest extends TestCase
                 [
                     'cartitem_id' => '1',
                     'product_id' => $product->getKey(),
-                    'quantity' => 1,
+                    'quantity' => 2,
                     'schemas' => [],
                 ],
                 [
@@ -1324,7 +1324,7 @@ class CartTest extends TestCase
         $this->$user->givePermissionTo('cart.verify');
 
         $this->item->deposits()->create([
-            'quantity' => 2,
+            'quantity' => 3,
         ]);
 
         $this->productWithSchema->items()->attach($this->item->getKey(), ['required_quantity' => 2]);
@@ -1335,10 +1335,53 @@ class CartTest extends TestCase
                 [
                     'cartitem_id' => '1',
                     'product_id' => $this->productWithSchema->getKey(),
-                    'quantity' => 2,
+                    'quantity' => 7,
                     'schemas' => [
                         $this->schema->getKey() => $this->option->getKey(),
                     ],
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'cart_total_initial' => 0,
+                'cart_total' => 0,
+                'shipping_price_initial' => 8.11,
+                'shipping_price' => 8.11,
+                'summary' => 8.11,
+                'coupons' => [],
+                'sales' => [],
+            ])
+            ->assertJsonMissing([
+                'cartitem_id' => '1',
+                'price' => 100,
+                'price_discounted' => 100,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessProductWithItemNotAvailable($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $this->item->deposits()->create([
+            'quantity' => 3,
+        ]);
+
+        $this->product->items()->attach($this->item->getKey(), ['required_quantity' => 2]);
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 7,
+                    'schemas' => [],
                 ],
             ],
         ]);
