@@ -154,6 +154,17 @@ class ProductSet extends Model
         return $sales->unique('id');
     }
 
+    public function allProducts(): Collection
+    {
+        $products = $this->products()->get();
+
+        foreach ($this->children()->get() as $child) {
+            $products = $products->merge($child->allProducts());
+        }
+
+        return $products->unique('id');
+    }
+
     protected static function booted(): void
     {
         static::addGlobalScope(
