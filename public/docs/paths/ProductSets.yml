@@ -297,3 +297,21 @@ ProductSetsProducts:
               type: object
     security:
       - BearerAuth: [ ]
+ProductSetsProductsReorder:
+  post:
+    tags:
+      - 'Product Sets'
+    parameters:
+      - name: id
+        in: query
+        description: 'Product set id'
+        allowEmptyValue: false
+        schema:
+          type: string
+    requestBody:
+      $ref: './../requests/ProductSets.yml#/ProductSetProductReorder'
+    responses:
+      204:
+        description: No content
+    security:
+      - BearerAuth: [ ]
