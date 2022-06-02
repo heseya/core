@@ -17,6 +17,7 @@ use App\Models\Schema;
 use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use Heseya\Dto\Missing;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 class ItemService implements ItemServiceContract
@@ -56,7 +57,7 @@ class ItemService implements ItemServiceContract
         }
     }
 
-    public function validateCartItems(array $items, array $selectedItems): bool
+    public function validateCartItems(array $items): bool
     {
         foreach ($items as $id => $count) {
             /** @var ?Item $item */
@@ -66,11 +67,12 @@ class ItemService implements ItemServiceContract
                 return false;
             }
 
-            if (array_key_exists($id, $selectedItems)) {
-                $count += $selectedItems[$id];
-            }
-
-            if ($item->quantity < $count) {
+            if (
+                $item->quantity < $count &&
+                is_null($item->unlimited_stock_shipping_time) &&
+                (is_null($item->unlimited_stock_shipping_date) ||
+                    $item->unlimited_stock_shipping_date < Carbon::now())
+            ) {
                 return false;
             }
         }
@@ -100,7 +102,6 @@ class ItemService implements ItemServiceContract
             }
 
             $schemas = $item->getSchemas();
-            $available = true;
 
             $productItems = [];
             /** @var Item $productItem */
@@ -120,15 +121,10 @@ class ItemService implements ItemServiceContract
                 }
 
                 $schemaItems = $schema->getItems($value, $item->getQuantity());
-                // Walidacja schemaItems z uwzględnieniem selectedItems
-                if (!$this->validateCartItems($schemaItems, $selectedItems)) {
-                    $available = false;
-                    break;
-                }
                 $selectedItems = $this->addItemArrays($selectedItems, $schemaItems);
             }
 
-            if ($available) {
+            if ($this->validateCartItems($selectedItems)) {
                 $products->push($product);
             }
         }
