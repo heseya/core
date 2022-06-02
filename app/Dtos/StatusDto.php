@@ -33,4 +33,9 @@ class StatusDto extends Dto implements InstantiateFromRequest
             metadata: self::mapMetadata($request),
         );
     }
+
+    public function getCancel(): bool|Missing
+    {
+        return $this->cancel;
+    }
 }

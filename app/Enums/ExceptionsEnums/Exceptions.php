@@ -75,6 +75,7 @@ final class Exceptions extends Enum
     public const CLIENT_NO_ACCESS = 'No access';
 
     public const CLIENT_REMOVE_DEFAULT_ADDRESS = 'You cannot delete default address';
+    public const CLIENT_STATUS_USED = 'Can\'t update or remove status that is currently used in order';
 
     public const SERVER_CDN_ERROR = 'CDN responded with an error';
     public const SERVER_ERROR = 'Server responded with an error';

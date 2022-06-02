@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Dtos\StatusDto;
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ClientException;
 use App\Models\Status;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\StatusServiceContract;
@@ -28,6 +30,10 @@ class StatusService implements StatusServiceContract
 
     public function update(Status $status, StatusDto $dto): Status
     {
+        if (is_bool($dto->getCancel()) && $status->orders()->count() > 0) {
+            throw new ClientException(Exceptions::CLIENT_STATUS_USED);
+        }
+
         $status->update($dto->toArray());
 
         return $status;
