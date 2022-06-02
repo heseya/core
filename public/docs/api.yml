@@ -269,6 +269,8 @@ paths:
     $ref: './paths/ProductSets.yml#/ProductSetsReorderParams'
   '/product-sets/id:{id}/products':
     $ref: './paths/ProductSets.yml#/ProductSetsProducts'
+  '/product-sets/id:{id}/products/reorder':
+    $ref: './paths/ProductSets.yml#/ProductSetsProductsReorder'
   /roles:
     $ref: './paths/Roles.yml#/Roles'
   '/roles/id:{id}':
