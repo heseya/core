@@ -32,8 +32,6 @@ class AttributeController extends Controller
 
     public function show(Attribute $attribute): JsonResource
     {
-        $attribute->load('options');
-
         return AttributeResource::make($attribute);
     }
 
