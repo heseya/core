@@ -759,6 +759,81 @@ class DiscountTest extends TestCase
     }
 
     /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithProductInChildSet($user): void
+    {
+        $this->$user->givePermissionTo('sales.add');
+
+        Event::fake(SaleCreated::class);
+
+        $discount = [
+            'name' => 'Kupon',
+            'description' => 'Testowy kupon',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'priority' => 1,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+        ];
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 1000,
+            'price_min_initial' => 900,
+            'price_max_initial' => 1200,
+        ]);
+
+        $parentSet = ProductSet::factory()->create(['public' => true]);
+        $childSet = ProductSet::factory()->create([
+            'public' => true,
+            'public_parent' => true,
+            'parent_id' => $parentSet->getKey(),
+        ]);
+        $subChildSet = ProductSet::factory()->create([
+            'public' => true,
+            'public_parent' => true,
+            'parent_id' => $childSet->getKey(),
+        ]);
+
+        $product->sets()->sync([$subChildSet->getKey()]);
+
+        $data = [
+            'target_sets' => [
+                $parentSet->getKey(),
+            ],
+        ];
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('POST', '/sales', $discount + $data);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment($discount)
+            ->assertJsonFragment([
+                'id' => $parentSet->getKey(),
+                'name' => $parentSet->name,
+                'public' => true,
+            ]);
+
+        $discountId = $response->getData()->data->id;
+
+        $this->assertDatabaseHas('discounts', $discount + ['id' => $discountId]);
+        $this->assertDatabaseHas('model_has_discounts', [
+            'discount_id' => $discountId,
+            'model_type' => ProductSet::class,
+            'model_id' => $parentSet->getKey(),
+        ]);
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'name' => $product->name,
+            'price_min' => 810,
+            'price_max' => 1080,
+        ]);
+    }
+
+    /**
      * @dataProvider authWithDiscountProvider
      */
     public function testCreateNoDescription($user, $discountKind): void
@@ -2271,6 +2346,66 @@ class DiscountTest extends TestCase
         ]);
 
         $discount->products()->attach($product);
+
+        /** @var DiscountServiceContract $discountService */
+        $discountService = App::make(DiscountServiceContract::class);
+
+        // Apply discount to products before update
+        $discountService->applyDiscountsOnProducts(Collection::make([$product]));
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'price_min' => 90,
+            'price_max' => 190,
+        ]);
+
+        $response = $this->actingAs($this->$user)->deleteJson('/sales/id:' . $discount->getKey());
+        $response->assertNoContent();
+        $this->assertSoftDeleted($discount);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'price_min' => 100,
+            'price_max' => 200,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteSaleWithProductInChildSet($user): void
+    {
+        $this->$user->givePermissionTo('sales.remove');
+        $discount = Discount::factory([
+            'type' => DiscountType::AMOUNT,
+            'value' => 10,
+            'code' => null,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+        ])->create();
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 100,
+            'price_min_initial' => 100,
+            'price_max_initial' => 200,
+        ]);
+
+        $parentSet = ProductSet::factory()->create(['public' => true]);
+        $childSet = ProductSet::factory()->create([
+            'public' => true,
+            'public_parent' => true,
+            'parent_id' => $parentSet->getKey(),
+        ]);
+        $subChildSet = ProductSet::factory()->create([
+            'public' => true,
+            'public_parent' => true,
+            'parent_id' => $childSet->getKey(),
+        ]);
+
+        $product->sets()->sync([$subChildSet->getKey()]);
+
+        $discount->productSets()->attach($parentSet);
 
         /** @var DiscountServiceContract $discountService */
         $discountService = App::make(DiscountServiceContract::class);

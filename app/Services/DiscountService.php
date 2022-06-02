@@ -64,6 +64,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 
@@ -540,6 +541,83 @@ class DiscountService implements DiscountServiceContract
             }
         }
         return false;
+    }
+
+    public function calculateDiscount(Discount $discount, bool $updated): void
+    {
+        // if job is called after update, then calculate discount for all products,
+        // because it may change the list of related products or target_is_allow_list value
+        if (!$updated) {
+            $products = $this->allDiscountProducts($discount);
+        } else {
+            $products = Product::all();
+        }
+
+        // If discount has conditions based on time, then must be added or removed from cache
+        $this->checkIsDiscountActive($discount);
+
+        $this->applyDiscountsOnProducts($products);
+
+        // @phpstan-ignore-next-line
+        Product::whereIn('id', $products->pluck('id'))->searchable();
+    }
+
+    public function checkActiveSales(): void
+    {
+        /** @var Collection<int, mixed> $activeSales */
+        $activeSales = Cache::get('sales.active', Collection::make());
+
+        $oldActiveSales = Collection::make($activeSales);
+
+        $products = Collection::make();
+
+        $activeSalesIds = $this->activeSales()->pluck('id');
+        $sales = $activeSalesIds->diff($oldActiveSales)->merge($oldActiveSales->diff($activeSalesIds));
+
+        $sales = Discount::whereIn('id', $sales)->with(['products', 'productSets', 'productSets.products'])->get();
+
+        foreach ($sales as $sale) {
+            $products = $products->merge($this->allDiscountProducts($sale))->unique('id');
+        }
+
+        $this->applyDiscountsOnProducts($products);
+
+        // @phpstan-ignore-next-line
+        Product::whereIn('id', $products->pluck('id'))->searchable();
+
+        Cache::put('sales.active', $activeSalesIds);
+    }
+
+    private function allDiscountProducts(Discount $discount): Collection
+    {
+        $products = $discount->allProducts();
+
+        if (!$discount->target_is_allow_list) {
+            $products = Product::whereNotIn('id', $products->pluck('id'))->get();
+        }
+
+        return $products;
+    }
+
+    private function checkIsDiscountActive(Discount $discount): void
+    {
+        if ($this->checkDiscountHasTimeConditions($discount)) {
+            /** @var Collection<int, mixed> $activeSales */
+            $activeSales = Cache::get('sales.active', Collection::make());
+
+            if ($this->checkDiscountTimeConditions($discount)) {
+                if (!$activeSales->contains($discount->getKey())) {
+                    $activeSales->push($discount->getKey());
+                }
+            } else {
+                if ($activeSales->contains($discount->getKey())) {
+                    $activeSales = $activeSales->reject(
+                        fn ($value, $key) => $value === $discount->getKey(),
+                    );
+                }
+            }
+            Cache::put('sales.active', $activeSales);
+        }
     }
 
     private function roundProductPrices(Order $order): Order
