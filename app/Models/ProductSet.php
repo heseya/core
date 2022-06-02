@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\ParentIdSearch;
 use App\Criteria\ProductSetSearch;
 use App\Enums\DiscountTargetType;
 use App\Traits\HasDiscountConditions;
@@ -54,7 +55,7 @@ class ProductSet extends Model
         'public',
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
-        'parent_id',
+        'parent_id' => ParentIdSearch::class,
     ];
 
     public function getSlugOverrideAttribute(): bool
