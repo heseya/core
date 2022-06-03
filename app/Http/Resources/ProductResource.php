@@ -31,6 +31,7 @@ class ProductResource extends Resource
             'shipping_date' => $this->resource->shipping_date,
             'cover' => MediaResource::make($this->resource->media->first()),
             'tags' => TagResource::collection($this->resource->tags),
+            'has_schemas' => $this->resource->has_schemas,
         ], $this->metadataResource('products.show_metadata_private'));
     }
 
