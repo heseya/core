@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->boolean('has_schemas')->index();
+            $table->boolean('has_schemas')->nullable()->index();
         });
     }
 
