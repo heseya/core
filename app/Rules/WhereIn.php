@@ -28,8 +28,6 @@ class WhereIn implements Rule
             return false;
         }
         return in_array($value, $this->fields);
-
-    
     }
 
     public function message()
