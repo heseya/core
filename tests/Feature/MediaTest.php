@@ -11,7 +11,6 @@ use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class MediaTest extends TestCase
@@ -129,6 +128,34 @@ class MediaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testIndexFilteredByRelationsWithNoRelations($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        Media::query()->delete();
+
+        $product = Product::factory()->create();
+
+        $media = Media::factory()->create([
+            'type' => MediaType::VIDEO,
+        ]);
+        $media->products()->save($product);
+
+        Media::factory()->create([
+            'type' => MediaType::VIDEO,
+        ]);
+
+        $response = $this->actingAs($this->$user)->json('GET', '/media?has_relationships=false');
+
+        $response->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'relations_count' => 0,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpload($user): void
     {
         $this->$user->givePermissionTo('pages.add');
@@ -145,7 +172,7 @@ class MediaTest extends TestCase
         $response
             ->assertCreated()
             ->assertJsonFragment([
-                'type' => Str::lower(MediaType::getKey(1)),
+                'type' => MediaType::PHOTO,
                 'alt' => 'test',
                 'metadata' => [
                     'test' => 'value',
@@ -179,7 +206,7 @@ class MediaTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['type' => Str::lower(MediaType::getKey(0))])
+            ->assertJsonFragment(['type' => MediaType::OTHER])
             ->assertJsonStructure(['data' => [
                 'id',
                 'type',
@@ -360,7 +387,7 @@ class MediaTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['type' => Str::lower(MediaType::getKey(2))])
+            ->assertJsonFragment(['type' => MediaType::VIDEO])
             ->assertJsonStructure(['data' => [
                 'id',
                 'type',
