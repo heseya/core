@@ -12,8 +12,8 @@ class ProductSetProductReorderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'products' => ['array', 'size:1'],
-            'products.*.order' => ['required', 'integer', 'gt:0'],
+            'products' => ['required', 'array', 'size:1'],
+            'products.*.order' => ['required', 'integer', 'gte:0'],
             'products.*.id' => ['required', 'uuid', 'exists:products,id'],
         ];
     }

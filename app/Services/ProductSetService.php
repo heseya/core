@@ -289,15 +289,23 @@ class ProductSetService implements ProductSetServiceContract
     {
         $product = $set->products()->where('id', $dto->getProducts()[0]['id'])->first();
         $order = $dto->getProducts()[0]['order'];
+        $orderedProductsAmount = $set->products()
+            ->whereNotNull('product_set_product.order')
+            ->whereNot('product_id', $dto->getProducts()[0]['id'])
+            ->count();
 
-        if ($order > $set->products->count()) {
-            $order = $set->products->count();
+        if ($order > $orderedProductsAmount) {
+            $order = $orderedProductsAmount;
         }
 
-        if ($order < $product->pivot->order) {
-            $this->setHigherOrder($product, $order);
+        if ($product->pivot->order === null) {
+            $this->setOrder($order);
         } else {
-            $this->setLowerOrder($product, $order);
+            if ($order < $product->pivot->order) {
+                $this->setHigherOrder($product, $order);
+            } else {
+                $this->setLowerOrder($product, $order);
+            }
         }
 
         $product->pivot->order = $order;
@@ -320,5 +328,13 @@ class ProductSetService implements ProductSetServiceContract
             ['order', '>', $product->pivot->order],
         ])
             ->decrement('order');
+    }
+
+    private function setOrder(int $order): void
+    {
+        DB::table('product_set_product')->where([
+            ['order', '>=', $order],
+        ])
+            ->increment('order');
     }
 }
