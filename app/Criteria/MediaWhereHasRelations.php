@@ -13,6 +13,10 @@ class MediaWhereHasRelations extends Criterion
             $query->whereHas('products')
                 ->orWhereHas('documents')
                 ->orWhereHas('bannerMedia');
+        } else {
+            $query->whereDoesntHave('products')
+                ->whereDoesntHave('documents')
+                ->whereDoesntHave('bannerMedia');
         }
 
         return $query;

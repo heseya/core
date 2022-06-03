@@ -6,7 +6,7 @@ use BenSampo\Enum\Enum;
 
 final class MediaType extends Enum
 {
-    public const OTHER = 0;
-    public const PHOTO = 1;
-    public const VIDEO = 2;
+    public const OTHER = 'other';
+    public const PHOTO = 'photo';
+    public const VIDEO = 'video';
 }

@@ -8,8 +8,8 @@ Media:
         in: query
         required: false
         schema:
-          type: number
-          example: 0
+          type: string
+          example: photo
       - name: has_relationships
         in: query
         required: false
