@@ -13,11 +13,11 @@ class WhereIn implements Rule
     {
     }
 
-    public function passes($attribute, $value)
+    public function passes($attribute, $value): bool
     {
         $this->field = $value;
 
-        if (preg_match('/^(\w*)\.(\w*)/', $value)) {
+        if (Str::contains($value, '.')) {
             foreach ($this->fields as $field) {
                 $wildcard = Str::endsWith($field, '.*');
                 if ($wildcard && preg_match('/^' . Str::remove('*', $field) . '/', $value)) {
@@ -27,11 +27,12 @@ class WhereIn implements Rule
 
             return false;
         }
+
         return in_array($value, $this->fields);
     }
 
-    public function message()
+    public function message(): string
     {
-        return 'You can\'t sort by '. $this->field .' field.';
+        return "You can't sort by {$this->field} field.";
     }
 }
