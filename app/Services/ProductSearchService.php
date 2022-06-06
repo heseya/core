@@ -22,7 +22,14 @@ class ProductSearchService implements ProductSearchServiceContract
 
     public function mapSearchableArray(Product $product): array
     {
-        return [
+        // Workaround for nested sort by attributes
+        // TODO: find solution to sort by text values(single/multi option attributes)
+        $attributeSlug = $product->attributes
+            ->mapWithKeys(fn ($attribute): array => [
+                'attribute.' . $attribute->slug => $this->getAttributeValue($attribute),
+            ])->toArray();
+
+        return array_merge([
             'id' => $product->getKey(),
             'name' => $product->name,
             'name_text' => $product->name,
@@ -62,7 +69,7 @@ class ProductSearchService implements ProductSearchServiceContract
             'metadata_private' => $product->metadataPrivate
                 ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
                 ->toArray(),
-        ];
+        ], $attributeSlug);
     }
 
     public function mappableAs(): array
