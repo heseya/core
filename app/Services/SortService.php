@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Models\Contracts\SortableContract;
+use App\Rules\WhereIn;
 use App\Services\Contracts\SortServiceContract;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -35,12 +36,11 @@ class SortService implements SortServiceContract
             Validator::make(
                 $option,
                 [
-                    '0' => ['required', 'in:' . implode(',', $sortable)],
+                    '0' => ['required', new WhereIn($sortable)],
                     '1' => ['in:asc,desc'],
                 ],
                 [
                     'required' => 'You must specify sort field.',
-                    '0.in' => "You can't sort by ${field} field.",
                     '1.in' => "Only asc|desc sorting directions are allowed on field ${field}.",
                 ]
             )->validate();
