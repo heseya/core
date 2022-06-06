@@ -25,8 +25,13 @@ class ProductSearchService implements ProductSearchServiceContract
         // Workaround for nested sort by attributes
         // TODO: find solution to sort by text values(single/multi option attributes)
         $attributeSlug = $product->attributes
-            ->mapWithKeys(fn ($attribute): array => [
-                'attribute.' . $attribute->slug => $this->getAttributeValue($attribute),
+            ->mapWithKeys(fn (Attribute $attribute): array => [
+                "attribute.{$attribute->slug}" => $this->getAttributeValue($attribute),
+            ])->toArray();
+
+        $setsOrder = $product->sets
+            ->mapWithKeys(fn (ProductSet $set): array => [
+                "set.{$set->slug}" => $set->pivot->order,
             ])->toArray();
 
         return array_merge([
@@ -69,7 +74,7 @@ class ProductSearchService implements ProductSearchServiceContract
             'metadata_private' => $product->metadataPrivate
                 ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
                 ->toArray(),
-        ], $attributeSlug);
+        ], $attributeSlug, $setsOrder);
     }
 
     public function mappableAs(): array

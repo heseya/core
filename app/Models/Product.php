@@ -104,6 +104,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'price_min',
         'price_max',
         'attribute.*',
+        'set.*',
     ];
 
     protected array $criteria = [
@@ -156,7 +157,9 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
 
     public function sets(): BelongsToMany
     {
-        return $this->belongsToMany(ProductSet::class, 'product_set_product');
+        return $this
+            ->belongsToMany(ProductSet::class, 'product_set_product')
+            ->withPivot('order');
     }
 
     public function items(): BelongsToMany

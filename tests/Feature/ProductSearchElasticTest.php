@@ -1324,4 +1324,56 @@ class ProductSearchElasticTest extends TestCase
             )
             ->assertUnprocessable();
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSortBySet($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                ['sort' => 'set.test:desc'],
+            )
+            ->assertOk();
+
+        $this->assertElasticQuery(
+            [
+                'bool' => [
+                    'must' => [],
+                    'should' => [],
+                    'filter' => [
+                        [
+                            'term' => [
+                                'public' => [
+                                    'value' => true,
+                                    'boost' => 1.0,
+                                ],
+                            ],
+                        ],
+                        [
+                            'term' => [
+                                'hide_on_index' => [
+                                    'value' => false,
+                                    'boost' => 1.0,
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            24,
+            [
+                'sort' => [
+                    [
+                        'set.test' => 'desc',
+                    ],
+                ],
+            ],
+        );
+    }
 }
