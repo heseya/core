@@ -141,6 +141,9 @@ class ProductSetService implements ProductSetServiceContract
                 ]);
             },
         );
+
+        // @phpstan-ignore-next-line
+        ProductSet::where('id', $parentId)->first()?->products()->searchable();
     }
 
     public function update(ProductSet $set, ProductSetUpdateDto $dto): ProductSet
@@ -217,6 +220,9 @@ class ProductSetService implements ProductSetServiceContract
 
         foreach ($sets as $key => $id) {
             ProductSet::where('id', $id)->update(['order' => $key]);
+
+            // @phpstan-ignore-next-line
+            ProductSet::where('id', $id)->first()?->products()->searchable();
         }
     }
 
