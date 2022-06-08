@@ -20,6 +20,7 @@ class ProductSearchDto extends Dto implements InstantiateFromRequest
 
     private bool|Missing $public;
     private bool|Missing $available;
+    private bool|Missing $photo;
 
     private array|Missing $sets;
     private array|Missing $tags;
@@ -45,6 +46,7 @@ class ProductSearchDto extends Dto implements InstantiateFromRequest
             name: $request->input('name', new Missing()),
             public: self::boolean('public', $request),
             available: self::boolean('available', $request),
+            photo: self::boolean('photo', $request),
             sets: self::array('sets', $request),
             tags: self::array('tags', $request),
             attribute: self::array('attribute', $request),
