@@ -15,6 +15,7 @@ use Heseya\Dto\Missing;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class MediaService implements MediaServiceContract
 {
@@ -42,14 +43,16 @@ class MediaService implements MediaServiceContract
             Gate::authorize('products.edit');
         }
 
-        $response = Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
-            ->delete($media->url);
+        if (Str::contains($media->url, Config::get('silverbox.host'))) {
+            $response = Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
+                ->delete($media->url);
 
-        if ($response->failed()) {
-            throw new ServerException(
-                message: Exceptions::SERVER_CDN_ERROR,
-                errorArray: $response->json(),
-            );
+            if ($response->failed()) {
+                throw new ServerException(
+                    message: Exceptions::SERVER_CDN_ERROR,
+                    errorArray: $response->json(),
+                );
+            }
         }
 
         $media->forceDelete();

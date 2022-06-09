@@ -10,6 +10,7 @@ use App\Models\Media;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -270,48 +271,36 @@ class MediaTest extends TestCase
         ])->assertCreated();
     }
 
+    public function deleteProvider(): array
+    {
+        return [
+            'as user pages add permission' => ['user', 'pages.add'],
+            'as app pages add permission' => ['application', 'pages.add'],
+            'as user pages edit permission' => ['user', 'pages.edit'],
+            'as app pages edit permission' => ['application', 'pages.edit'],
+            'as user products add permission' => ['user', 'products.add'],
+            'as app products add permission' => ['application', 'products.add'],
+        ];
+    }
+
     public function testDeleteUnauthorized(): void
     {
-        $response = $this->deleteJson('/media/id:' . $this->media->getKey());
-        $response->assertForbidden();
+        $this
+            ->deleteJson('/media/id:' . $this->media->getKey())
+            ->assertForbidden();
     }
-
     /**
-     * @dataProvider authProvider
+     * @dataProvider deleteProvider
      */
-    public function testDeletePagesAdd($user): void
+    public function testDelete($user, $permission): void
     {
-        $this->$user->givePermissionTo('pages.add');
+        $this->$user->givePermissionTo($permission);
 
-        Http::fake(['*' => Http::response(status: 204)]);
-        $response = $this->actingAs($this->$user)->deleteJson('/media/id:' . $this->media->getKey());
-        $response->assertNoContent();
-        $this->assertDatabaseMissing('media', ['id' => $this->media->getKey()]);
-    }
+        $this
+            ->actingAs($this->$user)
+            ->deleteJson('/media/id:' . $this->media->getKey())
+            ->assertNoContent();
 
-    /**
-     * @dataProvider authProvider
-     */
-    public function testDeletePagesEdit($user): void
-    {
-        $this->$user->givePermissionTo('pages.edit');
-
-        Http::fake(['*' => Http::response(status: 204)]);
-        $response = $this->actingAs($this->$user)->deleteJson('/media/id:' . $this->media->getKey());
-        $response->assertNoContent();
-        $this->assertDatabaseMissing('media', ['id' => $this->media->getKey()]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testDeleteProductsAdd($user): void
-    {
-        $this->$user->givePermissionTo('products.add');
-
-        Http::fake(['*' => Http::response(status: 204)]);
-        $response = $this->actingAs($this->$user)->deleteJson('/media/id:' . $this->media->getKey());
-        $response->assertNoContent();
         $this->assertDatabaseMissing('media', ['id' => $this->media->getKey()]);
     }
 
@@ -328,7 +317,9 @@ class MediaTest extends TestCase
         ]);
         $product->media()->sync($media);
 
-        $this->actingAs($this->$user)->deleteJson('/media/id:' . $media->getKey())
+        $this
+            ->actingAs($this->$user)
+            ->deleteJson('/media/id:' . $media->getKey())
             ->assertForbidden();
     }
 
@@ -345,9 +336,36 @@ class MediaTest extends TestCase
         ]);
         $product->media()->sync($media);
 
-        Http::fake(['*' => Http::response(status: 204)]);
-        $this->actingAs($this->$user)->deleteJson('/media/id:' . $media->getKey())
+        $this
+            ->actingAs($this->$user)
+            ->deleteJson('/media/id:' . $media->getKey())
             ->assertNoContent();
+
+        $this->assertDatabaseMissing('media', ['id' => $media->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteFromProductSilverboxMedia($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $product = Product::factory()->create();
+        $media = Media::factory()->create([
+            'url' => Config::get('silverbox.host') . '/test-image.jpg',
+        ]);
+        $product->media()->sync($media);
+
+        Http::fake([
+            Config::get('silverbox.host') . '/test-image.jpg' => Http::response(status: 204),
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->deleteJson('/media/id:' . $media->getKey())
+            ->assertNoContent();
+
         $this->assertDatabaseMissing('media', ['id' => $media->getKey()]);
     }
 
