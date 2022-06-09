@@ -1584,6 +1584,7 @@ class ProductTest extends TestCase
             'price' => 150,
             'public' => false,
             'description_html' => null,
+            'has_schemas' => true,
         ]);
 
         $this->assertDatabaseHas('product_schemas', [
@@ -2452,6 +2453,36 @@ class ProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateDeleteSchemas($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        Event::fake([ProductUpdated::class]);
+
+        $product = Product::factory()->create([
+            'has_schemas' => true,
+        ]);
+
+        $schema = Schema::factory()->create([
+            'name' => 'testSchema',
+            'hidden' => false,
+        ]);
+
+        $product->schemas()->attach($schema->getKey());
+
+        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $product->getKey(), [
+            'name' => 'testProduct',
+            'schemas' => [],
+        ]);
+
+        $response->assertOk();
+
+        Event::assertDispatched(ProductUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateDeleteSets($user): void
     {
         $this->$user->givePermissionTo('products.edit');
@@ -3080,5 +3111,87 @@ class ProductTest extends TestCase
                 && $payload['data_type'] === 'Product'
                 && $payload['event'] === 'ProductDeleted';
         });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testHasSchemaOnAddSchema($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $product = Product::factory()->create();
+
+        $schema = Schema::factory()->create([
+            'required' => false,
+            'name' => 'testSchema',
+        ]);
+
+        $this->productService->updateMinMaxPrices($product);
+
+        $this->actingAs($this->$user)->patchJson('/products/id:' . $product->getKey(), [
+            'schemas' => [
+                $schema->getKey(),
+            ],
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'has_schemas' => true,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testHasSchemaOnDeleteSchema($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $product = Product::factory()->create([
+            'has_schemas' => true,
+        ]);
+
+        $schema = Schema::factory()->create([
+            'required' => false,
+            'name' => 'testSchema',
+        ]);
+
+        $product->schemas()->attach($schema->getKey());
+
+        $this->actingAs($this->$user)->patchJson('/products/id:' . $product->getKey(), [
+            'schemas' => [],
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'has_schemas' => false,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testHasSchemaOnDeleteSchemaDirectly($user): void
+    {
+        $this->$user->givePermissionTo('schemas.remove');
+
+        $product = Product::factory()->create([
+            'has_schemas' => true,
+        ]);
+
+        $schema = Schema::factory()->create([
+            'required' => false,
+            'name' => 'testSchema',
+        ]);
+
+        $product->schemas()->attach($schema->getKey());
+
+        $this->actingAs($this->$user)->json('delete', '/schemas/id:' . $schema->getKey());
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->getKey(),
+            'has_schemas' => false,
+        ]);
     }
 }
