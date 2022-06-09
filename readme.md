@@ -25,7 +25,7 @@ If port is taken you can change DOCKER_PORT in .env to your liking
 Easy start only works with default dirname `store-api` for now.
 
 ## Git hooks
-Project uses git pre-commit hook to automaticly generate IDE Helper docs and fix style issues
+Project uses git pre-commit hook to automatically generate IDE Helper docs and fix style issues
 
 >### Attention
 >Hook scripts assume the project catalogue uses the default repository name: store-api.

@@ -91,40 +91,47 @@ class AvailabilityService implements AvailabilityServiceContract
     public function calculateProductAvailability(Product $product): void
     {
         $product->update([
-            'available' => $this->isProductAvaiable($product),
+            'available' => $this->isProductAvailable($product),
         ] + $this->depositService->getProductShippingTimeDate($product));
     }
 
-    public function isProductAvaiable(Product $product): bool
+    public function isProductAvailable(Product $product): bool
     {
-        //If every product's item quantity is greater or equal to pivot quantity or product has no schemas
-        //then product is available
+        $flagPermutations = false;
+        /** @var Collection<int,mixed> $requiredSelectSchemas */
         $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
-        if ($requiredSelectSchemas->isEmpty() || ($product->items->isNotEmpty() &&
-                $product->items->every(
-                    fn (Item $item) => $item->pivot->required_quantity <= $item->quantity ||
-                        !is_null($item->unlimited_stock_shipping_time) ||
-                        (!is_null($item->unlimited_stock_shipping_date) &&
-                            $item->unlimited_stock_shipping_date >= Carbon::now())
-                ))) {
-            return true;
+        if (!$requiredSelectSchemas->isEmpty() &&
+            $requiredSelectSchemas->some(fn (Schema $schema) => $schema->options->count() > 0)
+        ) {
+            $flagPermutations = true;
+            $items = [];
+            foreach ($product->items as $productItem) {
+                $items[$productItem->getKey()] = $productItem->pivot->required_quantity;
+            }
+            $hasAvailablePermutations = $this->checkPermutations($requiredSelectSchemas, $items);
+
+            if ($hasAvailablePermutations) {
+                return true;
+            }
         }
-
-        $hasAvailablePermutations = $this->checkPermutations($requiredSelectSchemas);
-
-        if ($hasAvailablePermutations) {
+        if (!$flagPermutations && $product->items->every(
+            fn (Item $item) => $item->pivot->required_quantity <= $item->quantity ||
+                !is_null($item->unlimited_stock_shipping_time) ||
+                (!is_null($item->unlimited_stock_shipping_date) &&
+                    $item->unlimited_stock_shipping_date >= Carbon::now())
+        )) {
             return true;
         }
 
         return false;
     }
 
-    public function checkPermutations(Collection $schemas): bool
+    public function checkPermutations(Collection $schemas, array $items): bool
     {
         $max = $schemas->count();
         $options = new Collection();
 
-        return $this->getSchemaOptions($schemas->first(), $schemas, $options, $max);
+        return $this->getSchemaOptions($schemas->first(), $schemas, $options, $max, $items);
     }
 
     public function getSchemaOptions(
@@ -132,6 +139,7 @@ class AvailabilityService implements AvailabilityServiceContract
         Collection $schemas,
         Collection $options,
         int $max,
+        array $items,
         int $index = 0
     ): bool {
         foreach ($schema->options as $option) {
@@ -139,10 +147,10 @@ class AvailabilityService implements AvailabilityServiceContract
             if ($index < $max - 1) {
                 $newIndex = $index + 1;
 
-                return $this->getSchemaOptions($schemas->get($newIndex), $schemas, $options, $max, $newIndex);
+                return $this->getSchemaOptions($schemas->get($newIndex), $schemas, $options, $max, $items, $newIndex);
             }
             if ($index === $max - 1) {
-                if ($this->isOptionsItemsAvailable($options)) {
+                if ($this->isOptionsItemsAvailable($options, $items)) {
                     return true;
                 }
             }
@@ -151,10 +159,22 @@ class AvailabilityService implements AvailabilityServiceContract
         return false;
     }
 
-    public function isOptionsItemsAvailable(Collection $options): bool
+    /**
+     * @param Collection $options
+     * @param array<string, int> $items <unique id of item, quantity>
+     *
+     * @return bool
+     */
+    public function isOptionsItemsAvailable(Collection $options, array $items): bool
     {
-        $items = $options->pluck('items')->flatten()->groupBy('id');
+        $itemsOptions = $options->pluck('items')->flatten()->groupBy('id');
 
-        return $items->every(fn ($item) => $item->first()->quantity >= $items->get($item->first()->getKey())->count());
+        return $itemsOptions->every(
+            function (Collection $item) use ($itemsOptions, $items) {
+                $requiredAmount = ($items[$item->first()->getKey()] ?? 0) +
+                    $itemsOptions->get($item->first()->getKey())->count();
+                return $item->first()->quantity >= $requiredAmount;
+            }
+        );
     }
 }

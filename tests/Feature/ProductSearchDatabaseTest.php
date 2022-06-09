@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Tag;
@@ -461,6 +462,42 @@ class ProductSearchDatabaseTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $product->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByPhoto($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $productNoPhoto = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $productPhoto = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $media = Media::factory()->create([
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ]);
+
+        $productPhoto->media()->sync($media);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['photo' => false])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $productNoPhoto->getKey()]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['photo' => true])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $productPhoto->getKey()]);
     }
 
     private function getProductsByParentSet(

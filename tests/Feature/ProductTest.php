@@ -1091,6 +1091,94 @@ class ProductTest extends TestCase
             ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowWithSalesProductSetsChildren($user): void
+    {
+        $this->$user->givePermissionTo('products.show_details');
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 3000,
+            'price_min_initial' => 2500,
+            'price_max_initial' => 3500,
+        ]);
+
+        $parentSet = ProductSet::factory()->create([
+            'public' => true,
+            'name' => 'parent',
+        ]);
+
+        $childrenSet = ProductSet::factory()->create([
+            'public' => true,
+            'name' => 'children',
+            'public_parent' => true,
+            'parent_id' => $parentSet->getKey(),
+        ]);
+
+        $subChildrenSet = ProductSet::factory()->create([
+            'public' => true,
+            'name' => 'sub children',
+            'public_parent' => true,
+            'parent_id' => $childrenSet->getKey(),
+        ]);
+
+        $product->sets()->sync([$subChildrenSet->getKey()]);
+
+        // Applied - product set is on allow list
+        $sale1 = Discount::factory()->create([
+            'description' => 'Testowa promocja',
+            'name' => 'Testowa promocja obowiązująca',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+            'priority' => 1,
+        ]);
+
+        $sale1->productSets()->attach($parentSet);
+
+        // Not applied - product set is on block list
+        $sale2 = Discount::factory()->create([
+            'description' => 'Not applied - product set is on block list',
+            'name' => 'Set on block list',
+            'value' => 5,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => false,
+            'code' => null,
+        ]);
+
+        $sale2->productSets()->attach($parentSet);
+
+        $this->discountService->applyDiscountsOnProduct($product);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/products/id:' . $product->getKey());
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $product->getKey(),
+                'name' => $product->name,
+                'price' => $product->price,
+                'price_min_initial' => $product->price_min_initial,
+                'price_max_initial' => $product->price_max_initial,
+                'price_min' => 2250,
+                'price_max' => 3150,
+            ])
+            ->assertJsonFragment([
+                'id' => $sale1->getKey(),
+                'name' => $sale1->name,
+            ])
+            ->assertJsonMissing([
+                'id' => $sale2->getKey(),
+                'name' => $sale2->name,
+            ]);
+    }
+
     public function testCreateUnauthorized(): void
     {
         Event::fake([ProductCreated::class]);

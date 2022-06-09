@@ -481,8 +481,7 @@ class UserTest extends TestCase
         $response
             ->assertCreated()
             ->assertJsonPath('data.email', $data['email'])
-            ->assertJsonPath('data.name', $data['name'])
-            ->assertJsonFragment(['name' => 'Authenticated']);
+            ->assertJsonPath('data.name', $data['name']);
 
         $userId = $response->getData()->data->id;
 
@@ -777,14 +776,6 @@ class UserTest extends TestCase
                 'deletable' => true,
                 'metadata' => [],
             ],
-            ])->assertJsonFragment([[
-                'id' => $this->authenticated->getKey(),
-                'name' => $this->authenticated->name,
-                'description' => $this->authenticated->description,
-                'assignable' => false,
-                'deletable' => false,
-                'metadata' => [],
-            ],
             ])->assertJsonPath('data.permissions', $permissions);
 
         $user = User::findOrFail($response->getData()->data->id);
@@ -1049,14 +1040,6 @@ class UserTest extends TestCase
                 'deletable' => true,
                 'metadata' => [],
             ],
-            ])->assertJsonFragment([[
-                'id' => $this->authenticated->getKey(),
-                'name' => $this->authenticated->name,
-                'description' => $this->authenticated->description,
-                'assignable' => false,
-                'deletable' => false,
-                'metadata' => [],
-            ],
             ])->assertJsonPath('data.permissions', $permissions);
 
         $otherUser->refresh();
@@ -1167,16 +1150,6 @@ class UserTest extends TestCase
         );
         $response
             ->assertOk()
-            ->assertJsonPath('data.roles', [
-                0 => [
-                    'id' => $this->authenticated->getKey(),
-                    'name' => $this->authenticated->name,
-                    'description' => $this->authenticated->description,
-                    'assignable' => false,
-                    'deletable' => false,
-                    'metadata' => [],
-                ],
-            ])
             ->assertJsonPath('data.permissions', $this->authenticatedPermissions->toArray());
         $otherUser->refresh();
 

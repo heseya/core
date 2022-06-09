@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\StatusDto;
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ClientException;
 use App\Exceptions\Error;
 use App\Http\Requests\StatusCreateRequest;
 use App\Http\Requests\StatusIndexRequest;
@@ -67,10 +69,7 @@ class StatusController extends Controller
         }
 
         if ($status->orders()->count() > 0) {
-            return Error::abort(
-                'Status nie może być usunięty, ponieważ jest przypisany do zamówienia.',
-                409,
-            );
+            throw new ClientException(Exceptions::CLIENT_STATUS_USED);
         }
 
         $this->statusService->destroy($status);

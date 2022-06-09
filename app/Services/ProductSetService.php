@@ -14,7 +14,7 @@ use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use Heseya\Dto\Missing;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -104,6 +104,9 @@ class ProductSetService implements ProductSetServiceContract
             $this->metadataService->sync($set, $dto->getMetadata());
         }
 
+        // @phpstan-ignore-next-line
+        $set->products()->searchable();
+
         ProductSetCreated::dispatch($set);
 
         return $set;
@@ -138,6 +141,9 @@ class ProductSetService implements ProductSetServiceContract
                 ]);
             },
         );
+
+        // @phpstan-ignore-next-line
+        ProductSet::where('id', $parentId)->first()?->products()->searchable();
     }
 
     public function update(ProductSet $set, ProductSetUpdateDto $dto): ProductSet
@@ -214,6 +220,9 @@ class ProductSetService implements ProductSetServiceContract
 
         foreach ($sets as $key => $id) {
             ProductSet::where('id', $id)->update(['order' => $key]);
+
+            // @phpstan-ignore-next-line
+            ProductSet::where('id', $id)->first()?->products()->searchable();
         }
     }
 
@@ -233,7 +242,7 @@ class ProductSetService implements ProductSetServiceContract
             $set->children->each(fn ($subset) => $this->delete($subset));
         }
 
-        $set->delete();
+        $products = $set->products()->pluck('id');
 
         if ($set->delete()) {
             ProductSetDeleted::dispatch($set);
@@ -241,9 +250,12 @@ class ProductSetService implements ProductSetServiceContract
                 $this->seoMetadataService->delete($set->seo);
             }
         }
+
+        // @phpstan-ignore-next-line
+        Product::whereIn('id', $products)->searchable();
     }
 
-    public function products(ProductSet $set): mixed
+    public function products(ProductSet $set): LengthAwarePaginator
     {
         $query = $set->products();
 

@@ -62,7 +62,6 @@
         </mj-text>
         <mj-text align="left" color="#000" font-family="Arial, sans-serif" font-size="10px" line-height="14px">
           <p>Tak - akceptuję <a href="https://ksiązki.pl/regulamin">regulamin</a> sklepu <a href="https://ksiązki.pl">ksiązki.pl</a></p>
-          <p>Tak - oświadczam, że niniejszy zakup towarów dotyczy bezpośrednio mojej działalności gospodarczej lecz nie ma dla mnie charakteru zawodowego (zakup nie ma związku z branżą/zawodem, w której/ym prowadzę działalność gospodarczą)</p>
         </mj-text>
         <mj-text align="left" color="#000" font-family="Arial, sans-serif" font-size="14px" line-height="22px">
           <p>Pozdrawiamy,<br />Zespół {{ $settingsService->getSetting('store_name')->value }}</p>

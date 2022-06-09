@@ -48,6 +48,7 @@ use App\Models\DiscountCondition;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
+use App\Models\ProductSet;
 use App\Models\Role;
 use App\Models\SalesShortResource;
 use App\Models\ShippingMethod;
@@ -63,6 +64,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 
@@ -378,39 +380,7 @@ class DiscountService implements DiscountServiceContract
 
     public function applyDiscountsOnProduct(Product $product): void
     {
-        $sales = Discount::where('code', null)
-            ->where('target_type', DiscountTargetType::PRODUCTS)
-            ->where('target_is_allow_list', true)
-            ->whereHas('products', function ($query) use ($product): void {
-                $query->where('id', $product->getKey());
-            })
-            ->orWhere(function ($query) use ($product): void {
-                $query->where('code', null)
-                    ->where('target_type', DiscountTargetType::PRODUCTS)
-                    ->where('target_is_allow_list', true)
-                    ->whereHas('productSets', function ($query) use ($product): void {
-                        $query->whereHas('products', function ($query) use ($product): void {
-                            $query->where('id', $product->getKey());
-                        });
-                    });
-            })
-            ->orWhere(function ($query) use ($product): void {
-                $query->where('code', null)
-                    ->where('target_type', DiscountTargetType::PRODUCTS)
-                    ->where('target_is_allow_list', false)
-                    ->whereDoesntHave('products', function ($query) use ($product): void {
-                        $query->where('id', $product->getKey());
-                    })
-                    ->whereDoesntHave('productSets', function ($query) use ($product): void {
-                        $query->whereHas('products', function ($query) use ($product): void {
-                            $query->where('id', $product->getKey());
-                        });
-                    });
-            })
-            ->with(['products', 'productSets', 'conditionGroups', 'shippingMethods'])
-            ->get();
-
-        $sales = $this->sortDiscounts($sales);
+        $sales = $this->sortDiscounts($product->allProductSales());
 
         $minPriceDiscounted = $product->price_min_initial;
         $maxPriceDiscounted = $product->price_max_initial;
@@ -571,6 +541,83 @@ class DiscountService implements DiscountServiceContract
             }
         }
         return false;
+    }
+
+    public function calculateDiscount(Discount $discount, bool $updated): void
+    {
+        // if job is called after update, then calculate discount for all products,
+        // because it may change the list of related products or target_is_allow_list value
+        if (!$updated) {
+            $products = $this->allDiscountProducts($discount);
+        } else {
+            $products = Product::all();
+        }
+
+        // If discount has conditions based on time, then must be added or removed from cache
+        $this->checkIsDiscountActive($discount);
+
+        $this->applyDiscountsOnProducts($products);
+
+        // @phpstan-ignore-next-line
+        Product::whereIn('id', $products->pluck('id'))->searchable();
+    }
+
+    public function checkActiveSales(): void
+    {
+        /** @var Collection<int, mixed> $activeSales */
+        $activeSales = Cache::get('sales.active', Collection::make());
+
+        $oldActiveSales = Collection::make($activeSales);
+
+        $products = Collection::make();
+
+        $activeSalesIds = $this->activeSales()->pluck('id');
+        $sales = $activeSalesIds->diff($oldActiveSales)->merge($oldActiveSales->diff($activeSalesIds));
+
+        $sales = Discount::whereIn('id', $sales)->with(['products', 'productSets', 'productSets.products'])->get();
+
+        foreach ($sales as $sale) {
+            $products = $products->merge($this->allDiscountProducts($sale))->unique('id');
+        }
+
+        $this->applyDiscountsOnProducts($products);
+
+        // @phpstan-ignore-next-line
+        Product::whereIn('id', $products->pluck('id'))->searchable();
+
+        Cache::put('sales.active', $activeSalesIds);
+    }
+
+    private function allDiscountProducts(Discount $discount): Collection
+    {
+        $products = $discount->allProducts();
+
+        if (!$discount->target_is_allow_list) {
+            $products = Product::whereNotIn('id', $products->pluck('id'))->get();
+        }
+
+        return $products;
+    }
+
+    private function checkIsDiscountActive(Discount $discount): void
+    {
+        if ($this->checkDiscountHasTimeConditions($discount)) {
+            /** @var Collection<int, mixed> $activeSales */
+            $activeSales = Cache::get('sales.active', Collection::make());
+
+            if ($this->checkDiscountTimeConditions($discount)) {
+                if (!$activeSales->contains($discount->getKey())) {
+                    $activeSales->push($discount->getKey());
+                }
+            } else {
+                if ($activeSales->contains($discount->getKey())) {
+                    $activeSales = $activeSales->reject(
+                        fn ($value, $key) => $value === $discount->getKey(),
+                    );
+                }
+            }
+            Cache::put('sales.active', $activeSales);
+        }
     }
 
     private function roundProductPrices(Order $order): Order
@@ -917,7 +964,11 @@ class DiscountService implements DiscountServiceContract
         $inDiscount = $this->checkIsProductInDiscountProducts($productId, $discount);
 
         if ($inDiscount !== $discount->target_is_allow_list) {
-            return $this->checkIsProductInDiscountProductSets($productId, $discount);
+            return $this->checkIsProductInDiscountProductSets(
+                $productId,
+                $discount->productSets,
+                $discount->target_is_allow_list
+            );
         }
 
         return $inDiscount;
@@ -928,20 +979,43 @@ class DiscountService implements DiscountServiceContract
         return in_array($productId, $discount->products->pluck('id')->all()) === $discount->target_is_allow_list;
     }
 
-    private function checkIsProductInDiscountProductSets(string $productId, Discount $discount): bool
-    {
+    private function checkIsProductInDiscountProductSets(
+        string $productId,
+        Collection $discountProductSets,
+        bool $allowList
+    ): bool {
         $product = Product::where('id', $productId)->firstOrFail();
-        $productSets = $product->sets()->whereIn('id', $discount->productSets->pluck('id')->all())->count();
 
-        if ($discount->target_is_allow_list && $productSets > 0) {
-            return true;
+        $productSets = $product->sets()->with('parent')->get();
+        $diffCount = $productSets->pluck('id')->diff($discountProductSets->pluck('id')->all())->count();
+
+        // some product sets are in discount
+        if ($diffCount < $productSets->count()) {
+            return $allowList;
         }
 
-        if (!$discount->target_is_allow_list && $productSets === 0) {
-            return true;
+        foreach ($productSets as $productSet) {
+            $result = $this->checkProductSetParentInDiscount($productSet, $discountProductSets, $allowList);
+            if ($result === $allowList) {
+                return $result;
+            }
         }
 
-        return false;
+        return !$allowList;
+    }
+
+    private function checkProductSetParentInDiscount(
+        ProductSet $productSet,
+        Collection $productSets,
+        bool $allowList
+    ): bool {
+        if ($productSet->parent) {
+            if ($productSets->contains($productSet->parent->id)) {
+                return $allowList;
+            }
+            return $this->checkProductSetParentInDiscount($productSet->parent, $productSets, $allowList);
+        }
+        return !$allowList;
     }
 
     private function createConditionGroupsToAttach(array $conditions): array
@@ -1036,23 +1110,21 @@ class DiscountService implements DiscountServiceContract
     private function checkConditionProductInSet(DiscountCondition $condition, array $productIds): bool
     {
         $conditionDto = ProductInSetConditionDto::fromArray($condition->value + ['type' => $condition->type]);
+        $productSets = ProductSet::whereIn('id', $conditionDto->getProductSets())->get();
 
         foreach ($productIds as $productId) {
-            $product = Product::findOrFail($productId);
-            $productSetsProduct = $product->sets()->whereIn('id', $conditionDto->getProductSets())->count();
+            $result = $this->checkIsProductInDiscountProductSets(
+                $productId,
+                $productSets,
+                $conditionDto->isIsAllowList()
+            );
 
-            // Produkt należy do co najmniej jednej kolekcji
-            if ($conditionDto->isIsAllowList() && $productSetsProduct > 0) {
-                return true;
-            }
-
-            // Produkt nie należy do co najmniej jednej kolekcji
-            if (!$conditionDto->isIsAllowList() && $productSetsProduct < count($conditionDto->getProductSets())) {
-                return true;
+            if ($result === $conditionDto->isIsAllowList()) {
+                return $result;
             }
         }
 
-        return false;
+        return !$conditionDto->isIsAllowList();
     }
 
     private function checkConditionProductIn(DiscountCondition $condition, array $productIds): bool

@@ -75,4 +75,8 @@ interface DiscountServiceContract
     public function checkDiscountHasTimeConditions(Discount $discount): bool;
 
     public function checkDiscountTimeConditions(Discount $discount): bool;
+
+    public function calculateDiscount(Discount $discount, bool $updated): void;
+
+    public function checkActiveSales(): void;
 }

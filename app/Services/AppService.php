@@ -61,8 +61,8 @@ class AppService implements AppServiceContract
                 null,
                 false,
                 [
-                    "Status code: {$response->status()}",
-                    "Body: {$response->body()}",
+                    'code' => $response->status(),
+                    'body' => $response->body(),
                 ],
             );
         }
@@ -90,7 +90,7 @@ class AppService implements AppServiceContract
         $advertisedPerm = $requiredPerm->concat($optionalPerm)->unique();
 
         if ($advertisedPerm->diff($allPermissions)->isNotEmpty()) {
-            throw new ClientException(Exceptions::CLIENT_APP_WANTS_INVALID_INFO);
+            throw new ClientException(Exceptions::CLIENT_APP_WANTS_INVALID_PERMISSION);
         }
 
         if ($permissions->intersect($requiredPerm)->count() < $requiredPerm->count()) {

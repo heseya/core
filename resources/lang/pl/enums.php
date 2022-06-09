@@ -32,5 +32,6 @@ return [
         EventType::COUPON_DELETED => 'Zdarzenie wyzwalane po usunięciu kodów rabatowych',
         EventType::ADD_ORDER_DOCUMENT => 'Zdarzenie wyzwalane po utworzeniu nowych dokumentów zamówienia',
         EventType::REMOVE_ORDER_DOCUMENT => 'Zdarzenie wyzwalane po usunięciu dokumentu zamówienia',
-    ]
+        EventType::ORDER_UPDATED_PAID => 'Zdarzenie wyzwalane po zmienie statusu płatności zamówienia',
+    ],
 ];

@@ -4,7 +4,9 @@ namespace App\Models;
 
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\ParentIdSearch;
 use App\Criteria\ProductSetSearch;
+use App\Enums\DiscountTargetType;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasDiscounts;
 use App\Traits\HasMetadata;
@@ -18,9 +20,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**
+ * @property mixed $pivot
+ *
  * @mixin IdeHelperProductSet
  */
 class ProductSet extends Model
@@ -52,7 +57,7 @@ class ProductSet extends Model
         'public',
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
-        'parent_id',
+        'parent_id' => ParentIdSearch::class,
     ];
 
     public function getSlugOverrideAttribute(): bool
@@ -137,6 +142,33 @@ class ProductSet extends Model
     public function media(): HasOne
     {
         return $this->hasOne(Media::class, 'id', 'cover_id');
+    }
+
+    public function allProductsSales(): Collection
+    {
+        $sales = $this
+            ->discounts()
+            ->with(['products', 'productSets', 'conditionGroups', 'shippingMethods'])
+            ->where('code', '=', null)
+            ->where('target_type', '=', DiscountTargetType::PRODUCTS)
+            ->get();
+
+        if ($this->parent) {
+            $sales = $sales->merge($this->parent->allProductsSales());
+        }
+
+        return $sales->unique('id');
+    }
+
+    public function allProducts(): Collection
+    {
+        $products = $this->products()->get();
+
+        foreach ($this->children()->get() as $child) {
+            $products = $products->merge($child->allProducts());
+        }
+
+        return $products->unique('id');
     }
 
     protected static function booted(): void

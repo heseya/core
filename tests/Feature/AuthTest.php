@@ -79,7 +79,6 @@ class AuthTest extends TestCase
             'email' => $this->user->email,
             'password' => $this->password,
         ]);
-
         $response
             ->assertOk()
             ->assertJsonStructure(['data' => $this->expected]);
@@ -1379,11 +1378,6 @@ class AuthTest extends TestCase
             ->assertJsonFragment([
                 'name' => 'Registered user',
                 'email' => $email,
-            ])
-            ->assertJsonFragment([
-                'name' => 'Authenticated',
-                'assignable' => false,
-                'deletable' => false,
             ]);
 
         $user = User::where('email', $email)->first();

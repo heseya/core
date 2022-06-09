@@ -42,7 +42,6 @@ class AttributeStoreRequest extends FormRequest
                 'type' => ['required', new EnumValue(AttributeType::class, false)],
                 'global' => ['required', new Boolean()],
                 'sortable' => ['required', new Boolean()],
-                'options' => ['nullable', 'array'],
             ]
         );
     }

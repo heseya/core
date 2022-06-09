@@ -97,6 +97,44 @@ class PerformanceTest extends TestCase
         $this->assertQueryCountLessThan(11);
     }
 
+    public function testShowPerformanceAttribute2500(): void
+    {
+        $this->user->givePermissionTo('attributes.show');
+
+        $attribute = Attribute::factory()->create();
+
+        AttributeOption::factory()->count(500)->create([
+            'index' => 1,
+            'attribute_id' => $attribute->getKey(),
+        ]);
+
+        $this
+            ->actingAs($this->user)
+            ->getJson('/attributes/id:' . $attribute->getKey())
+            ->assertOk();
+
+        $this->assertQueryCountLessThan(6);
+    }
+
+    public function testShowPerformanceListAttributeOptions2500(): void
+    {
+        $this->user->givePermissionTo('attributes.show');
+
+        $attribute = Attribute::factory()->create();
+
+        AttributeOption::factory()->count(500)->create([
+            'index' => 1,
+            'attribute_id' => $attribute->getKey(),
+        ]);
+
+        $this
+            ->actingAs($this->user)
+            ->getJson('/attributes/id:' . $attribute->getKey() . '/options')
+            ->assertOk();
+
+        $this->assertQueryCountLessThan(9);
+    }
+
     public function testIndexPerformanceAttribute500(): void
     {
         $this->user->givePermissionTo('attributes.show');

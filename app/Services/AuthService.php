@@ -238,7 +238,7 @@ class AuthService implements AuthServiceContract
         $this->checkIsTFA(Auth::user());
 
         if (!Auth::user()->tfa_type) {
-            throw new ClientException(Exceptions::CLIENT_TFA_SELECT_TYPE);
+            throw new ClientException(Exceptions::CLIENT_DOESNT_HAVE_TFA_TYPE_SELECTED);
         }
 
         $this->checkIsValidTFA($dto->getCode());
