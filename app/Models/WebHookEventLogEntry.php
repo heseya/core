@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Criteria\WebhookIsSuccessful;
 use App\Criteria\WhereHasEventType;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -35,6 +36,7 @@ class WebHookEventLogEntry extends Model
         'status_code',
         'web_hook_id',
         'event' => WhereHasEventType::class,
+        'successful' => WebhookIsSuccessful::class,
     ];
 
     public function webHook(): BelongsTo
