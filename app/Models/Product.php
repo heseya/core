@@ -8,6 +8,7 @@ use App\Criteria\MetadataSearch;
 use App\Criteria\MoreOrEquals;
 use App\Criteria\ProductSearch;
 use App\Criteria\WhereHasId;
+use App\Criteria\WhereHasPhoto;
 use App\Criteria\WhereHasSlug;
 use App\Criteria\WhereInIds;
 use App\Enums\DiscountTargetType;
@@ -120,6 +121,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'metadata_private' => MetadataPrivateSearch::class,
         'price_max' => LessOrEquals::class,
         'price_min' => MoreOrEquals::class,
+        'photo' => WhereHasPhoto::class,
     ];
 
     protected string $defaultSortBy = 'products.order';

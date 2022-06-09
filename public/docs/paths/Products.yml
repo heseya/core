@@ -60,6 +60,11 @@ Products:
         in: query
         schema:
           type: number
+      - name: photo
+        in: query
+        description: 'Product has photo'
+        schema:
+          type: boolean
     responses:
       200:
         description: Success
