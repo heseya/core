@@ -146,7 +146,7 @@ class WebHookLogTest extends TestCase
                 'successful' => false,
             ])
             ->assertOk()
-            ->assertJsonCount(1, 'data')
+            ->assertJsonCount(2, 'data')
             ->assertJsonFragment(['id' => $this->logTwo->getKey()]);
     }
 
@@ -171,6 +171,12 @@ class WebHookLogTest extends TestCase
         ]);
 
         $this->logTwo = $this->webHookTwo->logs()->create([
+            'triggered_at' => Carbon::now(),
+            'status_code' => 400,
+            'url' => 'localhost',
+        ]);
+
+        $this->webHookTwo->logs()->create([
             'triggered_at' => Carbon::now(),
             'status_code' => 400,
             'url' => 'localhost',
