@@ -40,6 +40,8 @@ class ProductService implements ProductServiceContract
     {
         if (!($dto->getSchemas() instanceof Missing)) {
             $this->schemaService->sync($product, $dto->getSchemas());
+
+            $this->setProductHasSchemaAttribute($product);
         }
 
         if (!($dto->getSets() instanceof Missing)) {
@@ -147,6 +149,17 @@ class ProductService implements ProductServiceContract
             'price_max_initial' => $productMinMaxPrices[1],
         ]);
         $this->discountService->applyDiscountsOnProduct($product);
+    }
+
+    public function setProductHasSchemaAttribute(Product $product): void
+    {
+        if ($product->has_schemas && $product->schemas->count() === 0) {
+            $product->update(['has_schemas' => false]);
+        }
+
+        if (!$product->has_schemas && $product->schemas->count() > 0) {
+            $product->update(['has_schemas' => true]);
+        }
     }
 
     private function assignItems(Product $product, ?array $items): void
