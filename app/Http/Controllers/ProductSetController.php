@@ -119,6 +119,7 @@ class ProductSetController extends Controller
     {
         $dto = ProductsReorderDto::instantiateFromRequest($request);
         $this->productSetService->reorderProducts($productSet, $dto);
+
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }
