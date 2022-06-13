@@ -487,14 +487,14 @@ class ProductSearchDatabaseTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->json('GET', '/products', ['photo' => false])
+            ->json('GET', '/products', ['has_cover' => false])
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $productNoPhoto->getKey()]);
 
         $this
             ->actingAs($this->$user)
-            ->json('GET', '/products', ['photo' => true])
+            ->json('GET', '/products', ['has_cover' => true])
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $productPhoto->getKey()]);

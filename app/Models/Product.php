@@ -121,7 +121,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'metadata_private' => MetadataPrivateSearch::class,
         'price_max' => LessOrEquals::class,
         'price_min' => MoreOrEquals::class,
-        'photo' => WhereHasPhoto::class,
+        'has_cover' => WhereHasPhoto::class,
     ];
 
     protected string $defaultSortBy = 'products.order';

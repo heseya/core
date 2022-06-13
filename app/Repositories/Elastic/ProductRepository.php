@@ -19,6 +19,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use JeroenG\Explorer\Domain\Syntax\Exists;
+use JeroenG\Explorer\Domain\Syntax\Invert;
 use JeroenG\Explorer\Domain\Syntax\Matching;
 use JeroenG\Explorer\Domain\Syntax\Nested;
 use JeroenG\Explorer\Domain\Syntax\Range;
@@ -41,6 +43,7 @@ class ProductRepository implements ProductRepositoryContract
         'price_min' => 'filterPriceMin',
         'price_max' => 'filterPriceMax',
         'attribute' => 'filterAttributes',
+        'has_cover' => 'filterCover',
     ];
 
     public function __construct(
@@ -280,5 +283,11 @@ class ProductRepository implements ProductRepositoryContract
         $query->must(new Nested('attributes.values', new Terms('attributes.values.id', $values)));
 
         return $query;
+    }
+
+    private function filterCover(Builder $query, string $key, bool $value): Builder
+    {
+        $term = Exists::field('cover');
+        return $query->filter($value ? $term : Invert::query($term));
     }
 }
