@@ -13,7 +13,6 @@ use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
@@ -39,10 +38,6 @@ class MediaService implements MediaServiceContract
 
     public function destroy(Media $media): void
     {
-        if ($media->products()->exists()) {
-            Gate::authorize('products.edit');
-        }
-
         if (Str::contains($media->url, Config::get('silverbox.host'))) {
             $response = Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
                 ->delete($media->url);
