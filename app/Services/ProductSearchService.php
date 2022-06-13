@@ -128,6 +128,15 @@ class ProductSearchService implements ProductSearchServiceContract
         ];
     }
 
+    public function searchableFields(): array
+    {
+        return [
+            'name^10',
+            'attributes.*^5',
+            '*',
+        ];
+    }
+
     private function mapHideOnIndex(Product $product): bool
     {
         $sets = $this->productSetService->flattenParentsSetsTree($product->sets);
