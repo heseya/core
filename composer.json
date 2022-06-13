@@ -4,7 +4,7 @@
     "description": "Store API by Heseya",
     "license": "proprietary",
     "require": {
-        "php": "^8.0",
+        "php": "^8.1",
         "ext-filter": "*",
         "ext-hash": "*",
         "ext-json": "*",
@@ -87,6 +87,7 @@
             "@php artisan key:generate --ansi"
         ],
         "ide-helper": [
+            "@php artisan clear-compiled",
             "@php artisan ide-helper:generate -M",
             "@php artisan ide-helper:models -M",
             "@php artisan ide-helper:meta"
