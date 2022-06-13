@@ -188,6 +188,11 @@ class ProductSearchElasticTest extends TestCase
                         'multi_match' => [
                             'query' => $searchQuery,
                             'fuzziness' => 'auto',
+                            'fields' => [
+                                'name^10',
+                                'attributes.*^5',
+                                '*',
+                            ],
                         ],
                     ],
                 ],

@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use JeroenG\Explorer\Application\Explored;
+use JeroenG\Explorer\Application\SearchableFields;
 use JeroenG\Explorer\Domain\Analysis\Analysis;
 use JeroenG\Explorer\Domain\Analysis\Analyzer\StandardAnalyzer;
 use Laravel\Scout\Searchable;
@@ -39,7 +40,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  *
  * @mixin IdeHelperProduct
  */
-class Product extends Model implements AuditableContract, Explored, SortableContract
+class Product extends Model implements AuditableContract, Explored, SortableContract, SearchableFields
 {
     use HasFactory,
         SoftDeletes,
@@ -145,6 +146,11 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
     public function toSearchableArray(): array
     {
         return $this->searchService->mapSearchableArray($this);
+    }
+
+    public function getSearchableFields(): array
+    {
+        return $this->searchService->searchableFields();
     }
 
     public function indexSettings(): array
