@@ -64,7 +64,7 @@ class ProductSearchElasticTest extends TestCase
             ],
         ], 100);
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(4);
     }
 
     /**
@@ -113,8 +113,6 @@ class ProductSearchElasticTest extends TestCase
                 ],
             ],
         );
-
-        $this->assertQueryCountLessThan(20);
     }
 
     /**
@@ -163,8 +161,6 @@ class ProductSearchElasticTest extends TestCase
                 ],
             ],
         );
-
-        $this->assertQueryCountLessThan(20);
     }
 
     /**

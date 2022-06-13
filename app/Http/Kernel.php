@@ -4,7 +4,6 @@ namespace App\Http;
 
 use App\Http\Middleware\AppAccessRestrict;
 use App\Http\Middleware\Authenticate;
-use App\Http\Middleware\Language;
 use App\Http\Middleware\SecureHeaders;
 use App\Http\Middleware\TrimStrings;
 use App\Http\Middleware\TrustProxies;
@@ -33,7 +32,6 @@ class Kernel extends HttpKernel
         HandleCors::class,
         SecureHeaders::class,
         ValidatePostSize::class,
-        Language::class,
         TrustProxies::class,
         TrimStrings::class,
         ConvertEmptyStringsToNull::class,
