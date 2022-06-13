@@ -60,9 +60,9 @@ Products:
         in: query
         schema:
           type: number
-      - name: photo
+      - name: has_cover
         in: query
-        description: 'Product has photo'
+        description: 'Product has set cover'
         schema:
           type: boolean
     responses:

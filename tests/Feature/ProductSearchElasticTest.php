@@ -1376,4 +1376,82 @@ class ProductSearchElasticTest extends TestCase
             ],
         );
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSortByCover($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                ['has_cover' => true],
+            )
+            ->assertOk();
+
+        $this->assertElasticQuery(
+            [
+                'bool' => [
+                    'must' => [],
+                    'should' => [],
+                    'filter' => [
+                        [
+                            'exists' => [
+                                'field' => 'cover',
+                            ],
+                        ],
+                        [
+                            'term' => [
+                                'public' => [
+                                    'value' => true,
+                                    'boost' => 1.0,
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        );
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                ['has_cover' => false],
+            )
+            ->assertOk();
+
+        $this->assertElasticQuery(
+            [
+                'bool' => [
+                    'must' => [],
+                    'should' => [],
+                    'filter' => [
+                        [
+                            'bool' => [
+                                'must_not' => [
+                                    'exists' => [
+                                        'field' => 'cover',
+                                    ],
+                                ],
+                            ],
+                        ],
+                        [
+                            'term' => [
+                                'public' => [
+                                    'value' => true,
+                                    'boost' => 1.0,
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        );
+    }
 }

@@ -17,7 +17,7 @@ class ProductIndexRequest extends FormRequest
     protected array $booleanFields = [
         'public',
         'full',
-        'photo',
+        'has_cover',
     ];
 
     public function rules(): array
@@ -40,7 +40,7 @@ class ProductIndexRequest extends FormRequest
             'public' => [new Boolean()],
             'sort' => ['nullable', 'string', 'max:255'],
             'available' => ['nullable'],
-            'photo' => ['nullable', new Boolean()],
+            'has_cover' => ['nullable', new Boolean()],
 
             'sets' => ['nullable', 'array'],
             'sets.*' => ['string', $setsExist],
