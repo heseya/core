@@ -16,7 +16,7 @@ class ShippingMethodDto extends Dto implements InstantiateFromRequest
 
     protected string|Missing $name;
     protected bool|Missing $public;
-    protected bool|Missing $black_list;
+    protected bool|Missing $block_list;
     protected ?array $payment_methods;
     protected ?array $countries;
     protected ?array $price_ranges;
@@ -31,7 +31,7 @@ class ShippingMethodDto extends Dto implements InstantiateFromRequest
         return new self(
             name: $request->input('name', new Missing()),
             public: $request->input('public', new Missing()),
-            black_list: $request->input('black_list', new Missing()),
+            block_list: $request->input('block_list', new Missing()),
             payment_methods: $request->input('payment_methods'),
             countries: $request->input('countries'),
             price_ranges: $request->input('price_ranges'),
@@ -51,9 +51,9 @@ class ShippingMethodDto extends Dto implements InstantiateFromRequest
         return $this->public;
     }
 
-    public function isBlackList(): ?bool
+    public function isBlockList(): ?bool
     {
-        return $this->black_list;
+        return $this->block_list;
     }
 
     public function getPaymentMethods(): ?array
