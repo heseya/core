@@ -6,6 +6,6 @@ use BenSampo\Enum\Enum;
 
 class SavedAddressType extends Enum
 {
-    public const DELIVERY = 0;
-    public const INVOICE = 1;
+    public const DELIVERY = 'delivery';
+    public const INVOICE = 'invoice';
 }

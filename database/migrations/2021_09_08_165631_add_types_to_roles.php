@@ -10,7 +10,7 @@ class AddTypesToRoles extends Migration
     public function up(): void
     {
         Schema::table('roles', function (Blueprint $table): void {
-            $table->unsignedTinyInteger('type')->default(RoleType::REGULAR);
+            $table->string('type')->default(RoleType::REGULAR);
         });
     }
 

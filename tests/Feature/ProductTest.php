@@ -2594,7 +2594,7 @@ class ProductTest extends TestCase
 
         $schemaPrice = 50;
         $schema = Schema::factory()->create([
-            'type' => 0,
+            'type' => SchemaType::STRING,
             'required' => false,
             'price' => $schemaPrice,
         ]);
@@ -2638,7 +2638,7 @@ class ProductTest extends TestCase
 
         $schemaPrice = 50;
         $schema = Schema::factory()->create([
-            'type' => 0,
+            'type' => SchemaType::STRING,
             'required' => false,
             'price' => $schemaPrice,
         ]);
@@ -2697,7 +2697,7 @@ class ProductTest extends TestCase
 
         $schemaPrice = 50;
         $schema = Schema::factory()->create([
-            'type' => 0,
+            'type' => SchemaType::STRING,
             'required' => true,
             'price' => $schemaPrice,
         ]);
@@ -2737,7 +2737,7 @@ class ProductTest extends TestCase
 
         $schemaPrice = 50;
         $schema = Schema::factory()->create([
-            'type' => 0,
+            'type' => SchemaType::STRING,
             'required' => false,
             'price' => $schemaPrice,
         ]);
@@ -2842,7 +2842,7 @@ class ProductTest extends TestCase
 
         $schemaPrice = 50;
         $schema = Schema::factory()->create([
-            'type' => 0,
+            'type' => SchemaType::STRING,
             'required' => true,
             'price' => $schemaPrice,
         ]);
@@ -2876,7 +2876,7 @@ class ProductTest extends TestCase
 
         $schemaPrice = 50;
         $schema = Schema::factory()->create([
-            'type' => 0,
+            'type' => SchemaType::STRING,
             'required' => true,
             'price' => $schemaPrice,
         ]);

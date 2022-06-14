@@ -6,12 +6,12 @@ use BenSampo\Enum\Enum;
 
 final class SchemaType extends Enum
 {
-    public const STRING = 0;
-    public const NUMERIC = 1;
-    public const BOOLEAN = 2;
-    public const DATE = 3;
-    public const SELECT = 4;
-    public const FILE = 5;
-    public const MULTIPLY = 6;
-    public const MULTIPLY_SCHEMA = 7;
+    public const STRING = 'string';
+    public const NUMERIC = 'numeric';
+    public const BOOLEAN = 'boolean';
+    public const DATE = 'date';
+    public const SELECT = 'select';
+    public const FILE = 'file';
+    public const MULTIPLY = 'multiply';
+    public const MULTIPLY_SCHEMA = 'multiply_schema';
 }
