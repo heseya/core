@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 
 class SavedAddressService implements SavedAddressServiceContract
 {
-    public function storeAddress(SavedAddressDto $addressDto, int $type): SavedAddress
+    public function storeAddress(SavedAddressDto $addressDto, string $type): SavedAddress
     {
         $savedAddress = null;
 
@@ -48,7 +48,7 @@ class SavedAddressService implements SavedAddressServiceContract
     public function updateAddress(
         SavedAddress $address,
         SavedAddressDto $addressDto,
-        int $type
+        string $type
     ): SavedAddress {
         if (Auth::id() !== $address->user_id) {
             throw new AuthenticationException();
@@ -91,7 +91,7 @@ class SavedAddressService implements SavedAddressServiceContract
         $address->delete();
     }
 
-    public function defaultSet(SavedAddress $address, int $type): void
+    public function defaultSet(SavedAddress $address, string $type): void
     {
         SavedAddress::where('id', '!=', $address->getKey())
             ->where('user_id', '=', $address->user_id)

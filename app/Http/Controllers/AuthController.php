@@ -190,7 +190,7 @@ class AuthController extends Controller
         return UserResource::make($this->authService->register(RegisterDto::instantiateFromRequest($request)));
     }
 
-    public function storeSavedAddress(SavedAddressStoreRequest $request, int $type): JsonResource
+    public function storeSavedAddress(SavedAddressStoreRequest $request, string $type): JsonResource
     {
         $this->savedAddresService->storeAddress(
             SavedAddressDto::instantiateFromRequest($request),
@@ -208,7 +208,7 @@ class AuthController extends Controller
     public function updateSavedAddress(
         SavedAddressUpdateRequest $request,
         SavedAddress $address,
-        int $type
+        string $type
     ): JsonResource {
         $this->savedAddresService->updateAddress(
             $address,
@@ -224,7 +224,7 @@ class AuthController extends Controller
         );
     }
 
-    public function deleteSavedAddress(SavedAddress $address, int $type): JsonResource
+    public function deleteSavedAddress(SavedAddress $address, string $type): JsonResource
     {
         $this->savedAddresService->deleteSavedAddress($address);
 

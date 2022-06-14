@@ -63,7 +63,7 @@ class ProductServiceTest extends TestCase
     public function testMinMaxPricesSchema(
         float $price,
         float $schemaPrice,
-        int $type,
+        string $type,
         bool $required,
         array $minmax,
     ): void {
