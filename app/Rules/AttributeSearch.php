@@ -84,8 +84,10 @@ class AttributeSearch implements Rule
 
     private function validateOptions(mixed $value): bool
     {
-        $value = Str::replace('%2C', ',', $value);
-        $value = explode(',', $value);
+        if (!is_array($value)) {
+            $value = Str::replace('%2C', ',', $value);
+            $value = explode(',', $value);
+        }
 
         foreach ($value as $option) {
             if (!Str::isUuid($option)) {
