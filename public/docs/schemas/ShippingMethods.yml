@@ -9,7 +9,7 @@ ShippingMethod:
       example: 'Next Day Courier'
     public:
       type: boolean
-    black_list:
+    block_list:
       type: boolean
     payment_methods:
       type: array
