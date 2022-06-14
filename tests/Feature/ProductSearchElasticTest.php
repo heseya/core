@@ -831,33 +831,24 @@ class ProductSearchElasticTest extends TestCase
             'type' => 'multi-choice-option',
         ]);
 
-        $option = AttributeOption::factory()->create([
+        $option1 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+        ]);
+
+        $option2 = AttributeOption::factory()->create([
             'attribute_id' => $attribute->getKey(),
             'index' => 1,
         ]);
 
         $this
             ->actingAs($this->$user)
-            ->json('GET', '/products', ['attribute' => [$attribute->slug => $option->getKey()]])
+            ->json('GET', '/products', ['attribute' => [$attribute->slug => $option1->getKey()]])
             ->assertOk();
 
         $this->assertElasticQuery([
             'bool' => [
-                'must' => [
-                    [
-                        'nested' => [
-                            'path' => 'attributes.values',
-                            'query' => [
-                                'terms' => [
-                                    'attributes.values.id' => [
-                                        $option->getKey(),
-                                    ],
-                                    'boost' => 1.0,
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
+                'must' => [],
                 'should' => [],
                 'filter' => [
                     [
@@ -866,6 +857,118 @@ class ProductSearchElasticTest extends TestCase
                                 $attribute->slug,
                             ],
                             'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'nested' => [
+                            'path' => 'attributes.values',
+                            'query' => [
+                                'terms' => [
+                                    'attributes.values.id' => [
+                                        $option1->getKey(),
+                                    ],
+                                    'boost' => 1.0,
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+        //Case: Attributes as array
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', [
+                'attribute' => [
+                    $attribute->slug => [
+                        $option1->getKey(),
+                        $option2->getKey(),
+                    ],
+                ],
+            ])
+            ->assertOk();
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' => [],
+                'should' => [],
+                'filter' => [
+                    [
+                        'terms' => [
+                            'attributes_slug' => [
+                                $attribute->slug,
+                            ],
+                            'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'nested' => [
+                            'path' => 'attributes.values',
+                            'query' => [
+                                'terms' => [
+                                    'attributes.values.id' => [
+                                        $option1->getKey(),
+                                        $option2->getKey(),
+                                    ],
+                                    'boost' => 1.0,
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+        //Case: Attributes as string - coma as delimiter
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', [
+                'attribute' => [
+                    $attribute->slug => $option1->getKey() . ',' . $option2->getKey(),
+                ],
+            ])
+            ->assertOk();
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' => [],
+                'should' => [],
+                'filter' => [
+                    [
+                        'terms' => [
+                            'attributes_slug' => [
+                                $attribute->slug,
+                            ],
+                            'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'nested' => [
+                            'path' => 'attributes.values',
+                            'query' => [
+                                'terms' => [
+                                    'attributes.values.id' => [
+                                        $option1->getKey(),
+                                        $option2->getKey(),
+                                    ],
+                                    'boost' => 1.0,
+                                ],
+                            ],
                         ],
                     ],
                     [
