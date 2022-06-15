@@ -11,6 +11,8 @@ use App\Criteria\WhereHasId;
 use App\Criteria\WhereHasPhoto;
 use App\Criteria\WhereHasSlug;
 use App\Criteria\WhereInIds;
+use App\Criteria\WhereNotId;
+use App\Criteria\WhereNotSlug;
 use App\Enums\DiscountTargetType;
 use App\Models\Contracts\SortableContract;
 use App\Services\Contracts\ProductSearchServiceContract;
@@ -117,7 +119,9 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'public' => Equals::class,
         'available' => Equals::class,
         'sets' => WhereHasSlug::class,
+        'sets_not' => WhereNotSlug::class,
         'tags' => WhereHasId::class,
+        'tags_not' => WhereNotId::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'price_max' => LessOrEquals::class,

@@ -37,12 +37,15 @@ class ProductRepository implements ProductRepositoryContract
         'public' => 'filter',
         'available' => 'filter',
         'sets' => 'filterSlug',
+        'sets_not' => 'filterNotSlug',
         'tags' => 'filterId',
+        'tags_not' => 'filterNotId',
         'metadata' => 'filterMeta',
         'metadata_private' => 'filterMeta',
         'price_min' => 'filterPriceMin',
         'price_max' => 'filterPriceMax',
         'attribute' => 'filterAttributes',
+        'attribute_not' => 'filterNotAttributes',
         'has_cover' => 'filterCover',
     ];
 
@@ -224,9 +227,27 @@ class ProductRepository implements ProductRepositoryContract
         return $query->filter(new Terms("${key}_slug", $slugs));
     }
 
+    private function filterNotSlug(Builder $query, string $key, array $slugs): Builder
+    {
+        return $query->filter(
+            Invert::query(
+                new Terms(Str::replace('_not', '_slug', $key), $slugs)
+            )
+        );
+    }
+
     private function filterId(Builder $query, string $key, array $ids): Builder
     {
         return $query->filter(new Terms("${key}_id", $ids));
+    }
+
+    private function filterNotId(Builder $query, string $key, array $ids): Builder
+    {
+        return $query->filter(
+            Invert::query(
+                new Terms(Str::replace('_not', '_id', $key), $ids)
+            )
+        );
     }
 
     private function filterIds(Builder $query, string $key, string $ids): Builder
@@ -287,6 +308,49 @@ class ProductRepository implements ProductRepositoryContract
         }
 
         $query->filter(new Nested('attributes.values', new Terms('attributes.values.id', (array) $values)));
+
+        return $query;
+    }
+
+    private function filterNotAttributes(Builder $query, string $key, array $attributes): Builder
+    {
+        $values = array_values($attributes)[0];
+
+        $query->filter(new Terms('attributes_slug', array_keys($attributes)));
+
+        if (is_array($values) && !array_key_exists(0, $values)) {
+            $range = new Collection();
+
+            if (array_key_exists('min', $values)) {
+                $range->put('gte', $values['min']);
+            }
+
+            if (array_key_exists('max', $values)) {
+                $range->put('lte', $values['max']);
+            }
+
+            // @phpstan-ignore-next-line
+            $field = is_numeric($range->first()) ? 'attributes.values.value_number' : 'attributes.values.value_date';
+            $query->filter(
+                Invert::query(
+                    new Nested('attributes.values', new Range($field, $range->toArray()))
+                )
+            );
+
+            return $query;
+        }
+
+        if (is_string($values))
+        {
+            $values = Str::replace('%2C', ',', $values);
+            $values = explode(',', $values);
+        }
+
+        $query->filter(
+            Invert::query(
+                new Nested('attributes.values', new Terms('attributes.values.id', (array) $values))
+            )
+        );
 
         return $query;
     }
