@@ -35,6 +35,12 @@ Products:
         schema:
           type: string
         example: 'sets[]=category-teapots&sets[]=category-mugs'
+      - name: 'sets_not[]'
+        in: query
+        description: 'Product set array slug search negation'
+        schema:
+          type: string
+        example: 'sets[]=category-teapots&sets[]=category-mugs'
       - name: sort
         in: query
         description: 'Sorting string'
@@ -44,6 +50,12 @@ Products:
       - name: 'tags[]'
         in: query
         description: 'Tag array id search'
+        schema:
+          type: string
+        example: 'tags[]=5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&tags[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+      - name: 'tags_not[]'
+        in: query
+        description: 'Tag array id search negation'
         schema:
           type: string
         example: 'tags[]=5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&tags[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
