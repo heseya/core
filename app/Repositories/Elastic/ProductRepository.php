@@ -261,8 +261,13 @@ class ProductRepository implements ProductRepositoryContract
 
     private function filterMeta(Builder $query, string $key, array $meta): Builder
     {
+        $values = array_map(
+            fn ($value) => (string) $value,
+            array_values($meta)
+        );
+
         $query->filter(new Terms("${key}.name", array_keys($meta)));
-        $query->filter(new Terms("${key}.value", array_values($meta)));
+        $query->filter(new Terms("${key}.value", $values));
 
         return $query;
     }

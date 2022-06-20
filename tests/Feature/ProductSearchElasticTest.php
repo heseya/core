@@ -869,6 +869,66 @@ class ProductSearchElasticTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testSearchByMetadataBodyParams($user): void
+    {
+        $erpId = 'a2f4f8b0-f8c9-11e9-9eb6-2a2ae2dbcce4';
+        $sku = 123456789;
+
+        $this->$user->givePermissionTo('products.show');
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'metadata' => [
+                        'erp_id' => $erpId,
+                        'sku' => $sku,
+                    ],
+                ],
+            )
+            ->assertOk();
+
+        $this->assertElasticQuery([
+            'bool' => [
+                'must' => [],
+                'should' => [],
+                'filter' => [
+                    [
+                        'terms' => [
+                            'metadata.name' => [
+                                'erp_id',
+                                'sku',
+                            ],
+                            'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'terms' => [
+                            'metadata.value' => [
+                                $erpId,
+                                $sku,
+                            ],
+                            'boost' => 1.0,
+                        ],
+                    ],
+                    [
+                        'term' => [
+                            'public' => [
+                                'value' => true,
+                                'boost' => 1.0,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testSearchByMetadataPrivate($user): void
     {
         $sku = 123456789;
