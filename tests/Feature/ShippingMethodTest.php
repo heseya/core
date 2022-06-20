@@ -25,7 +25,7 @@ class ShippingMethodTest extends TestCase
 
         $this->shipping_method = ShippingMethod::factory()->create([
             'public' => true,
-            'black_list' => true,
+            'block_list' => true,
             'shipping_time_min' => 1,
             'shipping_time_max' => 2,
         ]);
@@ -42,7 +42,7 @@ class ShippingMethodTest extends TestCase
 
         $this->shipping_method_hidden = ShippingMethod::factory()->create([
             'public' => false,
-            'black_list' => true,
+            'block_list' => true,
         ]);
 
         $lowRange = PriceRange::create(['start' => 0]);
@@ -232,14 +232,14 @@ class ShippingMethodTest extends TestCase
         // All countries without Germany
         $shippingMethod = ShippingMethod::factory()->create([
             'public' => true,
-            'black_list' => true,
+            'block_list' => true,
         ]);
         $shippingMethod->countries()->sync(['DE']);
 
         // Only Germany
         $shippingMethod2 = ShippingMethod::factory()->create([
             'public' => true,
-            'black_list' => false,
+            'block_list' => false,
         ]);
         $shippingMethod2->countries()->sync(['DE']);
 
@@ -331,7 +331,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test',
             'public' => true,
-            'black_list' => false,
+            'block_list' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
         ];
@@ -374,7 +374,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test',
             'public' => true,
-            'black_list' => false,
+            'block_list' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
             'metadata' => [
@@ -412,7 +412,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test',
             'public' => true,
-            'black_list' => false,
+            'block_list' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
             'metadata_private' => [
@@ -450,7 +450,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test Shipping Time',
             'public' => true,
-            'black_list' => false,
+            'block_list' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
         ];
@@ -489,7 +489,7 @@ class ShippingMethodTest extends TestCase
             ->json('POST', '/shipping-methods', [
                 'name' => 'Test Shipping Time',
                 'public' => true,
-                'black_list' => false,
+                'block_list' => false,
                 'shipping_time_min' => 3,
                 'shipping_time_max' => 2,
                 'price_ranges' => [
@@ -517,7 +517,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test',
             'public' => true,
-            'black_list' => true,
+            'block_list' => true,
             'shipping_time_min' => 2,
             'shipping_time_max' => 2,
         ];
@@ -549,7 +549,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test',
             'public' => $boolean,
-            'black_list' => $boolean,
+            'block_list' => $boolean,
             'shipping_time_min' => 2,
             'shipping_time_max' => 2,
         ];
@@ -570,7 +570,7 @@ class ShippingMethodTest extends TestCase
 
         $shippingMethodResponse = array_merge($shipping_method, [
             'public' => $booleanValue,
-            'black_list' => $booleanValue,
+            'block_list' => $booleanValue,
         ]);
 
         $response
@@ -657,7 +657,7 @@ class ShippingMethodTest extends TestCase
         $shipping_method = [
             'name' => 'Test 2',
             'public' => false,
-            'black_list' => false,
+            'block_list' => false,
         ];
 
         $response = $this->actingAs($this->$user)->patchJson(
@@ -709,7 +709,7 @@ class ShippingMethodTest extends TestCase
                 'id' => $this->shipping_method->getKey(),
                 'name' => $this->shipping_method->name,
                 'public' => $this->shipping_method->public,
-                'black_list' => $this->shipping_method->black_list,
+                'block_list' => $this->shipping_method->block_list,
                 'shipping_time_min' => $this->shipping_method->shipping_time_min,
                 'shipping_time_max' => $this->shipping_method->shipping_time_max,
             ],
@@ -724,7 +724,7 @@ class ShippingMethodTest extends TestCase
             'id' => $this->shipping_method->getKey(),
             'name' => $this->shipping_method->name,
             'public' => $this->shipping_method->public,
-            'black_list' => $this->shipping_method->black_list,
+            'block_list' => $this->shipping_method->block_list,
             'shipping_time_min' => $this->shipping_method->shipping_time_min,
             'shipping_time_max' => $this->shipping_method->shipping_time_max,
         ]);
@@ -737,12 +737,12 @@ class ShippingMethodTest extends TestCase
     {
         $this->$user->givePermissionTo('shipping_methods.edit');
 
-        $this->shipping_method->update(['black_list' => false]);
+        $this->shipping_method->update(['block_list' => false]);
 
         $shipping_method = [
             'name' => 'Test 2',
             'public' => false,
-            'black_list' => true,
+            'block_list' => true,
         ];
 
         $response = $this->actingAs($this->$user)->patchJson(
@@ -774,12 +774,12 @@ class ShippingMethodTest extends TestCase
     {
         $this->$user->givePermissionTo('shipping_methods.edit');
 
-        $this->shipping_method->update(['black_list' => false]);
+        $this->shipping_method->update(['block_list' => false]);
 
         $shipping_method = [
             'name' => 'Test 2',
             'public' => $boolean,
-            'black_list' => $boolean,
+            'block_list' => $boolean,
         ];
 
         $response = $this->actingAs($this->$user)->patchJson(
@@ -796,7 +796,7 @@ class ShippingMethodTest extends TestCase
 
         $shippingMethodResponse = array_merge($shipping_method, [
             'public' => $booleanValue,
-            'black_list' => $booleanValue,
+            'block_list' => $booleanValue,
         ]);
 
         $response

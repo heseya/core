@@ -44,9 +44,13 @@ class ProductIndexRequest extends FormRequest
 
             'sets' => ['nullable', 'array'],
             'sets.*' => ['string', $setsExist],
+            'sets_not' => ['nullable', 'array'],
+            'sets_not.*' => ['string', $setsExist],
 
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'uuid'],
+            'tags_not' => ['nullable', 'array'],
+            'tags_not.*' => ['string', 'uuid'],
 
             'metadata' => ['nullable', 'array'],
             'metadata.*' => ['filled'],
@@ -59,6 +63,8 @@ class ProductIndexRequest extends FormRequest
 
             'attribute' => ['nullable', 'array'],
             'attribute.*' => [new AttributeSearch()],
+            'attribute_not' => ['nullable', 'array'],
+            'attribute_not.*' => [new AttributeSearch()],
 
             'full' => [new Boolean()],
         ];
