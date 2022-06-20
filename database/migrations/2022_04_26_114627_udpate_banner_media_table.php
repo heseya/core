@@ -16,15 +16,15 @@ return new class() extends Migration {
             $table->string('subtitle')->nullable();
         });
 
-        DB::statement("UPDATE banner_media, banners
+        DB::statement('UPDATE banner_media, banners
 SET banner_media.url = banners.url, banner_media.title = banners.name
-where banner_media.banner_id = banners.id");
+where banner_media.banner_id = banners.id');
 
         Schema::table('banners', function (Blueprint $table): void {
             $table->dropColumn('url');
         });
 
-        Schema::table('media_responsive_media', function(Blueprint $table) {
+        Schema::table('media_responsive_media', function (Blueprint $table): void {
             $table->renameColumn('responsive_media_id', 'banner_media_id');
         });
     }
@@ -37,8 +37,8 @@ where banner_media.banner_id = banners.id");
             $table->string('url')->nullable();
         });
 
-        DB::statement("UPDATE responsive_media, banners
-SET banners.url = responsive_media.url where banners.id = responsive_media.banner_id");
+        DB::statement('UPDATE responsive_media, banners
+SET banners.url = responsive_media.url where banners.id = responsive_media.banner_id');
 
         Schema::table('responsive_media', function (Blueprint $table): void {
             $table->dropColumn('title');
@@ -46,7 +46,7 @@ SET banners.url = responsive_media.url where banners.id = responsive_media.banne
             $table->dropColumn('url');
         });
 
-        Schema::table('media_responsive_media', function(Blueprint $table) {
+        Schema::table('media_responsive_media', function (Blueprint $table): void {
             $table->renameColumn('banner_media_id', 'responsive_media_id');
         });
     }

@@ -102,6 +102,35 @@ class ProductSetIndexTest extends TestCase
             ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexParentIdEmpty($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.show');
+
+        $response = $this->actingAs($this->$user)->getJson('/product-sets?parent_id=');
+        $response
+            ->assertOk()
+            ->assertJsonCount(1, 'data') // Should show only public sets.
+            ->assertJson(['data' => [
+                0 => [
+                    'id' => $this->set->getKey(),
+                    'name' => $this->set->name,
+                    'slug' => $this->set->slug,
+                    'slug_override' => false,
+                    'public' => $this->set->public,
+                    'visible' => $this->set->public && $this->set->public_parent,
+                    'hide_on_index' => $this->set->hide_on_index,
+                    'parent_id' => $this->set->parent_id,
+                    'children_ids' => [
+                        $this->childSet->getKey(),
+                    ],
+                ],
+            ],
+            ]);
+    }
+
     public function testIndexPerformance(): void
     {
         $this->user->givePermissionTo('product_sets.show');

@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
@@ -91,5 +92,16 @@ class Discount extends Model implements AuditableContract
     public function conditionGroups(): BelongsToMany
     {
         return $this->belongsToMany(ConditionGroup::class, 'discount_condition_groups');
+    }
+
+    public function allProducts(): Collection
+    {
+        $products = $this->products()->get();
+
+        foreach ($this->productSets()->get() as $productSet) {
+            $products = $products->merge($productSet->allProducts());
+        }
+
+        return $products->unique('id');
     }
 }

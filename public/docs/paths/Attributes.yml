@@ -30,6 +30,11 @@ Attributes:
         required: false
         schema:
           $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: name
+        in: query
+        description: 'Name search'
+        schema:
+          type: string
     summary: 'list attributes'
     responses:
       200:

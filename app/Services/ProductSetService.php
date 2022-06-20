@@ -4,18 +4,21 @@ namespace App\Services;
 
 use App\Dtos\ProductSetDto;
 use App\Dtos\ProductSetUpdateDto;
+use App\Dtos\ProductsReorderDto;
 use App\Events\ProductSetCreated;
 use App\Events\ProductSetDeleted;
 use App\Events\ProductSetUpdated;
+use App\Models\Product;
 use App\Models\ProductSet;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ProductSetServiceContract;
 use App\Services\Contracts\SeoMetadataServiceContract;
 use Heseya\Dto\Missing;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -101,6 +104,9 @@ class ProductSetService implements ProductSetServiceContract
             $this->metadataService->sync($set, $dto->getMetadata());
         }
 
+        // @phpstan-ignore-next-line
+        $set->products()->searchable();
+
         ProductSetCreated::dispatch($set);
 
         return $set;
@@ -135,6 +141,9 @@ class ProductSetService implements ProductSetServiceContract
                 ]);
             },
         );
+
+        // @phpstan-ignore-next-line
+        ProductSet::where('id', $parentId)->first()?->products()->searchable();
     }
 
     public function update(ProductSet $set, ProductSetUpdateDto $dto): ProductSet
@@ -211,6 +220,9 @@ class ProductSetService implements ProductSetServiceContract
 
         foreach ($sets as $key => $id) {
             ProductSet::where('id', $id)->update(['order' => $key]);
+
+            // @phpstan-ignore-next-line
+            ProductSet::where('id', $id)->first()?->products()->searchable();
         }
     }
 
@@ -230,7 +242,7 @@ class ProductSetService implements ProductSetServiceContract
             $set->children->each(fn ($subset) => $this->delete($subset));
         }
 
-        $set->delete();
+        $products = $set->products()->pluck('id');
 
         if ($set->delete()) {
             ProductSetDeleted::dispatch($set);
@@ -238,9 +250,12 @@ class ProductSetService implements ProductSetServiceContract
                 $this->seoMetadataService->delete($set->seo);
             }
         }
+
+        // @phpstan-ignore-next-line
+        Product::whereIn('id', $products)->searchable();
     }
 
-    public function products(ProductSet $set): mixed
+    public function products(ProductSet $set): LengthAwarePaginator
     {
         $query = $set->products();
 
@@ -274,5 +289,72 @@ class ProductSetService implements ProductSetServiceContract
         }
 
         return $subsets->flatten()->concat($sets);
+    }
+
+    public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void
+    {
+        $product = $set->products()->where('id', $dto->getProducts()[0]['id'])->first();
+        $order = $dto->getProducts()[0]['order'];
+        $orderedProductsAmount = $set->products()
+            ->whereNotNull('product_set_product.order')
+            ->whereNot('product_id', $dto->getProducts()[0]['id'])
+            ->count();
+
+        if ($order > $orderedProductsAmount) {
+            $order = $orderedProductsAmount;
+        }
+
+        if ($product->pivot->order === null) {
+            $this->setOrder($order);
+        } else {
+            if ($order < $product->pivot->order) {
+                $this->setHigherOrder($product, $order);
+            } else {
+                $this->setLowerOrder($product, $order);
+            }
+        }
+
+        $product->pivot->order = $order;
+        $product->pivot->save();
+
+        /** @var int $highestOrder */
+        $highestOrder = $set->products->max('pivot.order');
+
+        $this->assignOrderToNulls($highestOrder, $set->products->whereNull('pivot.order'));
+    }
+
+    private function setHigherOrder(Product $product, int $order): void
+    {
+        DB::table('product_set_product')->where([
+            ['order', '>=', $order],
+            ['order', '<', $product->pivot->order],
+        ])
+            ->increment('order');
+    }
+
+    private function setLowerOrder(Product $product, int $order): void
+    {
+        DB::table('product_set_product')->where([
+            ['order', '<=', $order],
+            ['order', '>', $product->pivot->order],
+        ])
+            ->decrement('order');
+    }
+
+    private function setOrder(int $order): void
+    {
+        DB::table('product_set_product')->where([
+            ['order', '>=', $order],
+        ])
+            ->increment('order');
+    }
+
+    private function assignOrderToNulls(int $highestOrder, Collection $products): void
+    {
+        $products->each(function (Product $product) use (&$highestOrder): void {
+            ++$highestOrder;
+            $product->pivot->order = $highestOrder;
+            $product->pivot->save();
+        });
     }
 }

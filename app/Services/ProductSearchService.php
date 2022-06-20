@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\AttributeType;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Models\Media;
@@ -21,7 +22,19 @@ class ProductSearchService implements ProductSearchServiceContract
 
     public function mapSearchableArray(Product $product): array
     {
-        return [
+        // Workaround for nested sort by attributes
+        // TODO: find solution to sort by text values(single/multi option attributes)
+        $attributeSlug = $product->attributes
+            ->mapWithKeys(fn (Attribute $attribute): array => [
+                "attribute.{$attribute->slug}" => $this->getAttributeValue($attribute),
+            ])->toArray();
+
+        $setsOrder = $product->sets
+            ->mapWithKeys(fn (ProductSet $set): array => [
+                "set.{$set->slug}" => $set->pivot->order,
+            ])->toArray();
+
+        return array_merge([
             'id' => $product->getKey(),
             'name' => $product->name,
             'name_text' => $product->name,
@@ -45,8 +58,15 @@ class ProductSearchService implements ProductSearchServiceContract
             'tags' => $product->tags->map(fn (Tag $tag): array => $this->mapTag($tag))->toArray(),
             'sets_slug' => $this->mapSetsSlugs($product),
             'sets' => $this->mapSets($product),
+            'attributes_slug' => $product->attributes
+                ->map(fn (Attribute $attribute): string => $attribute->slug)
+                ->toArray(),
             'attributes' => $product->attributes
                 ->map(fn (Attribute $attribute): array => $this->mapAttribute($attribute))
+                ->toArray(),
+            'attributes_text' => $product->attributes
+                ->map(fn (Attribute $attribute): array => $this->getAttributeValue($attribute))
+                ->flatten()
                 ->toArray(),
             'metadata' => $product->metadata
                 ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
@@ -54,7 +74,7 @@ class ProductSearchService implements ProductSearchServiceContract
             'metadata_private' => $product->metadataPrivate
                 ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
                 ->toArray(),
-        ];
+        ], $attributeSlug, $setsOrder);
     }
 
     public function mappableAs(): array
@@ -87,9 +107,33 @@ class ProductSearchService implements ProductSearchServiceContract
             'sets_slug' => 'keyword',
             'sets' => 'flattened',
 
-            'attributes' => 'flattened',
+            'attributes' => [
+                'id' => 'keyword',
+                'name' => 'text',
+                'slug' => 'text',
+                'attribute_type' => 'text',
+                'values' => [
+                    'id' => 'keyword',
+                    'name' => 'keyword',
+                    'value_number' => 'float',
+                    'value_date' => 'date',
+                    'metadata' => 'flattened',
+                    'metadata_private' => 'flattened',
+                ],
+            ],
+            'attributes_text' => 'text',
+            'attributes_slug' => 'keyword',
             'metadata' => 'flattened',
             'metadata_private' => 'flattened',
+        ];
+    }
+
+    public function searchableFields(): array
+    {
+        return [
+            'name^10',
+            'attributes.*^5',
+            '*',
         ];
     }
 
@@ -161,7 +205,7 @@ class ProductSearchService implements ProductSearchServiceContract
             'id' => $attribute->getKey(),
             'name' => $attribute->name,
             'slug' => $attribute->slug,
-            'type' => $attribute->type,
+            'attribute_type' => $attribute->type,
             'values' => $attribute->pivot->options->map(fn (AttributeOption $option): array => [
                 'id' => $option->getKey(),
                 'name' => $option->name,
@@ -181,6 +225,15 @@ class ProductSearchService implements ProductSearchServiceContract
                 ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
                 ->toArray(),
         ];
+    }
+
+    private function getAttributeValue(Attribute $attribute): array
+    {
+        return match ($attribute->type->value) {
+            AttributeType::NUMBER => $attribute->pivot->options->pluck('value_number')->toArray(),
+            AttributeType::DATE => $attribute->pivot->options->pluck('value_date')->toArray(),
+            default => $attribute->pivot->options->pluck('name')->toArray(),
+        };
     }
 
     private function mapMeta(Metadata $meta): array

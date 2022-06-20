@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Criteria\WebhookIsSuccessful;
+use App\Criteria\WhereHasEventType;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -10,7 +13,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class WebHookEventLogEntry extends Model
 {
-    use HasFactory;
+    use HasFactory,
+        HasCriteria;
 
     public $timestamps = null;
 
@@ -26,6 +30,13 @@ class WebHookEventLogEntry extends Model
 
     protected $casts = [
         'triggered_at' => 'datetime',
+    ];
+
+    protected array $criteria = [
+        'status_code',
+        'web_hook_id',
+        'event' => WhereHasEventType::class,
+        'successful' => WebhookIsSuccessful::class,
     ];
 
     public function webHook(): BelongsTo

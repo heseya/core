@@ -32,5 +32,6 @@ return [
         EventType::COUPON_DELETED => 'Event triggered after coupon is deleted',
         EventType::ADD_ORDER_DOCUMENT => 'Event triggered after order document are created',
         EventType::REMOVE_ORDER_DOCUMENT => 'Event triggered after order document is deleted',
-    ]
+        EventType::ORDER_UPDATED_PAID => 'Event triggered after order paid status is updated',
+    ],
 ];

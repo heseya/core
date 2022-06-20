@@ -131,12 +131,10 @@ return [
 
     'exclude' => [
         'storage',
-        'resources',
         'bootstrap',
         'database',
         '_ide_helper.php',
         '_ide_helper_models.php',
-        'app/Providers/TelescopeServiceProvider.php',
         'public',
     ],
 

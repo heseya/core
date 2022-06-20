@@ -1,27 +1,27 @@
 <mjml>
-  <mj-body background-color="#F4F4F4">
+  <mj-body background-color="#fff">
     <mj-section background-color="#fff" background-repeat="repeat" text-align="center" padding-top="50px">
       <mj-column>
-        <mj-image height="50px" src="{{ $settingsService->getSetting('mail_logo')->value ?? $settingsService->getSetting('store_logo')->value }}"></mj-image>
+        <mj-image height="30px" width="100px" src="{{ $settingsService->getSetting('mail_logo')->value ?? $settingsService->getSetting('store_logo')->value }}"></mj-image>
       </mj-column>
     </mj-section>
     <mj-section background-color="#fff" background-repeat="repeat" padding-bottom="0px" text-align="center">
       <mj-column>
-        <mj-text align="center" color="#55575d" font-family="Arial, sans-serif" font-size="32px" line-height="34px" padding-bottom="20px" padding-top="0px" padding="10px 25px" text-transform="uppercase">Dziękujemy za zakupy w {{ $settingsService->getSetting('store_name')->value }}</mj-text>
+        <mj-text align="center" color="#000" font-family="Arial, sans-serif" font-size="26px" line-height="28px" padding-bottom="20px" padding-top="0px" padding="10px 25px" text-transform="uppercase" font-weight="bold">Dziękujemy za zakupy w {{ $settingsService->getSetting('store_name')->value }}</mj-text>
       </mj-column>
     </mj-section>
     <mj-section background-color="#fff" background-repeat="repeat" background-size="auto" padding-bottom="0px" padding-top="30px" padding="20px 0" text-align="center">
       <mj-column>
         <mj-text align="left" color="#55575d" font-family="Arial, sans-serif" font-size="30px" line-height="22px" padding-bottom="10px" padding-top="10px" padding="10px 25px">
-          <p style="line-height: 30px; margin: 10px 0; text-align: center; color:#151e23; font-size:30p; font-family:Arial,sans-serif">Twoje zamówienie ma numer <b>{{ $order->code }}</b>, a jego szczegóły możesz sprawdzić poniżej.</p>
+          <p style="line-height: 30px; margin: 10px 0; text-align: center; color:#000; font-size:22px; font-family:Arial,sans-serif">Twoje zamówienie ma numer <b>{{ $order->code }}</b>, a jego szczegóły możesz sprawdzić poniżej.</p>
         </mj-text>
         <mj-text align="left" color="#333" font-family="Arial, sans-serif" font-size="16px" line-height="22px" padding-bottom="0" padding-top="10px" padding="10px 25px">
           <mj-column>
 
-            <p>INFORMACJE O ZAMÓWIENIU:</p>
-            <p>Zamówienie numer {{ $order->code }} z dnia {{ $order->created_at->format('d-m-Y') }}</p>
-            <p>@if ($order->shippingMethod)
-            <p> Dostawa: {{ $order->shippingMethod->name }} @endif</p>
+            <p style="text-align: center; background-color: #244d8b; color: #fff; font-size:14px">INFORMACJE O ZAMÓWIENIU:</p>
+            <p style="text-align: center;">Zamówienie numer <b>{{ $order->code }}</b> z dnia {{ $order->created_at->format('d-m-Y') }}</p>
+            <p style="text-align: center;">@if ($order->shippingMethod)
+            <p style="text-align: center;"> Dostawa: {{ $order->shippingMethod->name }} @endif</p>
             </p>
           </mj-column>
         </mj-text>
@@ -30,41 +30,86 @@
     <mj-section background-color="#fff" padding-bottom="0">
       <mj-column>
         <mj-text align="left" color="#333" font-family="Arial, sans-serif" font-size="16px" line-height="22px" padding-bottom="0" padding-top="10px" padding="10px 25px">
-          <p>ZAMÓWIONE PRODUKTY:</p>
+          <p style="text-align: center; background-color: #244d8b; color: #fff; font-size:14px">ZAMÓWIONE PRODUKTY:</p>
         </mj-text>
         <mj-table>
           <tr style="border-bottom:1px solid #ecedee;text-align:left;padding:15px 0;">
-            <th style="padding: 0 15px 0 0;">Nazwa</th>
-            <th style="padding: 0 15px; width: 30px;">Ilość</th>
-            <th style="padding: 0 0 0 15px; width: 25%;">Cena</th>
-          </tr> @foreach ($order->products as $item) <tr>
+            <th style="text-align: center; padding: 0 15px 0 0;">Nazwa</th>
+            <th style="text-align: center; padding: 0 15px; width: 30px;">Ilość</th>
+            <th style="text-align: center; padding: 0 0 0 15px; width: 25%;">Cena</th>
+          </tr> @foreach ($order->products as $item) <tr style='border-bottom: 2px #244d8b solid; line-height: 38px;'>
             <td style="padding: 0 15px 0 0;">{{ $item->product->name }}</td>
-            <td style="padding: 0 15px; width: 30px;">{{ $item->quantity }}</td>
-            <td style="padding: 0 0 0 15px; width: 25%;">{{ number_format($item->price, 2, '.', '') }} {{ $order->currency }}</td>
+            <td style="text-align: center; padding: 0 15px; width: 30px;">{{ $item->quantity }}</td>
+            <td style="text-align: center; padding: 0 0 0 15px; width: 25%;">{{ number_format($item->price, 2, '.', '') }} {{ $order->currency }}</td>
           </tr> @endforeach
         </mj-table>
       </mj-column>
     </mj-section>
     <mj-section background-color="#fff" background-repeat="repeat" background-size="auto" padding-bottom="0px" text-align="center">
+
       <mj-column>
-        <mj-text align="left" color="#000" font-family="Arial, sans-serif" font-size="14px" line-height="22px"> Wartość produktów: <b>{{ number_format($order->cart_total, 2, '.', '') }} {{ $order->currency }}</b><br />
-          <p>Koszt przesyłki: <b>{{ number_format($order->shipping_price, 2, '.', '') }} {{ $order->currency }}</b><br />
-          </p>
-          @if ($order->cart_total_initial !== $order->cart_total)<p>Rabat: <b>{{ number_format($order->cart_total_initial - $order->cart_total, 2, '.', '') }} {{ $order->currency }}</b></p>@endif
-          <p style="font-size: 20px">Do zapłaty: <b>{{ number_format($order->summary, 2, '.', '') }} {{ $order->currency }}</b></p><br />
-          <p>ZAMAWIAJĄCY:<br /></p>
-          <p>{{ $order?->invoiceAddress?->name ? 'Nazwa firmy:' : 'Imię i nazwisko:' }} {{ $order?->invoiceAddress?->name ?? $order?->deliveryAddress?->name ?? '-' }} <br />
-            Adres: {{ $order?->invoiceAddress?->address ?? $order?->deliveryAddress?->address ?? '-' }} <br />
-            Kod pocztowy: {{ $order?->invoiceAddress?->zip ?? $order?->deliveryAddress?->zip  ?? '-'}} <br />
-            Miejscowość: {{ $order?->invoiceAddress?->city ?? $order?->deliveryAddress?->city ?? '-' }} <br />
-            Telefon kontaktowy: {{ $order?->invoiceAddress?->phone ?? $order?->deliveryAddress?->phone ?? '-' }} <br />
-          </p>
-        </mj-text>
-        <mj-text align="left" color="#000" font-family="Arial, sans-serif" font-size="10px" line-height="14px">
-          <p>Tak - akceptuję <a href="https://ksiązki.pl/regulamin">regulamin</a> sklepu <a href="https://ksiązki.pl">ksiązki.pl</a></p>
-          <p>Tak - oświadczam, że niniejszy zakup towarów dotyczy bezpośrednio mojej działalności gospodarczej lecz nie ma dla mnie charakteru zawodowego (zakup nie ma związku z branżą/zawodem, w której/ym prowadzę działalność gospodarczą)</p>
-        </mj-text>
+        <mj-table>
+          <tr>
+            <td style="width: 180px">Wartość produktów:</td>
+            <td><b>{{ number_format($order->cart_total, 2, '.', '') }} {{ $order->currency }}</b></td>
+          </tr>
+          <tr>
+            <td style="width: 180px">Koszt przesyłki:</td>
+            <td><b>{{ number_format($order->shipping_price, 2, '.', '') }} {{ $order->currency }}</b></td>
+          </tr>
+          @if ($order->cart_total_initial !== $order->cart_total)
+          <tr>
+            <td style="width: 180px">Rabat:</td>
+            <td><b>{{ number_format($order->cart_total_initial - $order->cart_total, 2, '.', '') }} {{ $order->currency }}</b></td>
+          </tr>
+          @endif
+          <tr>
+            <td style="width: 180px">Do zapłaty:</td>
+            <td><b>{{ number_format($order->summary, 2, '.', '') }} {{ $order->currency }}</b></td>
+          </tr>
+        </mj-table>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#fff" background-repeat="repeat" background-size="auto" padding-bottom="0px" text-align="center">
+      <mj-column>
         <mj-text align="left" color="#000" font-family="Arial, sans-serif" font-size="14px" line-height="22px">
+          <p style="text-align: center; background-color: #244d8b; color: #fff; font-size:14px">ZAMAWIAJĄCY:</p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#fff" background-repeat="repeat" background-size="auto" padding-top='0px' padding-bottom="0px" text-align="center">
+      <mj-column>
+        <mj-table>
+          <tr>
+            <td style="width: 180px">{{ $order?->invoiceAddress?->name ? 'Nazwa firmy:' : 'Imię i nazwisko:' }}</td>
+            <td>{{ $order?->invoiceAddress?->name ?? $order?->deliveryAddress?->name ?? '-' }}</td>
+          </tr>
+          <tr>
+            <td style="width: 180px">Adres:</td>
+            <td>{{ $order?->invoiceAddress?->address ?? $order?->deliveryAddress?->address ?? '-' }}</td>
+          </tr>
+          <tr>
+            <td style="width: 180px">Kod pocztowy:</td>
+            <td>{{ $order?->invoiceAddress?->zip ?? $order?->deliveryAddress?->zip  ?? '-'}}</td>
+          </tr>
+          <tr>
+            <td style="width: 180px">Miejscowość:</td>
+            <td>{{ $order?->invoiceAddress?->city ?? $order?->deliveryAddress?->city ?? '-' }}</td>
+          </tr>
+          <tr>
+            <td style="width: 180px">Telefon kontaktowy:</td>
+            <td>{{ $order?->invoiceAddress?->phone ?? $order?->deliveryAddress?->phone ?? '-' }}</td>
+          </tr>
+        </mj-table>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#fff" background-repeat="repeat" background-size="auto" padding-bottom="0px" text-align="center">
+      <mj-column>
+        <mj-text align="right" color="#000" font-family="Arial, sans-serif" font-size="10px" line-height="14px">
+          <p>Tak - akceptuję <a href="https://***REMOVED***.pl/regulamin">regulamin</a> sklepu <a href="https://***REMOVED***.pl">ksiązki.pl</a></p>
+        </mj-text>
+        <mj-text align="right" color="#000" font-family="Arial, sans-serif" font-size="14px" line-height="22px">
           <p>Pozdrawiamy,<br />Zespół {{ $settingsService->getSetting('store_name')->value }}</p>
         </mj-text>
       </mj-column>

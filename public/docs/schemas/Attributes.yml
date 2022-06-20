@@ -1,4 +1,4 @@
-AttributeShort:
+Attribute:
   type: object
   properties:
     id:
@@ -37,36 +37,10 @@ AttributeShort:
       type: boolean
       example: 'true'
 
-AttributeShortMetadata:
-  allOf:
-    - $ref: '#/AttributeShort'
-    - properties:
-        metadata:
-          $ref: './../schemas/Metadata.yml#/Metadata'
-        metadata_private:
-          $ref: './../schemas/Metadata.yml#/Metadata'
-
-Attribute:
-  allOf:
-    - $ref: '#/AttributeShort'
-    - properties:
-        options:
-          description: 'Array options of attribute'
-          type: array
-          items:
-            allOf:
-              - $ref: '#/AttributeOption'
-
 AttributeMetadata:
   allOf:
     - $ref: '#/Attribute'
     - properties:
-        options:
-          description: 'Array options of attribute'
-          type: array
-          items:
-            allOf:
-              - $ref: '#/AttributeOptionMetadata'
         metadata:
           $ref: './../schemas/Metadata.yml#/Metadata'
         metadata_private:

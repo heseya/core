@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Models\Order;
 use App\Models\Status;
 use Tests\TestCase;
 
@@ -224,6 +226,32 @@ class StatusTest extends TestCase
     }
 
     /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWhenUsedByOrder($user): void
+    {
+        $this->$user->givePermissionTo('statuses.edit');
+
+        Order::factory()->create([
+            'status_id' => $this->status_model->getKey(),
+        ]);
+
+        $data = [
+            'name' => 'Test Status 2',
+            'cancel' => false,
+        ];
+
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/statuses/id:' . $this->status_model->getKey(),
+            $data,
+        );
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonFragment(['key' => Exceptions::getKey(Exceptions::CLIENT_STATUS_USED)]);
+    }
+
+    /**
      * @dataProvider booleanProvider
      */
     public function testUpdateBooleanValues($user, $boolean, $booleanValue): void
@@ -280,6 +308,25 @@ class StatusTest extends TestCase
             ->assertNoContent();
 
         $this->assertModelMissing($this->status_model);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteWhenUsedByOrder($user): void
+    {
+        $this->$user->givePermissionTo('statuses.remove');
+
+        Order::factory()->create([
+            'status_id' => $this->status_model->getKey(),
+        ]);
+
+        $this->actingAs($this->$user)
+            ->deleteJson('/statuses/id:' . $this->status_model->getKey())
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'key' => Exceptions::getKey(Exceptions::CLIENT_STATUS_USED),
+            ]);
     }
 
     /**

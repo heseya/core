@@ -48,7 +48,6 @@ class AttributeTest extends TestCase
                 'type',
                 'global',
                 'sortable',
-                'options',
                 'metadata',
             ],
         ];
@@ -83,13 +82,6 @@ class AttributeTest extends TestCase
                 'type' => $this->attribute->type,
                 'global' => $this->attribute->global,
                 'sortable' => $this->attribute->sortable,
-                'metadata' => [],
-            ])
-            ->assertJsonFragment([
-                'index' => $this->option->index,
-                'name' => $this->option->name,
-                'value_number' => $this->option->value_number,
-                'value_date' => $this->option->value_date,
                 'metadata' => [],
             ])
             ->assertJsonFragment($this->newAttribute);
@@ -276,12 +268,6 @@ class AttributeTest extends TestCase
                 'type' => $this->attribute->type,
                 'global' => $this->attribute->global,
                 'sortable' => $this->attribute->sortable,
-            ])
-            ->assertJsonFragment([
-                'index' => $this->option->index,
-                'name' => $this->option->name,
-                'value_number' => $this->option->value_number,
-                'value_date' => $this->option->value_date,
             ]);
     }
 
@@ -348,20 +334,6 @@ class AttributeTest extends TestCase
                 'type' => $attribute->type,
                 'global' => $attribute->global,
                 'sortable' => $attribute->sortable,
-            ])
-            ->assertJsonFragment([
-                'index' => $option1->index,
-                'name' => $option1->name,
-                'value_number' => $option1->value_number,
-                'value_date' => $option1->value_date,
-                'attribute_id' => $option1->attribute_id,
-            ])
-            ->assertJsonFragment([
-                'index' => $option2->index,
-                'name' => $option2->name,
-                'value_number' => $option2->value_number,
-                'value_date' => $option2->value_date,
-                'attribute_id' => $option2->attribute_id,
             ]);
 
         //checking rest of min/max fields in attribute
@@ -423,20 +395,6 @@ class AttributeTest extends TestCase
                 'type' => $attribute->type,
                 'global' => $attribute->global,
                 'sortable' => $attribute->sortable,
-            ])
-            ->assertJsonFragment([
-                'index' => $option1->index,
-                'name' => $option1->name,
-                'value_number' => $option1->value_number,
-                'value_date' => $option1->value_date,
-                'attribute_id' => $option1->attribute_id,
-            ])
-            ->assertJsonFragment([
-                'index' => $option2->index,
-                'name' => $option2->name,
-                'value_number' => $option2->value_number,
-                'value_date' => $option2->value_date,
-                'attribute_id' => $option2->attribute_id,
             ]);
 
         //checking rest of min/max fields in attribute
@@ -472,9 +430,7 @@ class AttributeTest extends TestCase
                 'type' => $this->newAttribute['type'],
                 'global' => $this->newAttribute['global'],
                 'sortable' => $this->newAttribute['sortable'],
-            ])
-            ->assertJsonFragment(['index' => 1] + $this->newAttribute['options'][0])
-            ->assertJsonFragment(['index' => 2] + $this->newAttribute['options'][1]);
+            ]);
     }
 
     /**
@@ -485,21 +441,6 @@ class AttributeTest extends TestCase
         $this->$user->givePermissionTo('attributes.add');
 
         $attribute = Attribute::factory()->make()->toArray();
-        $attribute['options'] = [
-            AttributeOption::factory()->make(['name' => 'optionOne'])->toArray() + [
-                'metadata' => [
-                    'optionOne' => 'optionOneValue',
-                ],
-                'metadata_private' => [
-                    'optionOnePriv' => 'optionOneValuePriv',
-                ],
-            ],
-            AttributeOption::factory()->make(['name' => 'optionTwo'])->toArray() + [
-                'metadata' => [
-                    'optionTwo' => 'optionTwoValue',
-                ],
-            ],
-        ];
 
         $response = $this->actingAs($this->$user)
             ->postJson('/attributes', $attribute + [
@@ -512,10 +453,8 @@ class AttributeTest extends TestCase
             ]);
 
         $createdAttribute = Attribute::find($response->getData()->data->id);
-        $optionOne = $createdAttribute->options()->where('name', 'optionOne')->first();
-        $optionTwo = $createdAttribute->options()->where('name', 'optionTwo')->first();
 
-        $this->assertDatabaseCount('metadata', 5)
+        $this->assertDatabaseCount('metadata', 2)
             ->assertDatabaseHas('metadata', [
                 'name' => 'attributeMeta',
                 'value' => 'attributeValueOne',
@@ -527,24 +466,6 @@ class AttributeTest extends TestCase
                 'value' => 'attributeValueOnePriv',
                 'model_id' => $createdAttribute->getKey(),
                 'public' => false,
-            ])
-            ->assertDatabaseHas('metadata', [
-                'name' => 'optionOne',
-                'value' => 'optionOneValue',
-                'model_id' => $optionOne->getKey(),
-                'public' => true,
-            ])
-            ->assertDatabaseHas('metadata', [
-                'name' => 'optionOnePriv',
-                'value' => 'optionOneValuePriv',
-                'model_id' => $optionOne->getKey(),
-                'public' => false,
-            ])
-            ->assertDatabaseHas('metadata', [
-                'name' => 'optionTwo',
-                'value' => 'optionTwoValue',
-                'model_id' => $optionTwo->getKey(),
-                'public' => true,
             ]);
     }
 
@@ -567,9 +488,7 @@ class AttributeTest extends TestCase
                 'type' => $this->newAttribute['type'],
                 'global' => $booleanValue,
                 'sortable' => $booleanValue,
-            ])
-            ->assertJsonFragment(['index' => 1] + $this->newAttribute['options'][0])
-            ->assertJsonFragment(['index' => 2] + $this->newAttribute['options'][1]);
+            ]);
     }
 
     /**
@@ -675,8 +594,7 @@ class AttributeTest extends TestCase
                 'type' => $attributeUpdate['type'],
                 'global' => $attributeUpdate['global'],
                 'sortable' => $attributeUpdate['sortable'],
-            ])
-            ->assertJsonFragment($attributeUpdate['options'][0]);
+            ]);
     }
 
     /**
@@ -715,8 +633,7 @@ class AttributeTest extends TestCase
                 'type' => $attributeUpdate['type'],
                 'global' => $attributeUpdate['global'],
                 'sortable' => $attributeUpdate['sortable'],
-            ])
-            ->assertJsonFragment($attributeUpdate['options'][0]);
+            ]);
     }
 
     /**
@@ -792,46 +709,6 @@ class AttributeTest extends TestCase
             ->actingAs($this->$user)
             ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
             ->assertNotFound();
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateWithoutAssignedOption($user): void
-    {
-        $this->$user->givePermissionTo('attributes.edit');
-
-        $attributeUpdate = [
-            'name' => 'Test ' . $this->attribute->name,
-            'slug' => 'test-' . $this->attribute->slug,
-            'description' => 'Test ' . $this->attribute->description,
-            'type' => $this->attribute->type,
-            'global' => true,
-            'sortable' => true,
-            'options' => [
-                [
-                    'name' => 'Totally different option',
-                    'value_number' => $this->option->value_number,
-                    'value_date' => $this->option->value_date,
-                ],
-            ],
-        ];
-
-        $this
-            ->actingAs($this->$user)
-            ->patchJson('/attributes/id:' . $this->attribute->getKey(), $attributeUpdate)
-            ->assertOk()
-            ->assertJsonStructure($this->expectedStructure)
-            ->assertJsonFragment([
-                'name' => $attributeUpdate['name'],
-                'slug' => $attributeUpdate['slug'],
-                'description' => $attributeUpdate['description'],
-                'type' => $attributeUpdate['type'],
-                'global' => $attributeUpdate['global'],
-                'sortable' => $attributeUpdate['sortable'],
-            ])
-            ->assertJsonFragment($attributeUpdate['options'][0])
-            ->assertJsonMissing(['id' => $this->option->getKey()]);
     }
 
     /**
@@ -920,6 +797,40 @@ class AttributeTest extends TestCase
             ->assertJsonFragment([
                 'id' => $this->option->getKey(),
                 'name' => $this->option->name,
+            ]);
+    }
+
+    public function testIndexOptionsUnauthorized(): void
+    {
+        $this
+            ->getJson("/attributes/id:{$this->attribute->getKey()}/options")
+            ->assertForbidden()
+            ->assertJsonFragment(['message' => 'This action is unauthorized.']);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexOptionsWithPagination($user): void
+    {
+        $this->$user->givePermissionTo('attributes.show');
+
+        AttributeOption::factory()
+            ->count(20)
+            ->sequence(fn ($sequence) => ['index' => $sequence->index])
+            ->create([
+                'attribute_id' => $this->attribute->getKey(),
+            ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', "/attributes/id:{$this->attribute->getKey()}/options", ['limit' => 10])
+            ->assertOk()
+            ->assertJsonCount(10, 'data')
+            ->assertJsonFragment([
+                'per_page' => 10,
+                'to' => 10,
+                'total' => 21,
             ]);
     }
 
@@ -1399,9 +1310,16 @@ class AttributeTest extends TestCase
                 'type' => $this->newAttribute['type'],
                 'global' => $this->newAttribute['global'],
                 'sortable' => $this->newAttribute['sortable'],
-            ])
-            ->assertJsonFragment(['index' => 1] + $this->newAttribute['options'][0])
-            ->assertJsonFragment(['index' => 2] + $this->newAttribute['options'][1]);
+            ]);
+
+        AttributeOption::factory()->create([
+            'index' => 1,
+            'attribute_id' => $response['data']['id'],
+        ]);
+        AttributeOption::factory()->create([
+            'index' => 2,
+            'attribute_id' => $response['data']['id'],
+        ]);
 
         AttributeOption::query()
             ->where('attribute_id', '=', $response['data']['id'])
@@ -1430,10 +1348,18 @@ class AttributeTest extends TestCase
                 'type' => $this->newAttribute['type'],
                 'global' => $this->newAttribute['global'],
                 'sortable' => $this->newAttribute['sortable'],
-            ])
-            ->assertJsonFragment(['index' => 1])
-            ->assertJsonMissing(['index' => 2])
-            ->assertJsonFragment(['index' => 3]);
+            ]);
+
+        $this->assertDatabaseHas('attribute_options', [
+            'attribute_id' => $response['data']['id'],
+            'index' => 1,
+            'deleted_at' => null,
+        ]);
+        $this->assertDatabaseHas('attribute_options', [
+            'attribute_id' => $response['data']['id'],
+            'index' => 3,
+            'deleted_at' => null,
+        ]);
     }
 
     /**
@@ -1664,5 +1590,35 @@ class AttributeTest extends TestCase
                     ],
                 ],
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexAttributeOptionName($user): void
+    {
+        $this->$user->givePermissionTo(['attributes.show', 'attributes.show_metadata_private']);
+
+        unset($this->newAttribute['options']);
+        $attribute = Attribute::create($this->newAttribute);
+
+        AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'name' => 'Searched name',
+        ]);
+        AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 2,
+            'name' => 'Another name',
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/attributes/id:' . $attribute->getKey() .'/options', ['name' => 'Searched name'])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['name' => 'Searched name'])
+            ->assertJsonMissing(['name' => 'Another name']);
     }
 }

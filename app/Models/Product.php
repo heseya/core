@@ -8,8 +8,12 @@ use App\Criteria\MetadataSearch;
 use App\Criteria\MoreOrEquals;
 use App\Criteria\ProductSearch;
 use App\Criteria\WhereHasId;
+use App\Criteria\WhereHasPhoto;
 use App\Criteria\WhereHasSlug;
 use App\Criteria\WhereInIds;
+use App\Criteria\WhereNotId;
+use App\Criteria\WhereNotSlug;
+use App\Enums\DiscountTargetType;
 use App\Models\Contracts\SortableContract;
 use App\Services\Contracts\ProductSearchServiceContract;
 use App\Traits\HasDiscountConditions;
@@ -24,7 +28,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use JeroenG\Explorer\Application\Explored;
+use JeroenG\Explorer\Application\SearchableFields;
 use JeroenG\Explorer\Domain\Analysis\Analysis;
 use JeroenG\Explorer\Domain\Analysis\Analyzer\StandardAnalyzer;
 use Laravel\Scout\Searchable;
@@ -32,9 +38,11 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
+ * @property mixed $pivot
+ *
  * @mixin IdeHelperProduct
  */
-class Product extends Model implements AuditableContract, Explored, SortableContract
+class Product extends Model implements AuditableContract, Explored, SortableContract, SearchableFields
 {
     use HasFactory,
         SoftDeletes,
@@ -99,6 +107,8 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'available',
         'price_min',
         'price_max',
+        'attribute.*',
+        'set.*',
     ];
 
     protected array $criteria = [
@@ -109,14 +119,17 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'public' => Equals::class,
         'available' => Equals::class,
         'sets' => WhereHasSlug::class,
+        'sets_not' => WhereNotSlug::class,
         'tags' => WhereHasId::class,
+        'tags_not' => WhereNotId::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'price_max' => LessOrEquals::class,
         'price_min' => MoreOrEquals::class,
+        'has_cover' => WhereHasPhoto::class,
     ];
 
-    protected string $defaultSortBy = 'order';
+    protected string $defaultSortBy = 'products.order';
 
     protected string $defaultSortDirection = 'desc';
 
@@ -139,19 +152,26 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         return $this->searchService->mapSearchableArray($this);
     }
 
+    public function getSearchableFields(): array
+    {
+        return $this->searchService->searchableFields();
+    }
+
     public function indexSettings(): array
     {
-        $synonymAnalyzer = new StandardAnalyzer('synonym');
-        $synonymAnalyzer->setFilters(['lowercase', 'morfologik_stem']);
+        $analyzer = new StandardAnalyzer('morfologik');
+        $analyzer->setFilters(['lowercase', 'morfologik_stem']);
 
         return (new Analysis())
-            ->addAnalyzer($synonymAnalyzer)
+            ->addAnalyzer($analyzer)
             ->build();
     }
 
     public function sets(): BelongsToMany
     {
-        return $this->belongsToMany(ProductSet::class, 'product_set_product');
+        return $this
+            ->belongsToMany(ProductSet::class, 'product_set_product')
+            ->withPivot('order');
     }
 
     public function items(): BelongsToMany
@@ -214,5 +234,52 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
             'product_id',
             'sale_id',
         );
+    }
+
+    public function productSetSales(): Collection
+    {
+        $sales = Collection::make();
+        $sets = $this
+            ->sets()
+            ->get();
+
+        /** @var ProductSet $set */
+        foreach ($sets as $set) {
+            $sales = $sales->merge($set->allProductsSales());
+        }
+
+        return $sales->unique('id');
+    }
+
+    public function allProductSales(): Collection
+    {
+        $sales = Discount::where('code', null)
+            ->where('target_type', DiscountTargetType::PRODUCTS)
+            ->where('target_is_allow_list', true)
+            ->whereHas('products', function ($query): void {
+                $query->where('id', $this->getKey());
+            })
+            ->orWhere(function ($query): void {
+                $query->where('code', null)
+                    ->where('target_type', DiscountTargetType::PRODUCTS)
+                    ->where('target_is_allow_list', false)
+                    ->whereDoesntHave('products', function ($query): void {
+                        $query->where('id', $this->getKey());
+                    })
+                    ->whereDoesntHave('productSets', function ($query): void {
+                        $query->whereHas('products', function ($query): void {
+                            $query->where('id', $this->getKey());
+                        });
+                    });
+            })
+            ->with(['products', 'productSets', 'conditionGroups', 'shippingMethods'])
+            ->get();
+
+        $productSetSales = $this->productSetSales();
+
+        $sales = $sales->merge($productSetSales->where('target_is_allow_list', true));
+        $sales = $sales->diff($productSetSales->where('target_is_allow_list', false));
+
+        return $sales->unique('id');
     }
 }

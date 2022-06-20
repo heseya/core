@@ -27,16 +27,12 @@ class AttributeService implements AttributeServiceContract
             $this->metadataService->sync($attribute, $dto->getMetadata());
         }
 
-        $this->processAttributeOptions($attribute, $dto);
-
         return $attribute;
     }
 
     public function update(Attribute $attribute, AttributeDto $dto): Attribute
     {
         $attribute->update($dto->toArray());
-
-        $this->processAttributeOptions($attribute, $dto);
 
         return $attribute;
     }
@@ -73,24 +69,5 @@ class AttributeService implements AttributeServiceContract
         }
 
         $attribute->update();
-    }
-
-    protected function processAttributeOptions(Attribute &$attribute, AttributeDto $dto): Attribute
-    {
-        $attribute->options
-            ->whereNotIn('id', array_map(fn ($option) => $option->getId(), $dto->getOptions()))
-            ->each(
-                fn ($missingOption) => $this->attributeOptionService->delete($missingOption)
-            );
-
-        foreach ($dto->getOptions() as $option) {
-            $attributeOption = $this->attributeOptionService->updateOrCreate($attribute->getKey(), $option);
-
-            if (!($option->getMetadata() instanceof Missing)) {
-                $this->metadataService->sync($attributeOption, $option->getMetadata());
-            }
-        }
-
-        return $attribute->refresh();
     }
 }

@@ -11,6 +11,7 @@ class AttributeOptionIndexRequest extends FormRequest
         return [
             'metadata' => ['nullable', 'array'],
             'metadata_private' => ['nullable', 'array'],
+            'name' => ['nullable', 'string'],
         ];
     }
 }

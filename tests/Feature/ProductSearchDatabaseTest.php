@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Tag;
@@ -176,6 +177,36 @@ class ProductSearchDatabaseTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testSearchBySetNegation($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $set = ProductSet::factory()->create([
+            'public' => true,
+            'hide_on_index' => false,
+        ]);
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        // Product not in set
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $set->products()->attach($product);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['sets_not' => [$set->slug]])
+            ->assertOk()
+            ->assertJsonMissing(['id' => $product->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testSearchBySets($user): void
     {
         $this->$user->givePermissionTo('products.show');
@@ -213,6 +244,47 @@ class ProductSearchDatabaseTest extends TestCase
             ->assertJsonCount(2, 'data')
             ->assertJsonFragment(['id' => $product->getKey()])
             ->assertJsonFragment(['id' => $product2->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchBySetsNegation($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $set2 = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $product2 = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        // Product not in set
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $set->products()->attach($product);
+        $set2->products()->attach($product2);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', [
+                'sets_not' => [$set->slug, $set2->slug],
+            ])
+            ->assertOk()
+            ->assertJsonMissing(['id' => $product->getKey()])
+            ->assertJsonMissing(['id' => $product2->getKey()]);
     }
 
     /**
@@ -337,6 +409,32 @@ class ProductSearchDatabaseTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $product->getKey()]);
     }
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByTagNegation($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $tag = Tag::factory()->create();
+
+        $product = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        // Product not in tag
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $tag->products()->attach($product);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['tags_not' => [$tag->getKey()]])
+            ->assertOk()
+            ->assertJsonMissing(['id' => $product->getKey()]);
+    }
 
     /**
      * @dataProvider authProvider
@@ -376,6 +474,45 @@ class ProductSearchDatabaseTest extends TestCase
             ->assertJsonCount(2, 'data')
             ->assertJsonFragment(['id' => $product1->getKey()])
             ->assertJsonFragment(['id' => $product2->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByTagsNot($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $tag1 = Tag::factory()->create();
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $tag2 = Tag::factory()->create();
+
+        $product2 = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        // Product not in tag
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $tag1->products()->attach($product1);
+        $tag2->products()->attach($product2);
+
+        $this->actingAs($this->$user)
+            ->json('GET', '/products', [
+                'tags_not' => [
+                    $tag1->getKey(),
+                    $tag2->getKey(),
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonMissing(['id' => $product1->getKey()])
+            ->assertJsonMissing(['id' => $product2->getKey()]);
     }
 
     /**
@@ -461,6 +598,42 @@ class ProductSearchDatabaseTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $product->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByPhoto($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $productNoPhoto = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $productPhoto = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $media = Media::factory()->create([
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ]);
+
+        $productPhoto->media()->sync($media);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['has_cover' => false])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $productNoPhoto->getKey()]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['has_cover' => true])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $productPhoto->getKey()]);
     }
 
     private function getProductsByParentSet(

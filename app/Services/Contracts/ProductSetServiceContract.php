@@ -4,8 +4,9 @@ namespace App\Services\Contracts;
 
 use App\Dtos\ProductSetDto;
 use App\Dtos\ProductSetUpdateDto;
+use App\Dtos\ProductsReorderDto;
 use App\Models\ProductSet;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 interface ProductSetServiceContract
@@ -29,11 +30,13 @@ interface ProductSetServiceContract
 
     public function delete(ProductSet $set): void;
 
-    public function products(ProductSet $set): mixed;
+    public function products(ProductSet $set): LengthAwarePaginator;
 
     public function flattenSetsTree(Collection $sets, string $relation): Collection;
 
     public function flattenParentsSetsTree(Collection $sets): Collection;
 
     public function attach(ProductSet $set, array $products): Collection;
+
+    public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void;
 }

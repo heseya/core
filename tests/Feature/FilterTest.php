@@ -73,6 +73,7 @@ class FilterTest extends TestCase
 
         ProductSet::factory()->create()->attributes()->attach([
             Attribute::factory()->create([
+                'name' => 'Not in query number',
                 'global' => 0,
                 'type' => 'number',
             ])->getKey(),
@@ -81,6 +82,7 @@ class FilterTest extends TestCase
                 'type' => 'date',
             ])->getKey(),
             Attribute::factory()->create([
+                'name' => 'Not in query single option',
                 'global' => 0,
                 'type' => 'single-option',
             ])->getKey(),
@@ -91,14 +93,12 @@ class FilterTest extends TestCase
             ->json('GET', '/filters', [
                 'sets' => [$firstProductSet->getKey(), $secondProductSet->getKey()],
             ])
-            ->assertJsonFragment([
-                'name' => 'test',
-                'value_number' => 1,
+            ->assertJsonCount(6, 'data')
+            ->assertJsonMissing([
+                'name' => 'Not in query number',
             ])
-            ->assertJsonFragment([
-                'name' => 'test2',
-                'value_number' => 99,
-            ])
-            ->assertJsonCount(6, 'data');
+            ->assertJsonMissing([
+                'name' => 'Not in query single option',
+            ]);
     }
 }

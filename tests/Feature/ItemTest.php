@@ -1017,10 +1017,10 @@ class ItemTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'availability' => [
-                    ['quantity' => '2.0000', 'shipping_time' => null, 'shipping_date' => null],
-                    ['quantity' => '2.0000', 'shipping_time' => null, 'shipping_date' => $date],
-                    ['quantity' => '4.0000', 'shipping_time' => 4, 'shipping_date' => null],
-                    ['quantity' => '2.0000', 'shipping_time' => 9, 'shipping_date' => null],
+                    ['quantity' => 2, 'shipping_time' => null, 'shipping_date' => null],
+                    ['quantity' => 2, 'shipping_time' => null, 'shipping_date' => $date],
+                    ['quantity' => 4, 'shipping_time' => 4, 'shipping_date' => null],
+                    ['quantity' => 2, 'shipping_time' => 9, 'shipping_date' => null],
                 ],
             ]);
     }
@@ -1052,7 +1052,7 @@ class ItemTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'availability' => [
-                    ['quantity' => '10.0000', 'shipping_time' => 10, 'shipping_date' => null],
+                    ['quantity' => 10, 'shipping_time' => 10, 'shipping_date' => null],
                 ],
             ]);
 
@@ -1062,7 +1062,7 @@ class ItemTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'availability' => [
-                    ['quantity' => '10.0000', 'shipping_time' => 10, 'shipping_date' => null],
+                    ['quantity' => 10, 'shipping_time' => 10, 'shipping_date' => null],
                 ],
             ]);
     }

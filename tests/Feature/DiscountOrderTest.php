@@ -8,6 +8,7 @@ use App\Enums\DiscountType;
 use App\Enums\SchemaType;
 use App\Models\ConditionGroup;
 use App\Models\Discount;
+use App\Models\Item;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
@@ -811,5 +812,75 @@ class DiscountOrderTest extends TestCase
         $response
             ->assertCreated()
             ->assertJsonFragment(['summary' => 110]); // (20 (schema price) - 30 (discount)) + 100 + 10 (delivery)
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOrderCreateDiscountCheapestProductAndCheckDeposits($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => 100,
+        ]);
+
+        $itemData = [
+            'unlimited_stock_shipping_time' => 4,
+        ];
+
+        $item = Item::factory()->create($itemData);
+
+        $product->items()->attach($item->getKey(), ['required_quantity' => 1]);
+
+        Discount::factory()->create([
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::CHEAPEST_PRODUCT,
+            'value' => 10,
+            'code' => null,
+        ]);
+
+        $response = $this->actingAs($this->$user)->postJson('/orders', [
+            'email' => 'info@example.com',
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'delivery_address' => $this->address,
+            'items' => [
+                [
+                    'product_id' => $product->getKey(),
+                    'quantity' => 3,
+                ],
+            ],
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment(['summary' => 300]); // 100 * 2 + (100 - 10%) * 1 + 10 (delivery)
+
+        $order = Order::find($response->getData()->data->id);
+
+        $this->assertDatabaseHas('order_products', [
+            'order_id' => $order->getKey(),
+            'product_id' => $product->getKey(),
+            'price' => 90,
+        ]);
+
+        $this->assertDatabaseHas('order_products', [
+            'order_id' => $order->getKey(),
+            'product_id' => $product->getKey(),
+            'price' => 100,
+        ]);
+
+        $this->assertDatabaseHas('deposits', [
+            'quantity' => -2,
+            'item_id' => $item->getKey(),
+            'shipping_time' => 4,
+        ]);
+
+        $this->assertDatabaseHas('deposits', [
+            'quantity' => -1,
+            'item_id' => $item->getKey(),
+            'shipping_time' => 4,
+        ]);
     }
 }

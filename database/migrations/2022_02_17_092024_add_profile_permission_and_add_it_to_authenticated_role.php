@@ -4,8 +4,6 @@ use App\Enums\RoleType;
 use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 class AddProfilePermissionAndAddItToAuthenticatedRole extends Migration
 {
@@ -14,7 +12,7 @@ class AddProfilePermissionAndAddItToAuthenticatedRole extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         // Saved Addresses
         Permission::create(['name' => 'profile.addresses_manage', 'display_name' => 'Możliwość zarządzania swoimi zapisanymi adresami']);
@@ -35,7 +33,7 @@ class AddProfilePermissionAndAddItToAuthenticatedRole extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         $authenticated = Role::where('type', RoleType::AUTHENTICATED)->firstOrFail();
         $authenticated->revokePermissionTo('profile.addresses_manage');

@@ -19,7 +19,10 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use JeroenG\Explorer\Domain\Syntax\Exists;
+use JeroenG\Explorer\Domain\Syntax\Invert;
 use JeroenG\Explorer\Domain\Syntax\Matching;
+use JeroenG\Explorer\Domain\Syntax\Nested;
 use JeroenG\Explorer\Domain\Syntax\Range;
 use JeroenG\Explorer\Domain\Syntax\Term;
 use JeroenG\Explorer\Domain\Syntax\Terms;
@@ -30,16 +33,20 @@ class ProductRepository implements ProductRepositoryContract
     private const CRITERIA = [
         'ids' => 'filterIds',
         'slug' => 'must',
-        'name' => 'must',
+        'name' => 'filterName',
         'public' => 'filter',
         'available' => 'filter',
         'sets' => 'filterSlug',
+        'sets_not' => 'filterNotSlug',
         'tags' => 'filterId',
+        'tags_not' => 'filterNotId',
         'metadata' => 'filterMeta',
         'metadata_private' => 'filterMeta',
         'price_min' => 'filterPriceMin',
         'price_max' => 'filterPriceMax',
-        'attributes' => 'filterAttributes',
+        'attribute' => 'filterAttributes',
+        'attribute_not' => 'filterNotAttributes',
+        'has_cover' => 'filterCover',
     ];
 
     public function __construct(
@@ -134,7 +141,9 @@ class ProductRepository implements ProductRepositoryContract
         $attributes = new Collection();
         foreach ($hit['_source']['attributes'] as $raw) {
             $attribute = new Attribute();
-            $attribute->forceFill(Arr::except($raw, ['values', 'metadata', 'metadata_private']));
+            $properties = Arr::except($raw, ['values', 'metadata', 'metadata_private', 'attribute_type']);
+            $properties['type'] = $raw['attribute_type'];
+            $attribute->forceFill($properties);
 
             $options = new Collection();
             foreach ($raw['values'] as $value) {
@@ -200,6 +209,14 @@ class ProductRepository implements ProductRepositoryContract
         return $query->must(new Matching($key, $value));
     }
 
+    private function filterName(Builder $query, string $key, string|int|float|bool $value): Builder
+    {
+        $matching = new Matching($key, $value);
+        $matching->setBoost(10);
+
+        return $query->must($matching);
+    }
+
     private function filter(Builder $query, string $key, string|int|float|bool $value): Builder
     {
         return $query->filter(new Term($key, $value));
@@ -210,9 +227,27 @@ class ProductRepository implements ProductRepositoryContract
         return $query->filter(new Terms("${key}_slug", $slugs));
     }
 
+    private function filterNotSlug(Builder $query, string $key, array $slugs): Builder
+    {
+        return $query->filter(
+            Invert::query(
+                new Terms(Str::replace('_not', '_slug', $key), $slugs)
+            )
+        );
+    }
+
     private function filterId(Builder $query, string $key, array $ids): Builder
     {
         return $query->filter(new Terms("${key}_id", $ids));
+    }
+
+    private function filterNotId(Builder $query, string $key, array $ids): Builder
+    {
+        return $query->filter(
+            Invert::query(
+                new Terms(Str::replace('_not', '_id', $key), $ids)
+            )
+        );
     }
 
     private function filterIds(Builder $query, string $key, string $ids): Builder
@@ -226,8 +261,13 @@ class ProductRepository implements ProductRepositoryContract
 
     private function filterMeta(Builder $query, string $key, array $meta): Builder
     {
+        $values = array_map(
+            fn ($value) => (string) $value,
+            array_values($meta)
+        );
+
         $query->filter(new Terms("${key}.name", array_keys($meta)));
-        $query->filter(new Terms("${key}.value", array_values($meta)));
+        $query->filter(new Terms("${key}.value", $values));
 
         return $query;
     }
@@ -240,5 +280,89 @@ class ProductRepository implements ProductRepositoryContract
     private function filterPriceMax(Builder $query, string $key, float $value): Builder
     {
         return $query->filter(new Range('price_max', ['lte' => $value]));
+    }
+
+    private function filterAttributes(Builder $query, string $key, array $attributes): Builder
+    {
+        $values = array_values($attributes)[0];
+
+        $query->filter(new Terms('attributes_slug', array_keys($attributes)));
+
+        if (is_array($values) && !array_key_exists(0, $values)) {
+            $range = new Collection();
+
+            if (array_key_exists('min', $values)) {
+                $range->put('gte', $values['min']);
+            }
+
+            if (array_key_exists('max', $values)) {
+                $range->put('lte', $values['max']);
+            }
+
+            // @phpstan-ignore-next-line
+            $field = is_numeric($range->first()) ? 'attributes.values.value_number' : 'attributes.values.value_date';
+            $query->filter(new Nested('attributes.values', new Range($field, $range->toArray())));
+
+            return $query;
+        }
+
+        if (is_string($values))
+        {
+            $values = Str::replace('%2C', ',', $values);
+            $values = explode(',', $values);
+        }
+
+        $query->filter(new Nested('attributes.values', new Terms('attributes.values.id', (array) $values)));
+
+        return $query;
+    }
+
+    private function filterNotAttributes(Builder $query, string $key, array $attributes): Builder
+    {
+        $values = array_values($attributes)[0];
+
+        $query->filter(new Terms('attributes_slug', array_keys($attributes)));
+
+        if (is_array($values) && !array_key_exists(0, $values)) {
+            $range = new Collection();
+
+            if (array_key_exists('min', $values)) {
+                $range->put('gte', $values['min']);
+            }
+
+            if (array_key_exists('max', $values)) {
+                $range->put('lte', $values['max']);
+            }
+
+            // @phpstan-ignore-next-line
+            $field = is_numeric($range->first()) ? 'attributes.values.value_number' : 'attributes.values.value_date';
+            $query->filter(
+                Invert::query(
+                    new Nested('attributes.values', new Range($field, $range->toArray()))
+                )
+            );
+
+            return $query;
+        }
+
+        if (is_string($values))
+        {
+            $values = Str::replace('%2C', ',', $values);
+            $values = explode(',', $values);
+        }
+
+        $query->filter(
+            Invert::query(
+                new Nested('attributes.values', new Terms('attributes.values.id', (array) $values))
+            )
+        );
+
+        return $query;
+    }
+
+    private function filterCover(Builder $query, string $key, bool $value): Builder
+    {
+        $term = Exists::field('cover');
+        return $query->filter($value ? $term : Invert::query($term));
     }
 }
