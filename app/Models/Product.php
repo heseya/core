@@ -8,8 +8,11 @@ use App\Criteria\MetadataSearch;
 use App\Criteria\MoreOrEquals;
 use App\Criteria\ProductSearch;
 use App\Criteria\WhereHasId;
+use App\Criteria\WhereHasPhoto;
 use App\Criteria\WhereHasSlug;
 use App\Criteria\WhereInIds;
+use App\Criteria\WhereNotId;
+use App\Criteria\WhereNotSlug;
 use App\Enums\DiscountTargetType;
 use App\Models\Contracts\SortableContract;
 use App\Services\Contracts\ProductSearchServiceContract;
@@ -27,6 +30,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use JeroenG\Explorer\Application\Explored;
+use JeroenG\Explorer\Application\SearchableFields;
 use JeroenG\Explorer\Domain\Analysis\Analysis;
 use JeroenG\Explorer\Domain\Analysis\Analyzer\StandardAnalyzer;
 use Laravel\Scout\Searchable;
@@ -38,7 +42,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  *
  * @mixin IdeHelperProduct
  */
-class Product extends Model implements AuditableContract, Explored, SortableContract
+class Product extends Model implements AuditableContract, Explored, SortableContract, SearchableFields
 {
     use HasFactory,
         SoftDeletes,
@@ -105,6 +109,8 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'available',
         'price_min',
         'price_max',
+        'attribute.*',
+        'set.*',
     ];
 
     protected array $criteria = [
@@ -115,11 +121,14 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'public' => Equals::class,
         'available' => Equals::class,
         'sets' => WhereHasSlug::class,
+        'sets_not' => WhereNotSlug::class,
         'tags' => WhereHasId::class,
+        'tags_not' => WhereNotId::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'price_max' => LessOrEquals::class,
         'price_min' => MoreOrEquals::class,
+        'has_cover' => WhereHasPhoto::class,
     ];
 
     protected string $defaultSortBy = 'products.order';
@@ -145,6 +154,11 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         return $this->searchService->mapSearchableArray($this);
     }
 
+    public function getSearchableFields(): array
+    {
+        return $this->searchService->searchableFields();
+    }
+
     public function indexSettings(): array
     {
         $analyzer = new StandardAnalyzer('morfologik');
@@ -157,7 +171,9 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
 
     public function sets(): BelongsToMany
     {
-        return $this->belongsToMany(ProductSet::class, 'product_set_product');
+        return $this
+            ->belongsToMany(ProductSet::class, 'product_set_product')
+            ->withPivot('order');
     }
 
     public function items(): BelongsToMany

@@ -141,6 +141,9 @@ class ProductSetService implements ProductSetServiceContract
                 ]);
             },
         );
+
+        // @phpstan-ignore-next-line
+        ProductSet::where('id', $parentId)->first()?->products()->searchable();
     }
 
     public function update(ProductSet $set, ProductSetUpdateDto $dto): ProductSet
@@ -217,6 +220,9 @@ class ProductSetService implements ProductSetServiceContract
 
         foreach ($sets as $key => $id) {
             ProductSet::where('id', $id)->update(['order' => $key]);
+
+            // @phpstan-ignore-next-line
+            ProductSet::where('id', $id)->first()?->products()->searchable();
         }
     }
 
@@ -310,6 +316,11 @@ class ProductSetService implements ProductSetServiceContract
 
         $product->pivot->order = $order;
         $product->pivot->save();
+
+        /** @var int $highestOrder */
+        $highestOrder = $set->products->max('pivot.order');
+
+        $this->assignOrderToNulls($highestOrder, $set->products->whereNull('pivot.order'));
     }
 
     private function setHigherOrder(Product $product, int $order): void
@@ -336,5 +347,14 @@ class ProductSetService implements ProductSetServiceContract
             ['order', '>=', $order],
         ])
             ->increment('order');
+    }
+
+    private function assignOrderToNulls(int $highestOrder, Collection $products): void
+    {
+        $products->each(function (Product $product) use (&$highestOrder): void {
+            ++$highestOrder;
+            $product->pivot->order = $highestOrder;
+            $product->pivot->save();
+        });
     }
 }

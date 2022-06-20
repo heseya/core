@@ -24,6 +24,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**
+ * @property mixed $pivot
+ *
  * @mixin IdeHelperProductSet
  */
 class ProductSet extends Model
@@ -131,7 +133,10 @@ class ProductSet extends Model
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'product_set_product')->withPivot('order');
+        return $this
+            ->belongsToMany(Product::class, 'product_set_product')
+            ->withPivot('order')
+            ->orderByPivot('order');
     }
 
     public function media(): HasOne
