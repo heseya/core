@@ -10,6 +10,7 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\SchemaType;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdated;
+use App\Events\OrderUpdatedShippingNumber;
 use App\Exceptions\ClientException;
 use App\Exceptions\OrderException;
 use App\Exceptions\ServerException;
@@ -222,7 +223,16 @@ class OrderService implements OrderServiceContract
 
             DB::commit();
 
-            OrderUpdated::dispatch($order);
+            // other event when only shipping number is updated
+            if (!($dto->getShippingNumber() instanceof Missing)) {
+                OrderUpdatedShippingNumber::dispatch($order);
+
+                if (count($dto->toArray()) !== 1) {
+                    OrderUpdated::dispatch($order);
+                }
+            } else {
+                OrderUpdated::dispatch($order);
+            }
 
             return OrderResource::make($order)->response();
         } catch (Exception $error) {
