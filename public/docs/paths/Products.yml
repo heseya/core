@@ -40,7 +40,7 @@ Products:
         description: 'Product set array slug search negation'
         schema:
           type: string
-        example: 'sets[]=category-teapots&sets[]=category-mugs'
+        example: 'sets_not[]=category-teapots&sets_not[]=category-mugs'
       - name: sort
         in: query
         description: 'Sorting string'
@@ -58,7 +58,7 @@ Products:
         description: 'Tag array id search negation'
         schema:
           type: string
-        example: 'tags[]=5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&tags[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
+        example: 'tags_not[]=5a61f3a1-1cd1-4e71-bf7d-0d3a159bd6b0&tags_not[]=33e37b2a-44e9-4d35-88db-d9a79a61e557'
       - name: available
         in: query
         description: 'Is available search'
@@ -77,6 +77,58 @@ Products:
         description: 'Product has set cover'
         schema:
           type: boolean
+      - name: attribute
+        in: query
+        description: 'search by attributes'
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          type: object
+          properties:
+            autor:
+              type: string
+            ilosc-stron:
+              type: object
+              properties:
+                min:
+                  type: number
+                max:
+                  type: number
+      - name: attribute_not
+        in: query
+        description: 'search by attributes negation'
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          type: object
+          properties:
+            autor:
+              type: string
+            ilosc-stron:
+              type: object
+              properties:
+                min:
+                  type: number
+                max:
+                  type: number
+      - name: metadata
+        in: query
+        description: 'search by metadata'
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: metadata_private
+        in: query
+        description: 'search by metadata private'
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
     responses:
       200:
         description: Success
