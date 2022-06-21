@@ -13,6 +13,7 @@ use App\Events\OrderCreated;
 use App\Events\OrderDocumentEvent;
 use App\Events\OrderUpdated;
 use App\Events\OrderUpdatedPaid;
+use App\Events\OrderUpdatedShippingNumber;
 use App\Events\OrderUpdatedStatus;
 use App\Events\PageCreated;
 use App\Events\PageDeleted;
@@ -109,6 +110,9 @@ class EventServiceProvider extends ServiceProvider
             ItemUpdatedQuantityListener::class,
         ],
         OrderUpdated::class => [
+            WebHookEventListener::class,
+        ],
+        OrderUpdatedShippingNumber::class => [
             WebHookEventListener::class,
         ],
         PageCreated::class => [
