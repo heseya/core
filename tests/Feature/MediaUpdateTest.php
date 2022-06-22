@@ -184,7 +184,7 @@ class MediaUpdateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateWithoutAltNull($user): void
+    public function testUpdateAltNull($user): void
     {
         $this->$user->givePermissionTo('pages.add');
 
