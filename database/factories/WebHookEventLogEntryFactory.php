@@ -30,7 +30,7 @@ class WebHookEventLogEntryFactory extends Factory
             'web_hook_id' => $webhooks->random(1)->first()->getKey(),
             'triggered_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
             'url' => $this->faker->url,
-            'status_code' => $this->faker->randomElement([400, 500]),
+            'status_code' => $this->faker->randomElement([200, 400, 500]),
         ];
     }
 }
