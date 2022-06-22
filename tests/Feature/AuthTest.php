@@ -144,7 +144,7 @@ class AuthTest extends TestCase
 
         $response->assertStatus(Response::HTTP_FORBIDDEN)
             ->assertJsonFragment([
-                'message' => 'Two-Factor Authentication is required',
+                'key' => Exceptions::getKey(Exceptions::CLIENT_TFA_REQUIRED),
             ]);
     }
 
