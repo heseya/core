@@ -180,4 +180,29 @@ class MediaUpdateTest extends TestCase
 
         Http::assertNothingSent();
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateAltNull($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/media/id:{$this->media->getKey()}", [
+                'alt' => null,
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'alt' => null,
+            ]);
+
+        $this->assertDatabaseHas('media', [
+            'id' => $this->media->getKey(),
+            'alt' => null,
+        ]);
+
+        Http::assertNothingSent();
+    }
 }
