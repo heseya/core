@@ -193,10 +193,10 @@ class MediaUpdateTest extends TestCase
             ->json('PATCH', "/media/id:{$this->media->getKey()}", [
                 'alt' => null,
             ])
-        ->assertOk()
-        ->assertJsonFragment([
-            'alt' => null,
-        ]);
+            ->assertOk()
+            ->assertJsonFragment([
+                'alt' => null,
+            ]);
 
         $this->assertDatabaseHas('media', [
             'id' => $this->media->getKey(),
