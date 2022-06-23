@@ -150,6 +150,25 @@ class WebHookLogTest extends TestCase
             ->assertJsonFragment(['id' => $this->logTwo->getKey()]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexPayload($user): void
+    {
+        $this->$user->givePermissionTo('webhooks.show_details');
+
+        $this->prepareData($user);
+
+        $log = WebHookEventLogEntry::factory()->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/webhooks/logs')
+            ->assertOk()
+            ->assertJsonFragment(['event' => $log->payload['event']])
+            ->assertJsonFragment(['event' => null]);
+    }
+
     private function prepareData($user): void
     {
         $this->webHookOne = WebHook::factory()->create([
