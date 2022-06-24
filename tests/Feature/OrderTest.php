@@ -789,13 +789,14 @@ class OrderTest extends TestCase
 
         $status = Status::factory()->create();
         $product = Product::factory()->create();
+        $product2 = Product::factory()->create();
 
         $order = Order::factory()->create([
             'shipping_method_id' => $this->shippingMethod->getKey(),
             'status_id' => $status->getKey(),
-            'cart_total_initial' => 247.47,
-            'cart_total' => 200.00,
-            'summary' => 200.00,
+            'cart_total_initial' => 394.94,
+            'cart_total' => 300.00,
+            'summary' => 300.00,
             'shipping_price' => 0,
         ]);
 
@@ -805,6 +806,14 @@ class OrderTest extends TestCase
             'price' => 200.00,
             'price_initial' => 247.47,
             'name' => $product->name,
+        ]);
+
+        $item_product2 = $order->products()->create([
+            'product_id' => $product2->getKey(),
+            'quantity' => 1,
+            'price' => 100.00,
+            'price_initial' => 147.47,
+            'name' => $product2->name,
         ]);
 
         $discountShipping = Discount::factory()->create([
@@ -838,8 +847,21 @@ class OrderTest extends TestCase
         ]);
 
         $discountProduct->products()->attach($product);
+        $discountProduct->products()->attach($product2);
 
         $item_product->discounts()->attach(
+            $discountProduct->getKey(),
+            [
+                'name' => $discountProduct->name,
+                'type' => $discountProduct->type,
+                'value' => $discountProduct->value,
+                'target_type' => $discountProduct->target_type,
+                'applied_discount' => $discountProduct->value,
+                'code' => $discountProduct->code,
+            ],
+        );
+
+        $item_product2->discounts()->attach(
             $discountProduct->getKey(),
             [
                 'name' => $discountProduct->name,
@@ -857,20 +879,18 @@ class OrderTest extends TestCase
                 $json
                     ->has('data', function ($json) use ($discountShipping, $discountProduct): void {
                         $json
-                            // order has 1 discount
-                            ->has('discounts', function ($json) use ($discountShipping): void {
+                            // order has 1 discount AND 1 discount same for two products
+                            ->has('discounts', function ($json) use ($discountShipping, $discountProduct): void {
                                 $json
-                                    ->has(1)
-                                    ->first(function ($json) use ($discountShipping): void {
-                                        $json
-                                            ->where('code', $discountShipping->code)
-                                            ->etc();
-                                    });
+                                    ->has(2)
+                                    ->where('0.code', $discountShipping->code)
+                                    ->where('1.code', $discountProduct->code)
+                                    ->where('1.applied_discount', 94.94);
                             })
                             // order product has 1 discounts
                             ->has('products', function ($json) use ($discountProduct): void {
                                 $json
-                                    ->has(1)
+                                    ->has(2)
                                     ->first(function ($json) use ($discountProduct): void {
                                         $json
                                             ->has('discounts', function ($json) use ($discountProduct): void {
@@ -883,7 +903,8 @@ class OrderTest extends TestCase
                                                     });
                                             })
                                             ->etc();
-                                    });
+                                    })
+                                    ->etc();
                             })
                             ->etc();
                     })
