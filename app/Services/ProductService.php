@@ -90,7 +90,7 @@ class ProductService implements ProductServiceContract
         // @phpstan-ignore-next-line
         Product::where($product->getKeyName(), $product->getKey())->searchable();
 
-        return $product;
+        return $product->refresh();
     }
 
     public function getMinMaxPrices(Product $product): array
