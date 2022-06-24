@@ -69,12 +69,11 @@ abstract class TestCase extends BaseTestCase
     {
         $token = $this->tokenService->createToken(
             $authenticatable,
-            new TokenType(TokenType::ACCESS),
+            TokenType::ACCESS,
             Str::uuid()->toString(),
         );
-
         $this->withHeaders(
-            $this->defaultHeaders + ['Authorization' => "Bearer ${token}"],
+            array_merge($this->defaultHeaders, ['Authorization' => "Bearer ${token}"]),
         );
 
         return $this;

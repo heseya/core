@@ -178,7 +178,7 @@ class InitDatabase extends Migration
 
         Schema::create('media', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            $table->tinyInteger('type');
+            $table->string('type');
             $table->string('url');
             $table->timestamps();
         });

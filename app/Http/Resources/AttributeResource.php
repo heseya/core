@@ -12,7 +12,7 @@ class AttributeResource extends Resource
 
     public function base(Request $request): array
     {
-        [$min, $max] = match ($this->resource->type->value) {
+        [$min, $max] = match ($this->resource->type) {
             AttributeType::NUMBER => [$this->resource->min_number, $this->resource->max_number],
             AttributeType::DATE => [$this->resource->min_date, $this->resource->max_date],
             default => [null, null],

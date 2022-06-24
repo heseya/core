@@ -32,7 +32,7 @@ class ActiveSalesTest extends TestCase
     public function conditionTypeProvider(): array
     {
         return [
-            ConditionType::DATE_BETWEEN => [
+            ConditionType::DATE_BETWEEN->value => [
                 ConditionType::DATE_BETWEEN,
                 [
                     'start_at' => '2022-04-20T12:00:00',
@@ -43,7 +43,7 @@ class ActiveSalesTest extends TestCase
                     'end_at' => '2022-05-22',
                 ],
             ],
-            ConditionType::TIME_BETWEEN => [
+            ConditionType::TIME_BETWEEN->value => [
                 ConditionType::TIME_BETWEEN,
                 [
                     'start_at' => '10:00:00',

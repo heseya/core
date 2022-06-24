@@ -7,7 +7,6 @@ use App\Models\Media;
 use App\Models\Product;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class MediaTest extends TestCase
@@ -49,7 +48,7 @@ class MediaTest extends TestCase
         $response
             ->assertCreated()
             ->assertJsonFragment([
-                'type' => Str::lower(MediaType::getKey(1)),
+                'type' => MediaType::PHOTO->value,
                 'alt' => 'test',
                 'metadata' => [
                     'test' => 'value',
@@ -83,7 +82,7 @@ class MediaTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['type' => Str::lower(MediaType::getKey(0))])
+            ->assertJsonFragment(['type' => MediaType::OTHER->value])
             ->assertJsonStructure(['data' => [
                 'id',
                 'type',
@@ -264,7 +263,7 @@ class MediaTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonFragment(['type' => Str::lower(MediaType::getKey(2))])
+            ->assertJsonFragment(['type' => MediaType::VIDEO->value])
             ->assertJsonStructure(['data' => [
                 'id',
                 'type',

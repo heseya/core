@@ -1332,12 +1332,10 @@ class DiscountConditionsCheckTest extends TestCase
             'coupons' => Arr::pluck($coupons, 'code'),
             'shipping_method_id' => $this->shippingMethod->getKey(),
         ]);
-
         $discountCondition = $this->conditionGroup->conditions()->create([
             'type' => ConditionType::COUPONS_COUNT,
             'value' => $value,
         ]);
-
         $this->assertTrue(count($cart->getCoupons()) === $quantity);
         $this->assertTrue($this->discountService->checkCondition($discountCondition, $cart) === $result);
     }

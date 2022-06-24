@@ -37,7 +37,6 @@ class TokenService implements TokenServiceContract
     public function validate(string $token): bool
     {
         $this->jwt->setToken($token);
-
         return $this->jwt->check();
     }
 
@@ -72,9 +71,9 @@ class TokenService implements TokenServiceContract
         $typ = $type->value;
 
         $exp = [
-            TokenType::ACCESS => Config::get('jwt.ttl', 5),
-            TokenType::IDENTITY => Config::get('jwt.ttl', 5),
-            TokenType::REFRESH => 60 * 24 * 90,
+            TokenType::ACCESS->value => Config::get('jwt.ttl', 5),
+            TokenType::IDENTITY->value => Config::get('jwt.ttl', 5),
+            TokenType::REFRESH->value => 60 * 24 * 90,
         ];
 
         $this->jwt->factory()->setTTL($exp[$typ]);
@@ -114,7 +113,6 @@ class TokenService implements TokenServiceContract
         if ($payload === null) {
             return false;
         }
-
-        return $type->is($payload->get('typ'));
+        return $type->value === $payload->get('typ');
     }
 }

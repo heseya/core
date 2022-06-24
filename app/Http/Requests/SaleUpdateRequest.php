@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Rules\Boolean;
-use BenSampo\Enum\Rules\EnumValue;
+use Illuminate\Validation\Rules\Enum;
 
 class SaleUpdateRequest extends SaleCreateRequest
 {
@@ -17,9 +17,9 @@ class SaleUpdateRequest extends SaleCreateRequest
         return array_merge(parent::rules(), [
             'name' => ['filled', 'string', 'max:255'],
             'value' => ['numeric'],
-            'type' => [new EnumValue(DiscountType::class, false)],
+            'type' => [new Enum(DiscountType::class)],
             'priority' => ['integer'],
-            'target_type' => [new EnumValue(DiscountTargetType::class, false)],
+            'target_type' => [new Enum(DiscountTargetType::class)],
             'target_is_allow_list' => [new Boolean()],
         ]);
     }

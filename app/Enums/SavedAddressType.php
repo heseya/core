@@ -2,10 +2,12 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
+use App\Traits\EnumUtilities;
 
-class SavedAddressType extends Enum
+enum SavedAddressType: string
 {
-    public const DELIVERY = 'delivery';
-    public const INVOICE = 'invoice';
+    use EnumUtilities;
+
+    case DELIVERY = 'delivery';
+    case INVOICE = 'invoice';
 }

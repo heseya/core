@@ -78,7 +78,7 @@ class AuditTest extends TestCase
             ->json('GET', '/audits/tags/id:' . $tag->getKey())
             ->assertStatus(400)
             ->assertJsonFragment([
-                'key' => Exceptions::coerce(Exceptions::CLIENT_MODEL_NOT_AUDITABLE)->key,
+                'key' => Exceptions::CLIENT_MODEL_NOT_AUDITABLE->name,
             ]);
     }
 

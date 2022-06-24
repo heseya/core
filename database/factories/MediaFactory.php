@@ -21,7 +21,7 @@ class MediaFactory extends Factory
     public function definition(): array
     {
         return [
-            'type' => MediaType::PHOTO,
+            'type' => MediaType::PHOTO->value,
             'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
         ];
     }

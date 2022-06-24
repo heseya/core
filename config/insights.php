@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Heseya\Insights\Sniffs\NotSpaceAfterNot;
+use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenDefineFunctions;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenDefineGlobalConstants;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenGlobals;
 use NunoMaduro\PhpInsights\Domain\Insights\ForbiddenNormalClasses;
@@ -89,6 +90,8 @@ return [
         ForbiddenGlobals::class,
         DisallowImplicitArrayCreationSniff::class,
 
+        ForbiddenDefineFunctions::class,
+
         // laravel default
         ProtectedToPrivateFixer::class,
         StaticClosureSniff::class,
@@ -136,6 +139,7 @@ return [
         '_ide_helper.php',
         '_ide_helper_models.php',
         'public',
+        'app/Enums',
     ],
 
     /*

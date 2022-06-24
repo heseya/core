@@ -2,11 +2,13 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
+use App\Traits\EnumUtilities;
 
-final class MediaType extends Enum
+enum MediaType: string
 {
-    public const OTHER = 0;
-    public const PHOTO = 1;
-    public const VIDEO = 2;
+    use EnumUtilities;
+
+    case OTHER = 'other';
+    case PHOTO = 'photo';
+    case VIDEO = 'video';
 }

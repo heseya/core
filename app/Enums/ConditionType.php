@@ -2,20 +2,22 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
+use App\Traits\EnumUtilities;
 
-final class ConditionType extends Enum
+enum ConditionType: string
 {
-    public const ORDER_VALUE = 'order-value';
-    public const USER_IN_ROLE = 'user-in-role';
-    public const USER_IN = 'user-in';
-    public const PRODUCT_IN_SET = 'product-in-set';
-    public const PRODUCT_IN = 'product-in';
-    public const DATE_BETWEEN = 'date-between';
-    public const TIME_BETWEEN = 'time-between';
-    public const MAX_USES = 'max-uses';
-    public const MAX_USES_PER_USER = 'max-uses-per-user';
-    public const WEEKDAY_IN = 'weekday-in';
-    public const CART_LENGTH = 'cart-length';
-    public const COUPONS_COUNT = 'coupons-count';
+    use EnumUtilities;
+
+    case ORDER_VALUE = 'order-value';
+    case USER_IN_ROLE = 'user-in-role';
+    case USER_IN = 'user-in';
+    case PRODUCT_IN_SET = 'product-in-set';
+    case PRODUCT_IN = 'product-in';
+    case DATE_BETWEEN = 'date-between';
+    case TIME_BETWEEN = 'time-between';
+    case MAX_USES = 'max-uses';
+    case MAX_USES_PER_USER = 'max-uses-per-user';
+    case WEEKDAY_IN = 'weekday-in';
+    case CART_LENGTH = 'cart-length';
+    case COUPONS_COUNT = 'coupons-count';
 }

@@ -15,7 +15,6 @@ class MetadataSearch extends Criterion
                     ->where('value', '=', $value);
             });
         }
-
         return $query;
     }
 

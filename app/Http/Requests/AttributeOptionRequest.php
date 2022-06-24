@@ -17,7 +17,7 @@ class AttributeOptionRequest extends FormRequest
     public function rules(): array
     {
         $nameRule = match ($this->attribute?->type->value ?? $this->input('type')) {
-            AttributeType::SINGLE_OPTION => 'required',
+            AttributeType::SINGLE_OPTION->value => 'required',
             default => 'nullable',
         };
 

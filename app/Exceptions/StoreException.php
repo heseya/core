@@ -43,6 +43,6 @@ class StoreException extends Exception
 
     public function getKey(): string
     {
-        return Exceptions::fromValue($this->getMessage())->key;
+        return Exceptions::from($this->getMessage())->name;
     }
 }

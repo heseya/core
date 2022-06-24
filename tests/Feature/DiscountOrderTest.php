@@ -673,7 +673,7 @@ class DiscountOrderTest extends TestCase
         ]);
 
         $schema = Schema::factory()->create([
-            'type' => 'string',
+            'type' => SchemaType::STRING,
             'price' => 20,
             'hidden' => false,
         ]);

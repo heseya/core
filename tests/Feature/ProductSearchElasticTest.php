@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\AttributeType;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Models\ProductSet;
@@ -1080,7 +1081,7 @@ class ProductSearchElasticTest extends TestCase
             'name' => 'Serie',
             'slug' => 'serie',
             'sortable' => 1,
-            'type' => 'multi-choice-option',
+            'type' => AttributeType::MULTI_CHOICE_OPTION,
         ]);
 
         $option1 = AttributeOption::factory()->create([
@@ -1428,7 +1429,7 @@ class ProductSearchElasticTest extends TestCase
             'name' => 'Serie',
             'slug' => 'serie',
             'sortable' => 1,
-            'type' => 'multi-choice-option',
+            'type' => AttributeType::MULTI_CHOICE_OPTION,
         ]);
 
         $this
@@ -1643,7 +1644,7 @@ class ProductSearchElasticTest extends TestCase
 
         $attribute = Attribute::factory()->create([
             'sortable' => 1,
-            'type' => 'number',
+            'type' => AttributeType::NUMBER,
         ]);
 
         $this
@@ -1829,7 +1830,7 @@ class ProductSearchElasticTest extends TestCase
 
         $attribute = Attribute::factory()->create([
             'sortable' => 1,
-            'type' => 'number',
+            'type' => AttributeType::NUMBER,
         ]);
 
         $this
@@ -1857,7 +1858,7 @@ class ProductSearchElasticTest extends TestCase
 
         $attribute = Attribute::factory()->create([
             'sortable' => 1,
-            'type' => 'date',
+            'type' => AttributeType::DATE,
         ]);
 
         $this
@@ -2217,7 +2218,7 @@ class ProductSearchElasticTest extends TestCase
 
         $attribute = Attribute::factory()->create([
             'sortable' => 1,
-            'type' => 'date',
+            'type' => AttributeType::DATE,
         ]);
 
         $this

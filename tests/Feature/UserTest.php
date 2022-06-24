@@ -478,6 +478,7 @@ class UserTest extends TestCase
         ];
 
         $response = $this->actingAs($this->$user)->postJson('/users', $data);
+
         $response
             ->assertCreated()
             ->assertJsonPath('data.email', $data['email'])
@@ -698,7 +699,7 @@ class UserTest extends TestCase
                 return str_contains(
                     $message,
                     'ClientException(code: 422): '
-                    . "Can't give a role with permissions you don't have to the user at"
+                    . "Can't give a role with permissions you don't have to the user"
                 );
             });
 

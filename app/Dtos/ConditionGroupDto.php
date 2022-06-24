@@ -27,18 +27,18 @@ class ConditionGroupDto extends Dto
         $result = [];
         foreach ($conditions as $condition) {
             array_push($result, match ($condition['type']) {
-                ConditionType::ORDER_VALUE => OrderValueConditionDto::fromArray($condition),
-                ConditionType::USER_IN_ROLE => UserInRoleConditionDto::fromArray($condition),
-                ConditionType::USER_IN => UserInConditionDto::fromArray($condition),
-                ConditionType::PRODUCT_IN_SET => ProductInSetConditionDto::fromArray($condition),
-                ConditionType::PRODUCT_IN => ProductInConditionDto::fromArray($condition),
-                ConditionType::DATE_BETWEEN => DateBetweenConditionDto::fromArray($condition),
-                ConditionType::TIME_BETWEEN => TimeBetweenConditionDto::fromArray($condition),
-                ConditionType::MAX_USES => MaxUsesConditionDto::fromArray($condition),
-                ConditionType::MAX_USES_PER_USER => MaxUsesPerUserConditionDto::fromArray($condition),
-                ConditionType::WEEKDAY_IN => WeekDayInConditionDto::fromArray($condition),
-                ConditionType::CART_LENGTH => CartLengthConditionDto::fromArray($condition),
-                ConditionType::COUPONS_COUNT => CouponsCountConditionDto::fromArray($condition),
+                ConditionType::ORDER_VALUE->value => OrderValueConditionDto::fromArray($condition),
+                ConditionType::USER_IN_ROLE->value => UserInRoleConditionDto::fromArray($condition),
+                ConditionType::USER_IN->value => UserInConditionDto::fromArray($condition),
+                ConditionType::PRODUCT_IN_SET->value => ProductInSetConditionDto::fromArray($condition),
+                ConditionType::PRODUCT_IN->value => ProductInConditionDto::fromArray($condition),
+                ConditionType::DATE_BETWEEN->value => DateBetweenConditionDto::fromArray($condition),
+                ConditionType::TIME_BETWEEN->value => TimeBetweenConditionDto::fromArray($condition),
+                ConditionType::MAX_USES->value => MaxUsesConditionDto::fromArray($condition),
+                ConditionType::MAX_USES_PER_USER->value => MaxUsesPerUserConditionDto::fromArray($condition),
+                ConditionType::WEEKDAY_IN->value => WeekDayInConditionDto::fromArray($condition),
+                ConditionType::CART_LENGTH->value => CartLengthConditionDto::fromArray($condition),
+                ConditionType::COUPONS_COUNT->value => CouponsCountConditionDto::fromArray($condition),
                 default => throw new Exception('Unknown condition type.')
             });
         }

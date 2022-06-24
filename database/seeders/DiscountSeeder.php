@@ -44,7 +44,7 @@ class DiscountSeeder extends Seeder
             $appliedDiscount = 0;
 
             [$appliedDiscount, $update] = match ($discount->target_type->value) {
-                DiscountTargetType::ORDER_VALUE => $this
+                DiscountTargetType::ORDER_VALUE->value => $this
                     ->calcOrderDiscounts(
                         'cart_total',
                         'minimal_order_price',
@@ -52,7 +52,7 @@ class DiscountSeeder extends Seeder
                         $order->cart_total,
                         $discount,
                     ),
-                DiscountTargetType::SHIPPING_PRICE => $this
+                DiscountTargetType::SHIPPING_PRICE->value => $this
                     ->calcOrderDiscounts(
                         'shipping_price',
                         'minimal_shipping_price',

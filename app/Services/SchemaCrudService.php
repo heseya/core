@@ -49,7 +49,6 @@ class SchemaCrudService implements SchemaCrudServiceContract
     public function update(Schema $schema, SchemaDto $dto): Schema
     {
         $schema->update($dto->toArray());
-
         if (!$dto->getOptions() instanceof Missing) {
             $this->optionService->sync($schema, $dto->getOptions());
             $schema->refresh();

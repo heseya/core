@@ -2,10 +2,12 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
+use App\Traits\EnumUtilities;
 
-final class TFAType extends Enum
+enum TFAType: string
 {
-    public const APP = 'app';
-    public const EMAIL = 'email';
+    use EnumUtilities;
+
+    case APP = 'app';
+    case EMAIL = 'email';
 }

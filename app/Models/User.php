@@ -9,6 +9,7 @@ use App\Criteria\MetadataSearch;
 use App\Criteria\UserSearch;
 use App\Criteria\WhereInIds;
 use App\Enums\SavedAddressType;
+use App\Enums\TFAType;
 use App\Models\Contracts\SortableContract;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasMetadata;
@@ -96,6 +97,7 @@ class User extends Model implements
 
     protected $casts = [
         'is_tfa_active' => 'bool',
+        'tfa_type' => TFAType::class,
     ];
 
     /**

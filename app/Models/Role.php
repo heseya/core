@@ -50,7 +50,7 @@ class Role extends SpatieRole implements AuditableContract
     protected static function booted(): void
     {
         static::addGlobalScope('order', function (Builder $builder): void {
-            $builder->orderByRaw('type = \'' . RoleType::OWNER . '\' DESC, type ASC');
+            $builder->orderByRaw('type = \'' . RoleType::OWNER->value . '\' DESC, type ASC');
         });
     }
 }

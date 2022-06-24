@@ -7,6 +7,7 @@ use App\Dtos\SavedAddressDto;
 use App\Dtos\TFAConfirmDto;
 use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
+use App\Enums\SavedAddressType;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
 use App\Http\Requests\PasswordResetRequest;
@@ -69,7 +70,6 @@ class AuthController extends Controller
             $request->ip(),
             $request->userAgent(),
         );
-
         return AuthResource::make($tokens);
     }
 
@@ -194,7 +194,7 @@ class AuthController extends Controller
     {
         $this->savedAddresService->storeAddress(
             SavedAddressDto::instantiateFromRequest($request),
-            $type
+            SavedAddressType::from($type)
         );
 
         return SavedAddressResource::collection(
@@ -213,7 +213,7 @@ class AuthController extends Controller
         $this->savedAddresService->updateAddress(
             $address,
             SavedAddressDto::instantiateFromRequest($request),
-            $type
+            SavedAddressType::from($type)
         );
 
         return SavedAddressResource::collection(

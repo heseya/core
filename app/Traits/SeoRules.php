@@ -4,7 +4,7 @@ namespace App\Traits;
 
 use App\Enums\TwitterCardType;
 use App\Rules\Boolean;
-use BenSampo\Enum\Rules\EnumValue;
+use Illuminate\Validation\Rules\Enum;
 
 trait SeoRules
 {
@@ -15,7 +15,7 @@ trait SeoRules
             "{$prefix}description" => ['nullable', 'string', 'max:1000'],
             "{$prefix}keywords" => ['nullable', 'array'],
             "{$prefix}og_image_id" => ['nullable', 'uuid', 'exists:media,id'],
-            "{$prefix}twitter_card" => ['nullable', new EnumValue(TwitterCardType::class, false)],
+            "{$prefix}twitter_card" => ['nullable', new Enum(TwitterCardType::class)],
             "{$prefix}no_index" => [new Boolean()],
         ];
     }

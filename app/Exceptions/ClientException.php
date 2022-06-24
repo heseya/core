@@ -2,17 +2,18 @@
 
 namespace App\Exceptions;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use Throwable;
 
 class ClientException extends StoreException
 {
     public function __construct(
-        string $message = '',
+        Exceptions $enum,
         int $code = 0,
         ?Throwable $previous = null,
         bool $simpleLogs = false,
         array $errorArray = [],
     ) {
-        parent::__construct($message, $code, $previous, $simpleLogs, $errorArray);
+        parent::__construct($enum->value, $code, $previous, $simpleLogs, $errorArray);
     }
 }

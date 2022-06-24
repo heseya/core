@@ -34,16 +34,14 @@ class Authenticate extends Middleware
             } else {
                 /** @var AuthServiceContract $authService */
                 $authService = AppFacade::make(AuthServiceContract::class);
-
-                Auth::claims(['typ' => TokenType::ACCESS])
+                Auth::claims(['typ' => TokenType::ACCESS->value])
                     ->login($authService->unauthenticatedUser());
             }
         }
 
-        if (Auth::getClaim('typ') !== TokenType::ACCESS) {
+        if (Auth::getClaim('typ') !== TokenType::ACCESS->value) {
             throw new AuthenticationException();
         }
-
         return $next($request);
     }
 

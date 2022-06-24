@@ -52,6 +52,6 @@ class CategoryTest extends TestCase
     {
         $this->actingAs($this->$user)->json('get', '/google-categories/test-TEST')
             ->assertStatus(500)
-            ->assertJsonFragment(['key' => Exceptions::getKey(Exceptions::SERVER_ERROR)]);
+            ->assertJsonFragment(['key' => Exceptions::SERVER_ERROR->name]);
     }
 }

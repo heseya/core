@@ -2,11 +2,13 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
+use App\Traits\EnumUtilities;
 
-final class OrderDocumentType extends Enum
+enum OrderDocumentType: string
 {
-    public const OTHER = 'other';
-    public const RECEIPT = 'receipt';
-    public const INVOICE = 'invoice';
+    use EnumUtilities;
+
+    case OTHER = 'other';
+    case RECEIPT = 'receipt';
+    case INVOICE = 'invoice';
 }

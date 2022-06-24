@@ -6,8 +6,8 @@ use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Models\Discount;
 use App\Rules\Boolean;
-use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
 
 class CouponUpdateRequest extends CouponCreateRequest
 {
@@ -19,9 +19,9 @@ class CouponUpdateRequest extends CouponCreateRequest
         return array_merge(parent::rules(), [
             'name' => ['filled', 'string', 'max:255'],
             'value' => ['numeric'],
-            'type' => [new EnumValue(DiscountType::class, false)],
+            'type' => [new Enum(DiscountType::class)],
             'priority' => ['integer'],
-            'target_type' => [new EnumValue(DiscountTargetType::class, false)],
+            'target_type' => [new Enum(DiscountTargetType::class)],
             'target_is_allow_list' => [new Boolean()],
             'code' => [
                 'alpha_dash',

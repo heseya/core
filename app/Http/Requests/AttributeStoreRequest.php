@@ -6,8 +6,8 @@ use App\Enums\AttributeType;
 use App\Rules\Boolean;
 use App\Traits\BooleanRules;
 use App\Traits\MetadataRules;
-use BenSampo\Enum\Rules\EnumValue;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class AttributeStoreRequest extends FormRequest
 {
@@ -39,7 +39,7 @@ class AttributeStoreRequest extends FormRequest
                 'name' => ['required', 'string', 'max:255'],
                 'slug' => ['required', 'string', 'max:255', 'unique:attributes'],
                 'description' => ['nullable', 'string', 'max:255'],
-                'type' => ['required', new EnumValue(AttributeType::class, false)],
+                'type' => ['required', new Enum(AttributeType::class)],
                 'global' => ['required', new Boolean()],
                 'sortable' => ['required', new Boolean()],
             ]

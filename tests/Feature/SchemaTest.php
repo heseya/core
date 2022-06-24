@@ -229,7 +229,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->postJson('/schemas', [
             'name' => 'Test',
-            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'type' => SchemaType::SELECT->value,
             'price' => 120,
             'description' => 'test test',
             'hidden' => false,
@@ -266,7 +266,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->postJson('/schemas', [
             'name' => 'Test',
-            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'type' => SchemaType::SELECT->value,
             'price' => 120,
             'description' => 'test test',
             'hidden' => false,
@@ -347,7 +347,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
             'name' => 'Test',
-            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'type' => SchemaType::SELECT->value,
             'price' => 120,
             'description' => 'test test',
             'hidden' => $boolean,
@@ -396,7 +396,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
             'name' => 'Test',
-            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'type' => SchemaType::SELECT->value,
             'price' => 120,
             'description' => 'test test',
             'hidden' => $boolean,
@@ -453,7 +453,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
             'name' => 'Test',
-            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'type' => SchemaType::SELECT->value,
             'price' => 120,
             'description' => 'test test',
             'hidden' => $boolean,
@@ -514,7 +514,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
             'name' => 'Test',
-            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'type' => SchemaType::SELECT->value,
             'price' => 120,
             'description' => 'test test',
             'hidden' => $boolean,
@@ -571,7 +571,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
             'name' => 'Test',
-            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'type' => SchemaType::SELECT->value,
             'price' => 120,
             'description' => 'test test',
             'hidden' => $boolean,
@@ -642,7 +642,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->postJson('/schemas', [
             'name' => 'Multiplier',
-            'type' => SchemaType::getKey(SchemaType::MULTIPLY_SCHEMA),
+            'type' => SchemaType::MULTIPLY_SCHEMA->value,
             'min' => 1,
             'max' => 10,
             'step' => 0.1,
@@ -673,7 +673,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->postJson('/schemas', [
             'name' => 'Multiplier',
-            'type' => SchemaType::getKey(SchemaType::MULTIPLY_SCHEMA),
+            'type' => SchemaType::MULTIPLY_SCHEMA->value,
             'min' => 1,
             'max' => 10,
             'step' => 0.1,
@@ -721,7 +721,7 @@ class SchemaTest extends TestCase
             ->patchJson('/schemas/id:' . $schema->getKey(), [
                 'name' => 'Test Updated',
                 'price' => 200,
-                'type' => SchemaType::getKey(SchemaType::SELECT),
+                'type' => SchemaType::SELECT->value,
                 'description' => 'test test',
                 'hidden' => false,
                 'required' => false,
@@ -782,7 +782,7 @@ class SchemaTest extends TestCase
         $response = $this->actingAs($this->$user)->patchJson('/schemas/id:' . $schema->getKey(), [
             'name' => 'Test Updated',
             'price' => 200,
-            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'type' => SchemaType::SELECT->value,
             'description' => 'test test',
             'hidden' => false,
             'required' => false,
@@ -863,6 +863,33 @@ class SchemaTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->$user)->patchJson('/schemas/id:' . $schema->getKey(), []);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('schemas', $schema->toArray());
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateType($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $schema = Schema::factory()->create([
+            'name' => 'new schema',
+            'description' => 'new schema description',
+            'price' => 10,
+            'hidden' => false,
+            'required' => true,
+            'max' => 10,
+            'min' => 1,
+            'type' => SchemaType::STRING,
+        ]);
+
+        $response = $this->actingAs($this->$user)->patchJson('/schemas/id:' . $schema->getKey(), [
+            'type' => SchemaType::STRING,
+        ]);
 
         $response->assertOk();
 
@@ -1018,7 +1045,7 @@ class SchemaTest extends TestCase
         $response = $this->actingAs($this->$user)->json('PATCH', '/schemas/id:' . $schema->getKey(), [
             'name' => 'Test Updated',
             'price' => 200,
-            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'type' => SchemaType::SELECT->value,
             'description' => 'test test',
             'hidden' => false,
             'required' => false,
@@ -1049,7 +1076,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->postJson('/schemas', [
             'name' => 'Test',
-            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'type' => SchemaType::SELECT->value,
             'price' => 120,
             'description' => 'test test',
             'hidden' => false,

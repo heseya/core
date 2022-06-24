@@ -66,12 +66,12 @@ class AuthService implements AuthServiceContract
 
         $identityToken = $this->tokenService->createToken(
             Auth::user(),
-            new TokenType(TokenType::IDENTITY),
+            TokenType::IDENTITY,
             $uuid,
         );
         $refreshToken = $this->tokenService->createToken(
             Auth::user(),
-            new TokenType(TokenType::REFRESH),
+            TokenType::REFRESH,
             $uuid,
         );
 
@@ -91,7 +91,7 @@ class AuthService implements AuthServiceContract
         $payload = $this->tokenService->payload($refreshToken);
 
         if (
-            $payload->get('typ') !== TokenType::REFRESH ||
+            $payload->get('typ') !== TokenType::REFRESH->value ||
             Token::where('id', $payload->get('jti'))->where('invalidated', true)->exists()
         ) {
             throw new ClientException(Exceptions::CLIENT_INVALID_TOKEN);
@@ -108,17 +108,17 @@ class AuthService implements AuthServiceContract
 
         $token = $this->tokenService->createToken(
             $user,
-            new TokenType(TokenType::ACCESS),
+            TokenType::ACCESS,
             $uuid,
         );
         $identityToken = $user instanceof App ? null : $this->tokenService->createToken(
             $user,
-            new TokenType(TokenType::IDENTITY),
+            TokenType::IDENTITY,
             $uuid,
         );
         $refreshToken = $this->tokenService->createToken(
             $user,
-            new TokenType(TokenType::REFRESH),
+            TokenType::REFRESH,
             $uuid,
         );
 
@@ -186,7 +186,7 @@ class AuthService implements AuthServiceContract
         $user = $this->tokenService->getUser($identityToken);
         $isIdentityToken = $this->tokenService->isTokenType(
             $identityToken,
-            new TokenType(TokenType::IDENTITY),
+            TokenType::IDENTITY,
         );
 
         if (!($user instanceof User) || !$isIdentityToken) {
@@ -221,8 +221,8 @@ class AuthService implements AuthServiceContract
         $this->checkIsTFA(Auth::user());
 
         return match ($dto->getType()) {
-            TFAType::APP => $this->googleTFA(),
-            TFAType::EMAIL => $this->emailTFA(),
+            TFAType::APP->value => $this->googleTFA(),
+            TFAType::EMAIL->value => $this->emailTFA(),
             default => throw new ClientException(Exceptions::CLIENT_INVALID_TFA_TYPE),
         };
     }
@@ -236,7 +236,6 @@ class AuthService implements AuthServiceContract
     {
         $this->checkIsUserTFA();
         $this->checkIsTFA(Auth::user());
-
         if (!Auth::user()->tfa_type) {
             throw new ClientException(Exceptions::CLIENT_DOESNT_HAVE_TFA_TYPE_SELECTED);
         }
@@ -331,14 +330,13 @@ class AuthService implements AuthServiceContract
                 Auth::user(),
                 Config::get('tfa.code_expires_time')
             );
-
             Auth::user()->notify(new TFASecurityCode($code));
         }
         throw new TFAException(
             Exceptions::CLIENT_TFA_REQUIRED,
             403,
             simpleLogs: true,
-            type: Auth::user()->tfa_type
+            type: Auth::user()->tfa_type->value
         );
     }
 
@@ -347,7 +345,7 @@ class AuthService implements AuthServiceContract
         $valid = match (Auth::user()->tfa_type) {
             TFAType::APP => $this->googleTFAVerify($code),
             TFAType::EMAIL => $this->emailTFAVerify($code),
-            default => throw new TFAException('Invalid Two-Factor Authentication Type', simpleLogs: true),
+            default => throw new TFAException(Exceptions::CLIENT_INVALID_TFA_TYPE, simpleLogs: true),
         };
 
         if (Auth::user()->is_tfa_active && !$valid) {
