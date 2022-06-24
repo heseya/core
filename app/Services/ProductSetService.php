@@ -52,7 +52,6 @@ class ProductSetService implements ProductSetServiceContract
         } else {
             $query->with(['children', 'metadataPrivate', 'media.metadataPrivate']);
         }
-
         if ($root) {
             $query->root();
         }
