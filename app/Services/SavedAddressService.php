@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Dtos\SavedAddressDto;
 use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\SavedAddressType;
 use App\Exceptions\ClientException;
 use App\Models\Address;
 use App\Models\SavedAddress;
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 class SavedAddressService implements SavedAddressServiceContract
 {
-    public function storeAddress(SavedAddressDto $addressDto, string $type): SavedAddress
+    public function storeAddress(SavedAddressDto $addressDto, SavedAddressType $type): SavedAddress
     {
         $savedAddress = null;
 
@@ -39,7 +40,7 @@ class SavedAddressService implements SavedAddressServiceContract
         });
 
         if ($savedAddress->default) {
-            $this->defaultSet($savedAddress, $type);
+            $this->defaultSet($savedAddress, $type->value);
         }
 
         return $savedAddress;
@@ -48,7 +49,7 @@ class SavedAddressService implements SavedAddressServiceContract
     public function updateAddress(
         SavedAddress $address,
         SavedAddressDto $addressDto,
-        string $type
+        SavedAddressType $type
     ): SavedAddress {
         if (Auth::id() !== $address->user_id) {
             throw new AuthenticationException();
@@ -71,7 +72,7 @@ class SavedAddressService implements SavedAddressServiceContract
             ]);
 
             if ($address->default) {
-                $this->defaultSet($address, $type);
+                $this->defaultSet($address, $type->value);
             }
         });
 

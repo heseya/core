@@ -3,6 +3,7 @@
 namespace App\Dtos;
 
 use App\Dtos\Contracts\InstantiateFromRequest;
+use App\Enums\SchemaType;
 use App\Traits\MapMetadata;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
@@ -12,7 +13,7 @@ class SchemaDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    protected string|Missing $type;
+    protected SchemaType|Missing $type;
     protected string|Missing $name;
     protected string|Missing $description;
     protected float|Missing $price;
@@ -40,7 +41,7 @@ class SchemaDto extends Dto implements InstantiateFromRequest
         }
 
         return new self(
-            type: $request->input('type', new Missing()),
+            type: SchemaType::tryFrom($request->input('type')) ?? new Missing(),
             name: $request->input('name', new Missing()),
             description: $request->input('description', new Missing()),
             price: $request->input('price', new Missing()),

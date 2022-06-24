@@ -2,44 +2,47 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Contracts\LocalizedEnum;
-use BenSampo\Enum\Enum;
+use App\Traits\EnumUtilities;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Str;
 
-final class EventType extends Enum implements LocalizedEnum
+enum EventType : string
 {
-    public const ORDER_CREATED = 'OrderCreated';
-    public const ORDER_UPDATED = 'OrderUpdated';
-    public const ORDER_UPDATED_STATUS = 'OrderUpdatedStatus';
-    public const PRODUCT_CREATED = 'ProductCreated';
-    public const PRODUCT_UPDATED = 'ProductUpdated';
-    public const PRODUCT_DELETED = 'ProductDeleted';
-    public const ITEM_CREATED = 'ItemCreated';
-    public const ITEM_UPDATED = 'ItemUpdated';
-    public const ITEM_UPDATED_QUANTITY = 'ItemUpdatedQuantity';
-    public const ITEM_DELETED = 'ItemDeleted';
-    public const PAGE_CREATED = 'PageCreated';
-    public const PAGE_UPDATED = 'PageUpdated';
-    public const PAGE_DELETED = 'PageDeleted';
-    public const PRODUCT_SET_CREATED = 'ProductSetCreated';
-    public const PRODUCT_SET_UPDATED = 'ProductSetUpdated';
-    public const PRODUCT_SET_DELETED = 'ProductSetDeleted';
-    public const USER_CREATED = 'UserCreated';
-    public const USER_UPDATED = 'UserUpdated';
-    public const USER_DELETED = 'UserDeleted';
-    public const SALE_CREATED = 'SaleCreated';
-    public const SALE_UPDATED = 'SaleUpdated';
-    public const SALE_DELETED = 'SaleDeleted';
-    public const COUPON_CREATED = 'CouponCreated';
-    public const COUPON_UPDATED = 'CouponUpdated';
-    public const COUPON_DELETED = 'CouponDeleted';
-    public const ADD_ORDER_DOCUMENT = 'AddOrderDocument';
-    public const REMOVE_ORDER_DOCUMENT = 'RemoveOrderDocument';
-    public const ORDER_UPDATED_PAID = 'OrderUpdatedPaid';
+    use EnumUtilities;
+
+    case ORDER_CREATED = 'OrderCreated';
+    case ORDER_UPDATED = 'OrderUpdated';
+    case ORDER_UPDATED_STATUS = 'OrderUpdatedStatus';
+    case PRODUCT_CREATED = 'ProductCreated';
+    case PRODUCT_UPDATED = 'ProductUpdated';
+    case PRODUCT_DELETED = 'ProductDeleted';
+    case ITEM_CREATED = 'ItemCreated';
+    case ITEM_UPDATED = 'ItemUpdated';
+    case ITEM_UPDATED_QUANTITY = 'ItemUpdatedQuantity';
+    case ITEM_DELETED = 'ItemDeleted';
+    case PAGE_CREATED = 'PageCreated';
+    case PAGE_UPDATED = 'PageUpdated';
+    case PAGE_DELETED = 'PageDeleted';
+    case PRODUCT_SET_CREATED = 'ProductSetCreated';
+    case PRODUCT_SET_UPDATED = 'ProductSetUpdated';
+    case PRODUCT_SET_DELETED = 'ProductSetDeleted';
+    case USER_CREATED = 'UserCreated';
+    case USER_UPDATED = 'UserUpdated';
+    case USER_DELETED = 'UserDeleted';
+    case SALE_CREATED = 'SaleCreated';
+    case SALE_UPDATED = 'SaleUpdated';
+    case SALE_DELETED = 'SaleDeleted';
+    case COUPON_CREATED = 'CouponCreated';
+    case COUPON_UPDATED = 'CouponUpdated';
+    case COUPON_DELETED = 'CouponDeleted';
+    case ADD_ORDER_DOCUMENT = 'AddOrderDocument';
+    case REMOVE_ORDER_DOCUMENT = 'RemoveOrderDocument';
+    case ORDER_UPDATED_PAID = 'OrderUpdatedPaid';
 
     public static function getEventList(): array
     {
-        $events = self::getInstances();
+        $events = self::cases();
         $result = [];
 
         $required_permissions = Config::get('events.permissions');
@@ -54,12 +57,26 @@ final class EventType extends Enum implements LocalizedEnum
         return $result;
     }
 
-    private static function getData(Enum $enum, mixed $permissions, mixed $hidden_permissions): array
+    private static function getFriendlyKeyName(string $key): string
+    {
+        if (ctype_upper(preg_replace('/[^a-zA-Z]/', '', $key))) {
+            $key = strtolower($key);
+        }
+
+        return ucfirst(str_replace('_', ' ', Str::snake($key)));
+    }
+
+    private static function getDescription(string $key): string
+    {
+        return Lang::get('enums')[self::class][$key];
+    }
+
+    private static function getData(EventType $enum, mixed $permissions, mixed $hidden_permissions): array
     {
         return [
             'key' => $enum->value,
-            'name' => self::getFriendlyKeyName($enum->key),
-            'description' => $enum->description,
+            'name' => self::getFriendlyKeyName($enum->name),
+            'description' => self::getDescription($enum->value),
             'required_permissions' => $permissions,
             'required_hidden_permissions' => $hidden_permissions,
         ];

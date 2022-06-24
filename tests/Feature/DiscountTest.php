@@ -444,9 +444,9 @@ class DiscountTest extends TestCase
             'name' => 'Kupon',
             'description' => 'Testowy kupon',
             'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'type' => DiscountType::PERCENTAGE->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_type' => DiscountTargetType::ORDER_VALUE->value,
             'target_is_allow_list' => true,
         ];
 
@@ -525,7 +525,7 @@ class DiscountTest extends TestCase
                 [
                     'conditions' => [
                         [
-                            'type' => ConditionType::MAX_USES,
+                            'type' => ConditionType::MAX_USES->value,
                             'max_uses' => 150,
                         ],
                     ],
@@ -557,9 +557,9 @@ class DiscountTest extends TestCase
             'name' => 'Kupon',
             'description' => 'Testowy kupon',
             'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'type' => DiscountType::PERCENTAGE->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::SHIPPING_PRICE,
+            'target_type' => DiscountTargetType::SHIPPING_PRICE->value,
             'target_is_allow_list' => true,
             'metadata' => [
                 'attributeMeta' => 'attributeValue',
@@ -594,9 +594,9 @@ class DiscountTest extends TestCase
             'name' => 'Kupon',
             'description' => 'Testowy kupon',
             'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'type' => DiscountType::PERCENTAGE->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::SHIPPING_PRICE,
+            'target_type' => DiscountTargetType::SHIPPING_PRICE->value,
             'target_is_allow_list' => true,
             'metadata_private' => [
                 'attributeMetaPriv' => 'attributeValue',
@@ -631,9 +631,9 @@ class DiscountTest extends TestCase
             'name' => 'Kupon',
             'description' => 'Testowy kupon',
             'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'type' => DiscountType::PERCENTAGE->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::SHIPPING_PRICE,
+            'target_type' => DiscountTargetType::SHIPPING_PRICE->value,
             'target_is_allow_list' => true,
         ];
 
@@ -695,9 +695,9 @@ class DiscountTest extends TestCase
             'name' => 'Kupon',
             'description' => 'Testowy kupon',
             'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'type' => DiscountType::PERCENTAGE->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_type' => DiscountTargetType::PRODUCTS->value,
             'target_is_allow_list' => true,
         ];
 
@@ -771,9 +771,9 @@ class DiscountTest extends TestCase
             'name' => 'Kupon',
             'description' => 'Testowy kupon',
             'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'type' => DiscountType::PERCENTAGE->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_type' => DiscountTargetType::PRODUCTS->value,
             'target_is_allow_list' => true,
         ];
 
@@ -845,9 +845,9 @@ class DiscountTest extends TestCase
         $discount = [
             'name' => 'Kupon',
             'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'type' => DiscountType::PERCENTAGE->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_type' => DiscountTargetType::ORDER_VALUE->value,
             'target_is_allow_list' => true,
         ];
 
@@ -878,9 +878,9 @@ class DiscountTest extends TestCase
         $discount = [
             'name' => 'Kupon',
             'value' => 855,
-            'type' => DiscountType::PERCENTAGE,
+            'type' => DiscountType::PERCENTAGE->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_type' => DiscountTargetType::ORDER_VALUE->value,
             'target_is_allow_list' => true,
         ];
 
@@ -906,9 +906,9 @@ class DiscountTest extends TestCase
         $discount = [
             'name' => 'Kupon',
             'value' => 855,
-            'type' => DiscountType::AMOUNT,
+            'type' => DiscountType::AMOUNT->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_type' => DiscountTargetType::ORDER_VALUE->value,
             'target_is_allow_list' => true,
         ];
 
@@ -939,9 +939,9 @@ class DiscountTest extends TestCase
         $discount = [
             'name' => 'Kupon',
             'value' => -10,
-            'type' => DiscountType::PERCENTAGE,
+            'type' => DiscountType::PERCENTAGE->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_type' => DiscountTargetType::ORDER_VALUE->value,
             'target_is_allow_list' => true,
         ];
 
@@ -967,9 +967,9 @@ class DiscountTest extends TestCase
         $discount = [
             'name' => 'Kupon',
             'value' => -10,
-            'type' => DiscountType::AMOUNT,
+            'type' => DiscountType::AMOUNT->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_type' => DiscountTargetType::ORDER_VALUE->value,
             'target_is_allow_list' => true,
         ];
 
@@ -994,9 +994,9 @@ class DiscountTest extends TestCase
             'name' => 'Kupon',
             'description' => 'Testowy kupon',
             'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'type' => DiscountType::PERCENTAGE->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_type' => DiscountTargetType::ORDER_VALUE->value,
             'target_is_allow_list' => true,
         ];
 
@@ -1092,9 +1092,9 @@ class DiscountTest extends TestCase
             'name' => 'Kupon',
             'description' => 'Testowy kupon',
             'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'type' => DiscountType::PERCENTAGE->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_type' => DiscountTargetType::ORDER_VALUE->value,
             'target_is_allow_list' => $boolean,
         ];
 
@@ -1103,54 +1103,54 @@ class DiscountTest extends TestCase
                 [
                     'conditions' => [
                         [
-                            'type' => ConditionType::ORDER_VALUE,
+                            'type' => ConditionType::ORDER_VALUE->value,
                             'min_value' => 100,
                             'max_value' => 500,
                             'include_taxes' => $boolean,
                             'is_in_range' => $boolean,
                         ],
                         [
-                            'type' => ConditionType::USER_IN_ROLE,
+                            'type' => ConditionType::USER_IN_ROLE->value,
                             'roles' => [
                                 $this->role->getKey(),
                             ],
                             'is_allow_list' => $boolean,
                         ],
                         [
-                            'type' => ConditionType::USER_IN,
+                            'type' => ConditionType::USER_IN->value,
                             'users' => [
                                 $this->conditionUser->getKey(),
                             ],
                             'is_allow_list' => $boolean,
                         ],
                         [
-                            'type' => ConditionType::PRODUCT_IN_SET,
+                            'type' => ConditionType::PRODUCT_IN_SET->value,
                             'product_sets' => [
                                 $this->conditionProductSet->getKey(),
                             ],
                             'is_allow_list' => $boolean,
                         ],
                         [
-                            'type' => ConditionType::PRODUCT_IN,
+                            'type' => ConditionType::PRODUCT_IN->value,
                             'products' => [
                                 $this->conditionProduct->getKey(),
                             ],
                             'is_allow_list' => $boolean,
                         ],
                         [
-                            'type' => ConditionType::DATE_BETWEEN,
+                            'type' => ConditionType::DATE_BETWEEN->value,
                             'start_at' => Carbon::now(),
                             'end_at' => Carbon::tomorrow(),
                             'is_in_range' => $boolean,
                         ],
                         [
-                            'type' => ConditionType::TIME_BETWEEN,
+                            'type' => ConditionType::TIME_BETWEEN->value,
                             'start_at' => Carbon::now()->toTimeString(),
                             'end_at' => Carbon::tomorrow()->toTimeString(),
                             'is_in_range' => $boolean,
                         ],
                         [
-                            'type' => ConditionType::WEEKDAY_IN,
+                            'type' => ConditionType::WEEKDAY_IN->value,
                             'weekday' => [$boolean, 'on', 'off', 'no', 1, 'yes', $boolean],
                         ],
                     ],
@@ -1173,38 +1173,38 @@ class DiscountTest extends TestCase
 
         $response
             ->assertJsonFragment([
-                'type' => ConditionType::USER_IN_ROLE,
+                'type' => ConditionType::USER_IN_ROLE->value,
                 'is_allow_list' => $booleanValue,
             ])
             ->assertJsonFragment([
-                'type' => ConditionType::USER_IN,
+                'type' => ConditionType::USER_IN->value,
                 'is_allow_list' => $booleanValue,
             ])
             ->assertJsonFragment([
-                'type' => ConditionType::PRODUCT_IN,
+                'type' => ConditionType::PRODUCT_IN->value,
                 'is_allow_list' => $booleanValue,
             ])
             ->assertJsonFragment([
-                'type' => ConditionType::PRODUCT_IN_SET,
+                'type' => ConditionType::PRODUCT_IN_SET->value,
                 'is_allow_list' => $booleanValue,
             ])
             ->assertJsonFragment([
-                'type' => ConditionType::ORDER_VALUE,
+                'type' => ConditionType::ORDER_VALUE->value,
                 'min_value' => 100,
                 'max_value' => 500,
                 'include_taxes' => $booleanValue,
                 'is_in_range' => $booleanValue,
             ])
             ->assertJsonFragment([
-                'type' => ConditionType::DATE_BETWEEN,
+                'type' => ConditionType::DATE_BETWEEN->value,
                 'is_in_range' => $booleanValue,
             ])
             ->assertJsonFragment([
-                'type' => ConditionType::TIME_BETWEEN,
+                'type' => ConditionType::TIME_BETWEEN->value,
                 'is_in_range' => $booleanValue,
             ])
             ->assertJsonFragment([
-                'type' => ConditionType::WEEKDAY_IN,
+                'type' => ConditionType::WEEKDAY_IN->value,
                 'weekday' => [$booleanValue, true, false, false, true, true, $booleanValue],
             ]);
 
@@ -1225,9 +1225,9 @@ class DiscountTest extends TestCase
             'name' => 'Kupon',
             'description' => 'Testowy kupon',
             'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'type' => DiscountType::PERCENTAGE->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_type' => DiscountTargetType::ORDER_VALUE->value,
             'target_is_allow_list' => true,
         ];
 
@@ -1240,7 +1240,7 @@ class DiscountTest extends TestCase
                 [
                     'conditions' => [
                         [
-                            'type' => ConditionType::WEEKDAY_IN,
+                            'type' => ConditionType::WEEKDAY_IN->value,
                             'weekday' => [false, true, false, false, true, true, false],
                         ],
                     ],
@@ -1290,9 +1290,9 @@ class DiscountTest extends TestCase
             'name' => 'Kupon',
             'description' => 'Testowy kupon',
             'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'type' => DiscountType::PERCENTAGE->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_type' => DiscountTargetType::ORDER_VALUE->value,
             'target_is_allow_list' => true,
         ];
 
@@ -1305,7 +1305,7 @@ class DiscountTest extends TestCase
                 [
                     'conditions' => [
                         [
-                            'type' => ConditionType::DATE_BETWEEN,
+                            'type' => ConditionType::DATE_BETWEEN->value,
                             'is_in_range' => true,
                             'start_at' => '2022-04-15',
                             'end_at' => '2022-04-20',
@@ -1347,7 +1347,7 @@ class DiscountTest extends TestCase
             'as user date between' => [
                 'user',
                 [
-                    'type' => ConditionType::DATE_BETWEEN,
+                    'type' => ConditionType::DATE_BETWEEN->value,
                     'is_in_range' => true,
                     'start_at' => '2022-05-09',
                     'end_at' => '2022-05-13',
@@ -1356,7 +1356,7 @@ class DiscountTest extends TestCase
             'as user time between' => [
                 'user',
                 [
-                    'type' => ConditionType::TIME_BETWEEN,
+                    'type' => ConditionType::TIME_BETWEEN->value,
                     'is_in_range' => true,
                     'start_at' => '10:00:00',
                     'end_at' => '14:00:00',
@@ -1365,14 +1365,14 @@ class DiscountTest extends TestCase
             'as user weekday in' => [
                 'user',
                 [
-                    'type' => ConditionType::WEEKDAY_IN,
+                    'type' => ConditionType::WEEKDAY_IN->value,
                     'weekday' => [0, 0, 0, 0, 1, 0, 0],
                 ],
             ],
             'as app date between' => [
                 'application',
                 [
-                    'type' => ConditionType::DATE_BETWEEN,
+                    'type' => ConditionType::DATE_BETWEEN->value,
                     'is_in_range' => true,
                     'start_at' => '2022-05-09',
                     'end_at' => '2022-05-13',
@@ -1381,7 +1381,7 @@ class DiscountTest extends TestCase
             'as app time between' => [
                 'application',
                 [
-                    'type' => ConditionType::TIME_BETWEEN,
+                    'type' => ConditionType::TIME_BETWEEN->value,
                     'is_in_range' => true,
                     'start_at' => '10:00:00',
                     'end_at' => '14:00:00',
@@ -1390,7 +1390,7 @@ class DiscountTest extends TestCase
             'as app weekday in' => [
                 'application',
                 [
-                    'type' => ConditionType::WEEKDAY_IN,
+                    'type' => ConditionType::WEEKDAY_IN->value,
                     'weekday' => [0, 0, 0, 0, 1, 0, 0],
                 ],
             ],
@@ -1409,9 +1409,9 @@ class DiscountTest extends TestCase
             'name' => 'Sale',
             'description' => 'Test sale',
             'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'type' => DiscountType::PERCENTAGE->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_type' => DiscountTargetType::PRODUCTS->value,
             'target_is_allow_list' => true,
             'code' => null,
         ];
@@ -1427,7 +1427,6 @@ class DiscountTest extends TestCase
         ];
 
         $response = $this->actingAs($this->$user)->json('POST', 'sales', $discount + $conditions);
-
         $response->assertCreated();
 
         $discountModel = Discount::find($response->getData()->data->id);
@@ -1449,9 +1448,9 @@ class DiscountTest extends TestCase
             'name' => 'Sale',
             'description' => 'Test sale',
             'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'type' => DiscountType::PERCENTAGE->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_type' => DiscountTargetType::PRODUCTS->value,
             'target_is_allow_list' => true,
             'code' => null,
         ];
@@ -1488,9 +1487,9 @@ class DiscountTest extends TestCase
             'name' => 'Kupon',
             'description' => 'Testowy kupon',
             'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'type' => DiscountType::PERCENTAGE->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_type' => DiscountTargetType::ORDER_VALUE->value,
             'target_is_allow_list' => true,
             'condition_groups' => [
                 [
@@ -1547,9 +1546,9 @@ class DiscountTest extends TestCase
             'name' => 'Kupon',
             'description' => 'Testowy kupon',
             'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'type' => DiscountType::PERCENTAGE->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_type' => DiscountTargetType::ORDER_VALUE->value,
             'target_is_allow_list' => true,
         ] + $code);
 
@@ -1656,9 +1655,9 @@ class DiscountTest extends TestCase
             'name' => 'Kupon',
             'description' => 'Testowy kupon',
             'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'type' => DiscountType::PERCENTAGE->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_type' => DiscountTargetType::PRODUCTS->value,
             'target_is_allow_list' => true,
         ];
 
@@ -1770,9 +1769,9 @@ class DiscountTest extends TestCase
             'name' => 'Kupon',
             'description' => 'Testowy kupon',
             'value' => 10,
-            'type' => DiscountType::PERCENTAGE,
+            'type' => DiscountType::PERCENTAGE->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_type' => DiscountTargetType::ORDER_VALUE->value,
             'target_is_allow_list' => $boolean,
         ];
 
@@ -1781,54 +1780,54 @@ class DiscountTest extends TestCase
                 [
                     'conditions' => [
                         [
-                            'type' => ConditionType::ORDER_VALUE,
+                            'type' => ConditionType::ORDER_VALUE->value,
                             'min_value' => 100,
                             'max_value' => 500,
                             'include_taxes' => $boolean,
                             'is_in_range' => $boolean,
                         ],
                         [
-                            'type' => ConditionType::USER_IN_ROLE,
+                            'type' => ConditionType::USER_IN_ROLE->value,
                             'roles' => [
                                 $this->role->getKey(),
                             ],
                             'is_allow_list' => $boolean,
                         ],
                         [
-                            'type' => ConditionType::USER_IN,
+                            'type' => ConditionType::USER_IN->value,
                             'users' => [
                                 $this->conditionUser->getKey(),
                             ],
                             'is_allow_list' => $boolean,
                         ],
                         [
-                            'type' => ConditionType::PRODUCT_IN_SET,
+                            'type' => ConditionType::PRODUCT_IN_SET->value,
                             'product_sets' => [
                                 $this->conditionProductSet->getKey(),
                             ],
                             'is_allow_list' => $boolean,
                         ],
                         [
-                            'type' => ConditionType::PRODUCT_IN,
+                            'type' => ConditionType::PRODUCT_IN->value,
                             'products' => [
                                 $this->conditionProduct->getKey(),
                             ],
                             'is_allow_list' => $boolean,
                         ],
                         [
-                            'type' => ConditionType::DATE_BETWEEN,
+                            'type' => ConditionType::DATE_BETWEEN->value,
                             'start_at' => Carbon::now(),
                             'end_at' => Carbon::tomorrow(),
                             'is_in_range' => $boolean,
                         ],
                         [
-                            'type' => ConditionType::TIME_BETWEEN,
+                            'type' => ConditionType::TIME_BETWEEN->value,
                             'start_at' => Carbon::now()->toTimeString(),
                             'end_at' => Carbon::tomorrow()->toTimeString(),
                             'is_in_range' => $boolean,
                         ],
                         [
-                            'type' => ConditionType::WEEKDAY_IN,
+                            'type' => ConditionType::WEEKDAY_IN->value,
                             'weekday' => [$boolean, 'on', 'off', 'no', 1, 'yes', $boolean],
                         ],
                     ],
@@ -1962,7 +1961,7 @@ class DiscountTest extends TestCase
             ->json('PATCH', "/${discountKind}/id:" . $discount->getKey(), [
                 'description' => 'Weekend Sale',
                 'discount' => 20,
-                'type' => DiscountType::AMOUNT,
+                'type' => DiscountType::AMOUNT->value,
                 'code' => $discount->code,
             ])->assertOk();
 
@@ -2018,7 +2017,7 @@ class DiscountTest extends TestCase
             ->json('PATCH', "/${discountKind}/id:" . $discount->getKey(), [
                 'description' => 'Weekend Sale',
                 'discount' => 20,
-                'type' => DiscountType::AMOUNT,
+                'type' => DiscountType::AMOUNT->value,
                 'code' => $discount->code,
             ])->assertOk();
 
@@ -2083,9 +2082,9 @@ class DiscountTest extends TestCase
             'name' => 'Kupon',
             'description' => 'Testowy kupon',
             'value' => 10,
-            'type' => DiscountType::AMOUNT,
+            'type' => DiscountType::AMOUNT->value,
             'priority' => 1,
-            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_type' => DiscountTargetType::PRODUCTS->value,
             'target_is_allow_list' => true,
         ];
 
@@ -2464,7 +2463,7 @@ class DiscountTest extends TestCase
                 [
                     'conditions' => [
                         [
-                            'type' => ConditionType::TIME_BETWEEN,
+                            'type' => ConditionType::TIME_BETWEEN->value,
                             'is_in_range' => true,
                             'start_at' => '10:00:00',
                             'end_at' => '14:00:00',

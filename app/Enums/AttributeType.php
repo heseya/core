@@ -2,12 +2,14 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
+use App\Traits\EnumUtilities;
 
-final class AttributeType extends Enum
+enum AttributeType: string
 {
-    public const SINGLE_OPTION = 'single-option';
-    public const MULTI_CHOICE_OPTION = 'multi-choice-option';
-    public const NUMBER = 'number';
-    public const DATE = 'date';
+    use EnumUtilities;
+
+    case SINGLE_OPTION = 'single-option';
+    case MULTI_CHOICE_OPTION = 'multi-choice-option';
+    case NUMBER = 'number';
+    case DATE = 'date';
 }

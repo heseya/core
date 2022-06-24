@@ -2,19 +2,21 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
+use App\Traits\EnumUtilities;
 use Exception;
 
-final class DiscountType extends Enum
+enum DiscountType: string
 {
-    public const PERCENTAGE = 'percentage';
-    public const AMOUNT = 'amount';
+    use EnumUtilities;
+
+    case PERCENTAGE = 'percentage';
+    case AMOUNT = 'amount';
 
     public static function getPriority(string $value): int
     {
         return match ($value) {
-            self::AMOUNT => 0,
-            self::PERCENTAGE => 1,
+            self::AMOUNT->value => 0,
+            self::PERCENTAGE->value => 1,
             default => throw new Exception('Unknown discount type'),
         };
     }

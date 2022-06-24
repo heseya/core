@@ -4,7 +4,6 @@ namespace App\Http\Resources;
 
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class SchemaResource extends Resource
 {
@@ -14,7 +13,7 @@ class SchemaResource extends Resource
     {
         return array_merge([
             'id' => $this->resource->getKey(),
-            'type' => Str::lower($this->resource->type->key),
+            'type' => $this->resource->type->value,
             'name' => $this->resource->name,
             'description' => $this->resource->description,
             'price' => $this->resource->price,

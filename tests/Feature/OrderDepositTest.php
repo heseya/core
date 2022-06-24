@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\SchemaType;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
 use App\Models\Address;
@@ -41,7 +42,7 @@ class OrderDepositTest extends TestCase
             'public' => true,
         ]);
         $this->schema = Schema::factory()->create([
-            'type' => 'select',
+            'type' => SchemaType::SELECT,
             'price' => 0,
             'hidden' => false,
             'required' => true,
@@ -226,7 +227,7 @@ class OrderDepositTest extends TestCase
     public function testCantCreateOrderWithoutMultipleItems($user): void
     {
         $schema = Schema::factory()->create([
-            'type' => 'select',
+            'type' => SchemaType::SELECT,
             'price' => 0,
             'hidden' => false,
         ]);

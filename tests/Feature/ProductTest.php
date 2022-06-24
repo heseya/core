@@ -33,7 +33,6 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
-use Illuminate\Support\Str;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
@@ -157,7 +156,7 @@ class ProductTest extends TestCase
             'id' => $attribute->getKey(),
             'slug' => $attribute->slug,
             'description' => $attribute->description,
-            'type' => $attribute->type,
+            'type' => $attribute->type->value,
             'global' => $attribute->global,
             'sortable' => $attribute->sortable,
         ];
@@ -171,7 +170,7 @@ class ProductTest extends TestCase
             'gallery' => [],
             'schemas' => [[
                 'name' => 'Rozmiar',
-                'type' => 'select',
+                'type' => SchemaType::SELECT->value,
                 'required' => true,
                 'available' => true,
                 'price' => 0,
@@ -614,7 +613,7 @@ class ProductTest extends TestCase
                     'metadata' => [],
                     'cover' => [
                         'id' => $media1->getKey(),
-                        'type' => Str::lower($media1->type->key),
+                        'type' => $media1->type->value,
                         'url' => $media1->url,
                         'slug' => $media1->slug,
                         'alt' => $media1->alt,
@@ -635,7 +634,7 @@ class ProductTest extends TestCase
                     'metadata' => [],
                     'cover' => [
                         'id' => $media2->getKey(),
-                        'type' => Str::lower($media2->type->key),
+                        'type' => $media2->type->value,
                         'url' => $media2->url,
                         'slug' => $media2->slug,
                         'alt' => $media2->alt,

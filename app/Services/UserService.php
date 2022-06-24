@@ -43,13 +43,12 @@ class UserService implements UserServiceContract
         }
 
         $permissions = $roleModels->flatMap(
-            fn ($role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
+            fn ($role) => $role->type !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
         )->unique();
 
         if (!Auth::user()->hasAllPermissions($permissions)) {
             throw new ClientException(Exceptions::CLIENT_GIVE_ROLE_THAT_USER_DOESNT_HAVE, simpleLogs: true);
         }
-
         $user = User::create([
             'name' => $dto->getName(),
             'email' => $dto->getEmail(),
@@ -80,7 +79,7 @@ class UserService implements UserServiceContract
             $removedRoles = $user->roles->diff($roleModels);
 
             $permissions = $newRoles->flatMap(
-                fn ($role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
+                fn ($role) => $role->type !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
             )->unique();
 
             if (!$authenticable->hasAllPermissions($permissions)) {
@@ -88,7 +87,7 @@ class UserService implements UserServiceContract
             }
 
             $permissions = $removedRoles->flatMap(
-                fn (Role $role) => $role->type->value !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
+                fn (Role $role) => $role->type !== RoleType::AUTHENTICATED ? $role->getPermissionNames() : [],
             )->unique();
 
             if (!$authenticable->hasAllPermissions($permissions)) {

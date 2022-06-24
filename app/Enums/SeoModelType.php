@@ -2,14 +2,13 @@
 
 namespace App\Enums;
 
-use App\Models\Page;
-use App\Models\Product;
-use App\Models\ProductSet;
-use BenSampo\Enum\Enum;
+use App\Traits\EnumUtilities;
 
-final class SeoModelType extends Enum
+enum SeoModelType: string
 {
-    public const PRODUCT = Product::class;
-    public const PRODUCT_SET = ProductSet::class;
-    public const PAGE = Page::class;
+    use EnumUtilities;
+
+    case PRODUCT = 'App\Models\Product';
+    case PRODUCT_SET = 'App\Models\ProductSet';
+    case PAGE = 'App\Models\Page';
 }

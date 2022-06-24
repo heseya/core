@@ -12,7 +12,6 @@ use App\Models\WebHook;
 use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Str;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
@@ -210,7 +209,7 @@ class ProductSetCreateTest extends TestCase
                 'slug' => 'test',
                 'cover' => [
                     'id' => $media->getKey(),
-                    'type' => Str::lower($media->type->key),
+                    'type' => $media->type->value,
                     'url' => $media->url,
                 ],
             ],
@@ -688,7 +687,7 @@ class ProductSetCreateTest extends TestCase
                     'slug' => 'test',
                     'cover' => [
                         'id' => $media->getKey(),
-                        'type' => Str::lower($media->type->key),
+                        'type' => $media->type->value,
                         'url' => $media->url,
                     ],
                     'seo' => [

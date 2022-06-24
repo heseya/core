@@ -2,12 +2,14 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
+use App\Traits\EnumUtilities;
 
-final class RoleType extends Enum
+enum RoleType: string
 {
-    public const REGULAR = 'regular';
-    public const OWNER = 'owner';
-    public const UNAUTHENTICATED = 'unauthenticated';
-    public const AUTHENTICATED = 'authenticated';
+    use EnumUtilities;
+
+    case REGULAR = 'regular';
+    case OWNER = 'owner';
+    case UNAUTHENTICATED = 'unauthenticated';
+    case AUTHENTICATED = 'authenticated';
 }

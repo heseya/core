@@ -2,11 +2,13 @@
 
 namespace App\Enums;
 
-use BenSampo\Enum\Enum;
+use App\Traits\EnumUtilities;
 
-final class IssuerType extends Enum
+enum IssuerType: string
 {
-    public const APP = 'app';
-    public const USER = 'user';
-    public const UNAUTHENTICATED = 'unauthenticated';
+    use EnumUtilities;
+
+    case APP = 'app';
+    case USER = 'user';
+    case UNAUTHENTICATED = 'unauthenticated';
 }

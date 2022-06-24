@@ -5,6 +5,7 @@ namespace Feature;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Enums\SchemaType;
 use App\Models\ConditionGroup;
 use App\Models\Deposit;
 use App\Models\Discount;
@@ -59,7 +60,7 @@ class CartTest extends TestCase
             'public' => true,
         ]);
         $this->schema = Schema::factory()->create([
-            'type' => 'select',
+            'type' => SchemaType::SELECT,
             'price' => 0,
             'hidden' => false,
         ]);
@@ -788,7 +789,7 @@ class CartTest extends TestCase
             'price' => 10,
         ]);
         $schema = Schema::factory()->create([
-            'type' => 'string',
+            'type' => SchemaType::STRING,
             'price' => 20,
             'hidden' => false,
         ]);
@@ -842,7 +843,7 @@ class CartTest extends TestCase
             'price' => 10,
         ]);
         $schema = Schema::factory()->create([
-            'type' => 'string',
+            'type' => SchemaType::STRING,
             'price' => 20,
             'hidden' => false,
         ]);

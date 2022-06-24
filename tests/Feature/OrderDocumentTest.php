@@ -224,7 +224,7 @@ class OrderDocumentTest extends TestCase
         $response
             ->assertStatus(422)
             ->assertJsonFragment(
-                ['key' => Exceptions::coerce(Exceptions::CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT)->key],
+                ['key' => Exceptions::CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT->name],
             );
     }
 
@@ -256,7 +256,7 @@ class OrderDocumentTest extends TestCase
         $response
             ->assertStatus(422)
             ->assertJsonFragment([
-                'key' => Exceptions::coerce(Exceptions::CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT)->key,
+                'key' => Exceptions::CLIENT_NO_ACCESS_TO_DOWNLOAD_DOCUMENT->name,
             ]);
     }
 }

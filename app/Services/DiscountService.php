@@ -84,11 +84,11 @@ class DiscountService implements DiscountServiceContract
             $discount->value = $discount->pivot->value;
         }
 
-        if ($discount->type->is(DiscountType::PERCENTAGE)) {
+        if ($discount->type === DiscountType::PERCENTAGE) {
             return $value * $discount->value / 100;
         }
 
-        if ($discount->type->is(DiscountType::AMOUNT)) {
+        if ($discount->type === DiscountType::AMOUNT) {
             return $discount->value;
         }
 
@@ -126,7 +126,7 @@ class DiscountService implements DiscountServiceContract
             CouponCreated::dispatch($discount);
         } else {
             CalculateDiscount::dispatchIf(
-                $discount->target_type->is(DiscountTargetType::PRODUCTS),
+                $discount->target_type === DiscountTargetType::PRODUCTS,
                 $discount,
             );
             SaleCreated::dispatch($discount);
@@ -189,7 +189,7 @@ class DiscountService implements DiscountServiceContract
         ?CartOrderDto $dto = null,
         ?float $cartValue = 0,
     ): bool {
-        return match ($condition->type->value) {
+        return match ($condition->type) {
             ConditionType::ORDER_VALUE => $this->checkConditionOrderValue($condition, $cartValue),
             ConditionType::USER_IN_ROLE => $this->checkConditionUserInRole($condition),
             ConditionType::USER_IN => $this->checkConditionUserIn($condition),
@@ -388,7 +388,6 @@ class DiscountService implements DiscountServiceContract
         $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
 
         $productSales = Collection::make();
-
         foreach ($sales as $sale) {
             if ($this->checkConditionGroupsForProduct($sale)) {
                 if ($minPriceDiscounted !== $minimalProductPrice) {
@@ -451,12 +450,12 @@ class DiscountService implements DiscountServiceContract
     {
         $refreshedOrder = $order->fresh();
         if (
-            ($discount->target_type->value === DiscountTargetType::ORDER_VALUE
-                || $discount->target_type->value === DiscountTargetType::SHIPPING_PRICE)
+            ($discount->target_type === DiscountTargetType::ORDER_VALUE
+                || $discount->target_type === DiscountTargetType::SHIPPING_PRICE)
             && $refreshedOrder->discounts->count() === 0) {
             $order = $this->roundProductPrices($order);
         }
-        return match ($discount->target_type->value) {
+        return match ($discount->target_type) {
             DiscountTargetType::PRODUCTS => $this->applyDiscountOnOrderProducts($order, $discount),
             DiscountTargetType::ORDER_VALUE => $this->applyDiscountOnOrderValue($order, $discount),
             DiscountTargetType::SHIPPING_PRICE => $this->applyDiscountOnOrderShipping($order, $discount),
@@ -491,7 +490,7 @@ class DiscountService implements DiscountServiceContract
         return $sales->filter(function ($sale): bool {
             foreach ($sale->conditionGroups as $conditionGroup) {
                 foreach ($conditionGroup->conditions as $condition) {
-                    $result = match ($condition->type->value) {
+                    $result = match ($condition->type) {
                         ConditionType::DATE_BETWEEN => $this->checkConditionDateBetween($condition),
                         ConditionType::TIME_BETWEEN => $this->checkConditionTimeBetween($condition),
                         ConditionType::WEEKDAY_IN => $this->checkConditionWeekdayIn($condition),
@@ -529,7 +528,7 @@ class DiscountService implements DiscountServiceContract
     {
         foreach ($discount->conditionGroups as $conditionGroup) {
             foreach ($conditionGroup->conditions as $condition) {
-                $result = match ($condition->type->value) {
+                $result = match ($condition->type) {
                     ConditionType::DATE_BETWEEN => $this->checkConditionDateBetween($condition),
                     ConditionType::TIME_BETWEEN => $this->checkConditionTimeBetween($condition),
                     ConditionType::WEEKDAY_IN => $this->checkConditionWeekdayIn($condition),
@@ -604,7 +603,6 @@ class DiscountService implements DiscountServiceContract
         if ($this->checkDiscountHasTimeConditions($discount)) {
             /** @var Collection<int, mixed> $activeSales */
             $activeSales = Cache::get('sales.active', Collection::make());
-
             if ($this->checkDiscountTimeConditions($discount)) {
                 if (!$activeSales->contains($discount->getKey())) {
                     $activeSales->push($discount->getKey());
@@ -670,7 +668,7 @@ class DiscountService implements DiscountServiceContract
 
     private function checkConditionForProduct(DiscountCondition $condition): bool
     {
-        return match ($condition->type->value) {
+        return match ($condition->type) {
             ConditionType::USER_IN_ROLE => $this->checkConditionUserInRole($condition),
             ConditionType::USER_IN => $this->checkConditionUserIn($condition),
             ConditionType::DATE_BETWEEN => $this->checkConditionDateBetween($condition),
@@ -810,7 +808,7 @@ class DiscountService implements DiscountServiceContract
 
     private function applyDiscountOnCart(Discount $discount, CartDto $cartDto, CartResource $cart): CartResource
     {
-        return match ($discount->target_type->value) {
+        return match ($discount->target_type) {
             DiscountTargetType::PRODUCTS => $this->applyDiscountOnCartItems($discount, $cartDto, $cart),
             DiscountTargetType::ORDER_VALUE => $this->applyDiscountOnCartTotal($discount, $cart),
             DiscountTargetType::SHIPPING_PRICE => $this->applyDiscountOnCartShipping($discount, $cartDto, $cart),
@@ -1062,7 +1060,9 @@ class DiscountService implements DiscountServiceContract
 
     private function checkConditionOrderValue(DiscountCondition $condition, float $cartValue = 0): bool
     {
-        $conditionDto = OrderValueConditionDto::fromArray($condition->value + ['type' => $condition->type]);
+        $conditionDto = OrderValueConditionDto::fromArray(
+            $condition->value + ['type' => $condition->type->value]
+        );
 
         // TODO uwzględnić przy sprawdzaniu podatki $conditionDto->isIncludeTaxes()
         if (!$conditionDto->getMinValue() instanceof Missing && !$conditionDto->getMaxValue() instanceof Missing) {
@@ -1083,7 +1083,9 @@ class DiscountService implements DiscountServiceContract
 
     private function checkConditionUserInRole(DiscountCondition $condition): bool
     {
-        $conditionDto = UserInRoleConditionDto::fromArray($condition->value + ['type' => $condition->type]);
+        $conditionDto = UserInRoleConditionDto::fromArray(
+            $condition->value + ['type' => $condition->type->value]
+        );
         $user = Auth::user();
 
         if ($user) {
@@ -1100,7 +1102,9 @@ class DiscountService implements DiscountServiceContract
 
     private function checkConditionUserIn(DiscountCondition $condition): bool
     {
-        $conditionDto = UserInConditionDto::fromArray($condition->value + ['type' => $condition->type]);
+        $conditionDto = UserInConditionDto::fromArray(
+            $condition->value + ['type' => $condition->type->value]
+        );
         if (Auth::user()) {
             return in_array(Auth::id(), $conditionDto->getUsers()) === $conditionDto->isIsAllowList();
         }
@@ -1109,7 +1113,9 @@ class DiscountService implements DiscountServiceContract
 
     private function checkConditionProductInSet(DiscountCondition $condition, array $productIds): bool
     {
-        $conditionDto = ProductInSetConditionDto::fromArray($condition->value + ['type' => $condition->type]);
+        $conditionDto = ProductInSetConditionDto::fromArray(
+            $condition->value + ['type' => $condition->type->value]
+        );
         $productSets = ProductSet::whereIn('id', $conditionDto->getProductSets())->get();
 
         foreach ($productIds as $productId) {
@@ -1129,7 +1135,9 @@ class DiscountService implements DiscountServiceContract
 
     private function checkConditionProductIn(DiscountCondition $condition, array $productIds): bool
     {
-        $conditionDto = ProductInConditionDto::fromArray($condition->value + ['type' => $condition->type]);
+        $conditionDto = ProductInConditionDto::fromArray(
+            $condition->value + ['type' => $condition->type->value]
+        );
 
         foreach ($productIds as $productId) {
             if (in_array($productId, $conditionDto->getProducts()) === $conditionDto->isIsAllowList()) {
@@ -1142,7 +1150,9 @@ class DiscountService implements DiscountServiceContract
 
     private function checkConditionDateBetween(DiscountCondition $condition): bool
     {
-        $conditionDto = DateBetweenConditionDto::fromArray($condition->value + ['type' => $condition->type]);
+        $conditionDto = DateBetweenConditionDto::fromArray(
+            $condition->value + ['type' => $condition->type->value]
+        );
 
         $actualDate = Carbon::now();
 
@@ -1172,7 +1182,9 @@ class DiscountService implements DiscountServiceContract
 
     private function checkConditionTimeBetween(DiscountCondition $condition): bool
     {
-        $conditionDto = TimeBetweenConditionDto::fromArray($condition->value + ['type' => $condition->type]);
+        $conditionDto = TimeBetweenConditionDto::fromArray(
+            $condition->value + ['type' => $condition->type->value]
+        );
 
         $actualTime = Carbon::now();
 
@@ -1201,13 +1213,17 @@ class DiscountService implements DiscountServiceContract
 
     private function checkConditionMaxUses(DiscountCondition $condition): bool
     {
-        $conditionDto = MaxUsesConditionDto::fromArray($condition->value + ['type' => $condition->type]);
+        $conditionDto = MaxUsesConditionDto::fromArray(
+            $condition->value + ['type' => $condition->type->value]
+        );
         return $condition->conditionGroup->discounts()->first()->orders()->count() < $conditionDto->getMaxUses();
     }
 
     private function checkConditionMaxUsesPerUser(DiscountCondition $condition): bool
     {
-        $conditionDto = MaxUsesPerUserConditionDto::fromArray($condition->value + ['type' => $condition->type]);
+        $conditionDto = MaxUsesPerUserConditionDto::fromArray(
+            $condition->value + ['type' => $condition->type->value]
+        );
 
         if (Auth::user()) {
             return $condition
@@ -1226,7 +1242,9 @@ class DiscountService implements DiscountServiceContract
 
     private function checkConditionWeekdayIn(DiscountCondition $condition): bool
     {
-        $conditionDto = WeekDayInConditionDto::fromArray($condition->value + ['type' => $condition->type]);
+        $conditionDto = WeekDayInConditionDto::fromArray(
+            $condition->value + ['type' => $condition->type->value]
+        );
 
         // In Carbon week starts with sunday (index - 0)
         return $conditionDto->getWeekday()[Carbon::now()->dayOfWeek];
@@ -1234,14 +1252,16 @@ class DiscountService implements DiscountServiceContract
 
     private function checkConditionCartLength(DiscountCondition $condition, int $cartLength): bool
     {
-        $conditionDto = CartLengthConditionDto::fromArray($condition->value + ['type' => $condition->type]);
+        $conditionDto = CartLengthConditionDto::fromArray(
+            $condition->value + ['type' => $condition->type->value]
+        );
 
         return $this->checkConditionLenght($conditionDto, $cartLength);
     }
 
     private function checkConditionCouponsCount(DiscountCondition $condition, int $couponsCount): bool
     {
-        $conditionDto = CouponsCountConditionDto::fromArray($condition->value + ['type' => $condition->type]);
+        $conditionDto = CouponsCountConditionDto::fromArray($condition->value + ['type' => $condition->type->value]);
 
         return $this->checkConditionLenght($conditionDto, $couponsCount);
     }

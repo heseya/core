@@ -39,7 +39,7 @@ class DiscountFactory extends Factory
             'code' => $this->faker->unique()->regexify('[A-Z0-9]{8}'),
             'description' => rand(0, 5) ? null : $this->faker->randomElement(self::DESCRIPTIONS),
             'type' => $type,
-            'value' => $type->is(DiscountType::PERCENTAGE) ? rand(1, 18) * 5 : $this->faker->randomFloat(2, 5, 40),
+            'value' => $type === DiscountType::PERCENTAGE ? rand(1, 18) * 5 : $this->faker->randomFloat(2, 5, 40),
             'priority' => $this->faker->randomDigit(),
             'target_type' => DiscountTargetType::getRandomValue(),
             'target_is_allow_list' => $this->faker->boolean,

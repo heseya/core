@@ -7,6 +7,7 @@ use App\Dtos\CartItemDto;
 use App\Dtos\OrderProductDto;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Enums\SchemaType;
 use App\Models\CartItemResponse;
 use App\Models\CartResource;
 use App\Models\Discount;
@@ -51,7 +52,7 @@ class DiscountApplyTest extends TestCase
         ]);
 
         $this->schema = Schema::factory()->create([
-            'type' => 'string',
+            'type' => SchemaType::STRING,
             'price' => 10,
             'hidden' => false,
         ]);

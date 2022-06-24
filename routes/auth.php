@@ -15,17 +15,17 @@ Route::prefix('auth')->group(function (): void {
         ->middleware('can:profile.addresses_manage')
         ->group(function (): void {
             Route::post('delivery-addresses', [AuthController::class, 'storeSavedAddress'])
-                ->defaults('type', SavedAddressType::DELIVERY);
+                ->defaults('type', SavedAddressType::DELIVERY->value);
             Route::patch('delivery-addresses/id:{address}', [AuthController::class, 'updateSavedAddress'])
-                ->defaults('type', SavedAddressType::DELIVERY);
+                ->defaults('type', SavedAddressType::DELIVERY->value);
             Route::delete('delivery-addresses/id:{address}', [AuthController::class, 'deleteSavedAddress'])
-                ->defaults('type', SavedAddressType::DELIVERY);
+                ->defaults('type', SavedAddressType::DELIVERY->value);
             Route::post('invoice-addresses', [AuthController::class, 'storeSavedAddress'])
-                ->defaults('type', SavedAddressType::INVOICE);
+                ->defaults('type', SavedAddressType::INVOICE->value);
             Route::patch('invoice-addresses/id:{address}', [AuthController::class, 'updateSavedAddress'])
-                ->defaults('type', SavedAddressType::INVOICE);
+                ->defaults('type', SavedAddressType::INVOICE->value);
             Route::delete('invoice-addresses/id:{address}', [AuthController::class, 'deleteSavedAddress'])
-                ->defaults('type', SavedAddressType::INVOICE);
+                ->defaults('type', SavedAddressType::INVOICE->value);
         });
 
     Route::post('refresh', [AuthController::class, 'refresh'])

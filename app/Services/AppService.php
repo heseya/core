@@ -125,13 +125,13 @@ class AppService implements AppServiceContract
         $uuid = Str::uuid()->toString();
         $integrationToken = $this->tokenService->createToken(
             $app,
-            new TokenType(TokenType::ACCESS),
+            TokenType::ACCESS,
             $uuid,
         );
 
         $refreshToken = $this->tokenService->createToken(
             $app,
-            new TokenType(TokenType::REFRESH),
+            TokenType::REFRESH,
             $uuid,
         );
 

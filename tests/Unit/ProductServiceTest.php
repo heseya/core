@@ -42,13 +42,13 @@ class ProductServiceTest extends TestCase
         ];
 
         return [
-            'optional schema' => array_merge(
-                $base,
-                [SchemaType::STRING, false, [$price, $price + $schemaPrice]]
-            ),
             'boolean schema' => array_merge(
                 $base,
                 [SchemaType::BOOLEAN, true, [$price, $price + $schemaPrice]],
+            ),
+            'optional schema' => array_merge(
+                $base,
+                [SchemaType::STRING, false, [$price, $price + $schemaPrice]]
             ),
             'required schema' => array_merge(
                 $base,
@@ -63,7 +63,7 @@ class ProductServiceTest extends TestCase
     public function testMinMaxPricesSchema(
         float $price,
         float $schemaPrice,
-        string $type,
+        SchemaType $type,
         bool $required,
         array $minmax,
     ): void {
@@ -78,7 +78,6 @@ class ProductServiceTest extends TestCase
             'price' => $schemaPrice,
             'required' => $required,
         ]);
-
         $this->assertEquals(
             $minmax,
             $this->productService->getMinMaxPrices($product),

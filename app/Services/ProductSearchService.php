@@ -229,7 +229,7 @@ class ProductSearchService implements ProductSearchServiceContract
 
     private function getAttributeValue(Attribute $attribute): array
     {
-        return match ($attribute->type->value) {
+        return match ($attribute->type) {
             AttributeType::NUMBER => $attribute->pivot->options->pluck('value_number')->toArray(),
             AttributeType::DATE => $attribute->pivot->options->pluck('value_date')->toArray(),
             default => $attribute->pivot->options->pluck('name')->toArray(),

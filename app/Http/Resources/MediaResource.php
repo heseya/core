@@ -14,7 +14,7 @@ class MediaResource extends Resource
     {
         return array_merge([
             'id' => $this->resource->getKey(),
-            'type' => Str::lower($this->resource->type->key),
+            'type' => Str::lower($this->resource->type->value),
             'url' => $this->resource->url,
             'slug' => $this->resource->slug,
             'alt' => $this->resource->alt,

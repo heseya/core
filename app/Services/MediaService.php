@@ -47,7 +47,7 @@ class MediaService implements MediaServiceContract
 
         if ($response->failed()) {
             throw new ServerException(
-                message: Exceptions::SERVER_CDN_ERROR,
+                enum: Exceptions::SERVER_CDN_ERROR,
                 errorArray: $response->json() ?? [],
             );
         }
@@ -65,13 +65,13 @@ class MediaService implements MediaServiceContract
 
         if ($response->failed()) {
             throw new ServerException(
-                message: Exceptions::SERVER_CDN_ERROR,
+                enum: Exceptions::SERVER_CDN_ERROR,
                 errorArray: $response->json(),
             );
         }
 
         $media = Media::create([
-            'type' => $this->getMediaType($dto->getFile()->extension()),
+            'type' => $this->getMediaType($dto->getFile()->extension())->value,
             'url' => Config::get('silverbox.host') . '/' . $response->json('0.path'),
             'alt' => $dto->getAlt() instanceof Missing ? null : $dto->getAlt(),
         ]);
@@ -99,7 +99,7 @@ class MediaService implements MediaServiceContract
         return $media;
     }
 
-    private function getMediaType(string $extension): int
+    private function getMediaType(string $extension): MediaType
     {
         return match ($extension) {
             'jpeg', 'jpg', 'png', 'gif', 'bmp', 'svg', 'webp' => MediaType::PHOTO,
@@ -119,7 +119,7 @@ class MediaService implements MediaServiceContract
 
         if ($response->failed() || !isset($response['path'])) {
             throw new ServerException(
-                message: Exceptions::SERVER_CDN_ERROR,
+                enum: Exceptions::SERVER_CDN_ERROR,
                 errorArray: $response->json(),
             );
         }

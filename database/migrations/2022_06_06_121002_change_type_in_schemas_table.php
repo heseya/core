@@ -16,7 +16,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('schemas', function (Blueprint $table) {
-            $table->string('type')->change()->default(SchemaType::STRING);
+            $table->string('type')->change()->default(SchemaType::STRING->value);
             $roles = SchemaModel::all();
             $roles->each(function (SchemaModel $schema) {
                 $type = match ($schema->type) {

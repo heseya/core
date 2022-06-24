@@ -32,7 +32,7 @@ class AttributeSearch implements Rule
             return false;
         }
 
-        return match ($this->attribute->type->value) {
+        return match ($this->attribute->type) {
             AttributeType::NUMBER => $this->validateMinMax($value) && $this->validateNumber($value),
             AttributeType::DATE => $this->validateMinMax($value) && $this->validateDate($value),
             AttributeType::SINGLE_OPTION, AttributeType::MULTI_CHOICE_OPTION => $this->validateOptions($value),

@@ -35,7 +35,7 @@ abstract class WebHookEvent
             'event' => $this->getEvent(),
             'triggered_at' => $this->triggered_at,
             'issuer_type' => $this->issuer ? IssuerType::getValue(strtoupper($this->getModelClass($this->issuer)))
-                : IssuerType::UNAUTHENTICATED,
+                : IssuerType::UNAUTHENTICATED->value,
             'api_url' => Config::get('app.url'),
         ];
     }

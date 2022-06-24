@@ -30,11 +30,11 @@ final class Handler extends ExceptionHandler
         StoreException::class => ErrorCode::BAD_REQUEST,
 
         // 401
-        AuthenticationException::class => ErrorCode::UNAUTHORIZED,
         AccessDeniedHttpException::class => ErrorCode::UNAUTHORIZED,
         TokenExpiredException::class => ErrorCode::UNAUTHORIZED,
 
         // 403
+        AuthenticationException::class => ErrorCode::FORBIDDEN,
         AuthorizationException::class => ErrorCode::FORBIDDEN,
         UnauthorizedException::class => ErrorCode::FORBIDDEN,
 
@@ -86,12 +86,13 @@ final class Handler extends ExceptionHandler
                     ->response()
                     ->setStatusCode($exception->getCode());
             }
+
             $error = new Error(
                 $exception->getMessage(),
                 $exception instanceof StoreException ?
                     $exception->getCode() : ErrorCode::getCode(self::ERRORS[$class]),
                 $exception instanceof StoreException ?
-                    $exception->getKey() : ErrorCode::fromValue(self::ERRORS[$class])->key,
+                    $exception->getKey() : self::ERRORS[$class]->name,
                 $this->getExceptionData($exception),
             );
         } else {
@@ -131,7 +132,7 @@ final class Handler extends ExceptionHandler
 
             foreach ($value as $attribute => $attrValue) {
                 $attribute = Str::of($attribute)->afterLast('\\')->toString();
-                $key = ValidationError::coerce($attribute)->value ?? 'INTERNAL_SERVER_ERROR';
+                $key = ValidationError::getValue($attribute) ?? 'INTERNAL_SERVER_ERROR';
 
                 $message = array_key_exists($field, $errors) ?
                     array_key_exists($index, $errors[$field]) ?
@@ -139,7 +140,7 @@ final class Handler extends ExceptionHandler
                     : null;
 
                 #Workaround for Password::defaults() rule
-                if ($key === ValidationError::PASSWORD) {
+                if ($key === ValidationError::PASSWORD->value) {
                     $key = Str::contains($message, 'data leak') ?
                         ValidationError::PASSWORDCOMPROMISED : ValidationError::PASSWORDLENGTH;
                 }
@@ -178,41 +179,41 @@ final class Handler extends ExceptionHandler
     private function createValidationAttributeData(string $key, array $data): array
     {
         return match ($key) {
-            ValidationError::MIN => [
+            ValidationError::MIN->name => [
                 'min' => $data[0],
             ],
-            ValidationError::MAX => [
+            ValidationError::MAX->name => [
                 'max' => $data[0],
             ],
-            ValidationError::SIZE => [
+            ValidationError::SIZE->name => [
                 'size' => $data[0],
             ],
-            ValidationError::IN => [
+            ValidationError::IN->name => [
                 'available' => $data,
             ],
-            ValidationError::BETWEEN => [
+            ValidationError::BETWEEN->name => [
                 'min' => $data[0],
                 'max' => $data[1],
             ],
-            ValidationError::PASSWORDLENGTH => [
+            ValidationError::PASSWORDLENGTH->name => [
                 'min' => Config::get('validation.password_min_length'),
             ],
-            ValidationError::BEFOREOREQUAL,
-            ValidationError::AFTEROREQUAL => [
+            ValidationError::BEFOREOREQUAL->name,
+            ValidationError::AFTEROREQUAL->name => [
                 'when' => $data[0],
             ],
-            ValidationError::PROHIBITEDUNLESS => [
+            ValidationError::PROHIBITEDUNLESS->name => [
                 'field' => $data[0],
                 'value' => $data[1],
             ],
-            ValidationError::MIMETYPES => [
+            ValidationError::MIMETYPES->name => [
                 'types' => $data,
             ],
-            ValidationError::EXISTS => [
+            ValidationError::EXISTS->name => [
                 'table' => $data[0],
                 'field' => $data[1],
             ],
-            ValidationError::GTE => [
+            ValidationError::GTE->name => [
                 'field' => $data[0],
             ],
             default => []

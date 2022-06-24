@@ -32,7 +32,7 @@ class AvailabilityService implements AvailabilityServiceContract
         $options = $item->options;
         $options->each(fn ($option) => $this->calculateOptionAvailability($option));
 
-        $schemas = Schema::where('type', SchemaType::SELECT)
+        $schemas = Schema::where('type', SchemaType::SELECT->value)
             ->whereIn('id', $options->pluck('schema_id'))
             ->get();
         $schemas->each(fn ($schema) => $this->calculateSchemaAvailability($schema));
@@ -99,7 +99,7 @@ class AvailabilityService implements AvailabilityServiceContract
     {
         $flagPermutations = false;
         /** @var Collection<int,mixed> $requiredSelectSchemas */
-        $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
+        $requiredSelectSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT->value);
         if (!$requiredSelectSchemas->isEmpty() &&
             $requiredSelectSchemas->some(fn (Schema $schema) => $schema->options->count() > 0)
         ) {

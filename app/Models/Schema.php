@@ -10,7 +10,6 @@ use App\Models\Contracts\SortableContract;
 use App\Rules\OptionAvailable;
 use App\Traits\HasMetadata;
 use App\Traits\Sortable;
-use BenSampo\Enum\Exceptions\InvalidEnumKeyException;
 use Heseya\Searchable\Criteria\Like;
 use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Contracts\Support\Arrayable;
@@ -155,14 +154,9 @@ class Schema extends Model implements SortableContract
             ->orderBy('name', 'DESC');
     }
 
-    /**
-     * @throws InvalidEnumKeyException
-     */
-    public function setTypeAttribute(mixed $value): void
+    public function setTypeAttribute(SchemaType $type): void
     {
-        if (!is_integer($value)) {
-            $value = SchemaType::fromKey(Str::upper($value));
-        }
+        $value = SchemaType::fromKey(Str::upper($type->value));
 
         $this->attributes['type'] = $value;
     }

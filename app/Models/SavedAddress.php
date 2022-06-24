@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\SavedAddressType;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,6 +25,7 @@ class SavedAddress extends Model
     protected $casts = [
         'default' => 'bool',
         'name' => 'string',
+        'type' => SavedAddressType::class,
     ];
 
     public function address(): BelongsTo

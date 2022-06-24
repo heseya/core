@@ -2,18 +2,19 @@
 
 namespace App\Exceptions;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use Throwable;
 
 class TFAException extends StoreException
 {
     public function __construct(
-        string $message = '',
+        Exceptions $enum,
         int $code = 0,
         ?Throwable $previous = null,
         bool $simpleLogs = false,
         protected ?string $type = '',
     ) {
-        parent::__construct($message, $code, $previous);
+        parent::__construct($enum->value, $code, $previous);
         $this->simpleLogs = $simpleLogs;
     }
 

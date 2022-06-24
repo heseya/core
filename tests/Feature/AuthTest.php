@@ -114,7 +114,7 @@ class AuthTest extends TestCase
 
         $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
             ->assertJsonFragment([
-                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_NOT_SET_UP)->key,
+                'key' => Exceptions::CLIENT_TFA_NOT_SET_UP->name,
             ]);
     }
 
@@ -218,7 +218,7 @@ class AuthTest extends TestCase
         $response
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
             ->assertJsonFragment([
-                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_INVALID_TOKEN)->key,
+                'key' => Exceptions::CLIENT_TFA_INVALID_TOKEN->name,
             ]);
 
         $this->assertDatabaseCount('one_time_security_codes', 1);
@@ -277,7 +277,7 @@ class AuthTest extends TestCase
         $response
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
             ->assertJsonFragment([
-                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_INVALID_TOKEN)->key,
+                'key' => Exceptions::CLIENT_TFA_INVALID_TOKEN->name,
             ]);
     }
 
@@ -288,7 +288,7 @@ class AuthTest extends TestCase
     {
         $token = $this->tokenService->createToken(
             $this->$user,
-            new TokenType(TokenType::REFRESH),
+            TokenType::REFRESH,
         );
 
         $response = $this->actingAs($this->$user)->postJson('/auth/refresh', [
@@ -318,7 +318,7 @@ class AuthTest extends TestCase
 
         $token = $this->tokenService->createToken(
             $this->user,
-            new TokenType(TokenType::REFRESH),
+            TokenType::REFRESH,
         );
 
         $response = $this->actingAs($this->user)->json('POST', 'auth/refresh', [
@@ -332,7 +332,7 @@ class AuthTest extends TestCase
         ]);
 
         $responseFail->assertStatus(422)
-            ->assertJsonFragment(['key' => Exceptions::fromValue(Exceptions::CLIENT_USER_DOESNT_EXIST)->key]);
+            ->assertJsonFragment(['key' => Exceptions::CLIENT_USER_DOESNT_EXIST->name]);
     }
 
     public function testRefreshTokenUser(): void
@@ -341,7 +341,7 @@ class AuthTest extends TestCase
 
         $token = $this->tokenService->createToken(
             $this->user,
-            new TokenType(TokenType::REFRESH),
+            TokenType::REFRESH,
         );
 
         $response = $this->actingAs($this->user)->postJson('/auth/refresh', [
@@ -370,7 +370,7 @@ class AuthTest extends TestCase
 
         $token = $this->tokenService->createToken(
             $this->application,
-            new TokenType(TokenType::REFRESH),
+            TokenType::REFRESH,
         );
 
         $response = $this->actingAs($this->application)->postJson('/auth/refresh', [
@@ -410,7 +410,7 @@ class AuthTest extends TestCase
 
         $token = $this->tokenService->createToken(
             $this->$user,
-            new TokenType(TokenType::REFRESH),
+            TokenType::REFRESH,
         );
         $this->tokenService->invalidateToken($token);
 
@@ -426,7 +426,7 @@ class AuthTest extends TestCase
         $uuid = Str::uuid()->toString();
         $token = $this->tokenService->createToken(
             $this->user,
-            new TokenType(TokenType::ACCESS),
+            TokenType::ACCESS,
             $uuid,
         );
 
@@ -778,7 +778,7 @@ class AuthTest extends TestCase
 
         $token = $this->tokenService->createToken(
             $user,
-            new TokenType(TokenType::IDENTITY),
+            TokenType::IDENTITY,
         );
 
         $this->actingAs($user)->getJson("/auth/check/${token}")
@@ -796,7 +796,7 @@ class AuthTest extends TestCase
 
         $token = $this->tokenService->createToken(
             $otherUser,
-            new TokenType(TokenType::IDENTITY),
+            TokenType::IDENTITY,
         ) . 'invalid_hash';
 
         $this->actingAs($this->$user)->getJson("/auth/check/${token}")
@@ -840,7 +840,7 @@ class AuthTest extends TestCase
 
         $token = $this->tokenService->createToken(
             $otherUser,
-            new TokenType(TokenType::IDENTITY),
+            TokenType::IDENTITY,
         );
 
         $this->actingAs($this->$user)->getJson("/auth/check/${token}")
@@ -880,7 +880,7 @@ class AuthTest extends TestCase
 
         $token = $this->tokenService->createToken(
             $otherUser,
-            new TokenType(TokenType::IDENTITY),
+            TokenType::IDENTITY,
         );
 
         $this->actingAs($this->$user)->getJson("/auth/check/${token}")
@@ -918,7 +918,7 @@ class AuthTest extends TestCase
 
         $token = $this->tokenService->createToken(
             $user,
-            new TokenType(TokenType::IDENTITY),
+            TokenType::IDENTITY,
         );
 
         $this->actingAs($app)->getJson("/auth/check/${token}")
@@ -953,8 +953,8 @@ class AuthTest extends TestCase
     public function tfaMethodProvider(): array
     {
         return [
-            'as app 2fa' => [TFAType::APP, 'secret'],
             'as email 2fa' => [TFAType::EMAIL, null],
+            'as app 2fa' => [TFAType::APP, 'secret'],
         ];
     }
 
@@ -974,7 +974,7 @@ class AuthTest extends TestCase
         ])
             ->assertStatus(422)
             ->assertJsonFragment([
-                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_ALREADY_SET_UP)->key,
+                'key' => Exceptions::CLIENT_TFA_ALREADY_SET_UP->name,
             ]);
     }
 
@@ -1040,14 +1040,14 @@ class AuthTest extends TestCase
     public function testSetupAppTfa(): void
     {
         $response = $this->actingAs($this->user)->json('POST', '/auth/2fa/setup', [
-            'type' => TFAType::APP,
+            'type' => TFAType::APP->value,
         ]);
 
         $secret = $response->getData()->data->secret;
 
         $this->assertDatabaseHas('users', [
             'id' => $this->user->getKey(),
-            'tfa_type' => TFAType::APP,
+            'tfa_type' => TFAType::APP->value,
             'tfa_secret' => $secret,
             'is_tfa_active' => false,
         ]);
@@ -1171,7 +1171,7 @@ class AuthTest extends TestCase
         ])
             ->assertStatus(422)
             ->assertJsonFragment([
-                'key' => Exceptions::getKey(Exceptions::CLIENT_INVALID_PASSWORD),
+                'key' => Exceptions::CLIENT_INVALID_PASSWORD->name,
             ]);
     }
 
@@ -1182,7 +1182,7 @@ class AuthTest extends TestCase
         ])
             ->assertStatus(422)
             ->assertJsonFragment([
-                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_NOT_SET_UP)->key,
+                'key' => Exceptions::CLIENT_TFA_NOT_SET_UP->name,
             ]);
     }
 
@@ -1234,7 +1234,7 @@ class AuthTest extends TestCase
         ])
             ->assertStatus(422)
             ->assertJsonFragment([
-                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_NOT_SET_UP)->key,
+                'key' => Exceptions::CLIENT_TFA_NOT_SET_UP->name,
             ]);
     }
 
@@ -1283,7 +1283,7 @@ class AuthTest extends TestCase
         $this->actingAs($this->user)->json('POST', '/users/id:' . $otherUser->getKey() . '/2fa/remove')
             ->assertStatus(422)
             ->assertJsonFragment([
-                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_NOT_SET_UP)->key,
+                'key' => Exceptions::CLIENT_TFA_NOT_SET_UP->name,
             ]);
     }
 
@@ -1294,7 +1294,7 @@ class AuthTest extends TestCase
         $this->actingAs($this->user)->json('POST', '/users/id:' . $this->user->getKey() . '/2fa/remove')
             ->assertStatus(422)
             ->assertJsonFragment([
-                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_CANNOT_REMOVE)->key,
+                'key' => Exceptions::CLIENT_TFA_CANNOT_REMOVE->name,
             ]);
     }
 

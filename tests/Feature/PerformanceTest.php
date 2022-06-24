@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\DiscountTargetType;
 use App\Enums\MetadataType;
+use App\Enums\SchemaType;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Models\Banner;
@@ -34,15 +35,15 @@ class PerformanceTest extends TestCase
         ]);
 
         $schema1 = Schema::factory()->create([
-            'type' => 'select',
+            'type' => SchemaType::SELECT,
             'hidden' => false,
         ]);
         $schema2 = Schema::factory()->create([
-            'type' => 'select',
+            'type' => SchemaType::SELECT,
             'hidden' => false,
         ]);
         $schema3 = Schema::factory()->create([
-            'type' => 'select',
+            'type' => SchemaType::SELECT,
             'hidden' => false,
         ]);
 

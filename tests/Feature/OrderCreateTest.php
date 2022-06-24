@@ -446,7 +446,7 @@ class OrderCreateTest extends TestCase
                 && $payload['data']['id'] === $orderUnauthenticated->getKey()
                 && $payload['data_type'] === 'Order'
                 && $payload['event'] === 'OrderCreated'
-                && $payload['issuer_type'] === IssuerType::UNAUTHENTICATED;
+                && $payload['issuer_type'] === IssuerType::UNAUTHENTICATED->value;
         });
     }
 
@@ -460,7 +460,7 @@ class OrderCreateTest extends TestCase
         Event::fake([OrderCreated::class]);
 
         $schema = Schema::factory()->create([
-            'type' => 'string',
+            'type' => SchemaType::STRING,
             'price' => 10,
             'hidden' => false,
         ]);
@@ -529,7 +529,7 @@ class OrderCreateTest extends TestCase
         $this->$user->givePermissionTo('orders.add');
 
         $schema = Schema::factory()->create([
-            'type' => 'string',
+            'type' => SchemaType::STRING,
             'price' => 10,
             'hidden' => false,
         ]);
@@ -572,7 +572,7 @@ class OrderCreateTest extends TestCase
         $this->$user->givePermissionTo('orders.add');
 
         $schema = Schema::factory()->create([
-            'type' => 'string',
+            'type' => SchemaType::STRING,
             'price' => 10,
             'hidden' => false,
         ]);
@@ -640,7 +640,7 @@ class OrderCreateTest extends TestCase
         ]);
 
         $schema = Schema::factory()->create([
-            'type' => 'select',
+            'type' => SchemaType::SELECT,
             'price' => 10,
             'hidden' => false,
         ]);
@@ -736,7 +736,7 @@ class OrderCreateTest extends TestCase
         Event::fake([OrderCreated::class]);
 
         $schema = Schema::factory()->create([
-            'type' => 'string',
+            'type' => SchemaType::STRING,
             'price' => 10,
             'hidden' => true,
         ]);
@@ -803,7 +803,7 @@ class OrderCreateTest extends TestCase
 
         $schemaPrice = 10;
         $schema = Schema::factory()->create([
-            'type' => SchemaType::getKey(SchemaType::STRING),
+            'type' => SchemaType::STRING,
             'price' => $schemaPrice,
             'required' => false, // Important!
         ]);

@@ -4,10 +4,10 @@ namespace App\Http\Requests;
 
 use App\Enums\SchemaType;
 use App\Rules\Boolean;
-use App\Rules\EnumKey;
 use App\Traits\BooleanRules;
 use App\Traits\MetadataRules;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class SchemaStoreRequest extends FormRequest
 {
@@ -24,7 +24,7 @@ class SchemaStoreRequest extends FormRequest
         return array_merge(
             $this->metadataRules(),
             [
-                'type' => ['required', 'string', new EnumKey(SchemaType::class)],
+                'type' => ['required', new Enum(SchemaType::class)],
                 'name' => ['required', 'string', 'max:255'],
                 'description' => ['nullable', 'string', 'max:255'],
                 'price' => ['nullable', 'numeric'],

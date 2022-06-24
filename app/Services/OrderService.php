@@ -177,7 +177,7 @@ class OrderService implements OrderServiceContract
             foreach ($order->products as $orderProduct) {
                 // Remove items from warehouse
                 if (!$this->removeItemsFromWarehouse($orderProduct, $tempSchemaOrderProduct)) {
-                    throw new OrderException(Exceptions::ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE);
+                    throw new ClientException(Exceptions::ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE);
                 }
             }
             $order->push();
