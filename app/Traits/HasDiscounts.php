@@ -9,6 +9,8 @@ trait HasDiscounts
 {
     public function discounts(): MorphToMany
     {
-        return $this->morphToMany(Discount::class, 'model', 'model_has_discounts');
+        return $this
+            ->morphToMany(Discount::class, 'model', 'model_has_discounts')
+            ->with(['products', 'productSets', 'conditionGroups', 'shippingMethods']);
     }
 }
