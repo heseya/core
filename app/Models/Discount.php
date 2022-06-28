@@ -96,12 +96,12 @@ class Discount extends Model implements AuditableContract
 
     public function allProducts(): Collection
     {
-        $products = $this->products()->get();
+        $products = $this->products->pluck('id');
 
         foreach ($this->productSets()->get() as $productSet) {
             $products = $products->merge($productSet->allProducts());
         }
 
-        return $products->unique('id');
+        return $products->unique();
     }
 }
