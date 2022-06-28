@@ -6,6 +6,8 @@ use App\Criteria\LessOrEquals;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\MoreOrEquals;
+use App\Criteria\ProductAttributeSearch;
+use App\Criteria\ProductNotAttributeSearch;
 use App\Criteria\ProductSearch;
 use App\Criteria\WhereHasId;
 use App\Criteria\WhereHasPhoto;
@@ -126,6 +128,8 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'metadata_private' => MetadataPrivateSearch::class,
         'price_max' => LessOrEquals::class,
         'price_min' => MoreOrEquals::class,
+        'attribute' => ProductAttributeSearch::class,
+        'attribute_not' => ProductNotAttributeSearch::class,
         'has_cover' => WhereHasPhoto::class,
     ];
 
