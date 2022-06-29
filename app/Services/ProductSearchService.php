@@ -106,6 +106,7 @@ class ProductSearchService implements ProductSearchServiceContract
 
             'sets_slug' => 'keyword',
             'sets' => 'flattened',
+            'set' => 'flattened',
 
             'attributes' => [
                 'id' => 'keyword',
