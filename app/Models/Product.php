@@ -273,7 +273,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         });
 
         $salesBlockList = $salesWithBlockList->filter(function ($sale): bool {
-            if($sale->products->contains(function ($value): bool {
+            if ($sale->products->contains(function ($value): bool {
                 return $value->getKey() === $this->getKey();
             })) {
                 return false;

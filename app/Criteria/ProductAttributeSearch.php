@@ -38,11 +38,9 @@ class ProductAttributeSearch extends Criterion
 
                             if (Arr::has($value, ['min', 'max'])) {
                                 $query->whereBetween($key, [$value['min'], $value['max']]);
-                            }
-                            elseif (Arr::has($value, 'min')) {
+                            } elseif (Arr::has($value, 'min')) {
                                 $query->where($key, '>=', $value['min']);
-                            }
-                            elseif (Arr::has($value, 'max')) {
+                            } elseif (Arr::has($value, 'max')) {
                                 $query->where($key, '<=', $value['max']);
                             }
                         } else {
