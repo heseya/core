@@ -1,0 +1,367 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\ValidationError;
+use App\Models\AuthProvider;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Socialite\Facades\Socialite;
+use Tests\TestCase;
+
+class ProviderTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function socialMediaProvider(): array
+    {
+        return [
+            'google' => ['google'],
+            'facebook' => ['facebook'],
+            'apple' => ['apple'],
+            'github' => ['github'],
+            'gitlab' => ['gitlab'],
+            'bitbucket' => ['bitbucket'],
+            'linkedin' => ['linkedin'],
+        ];
+    }
+
+    public function testProvidersList(): void
+    {
+        AuthProvider::factory()->create([
+            'key' => 'facebook',
+            'active' => true,
+        ]);
+
+        $this->getJson('auth/providers')
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'key' => 'facebook',
+                        'active' => true,
+                    ],
+                    1 => [
+                        'key' => 'google',
+                        'active' => false,
+                    ],
+                    2 => [
+                        'key' => 'apple',
+                        'active' => false,
+                    ],
+                    3 => [
+                        'key' => 'github',
+                        'active' => false,
+                    ],
+                    4 => [
+                        'key' => 'gitlab',
+                        'active' => false,
+                    ],
+                    5 => [
+                        'key' => 'bitbucket',
+                        'active' => false,
+                    ],
+                    6 => [
+                        'key' => 'linkedin',
+                        'active' => false,
+                    ],
+                ],
+            ]);
+    }
+
+    public function testProvidersListActive(): void
+    {
+        AuthProvider::factory()->create([
+            'key' => 'facebook',
+            'active' => true,
+        ]);
+
+        $this->getJson('auth/providers?active=true')
+            ->assertJsonCount(1, 'data')
+            ->assertJson(['data' => [
+                0 => [
+                    'key' => 'facebook',
+                    'active' => true,
+                ],
+            ],
+            ]);
+    }
+
+    public function testProvidersListInactive(): void
+    {
+        AuthProvider::factory()->create([
+            'key' => 'facebook',
+            'active' => true,
+        ]);
+
+        $this->getJson('auth/providers?active=false')
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'key' => 'google',
+                        'active' => false,
+                    ],
+                    1 => [
+                        'key' => 'apple',
+                        'active' => false,
+                    ],
+                    2 => [
+                        'key' => 'github',
+                        'active' => false,
+                    ],
+                    3 => [
+                        'key' => 'gitlab',
+                        'active' => false,
+                    ],
+                    4 => [
+                        'key' => 'bitbucket',
+                        'active' => false,
+                    ],
+                    5 => [
+                        'key' => 'linkedin',
+                        'active' => false,
+                    ],
+                ],
+            ]);
+    }
+
+    public function testGetProvider(): void
+    {
+        $provider = AuthProvider::factory()->create([
+            'key' => 'facebook',
+        ]);
+
+        $this->getJson('auth/providers/facebook')
+            ->assertJson([
+                'id' => $provider->getKey(),
+                'key' => $provider->key,
+                'active' => $provider->active,
+                'client_id' => $provider->client_id,
+                'client_secret' => $provider->client_secret,
+            ]);
+    }
+
+    public function testUpdate(): void
+    {
+        AuthProvider::factory()->create([
+            'key' => 'facebook',
+            'active' => false,
+        ]);
+
+        $response = $this->json('patch', 'auth/providers/facebook', [
+            'active' => true,
+            'client_id' => 'test_id',
+            'client_secret' => 'test_secret',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonFragment([
+                'active' => true,
+                'client_id' => 'test_id',
+                'client_secret' => 'test_secret',
+            ]);
+
+        $this->assertDatabaseHas('auth_providers', [
+            'id' => $response->getData()->id,
+            'active' => true,
+            'client_id' => 'test_id',
+            'client_secret' => 'test_secret',
+        ]);
+    }
+
+    public function testUpdateActiveWithoutConfig(): void
+    {
+        AuthProvider::factory()->create([
+            'key' => 'facebook',
+            'active' => false,
+            'client_id' => null,
+            'client_secret' => null,
+        ]);
+
+        $this->json('patch', 'auth/providers/facebook', [
+            'active' => true,
+        ])
+            ->assertJsonFragment(['key' => ValidationError::AUTHPROVIDERACTIVE]);
+    }
+
+    /**
+     * @dataProvider socialMediaProvider
+     */
+    public function testRedirect($key): void
+    {
+        $provider = AuthProvider::factory()->create([
+            'key' => $key,
+            'active' => true,
+            'client_secret' => '***REMOVED***',
+            'client_id' => '***REMOVED***',
+        ]);
+
+        $response = $this->json('post', "auth/providers/{$provider->key}/redirect", [
+            'return_url' => 'http://localhost',
+        ]);
+
+        $response->assertOk();
+    }
+
+    /**
+     * @dataProvider socialMediaProvider
+     */
+    public function testRedirectInactive($key): void
+    {
+        $provider = AuthProvider::factory()->create([
+            'key' => $key,
+            'active' => false,
+        ]);
+
+        $response = $this->json('post', "auth/providers/{$provider->key}/redirect", [
+            'return_url' => 'http://localhost',
+        ]);
+
+        $response->assertJsonFragment([
+            'key' => Exceptions::getKey(Exceptions::CLIENT_PROVIDER_IS_NOT_ACTIVE),
+        ]);
+    }
+
+    /**
+     * @dataProvider socialMediaProvider
+     */
+    public function testRedirectNoConfig($key): void
+    {
+        $provider = AuthProvider::factory()->create([
+            'key' => $key,
+            'client_id' => null,
+            'client_secret' => null,
+            'active' => false,
+        ]);
+
+        $response = $this->json('post', "auth/providers/{$provider->key}/redirect", [
+            'return_url' => 'http://localhost',
+        ]);
+
+        $response->assertJsonFragment([
+            'key' => Exceptions::getKey(Exceptions::CLIENT_PROVIDER_HAS_NO_CONFIG),
+        ]);
+    }
+
+    /**
+     * @dataProvider socialMediaProvider
+     */
+    public function testLoginNewUser($key): void
+    {
+        $user = \Mockery::mock('Laravel\Socialite\Two\User');
+        $user
+            ->shouldReceive('getId')
+            ->andReturn(rand())
+            ->shouldReceive('getName')
+            ->andReturn('test user')
+            ->shouldReceive('getEmail')
+            ->andReturn('test.user@gmail.com')
+            ->shouldReceive('getAvatar')
+            ->andReturn('https://en.gravatar.com/userimage');
+
+        $provider = \Mockery::mock('Laravel\Socialite\Contracts\Provider');
+        $provider
+            ->shouldReceive('stateless')
+            ->andReturn($provider)
+            ->shouldReceive('user')
+            ->andReturn($user);
+
+        Socialite::shouldReceive('driver')->with($key)->andReturn($provider);
+
+        AuthProvider::factory()->create([
+            'key' => $key,
+            'active' => true,
+            'client_id' => 'test_id',
+            'client_secret' => 'test_secret',
+        ]);
+
+        $response = $this->json('get', "auth/providers/{$key}/login?code=test");
+
+        $response->assertJsonStructure(
+            [
+                'data' => [
+                    'token',
+                    'identity_token',
+                    'refresh_token',
+                    'user' => [
+                        'id',
+                        'email',
+                        'name',
+                        'avatar',
+                        'roles',
+                        'delivery_addresses',
+                        'invoice_addresses',
+                        'permissions',
+                    ],
+                ],
+            ]
+        );
+    }
+
+    /**
+     * @dataProvider socialMediaProvider
+     */
+    public function testLoginExistingUser($key): void
+    {
+        $user = \Mockery::mock('Laravel\Socialite\Two\User');
+        $user
+            ->shouldReceive('getId')
+            ->andReturn(123456789)
+            ->shouldReceive('getName')
+            ->andReturn('test user')
+            ->shouldReceive('getEmail')
+            ->andReturn('test.user@gmail.com')
+            ->shouldReceive('getAvatar')
+            ->andReturn('https://en.gravatar.com/userimage');
+
+        $provider = \Mockery::mock('Laravel\Socialite\Contracts\Provider');
+        $provider
+            ->shouldReceive('stateless')
+            ->andReturn($provider)
+            ->shouldReceive('user')
+            ->andReturn($user);
+
+        Socialite::shouldReceive('driver')->with($key)->andReturn($provider);
+
+        $authProvider = AuthProvider::factory()->create([
+            'key' => $key,
+            'active' => true,
+            'client_id' => 'test_id',
+            'client_secret' => 'test_secret',
+        ]);
+
+        $existingUser = User::factory()->create([
+            'name' => 'test user',
+            'email' => 'test.user@gmail.com',
+            'password' => null,
+        ]);
+
+        $existingUser->providers()->create([
+            'provider' => $authProvider->key,
+            'provider_user_id' => 123456789,
+            'user_id' => $existingUser->getKey(),
+        ]);
+
+        $response = $this->json('get', "auth/providers/{$key}/login?code=test");
+
+        $response->assertJsonStructure(
+            [
+                'data' => [
+                    'token',
+                    'identity_token',
+                    'refresh_token',
+                    'user' => [
+                        'id',
+                        'email',
+                        'name',
+                        'avatar',
+                        'roles',
+                        'delivery_addresses',
+                        'invoice_addresses',
+                        'permissions',
+                    ],
+                ],
+            ]
+        );
+    }
+}
