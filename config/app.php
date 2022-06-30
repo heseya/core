@@ -170,7 +170,7 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
-
+        \SocialiteProviders\Manager\ServiceProvider::class,
         /*
          * PackageTemplate Service Providers...
          */
@@ -187,7 +187,6 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\TimeServiceProvider::class,
-
     ],
 
     /*

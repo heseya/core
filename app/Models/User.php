@@ -144,4 +144,9 @@ class User extends Model implements
     {
         return $this->hasMany(OneTimeSecurityCode::class, 'user_id', 'id');
     }
+
+    public function providers(): HasMany
+    {
+        return $this->hasMany(UserProvider::class, 'user_id', 'id');
+    }
 }

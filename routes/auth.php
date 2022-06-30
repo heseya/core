@@ -2,6 +2,7 @@
 
 use App\Enums\SavedAddressType;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProviderController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function (): void {
@@ -45,6 +46,14 @@ Route::prefix('auth')->group(function (): void {
 
     Route::post('2fa/recovery/create', [AuthController::class, 'generateRecoveryCodes'])
         ->middleware('can:authenticated');
+
+    Route::prefix('providers')->group(function (): void {
+        Route::get(null, [ProviderController::class, 'getProvidersList']);
+        Route::get('{authProviderKey}/login', [ProviderController::class, 'login']);
+        Route::post('{authProviderKey}/redirect', [ProviderController::class, 'redirect']);
+        Route::get('{authProviderKey}', [ProviderController::class, 'getProvider']);
+        Route::patch('{authProviderKey}', [ProviderController::class, 'update']);
+    });
 });
 
 Route::post('login', [AuthController::class, 'login'])

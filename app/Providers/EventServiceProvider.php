@@ -47,6 +47,8 @@ use App\Observers\ItemProductObserver;
 use App\Observers\PageObserver;
 use App\Observers\PaymentObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use SocialiteProviders\Apple\AppleExtendSocialite;
+use SocialiteProviders\Manager\SocialiteWasCalled;
 use Spatie\WebhookServer\Events\FinalWebhookCallFailedEvent;
 
 class EventServiceProvider extends ServiceProvider
@@ -150,6 +152,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         UserUpdated::class => [
             WebHookEventListener::class,
+        ],
+        SocialiteWasCalled::class => [
+            AppleExtendSocialite::class.'@handle',
         ],
     ];
 

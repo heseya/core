@@ -64,22 +64,24 @@ class AuthService implements AuthServiceContract
 
         $this->verifyTFA($code);
 
-        $identityToken = $this->tokenService->createToken(
-            Auth::user(),
-            new TokenType(TokenType::IDENTITY),
-            $uuid,
-        );
-        $refreshToken = $this->tokenService->createToken(
-            Auth::user(),
-            new TokenType(TokenType::REFRESH),
-            $uuid,
-        );
+        return $this->createTokens($token, $uuid);
+    }
 
-        return [
-            'token' => $token,
-            'identity_token' => $identityToken,
-            'refresh_token' => $refreshToken,
-        ];
+    public function loginWithUser(Authenticatable $user, ?string $ip, ?string $userAgent): array
+    {
+        $uuid = Str::uuid()->toString();
+
+        Auth::claims([
+            'iss' => Config::get('app.url'),
+            'typ' => TokenType::ACCESS,
+            'jti' => $uuid,
+        ]);
+        // @phpstan-ignore-next-line
+        Auth::login($user);
+        // @phpstan-ignore-next-line
+        $token = Auth::fromUser($user);
+
+        return $this->createTokens($token, $uuid);
     }
 
     public function refresh(string $refreshToken, ?string $ip, ?string $userAgent): array
@@ -493,5 +495,25 @@ class AuthService implements AuthServiceContract
             'tfa_secret' => null,
             'is_tfa_active' => false,
         ]);
+    }
+
+    private function createTokens(string|bool $token, string $uuid): array
+    {
+        $identityToken = $this->tokenService->createToken(
+            Auth::user(),
+            new TokenType(TokenType::IDENTITY),
+            $uuid,
+        );
+        $refreshToken = $this->tokenService->createToken(
+            Auth::user(),
+            new TokenType(TokenType::REFRESH),
+            $uuid,
+        );
+
+        return [
+            'token' => $token,
+            'identity_token' => $identityToken,
+            'refresh_token' => $refreshToken,
+        ];
     }
 }
