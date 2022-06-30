@@ -110,4 +110,9 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
         }
         return $length;
     }
+
+    public function getShippingNumber(): Missing|string|null
+    {
+        return $this->shipping_number;
+    }
 }

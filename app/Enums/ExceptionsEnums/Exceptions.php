@@ -8,7 +8,8 @@ final class Exceptions extends Enum
 {
     public const CLIENT_INVALID_INSTALLATION_RESPONSE = 'App has invalid installation response';
     public const CLIENT_FAILED_TO_CONNECT_WITH_APP = 'Failed to connect with application';
-    public const CLIENT_FAILED_TO_UNINSTALL_APP = 'Failed to uninstall the application. Failed response from app';
+    public const CLIENT_FAILED_TO_UNINSTALL_APP =
+        'Failed to uninstall the application. Failed response from app. Check if uninstall token is correct.';
     public const CLIENT_ASSIGN_INVALID_PERMISSIONS =
         'Assigning invalid permissions, there is no difference between all possible permissions and assigned ones';
     public const CLIENT_ADD_APP_WITH_PERMISSIONS_USER_DONT_HAVE = 'Can\'t add an app with permissions you don\'t have';
@@ -30,8 +31,8 @@ final class Exceptions extends Enum
         'Discount type is not supported, discount value cannot be calculated.';
     public const CLIENT_CANNOT_APPLY_SELECTED_DISCOUNT_TYPE = 'Cannot apply selected discount type to order';
     public const CLIENT_NOT_ENOUGH_ITEMS = 'There is not enough items to order the product';
-    public const CLIENT_ITEM_NOT_FOUND = 'Item not found';
-    public const CLIENT_NON_NUMERIC_VALUE = 'Value must be numeric';
+    public const CLIENT_ITEM_NOT_FOUND = 'Item not found when creating an order';
+    public const CLIENT_ORDER_CODE_LENGTH_MUST_BE_NUMERIC = 'Order code length in config must be numeric';
 
     public const CLIENT_CREATE_ROLE_WITHOUT_PERMISSION = 'Cant create a role with permissions you don\'t have';
     public const CLIENT_UPDATE_ROLE_WITHOUT_PERMISSION = 'Cant update a role with permissions you don\'t have';
@@ -47,12 +48,12 @@ final class Exceptions extends Enum
     public const CLIENT_ONE_OWNER_REMAINS = 'There must always be at least one Owner left';
     public const CLIENT_DELETE_WHEN_RELATION_EXISTS = 'Element can\'t be deleted, because it has relations';
 
-    public const CLIENT_ORDER_EDIT_ERROR = 'Error while editing order';
+    public const CLIENT_ORDER_EDIT_ERROR = 'Error in order update transaction. Check order and addresses data';
     public const CLIENT_CHANGE_CANCELED_ORDER_STATUS = 'Cannot change the status of a cancelled order';
     public const CLIENT_MODEL_NOT_SORTABLE = 'Model is not sortable';
     public const CLIENT_ORDER_PAID = 'Order is already paid';
     public const CLIENT_UNKNOWN_PAYMENT_METHOD = 'Unknown payment method';
-    public const CLIENT_INVALID_PAYMENT = 'Payment\'s signature doesn\'t match correct signature';
+    public const CLIENT_INVALID_PAYMENT = 'Payment signature hash isn\'t correct hash';
     public const CLIENT_GENERATE_PAYMENT_URL = 'Cannot generate payment url';
     public const CLIENT_VERIFY_PAYMENT = 'Cannot verify payment';
 
@@ -63,7 +64,7 @@ final class Exceptions extends Enum
 
     public const CLIENT_DOESNT_HAVE_TFA_TYPE_SELECTED = 'Client does not have 2FA type selected';
     public const CLIENT_TFA_CANNOT_REMOVE = 'You cannot remove 2FA yourself in this way';
-    public const CLIENT_TFA_REQUIRED = 'Two-Factor Authentication is required';
+    public const CLIENT_TFA_REQUIRED = 'Two-Factor Authentication code is required in request';
     public const CLIENT_ONLY_USER_CAN_SET_TFA = 'Only users can set up Two-Factor Authentication';
     public const CLIENT_INVALID_TFA_TYPE = 'Invalid Two-Factor Authentication type';
     public const CLIENT_TFA_INVALID_TOKEN = 'Invalid Two-Factor Authentication token';

@@ -15,6 +15,7 @@ class WebHookEventLogEntryResource extends Resource
             'status_code' => $this->resource->status_code,
             'web_hook' => WebHookResource::make($this->resource->webHook),
             'payload' => $this->resource->payload,
+            'event' => $this->resource->payload['event'] ?? null,
             'response' => $this->resource->response,
         ];
     }

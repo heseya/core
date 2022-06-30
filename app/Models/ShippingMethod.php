@@ -31,7 +31,7 @@ class ShippingMethod extends Model implements AuditableContract
         'name',
         'public',
         'order',
-        'black_list',
+        'block_list',
         'shipping_time_min',
         'shipping_time_max',
     ];
@@ -43,7 +43,7 @@ class ShippingMethod extends Model implements AuditableContract
      */
     protected $casts = [
         'public' => 'boolean',
-        'black_list' => 'boolean',
+        'block_list' => 'boolean',
     ];
 
     /**

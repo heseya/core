@@ -146,8 +146,27 @@ class WebHookLogTest extends TestCase
                 'successful' => false,
             ])
             ->assertOk()
-            ->assertJsonCount(1, 'data')
+            ->assertJsonCount(2, 'data')
             ->assertJsonFragment(['id' => $this->logTwo->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexPayload($user): void
+    {
+        $this->$user->givePermissionTo('webhooks.show_details');
+
+        $this->prepareData($user);
+
+        $log = WebHookEventLogEntry::factory()->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/webhooks/logs')
+            ->assertOk()
+            ->assertJsonFragment(['event' => $log->payload['event']])
+            ->assertJsonFragment(['event' => null]);
     }
 
     private function prepareData($user): void
@@ -171,6 +190,12 @@ class WebHookLogTest extends TestCase
         ]);
 
         $this->logTwo = $this->webHookTwo->logs()->create([
+            'triggered_at' => Carbon::now(),
+            'status_code' => 400,
+            'url' => 'localhost',
+        ]);
+
+        $this->webHookTwo->logs()->create([
             'triggered_at' => Carbon::now(),
             'status_code' => 400,
             'url' => 'localhost',

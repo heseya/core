@@ -24,6 +24,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**
+ * @property mixed $pivot
+ *
  * @mixin IdeHelperProductSet
  */
 class ProductSet extends Model
@@ -131,7 +133,10 @@ class ProductSet extends Model
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'product_set_product')->withPivot('order');
+        return $this
+            ->belongsToMany(Product::class, 'product_set_product')
+            ->withPivot('order')
+            ->orderByPivot('order');
     }
 
     public function media(): HasOne
@@ -141,12 +146,11 @@ class ProductSet extends Model
 
     public function allProductsSales(): Collection
     {
-        $sales = $this
-            ->discounts()
-            ->with(['products', 'productSets', 'conditionGroups', 'shippingMethods'])
-            ->where('code', '=', null)
-            ->where('target_type', '=', DiscountTargetType::PRODUCTS)
-            ->get();
+        $sales = $this->discounts
+            ->filter(function ($discount): bool {
+                return $discount->code === null
+                    && $discount->target_type->is(DiscountTargetType::PRODUCTS);
+            });
 
         if ($this->parent) {
             $sales = $sales->merge($this->parent->allProductsSales());
@@ -157,13 +161,13 @@ class ProductSet extends Model
 
     public function allProducts(): Collection
     {
-        $products = $this->products()->get();
+        $products = $this->products()->pluck('id');
 
         foreach ($this->children()->get() as $child) {
             $products = $products->merge($child->allProducts());
         }
 
-        return $products->unique('id');
+        return $products->unique();
     }
 
     protected static function booted(): void

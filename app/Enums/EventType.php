@@ -36,6 +36,7 @@ final class EventType extends Enum implements LocalizedEnum
     public const ADD_ORDER_DOCUMENT = 'AddOrderDocument';
     public const REMOVE_ORDER_DOCUMENT = 'RemoveOrderDocument';
     public const ORDER_UPDATED_PAID = 'OrderUpdatedPaid';
+    public const ORDER_UPDATED_SHIPPING_NUMBER = 'OrderUpdatedShippingNumber';
 
     public static function getEventList(): array
     {

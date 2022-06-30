@@ -334,11 +334,11 @@ class AuthService implements AuthServiceContract
 
             Auth::user()->notify(new TFASecurityCode($code));
         }
-        throw new TFAException(
+        throw new ClientException(
             Exceptions::CLIENT_TFA_REQUIRED,
             403,
             simpleLogs: true,
-            type: Auth::user()->tfa_type
+            errorArray: ['type' => Auth::user()->tfa_type]
         );
     }
 

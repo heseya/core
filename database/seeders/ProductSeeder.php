@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Models\SeoMetadata;
+use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\ProductServiceContract;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Seeder;
@@ -76,6 +77,8 @@ class ProductSeeder extends Seeder
                 $product->save();
                 $productService->updateMinMaxPrices($product);
             });
+
+            $this->setAvailability();
         });
     }
 
@@ -88,7 +91,6 @@ class ProductSeeder extends Seeder
     private function schemas(Product $product): void
     {
         $schema = Schema::factory()->make();
-
         $product->schemas()->save($schema);
 
         $item = Item::factory()->create();
@@ -119,5 +121,14 @@ class ProductSeeder extends Seeder
     private function categories(Product $product, Collection $categories): void
     {
         $product->sets()->syncWithoutDetaching($categories->random());
+    }
+
+    private function setAvailability(): void
+    {
+        /** @var AvailabilityServiceContract $availabilityService */
+        $availabilityService = App::make(AvailabilityServiceContract::class);
+        $products = Product::all();
+
+        $products->each(fn (Product $product) => $availabilityService->calculateProductAvailability($product));
     }
 }

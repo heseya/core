@@ -16,7 +16,7 @@ class ShippingMethodResource extends Resource
             'name' => $this->resource->name,
             'price' => $this->resource->price,
             'public' => $this->resource->public,
-            'black_list' => $this->resource->black_list,
+            'block_list' => $this->resource->block_list,
             'payment_methods' => PaymentMethodResource::collection($this->resource->paymentMethods),
             'countries' => CountryResource::collection($this->resource->countries),
             'price_ranges' => PriceRangeResource::collection($this->resource->priceRanges->sortBy('start')),

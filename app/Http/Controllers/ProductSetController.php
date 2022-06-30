@@ -35,10 +35,8 @@ class ProductSetController extends Controller
     {
         $sets = $this->productSetService->searchAll(
             $request->validated(),
-            $request->has('tree') && $request->input('tree', true) !== false ||
             $request->has('root') && $request->input('root', true) !== false,
         );
-
         if ($request->has('tree') && $request->input('tree', true) !== false) {
             return ProductSetChildrenResource::collection($sets);
         }
@@ -119,6 +117,7 @@ class ProductSetController extends Controller
     {
         $dto = ProductsReorderDto::instantiateFromRequest($request);
         $this->productSetService->reorderProducts($productSet, $dto);
+
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

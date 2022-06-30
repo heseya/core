@@ -24,12 +24,12 @@ class SchemaCrudService implements SchemaCrudServiceContract
     {
         $schema = Schema::create($dto->toArray());
 
-        if (!$dto->getOptions() instanceof Missing) {
+        if (!$dto->getOptions() instanceof Missing && $dto->getOptions() !== null) {
             $this->optionService->sync($schema, $dto->getOptions());
             $schema->refresh();
         }
 
-        if (!$dto->getUsedSchemas() instanceof Missing) {
+        if (!$dto->getUsedSchemas() instanceof Missing && $dto->getUsedSchemas() !== null) {
             foreach ($dto->getUsedSchemas() as $input) {
                 $used_schema = Schema::findOrFail($input);
 

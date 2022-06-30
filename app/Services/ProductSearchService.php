@@ -22,7 +22,19 @@ class ProductSearchService implements ProductSearchServiceContract
 
     public function mapSearchableArray(Product $product): array
     {
-        return [
+        // Workaround for nested sort by attributes
+        // TODO: find solution to sort by text values(single/multi option attributes)
+        $attributeSlug = $product->attributes
+            ->mapWithKeys(fn (Attribute $attribute): array => [
+                "attribute.{$attribute->slug}" => $this->getAttributeValue($attribute),
+            ])->toArray();
+
+        $setsOrder = $product->sets
+            ->mapWithKeys(fn (ProductSet $set): array => [
+                "set.{$set->slug}" => $set->pivot->order,
+            ])->toArray();
+
+        return array_merge([
             'id' => $product->getKey(),
             'name' => $product->name,
             'name_text' => $product->name,
@@ -62,7 +74,7 @@ class ProductSearchService implements ProductSearchServiceContract
             'metadata_private' => $product->metadataPrivate
                 ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
                 ->toArray(),
-        ];
+        ], $attributeSlug, $setsOrder);
     }
 
     public function mappableAs(): array
@@ -94,6 +106,7 @@ class ProductSearchService implements ProductSearchServiceContract
 
             'sets_slug' => 'keyword',
             'sets' => 'flattened',
+            'set' => 'flattened',
 
             'attributes' => [
                 'id' => 'keyword',
@@ -113,6 +126,15 @@ class ProductSearchService implements ProductSearchServiceContract
             'attributes_slug' => 'keyword',
             'metadata' => 'flattened',
             'metadata_private' => 'flattened',
+        ];
+    }
+
+    public function searchableFields(): array
+    {
+        return [
+            'name^10',
+            'attributes.*^5',
+            '*',
         ];
     }
 

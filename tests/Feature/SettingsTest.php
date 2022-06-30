@@ -15,11 +15,45 @@ class SettingsTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndex($user): void
+    public function testIndexPublic($user): void
     {
         $this->$user->givePermissionTo('settings.show');
 
-        $this->actingAs($this->$user)->getJson('/settings')->assertOk();
+        Setting::create([
+            'name' => 'private_setting',
+            'value' => 'Private value',
+            'public' => false,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/settings')
+            ->assertOk()
+            ->assertJsonMissing([
+                'name' => 'private_setting',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexPrivate($user): void
+    {
+        $this->$user->givePermissionTo(['settings.show', 'settings.show_hidden']);
+
+        Setting::create([
+            'name' => 'private_setting',
+            'value' => 'Private value',
+            'public' => false,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/settings')
+            ->assertOk()
+            ->assertJsonFragment([
+                'name' => 'private_setting',
+            ]);
     }
 
     public function testViewUnauthorized(): void
@@ -35,6 +69,38 @@ class SettingsTest extends TestCase
         $this->$user->givePermissionTo('settings.show_details');
 
         $this->actingAs($this->$user)->getJson('/settings/store_name')->assertOk();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewPrivateUnauthorized($user): void
+    {
+        $this->$user->givePermissionTo('settings.show_details');
+
+        Setting::create([
+            'name' => 'private_setting',
+            'value' => 'Private value',
+            'public' => false,
+        ]);
+
+        $this->actingAs($this->$user)->getJson('/settings/private_setting')->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewPrivateAuthorized($user): void
+    {
+        $this->$user->givePermissionTo(['settings.show_details', 'settings.show_hidden']);
+
+        Setting::create([
+            'name' => 'private_setting',
+            'value' => 'Private value',
+            'public' => false,
+        ]);
+
+        $this->actingAs($this->$user)->getJson('/settings/private_setting')->assertOk();
     }
 
     /**

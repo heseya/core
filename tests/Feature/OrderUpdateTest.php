@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Events\OrderUpdated;
+use App\Events\OrderUpdatedShippingNumber;
 use App\Listeners\WebHookEventListener;
 use App\Models\Address;
 use App\Models\Order;
@@ -779,13 +780,13 @@ class OrderUpdateTest extends TestCase
     {
         $this->$user->givePermissionTo('orders.edit');
 
-        Event::fake([OrderUpdated::class]);
+        Event::fake([OrderUpdated::class, OrderUpdatedShippingNumber::class]);
 
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
-            'shipping_number' => '1234567890',
-        ]);
-
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/orders/id:{$this->order->getKey()}", [
+                'shipping_number' => '1234567890',
+            ])
             ->assertOk()
             ->assertJsonFragment([
                 'shipping_number' => '1234567890',
@@ -796,7 +797,9 @@ class OrderUpdateTest extends TestCase
             'shipping_number' => '1234567890',
         ]);
 
-        Event::assertDispatched(OrderUpdated::class);
+        // only one event triggered
+        Event::assertDispatched(OrderUpdatedShippingNumber::class);
+        Event::assertNotDispatched(OrderUpdated::class);
     }
 
     /**
@@ -806,27 +809,32 @@ class OrderUpdateTest extends TestCase
     {
         $this->$user->givePermissionTo('orders.edit');
 
-        Event::fake([OrderUpdated::class]);
+        Event::fake([OrderUpdated::class, OrderUpdatedShippingNumber::class]);
 
         $this->order->update([
             'shipping_number' => '1234567890',
         ]);
 
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
-            'shipping_number' => null,
-        ]);
-
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/orders/id:{$this->order->getKey()}", [
+                'shipping_number' => null,
+                'comment' => 'test',
+            ])
             ->assertOk()
             ->assertJsonFragment([
                 'shipping_number' => null,
+                'comment' => 'test',
             ]);
 
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
             'shipping_number' => null,
+            'comment' => 'test',
         ]);
 
+        // two events
+        Event::assertDispatched(OrderUpdatedShippingNumber::class);
         Event::assertDispatched(OrderUpdated::class);
     }
 
