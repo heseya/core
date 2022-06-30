@@ -38,11 +38,9 @@ class ProductNotAttributeSearch extends Criterion
 
                             if (Arr::has($value, ['min', 'max'])) {
                                 $query->whereNotBetween($key, [$value['min'], $value['max']]);
-                            }
-                            elseif (Arr::has($value, 'min')) {
+                            } elseif (Arr::has($value, 'min')) {
                                 $query->whereNot($key, '>=', $value['min']);
-                            }
-                            elseif (Arr::has($value, 'max')) {
+                            } elseif (Arr::has($value, 'max')) {
                                 $query->whereNot($key, '<=', $value['max']);
                             }
                         } else {

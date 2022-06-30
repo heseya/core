@@ -638,36 +638,6 @@ class ProductSearchDatabaseTest extends TestCase
             ->assertJsonFragment(['id' => $productPhoto->getKey()]);
     }
 
-    private function getProductsByParentSet(
-        Authenticatable $user,
-        bool $isChildSetPublic,
-        ?Product &$productRef = null,
-    ): TestResponse {
-        $parentSet = ProductSet::factory()->create([
-            'public' => true,
-        ]);
-
-        $childSet = ProductSet::factory()->create([
-            'parent_id' => $parentSet->getKey(),
-            'public' => $isChildSetPublic,
-        ]);
-
-        $productRef = Product::factory()->create([
-            'public' => true,
-        ]);
-
-        // Product not in set
-        Product::factory()->create([
-            'public' => true,
-        ]);
-
-        $childSet->products()->attach($productRef);
-
-        return $this
-            ->actingAs($user)
-            ->getJson("/products?sets[]={$parentSet->slug}");
-    }
-
     /**
      * @dataProvider authProvider
      */
@@ -1296,5 +1266,35 @@ class ProductSearchDatabaseTest extends TestCase
                 'id' => $option2->getKey(),
                 'value_date' => $option2->value_date,
             ]);
+    }
+
+    private function getProductsByParentSet(
+        Authenticatable $user,
+        bool $isChildSetPublic,
+        ?Product &$productRef = null,
+    ): TestResponse {
+        $parentSet = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $childSet = ProductSet::factory()->create([
+            'parent_id' => $parentSet->getKey(),
+            'public' => $isChildSetPublic,
+        ]);
+
+        $productRef = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        // Product not in set
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $childSet->products()->attach($productRef);
+
+        return $this
+            ->actingAs($user)
+            ->getJson("/products?sets[]={$parentSet->slug}");
     }
 }

@@ -52,7 +52,7 @@ class ProductShippingCacheTest extends TestCase
 
         $date = Carbon::now()->addDays(7)->toDateTimeString();
         $item = Item::factory()->create([
-            'unlimited_stock_shipping_date' =>  $date,
+            'unlimited_stock_shipping_date' => $date,
         ]);
 
         $this
@@ -126,7 +126,8 @@ class ProductShippingCacheTest extends TestCase
      * E.g. Assigned item got shipping times edited
      */
 
-    private function productDataWithItem(Item $item) {
+    private function productDataWithItem(Item $item)
+    {
         return [
             'name' => 'Test',
             'slug' => 'test',

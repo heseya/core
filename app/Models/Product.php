@@ -75,6 +75,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'price_max_initial',
         'shipping_time',
         'shipping_date',
+        'has_schemas',
     ];
 
     protected array $auditInclude = [
@@ -96,6 +97,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'available' => 'bool',
         'quantity_step' => 'float',
         'vat_rate' => 'float',
+        'has_schemas' => 'bool',
     ];
 
     protected array $sortable = [
@@ -271,7 +273,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         });
 
         $salesBlockList = $salesWithBlockList->filter(function ($sale): bool {
-            if($sale->products->contains(function ($value): bool {
+            if ($sale->products->contains(function ($value): bool {
                 return $value->getKey() === $this->getKey();
             })) {
                 return false;

@@ -387,8 +387,6 @@ class SchemaTest extends TestCase
             ]);
     }
 
-
-
     /**
      * @dataProvider authProvider
      */
