@@ -42,15 +42,10 @@ class MediaService implements MediaServiceContract
             Gate::authorize('products.edit');
         }
 
-        $response = Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
+        Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
             ->delete($media->url);
 
-        if ($response->failed()) {
-            throw new ServerException(
-                message: Exceptions::SERVER_CDN_ERROR,
-                errorArray: $response->json() ?? [],
-            );
-        }
+        // no need to handle failed response while removing media
 
         $media->forceDelete();
     }
