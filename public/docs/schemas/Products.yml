@@ -74,6 +74,10 @@ Product:
       $ref: './../schemas/Metadata.yml#/Metadata'
     metadata_private:
       $ref: './../schemas/Metadata.yml#/Metadata'
+    has_schemas:
+      description: 'Does product has any attached schema'
+      type: boolean
+      example: true
 
 ProductView:
   type: object
