@@ -79,6 +79,7 @@ class MediaUpdateTest extends TestCase
             ->actingAs($this->$user)
             ->json('PATCH', "/media/id:{$media->getKey()}", [
                 'alt' => 'Test alt description',
+                'slug' => 'Test slug',
             ])
             ->assertJsonFragment(['key' => Exceptions::getKey(Exceptions::SERVER_CDN_ERROR)]);
     }
