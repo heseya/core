@@ -284,7 +284,7 @@ class PerformanceTest extends TestCase
         $set->products()->sync($products);
 
         $sale = Discount::factory()->create([
-            'name' => "promocja -10",
+            'name' => 'promocja -10',
             'type' => DiscountType::AMOUNT,
             'value' => 10,
             'priority' => 0,
@@ -296,7 +296,7 @@ class PerformanceTest extends TestCase
         $sale->productSets()->attach($set->getKey());
 
         $this->actingAs($this->user)->json('POST', '/sales', [
-            'name' => "promocja -10% priority 0",
+            'name' => 'promocja -10% priority 0',
             'type' => DiscountType::PERCENTAGE,
             'value' => 10,
             'priority' => 0,

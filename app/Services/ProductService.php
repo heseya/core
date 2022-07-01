@@ -93,19 +93,6 @@ class ProductService implements ProductServiceContract
         return $product->refresh();
     }
 
-    public function getMinMaxPrices(Product $product): array
-    {
-        [$schemaMin, $schemaMax] = $this->getSchemasPrices(
-            clone $product->schemas,
-            clone $product->schemas,
-        );
-
-        return [
-            $product->price + $schemaMin,
-            $product->price + $schemaMax,
-        ];
-    }
-
     public function update(Product $product, ProductUpdateDto $dto): Product
     {
         DB::beginTransaction();
@@ -139,6 +126,19 @@ class ProductService implements ProductServiceContract
         DB::commit();
     }
 
+    public function getMinMaxPrices(Product $product): array
+    {
+        [$schemaMin, $schemaMax] = $this->getSchemasPrices(
+            clone $product->schemas,
+            clone $product->schemas,
+        );
+
+        return [
+            $product->price + $schemaMin,
+            $product->price + $schemaMax,
+        ];
+    }
+
     public function updateMinMaxPrices(Product $product): void
     {
         $productMinMaxPrices = $this->getMinMaxPrices($product);
@@ -151,13 +151,11 @@ class ProductService implements ProductServiceContract
 
     private function assignItems(Product $product, ?array $items): void
     {
-        $items = Collection::make($items)->mapWithKeys(function (array $item): array {
-            return [
-                $item['id'] => [
-                    'required_quantity' => $item['required_quantity'],
-                ],
-            ];
-        });
+        $items = Collection::make($items)->mapWithKeys(fn (array $item): array => [
+            $item['id'] => [
+                'required_quantity' => $item['required_quantity'],
+            ],
+        ]);
 
         $product->items()->sync($items);
     }
