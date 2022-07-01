@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\MediaType;
 use App\Models\Media;
 use Illuminate\Http\Client\Request;
@@ -63,6 +64,26 @@ class MediaUpdateTest extends TestCase
         ]);
 
         Http::assertNothingSent();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSeededMedia($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        $media = Media::factory()->create();
+
+        $res = $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/media/id:{$media->getKey()}", [
+                'alt' => 'Test alt description',
+            ]);
+
+        dd($res->getData());
+
+//            ->assertJsonFragment(['key' => Exceptions::getKey(Exceptions::SERVER_CDN_ERROR)]);
     }
 
     /**
