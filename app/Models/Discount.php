@@ -94,12 +94,12 @@ class Discount extends Model implements AuditableContract
         return $this->belongsToMany(ConditionGroup::class, 'discount_condition_groups');
     }
 
-    public function allProducts(): Collection
+    public function allProductsIds(): Collection
     {
         $products = $this->products->pluck('id');
 
         foreach ($this->productSets()->get() as $productSet) {
-            $products = $products->merge($productSet->allProducts());
+            $products = $products->merge($productSet->allProductsIds());
         }
 
         return $products->unique();

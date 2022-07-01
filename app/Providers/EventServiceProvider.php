@@ -32,6 +32,7 @@ use App\Events\UserCreated;
 use App\Events\UserDeleted;
 use App\Events\UserUpdated;
 use App\Listeners\ItemUpdatedQuantityListener;
+use App\Listeners\MakeSetProductsSearchable;
 use App\Listeners\OrderCreatedListener;
 use App\Listeners\OrderUpdatedStatusListener;
 use App\Listeners\WebHookEventListener;
@@ -137,11 +138,13 @@ class EventServiceProvider extends ServiceProvider
         ],
         ProductSetCreated::class => [
             WebHookEventListener::class,
-        ],
-        ProductSetDeleted::class => [
-            WebHookEventListener::class,
+            MakeSetProductsSearchable::class,
         ],
         ProductSetUpdated::class => [
+            WebHookEventListener::class,
+            MakeSetProductsSearchable::class,
+        ],
+        ProductSetDeleted::class => [
             WebHookEventListener::class,
         ],
         UserCreated::class => [

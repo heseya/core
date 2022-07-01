@@ -80,6 +80,7 @@ class ProductSetService implements ProductSetServiceContract
             'slug' => 'unique:product_sets,slug',
         ])->validate();
 
+        /** @var ProductSet $set */
         $set = ProductSet::create($dto->toArray() + [
             'order' => $order,
             'slug' => $slug,
@@ -103,9 +104,7 @@ class ProductSetService implements ProductSetServiceContract
             $this->metadataService->sync($set, $dto->getMetadata());
         }
 
-        // @phpstan-ignore-next-line
-        $set->products()->searchable();
-
+        // searchable is handled by the event listener
         ProductSetCreated::dispatch($set);
 
         return $set;
@@ -140,9 +139,6 @@ class ProductSetService implements ProductSetServiceContract
                 ]);
             },
         );
-
-        // @phpstan-ignore-next-line
-        ProductSet::where('id', $parentId)->first()?->products()->searchable();
     }
 
     public function update(ProductSet $set, ProductSetUpdateDto $dto): ProductSet
@@ -202,35 +198,34 @@ class ProductSetService implements ProductSetServiceContract
             $this->seoMetadataService->update($dto->getSeo(), $set->seo);
         }
 
-        // @phpstan-ignore-next-line
-        $set->products()->searchable();
-
+        // searchable is handled by the event listener
         ProductSetUpdated::dispatch($set);
 
         return $set;
     }
 
-    public function reorder(ProductSet $parent, array $sets): void
+    public function reorder(array $sets, ProductSet|null $parent = null): void
     {
-        foreach ($sets as $id) {
-            ProductSet::where('parent_id', $parent->getKey())
-                ->findOrFail($id);
-        }
-
         foreach ($sets as $key => $id) {
-            ProductSet::where('id', $id)->update(['order' => $key]);
-
-            // @phpstan-ignore-next-line
-            ProductSet::where('id', $id)->first()?->products()->searchable();
+            ProductSet::query()
+                ->where('parent_id', $parent?->getKey()) // update only children of the parent
+                ->where('id', $id)
+                ->update(['order' => $key]);
         }
     }
 
-    public function attach(ProductSet $set, array $products): Collection
+    public function attach(ProductSet $set, array $productsIds): Collection
     {
-        $set->products()->sync($products);
+        // old products for reindexing
+        $oldProductsIds = $set->products()->pluck('id');
+
+        $set->products()->sync($productsIds);
 
         // @phpstan-ignore-next-line
-        $set->products()->searchable();
+        Product::query()->whereIn(
+            'id',
+            $oldProductsIds->merge($productsIds)->unique(),
+        )->searchable();
 
         return $set->products;
     }
@@ -241,7 +236,7 @@ class ProductSetService implements ProductSetServiceContract
             $set->children->each(fn ($subset) => $this->delete($subset));
         }
 
-        $products = $set->products()->pluck('id');
+        $productsIds = $set->allProductsIds();
 
         if ($set->delete()) {
             ProductSetDeleted::dispatch($set);
@@ -251,7 +246,7 @@ class ProductSetService implements ProductSetServiceContract
         }
 
         // @phpstan-ignore-next-line
-        Product::whereIn('id', $products)->searchable();
+        Product::query()->whereIn('id', $productsIds)->searchable();
     }
 
     public function products(ProductSet $set): LengthAwarePaginator
@@ -271,7 +266,7 @@ class ProductSetService implements ProductSetServiceContract
             fn ($set) => $this->flattenSetsTree($set->$relation, $relation),
         );
 
-        return $subsets->flatten()->concat($sets);
+        return $subsets->flatten()->concat($sets->toArray());
     }
 
     /**
@@ -287,7 +282,7 @@ class ProductSetService implements ProductSetServiceContract
             }
         }
 
-        return $subsets->flatten()->concat($sets);
+        return $subsets->flatten()->concat($sets->toArray());
     }
 
     public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void
@@ -320,6 +315,12 @@ class ProductSetService implements ProductSetServiceContract
         $highestOrder = $set->products->max('pivot.order');
 
         $this->assignOrderToNulls($highestOrder, $set->products->whereNull('pivot.order'));
+    }
+
+    public function indexAllProducts(ProductSet $set): void
+    {
+        // @phpstan-ignore-next-line
+        Product::query()->whereIn('id', $set->allProductsIds())->searchable();
     }
 
     private function setHigherOrder(Product $product, int $order): void

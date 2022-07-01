@@ -603,7 +603,7 @@ class DiscountService implements DiscountServiceContract
 
     private function allDiscountProducts(Discount $discount): Collection
     {
-        $products = $discount->allProducts();
+        $products = $discount->allProductsIds();
 
         if (!$discount->target_is_allow_list) {
             $products = Product::whereNotIn('id', $products)->pluck('id');

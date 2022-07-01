@@ -507,7 +507,7 @@ class ProductSetOtherTest extends TestCase
         $set = $this->prepareOrderData();
 
         /** @var Product $product */
-        $product = $set->products->where('name', 'five')->first();
+        $product = $set->products->firstWhere('name', 'five');
 
         $this->actingAs($this->$user)->json(
             'POST',
@@ -551,7 +551,7 @@ class ProductSetOtherTest extends TestCase
         $set = $this->prepareOrderData();
 
         /** @var Product $product */
-        $product = $set->products->where('name', 'one')->first();
+        $product = $set->products->firstWhere('name', 'one');
 
         $this->actingAs($this->$user)->json(
             'POST',
@@ -595,7 +595,7 @@ class ProductSetOtherTest extends TestCase
         $set = $this->prepareOrderData();
 
         /** @var Product $product */
-        $product = $set->products->where('name', 'three')->first();
+        $product = $set->products->firstWhere('name', 'three');
 
         $this->actingAs($this->$user)->json(
             'POST',
