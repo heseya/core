@@ -75,15 +75,12 @@ class MediaUpdateTest extends TestCase
 
         $media = Media::factory()->create();
 
-        $res = $this
+        $this
             ->actingAs($this->$user)
             ->json('PATCH', "/media/id:{$media->getKey()}", [
                 'alt' => 'Test alt description',
-            ]);
-
-        dd($res->getData());
-
-//            ->assertJsonFragment(['key' => Exceptions::getKey(Exceptions::SERVER_CDN_ERROR)]);
+            ])
+            ->assertJsonFragment(['key' => Exceptions::getKey(Exceptions::SERVER_CDN_ERROR)]);
     }
 
     /**
