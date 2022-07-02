@@ -4,16 +4,13 @@ namespace Tests\Feature;
 
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\ValidationError;
-use App\Models\AuthProvider;
+use App\Models\AuthProvider as AuthProviderModel;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Socialite\Facades\Socialite;
 use Tests\TestCase;
 
 class ProviderTest extends TestCase
 {
-    use RefreshDatabase;
-
     public function socialMediaProvider(): array
     {
         return [
@@ -29,7 +26,7 @@ class ProviderTest extends TestCase
 
     public function testProvidersList(): void
     {
-        AuthProvider::factory()->create([
+        AuthProviderModel::factory()->create([
             'key' => 'facebook',
             'active' => true,
         ]);
@@ -71,25 +68,26 @@ class ProviderTest extends TestCase
 
     public function testProvidersListActive(): void
     {
-        AuthProvider::factory()->create([
+        AuthProviderModel::factory()->create([
             'key' => 'facebook',
             'active' => true,
         ]);
 
         $this->getJson('auth/providers?active=true')
             ->assertJsonCount(1, 'data')
-            ->assertJson(['data' => [
-                0 => [
-                    'key' => 'facebook',
-                    'active' => true,
+            ->assertJson([
+                'data' => [
+                    0 => [
+                        'key' => 'facebook',
+                        'active' => true,
+                    ],
                 ],
-            ],
             ]);
     }
 
     public function testProvidersListInactive(): void
     {
-        AuthProvider::factory()->create([
+        AuthProviderModel::factory()->create([
             'key' => 'facebook',
             'active' => true,
         ]);
@@ -125,13 +123,20 @@ class ProviderTest extends TestCase
             ]);
     }
 
-    public function testGetProvider(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testGetProvider($user): void
     {
-        $provider = AuthProvider::factory()->create([
+        $this->$user->givePermissionTo('auth.providers.manage');
+
+        $provider = AuthProviderModel::factory()->create([
             'key' => 'facebook',
         ]);
 
-        $this->getJson('auth/providers/facebook')
+        $this
+            ->actingAs($this->$user)
+            ->getJson('auth/providers/facebook')
             ->assertJson([
                 'id' => $provider->getKey(),
                 'key' => $provider->key,
@@ -141,14 +146,53 @@ class ProviderTest extends TestCase
             ]);
     }
 
-    public function testUpdate(): void
+    public function testGetProviderWithoutPermission(): void
     {
-        AuthProvider::factory()->create([
+        $provider = AuthProviderModel::factory()->create([
+            'key' => 'facebook',
+        ]);
+
+        $this
+            ->getJson('auth/providers/facebook')
+            ->assertJson([
+                'id' => $provider->getKey(),
+                'key' => $provider->key,
+                'active' => $provider->active,
+            ])
+            ->assertJsonMissing([
+                'client_id' => $provider->client_id,
+                'client_secret' => $provider->client_secret,
+            ]);
+    }
+
+    public function testUpdateUnauthorized(): void
+    {
+        AuthProviderModel::factory()->create([
             'key' => 'facebook',
             'active' => false,
         ]);
 
-        $response = $this->json('patch', 'auth/providers/facebook', [
+        $this->json('patch', 'auth/providers/facebook', [
+            'active' => true,
+            'client_id' => 'test_id',
+            'client_secret' => 'test_secret',
+        ])
+            ->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdate($user): void
+    {
+        $this->$user->givePermissionTo('auth.providers.manage');
+
+        AuthProviderModel::factory()->create([
+            'key' => 'facebook',
+            'active' => false,
+        ]);
+
+        $response = $this->actingAs($this->$user)->json('patch', 'auth/providers/facebook', [
             'active' => true,
             'client_id' => 'test_id',
             'client_secret' => 'test_secret',
@@ -169,16 +213,21 @@ class ProviderTest extends TestCase
         ]);
     }
 
-    public function testUpdateActiveWithoutConfig(): void
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateActiveWithoutConfig($user): void
     {
-        AuthProvider::factory()->create([
+        $this->$user->givePermissionTo('auth.providers.manage');
+
+        AuthProviderModel::factory()->create([
             'key' => 'facebook',
             'active' => false,
             'client_id' => null,
             'client_secret' => null,
         ]);
 
-        $this->json('patch', 'auth/providers/facebook', [
+        $this->actingAs($this->$user)->json('patch', 'auth/providers/facebook', [
             'active' => true,
         ])
             ->assertJsonFragment(['key' => ValidationError::AUTHPROVIDERACTIVE]);
@@ -189,7 +238,7 @@ class ProviderTest extends TestCase
      */
     public function testRedirect($key): void
     {
-        $provider = AuthProvider::factory()->create([
+        $provider = AuthProviderModel::factory()->create([
             'key' => $key,
             'active' => true,
             'client_secret' => '***REMOVED***',
@@ -208,7 +257,7 @@ class ProviderTest extends TestCase
      */
     public function testRedirectInactive($key): void
     {
-        $provider = AuthProvider::factory()->create([
+        $provider = AuthProviderModel::factory()->create([
             'key' => $key,
             'active' => false,
         ]);
@@ -227,7 +276,7 @@ class ProviderTest extends TestCase
      */
     public function testRedirectNoConfig($key): void
     {
-        $provider = AuthProvider::factory()->create([
+        $provider = AuthProviderModel::factory()->create([
             'key' => $key,
             'client_id' => null,
             'client_secret' => null,
@@ -268,7 +317,7 @@ class ProviderTest extends TestCase
 
         Socialite::shouldReceive('driver')->with($key)->andReturn($provider);
 
-        AuthProvider::factory()->create([
+        AuthProviderModel::factory()->create([
             'key' => $key,
             'active' => true,
             'client_id' => 'test_id',
@@ -323,7 +372,7 @@ class ProviderTest extends TestCase
 
         Socialite::shouldReceive('driver')->with($key)->andReturn($provider);
 
-        $authProvider = AuthProvider::factory()->create([
+        $authProvider = AuthProviderModel::factory()->create([
             'key' => $key,
             'active' => true,
             'client_id' => 'test_id',

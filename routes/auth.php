@@ -52,7 +52,8 @@ Route::prefix('auth')->group(function (): void {
         Route::get('{authProviderKey}/login', [ProviderController::class, 'login']);
         Route::post('{authProviderKey}/redirect', [ProviderController::class, 'redirect']);
         Route::get('{authProviderKey}', [ProviderController::class, 'getProvider']);
-        Route::patch('{authProviderKey}', [ProviderController::class, 'update']);
+        Route::patch('{authProviderKey}', [ProviderController::class, 'update'])
+            ->middleware('can:auth.providers.manage');
     });
 });
 

@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Gate;
 use Laravel\Socialite\Facades\Socialite;
 
 class ProviderService implements ProviderServiceContract
@@ -56,10 +57,14 @@ class ProviderService implements ProviderServiceContract
     public function getProvider(string $authProviderKey): AuthProvider|array
     {
         $providerEnum = AuthProviderKey::fromValue($authProviderKey);
+        $providerQuery = AuthProvider::query()->where('key', $providerEnum->value);
 
-        $provider = AuthProvider::query()->where('key', $providerEnum->value);
-        if ($provider->exists()) {
-            return $provider->first();
+        if ($providerQuery->exists()) {
+            $provider = $providerQuery->first();
+            if (!Gate::allows('auth.providers.manage')) {
+                $provider->setHidden(['client_id', 'client_secret']);
+            }
+            return $provider;
         }
 
         return [];
