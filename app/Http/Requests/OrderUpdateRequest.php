@@ -30,8 +30,6 @@ class OrderUpdateRequest extends FormRequest
             'invoice_address.city' => ['string', 'max:255'],
             'invoice_address.country' => ['string', 'size:2'],
             'invoice_address.vat' => ['nullable', 'string', 'max:15'],
-
-            'validation' => ['boolean'],
         ];
     }
 }
