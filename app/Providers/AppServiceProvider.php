@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Product;
 use App\Services\AnalyticsService;
 use App\Services\AppService;
 use App\Services\AttributeOptionService;
@@ -167,5 +168,7 @@ class AppServiceProvider extends ServiceProvider
 
             return $this;
         });
+
+        Product::disableSearchSyncing();
     }
 }

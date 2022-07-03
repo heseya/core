@@ -274,15 +274,13 @@ class ProductSetService implements ProductSetServiceContract
      */
     public function flattenParentsSetsTree(Collection $sets): Collection
     {
-        $subsets = Collection::make();
+        $parents = $sets->map(fn ($set) => $set->parent)->filter(fn ($set) => $set !== null);
 
-        foreach ($sets as $set) {
-            if ($set->parent) {
-                $subsets = $subsets->merge($this->flattenParentsSetsTree(Collection::make([$set->parent])));
-            }
+        if ($parents->count() === 0) {
+            return $sets;
         }
 
-        return $subsets->flatten()->concat($sets->toArray());
+        return $sets->merge($this->flattenParentsSetsTree($parents));
     }
 
     public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void
