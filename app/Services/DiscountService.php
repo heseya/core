@@ -443,6 +443,7 @@ class DiscountService implements DiscountServiceContract
 
     public function activeSales(): Collection
     {
+        // This doesn't get all active sales. Only ones with conditions.
         $sales = Discount::where('code', null)
             ->where('target_type', DiscountTargetType::PRODUCTS)
             ->whereHas('conditionGroups', function ($query): void {
@@ -537,12 +538,12 @@ class DiscountService implements DiscountServiceContract
         $oldActiveSales = Collection::make($activeSales);
 
         $activeSalesIds = $this->activeSales()->pluck('id');
-        $sales = $activeSalesIds
+        $saleIds = $activeSalesIds
             ->diff($oldActiveSales)
             ->merge($oldActiveSales->diff($activeSalesIds));
 
         $sales = Discount::query()
-            ->whereIn('id', $sales)
+            ->whereIn('id', $saleIds)
             ->with(['products', 'productSets', 'productSets.products'])
             ->get();
 
@@ -660,8 +661,7 @@ class DiscountService implements DiscountServiceContract
     private function calcProductPriceDiscount(Discount $discount, float $price, float $minimalProductPrice): float
     {
         $price -= $this->calc($price, $discount);
-        return $price < $minimalProductPrice
-            ? $minimalProductPrice : $price;
+        return max($price, $minimalProductPrice);
     }
 
     private function checkConditionGroupForProduct(ConditionGroup $group): bool
@@ -1255,17 +1255,17 @@ class DiscountService implements DiscountServiceContract
     {
         $conditionDto = CartLengthConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
-        return $this->checkConditionLenght($conditionDto, $cartLength);
+        return $this->checkConditionLength($conditionDto, $cartLength);
     }
 
     private function checkConditionCouponsCount(DiscountCondition $condition, int $couponsCount): bool
     {
         $conditionDto = CouponsCountConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
-        return $this->checkConditionLenght($conditionDto, $couponsCount);
+        return $this->checkConditionLength($conditionDto, $couponsCount);
     }
 
-    private function checkConditionLenght(
+    private function checkConditionLength(
         CartLengthConditionDto|CouponsCountConditionDto $conditionDto,
         int $count,
     ): bool {
@@ -1291,31 +1291,25 @@ class DiscountService implements DiscountServiceContract
             ->where('target_is_allow_list', false)->with(['products', 'productSets', 'productSets.products'])->get();
     }
 
-    private function applyDiscountsOnProductsLazy(Collection $products, Collection $salesWithBlockList): void
+    private function applyDiscountsOnProductsLazy(Collection $productIds, Collection $salesWithBlockList): void
     {
-        $lazyProducts = Product::with([
+        $productQuery = Product::with([
             'discounts',
             'sets',
             'sets.discounts',
             'sets.parent',
-        ])->lazyById(100);
+        ]);
 
-        if ($products->count() > 0) {
-            $lazyProducts = $lazyProducts->filter(
-                fn ($product) => $products->contains($product->getKey()),
-            );
+        if ($productIds->isNotEmpty()) {
+            $productQuery = $productQuery->whereIn('id', $productIds);
         }
 
-        foreach ($lazyProducts as $product) {
-            $this->applyAllDiscountsOnProduct($product, $salesWithBlockList, false);
-        }
+        $productQuery->chunk(100, function ($products) use ($salesWithBlockList): void {
+            foreach ($products as $product) {
+                $this->applyAllDiscountsOnProduct($product, $salesWithBlockList, false);
+            }
 
-        if ($products->count() > 0) {
-            // @phpstan-ignore-next-line
-            Product::query()->whereIn('id', $products->pluck('id'))->searchable();
-        } else {
-            // @phpstan-ignore-next-line
-            Product::query()->searchable();
-        }
+            $products->searchable();
+        });
     }
 }

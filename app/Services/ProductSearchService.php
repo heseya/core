@@ -146,7 +146,7 @@ class ProductSearchService implements ProductSearchServiceContract
     private function mapCover(Product $product): ?array
     {
         /** @var ?Media $cover */
-        $cover = $product->media()->first();
+        $cover = $product->media->first();
 
         if ($cover === null) {
             return null;
