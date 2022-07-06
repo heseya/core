@@ -55,6 +55,7 @@ use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UrlServiceContract;
 use App\Services\Contracts\UserServiceContract;
 use App\Services\Contracts\WebHookServiceContract;
+use App\Services\Contracts\WishlistServiceContract;
 use App\Services\DepositService;
 use App\Services\DiscountService;
 use App\Services\DiscountStoreService;
@@ -88,6 +89,7 @@ use App\Services\TokenService;
 use App\Services\UrlService;
 use App\Services\UserService;
 use App\Services\WebHookService;
+use App\Services\WishlistService;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Scout\Builder;
 
@@ -137,6 +139,7 @@ class AppServiceProvider extends ServiceProvider
         DiscountStoreServiceContract::class => DiscountStoreService::class,
         ShippingTimeDateServiceContract::class => ShippingTimeDateService::class,
         CategoryServiceContract::class => CategoryService::class,
+        WishlistServiceContract::class => WishlistService::class,
     ];
 
     /**
