@@ -39,7 +39,7 @@ Media:
           schema:
             properties:
               file:
-                description: 'File. Accepted extensions: jpeg, png, gif, bmp, svg, mp4``````, webm, ogg, avi, mov, wmv'
+                description: 'File. Accepted extensions: jpeg, png, gif, bmp, svg, mp4, webm, ogg, avi, mov, wmv'
                 type: string
                 format: binary
               alt:
