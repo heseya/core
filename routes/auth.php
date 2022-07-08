@@ -28,8 +28,7 @@ Route::prefix('auth')->group(function (): void {
                 ->defaults('type', SavedAddressType::INVOICE);
         });
 
-    Route::post('refresh', [AuthController::class, 'refresh'])
-        ->middleware('can:auth.login');
+    Route::post('refresh', [AuthController::class, 'refresh']);
     Route::get('check', [AuthController::class, 'checkIdentity'])
         ->middleware('can:auth.check_identity');
     Route::get('check/{identity_token}', [AuthController::class, 'checkIdentity'])
@@ -48,7 +47,7 @@ Route::prefix('auth')->group(function (): void {
 });
 
 Route::post('login', [AuthController::class, 'login'])
-    ->middleware(['app.restrict', 'can:auth.login']);
+    ->middleware('app.restrict');
 Route::post('register', [AuthController::class, 'register'])
     ->middleware(['app.restrict', 'can:auth.register']);
 Route::put('users/password', [AuthController::class, 'changePassword'])

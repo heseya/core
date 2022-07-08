@@ -33,5 +33,6 @@ return [
         EventType::ADD_ORDER_DOCUMENT => 'Zdarzenie wyzwalane po utworzeniu nowych dokumentów zamówienia',
         EventType::REMOVE_ORDER_DOCUMENT => 'Zdarzenie wyzwalane po usunięciu dokumentu zamówienia',
         EventType::ORDER_UPDATED_PAID => 'Zdarzenie wyzwalane po zmienie statusu płatności zamówienia',
+        EventType::ORDER_UPDATED_SHIPPING_NUMBER => 'Zdarzenie wyzwalane po aktualizacji numeru listu przewozowego',
     ],
 ];

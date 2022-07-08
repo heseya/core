@@ -6,6 +6,8 @@ use App\Criteria\LessOrEquals;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\MoreOrEquals;
+use App\Criteria\ProductAttributeSearch;
+use App\Criteria\ProductNotAttributeSearch;
 use App\Criteria\ProductSearch;
 use App\Criteria\WhereHasId;
 use App\Criteria\WhereHasPhoto;
@@ -73,6 +75,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'price_max_initial',
         'shipping_time',
         'shipping_date',
+        'has_schemas',
     ];
 
     protected array $auditInclude = [
@@ -94,6 +97,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'available' => 'bool',
         'quantity_step' => 'float',
         'vat_rate' => 'float',
+        'has_schemas' => 'bool',
     ];
 
     protected array $sortable = [
@@ -126,6 +130,8 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'metadata_private' => MetadataPrivateSearch::class,
         'price_max' => LessOrEquals::class,
         'price_min' => MoreOrEquals::class,
+        'attribute' => ProductAttributeSearch::class,
+        'attribute_not' => ProductNotAttributeSearch::class,
         'has_cover' => WhereHasPhoto::class,
     ];
 
@@ -239,9 +245,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
     public function productSetSales(): Collection
     {
         $sales = Collection::make();
-        $sets = $this
-            ->sets()
-            ->get();
+        $sets = $this->sets;
 
         /** @var ProductSet $set */
         foreach ($sets as $set) {
@@ -251,29 +255,40 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         return $sales->unique('id');
     }
 
-    public function allProductSales(): Collection
+    public function allProductSales(Collection $salesWithBlockList): Collection
     {
-        $sales = Discount::where('code', null)
-            ->where('target_type', DiscountTargetType::PRODUCTS)
-            ->where('target_is_allow_list', true)
-            ->whereHas('products', function ($query): void {
-                $query->where('id', $this->getKey());
-            })
-            ->orWhere(function ($query): void {
-                $query->where('code', null)
-                    ->where('target_type', DiscountTargetType::PRODUCTS)
-                    ->where('target_is_allow_list', false)
-                    ->whereDoesntHave('products', function ($query): void {
-                        $query->where('id', $this->getKey());
-                    })
-                    ->whereDoesntHave('productSets', function ($query): void {
-                        $query->whereHas('products', function ($query): void {
-                            $query->where('id', $this->getKey());
-                        });
-                    });
-            })
-            ->with(['products', 'productSets', 'conditionGroups', 'shippingMethods'])
-            ->get();
+        $sales = $this->discounts->filter(function ($discount): bool {
+            if (
+                $discount->code === null
+                && $discount->target_type->is(DiscountTargetType::PRODUCTS)
+                && $discount->target_is_allow_list
+            ) {
+                if ($discount->products->contains(function ($value): bool {
+                    return $value->getKey() === $this->getKey();
+                })) {
+                    return true;
+                }
+            }
+            return false;
+        });
+
+        $salesBlockList = $salesWithBlockList->filter(function ($sale): bool {
+            if ($sale->products->contains(function ($value): bool {
+                return $value->getKey() === $this->getKey();
+            })) {
+                return false;
+            }
+            foreach ($sale->productSets as $set) {
+                if ($set->products->contains(function ($value): bool {
+                    return $value->getKey() === $this->getKey();
+                })) {
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        $sales = $sales->merge($salesBlockList);
 
         $productSetSales = $this->productSetSales();
 

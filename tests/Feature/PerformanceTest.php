@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\DiscountTargetType;
+use App\Enums\DiscountType;
 use App\Enums\MetadataType;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
@@ -15,6 +16,7 @@ use App\Models\Option;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
+use App\Models\ProductSet;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\Status;
@@ -259,5 +261,55 @@ class PerformanceTest extends TestCase
             ->assertOk();
 
         $this->assertQueryCountLessThan(16);
+    }
+
+    public function testCreateSalePerformance1000Products(): void
+    {
+        $this->user->givePermissionTo('sales.add');
+
+        $set = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $products = Product::factory()
+            ->count(1000)
+            ->sequence(fn ($sequence) => ['slug' => $sequence->index])
+            ->create([
+                'public' => true,
+                'price' => 1000,
+                'price_min_initial' => 1200,
+                'price_max_initial' => 1500,
+            ]);
+
+        $set->products()->sync($products);
+
+        $sale = Discount::factory()->create([
+            'name' => 'promocja -10',
+            'type' => DiscountType::AMOUNT,
+            'value' => 10,
+            'priority' => 0,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+            'code' => null,
+        ]);
+
+        $sale->productSets()->attach($set->getKey());
+
+        $this->actingAs($this->user)->json('POST', '/sales', [
+            'name' => 'promocja -10% priority 0',
+            'type' => DiscountType::PERCENTAGE,
+            'value' => 10,
+            'priority' => 0,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => false,
+        ])->assertCreated();
+
+        $product = Product::first();
+
+        $this->assertTrue($product->price_min === 1071.0);
+
+        // Every product with discount +3 query to database (update, detach(sales), attach(sales))
+        // 1000 products = +- 3137 queries, for 10000 +- 31130
+        $this->assertQueryCountLessThan(3200);
     }
 }

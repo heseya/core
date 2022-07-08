@@ -61,20 +61,8 @@ class AuthTest extends TestCase
         ];
     }
 
-    public function testLoginUnauthorized(): void
-    {
-        $response = $this->postJson('/login', [
-            'email' => $this->user->email,
-            'password' => $this->password,
-        ]);
-
-        $response->assertForbidden();
-    }
-
     public function testLogin(): void
     {
-        $this->user->givePermissionTo('auth.login');
-
         $response = $this->actingAs($this->user)->postJson('/login', [
             'email' => $this->user->email,
             'password' => $this->password,
@@ -86,8 +74,6 @@ class AuthTest extends TestCase
 
     public function testLoginInvalidCredential(): void
     {
-        $this->user->givePermissionTo('auth.login');
-
         Log::shouldReceive('error')
             ->once()
             ->withArgs(function ($message) {
@@ -104,8 +90,6 @@ class AuthTest extends TestCase
 
     public function testLoginDisabledTfaCode(): void
     {
-        $this->user->givePermissionTo('auth.login');
-
         $response = $this->actingAs($this->user)->postJson('/login', [
             'email' => $this->user->email,
             'password' => $this->password,
@@ -123,8 +107,6 @@ class AuthTest extends TestCase
      */
     public function testLoginEnabledTfaNoCode($method, $secret): void
     {
-        $this->user->givePermissionTo('auth.login');
-
         Notification::fake();
 
         $this->user->update([
@@ -144,7 +126,7 @@ class AuthTest extends TestCase
 
         $response->assertStatus(Response::HTTP_FORBIDDEN)
             ->assertJsonFragment([
-                'message' => 'Two-Factor Authentication is required',
+                'key' => Exceptions::getKey(Exceptions::CLIENT_TFA_REQUIRED),
             ]);
     }
 
@@ -153,8 +135,6 @@ class AuthTest extends TestCase
      */
     public function testLoginEnabledTfaCode($method, $secret): void
     {
-        $this->user->givePermissionTo('auth.login');
-
         Notification::fake();
 
         $this->user->update([
@@ -188,8 +168,6 @@ class AuthTest extends TestCase
 
     public function testLoginEnabledTfaOldCode(): void
     {
-        $this->user->givePermissionTo('auth.login');
-
         Notification::fake();
 
         $this->user->update([
@@ -229,8 +207,6 @@ class AuthTest extends TestCase
      */
     public function testLoginEnabledTfaRecoveryCode($method, $secret): void
     {
-        $this->user->givePermissionTo('auth.login');
-
         Notification::fake();
 
         $this->user->update([
@@ -258,8 +234,6 @@ class AuthTest extends TestCase
      */
     public function testLoginEnabledTfaInvalidCode($method, $secret): void
     {
-        $this->user->givePermissionTo('auth.login');
-
         Notification::fake();
 
         $this->user->update([
@@ -284,27 +258,8 @@ class AuthTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testRefreshTokenUnauthorized($user): void
-    {
-        $token = $this->tokenService->createToken(
-            $this->$user,
-            new TokenType(TokenType::REFRESH),
-        );
-
-        $response = $this->actingAs($this->$user)->postJson('/auth/refresh', [
-            'refresh_token' => $token,
-        ]);
-
-        $response->assertForbidden();
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testRefreshTokenMissing($user): void
     {
-        $this->$user->givePermissionTo('auth.login');
-
         $response = $this->actingAs($this->$user)->postJson('/auth/refresh', [
             'refresh_token' => null,
         ]);
@@ -314,8 +269,6 @@ class AuthTest extends TestCase
 
     public function testRefreshTokenAfterUserDeleted(): void
     {
-        $this->user->givePermissionTo('auth.login');
-
         $token = $this->tokenService->createToken(
             $this->user,
             new TokenType(TokenType::REFRESH),
@@ -337,8 +290,6 @@ class AuthTest extends TestCase
 
     public function testRefreshTokenUser(): void
     {
-        $this->user->givePermissionTo('auth.login');
-
         $token = $this->tokenService->createToken(
             $this->user,
             new TokenType(TokenType::REFRESH),
@@ -366,8 +317,6 @@ class AuthTest extends TestCase
 
     public function testRefreshTokenApp(): void
     {
-        $this->application->givePermissionTo('auth.login');
-
         $token = $this->tokenService->createToken(
             $this->application,
             new TokenType(TokenType::REFRESH),
@@ -406,8 +355,6 @@ class AuthTest extends TestCase
      */
     public function testRefreshTokenInvalidated($user): void
     {
-        $this->$user->givePermissionTo('auth.login');
-
         $token = $this->tokenService->createToken(
             $this->$user,
             new TokenType(TokenType::REFRESH),
@@ -447,8 +394,6 @@ class AuthTest extends TestCase
 
     public function testLogoutWithInvalidatedTokenAfterRefreshToken(): void
     {
-        $this->user->givePermissionTo('auth.login');
-
         $response = $this->actingAs($this->user)->postJson('/login', [
             'email' => $this->user->email,
             'password' => $this->password,

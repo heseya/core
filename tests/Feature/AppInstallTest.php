@@ -293,7 +293,6 @@ class AppInstallTest extends TestCase
         $app = App::where('name', $name)->firstOrFail();
 
         $this->assertTrue($app->hasAllPermissions([
-            'auth.login',
             'auth.check_identity',
             'products.show',
         ]));
@@ -555,7 +554,6 @@ class AppInstallTest extends TestCase
         $app = App::where('name', 'App name')->firstOrFail();
 
         $this->assertTrue($app->hasAllPermissions([
-            'auth.login',
             'auth.check_identity',
             'products.show',
             'products.add',
@@ -1104,7 +1102,6 @@ class AppInstallTest extends TestCase
         $app = App::where('name', $name)->firstOrFail();
 
         $this->assertTrue($app->hasAllPermissions([
-            'auth.login',
             'auth.check_identity',
             'products.show',
         ]));

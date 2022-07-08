@@ -22,59 +22,57 @@ class ProductSearchService implements ProductSearchServiceContract
 
     public function mapSearchableArray(Product $product): array
     {
-        // Workaround for nested sort by attributes
-        // TODO: find solution to sort by text values(single/multi option attributes)
-        $attributeSlug = $product->attributes
-            ->mapWithKeys(fn (Attribute $attribute): array => [
+        return array_merge(
+            [
+                'id' => $product->getKey(),
+                'name' => $product->name,
+                'name_text' => $product->name,
+                'slug' => $product->slug,
+                'google_product_category' => $product->google_product_category,
+                'hide_on_index' => $this->mapHideOnIndex($product),
+                'available' => $product->available,
+                'public' => $product->public,
+                'price' => $product->price,
+                'price_min' => $product->price_min,
+                'price_max' => $product->price_max,
+                'price_min_initial' => $product->price_min_initial,
+                'price_max_initial' => $product->price_max_initial,
+                'description' => strip_tags($product->description_html),
+                'description_short' => $product->description_short,
+                'created_at' => $product->created_at->toIso8601String(),
+                'updated_at' => $product->updated_at->toIso8601String(),
+                'order' => $product->order,
+                'cover' => $this->mapCover($product),
+                'tags_id' => $product->tags->map(fn (Tag $tag): string => $tag->getKey())->toArray(),
+                'tags' => $product->tags->map(fn (Tag $tag): array => $this->mapTag($tag))->toArray(),
+                'sets_slug' => $this->mapSetsSlugs($product),
+                'sets' => $this->mapSets($product),
+                'attributes_slug' => $product->attributes
+                    ->map(fn (Attribute $attribute): string => $attribute->slug)
+                    ->toArray(),
+                'attributes' => $product->attributes
+                    ->map(fn (Attribute $attribute): array => $this->mapAttribute($attribute))
+                    ->toArray(),
+                'attributes_text' => $product->attributes
+                    ->map(fn (Attribute $attribute): array => $this->getAttributeValue($attribute))
+                    ->flatten()
+                    ->toArray(),
+                'metadata' => $product->metadata
+                    ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
+                    ->toArray(),
+                'metadata_private' => $product->metadataPrivate
+                    ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
+                    ->toArray(),
+            ],
+            // Workaround for nested sort by attributes
+            // TODO: find solution to sort by text values(single/multi option attributes)
+            $product->attributes->mapWithKeys(fn (Attribute $attribute): array => [
                 "attribute.{$attribute->slug}" => $this->getAttributeValue($attribute),
-            ])->toArray();
-
-        $setsOrder = $product->sets
-            ->mapWithKeys(fn (ProductSet $set): array => [
+            ])->toArray(),
+            $product->sets->mapWithKeys(fn (ProductSet $set): array => [
                 "set.{$set->slug}" => $set->pivot->order,
-            ])->toArray();
-
-        return array_merge([
-            'id' => $product->getKey(),
-            'name' => $product->name,
-            'name_text' => $product->name,
-            'slug' => $product->slug,
-            'google_product_category' => $product->google_product_category,
-            'hide_on_index' => $this->mapHideOnIndex($product),
-            'available' => $product->available,
-            'public' => $product->public,
-            'price' => $product->price,
-            'price_min' => $product->price_min,
-            'price_max' => $product->price_max,
-            'price_min_initial' => $product->price_min_initial,
-            'price_max_initial' => $product->price_max_initial,
-            'description' => strip_tags($product->description_html),
-            'description_short' => $product->description_short,
-            'created_at' => $product->created_at->toIso8601String(),
-            'updated_at' => $product->updated_at->toIso8601String(),
-            'order' => $product->order,
-            'cover' => $this->mapCover($product),
-            'tags_id' => $product->tags->map(fn (Tag $tag): string => $tag->getKey())->toArray(),
-            'tags' => $product->tags->map(fn (Tag $tag): array => $this->mapTag($tag))->toArray(),
-            'sets_slug' => $this->mapSetsSlugs($product),
-            'sets' => $this->mapSets($product),
-            'attributes_slug' => $product->attributes
-                ->map(fn (Attribute $attribute): string => $attribute->slug)
-                ->toArray(),
-            'attributes' => $product->attributes
-                ->map(fn (Attribute $attribute): array => $this->mapAttribute($attribute))
-                ->toArray(),
-            'attributes_text' => $product->attributes
-                ->map(fn (Attribute $attribute): array => $this->getAttributeValue($attribute))
-                ->flatten()
-                ->toArray(),
-            'metadata' => $product->metadata
-                ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
-                ->toArray(),
-            'metadata_private' => $product->metadataPrivate
-                ->map(fn (Metadata $meta): array => $this->mapMeta($meta))
-                ->toArray(),
-        ], $attributeSlug, $setsOrder);
+            ])->toArray(),
+        );
     }
 
     public function mappableAs(): array
@@ -106,6 +104,7 @@ class ProductSearchService implements ProductSearchServiceContract
 
             'sets_slug' => 'keyword',
             'sets' => 'flattened',
+            'set' => 'flattened',
 
             'attributes' => [
                 'id' => 'keyword',
@@ -147,7 +146,7 @@ class ProductSearchService implements ProductSearchServiceContract
     private function mapCover(Product $product): ?array
     {
         /** @var ?Media $cover */
-        $cover = $product->media()->first();
+        $cover = $product->media->first();
 
         if ($cover === null) {
             return null;

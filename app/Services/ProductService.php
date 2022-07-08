@@ -72,7 +72,7 @@ class ProductService implements ProductServiceContract
         $product->price_min_initial = $priceMin;
         $product->price_max_initial = $priceMax;
         $product->available = $this->availabilityService->isProductAvailable($product);
-        $this->discountService->applyDiscountsOnProduct($product);
+        $this->discountService->applyDiscountsOnProduct($product, false);
 
         return $product;
     }
@@ -90,20 +90,7 @@ class ProductService implements ProductServiceContract
         // @phpstan-ignore-next-line
         Product::where($product->getKeyName(), $product->getKey())->searchable();
 
-        return $product;
-    }
-
-    public function getMinMaxPrices(Product $product): array
-    {
-        [$schemaMin, $schemaMax] = $this->getSchemasPrices(
-            clone $product->schemas,
-            clone $product->schemas,
-        );
-
-        return [
-            $product->price + $schemaMin,
-            $product->price + $schemaMax,
-        ];
+        return $product->refresh();
     }
 
     public function update(Product $product, ProductUpdateDto $dto): Product
@@ -139,6 +126,19 @@ class ProductService implements ProductServiceContract
         DB::commit();
     }
 
+    public function getMinMaxPrices(Product $product): array
+    {
+        [$schemaMin, $schemaMax] = $this->getSchemasPrices(
+            clone $product->schemas,
+            clone $product->schemas,
+        );
+
+        return [
+            $product->price + $schemaMin,
+            $product->price + $schemaMax,
+        ];
+    }
+
     public function updateMinMaxPrices(Product $product): void
     {
         $productMinMaxPrices = $this->getMinMaxPrices($product);
@@ -151,13 +151,11 @@ class ProductService implements ProductServiceContract
 
     private function assignItems(Product $product, ?array $items): void
     {
-        $items = Collection::make($items)->mapWithKeys(function (array $item): array {
-            return [
-                $item['id'] => [
-                    'required_quantity' => $item['required_quantity'],
-                ],
-            ];
-        });
+        $items = Collection::make($items)->mapWithKeys(fn (array $item): array => [
+            $item['id'] => [
+                'required_quantity' => $item['required_quantity'],
+            ],
+        ]);
 
         $product->items()->sync($items);
     }

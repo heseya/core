@@ -388,6 +388,82 @@ class SchemaTest extends TestCase
     }
 
     /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithEmptyNullableProperties($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/schemas', [
+                'name' => 'Test',
+                'type' => SchemaType::getKey(SchemaType::SELECT),
+                'description' => '',
+                'hidden' => '',
+                'required' => '',
+                'min' => '',
+                'max' => '',
+                'step' => '',
+                'default' => '',
+                'pattern' => '',
+                'validation' => '',
+                'used_schemas' => '',
+                'options' => '',
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => 'Test',
+                'price' => 0,
+                'description' => null,
+                'hidden' => true,
+                'required' => true,
+                'min' => null,
+                'max' => null,
+                'step' => null,
+                'default' => null,
+                'pattern' => null,
+                'validation' => null,
+                'used_schemas' => [],
+                'options' => [],
+            ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/schemas', [
+                'name' => 'Test',
+                'type' => SchemaType::getKey(SchemaType::SELECT),
+                'description' => null,
+                'hidden' => null,
+                'required' => null,
+                'min' => null,
+                'max' => null,
+                'step' => null,
+                'default' => null,
+                'pattern' => null,
+                'validation' => null,
+                'used_schemas' => null,
+                'options' => null,
+            ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'name' => 'Test',
+                'price' => 0,
+                'description' => null,
+                'hidden' => true,
+                'required' => true,
+                'min' => null,
+                'max' => null,
+                'step' => null,
+                'default' => null,
+                'pattern' => null,
+                'validation' => null,
+                'used_schemas' => [],
+                'options' => [],
+            ]);
+    }
+
+    /**
      * @dataProvider booleanProvider
      */
     public function testCreateWithMetadata($user, $boolean, $booleanValue): void

@@ -9,6 +9,7 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Events\ItemCreated;
 use App\Events\ItemDeleted;
 use App\Events\ItemUpdated;
+use App\Events\ItemUpdatedQuantity;
 use App\Exceptions\ClientException;
 use App\Models\Item;
 use App\Models\Option;
@@ -150,6 +151,13 @@ class ItemService implements ItemServiceContract
         $item->update($dto->toArray());
 
         ItemUpdated::dispatch($item);
+        if (
+            !($dto->getUnlimitedStockShippingDate() instanceof Missing) ||
+            !($dto->getUnlimitedStockShippingTime() instanceof Missing)
+        ) {
+            ItemUpdatedQuantity::dispatch($item);
+        }
+
         return $item;
     }
 

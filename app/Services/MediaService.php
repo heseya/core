@@ -42,13 +42,10 @@ class MediaService implements MediaServiceContract
             $response = Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
                 ->delete($media->url);
 
-            if ($response->failed()) {
-                throw new ServerException(
-                    message: Exceptions::SERVER_CDN_ERROR,
-                    errorArray: $response->json() ?? [],
-                );
-            }
-        }
+        Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
+            ->delete($media->url);
+
+        // no need to handle failed response while removing media
 
         $media->forceDelete();
     }
@@ -118,7 +115,7 @@ class MediaService implements MediaServiceContract
         if ($response->failed() || !isset($response['path'])) {
             throw new ServerException(
                 message: Exceptions::SERVER_CDN_ERROR,
-                errorArray: $response->json(),
+                errorArray: $response->json() ?? [],
             );
         }
 

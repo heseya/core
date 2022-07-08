@@ -297,10 +297,7 @@ class DiscountService implements DiscountServiceContract
                 $price += $schema->getPrice($value, $cartItem->getSchemas());
             }
             $cartValue += $price * $cartItem->getQuantity();
-            array_push(
-                $cartItems,
-                new CartItemResponse($cartItem->getCartItemId(), $price, $price, $cartItem->getQuantity()),
-            );
+            $cartItems[] = new CartItemResponse($cartItem->getCartItemId(), $price, $price, $cartItem->getQuantity());
         }
         $cartShippingTimeAndDate = $this->shippingTimeDateService->getTimeAndDateForCart($cart, $products);
 
@@ -373,44 +370,16 @@ class DiscountService implements DiscountServiceContract
 
     public function applyDiscountsOnProducts(Collection $products): void
     {
+        $salesWithBlockList = $this->getSalesWithBlockList();
         foreach ($products as $product) {
-            $this->applyDiscountsOnProduct($product);
+            $this->applyAllDiscountsOnProduct($product, $salesWithBlockList);
         }
     }
 
-    public function applyDiscountsOnProduct(Product $product): void
+    public function applyDiscountsOnProduct(Product $product, bool $reindex = true): void
     {
-        $sales = $this->sortDiscounts($product->allProductSales());
-
-        $minPriceDiscounted = $product->price_min_initial;
-        $maxPriceDiscounted = $product->price_max_initial;
-
-        $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
-
-        $productSales = Collection::make();
-
-        foreach ($sales as $sale) {
-            if ($this->checkConditionGroupsForProduct($sale)) {
-                if ($minPriceDiscounted !== $minimalProductPrice) {
-                    $minPriceDiscounted = $this
-                        ->calcProductPriceDiscount($sale, $minPriceDiscounted, $minimalProductPrice);
-                }
-
-                if ($maxPriceDiscounted !== $minimalProductPrice) {
-                    $maxPriceDiscounted = $this
-                        ->calcProductPriceDiscount($sale, $maxPriceDiscounted, $minimalProductPrice);
-                }
-
-                $productSales->push($sale);
-            }
-        }
-
-        $product->update([
-            'price_min' => $minPriceDiscounted,
-            'price_max' => $maxPriceDiscounted,
-        ]);
-        $product->sales()->sync($productSales->pluck('id'));
-        $product->searchable();
+        $salesWithBlockList = $this->getSalesWithBlockList();
+        $this->applyAllDiscountsOnProduct($product, $salesWithBlockList, $reindex);
     }
 
     public function applyDiscountOnOrderProduct(OrderProduct $orderProduct, Discount $discount): OrderProduct
@@ -474,6 +443,7 @@ class DiscountService implements DiscountServiceContract
 
     public function activeSales(): Collection
     {
+        // This doesn't get all active sales. Only ones with conditions.
         $sales = Discount::where('code', null)
             ->where('target_type', DiscountTargetType::PRODUCTS)
             ->whereHas('conditionGroups', function ($query): void {
@@ -545,21 +515,19 @@ class DiscountService implements DiscountServiceContract
 
     public function calculateDiscount(Discount $discount, bool $updated): void
     {
-        // if job is called after update, then calculate discount for all products,
-        // because it may change the list of related products or target_is_allow_list value
-        if (!$updated) {
-            $products = $this->allDiscountProducts($discount);
-        } else {
-            $products = Product::all();
-        }
-
         // If discount has conditions based on time, then must be added or removed from cache
         $this->checkIsDiscountActive($discount);
 
-        $this->applyDiscountsOnProducts($products);
+        $salesWithBlockList = $this->getSalesWithBlockList();
+        $products = Collection::make();
 
-        // @phpstan-ignore-next-line
-        Product::whereIn('id', $products->pluck('id'))->searchable();
+        // if job is called after update, then calculate discount for all products,
+        // because it may change the list of related products or target_is_allow_list value
+        if (!$updated) {
+            $products = $this->allDiscountProductsIds($discount);
+        }
+
+        $this->applyDiscountsOnProductsLazy($products, $salesWithBlockList);
     }
 
     public function checkActiveSales(): void
@@ -569,33 +537,85 @@ class DiscountService implements DiscountServiceContract
 
         $oldActiveSales = Collection::make($activeSales);
 
+        $activeSalesIds = $this->activeSales()->pluck('id');
+        $saleIds = $activeSalesIds
+            ->diff($oldActiveSales)
+            ->merge($oldActiveSales->diff($activeSalesIds));
+
+        $sales = Discount::query()
+            ->whereIn('id', $saleIds)
+            ->with(['products', 'productSets', 'productSets.products'])
+            ->get();
+
         $products = Collection::make();
 
-        $activeSalesIds = $this->activeSales()->pluck('id');
-        $sales = $activeSalesIds->diff($oldActiveSales)->merge($oldActiveSales->diff($activeSalesIds));
-
-        $sales = Discount::whereIn('id', $sales)->with(['products', 'productSets', 'productSets.products'])->get();
-
         foreach ($sales as $sale) {
-            $products = $products->merge($this->allDiscountProducts($sale))->unique('id');
+            $products = $products->merge($this->allDiscountProductsIds($sale));
         }
 
-        $this->applyDiscountsOnProducts($products);
-
-        // @phpstan-ignore-next-line
-        Product::whereIn('id', $products->pluck('id'))->searchable();
+        $products = $products->unique();
+        $this->applyDiscountsOnProductsLazy(
+            $products,
+            $this->getSalesWithBlockList(),
+        );
 
         Cache::put('sales.active', $activeSalesIds);
     }
 
-    private function allDiscountProducts(Discount $discount): Collection
-    {
-        $products = $discount->allProducts();
+    public function applyAllDiscountsOnProduct(
+        Product $product,
+        Collection $salesWithBlockList,
+        bool $reindex = true,
+    ): void {
+        $sales = $this->sortDiscounts($product->allProductSales($salesWithBlockList));
 
-        if (!$discount->target_is_allow_list) {
-            $products = Product::whereNotIn('id', $products->pluck('id'))->get();
+        // prevent error when price_min or price_max is null
+        $minPriceDiscounted = $product->price_min_initial ?? $product->price;
+        $maxPriceDiscounted = $product->price_max_initial ?? $product->price;
+
+        $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
+
+        $productSales = Collection::make();
+
+        foreach ($sales as $sale) {
+            if ($this->checkConditionGroupsForProduct($sale)) {
+                if ($minPriceDiscounted !== $minimalProductPrice) {
+                    $minPriceDiscounted = $this
+                        ->calcProductPriceDiscount($sale, $minPriceDiscounted, $minimalProductPrice);
+                }
+
+                if ($maxPriceDiscounted !== $minimalProductPrice) {
+                    $maxPriceDiscounted = $this
+                        ->calcProductPriceDiscount($sale, $maxPriceDiscounted, $minimalProductPrice);
+                }
+
+                $productSales->push($sale);
+            }
         }
 
+        // + 1 query for product
+        $product->update([
+            'price_min' => $minPriceDiscounted,
+            'price_max' => $maxPriceDiscounted,
+        ]);
+        // detach and attach only add 2 queries to database, sync add 1 query for every element in given array,
+        $product->sales()->detach();
+        $product->sales()->attach($productSales->pluck('id'));
+
+        if ($reindex) {
+            $product->searchable();
+        }
+    }
+
+    private function allDiscountProductsIds(Discount $discount): Collection
+    {
+        $products = $discount->allProductsIds();
+
+        if (!$discount->target_is_allow_list) {
+            $products = Product::query()->whereNotIn('id', $products)->pluck('id');
+        }
+
+        // Return only ids of products, that should be discounted
         return $products;
     }
 
@@ -641,8 +661,7 @@ class DiscountService implements DiscountServiceContract
     private function calcProductPriceDiscount(Discount $discount, float $price, float $minimalProductPrice): float
     {
         $price -= $this->calc($price, $discount);
-        return $price < $minimalProductPrice
-            ? $minimalProductPrice : $price;
+        return max($price, $minimalProductPrice);
     }
 
     private function checkConditionGroupForProduct(ConditionGroup $group): bool
@@ -869,7 +888,7 @@ class DiscountService implements DiscountServiceContract
 
             $cartItem = $this->applyDiscountOnCartItem($discount, $item, $cart);
 
-            array_push($cartItems, $cartItem);
+            $cartItems[] = $cartItem;
 
             $cartValue += $cartItem->price_discounted * $item->getQuantity();
         }
@@ -911,7 +930,7 @@ class DiscountService implements DiscountServiceContract
         if ($price !== $minimalProductPrice) {
             $newPrice = round($price - $this->calc($price, $discount), 2, PHP_ROUND_HALF_UP);
 
-            $cartItem->price_discounted = $newPrice < $minimalProductPrice ? $minimalProductPrice : $newPrice;
+            $cartItem->price_discounted = max($newPrice, $minimalProductPrice);
 
             $cart->cart_total -= ($price - $cartItem->price_discounted) * $cartItem->quantity;
         }
@@ -953,7 +972,7 @@ class DiscountService implements DiscountServiceContract
 
         if ($price !== $minimalProductPrice && $this->checkIsProductInDiscount($productId, $discount)) {
             $price -= $this->calc($price, $discount);
-            $price = $price < $minimalProductPrice ? $minimalProductPrice : $price;
+            $price = max($price, $minimalProductPrice);
         }
 
         return round($price, 2, PHP_ROUND_HALF_UP);
@@ -1022,7 +1041,7 @@ class DiscountService implements DiscountServiceContract
     {
         $result = [];
         foreach ($conditions as $condition) {
-            array_push($result, $this->createConditionGroup($condition));
+            $result[] = $this->createConditionGroup($condition);
         }
         return Collection::make($result)->pluck('id')->all();
     }
@@ -1236,17 +1255,17 @@ class DiscountService implements DiscountServiceContract
     {
         $conditionDto = CartLengthConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
-        return $this->checkConditionLenght($conditionDto, $cartLength);
+        return $this->checkConditionLength($conditionDto, $cartLength);
     }
 
     private function checkConditionCouponsCount(DiscountCondition $condition, int $couponsCount): bool
     {
         $conditionDto = CouponsCountConditionDto::fromArray($condition->value + ['type' => $condition->type]);
 
-        return $this->checkConditionLenght($conditionDto, $couponsCount);
+        return $this->checkConditionLength($conditionDto, $couponsCount);
     }
 
-    private function checkConditionLenght(
+    private function checkConditionLength(
         CartLengthConditionDto|CouponsCountConditionDto $conditionDto,
         int $count,
     ): bool {
@@ -1263,5 +1282,34 @@ class DiscountService implements DiscountServiceContract
         }
 
         return false;
+    }
+
+    private function getSalesWithBlockList(): Collection
+    {
+        return Discount::where('code', null)
+            ->where('target_type', DiscountTargetType::PRODUCTS)
+            ->where('target_is_allow_list', false)->with(['products', 'productSets', 'productSets.products'])->get();
+    }
+
+    private function applyDiscountsOnProductsLazy(Collection $productIds, Collection $salesWithBlockList): void
+    {
+        $productQuery = Product::with([
+            'discounts',
+            'sets',
+            'sets.discounts',
+            'sets.parent',
+        ]);
+
+        if ($productIds->isNotEmpty()) {
+            $productQuery = $productQuery->whereIn('id', $productIds);
+        }
+
+        $productQuery->chunk(100, function ($products) use ($salesWithBlockList): void {
+            foreach ($products as $product) {
+                $this->applyAllDiscountsOnProduct($product, $salesWithBlockList, false);
+            }
+
+            $products->searchable();
+        });
     }
 }

@@ -30,6 +30,7 @@ class WebHookEventLogEntry extends Model
 
     protected $casts = [
         'triggered_at' => 'datetime',
+        'payload' => 'array',
     ];
 
     protected array $criteria = [

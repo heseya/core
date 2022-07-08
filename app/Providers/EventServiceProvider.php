@@ -13,6 +13,7 @@ use App\Events\OrderCreated;
 use App\Events\OrderDocumentEvent;
 use App\Events\OrderUpdated;
 use App\Events\OrderUpdatedPaid;
+use App\Events\OrderUpdatedShippingNumber;
 use App\Events\OrderUpdatedStatus;
 use App\Events\PageCreated;
 use App\Events\PageDeleted;
@@ -31,6 +32,7 @@ use App\Events\UserCreated;
 use App\Events\UserDeleted;
 use App\Events\UserUpdated;
 use App\Listeners\ItemUpdatedQuantityListener;
+use App\Listeners\MakeSetProductsSearchable;
 use App\Listeners\OrderCreatedListener;
 use App\Listeners\OrderUpdatedStatusListener;
 use App\Listeners\WebHookEventListener;
@@ -40,11 +42,13 @@ use App\Models\Deposit;
 use App\Models\ItemProduct;
 use App\Models\Page;
 use App\Models\Payment;
+use App\Models\Schema;
 use App\Observers\AttributeOptionObserver;
 use App\Observers\DepositObserver;
 use App\Observers\ItemProductObserver;
 use App\Observers\PageObserver;
 use App\Observers\PaymentObserver;
+use App\Observers\SchemaObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Spatie\WebhookServer\Events\FinalWebhookCallFailedEvent;
 
@@ -111,6 +115,9 @@ class EventServiceProvider extends ServiceProvider
         OrderUpdated::class => [
             WebHookEventListener::class,
         ],
+        OrderUpdatedShippingNumber::class => [
+            WebHookEventListener::class,
+        ],
         PageCreated::class => [
             WebHookEventListener::class,
         ],
@@ -131,11 +138,13 @@ class EventServiceProvider extends ServiceProvider
         ],
         ProductSetCreated::class => [
             WebHookEventListener::class,
-        ],
-        ProductSetDeleted::class => [
-            WebHookEventListener::class,
+            MakeSetProductsSearchable::class,
         ],
         ProductSetUpdated::class => [
+            WebHookEventListener::class,
+            MakeSetProductsSearchable::class,
+        ],
+        ProductSetDeleted::class => [
             WebHookEventListener::class,
         ],
         UserCreated::class => [
@@ -157,5 +166,6 @@ class EventServiceProvider extends ServiceProvider
         AttributeOption::observe(AttributeOptionObserver::class);
         ItemProduct::observe(ItemProductObserver::class);
         Page::observe(PageObserver::class);
+        Schema::observe(SchemaObserver::class);
     }
 }

@@ -32,6 +32,7 @@ return [
         EventType::ADD_ORDER_DOCUMENT => ['orders.show_details', 'orders.show'],
         EventType::REMOVE_ORDER_DOCUMENT => ['orders.show_details', 'orders.show'],
         EventType::ORDER_UPDATED_PAID => ['orders.show_details', 'orders.show'],
+        EventType::ORDER_UPDATED_SHIPPING_NUMBER => ['orders.show_details', 'orders.show'],
     ],
 
     'permissions_hidden' => [

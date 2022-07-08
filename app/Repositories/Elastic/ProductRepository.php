@@ -306,8 +306,7 @@ class ProductRepository implements ProductRepositoryContract
             return $query;
         }
 
-        if (is_string($values))
-        {
+        if (is_string($values)) {
             $values = Str::replace('%2C', ',', $values);
             $values = explode(',', $values);
         }
@@ -345,8 +344,7 @@ class ProductRepository implements ProductRepositoryContract
             return $query;
         }
 
-        if (is_string($values))
-        {
+        if (is_string($values)) {
             $values = Str::replace('%2C', ',', $values);
             $values = explode(',', $values);
         }
