@@ -27,7 +27,7 @@ Users:
         example: 'name:desc'
       - name: full
         in: query
-        description: 'Return full data'
+        description: 'Returns details resource'
         schema:
           type: boolean
       - name: limit
