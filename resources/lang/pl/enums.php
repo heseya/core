@@ -33,6 +33,13 @@ return [
         EventType::ADD_ORDER_DOCUMENT => 'Zdarzenie wyzwalane po utworzeniu nowych dokumentów zamówienia',
         EventType::REMOVE_ORDER_DOCUMENT => 'Zdarzenie wyzwalane po usunięciu dokumentu zamówienia',
         EventType::ORDER_UPDATED_PAID => 'Zdarzenie wyzwalane po zmienie statusu płatności zamówienia',
+        EventType::TFA_INIT => 'Zdarzenie wyzwalane po inicjalizacji TFA jako email',
+        EventType::TFA_SECURITY_CODE => 'Zdarzenie wyzwalane po wygenerowaniu kodu TFA',
+        EventType::TFA_RECOVERY_CODES_CHANGED => 'Zdarzenie wyzwalane po wygenerowaniu kodów odzyskiwania TFA',
+        EventType::PASSWORD_RESET => 'Zdarzenie wyzwalane po żądaniu resetu hasła',
+        EventType::SUCCESSFUL_LOGIN_ATTEMPT => 'Zdarzenie wyzwalane po pomyślnej próbie logowania',
+        EventType::NEW_LOCALIZATION_LOGIN_ATTEMPT => 'Zdarzenie po pomyślnej próbie logowania z nowej lokalizacji',
+        EventType::FAILED_LOGIN_ATTEMPT => 'Zdarzenie wyzwalane po niepomyślnej próbie logowania',
         EventType::ORDER_UPDATED_SHIPPING_NUMBER => 'Zdarzenie wyzwalane po aktualizacji numeru listu przewozowego',
     ],
 ];

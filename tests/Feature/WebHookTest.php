@@ -239,6 +239,47 @@ class WebHookTest extends TestCase
         ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateSecureEventNoSecret($user): void
+    {
+        $this->$user->givePermissionTo('webhooks.add');
+
+        $response = $this->actingAs($this->$user)->json('POST', '/webhooks', [
+            'name' => 'webhook',
+            'url' => 'https://example.com',
+            'events' => [
+                'TfaInit',
+            ],
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateSecureEventNoSecureUrl($user): void
+    {
+        $this->$user->givePermissionTo('webhooks.add');
+
+        $response = $this->actingAs($this->$user)->json('POST', '/webhooks', [
+            'name' => 'webhook',
+            'url' => 'http://example.com',
+            'events' => [
+                'TfaInit',
+            ],
+            'secret' => 'secret',
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        $response->assertStatus(422);
+    }
+
     public function testUpdateUnauthorized(): void
     {
         $response = $this->json('PATCH', '/webhooks/id:' . $this->webHook->getKey());
