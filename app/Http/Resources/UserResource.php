@@ -17,9 +17,8 @@ class UserResource extends Resource
         /** @var Collection $roles */
         $roles = $this->resource->roles;
 
-        $filtered = $roles->filter(function (Role $role) {
-            return $role->type->value !== RoleType::AUTHENTICATED;
-        });
+        // filter Authenticated role from resources
+        $filtered = $roles->filter(fn (Role $role) => $role->type->value !== RoleType::AUTHENTICATED);
 
         return array_merge([
             'id' => $this->resource->getKey(),
@@ -39,6 +38,7 @@ class UserResource extends Resource
                 ->map(fn ($perm) => $perm->name)
                 ->sort()
                 ->values(),
+            'preferences' => UserPreferencesResource::make($this->resource->preferences),
         ];
     }
 }

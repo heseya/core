@@ -3,15 +3,10 @@
 namespace Tests\Feature;
 
 use App\Events\ProductSetUpdated;
-use App\Listeners\WebHookEventListener;
 use App\Models\Attribute;
 use App\Models\ProductSet;
 use App\Models\SeoMetadata;
-use App\Models\WebHook;
-use Illuminate\Events\CallQueuedListener;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
-use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
 class ProductSetUpdateTest extends TestCase
@@ -138,84 +133,6 @@ class ProductSetUpdateTest extends TestCase
             $parentId + [
                 'slug' => 'test-edit',
             ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateWithWebHook($user): void
-    {
-        $this->$user->givePermissionTo('product_sets.edit');
-
-        $webHook = WebHook::factory()->create([
-            'events' => [
-                'ProductSetUpdated',
-            ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
-            'with_issuer' => true,
-            'with_hidden' => true,
-        ]);
-
-        Bus::fake();
-
-        $newSet = ProductSet::factory()->create([
-            'public' => false,
-            'order' => 40,
-        ]);
-
-        $set = [
-            'name' => 'Test Edit',
-            'public' => true,
-            'hide_on_index' => true,
-        ];
-
-        $parentId = [
-            'parent_id' => null,
-        ];
-
-        $response = $this->actingAs($this->$user)->patchJson(
-            '/product-sets/id:' . $newSet->getKey(),
-            $set + $parentId + [
-                'children_ids' => [],
-                'slug_suffix' => 'test-edit',
-                'slug_override' => false,
-            ],
-        );
-        $response
-            ->assertOk()
-            ->assertJson(['data' => $set + [
-                'parent' => null,
-                'children_ids' => [],
-                'slug' => 'test-edit',
-                'slug_suffix' => 'test-edit',
-                'slug_override' => false,
-            ],
-            ]);
-
-        $this->assertDatabaseHas('product_sets', $set + $parentId + [
-            'slug' => 'test-edit',
-        ]);
-
-        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
-            return $job->class === WebHookEventListener::class
-                && $job->data[0] instanceof ProductSetUpdated;
-        });
-
-        $set = ProductSet::find($response->getData()->data->id);
-
-        $event = new ProductSetUpdated($set);
-        $listener = new WebHookEventListener();
-        $listener->handle($event);
-
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $set) {
-            $payload = $job->payload;
-            return $job->webhookUrl === $webHook->url
-                && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $set->getKey()
-                && $payload['data_type'] === 'ProductSet'
-                && $payload['event'] === 'ProductSetUpdated';
-        });
     }
 
     /**

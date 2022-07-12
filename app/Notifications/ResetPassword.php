@@ -5,14 +5,10 @@ namespace App\Notifications;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/**
- * @see https://laracasts.com/discuss/channels/laravel/trying-to-setup-a-new-notification-for-updating-user-password
- * @see https://laracasts.com/discuss/channels/laravel/how-to-override-the-tomail-function-in-illuminateauthnotificationsresetpasswordphp
- */
 class ResetPassword extends Notification
 {
     /**
-     * The password reset token.
+     * The password reset url.
      */
     public string $token;
     public string $redirect_url;
@@ -43,12 +39,11 @@ class ResetPassword extends Notification
             'token' => $this->token,
             'email' => $notifiable->getEmailForPasswordReset(),
         ]);
-        $url = $this->redirect_url . '?' . $param;
 
         return (new MailMessage())
             ->subject('Wniosek o zmianę hasła')
             ->view('mail.user-password-reset', [
-                'url' => $url,
+                'url' => "{$this->redirect_url}?{$param}",
             ]);
     }
 }

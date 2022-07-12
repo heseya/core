@@ -90,7 +90,7 @@ Users:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Users.yml#/User'
+                  $ref: './../schemas/Users.yml#/UserView'
               type: object
     security:
       - BearerAuth: [ ]
@@ -115,7 +115,7 @@ UsersParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Users.yml#/User'
+                  $ref: './../schemas/Users.yml#/UserView'
               type: object
     security:
       - BearerAuth: [ ]
@@ -156,7 +156,7 @@ UsersParams:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Users.yml#/User'
+                  $ref: './../schemas/Users.yml#/UserView'
               type: object
     security:
       - BearerAuth: [ ]

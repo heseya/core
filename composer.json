@@ -9,6 +9,7 @@
         "ext-hash": "*",
         "ext-json": "*",
         "ext-soap": "*",
+        "ext-openssl": "*",
         "bensampo/laravel-enum": "^5.1",
         "bvlinsky/explorer": "^3.0",
         "guzzlehttp/guzzle": "^7.4",
@@ -113,11 +114,14 @@
         "arch": [
             "deptrac"
         ],
+        "docs": [
+            "swagger-cli validate ./public/docs/api.yml"
+        ],
         "pre-commit": [
             "@style",
             "@phpstan",
             "@check",
-            "swagger-cli validate ./public/docs/api.yml"
+            "@docs"
         ],
         "test": [
             "@php artisan test --env=.env"

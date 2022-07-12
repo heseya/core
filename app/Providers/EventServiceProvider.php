@@ -5,10 +5,12 @@ namespace App\Providers;
 use App\Events\CouponCreated;
 use App\Events\CouponDeleted;
 use App\Events\CouponUpdated;
+use App\Events\FailedLoginAttempt;
 use App\Events\ItemCreated;
 use App\Events\ItemDeleted;
 use App\Events\ItemUpdated;
 use App\Events\ItemUpdatedQuantity;
+use App\Events\NewLocalizationLoginAttempt;
 use App\Events\OrderCreated;
 use App\Events\OrderDocumentEvent;
 use App\Events\OrderUpdated;
@@ -18,6 +20,7 @@ use App\Events\OrderUpdatedStatus;
 use App\Events\PageCreated;
 use App\Events\PageDeleted;
 use App\Events\PageUpdated;
+use App\Events\PasswordReset;
 use App\Events\ProductCreated;
 use App\Events\ProductDeleted;
 use App\Events\ProductSetCreated;
@@ -28,6 +31,10 @@ use App\Events\SaleCreated;
 use App\Events\SaleDeleted;
 use App\Events\SaleUpdated;
 use App\Events\SendOrderDocument;
+use App\Events\SuccessfulLoginAttempt;
+use App\Events\TfaInit;
+use App\Events\TfaRecoveryCodesChanged;
+use App\Events\TfaSecurityCode;
 use App\Events\UserCreated;
 use App\Events\UserDeleted;
 use App\Events\UserUpdated;
@@ -50,6 +57,7 @@ use App\Observers\PageObserver;
 use App\Observers\PaymentObserver;
 use App\Observers\SchemaObserver;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Event;
 use Spatie\WebhookServer\Events\FinalWebhookCallFailedEvent;
 
 class EventServiceProvider extends ServiceProvider
@@ -60,19 +68,11 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
-        OrderDocumentEvent::class => [
-            WebHookEventListener::class,
-        ],
-        SendOrderDocument::class => [
-            WebHookEventListener::class,
-        ],
         OrderCreated::class => [
             OrderCreatedListener::class,
-            WebHookEventListener::class,
         ],
         OrderUpdatedStatus::class => [
             OrderUpdatedStatusListener::class,
-            WebHookEventListener::class,
         ],
         OrderUpdatedPaid::class => [
             WebHookEventListener::class,
@@ -109,7 +109,6 @@ class EventServiceProvider extends ServiceProvider
             WebHookEventListener::class,
         ],
         ItemUpdatedQuantity::class => [
-            WebHookEventListener::class,
             ItemUpdatedQuantityListener::class,
         ],
         OrderUpdated::class => [
@@ -158,9 +157,50 @@ class EventServiceProvider extends ServiceProvider
         ],
     ];
 
+    /**
+     * Webhooks events.
+     */
+    private array $webhookEvents = [
+        OrderDocumentEvent::class,
+        SendOrderDocument::class,
+        OrderCreated::class,
+        OrderUpdatedStatus::class,
+        SaleCreated::class,
+        SaleDeleted::class,
+        SaleUpdated::class,
+        CouponCreated::class,
+        CouponDeleted::class,
+        CouponUpdated::class,
+        ItemCreated::class,
+        ItemDeleted::class,
+        ItemUpdated::class,
+        ItemUpdatedQuantity::class,
+        OrderUpdated::class,
+        PageCreated::class,
+        PageDeleted::class,
+        PageUpdated::class,
+        ProductCreated::class,
+        ProductDeleted::class,
+        ProductUpdated::class,
+        ProductSetCreated::class,
+        ProductSetDeleted::class,
+        ProductSetUpdated::class,
+        UserCreated::class,
+        UserDeleted::class,
+        UserUpdated::class,
+        TfaInit::class,
+        TfaSecurityCode::class,
+        TfaRecoveryCodesChanged::class,
+        PasswordReset::class,
+        SuccessfulLoginAttempt::class,
+        NewLocalizationLoginAttempt::class,
+        FailedLoginAttempt::class,
+    ];
+
     public function boot(): void
     {
         parent::boot();
+        Event::listen($this->webhookEvents, WebHookEventListener::class);
         Payment::observe(PaymentObserver::class);
         Deposit::observe(DepositObserver::class);
         AttributeOption::observe(AttributeOptionObserver::class);

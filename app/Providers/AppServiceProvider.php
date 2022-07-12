@@ -54,6 +54,7 @@ use App\Services\Contracts\SortServiceContract;
 use App\Services\Contracts\StatusServiceContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UrlServiceContract;
+use App\Services\Contracts\UserLoginAttemptServiceContract;
 use App\Services\Contracts\UserServiceContract;
 use App\Services\Contracts\WebHookServiceContract;
 use App\Services\DepositService;
@@ -87,6 +88,7 @@ use App\Services\SortService;
 use App\Services\StatusService;
 use App\Services\TokenService;
 use App\Services\UrlService;
+use App\Services\UserLoginAttemptService;
 use App\Services\UserService;
 use App\Services\WebHookService;
 use Illuminate\Support\ServiceProvider;
@@ -132,6 +134,7 @@ class AppServiceProvider extends ServiceProvider
         ProductSearchServiceContract::class => ProductSearchService::class,
         ConsentServiceContract::class => ConsentService::class,
         BannerServiceContract::class => BannerService::class,
+        UserLoginAttemptServiceContract::class => UserLoginAttemptService::class,
         StatusServiceContract::class => StatusService::class,
         PackageTemplateServiceContract::class => PackageTemplateService::class,
         DepositServiceContract::class => DepositService::class,
