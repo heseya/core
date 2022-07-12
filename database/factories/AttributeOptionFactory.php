@@ -16,15 +16,14 @@ class AttributeOptionFactory extends Factory
 
     /**
      * Define the model's default state.
-     *
-     * @return array
      */
-    public function definition()
+    public function definition(): array
     {
         return [
             'name' => $this->faker->word,
             'value_number' => rand(0, 1) === 1 ? $this->faker->randomNumber(5) : null,
             'value_date' => $this->faker->date,
+            'index' => 0,
         ];
     }
 }
