@@ -20,7 +20,7 @@ class MediaService implements MediaServiceContract
 {
     public function __construct(
         private ReorderServiceContract $reorderService,
-        private MetadataServiceContract $metadataService
+        private MetadataServiceContract $metadataService,
     ) {
     }
 
@@ -39,11 +39,9 @@ class MediaService implements MediaServiceContract
     public function destroy(Media $media): void
     {
         if (Str::contains($media->url, Config::get('silverbox.host'))) {
-            $response = Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
+            Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
                 ->delete($media->url);
-
-        Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
-            ->delete($media->url);
+        }
 
         // no need to handle failed response while removing media
 
