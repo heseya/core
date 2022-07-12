@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Dtos\MediaDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\MediaType;
+use App\Exceptions\ClientException;
 use App\Exceptions\ServerException;
 use App\Models\Media;
 use App\Models\Product;
@@ -103,6 +104,10 @@ class MediaService implements MediaServiceContract
 
     private function updateSlug(Media $media, string $slug): string
     {
+        if (!Str::contains($media->url, Config::get('silverbox.host'))) {
+            throw new CLientException(message: Exceptions::CDN_NOT_ALLOWED_TO_CHANGE_ALT);
+        }
+
         $response = Http::asJson()
             ->acceptJson()
             ->withHeaders(['x-api-key' => Config::get('silverbox.key')])
