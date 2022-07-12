@@ -105,7 +105,7 @@ class MediaService implements MediaServiceContract
     private function updateSlug(Media $media, string $slug): string
     {
         if (!Str::contains($media->url, Config::get('silverbox.host'))) {
-            throw new CLientException(message: Exceptions::CDN_NOT_ALLOWED_TO_CHANGE_ALT);
+            throw new ClientException(message: Exceptions::CDN_NOT_ALLOWED_TO_CHANGE_ALT);
         }
 
         $response = Http::asJson()
