@@ -19,11 +19,13 @@ class AttributeOptionTest extends TestCase
         $target = AttributeOption::factory()->create([
             'name' => 'searchtarget',
             'attribute_id' => $attribute->getKey(),
+            'index' => 0,
         ]);
 
         AttributeOption::factory()->count(10)->create([
             'name' => 'test',
             'attribute_id' => $attribute->getKey(),
+            'index' => 0,
         ]);
 
         $this
