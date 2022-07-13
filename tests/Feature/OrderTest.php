@@ -570,13 +570,24 @@ class OrderTest extends TestCase
     {
         $this->$user->givePermissionTo('orders.show_details');
 
-        $this->actingAs($this->$user)
+        $response = $this->actingAs($this->$user)
             ->getJson('/orders/id:its-not-uuid')
             ->assertNotFound();
 
-        $this->actingAs($this->$user)
+        $this->assertEquals(404, $response->getData()->error->code); //get error code from our error handle structure
+
+        $response = $this->actingAs($this->$user)
             ->getJson('/orders/id:' . $this->order->getKey() . $this->order->getKey())
             ->assertNotFound();
+
+        $this->assertEquals(404, $response->getData()->error->code);
+        $this->order->delete();
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/orders/id:' . $this->order->getKey())
+            ->assertNotFound();
+
+        $this->assertEquals(404, $response->getData()->error->code);
     }
 
     /**
@@ -633,13 +644,17 @@ class OrderTest extends TestCase
     {
         $this->$user->givePermissionTo('orders.show_summary');
 
-        $this->actingAs($this->$user)
+        $response = $this->actingAs($this->$user)
             ->getJson('/orders/its_wrong_code')
             ->assertNotFound();
 
-        $this->actingAs($this->$user)
+        $this->assertEquals(404, $response->getData()->error->code); //get error code from our error handle structure
+
+        $response = $this->actingAs($this->$user)
             ->getJson('/orders/' . $this->order->code . '_' . $this->order->code)
             ->assertNotFound();
+
+        $this->assertEquals(404, $response->getData()->error->code);
     }
 
     /**
