@@ -23,7 +23,8 @@ Route::prefix('orders')->group(function (): void {
     Route::patch('id:{order:id}/status', [OrderController::class, 'updateStatus'])
         ->middleware('can:orders.edit.status');
     Route::patch('id:{order:id}', [OrderController::class, 'update'])
-        ->middleware('can:orders.edit');
+        ->middleware('can:orders.edit')
+        ->whereUuid('order');
     Route::patch('id:{order:id}/metadata', [MetadataController::class, 'updateOrCreate'])
         ->middleware('can:orders.edit');
     Route::patch('id:{order:id}/metadata-private', [MetadataController::class, 'updateOrCreate'])
