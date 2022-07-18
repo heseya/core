@@ -9,4 +9,5 @@ final class MediaType extends Enum
     public const OTHER = 'other';
     public const PHOTO = 'photo';
     public const VIDEO = 'video';
+    public const DOCUMENT = 'document';
 }
