@@ -55,15 +55,18 @@ class ProviderController extends Controller
 
     public function redirect(AuthProviderRedirectRequest $request, string $authProviderKey): JsonResponse
     {
-        $this->providerService->setupRedirect($authProviderKey, $request->input('return_url'));
+        $this->providerService->setupRedirect(
+            $authProviderKey,
+            $request->input('return_url'),
+        );
 
         $driver = AuthProviderKey::getDriver($authProviderKey);
 
-        return Response::json(
-            Socialite::driver($driver)
+        return Response::json([
+            'redirect_url' => Socialite::driver($driver)
                 ->stateless()
                 ->redirect()
-                ->getTargetUrl()
-        );
+                ->getTargetUrl(),
+        ]);
     }
 }
