@@ -79,8 +79,11 @@ class MediaService implements MediaServiceContract
 
     public function update(Media $media, MediaDto $dto): Media
     {
-        if (!($dto->getSlug() instanceof Missing) && $media->slug !== $dto->getSlug()) {
-            $media->url = $this->updateSlug($media, $dto->getSlug());
+        if (!($dto->getSlug() instanceof Missing)) {
+            if ($media->slug !== $dto->getSlug() && $media->slug !== null) {
+                $media->url = $this->updateSlug($media, $dto->getSlug());
+            }
+
             $media->slug = $dto->getSlug();
         }
 
