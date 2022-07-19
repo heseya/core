@@ -29,17 +29,18 @@ class OneTimeSecurityCodeService implements OneTimeSecurityCodeContract
 
     public function generateRecoveryCodes(int $codes = 3): array
     {
-        Auth::user()->securityCodes()->delete();
-
+        /** @var User $user */
+        $user = Auth::user();
+        $user->securityCodes()->delete();
         $recovery_codes = [];
 
         for ($i = 0; $i < $codes; $i++) {
-            array_push($recovery_codes, $this->generateOneTimeSecurityCode(Auth::user()));
+            array_push($recovery_codes, $this->generateOneTimeSecurityCode($user));
         }
 
-        if (Auth::user()->preferences->recovery_code_changed_alert) {
+        if ($user->preferences !== null && $user->preferences->recovery_code_changed_alert) {
             TfaRecoveryCodesChanged::dispatch(Auth::user());
-            Auth::user()->notify(new TFARecoveryCodes());
+            $user->notify(new TFARecoveryCodes());
         }
 
         return $recovery_codes;

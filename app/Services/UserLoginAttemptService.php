@@ -39,21 +39,27 @@ class UserLoginAttemptService implements UserLoginAttemptServiceContract
 
     private function sendFailedLoginAttemptAlert(UserLoginAttempt $attempt): void
     {
-        if ($attempt->user->preferences->failed_login_attempt_alert) {
+        $preferences = $attempt->user->preferences;
+
+        if ($preferences !== null && $preferences->failed_login_attempt_alert) {
             ProcessFailedLoginAttempts::dispatch($attempt->user_id)->delay(now()->addMinutes(5));
         }
     }
 
     private function sendSuccessfulLoginAttemptAlert(UserLoginAttempt $attempt): void
     {
-        if ($attempt->user->preferences->successful_login_attempt_alert) {
+        $preferences = $attempt->user->preferences;
+
+        if ($preferences !== null && $preferences->successful_login_attempt_alert) {
             SuccessfulLoginAttempt::dispatch($attempt);
         }
     }
 
     private function sendNewLocalizationLoginAlert(UserLoginAttempt $attempt): void
     {
-        if ($attempt->user->preferences->new_localization_login_alert) {
+        $preferences = $attempt->user->preferences;
+
+        if ($preferences !== null && $preferences->new_localization_login_alert) {
             $attempts = UserLoginAttempt::where('user_id', $attempt->user_id)
                 ->where('fingerprint', $attempt->fingerprint)
                 ->where('created_at', '<', $attempt->created_at)
