@@ -21,7 +21,7 @@ class MediaUpdateRequest extends FormRequest
                 'string',
                 'max:64',
                 Rule::unique('media')->ignore($media->slug, 'slug'),
-            ]
+            ],
         ];
     }
 }
