@@ -17,9 +17,10 @@ class MediaUpdateRequest extends FormRequest
         return [
             'alt' => ['nullable', 'string', 'max:100'],
             'slug' => [
-                new MediaSlug($media),
+                'nullable',
                 'string',
                 'max:64',
+                new MediaSlug($media),
                 Rule::unique('media')->ignore($media->slug, 'slug'),
             ],
         ];
