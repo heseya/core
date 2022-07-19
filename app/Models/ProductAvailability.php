@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @mixin IdeHelperProductAvailability
+ */
 class ProductAvailability extends Model
 {
     public $timestamps = null;

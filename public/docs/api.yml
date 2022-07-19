@@ -60,36 +60,7 @@ paths:
   '/apps/id:{id}':
     $ref: './paths/Apps.yml#/AppsParams'
   '/audits/{object}/id:{id}':
-    get:
-      tags:
-        - Audits
-      summary: 'list changes for object'
-      operationId: e30e643af2cbd18d3525f753fed7082e
-      parameters:
-        - name: object
-          in: path
-          required: true
-          schema:
-            type: string
-            example: products
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Audit'
-                type: object
+    $ref: './paths/Audits.yml#/Audit'
   /login:
     $ref: './paths/Auth.yml#/Login'
   /register:
@@ -401,37 +372,6 @@ components:
       $ref: './schemas/Apps.yml#/App'
     AppView:
       $ref: './schemas/Apps.yml#/AppView'
-    Audit:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        event:
-          type: string
-          example: updated
-        created_at:
-          description: 'Date of event'
-          type: string
-          example: '2021-10-10T12:00:00'
-        old_values:
-          type: array
-          items:
-            properties:
-              key:
-                type: string
-                example: value
-            type: object
-        new_values:
-          type: array
-          items:
-            properties:
-              key:
-                type: string
-                example: value
-            type: object
-        user:
-          $ref: './schemas/Users.yml#/User'
-      type: object
     Event:
       $ref: './schemas/Events.yml#/Event'
     OrderSummary:
