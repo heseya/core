@@ -88,6 +88,24 @@ class AuthTest extends TestCase
         $this->webhookKey = Config::get('webhook.key');
     }
 
+    public function testSuccessfulLoginWithoutPreferences(): void
+    {
+        /** @var User $user */
+        $user = User::query()->create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => Hash::make('password'),
+        ]);
+
+        $this
+            ->actingAs($user)
+            ->json('POST', '/login', [
+                'email' => 'test@example.com',
+                'password' => 'password',
+            ])
+            ->assertOk();
+    }
+
     public function testSuccessfulLoginAttempt(): array
     {
         $this->user->preferences()->update([
