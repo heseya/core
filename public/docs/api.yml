@@ -60,36 +60,7 @@ paths:
   '/apps/id:{id}':
     $ref: './paths/Apps.yml#/AppsParams'
   '/audits/{object}/id:{id}':
-    get:
-      tags:
-        - Audits
-      summary: 'list changes for object'
-      operationId: e30e643af2cbd18d3525f753fed7082e
-      parameters:
-        - name: object
-          in: path
-          required: true
-          schema:
-            type: string
-            example: products
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Audit'
-                type: object
+    $ref: './paths/Audits.yml#/Audit'
   /login:
     $ref: './paths/Auth.yml#/Login'
   /register:
@@ -139,23 +110,7 @@ paths:
   /webhooks/logs:
     $ref: './paths/WebHooks.yml#/Logs'
   /webhooks/events:
-    get:
-      tags:
-        - WebHooks
-      summary: 'list available events'
-      operationId: 6414d6482ecea4faf4b1754015e9df32
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Event'
-                type: object
+    $ref: './paths/WebHooks.yml#/WebhooksEvents'
   /filters:
     $ref: './paths/Filters.yml#/Filters'
   /furgonetka/create-package:
@@ -386,122 +341,9 @@ paths:
   '/users/id:{id}/2fa/remove':
     $ref: './paths/Users.yml#/UserTFARemove'
   /webhooks:
-    get:
-      tags:
-        - WebHooks
-      summary: 'list webhooks by filters'
-      operationId: f117e0d9744b820cd732d70bd7457c6d
-      parameters:
-        - name: name
-          in: query
-          description: 'Name search'
-          allowEmptyValue: true
-          schema:
-            type: string
-        - name: url
-          in: query
-          description: 'URL search'
-          allowEmptyValue: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/WebHook'
-                type: object
-    post:
-      tags:
-        - WebHooks
-      summary: 'add new webhook'
-      operationId: 24a5ff9bca8d89624ddc8639312d8360
-      requestBody:
-        $ref: '#/components/requestBodies/WebHookCreate'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/WebHook'
-                type: object
-      security:
-        - BearerAuth: [ ]
+    $ref: './paths/WebHooks.yml#/Webhooks'
   '/webhooks/id:{id}':
-    get:
-      tags:
-        - WebHooks
-      summary: 'show webhook'
-      operationId: ed3a1cc4a7dc4d00ecb95aedb2eba3ea
-      parameters:
-        - name: id
-          in: path
-          description: 'Name search'
-          required: true
-          schema:
-            type: string
-            example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/WebHook'
-                type: object
-    delete:
-      tags:
-        - WebHooks
-      summary: 'delete webhook'
-      operationId: 6b66c3b845cda9fb9fe63f7e1415392c
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
-      responses:
-        204:
-          description: Success
-      security:
-        - BearerAuth: [ ]
-    patch:
-      tags:
-        - WebHooks
-      summary: 'update webhook'
-      operationId: 6592bce5d0ff79a23fd8060baf69d225
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
-      requestBody:
-        $ref: './requests/WebHookUpdate.yml#/WebHookUpdate'
-      responses:
-        200:
-          description: Updated
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/WebHook'
-                type: object
-      security:
-        - BearerAuth: [ ]
+    $ref: './paths/WebHooks.yml#/WebhooksParams'
   '/attributes':
     $ref: './paths/Attributes.yml#/Attributes'
   '/attributes/id:{id}':
@@ -530,64 +372,8 @@ components:
       $ref: './schemas/Apps.yml#/App'
     AppView:
       $ref: './schemas/Apps.yml#/AppView'
-    Audit:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        event:
-          type: string
-          example: updated
-        created_at:
-          description: 'Date of event'
-          type: string
-          example: '2021-10-10T12:00:00'
-        old_values:
-          type: array
-          items:
-            properties:
-              key:
-                type: string
-                example: value
-            type: object
-        new_values:
-          type: array
-          items:
-            properties:
-              key:
-                type: string
-                example: value
-            type: object
-        user:
-          $ref: './schemas/Users.yml#/User'
-      type: object
     Event:
-      properties:
-        key:
-          description: 'Displayed event key'
-          type: string
-          example: PRODUCT_CREATED
-        name:
-          description: 'Displayed event name'
-          type: string
-          example: 'Product created'
-        description:
-          description: 'Displayed event description'
-          type: string
-          example: 'Event triggered when new products are created'
-        required_permissions:
-          description: 'List of Event required permissions'
-          type: array
-          items:
-            type: string
-            example: products.show
-        required_hidden_permissions:
-          description: 'List of Event required hidden permissions'
-          type: array
-          items:
-            type: string
-            example: products.show_hidden
-      type: object
+      $ref: './schemas/Events.yml#/Event'
     OrderSummary:
       $ref: './schemas/Orders.yml#/OrderSummary'
     Permission:
@@ -626,38 +412,10 @@ components:
       $ref: './schemas/Users.yml#/User'
     UserView:
       $ref: './schemas/Users.yml#/UserView'
+    WebHookEventLogEntry:
+      $ref: './schemas/WebHooks.yml#/WebHookEventLogEntry'
     WebHook:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        name:
-          description: 'Displayed webhook name'
-          type: string
-          example: 'WebHook name'
-        url:
-          description: 'Displayed webhook url'
-          type: string
-          example: 'https://app.heseya.com'
-        secret:
-          description: 'Displayed webhook secret'
-          type: string
-          example: secret
-        with_issuer:
-          description: 'Whether issuer is visible in WebHookEvent.'
-          type: boolean
-          example: true
-        with_hidden:
-          description: 'Whether hidden data are visible in WebHookEvent.'
-          type: boolean
-          example: true
-        events:
-          description: 'List of WebHook events'
-          type: array
-          items:
-            type: string
-            example: OrderCreated
-      type: object
+      $ref: './schemas/WebHooks.yml#/WebHook'
     Address:
       $ref: './schemas/Addresses.yml#/Address'
     Country:
@@ -724,6 +482,8 @@ components:
       $ref: './schemas/Attributes.yml#/AttributeOption'
     Consents:
       $ref: './schemas/Consents.yml#/Consent'
+    UserPreferences:
+      $ref: './schemas/Auth.yml#/Preferences'
   requestBodies:
     AppStore:
       $ref: './requests/Apps.yml#/AppStore'
@@ -774,37 +534,7 @@ components:
     UserUpdate:
       $ref: './requests/Users.yml#/UserUpdate'
     WebHookCreate:
-      content:
-        application/json:
-          schema:
-            properties:
-              name:
-                description: 'Displayed webhook name'
-                type: string
-                example: 'WebHook name'
-              url:
-                description: 'Displayed webhook url'
-                type: string
-                example: 'https://app.heseya.com'
-              secret:
-                description: 'Displayed webhook secret'
-                type: string
-                example: secret
-              with_issuer:
-                description: 'Whether issuer is visible in WebHookEvent.'
-                type: boolean
-                example: true
-              with_hidden:
-                description: 'Whether hidden data are visible in WebHookEvent.'
-                type: boolean
-                example: true
-              events:
-                description: 'List of WebHook events'
-                type: array
-                items:
-                  type: string
-                  example: OrderCreated
-            type: object
+      $ref: './requests/WebHooks.yml#/WebHookCreate'
   securitySchemes:
     BearerAuth:
       description: 'Use /login and paste token in value field below'

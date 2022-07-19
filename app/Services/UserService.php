@@ -11,6 +11,7 @@ use App\Events\UserUpdated;
 use App\Exceptions\ClientException;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserPreference;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\UserServiceContract;
 use Heseya\Dto\Missing;
@@ -56,11 +57,18 @@ class UserService implements UserServiceContract
             'password' => Hash::make($dto->getPassword()),
         ]);
 
+        $preferences = UserPreference::create();
+        $preferences->refresh();
+
+        $user->preferences()->associate($preferences);
+
         $user->syncRoles($roleModels);
 
         if (!($dto->getMetadata() instanceof Missing)) {
             $this->metadataService->sync($user, $dto->getMetadata());
         }
+
+        $user->save();
 
         UserCreated::dispatch($user);
 

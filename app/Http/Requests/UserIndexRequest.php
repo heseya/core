@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\Boolean;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UserIndexRequest extends FormRequest
@@ -13,6 +14,7 @@ class UserIndexRequest extends FormRequest
             'name' => ['nullable', 'string'],
             'email' => ['nullable', 'string'],
             'sort' => ['nullable', 'string'],
+            'full' => [new Boolean()],
             'limit' => ['nullable', 'integer', 'min:1'],
             'metadata' => ['nullable', 'array'],
             'metadata_private' => ['nullable', 'array'],

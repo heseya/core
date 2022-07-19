@@ -29,6 +29,7 @@ use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use JeroenG\Explorer\Application\Explored;
@@ -76,6 +77,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'shipping_time',
         'shipping_date',
         'has_schemas',
+        'quantity',
     ];
 
     protected array $auditInclude = [
@@ -98,6 +100,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'quantity_step' => 'float',
         'vat_rate' => 'float',
         'has_schemas' => 'bool',
+        'quantity' => 'float',
     ];
 
     protected array $sortable = [
@@ -296,5 +299,10 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         $sales = $sales->diff($productSetSales->where('target_is_allow_list', false));
 
         return $sales->unique('id');
+    }
+
+    public function productAvailabilities(): HasMany
+    {
+        return $this->hasMany(ProductAvailability::class);
     }
 }
