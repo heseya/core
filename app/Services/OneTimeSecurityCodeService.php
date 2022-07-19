@@ -31,9 +31,7 @@ class OneTimeSecurityCodeService implements OneTimeSecurityCodeContract
     {
         /** @var User $user */
         $user = Auth::user();
-
         $user->securityCodes()->delete();
-
         $recovery_codes = [];
 
         for ($i = 0; $i < $codes; $i++) {
