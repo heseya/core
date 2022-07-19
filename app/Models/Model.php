@@ -31,7 +31,7 @@ abstract class Model extends LaravelModel
         return $dirty;
     }
 
-    protected function serializeDate(DateTimeInterface $date) : string
+    protected function serializeDate(DateTimeInterface $date): string
     {
         // 2019-02-01T03:45:27+00:00
         return Carbon::instance($date)->toIso8601String();
