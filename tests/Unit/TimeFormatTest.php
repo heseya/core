@@ -66,9 +66,10 @@ class TimeFormatTest extends TestCase
         $item = Item::factory()->create();
         $deposit = Deposit::factory()->create([
             'item_id' => $item->getKey(),
+            'shipping_date' => Carbon::now()->addDay(),
         ]);
 
-        $this->modelTimeFormat($deposit, ['created_at', 'updated_at']);
+        $this->modelTimeFormat($deposit, ['created_at', 'updated_at', 'shipping_date']);
     }
 
     public function testDiscountTimeFormat(): void
