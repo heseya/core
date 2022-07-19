@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\TfaRecoveryCodesChanged;
 use App\Models\OneTimeSecurityCode;
 use App\Models\User;
 use App\Notifications\TFARecoveryCodes;
@@ -36,7 +37,10 @@ class OneTimeSecurityCodeService implements OneTimeSecurityCodeContract
             array_push($recovery_codes, $this->generateOneTimeSecurityCode(Auth::user()));
         }
 
-        Auth::user()->notify(new TFARecoveryCodes());
+        if (Auth::user()->preferences->recovery_code_changed_alert) {
+            TfaRecoveryCodesChanged::dispatch(Auth::user());
+            Auth::user()->notify(new TFARecoveryCodes());
+        }
 
         return $recovery_codes;
     }

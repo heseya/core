@@ -1,0 +1,57 @@
+WebHook:
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    name:
+      description: 'Displayed webhook name'
+      type: string
+      example: 'WebHook name'
+    url:
+      description: 'Displayed webhook url'
+      type: string
+      example: 'https://app.heseya.com'
+    secret:
+      description: 'Displayed webhook secret'
+      type: string
+      example: secret
+    with_issuer:
+      description: 'Whether issuer is visible in WebHookEvent.'
+      type: boolean
+      example: true
+    with_hidden:
+      description: 'Whether hidden data are visible in WebHookEvent.'
+      type: boolean
+      example: true
+    events:
+      description: 'List of WebHook events'
+      type: array
+      items:
+        type: string
+        example: OrderCreated
+    logs:
+      description: 'List of WebHooks logs'
+      type: array
+      items:
+        $ref: '#/WebHookEventLogEntry'
+  type: object
+
+WebHookEventLogEntry:
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    triggered_at:
+      description: 'Displayed webhook event triggered time'
+      type: string
+      format: date-time
+      example: '2021-10-07T08:49'
+    url:
+      description: 'Displayed webhook event url'
+      type: string
+      example: 'https://app.heseya.com'
+    status_code:
+      description: 'Webhook event status code'
+      type: number
+      example: 200
+  type: object

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\RoleType;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserPreference;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -30,6 +31,8 @@ class UserSeeder extends Seeder
         $authenticated = Role::where('type', RoleType::AUTHENTICATED)->firstOrFail();
         foreach (User::all() as $user) {
             $user->assignRole($authenticated);
+            $user->preferences()->associate(UserPreference::create());
+            $user->save();
         }
     }
 }

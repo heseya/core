@@ -119,7 +119,7 @@ class AppService implements AppServiceContract
         ])->toArray());
 
         $app->givePermissionTo(
-            $permissions->concat(['auth.login', 'auth.check_identity']),
+            $permissions->concat(['auth.check_identity']),
         );
 
         $uuid = Str::uuid()->toString();

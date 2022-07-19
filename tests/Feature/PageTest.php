@@ -748,51 +748,6 @@ class PageTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testDeleteWithWebHook($user): void
-    {
-        $this->$user->givePermissionTo('pages.remove');
-
-        $webHook = WebHook::factory()->create([
-            'events' => [
-                'PageDeleted',
-            ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
-            'with_issuer' => true,
-            'with_hidden' => true,
-        ]);
-
-        Bus::fake();
-
-        $response = $this->actingAs($this->$user)
-            ->deleteJson('/pages/id:' . $this->page->getKey());
-        $response->assertNoContent();
-        $this->assertSoftDeleted($this->page);
-
-        Bus::assertDispatched(CallQueuedListener::class, function ($job) {
-            return $job->class === WebHookEventListener::class
-                && $job->data[0] instanceof PageDeleted;
-        });
-
-        $page = $this->page;
-
-        $event = new PageDeleted($page);
-        $listener = new WebHookEventListener();
-        $listener->handle($event);
-
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $page) {
-            $payload = $job->payload;
-            return $job->webhookUrl === $webHook->url
-                && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $page->getKey()
-                && $payload['data_type'] === 'Page'
-                && $payload['event'] === 'PageDeleted';
-        });
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testReorderUnauthorized($user): void
     {
         DB::table('pages')->delete();

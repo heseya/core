@@ -115,7 +115,7 @@ class MediaService implements MediaServiceContract
         if ($response->failed() || !isset($response['path'])) {
             throw new ServerException(
                 message: Exceptions::SERVER_CDN_ERROR,
-                errorArray: $response->json(),
+                errorArray: $response->json() ?? [],
             );
         }
 
