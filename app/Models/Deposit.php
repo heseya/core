@@ -20,6 +20,10 @@ class Deposit extends Model
         'shipping_date',
     ];
 
+    protected $dates = [
+        'shipping_date',
+    ];
+
     public function item(): BelongsTo
     {
         return $this->belongsTo(Item::class);

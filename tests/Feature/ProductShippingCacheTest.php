@@ -50,7 +50,7 @@ class ProductShippingCacheTest extends TestCase
     {
         $this->$user->givePermissionTo('products.add');
 
-        $date = Carbon::now()->addDays(7)->toDateTimeString();
+        $date = Carbon::now()->addDays(7)->toIso8601String();
         $item = Item::factory()->create([
             'unlimited_stock_shipping_date' => $date,
         ]);
@@ -101,7 +101,7 @@ class ProductShippingCacheTest extends TestCase
     {
         $this->$user->givePermissionTo('products.add');
 
-        $date = Carbon::now()->addDays(7)->toDateTimeString();
+        $date = Carbon::now()->addDays(7)->toIso8601String();
         $item = Item::factory()->create();
         Deposit::factory()->create([
             'item_id' => $item->getKey(),

@@ -65,7 +65,7 @@ class EventServiceProvider extends ServiceProvider
     /**
      * The event listener mappings for the application.
      *
-     * @var array
+     * @var array<class-string, array<class-string>>
      */
     protected $listen = [
         OrderCreated::class => [
@@ -74,138 +74,74 @@ class EventServiceProvider extends ServiceProvider
         OrderUpdatedStatus::class => [
             OrderUpdatedStatusListener::class,
         ],
-        OrderUpdatedPaid::class => [
-            WebHookEventListener::class,
-        ],
         FinalWebhookCallFailedEvent::class => [
             WebHookFailedListener::class,
-        ],
-        // WebHookEvents
-        SaleCreated::class => [
-            WebHookEventListener::class,
-        ],
-        SaleDeleted::class => [
-            WebHookEventListener::class,
-        ],
-        SaleUpdated::class => [
-            WebHookEventListener::class,
-        ],
-        CouponCreated::class => [
-            WebHookEventListener::class,
-        ],
-        CouponDeleted::class => [
-            WebHookEventListener::class,
-        ],
-        CouponUpdated::class => [
-            WebHookEventListener::class,
-        ],
-        ItemCreated::class => [
-            WebHookEventListener::class,
-        ],
-        ItemDeleted::class => [
-            WebHookEventListener::class,
-        ],
-        ItemUpdated::class => [
-            WebHookEventListener::class,
         ],
         ItemUpdatedQuantity::class => [
             ItemUpdatedQuantityListener::class,
         ],
-        OrderUpdated::class => [
-            WebHookEventListener::class,
-        ],
-        OrderUpdatedShippingNumber::class => [
-            WebHookEventListener::class,
-        ],
-        PageCreated::class => [
-            WebHookEventListener::class,
-        ],
-        PageDeleted::class => [
-            WebHookEventListener::class,
-        ],
-        PageUpdated::class => [
-            WebHookEventListener::class,
-        ],
-        ProductCreated::class => [
-            WebHookEventListener::class,
-        ],
-        ProductDeleted::class => [
-            WebHookEventListener::class,
-        ],
-        ProductUpdated::class => [
-            WebHookEventListener::class,
-        ],
         ProductSetCreated::class => [
-            WebHookEventListener::class,
             MakeSetProductsSearchable::class,
         ],
         ProductSetUpdated::class => [
-            WebHookEventListener::class,
             MakeSetProductsSearchable::class,
-        ],
-        ProductSetDeleted::class => [
-            WebHookEventListener::class,
-        ],
-        UserCreated::class => [
-            WebHookEventListener::class,
-        ],
-        UserDeleted::class => [
-            WebHookEventListener::class,
-        ],
-        UserUpdated::class => [
-            WebHookEventListener::class,
         ],
     ];
 
     /**
-     * Webhooks events.
+     * @var array<class-string>
      */
     private array $webhookEvents = [
-        OrderDocumentEvent::class,
-        SendOrderDocument::class,
-        OrderCreated::class,
-        OrderUpdatedStatus::class,
-        SaleCreated::class,
-        SaleDeleted::class,
-        SaleUpdated::class,
         CouponCreated::class,
         CouponDeleted::class,
         CouponUpdated::class,
+        FailedLoginAttempt::class,
         ItemCreated::class,
         ItemDeleted::class,
         ItemUpdated::class,
         ItemUpdatedQuantity::class,
+        NewLocalizationLoginAttempt::class,
+        OrderCreated::class,
+        OrderDocumentEvent::class,
         OrderUpdated::class,
+        OrderUpdatedPaid::class,
+        OrderUpdatedShippingNumber::class,
+        OrderUpdatedStatus::class,
         PageCreated::class,
         PageDeleted::class,
         PageUpdated::class,
+        PasswordReset::class,
         ProductCreated::class,
         ProductDeleted::class,
-        ProductUpdated::class,
         ProductSetCreated::class,
         ProductSetDeleted::class,
         ProductSetUpdated::class,
+        ProductUpdated::class,
+        SaleCreated::class,
+        SaleDeleted::class,
+        SaleUpdated::class,
+        SendOrderDocument::class,
+        SuccessfulLoginAttempt::class,
+        TfaInit::class,
+        TfaRecoveryCodesChanged::class,
+        TfaSecurityCode::class,
         UserCreated::class,
         UserDeleted::class,
         UserUpdated::class,
-        TfaInit::class,
-        TfaSecurityCode::class,
-        TfaRecoveryCodesChanged::class,
-        PasswordReset::class,
-        SuccessfulLoginAttempt::class,
-        NewLocalizationLoginAttempt::class,
-        FailedLoginAttempt::class,
     ];
 
     public function boot(): void
     {
         parent::boot();
+
         Event::listen($this->webhookEvents, WebHookEventListener::class);
-        Payment::observe(PaymentObserver::class);
-        Deposit::observe(DepositObserver::class);
+
+        // Ugly observers 🤮
         AttributeOption::observe(AttributeOptionObserver::class);
+        Deposit::observe(DepositObserver::class);
         ItemProduct::observe(ItemProductObserver::class);
         Page::observe(PageObserver::class);
+        Payment::observe(PaymentObserver::class);
         Schema::observe(SchemaObserver::class);
     }
 }
