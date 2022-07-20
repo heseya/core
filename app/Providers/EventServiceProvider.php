@@ -29,6 +29,7 @@ use App\Events\ProductSetUpdated;
 use App\Events\ProductUpdated;
 use App\Events\SaleCreated;
 use App\Events\SaleDeleted;
+use App\Events\SaleUpdated;
 use App\Events\SendOrderDocument;
 use App\Events\SuccessfulLoginAttempt;
 use App\Events\TfaInit;
@@ -118,6 +119,7 @@ class EventServiceProvider extends ServiceProvider
         ProductUpdated::class,
         SaleCreated::class,
         SaleDeleted::class,
+        SaleUpdated::class,
         SendOrderDocument::class,
         SuccessfulLoginAttempt::class,
         TfaInit::class,
