@@ -77,26 +77,6 @@ class DiscountService implements DiscountServiceContract
     ) {
     }
 
-    public function calc(float $value, Discount $discount): float
-    {
-        if (isset($discount->pivot) && $discount->pivot->type !== null) {
-            $discount->type = $discount->pivot->type;
-            $discount->value = $discount->pivot->value;
-        }
-
-        if ($discount->type->is(DiscountType::PERCENTAGE)) {
-            return $value * $discount->value / 100;
-        }
-
-        if ($discount->type->is(DiscountType::AMOUNT)) {
-            return $discount->value;
-        }
-
-        throw new ClientException(Exceptions::CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED, errorArray: [
-            'type' => $discount->type,
-        ]);
-    }
-
     public function index(SaleIndexDto|CouponIndexDto $dto): LengthAwarePaginator
     {
         return Discount::searchByCriteria($dto->toArray())
@@ -184,6 +164,26 @@ class DiscountService implements DiscountServiceContract
         }
     }
 
+    public function calc(float $value, Discount $discount): float
+    {
+        if (isset($discount->pivot) && $discount->pivot->type !== null) {
+            $discount->type = $discount->pivot->type;
+            $discount->value = $discount->pivot->value;
+        }
+
+        if ($discount->type->is(DiscountType::PERCENTAGE)) {
+            return $value * $discount->value / 100;
+        }
+
+        if ($discount->type->is(DiscountType::AMOUNT)) {
+            return $discount->value;
+        }
+
+        throw new ClientException(Exceptions::CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED, errorArray: [
+            'type' => $discount->type,
+        ]);
+    }
+
     public function checkCondition(
         DiscountCondition $condition,
         ?CartOrderDto $dto = null,
@@ -235,11 +235,41 @@ class DiscountService implements DiscountServiceContract
         return true;
     }
 
-    public function calcOrderDiscounts(Order $order, OrderDto $orderDto): Order
+    /**
+     * @throws StoreException
+     * @throws ClientException
+     */
+    public function calcOrderProductsAndTotalDiscounts(Order $order, OrderDto $orderDto): Order
+    {
+        return $this->calcOrderDiscounts($order, $orderDto, [
+            DiscountTargetType::fromValue(DiscountTargetType::PRODUCTS),
+            DiscountTargetType::fromValue(DiscountTargetType::CHEAPEST_PRODUCT),
+            DiscountTargetType::fromValue(DiscountTargetType::ORDER_VALUE),
+        ]);
+    }
+
+    /**
+     * @throws StoreException
+     * @throws ClientException
+     */
+    public function calcOrderShippingDiscounts(Order $order, OrderDto $orderDto): Order
+    {
+        return $this->calcOrderDiscounts($order, $orderDto, [
+            DiscountTargetType::fromValue(DiscountTargetType::SHIPPING_PRICE),
+        ]);
+    }
+
+    /**
+     * @param array<DiscountTargetType> $targetTypes
+     *
+     * @throws StoreException
+     * @throws ClientException
+     */
+    private function calcOrderDiscounts(Order $order, OrderDto $orderDto, array $targetTypes = []): Order
     {
         $coupons = $orderDto->getCoupons() instanceof Missing ? [] : $orderDto->getCoupons();
         $sales = $orderDto->getSaleIds() instanceof Missing ? [] : $orderDto->getSaleIds();
-        $discounts = $this->getSalesAndCoupons($coupons);
+        $discounts = $this->getSalesAndCoupons($coupons, $targetTypes);
 
         /** @var Discount $discount */
         foreach ($discounts as $discount) {
@@ -938,18 +968,31 @@ class DiscountService implements DiscountServiceContract
         return $cart;
     }
 
-    private function getSalesAndCoupons(array|Missing $couponIds): Collection
+    /**
+     * @param array<DiscountTargetType> $targetTypes
+     */
+    private function getSalesAndCoupons(array|Missing $couponIds, array $targetTypes = []): Collection
     {
-        // Dostępne promocje
-        $sales = Discount::where('code', null)
-            ->with(['orders', 'products', 'productSets', 'conditionGroups', 'conditionGroups.conditions'])->get();
-        // Nie przesłano kuponów
+        // Get all discounts
+        $salesQuery = Discount::query()->where('code', null)
+            ->with(['orders', 'products', 'productSets', 'conditionGroups', 'conditionGroups.conditions']);
+        if (count($targetTypes)) {
+            $salesQuery = $salesQuery->whereIn('target_type', $targetTypes);
+        }
+        $sales = $salesQuery->get();
+
+        // No coupons used
         if ($couponIds instanceof Missing) {
             return $this->sortDiscounts($sales);
         }
-        // Wybrane kupony
-        $coupons = Discount::whereIn('code', $couponIds)
-            ->with(['orders', 'products', 'productSets', 'conditionGroups', 'conditionGroups.conditions'])->get();
+
+        // Get all coupons
+        $couponsQuery = Discount::whereIn('code', $couponIds)
+            ->with(['orders', 'products', 'productSets', 'conditionGroups', 'conditionGroups.conditions']);
+        if (count($targetTypes)) {
+            $couponsQuery = $couponsQuery->whereIn('target_type', $targetTypes);
+        }
+        $coupons = $couponsQuery->get();
 
         // Posortowanie w kolejności do naliczania zniżek
         return $this->sortDiscounts($sales->merge($coupons));
