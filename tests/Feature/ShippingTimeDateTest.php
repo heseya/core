@@ -170,8 +170,8 @@ class ShippingTimeDateTest extends TestCase
         $product->items()->attach($item->getKey(), ['required_quantity' => 1]);
 
         $this->assertNull($product->shipping_date);
-        $now = Carbon::now()->addDays(2)->toDateTimeString();
-        $product->update(['shipping_date' => $now]);
+        $now = Carbon::today()->addDays(2);
+        $product->update(['shipping_date' => $now->toIso8601String()]);
         $product->refresh();
 
         $this->assertEquals($now, $product->shipping_date);

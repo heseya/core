@@ -18,6 +18,10 @@ class ProductAvailability extends Model
         'shipping_date',
     ];
 
+    protected $dates = [
+        'shipping_date',
+    ];
+
     protected $casts = [
         'quantity' => 'float',
     ];
