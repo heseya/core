@@ -29,7 +29,6 @@ use App\Events\ProductSetUpdated;
 use App\Events\ProductUpdated;
 use App\Events\SaleCreated;
 use App\Events\SaleDeleted;
-use App\Events\SaleUpdated;
 use App\Events\SendOrderDocument;
 use App\Events\SuccessfulLoginAttempt;
 use App\Events\TfaInit;
@@ -74,86 +73,17 @@ class EventServiceProvider extends ServiceProvider
         OrderUpdatedStatus::class => [
             OrderUpdatedStatusListener::class,
         ],
-        OrderUpdatedPaid::class => [
-            WebHookEventListener::class,
-        ],
         FinalWebhookCallFailedEvent::class => [
             WebHookFailedListener::class,
-        ],
-        // WebHookEvents
-        SaleCreated::class => [
-            WebHookEventListener::class,
-        ],
-        SaleDeleted::class => [
-            WebHookEventListener::class,
-        ],
-        SaleUpdated::class => [
-            WebHookEventListener::class,
-        ],
-        CouponCreated::class => [
-            WebHookEventListener::class,
-        ],
-        CouponDeleted::class => [
-            WebHookEventListener::class,
-        ],
-        CouponUpdated::class => [
-            WebHookEventListener::class,
-        ],
-        ItemCreated::class => [
-            WebHookEventListener::class,
-        ],
-        ItemDeleted::class => [
-            WebHookEventListener::class,
-        ],
-        ItemUpdated::class => [
-            WebHookEventListener::class,
         ],
         ItemUpdatedQuantity::class => [
             ItemUpdatedQuantityListener::class,
         ],
-        OrderUpdated::class => [
-            WebHookEventListener::class,
-        ],
-        OrderUpdatedShippingNumber::class => [
-            WebHookEventListener::class,
-        ],
-        PageCreated::class => [
-            WebHookEventListener::class,
-        ],
-        PageDeleted::class => [
-            WebHookEventListener::class,
-        ],
-        PageUpdated::class => [
-            WebHookEventListener::class,
-        ],
-        ProductCreated::class => [
-            WebHookEventListener::class,
-        ],
-        ProductDeleted::class => [
-            WebHookEventListener::class,
-        ],
-        ProductUpdated::class => [
-            WebHookEventListener::class,
-        ],
         ProductSetCreated::class => [
-            WebHookEventListener::class,
             MakeSetProductsSearchable::class,
         ],
         ProductSetUpdated::class => [
-            WebHookEventListener::class,
             MakeSetProductsSearchable::class,
-        ],
-        ProductSetDeleted::class => [
-            WebHookEventListener::class,
-        ],
-        UserCreated::class => [
-            WebHookEventListener::class,
-        ],
-        UserDeleted::class => [
-            WebHookEventListener::class,
-        ],
-        UserUpdated::class => [
-            WebHookEventListener::class,
         ],
     ];
 
@@ -161,40 +91,41 @@ class EventServiceProvider extends ServiceProvider
      * Webhooks events.
      */
     private array $webhookEvents = [
-        OrderDocumentEvent::class,
-        SendOrderDocument::class,
-        OrderCreated::class,
-        OrderUpdatedStatus::class,
-        SaleCreated::class,
-        SaleDeleted::class,
-        SaleUpdated::class,
         CouponCreated::class,
         CouponDeleted::class,
         CouponUpdated::class,
+        FailedLoginAttempt::class,
         ItemCreated::class,
         ItemDeleted::class,
         ItemUpdated::class,
         ItemUpdatedQuantity::class,
+        NewLocalizationLoginAttempt::class,
+        OrderCreated::class,
+        OrderDocumentEvent::class,
         OrderUpdated::class,
+        OrderUpdatedPaid::class,
+        OrderUpdatedShippingNumber::class,
+        OrderUpdatedStatus::class,
         PageCreated::class,
         PageDeleted::class,
         PageUpdated::class,
+        PasswordReset::class,
         ProductCreated::class,
         ProductDeleted::class,
-        ProductUpdated::class,
         ProductSetCreated::class,
         ProductSetDeleted::class,
         ProductSetUpdated::class,
+        ProductUpdated::class,
+        SaleCreated::class,
+        SaleDeleted::class,
+        SendOrderDocument::class,
+        SuccessfulLoginAttempt::class,
+        TfaInit::class,
+        TfaRecoveryCodesChanged::class,
+        TfaSecurityCode::class,
         UserCreated::class,
         UserDeleted::class,
         UserUpdated::class,
-        TfaInit::class,
-        TfaSecurityCode::class,
-        TfaRecoveryCodesChanged::class,
-        PasswordReset::class,
-        SuccessfulLoginAttempt::class,
-        NewLocalizationLoginAttempt::class,
-        FailedLoginAttempt::class,
     ];
 
     public function boot(): void
