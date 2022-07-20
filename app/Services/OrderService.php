@@ -189,7 +189,7 @@ class OrderService implements OrderServiceContract
         }
 
         DB::commit();
-        OrderCreated::dispatch($order->refresh());
+        OrderCreated::dispatch($order);
 
         return $order;
     }
