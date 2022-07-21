@@ -64,7 +64,9 @@ interface DiscountServiceContract
 
     public function calcCartDiscounts(CartDto $cart, Collection $products): CartResource;
 
-    public function calcOrderDiscounts(Order $order, OrderDto $orderDto): Order;
+    public function calcOrderShippingDiscounts(Order $order, OrderDto $orderDto): Order;
+
+    public function calcOrderProductsAndTotalDiscounts(Order $order, OrderDto $orderDto): Order;
 
     public function applyDiscountOnOrder(Discount $discount, Order $order): Order;
 
