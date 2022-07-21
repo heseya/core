@@ -1,15 +1,15 @@
 {
     "name": "heseya/store-api",
-    "type": "project",
     "description": "Store API by Heseya",
     "license": "proprietary",
+    "type": "project",
     "require": {
         "php": "^8.0",
         "ext-filter": "*",
         "ext-hash": "*",
         "ext-json": "*",
-        "ext-soap": "*",
         "ext-openssl": "*",
+        "ext-soap": "*",
         "bensampo/laravel-enum": "^5.1",
         "bvlinsky/explorer": "^3.0",
         "guzzlehttp/guzzle": "^7.4",
@@ -47,21 +47,18 @@
         "phpunit/phpunit": "^9.5",
         "spatie/laravel-ignition": "^1.1"
     },
-    "config": {
-        "optimize-autoloader": true,
-        "preferred-install": "dist",
-        "sort-packages": true,
-        "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true
+    "repositories": [
+        {
+            "type": "path",
+            "url": "./heseya/demo"
+        },
+        {
+            "type": "path",
+            "url": "./heseya/resource"
         }
-    },
-    "extra": {
-        "laravel": {
-            "dont-discover": [
-                "barryvdh/laravel-ide-helper"
-            ]
-        }
-    },
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
         "psr-4": {
             "App\\": "app/",
@@ -74,8 +71,21 @@
             "Tests\\": "tests/"
         }
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": [
+                "barryvdh/laravel-ide-helper"
+            ]
+        }
+    },
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
@@ -87,6 +97,18 @@
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
         ],
+        "arch": [
+            "deptrac"
+        ],
+        "check": [
+            "composer-require-checker"
+        ],
+        "cp": [
+            "phpcpd ./app ./database"
+        ],
+        "docs": [
+            "swagger-cli validate ./public/docs/api.yml"
+        ],
         "ide-helper": [
             "@php artisan ide-helper:generate -M",
             "@php artisan ide-helper:models -M",
@@ -95,27 +117,11 @@
         "insights": [
             "@php artisan insights ./ ./tests --fix --no-interaction"
         ],
-        "style": [
-          "@ide-helper",
-          "@insights"
+        "normalize": [
+            "composer-normalize"
         ],
         "phpstan": [
             "@stan"
-        ],
-        "stan": [
-            "./vendor/bin/phpstan analyse --memory-limit=2G"
-        ],
-        "check": [
-            "composer-require-checker"
-        ],
-        "cp": [
-            "phpcpd ./app ./database"
-        ],
-        "arch": [
-            "deptrac"
-        ],
-        "docs": [
-            "swagger-cli validate ./public/docs/api.yml"
         ],
         "pre-commit": [
             "@style",
@@ -123,17 +129,14 @@
             "@check",
             "@docs"
         ],
-        "test": [
-            "@php artisan test --env=.env"
-        ],
-        "scout-index": [
-          "@php artisan scout:index products"
+        "scout-clear": [
+            "@php artisan scout:delete-index products"
         ],
         "scout-import": [
             "@php artisan scout:import 'App\\Models\\Product'"
         ],
-        "scout-clear": [
-            "@php artisan scout:delete-index products"
+        "scout-index": [
+            "@php artisan scout:index products"
         ],
         "scout-refresh": [
             "@scout-clear",
@@ -145,16 +148,17 @@
         ],
         "seed-prod": [
             "@php artisan db:seed --class=\"Database\\Seeders\\InitSeeder\""
+        ],
+        "stan": [
+            "./vendor/bin/phpstan analyse --memory-limit=2G"
+        ],
+        "style": [
+            "@normalize",
+            "@ide-helper",
+            "@insights"
+        ],
+        "test": [
+            "@php artisan test --env=.env"
         ]
-    },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "./heseya/demo"
-        },
-        {
-            "type": "path",
-            "url": "./heseya/resource"
-        }
-    ]
+    }
 }
