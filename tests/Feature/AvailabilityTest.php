@@ -286,11 +286,10 @@ class AvailabilityTest extends TestCase
             'quantity' => 2,
         ]);
 
-        $data->get('item')->refresh();
-
         $data->get('item')->options()->saveMany([$data->get('optionOne'), $data->get('optionTwo')]);
 
         $this->product->schemas()->saveMany([$data->get('schemaOne'), $data->get('schemaTwo')]);
+        $this->product->update(['available' => true]);
 
         $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'test@test.test',
