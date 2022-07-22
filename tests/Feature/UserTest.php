@@ -38,6 +38,8 @@ class UserTest extends TestCase
     {
         parent::setUp();
 
+        User::query()->where('email', 'admin@example.com')->delete();
+
         /** @var Metadata $metadata */
         $metadata = $this->user->metadata()->create([
             'name' => 'Metadata',
@@ -103,7 +105,7 @@ class UserTest extends TestCase
         $response = $this->actingAs($this->$user)->getJson('/users');
         $response
             ->assertOk()
-            ->assertJsonCount(3, 'data') // 1 form seeder, 1 from test case, 1 from here
+            ->assertJsonCount(2, 'data')
             ->assertJson(['data' => [
                 $this->expected,
                 [
@@ -133,7 +135,7 @@ class UserTest extends TestCase
             ->actingAs($this->$user)
             ->getJson('/users?full')
             ->assertOk()
-            ->assertJsonCount(3, 'data') // same as above
+            ->assertJsonCount(2, 'data')
             ->assertJson(['data' => [
                 $this->expected,
                 [
@@ -163,7 +165,7 @@ class UserTest extends TestCase
         $response = $this->actingAs($this->$user)->getJson('/users?sort=created_at:desc');
         $response
             ->assertOk()
-            ->assertJsonCount(3, 'data') // same as above
+            ->assertJsonCount(2, 'data')
             ->assertJson(['data' => [
                 [
                     'id' => $otherUser->getKey(),
@@ -1393,8 +1395,6 @@ class UserTest extends TestCase
 
     public function testDeleteOnlyOwner(): void
     {
-        User::query()->where('email', 'admin@example.com')->delete();
-
         Event::fake([UserDeleted::class]);
 
         $this->user->givePermissionTo('users.remove');
