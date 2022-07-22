@@ -68,10 +68,12 @@ class WebHookTest extends TestCase
             ->assertOk()
             ->assertJsonStructure(['data' => [
                 0 => $this->expected_structure,
-            ]])
+            ],
+            ])
             ->assertJsonFragment(['data' => [
                 0 => $this->expected,
-            ]]);
+            ],
+            ]);
     }
 
     /**
