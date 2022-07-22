@@ -38,6 +38,8 @@ class UserTest extends TestCase
     {
         parent::setUp();
 
+        User::query()->where('email', 'admin@example.com')->delete();
+
         /** @var Metadata $metadata */
         $metadata = $this->user->metadata()->create([
             'name' => 'Metadata',
