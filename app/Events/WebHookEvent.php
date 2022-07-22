@@ -24,9 +24,12 @@ abstract class WebHookEvent
 
     public function __construct()
     {
+        $user = Auth::user();
+
         $this->encrypted = false;
         $this->triggered_at = Carbon::now()->format('c');
-        $this->issuer = Auth::user();
+        // Check if the user is logged in and has an ID (Unauthorized user doesn't have).
+        $this->issuer = $user?->getAuthIdentifier() ? $user : null;
     }
 
     public function getData(): array
