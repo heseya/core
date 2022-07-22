@@ -14,15 +14,16 @@ class MediaUpdateRequest extends FormRequest
         /** @var Media $media */
         $media = $this->route('media');
 
-        return [
+        $return = [
             'alt' => ['nullable', 'string', 'max:100'],
-            'slug' => [
-                'nullable',
-                'string',
-                'max:64',
-                new MediaSlug($media),
-                Rule::unique('media')->ignore($media->slug, 'slug'),
-            ],
         ];
+
+        $return['slug'] = $this->input('slug') === null ? [new MediaSlug($media)] : [
+            'string',
+            'max:64',
+            Rule::unique('media')->ignore($media->slug, 'slug'),
+        ];
+
+        return $return;
     }
 }
