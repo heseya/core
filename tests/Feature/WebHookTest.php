@@ -62,17 +62,39 @@ class WebHookTest extends TestCase
     {
         $this->$user->givePermissionTo('webhooks.show');
 
-        $response = $this->actingAs($this->$user)->json('GET', '/webhooks');
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/webhooks')
             ->assertOk()
             ->assertJsonStructure(['data' => [
                 0 => $this->expected_structure,
-            ],
-            ])
+            ]])
             ->assertJsonFragment(['data' => [
                 0 => $this->expected,
-            ],
-            ]);
+            ]]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearch($user): void
+    {
+        $this->$user->givePermissionTo('webhooks.show');
+
+        $webHook = WebHook::factory()->create([
+            'name' => 'test webhook',
+            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->$user::class,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/webhooks', [
+                'search' => 'test webhook',
+            ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $webHook->getKey()]);
     }
 
     public function testCreateUnauthorized(): void
