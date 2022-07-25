@@ -4,14 +4,17 @@ namespace App\Services;
 
 use App\Models\WebHook;
 use App\Services\Contracts\WebHookServiceContract;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 
 class WebHookService implements WebHookServiceContract
 {
-    public function searchAll(array $attributes, ?string $sort): Collection
+    public function searchAll(array $attributes, ?string $sort): LengthAwarePaginator
     {
-        return WebHook::searchByCriteria($attributes)->sort($sort)->get();
+        return WebHook::searchByCriteria($attributes)
+            ->sort($sort)
+            ->paginate(Config::get('pagination.per_page'));
     }
 
     public function create(array $request): WebHook
