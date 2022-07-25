@@ -22,7 +22,11 @@ class WebHookController extends Controller
 
     public function index(WebHookIndexRequest $request): JsonResource
     {
-        $webHooks = $this->webHookService->searchAll($request->validated(), $request->input('sort'));
+        $webHooks = $this->webHookService->searchAll(
+            $request->validated(),
+            $request->input('sort'),
+        );
+
         return WebHookResource::collection($webHooks);
     }
 

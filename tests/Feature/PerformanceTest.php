@@ -235,11 +235,13 @@ class PerformanceTest extends TestCase
         $shippingMethod = ShippingMethod::factory()->create();
         $shippingMethod->countries()->sync(Country::query()->select('code as country_code')->get()->toArray());
 
-        $this->actingAs($this->user)->getJson('/shipping-methods')
+        $this
+            ->actingAs($this->user)
+            ->json('GET', '/shipping-methods')
             ->assertOk();
 
         // TODO: this should be improved
-        $this->assertQueryCountLessThan(10);
+        $this->assertQueryCountLessThan(11);
     }
 
     public function testIndexPerformanceDiscount(): void

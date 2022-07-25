@@ -118,7 +118,9 @@ class AvailabilityService implements AvailabilityServiceContract
             'available' => $this->isProductAvailable($product),
         ] + $this->depositService->getProductShippingTimeDate($product));
 
-        ProductUpdated::dispatch($product);
+        if ($product->wasChanged()) {
+            ProductUpdated::dispatch($product);
+        }
     }
 
     public function isProductAvailable(Product $product): bool
