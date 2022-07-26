@@ -56,7 +56,7 @@ class AppService implements AppServiceContract
 
         if ($response->failed()) {
             throw new ClientException(
-                Exceptions::CLIENT_APP_RESPONDED_WITH_INVALID_CODE,
+                Exceptions::CLIENT_APP_INFO_RESPONDED_WITH_INVALID_CODE,
                 0,
                 null,
                 false,
@@ -154,7 +154,7 @@ class AppService implements AppServiceContract
             $app->delete();
 
             throw new ClientException(
-                Exceptions::CLIENT_APP_RESPONDED_WITH_INVALID_CODE,
+                Exceptions::CLIENT_APP_INSTALLATION_RESPONDED_WITH_INVALID_CODE,
                 0,
                 null,
                 false,
