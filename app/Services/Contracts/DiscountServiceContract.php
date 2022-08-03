@@ -52,7 +52,7 @@ interface DiscountServiceContract
 
     public function applyDiscountsOnProducts(Collection $products): void;
 
-    public function applyDiscountsOnProduct(Product $product): void;
+    public function applyDiscountsOnProduct(Product $product, bool $reindex = true): void;
 
     public function applyDiscountOnOrderProduct(OrderProduct $orderProduct, Discount $discount): OrderProduct;
 
@@ -64,7 +64,9 @@ interface DiscountServiceContract
 
     public function calcCartDiscounts(CartDto $cart, Collection $products): CartResource;
 
-    public function calcOrderDiscounts(Order $order, OrderDto $orderDto): Order;
+    public function calcOrderShippingDiscounts(Order $order, OrderDto $orderDto): Order;
+
+    public function calcOrderProductsAndTotalDiscounts(Order $order, OrderDto $orderDto): Order;
 
     public function applyDiscountOnOrder(Discount $discount, Order $order): Order;
 

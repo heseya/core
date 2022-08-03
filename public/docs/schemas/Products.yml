@@ -48,6 +48,10 @@ Product:
       description: 'In what increments can you increase the product quantity'
       type: number
       example: 0.05
+    quantity:
+      description: 'Product quantity summary'
+      type: number
+      example: 20
     google_product_category:
       description: 'Google product category identification number'
       type: integer
@@ -74,6 +78,10 @@ Product:
       $ref: './../schemas/Metadata.yml#/Metadata'
     metadata_private:
       $ref: './../schemas/Metadata.yml#/Metadata'
+    has_schemas:
+      description: 'Does product has any attached schema'
+      type: boolean
+      example: true
 
 ProductView:
   type: object
@@ -122,6 +130,10 @@ ProductView:
           type: array
           items:
             $ref: './Sales.yml#/Sale'
+        availability:
+          type: array
+          items:
+            $ref: './ProductAvailabilities.yml#/ProductAvailability'
 
 ProductIndex:
   type: object

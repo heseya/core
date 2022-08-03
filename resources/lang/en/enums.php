@@ -33,5 +33,13 @@ return [
         EventType::ADD_ORDER_DOCUMENT => 'Event triggered after order document are created',
         EventType::REMOVE_ORDER_DOCUMENT => 'Event triggered after order document is deleted',
         EventType::ORDER_UPDATED_PAID => 'Event triggered after order paid status is updated',
+        EventType::TFA_INIT => 'Event triggered when TFA as email is initialized',
+        EventType::TFA_SECURITY_CODE => 'Event triggered when TFA security code is generated',
+        EventType::TFA_RECOVERY_CODES_CHANGED => 'Event triggered when TFA recovery codes are generated',
+        EventType::PASSWORD_RESET => 'Event triggered when reset password is requested',
+        EventType::SUCCESSFUL_LOGIN_ATTEMPT => 'Event triggered when a successful login attempt is made',
+        EventType::NEW_LOCALIZATION_LOGIN_ATTEMPT => 'Event after successful login attempt from new localization',
+        EventType::FAILED_LOGIN_ATTEMPT => 'Event triggered when a failed login attempt is made',
+        EventType::ORDER_UPDATED_SHIPPING_NUMBER => 'Event triggered after shipping number is updated',
     ],
 ];

@@ -14,7 +14,7 @@ class ShippingMethodStoreRequest extends FormRequest
 
     protected array $booleanFields = [
         'public',
-        'black_list',
+        'block_list',
     ];
 
     public function rules(): array
@@ -24,7 +24,7 @@ class ShippingMethodStoreRequest extends FormRequest
             [
                 'name' => ['required', 'string', 'max:255'],
                 'public' => [new Boolean()],
-                'black_list' => [new Boolean()],
+                'block_list' => [new Boolean()],
                 'payment_methods' => 'array',
                 'payment_methods.*' => ['uuid', 'exists:payment_methods,id'],
                 'countries' => 'array',

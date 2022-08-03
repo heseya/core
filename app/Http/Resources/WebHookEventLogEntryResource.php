@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 
-class WebHookEventLogEntryResource extends Resource
+final class WebHookEventLogEntryResource extends Resource
 {
     public function base(Request $request): array
     {
@@ -15,6 +15,7 @@ class WebHookEventLogEntryResource extends Resource
             'status_code' => $this->resource->status_code,
             'web_hook' => WebHookResource::make($this->resource->webHook),
             'payload' => $this->resource->payload,
+            'event' => $this->resource->payload['event'] ?? null,
             'response' => $this->resource->response,
         ];
     }

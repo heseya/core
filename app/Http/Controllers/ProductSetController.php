@@ -8,7 +8,6 @@ use App\Dtos\ProductsReorderDto;
 use App\Http\Requests\ProductSetAttachRequest;
 use App\Http\Requests\ProductSetIndexRequest;
 use App\Http\Requests\ProductSetProductReorderRequest;
-use App\Http\Requests\ProductSetProductsRequest;
 use App\Http\Requests\ProductSetReorderRequest;
 use App\Http\Requests\ProductSetShowRequest;
 use App\Http\Requests\ProductSetStoreRequest;
@@ -23,6 +22,7 @@ use App\Services\Contracts\ProductSetServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
+use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
 class ProductSetController extends Controller
 {
@@ -35,10 +35,8 @@ class ProductSetController extends Controller
     {
         $sets = $this->productSetService->searchAll(
             $request->validated(),
-            $request->has('tree') && $request->input('tree', true) !== false ||
             $request->has('root') && $request->input('root', true) !== false,
         );
-
         if ($request->has('tree') && $request->input('tree', true) !== false) {
             return ProductSetChildrenResource::collection($sets);
         }
@@ -81,11 +79,18 @@ class ProductSetController extends Controller
         return ProductSetParentResource::make($productSet);
     }
 
+    public function reorderRoot(ProductSetReorderRequest $request): JsonResponse
+    {
+        $this->productSetService->reorder($request->input('product_sets'));
+
+        return Response::json(null, ResponseAlias::HTTP_NO_CONTENT);
+    }
+
     public function reorder(ProductSet $productSet, ProductSetReorderRequest $request): JsonResponse
     {
-        $this->productSetService->reorder($productSet, $request->input('product_sets'));
+        $this->productSetService->reorder($request->input('product_sets'), $productSet);
 
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::json(null, ResponseAlias::HTTP_NO_CONTENT);
     }
 
     public function attach(ProductSet $productSet, ProductSetAttachRequest $request): JsonResource
@@ -95,9 +100,6 @@ class ProductSetController extends Controller
             $request->input('products', []),
         );
 
-        // @phpstan-ignore-next-line
-        $productSet->products()->searchable();
-
         return ProductResource::collection($products);
     }
 
@@ -105,10 +107,10 @@ class ProductSetController extends Controller
     {
         $this->productSetService->delete($productSet);
 
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::json(null, ResponseAlias::HTTP_NO_CONTENT);
     }
 
-    public function products(ProductSet $productSet, ProductSetProductsRequest $request): JsonResource
+    public function products(ProductSet $productSet): JsonResource
     {
         $products = $this->productSetService->products($productSet);
 
@@ -119,6 +121,7 @@ class ProductSetController extends Controller
     {
         $dto = ProductsReorderDto::instantiateFromRequest($request);
         $this->productSetService->reorderProducts($productSet, $dto);
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+
+        return Response::json(null, ResponseAlias::HTTP_NO_CONTENT);
     }
 }

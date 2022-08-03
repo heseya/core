@@ -7,9 +7,13 @@ ShippingMethod:
     name:
       type: string
       example: 'Next Day Courier'
+    price:
+      description: 'on index shows shipping price for provided "cart_value" (for 0 by default)'
+      type: number
+      example: 2
     public:
       type: boolean
-    black_list:
+    block_list:
       type: boolean
     payment_methods:
       type: array

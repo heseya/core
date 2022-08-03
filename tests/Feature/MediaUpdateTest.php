@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\MediaType;
 use App\Models\Media;
 use Illuminate\Http\Client\Request;
@@ -63,6 +64,24 @@ class MediaUpdateTest extends TestCase
         ]);
 
         Http::assertNothingSent();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateSeededMedia($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        $media = Media::factory()->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/media/id:{$media->getKey()}", [
+                'alt' => 'Test alt description',
+                'slug' => 'Test slug',
+            ])
+            ->assertJsonFragment(['key' => Exceptions::getKey(Exceptions::SERVER_CDN_ERROR)]);
     }
 
     /**
@@ -177,6 +196,31 @@ class MediaUpdateTest extends TestCase
                 'slug' => 'test-slug',
             ])
             ->assertOk();
+
+        Http::assertNothingSent();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateAltNull($user): void
+    {
+        $this->$user->givePermissionTo('pages.add');
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/media/id:{$this->media->getKey()}", [
+                'alt' => null,
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'alt' => null,
+            ]);
+
+        $this->assertDatabaseHas('media', [
+            'id' => $this->media->getKey(),
+            'alt' => null,
+        ]);
 
         Http::assertNothingSent();
     }

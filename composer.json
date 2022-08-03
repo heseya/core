@@ -1,156 +1,164 @@
 {
-  "name": "heseya/store-api",
-  "type": "project",
-  "description": "Store API by Heseya",
-  "license": "proprietary",
-  "require": {
-    "php": "^8.0",
-    "ext-filter": "*",
-    "ext-hash": "*",
-    "ext-json": "*",
-    "ext-soap": "*",
-    "bensampo/laravel-enum": "^5.1",
-    "bvlinsky/explorer": "^3.0",
-    "guzzlehttp/guzzle": "^7.4.5",
-    "guzzlehttp/psr7": "^2.2",
-    "heseya/2fa": "^2.0",
-    "heseya/dto": "^1.0",
-    "heseya/laravel-searchable": "^2.0",
-    "heseya/pagination": "^1.0.2",
-    "heseya/resource": "^1.0",
-    "laravel/framework": "^9.4",
-    "laravel/scout": "^9.4.5",
-    "league/omnipay": "^3.2",
-    "omnipay/common": "^3.2",
-    "omnipay/paypal": "^3.0",
-    "owen-it/laravel-auditing": "^12.2",
-    "php-open-source-saver/jwt-auth": "^1.4",
-    "predis/predis": "^1.1",
-    "propaganistas/laravel-phone": "^4.3",
-    "sentry/sentry-laravel": "^2.11",
-    "spatie/laravel-permission": "^5.5",
-    "spatie/laravel-webhook-server": "^3.1",
-    "symfony/http-foundation": "^6.0",
-    "symfony/http-kernel": "^6.0"
-  },
-  "require-dev": {
-    "barryvdh/laravel-ide-helper": "^2.12",
-    "fakerphp/faker": "^v1.19",
-    "heseya/demo": "^1.0",
-    "heseya/insights": "^1.0",
-    "laravel/tinker": "^2.7",
-    "mockery/mockery": "^1.5",
-    "nunomaduro/collision": "^6.1",
-    "nunomaduro/larastan": "^2.0",
-    "nunomaduro/phpinsights": "^2.2",
-    "phpunit/phpunit": "^9.5",
-    "spatie/laravel-ignition": "^1.1"
-  },
-  "config": {
-    "optimize-autoloader": true,
-    "preferred-install": "dist",
-    "sort-packages": true,
-    "allow-plugins": {
-      "dealerdirect/phpcodesniffer-composer-installer": true
-    }
-  },
-  "extra": {
-    "laravel": {
-      "dont-discover": [
-        "barryvdh/laravel-ide-helper"
-      ]
-    }
-  },
-  "autoload": {
-    "psr-4": {
-      "App\\": "app/",
-      "Database\\Factories\\": "database/factories/",
-      "Database\\Seeders\\": "database/seeders/"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Tests\\": "tests/"
-    }
-  },
-  "minimum-stability": "dev",
-  "prefer-stable": true,
-  "scripts": {
-    "post-autoload-dump": [
-      "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-      "@php artisan package:discover --ansi"
-    ],
-    "post-root-package-install": [
-      "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
-    ],
-    "post-create-project-cmd": [
-      "@php artisan key:generate --ansi"
-    ],
-    "ide-helper": [
-      "@php artisan ide-helper:generate -M",
-      "@php artisan ide-helper:models -M",
-      "@php artisan ide-helper:meta"
-    ],
-    "insights": [
-      "@php artisan insights ./ ./tests --fix --no-interaction"
-    ],
-    "style": [
-      "@ide-helper",
-      "@insights"
-    ],
-    "phpstan": [
-      "@stan"
-    ],
-    "stan": [
-      "./vendor/bin/phpstan analyse --memory-limit=2G"
-    ],
-    "check": [
-      "composer-require-checker"
-    ],
-    "cp": [
-      "phpcpd ./app ./database"
-    ],
-    "arch": [
-      "deptrac"
-    ],
-    "pre-commit": [
-      "@style",
-      "@phpstan",
-      "@check",
-      "swagger-cli validate ./public/docs/api.yml"
-    ],
-    "test": [
-      "@php artisan test --env=.env"
-    ],
-    "scout-index": [
-      "@php artisan scout:index products"
-    ],
-    "scout-import": [
-      "@php artisan scout:import 'App\\Models\\Product'"
-    ],
-    "scout-clear": [
-      "@php artisan scout:delete-index products"
-    ],
-    "scout-refresh": [
-      "@scout-clear",
-      "@scout-index",
-      "@scout-import"
-    ],
-    "seed": [
-      "@php artisan db:seed"
-    ],
-    "seed-prod": [
-      "@php artisan db:seed --class=\"Database\\Seeders\\InitSeeder\""
-    ]
-  },
-  "repositories": [
-    {
-      "type": "path",
-      "url": "./heseya/demo"
+    "name": "heseya/store-api",
+    "description": "Store API by Heseya",
+    "license": "proprietary",
+    "type": "project",
+    "require": {
+        "php": "^8.0",
+        "ext-filter": "*",
+        "ext-hash": "*",
+        "ext-json": "*",
+        "ext-openssl": "*",
+        "ext-soap": "*",
+        "bensampo/laravel-enum": "^5.1",
+        "bvlinsky/explorer": "^3.0",
+        "guzzlehttp/guzzle": "^7.4",
+        "guzzlehttp/psr7": "^2.2",
+        "heseya/2fa": "^2.0",
+        "heseya/dto": "^1.0",
+        "heseya/laravel-searchable": "^2.0",
+        "heseya/pagination": "^1.0.2",
+        "heseya/resource": "^1.0",
+        "laravel/framework": "^9.4",
+        "laravel/scout": "^9.4.5",
+        "league/omnipay": "^3.2",
+        "omnipay/common": "^3.2",
+        "omnipay/paypal": "^3.0",
+        "owen-it/laravel-auditing": "^12.2",
+        "php-open-source-saver/jwt-auth": "^1.4",
+        "predis/predis": "^1.1",
+        "propaganistas/laravel-phone": "^4.3",
+        "sentry/sentry-laravel": "^2.11",
+        "spatie/laravel-permission": "^5.5",
+        "spatie/laravel-webhook-server": "^3.1",
+        "symfony/http-foundation": "^6.0",
+        "symfony/http-kernel": "^6.0"
     },
-    {
-      "type": "path",
-      "url": "./heseya/resource"
+    "require-dev": {
+        "barryvdh/laravel-ide-helper": "^2.12",
+        "fakerphp/faker": "^v1.19",
+        "heseya/demo": "^1.0",
+        "heseya/insights": "^1.0",
+        "laravel/tinker": "^2.7",
+        "mockery/mockery": "^1.5",
+        "nunomaduro/collision": "^6.1",
+        "nunomaduro/larastan": "^2.0",
+        "nunomaduro/phpinsights": "^2.2",
+        "phpunit/phpunit": "^9.5",
+        "spatie/laravel-ignition": "^1.1"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "./heseya/demo"
+        },
+        {
+            "type": "path",
+            "url": "./heseya/resource"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": [
+                "barryvdh/laravel-ide-helper"
+            ]
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ],
+        "post-create-project-cmd": [
+            "@php artisan key:generate --ansi"
+        ],
+        "arch": [
+            "deptrac"
+        ],
+        "check": [
+            "composer-require-checker"
+        ],
+        "cp": [
+            "phpcpd ./app ./database"
+        ],
+        "docs": [
+            "swagger-cli validate ./public/docs/api.yml"
+        ],
+        "ide-helper": [
+            "@php artisan ide-helper:generate -M",
+            "@php artisan ide-helper:models -M",
+            "@php artisan ide-helper:meta"
+        ],
+        "insights": [
+            "@php artisan insights ./ ./tests --fix --no-interaction"
+        ],
+        "normalize": [
+            "composer-normalize"
+        ],
+        "phpstan": [
+            "@stan"
+        ],
+        "pre-commit": [
+            "@style",
+            "@phpstan",
+            "@check",
+            "@docs"
+        ],
+        "scout-clear": [
+            "@php artisan scout:delete-index products"
+        ],
+        "scout-import": [
+            "@php artisan scout:import 'App\\Models\\Product'"
+        ],
+        "scout-index": [
+            "@php artisan scout:index products"
+        ],
+        "scout-refresh": [
+            "@scout-clear",
+            "@scout-index",
+            "@scout-import"
+        ],
+        "seed": [
+            "@php artisan db:seed"
+        ],
+        "seed-prod": [
+            "@php artisan db:seed --class=\"Database\\Seeders\\InitSeeder\""
+        ],
+        "stan": [
+            "./vendor/bin/phpstan analyse --memory-limit=2G"
+        ],
+        "style": [
+            "@normalize",
+            "@ide-helper",
+            "@insights"
+        ],
+        "test": [
+            "@php artisan test --env=.env"
+        ]
     }
-  ]
 }

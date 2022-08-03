@@ -35,6 +35,18 @@ services:
       - app
       - mysql_service
       - redis
+  schedule:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile-dev
+    restart: unless-stopped
+    volumes:
+      - .:/usr/src/app
+    command: php artisan schedule:work
+    depends_on:
+      - app
+      - mysql_service
+      - redis
   mysql_service:
     image: mariadb:10.5
     restart: unless-stopped

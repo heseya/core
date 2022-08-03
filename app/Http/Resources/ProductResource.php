@@ -31,6 +31,8 @@ class ProductResource extends Resource
             'shipping_date' => $this->resource->shipping_date,
             'cover' => MediaResource::make($this->resource->media->first()),
             'tags' => TagResource::collection($this->resource->tags),
+            'has_schemas' => $this->resource->has_schemas,
+            'quantity' => $this->resource->quantity,
         ], $this->metadataResource('products.show_metadata_private'));
     }
 
@@ -52,6 +54,7 @@ class ProductResource extends Resource
             'sets' => ProductSetResource::collection($sets),
             'attributes' => ProductAttributeResource::collection($this->resource->attributes),
             'seo' => SeoMetadataResource::make($this->resource->seo),
+            'availability' => ProductAvailabilityResource::collection($this->resource->productAvailabilities),
         ] + $sales;
     }
 

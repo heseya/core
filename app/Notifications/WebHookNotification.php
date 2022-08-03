@@ -11,13 +11,10 @@ use Illuminate\Notifications\Notification;
 
 class WebHookNotification extends Notification
 {
-    private array $data;
-    private Model|null $issuer;
-
-    public function __construct(array $data, Model|null $issuer)
-    {
-        $this->data = $data;
-        $this->issuer = $issuer;
+    public function __construct(
+        private array $data,
+        private Model|null $issuer,
+    ) {
     }
 
     public function via(mixed $notifiable): array
@@ -34,6 +31,7 @@ class WebHookNotification extends Notification
                 default => null,
             };
         }
+
         return $this->data;
     }
 }

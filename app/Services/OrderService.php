@@ -10,6 +10,7 @@ use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\SchemaType;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdated;
+use App\Events\OrderUpdatedShippingNumber;
 use App\Exceptions\ClientException;
 use App\Exceptions\OrderException;
 use App\Exceptions\ServerException;
@@ -59,7 +60,7 @@ class OrderService implements OrderServiceContract
             $value -= $this->discountService->calc($cartValue, $discount);
         }
 
-        $value = ($value < 0 ? 0 : $value) + $order->shipping_price;
+        $value = max($value, 0) + $order->shipping_price;
 
         return round($value, 2, PHP_ROUND_HALF_UP);
     }
@@ -158,21 +159,22 @@ class OrderService implements OrderServiceContract
                 }
             }
 
-            $shippingPrice = $shippingMethod->getPrice($cartValueInitial);
-
-            $order->update([
-                'cart_total_initial' => $cartValueInitial,
-                'cart_total' => $cartValueInitial,
-                'shipping_price_initial' => $shippingPrice,
-                'shipping_price' => $shippingPrice,
-            ]);
-
             if (!($dto->getMetadata() instanceof Missing)) {
                 $this->metadataService->sync($order, $dto->getMetadata());
             }
 
+            $order->cart_total_initial = $cartValueInitial;
+
+            // Apply discounts to order/products
+            $order = $this->discountService->calcOrderProductsAndTotalDiscounts($order, $dto);
+
+            $shippingPrice = $shippingMethod->getPrice($order->cart_total);
+
+            $order->shipping_price_initial = $shippingPrice;
+            $order->shipping_price = $shippingPrice;
+
             // Apply discounts to order
-            $order = $this->discountService->calcOrderDiscounts($order, $dto);
+            $order = $this->discountService->calcOrderShippingDiscounts($order, $dto);
 
             foreach ($order->products as $orderProduct) {
                 // Remove items from warehouse
@@ -222,7 +224,16 @@ class OrderService implements OrderServiceContract
 
             DB::commit();
 
-            OrderUpdated::dispatch($order);
+            // other event when only shipping number is updated
+            if (!($dto->getShippingNumber() instanceof Missing)) {
+                OrderUpdatedShippingNumber::dispatch($order);
+
+                if (count($dto->toArray()) !== 1) {
+                    OrderUpdated::dispatch($order);
+                }
+            } else {
+                OrderUpdated::dispatch($order);
+            }
 
             return OrderResource::make($order)->response();
         } catch (Exception $error) {

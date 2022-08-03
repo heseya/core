@@ -6,10 +6,15 @@ use App\Criteria\LessOrEquals;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\MoreOrEquals;
+use App\Criteria\ProductAttributeSearch;
+use App\Criteria\ProductNotAttributeSearch;
 use App\Criteria\ProductSearch;
 use App\Criteria\WhereHasId;
+use App\Criteria\WhereHasPhoto;
 use App\Criteria\WhereHasSlug;
 use App\Criteria\WhereInIds;
+use App\Criteria\WhereNotId;
+use App\Criteria\WhereNotSlug;
 use App\Enums\DiscountTargetType;
 use App\Models\Contracts\SortableContract;
 use App\Services\Contracts\ProductSearchServiceContract;
@@ -24,9 +29,11 @@ use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use JeroenG\Explorer\Application\Explored;
+use JeroenG\Explorer\Application\SearchableFields;
 use JeroenG\Explorer\Domain\Analysis\Analysis;
 use JeroenG\Explorer\Domain\Analysis\Analyzer\StandardAnalyzer;
 use Laravel\Scout\Searchable;
@@ -38,7 +45,7 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
  *
  * @mixin IdeHelperProduct
  */
-class Product extends Model implements AuditableContract, Explored, SortableContract
+class Product extends Model implements AuditableContract, Explored, SortableContract, SearchableFields
 {
     use HasFactory,
         SoftDeletes,
@@ -69,6 +76,8 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'price_max_initial',
         'shipping_time',
         'shipping_date',
+        'has_schemas',
+        'quantity',
     ];
 
     protected array $auditInclude = [
@@ -84,12 +93,18 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'order',
     ];
 
+    protected $dates = [
+        'shipping_date',
+    ];
+
     protected $casts = [
         'price' => 'float',
         'public' => 'bool',
         'available' => 'bool',
         'quantity_step' => 'float',
         'vat_rate' => 'float',
+        'has_schemas' => 'bool',
+        'quantity' => 'float',
     ];
 
     protected array $sortable = [
@@ -115,11 +130,16 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         'public' => Equals::class,
         'available' => Equals::class,
         'sets' => WhereHasSlug::class,
+        'sets_not' => WhereNotSlug::class,
         'tags' => WhereHasId::class,
+        'tags_not' => WhereNotId::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'price_max' => LessOrEquals::class,
         'price_min' => MoreOrEquals::class,
+        'attribute' => ProductAttributeSearch::class,
+        'attribute_not' => ProductNotAttributeSearch::class,
+        'has_cover' => WhereHasPhoto::class,
     ];
 
     protected string $defaultSortBy = 'products.order';
@@ -143,6 +163,11 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
     public function toSearchableArray(): array
     {
         return $this->searchService->mapSearchableArray($this);
+    }
+
+    public function getSearchableFields(): array
+    {
+        return $this->searchService->searchableFields();
     }
 
     public function indexSettings(): array
@@ -227,9 +252,7 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
     public function productSetSales(): Collection
     {
         $sales = Collection::make();
-        $sets = $this
-            ->sets()
-            ->get();
+        $sets = $this->sets;
 
         /** @var ProductSet $set */
         foreach ($sets as $set) {
@@ -239,29 +262,40 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         return $sales->unique('id');
     }
 
-    public function allProductSales(): Collection
+    public function allProductSales(Collection $salesWithBlockList): Collection
     {
-        $sales = Discount::where('code', null)
-            ->where('target_type', DiscountTargetType::PRODUCTS)
-            ->where('target_is_allow_list', true)
-            ->whereHas('products', function ($query): void {
-                $query->where('id', $this->getKey());
-            })
-            ->orWhere(function ($query): void {
-                $query->where('code', null)
-                    ->where('target_type', DiscountTargetType::PRODUCTS)
-                    ->where('target_is_allow_list', false)
-                    ->whereDoesntHave('products', function ($query): void {
-                        $query->where('id', $this->getKey());
-                    })
-                    ->whereDoesntHave('productSets', function ($query): void {
-                        $query->whereHas('products', function ($query): void {
-                            $query->where('id', $this->getKey());
-                        });
-                    });
-            })
-            ->with(['products', 'productSets', 'conditionGroups', 'shippingMethods'])
-            ->get();
+        $sales = $this->discounts->filter(function ($discount): bool {
+            if (
+                $discount->code === null
+                && $discount->target_type->is(DiscountTargetType::PRODUCTS)
+                && $discount->target_is_allow_list
+            ) {
+                if ($discount->products->contains(function ($value): bool {
+                    return $value->getKey() === $this->getKey();
+                })) {
+                    return true;
+                }
+            }
+            return false;
+        });
+
+        $salesBlockList = $salesWithBlockList->filter(function ($sale): bool {
+            if ($sale->products->contains(function ($value): bool {
+                return $value->getKey() === $this->getKey();
+            })) {
+                return false;
+            }
+            foreach ($sale->productSets as $set) {
+                if ($set->products->contains(function ($value): bool {
+                    return $value->getKey() === $this->getKey();
+                })) {
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        $sales = $sales->merge($salesBlockList);
 
         $productSetSales = $this->productSetSales();
 
@@ -269,5 +303,10 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
         $sales = $sales->diff($productSetSales->where('target_is_allow_list', false));
 
         return $sales->unique('id');
+    }
+
+    public function productAvailabilities(): HasMany
+    {
+        return $this->hasMany(ProductAvailability::class);
     }
 }
