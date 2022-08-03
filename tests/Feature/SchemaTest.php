@@ -305,6 +305,7 @@ class SchemaTest extends TestCase
             'hidden' => 0,
             'required' => 0,
             'default' => null,
+            'available' => true,
         ]);
 
         $this->assertDatabaseHas('options', [
@@ -314,6 +315,7 @@ class SchemaTest extends TestCase
             'disabled' => 0,
             'schema_id' => $schema->id,
             'order' => 0,
+            'available' => false,
         ]);
 
         $this->assertDatabaseHas('options', [
@@ -322,6 +324,7 @@ class SchemaTest extends TestCase
             'disabled' => 0,
             'schema_id' => $schema->id,
             'order' => 1,
+            'available' => true,
         ]);
 
         $this->assertDatabaseHas('options', [
@@ -330,6 +333,7 @@ class SchemaTest extends TestCase
             'disabled' => 0,
             'schema_id' => $schema->id,
             'order' => 2,
+            'available' => true,
         ]);
 
         $this->assertDatabaseHas('option_items', [
