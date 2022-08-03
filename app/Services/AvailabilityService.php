@@ -85,7 +85,7 @@ class AvailabilityService implements AvailabilityServiceContract
 
     public function calculateSchemaAvailability(Schema $schema): void
     {
-        if (!$schema->required || $schema->type !== SchemaType::SELECT) {
+        if (!$schema->required || !$schema->type->is(SchemaType::SELECT)) {
             $schema->available = true;
             $schema->shipping_time = null;
             $schema->shipping_date = null;
