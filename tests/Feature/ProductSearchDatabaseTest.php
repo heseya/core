@@ -1233,6 +1233,58 @@ class ProductSearchDatabaseTest extends TestCase
             ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSortBySetOrder($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $product2 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $product3 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $set = ProductSet::factory()->create([
+            'slug' => 'test',
+            'public' => true,
+            'hide_on_index' => false,
+        ]);
+        $set->products()->sync([
+            $product1->getKey() => ['order' => 1],
+            $product2->getKey() => ['order' => 2],
+            $product3->getKey() => ['order' => 3],
+        ]);
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['sort' => 'set.test', 'sets[]' => 'test']);
+        $response
+            ->assertOk()
+            ->assertJsonCount(3, 'data');
+
+        $data = $response->getData()->data;
+        $this->assertEquals($product1->getKey(), $data[0]->id);
+        $this->assertEquals($product2->getKey(), $data[1]->id);
+        $this->assertEquals($product3->getKey(), $data[2]->id);
+
+        $this->assertQueryCountLessThan(20);
+
+        // desc
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['sort' => 'set.test:desc', 'sets[]' => 'test']);
+
+        $data = $response->getData()->data;
+        $this->assertEquals($product1->getKey(), $data[2]->id);
+        $this->assertEquals($product2->getKey(), $data[1]->id);
+        $this->assertEquals($product3->getKey(), $data[0]->id);
+    }
+
     private function getProductsByParentSet(
         Authenticatable $user,
         bool $isChildSetPublic,
