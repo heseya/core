@@ -16,7 +16,6 @@ use App\Services\Contracts\SeoMetadataServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -253,7 +252,7 @@ class ProductSetService implements ProductSetServiceContract
     {
         $query = $set->products();
 
-        if (!Auth::user()->can('product_sets.show_hidden')) {
+        if (Gate::denies('product_sets.show_hidden')) {
             $query->public();
         }
 
