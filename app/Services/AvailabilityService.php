@@ -16,8 +16,9 @@ use Illuminate\Support\Collection;
 
 class AvailabilityService implements AvailabilityServiceContract
 {
-    public function __construct(protected DepositServiceContract $depositService)
-    {
+    public function __construct(
+        protected DepositServiceContract $depositService,
+    ) {
     }
 
     /**
@@ -34,23 +35,40 @@ class AvailabilityService implements AvailabilityServiceContract
         $options = $item->options;
         $options->each(fn ($option) => $this->calculateOptionAvailability($option));
 
-        $schemas = Schema::where('type', SchemaType::SELECT)
+        $schemas = Schema::query()
+            ->where('type', SchemaType::SELECT)
             ->whereIn('id', $options->pluck('schema_id'))
             ->get();
-        $schemas->each(fn ($schema) => $this->calculateSchemaAvailability($schema));
 
-        $products = $schemas->pluck('products')->flatten()->unique('id');
-        $products->each(fn ($product) => $this->calculateProductAvailability($product));
+        $schemas->each(fn ($schema) => $this->calculateSchemaAvailability($schema));
+        $schemas
+            ->pluck('products')
+            ->flatten()
+            ->unique('id')
+            ->each(fn ($product) => $this->calculateProductAvailability($product));
 
         $item->products->each(fn ($product) => $this->calculateProductAvailability($product));
     }
 
     public function calculateOptionAvailability(Option $option): void
     {
+        if ($option->items->count() <= 0) {
+            $option->update([
+                'available' => true,
+                'shipping_time' => null,
+                'shipping_date' => null,
+            ]);
+
+            return;
+        }
+
         if ($option->available && $option->items->some(
-            fn ($item) => $item->quantity <= 0 && is_null($item->unlimited_stock_shipping_time) &&
-                (is_null($item->unlimited_stock_shipping_date) ||
-                    $item->unlimited_stock_shipping_date < Carbon::now())
+        fn ($item) => $item->quantity <= 0 &&
+            $item->unlimited_stock_shipping_time === null &&
+            (
+                $item->unlimited_stock_shipping_date === null ||
+                $item->unlimited_stock_shipping_date < Carbon::now()
+            )
         )) {
             $option->update([
                 'available' => false,
@@ -58,9 +76,12 @@ class AvailabilityService implements AvailabilityServiceContract
                 'shipping_date' => null,
             ]);
         } elseif (!$option->available && $option->items->every(
-            fn ($item) => $item->quantity > 0 || !is_null($item->unlimited_stock_shipping_time) ||
-                (!is_null($item->unlimited_stock_shipping_date) &&
-                    $item->unlimited_stock_shipping_date >= Carbon::now())
+        fn ($item) => $item->quantity > 0 ||
+            $item->unlimited_stock_shipping_time !== null ||
+            (
+                $item->unlimited_stock_shipping_date !== null &&
+                $item->unlimited_stock_shipping_date >= Carbon::now()
+            )
         )) {
             $option->update([
                 'available' => true,
@@ -71,23 +92,27 @@ class AvailabilityService implements AvailabilityServiceContract
     public function calculateSchemaAvailability(Schema $schema): void
     {
         if (!$schema->required) {
-            $schema->update([
-                'available' => true,
-                'shipping_time' => null,
-                'shipping_date' => null,
-            ]);
+            $schema->available = true;
+            $schema->shipping_time = null;
+            $schema->shipping_date = null;
         }
-        if ($schema->available && $schema->options->every(fn ($option) => !$option->available)) {
-            $schema->update([
-                'available' => false,
-                'shipping_time' => null,
-                'shipping_date' => null,
-            ]);
-        } elseif (!$schema->available && $schema->options->some(fn ($option) => $option->available)) {
-            $schema->update([
-                'available' => true,
-            ] + $this->depositService->getMinShippingTimeDateForOptions($schema->options));
+
+        if (
+            $schema->available &&
+            $schema->options->every(fn ($option) => !$option->available)
+        ) {
+            $schema->available = false;
+            $schema->shipping_time = null;
+            $schema->shipping_date = null;
+        } elseif (
+            !$schema->available &&
+            $schema->options->some(fn ($option) => $option->available)
+        ) {
+            $schema->available = true;
+            $schema->fill($this->depositService->getMinShippingTimeDateForOptions($schema->options));
         }
+
+        $schema->save();
     }
 
     public function calculateProductAvailability(Product $product): void
@@ -320,13 +345,13 @@ class AvailabilityService implements AvailabilityServiceContract
     {
         $groupedDeposits = $items->pluck('groupedDeposits')->flatten(1);
 
-        $shippingTimeDeposits = $groupedDeposits->filter(function ($groupedDeposit): bool {
-            return $groupedDeposit->shipping_time !== null;
-        })->sortBy('shipping_time')->groupBy('shipping_time');
+        $shippingTimeDeposits = $groupedDeposits->filter(
+            fn ($groupedDeposit): bool => $groupedDeposit->shipping_time !== null
+        )->sortBy('shipping_time')->groupBy('shipping_time');
 
-        $shippingDateDeposits = $groupedDeposits->filter(function ($groupDeposit): bool {
-            return $groupDeposit->shipping_date !== null;
-        })->sortBy('shipping_date')->groupBy('shipping_date');
+        $shippingDateDeposits = $groupedDeposits->filter(
+            fn ($groupDeposit): bool => $groupDeposit->shipping_date !== null
+        )->sortBy('shipping_date')->groupBy('shipping_date');
 
         return [$shippingTimeDeposits, $shippingDateDeposits];
     }
