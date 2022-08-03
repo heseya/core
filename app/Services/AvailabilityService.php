@@ -62,8 +62,7 @@ class AvailabilityService implements AvailabilityServiceContract
             return;
         }
 
-        if ($option->available && $option->items->some(
-        fn ($item) => $item->quantity <= 0 &&
+        if ($option->available && $option->items->some(fn ($item) => $item->quantity <= 0 &&
             $item->unlimited_stock_shipping_time === null &&
             ($item->unlimited_stock_shipping_date === null ||
                 $item->unlimited_stock_shipping_date < Carbon::now())
@@ -73,8 +72,7 @@ class AvailabilityService implements AvailabilityServiceContract
                 'shipping_time' => null,
                 'shipping_date' => null,
             ]);
-        } elseif (!$option->available && $option->items->every(
-        fn ($item) => $item->quantity > 0 ||
+        } elseif (!$option->available && $option->items->every(fn ($item) => $item->quantity > 0 ||
             $item->unlimited_stock_shipping_time !== null ||
             ($item->unlimited_stock_shipping_date !== null &&
                 $item->unlimited_stock_shipping_date >= Carbon::now())
