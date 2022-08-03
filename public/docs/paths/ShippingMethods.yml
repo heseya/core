@@ -11,6 +11,7 @@ ShippingMethods:
           type: string
           example: DE
       - name: cart_value
+        description: 'cart total you want to display shipping price for'
         in: query
         required: false
         schema:

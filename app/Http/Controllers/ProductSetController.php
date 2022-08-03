@@ -8,7 +8,6 @@ use App\Dtos\ProductsReorderDto;
 use App\Http\Requests\ProductSetAttachRequest;
 use App\Http\Requests\ProductSetIndexRequest;
 use App\Http\Requests\ProductSetProductReorderRequest;
-use App\Http\Requests\ProductSetProductsRequest;
 use App\Http\Requests\ProductSetReorderRequest;
 use App\Http\Requests\ProductSetShowRequest;
 use App\Http\Requests\ProductSetStoreRequest;
@@ -111,7 +110,7 @@ class ProductSetController extends Controller
         return Response::json(null, ResponseAlias::HTTP_NO_CONTENT);
     }
 
-    public function products(ProductSet $productSet, ProductSetProductsRequest $request): JsonResource
+    public function products(ProductSet $productSet): JsonResource
     {
         $products = $this->productSetService->products($productSet);
 

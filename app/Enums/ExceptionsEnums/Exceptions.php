@@ -9,11 +9,13 @@ final class Exceptions extends Enum
     public const CLIENT_INVALID_INSTALLATION_RESPONSE = 'App has invalid installation response';
     public const CLIENT_FAILED_TO_CONNECT_WITH_APP = 'Failed to connect with application';
     public const CLIENT_FAILED_TO_UNINSTALL_APP =
-        'Failed to uninstall the application. Failed response from app. Check if uninstall token is correct.';
+        'Failed to uninstall the application. Failed response from app. Check if uninstall token is correct';
     public const CLIENT_ASSIGN_INVALID_PERMISSIONS =
-        'Assigning invalid permissions, there is no difference between all possible permissions and assigned ones';
+        'Assigning invalid permissions. One or more of requested permissions doesn\'t exist';
     public const CLIENT_ADD_APP_WITH_PERMISSIONS_USER_DONT_HAVE = 'Can\'t add an app with permissions you don\'t have';
-    public const CLIENT_APP_RESPONDED_WITH_INVALID_CODE = 'Application info responded with invalid status code';
+    public const CLIENT_APP_INFO_RESPONDED_WITH_INVALID_CODE = 'Application info responded with invalid status code';
+    public const CLIENT_APP_INSTALLATION_RESPONDED_WITH_INVALID_CODE =
+        'Application installation responded with invalid status code';
     public const CLIENT_APP_RESPONDED_WITH_INVALID_INFO = 'App responded with invalid info';
     public const CLIENT_APP_WANTS_INVALID_PERMISSION = 'App wants invalid permissions';
     public const CLIENT_ADD_APP_WITHOUT_REQUIRED_PERMISSIONS = 'Can\'t add app without all required permissions';
@@ -28,7 +30,7 @@ final class Exceptions extends Enum
         'The token is invalid or inactive. Try to reset your password again';
 
     public const CLIENT_DISCOUNT_TYPE_NOT_SUPPORTED =
-        'Discount type is not supported, discount value cannot be calculated.';
+        'Discount type is not supported, discount value cannot be calculated';
     public const CLIENT_CANNOT_APPLY_SELECTED_DISCOUNT_TYPE = 'Cannot apply selected discount type to order';
     public const CLIENT_NOT_ENOUGH_ITEMS = 'There is not enough items to order the product';
     public const CLIENT_ITEM_NOT_FOUND = 'Item not found when creating an order';

@@ -16,11 +16,12 @@ class ProductRepository implements ProductRepositoryContract
 {
     public function search(ProductSearchDto $dto): LengthAwarePaginator
     {
-        $query = Product::searchByCriteria($dto->toArray())->with(['attributes', 'metadata', 'media', 'tags', 'items'])
+        $query = Product::searchByCriteria($dto->toArray())
+            ->with(['attributes', 'metadata', 'media', 'tags', 'items'])
             ->sort($dto->getSort());
 
         if (Gate::denies('products.show_hidden')) {
-            $query->where('public', true);
+            $query->where('products.public', true);
 
             // hide on index: sort and search is always in dto
             if (count($dto->toArray()) <= 2 && $dto->getSearch() === null) {
