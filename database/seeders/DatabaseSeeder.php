@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             ->call(PackageTemplateSeeder::class)
             ->call(AuthSeeder::class)
             ->call(DiscountSeeder::class)
-            ->call(WebHookEventLogSeeder::class);
+            ->call(WebHookEventLogSeeder::class)
+            ->call(DepositSeeder::class);
     }
 }
