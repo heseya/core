@@ -47,7 +47,7 @@ class MediaUpdateTest extends TestCase
      */
     public function testUpdateAlt($user): void
     {
-        $this->$user->givePermissionTo('pages.add');
+        $this->$user->givePermissionTo('media.edit');
 
         $this
             ->actingAs($this->$user)
@@ -71,7 +71,7 @@ class MediaUpdateTest extends TestCase
      */
     public function testUpdateSeededMedia($user): void
     {
-        $this->$user->givePermissionTo('pages.add');
+        $this->$user->givePermissionTo('media.edit');
 
         $media = Media::factory()->create();
 
@@ -81,7 +81,9 @@ class MediaUpdateTest extends TestCase
                 'alt' => 'Test alt description',
                 'slug' => 'Test slug',
             ])
-            ->assertJsonFragment(['key' => Exceptions::getKey(Exceptions::SERVER_CDN_ERROR)]);
+            ->assertJsonFragment([
+                'key' => Exceptions::getKey(Exceptions::CDN_NOT_ALLOWED_TO_CHANGE_ALT),
+            ]);
     }
 
     /**
@@ -89,7 +91,7 @@ class MediaUpdateTest extends TestCase
      */
     public function testUpdateSlug($user): void
     {
-        $this->$user->givePermissionTo('pages.add');
+        $this->$user->givePermissionTo('media.edit');
 
         $this
             ->actingAs($this->$user)
@@ -118,7 +120,7 @@ class MediaUpdateTest extends TestCase
      */
     public function testUpdateAltWithNullSlug($user): void
     {
-        $this->$user->givePermissionTo('pages.add');
+        $this->$user->givePermissionTo('media.edit');
 
         $this
             ->actingAs($this->$user)
@@ -143,7 +145,7 @@ class MediaUpdateTest extends TestCase
      */
     public function testUpdateMediaSlugToNull($user): void
     {
-        $this->$user->givePermissionTo('pages.add');
+        $this->$user->givePermissionTo('media.edit');
         $this->media->update(['slug' => 'test']);
 
         $this
@@ -161,7 +163,7 @@ class MediaUpdateTest extends TestCase
      */
     public function testCantUpdateSlugNotUnique($user): void
     {
-        $this->$user->givePermissionTo('pages.add');
+        $this->$user->givePermissionTo('media.edit');
 
         Media::create([
             'type' => MediaType::PHOTO,
@@ -186,7 +188,7 @@ class MediaUpdateTest extends TestCase
      */
     public function testUpdateSameSlug($user): void
     {
-        $this->$user->givePermissionTo('pages.add');
+        $this->$user->givePermissionTo('media.edit');
 
         $this->media->update(['slug' => 'test-slug']);
 
@@ -205,7 +207,7 @@ class MediaUpdateTest extends TestCase
      */
     public function testUpdateAltNull($user): void
     {
-        $this->$user->givePermissionTo('pages.add');
+        $this->$user->givePermissionTo('media.edit');
 
         $this
             ->actingAs($this->$user)
