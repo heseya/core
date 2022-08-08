@@ -9,7 +9,7 @@ class DepositSearch extends Criterion
 {
     public function query(Builder $query): Builder
     {
-        return  $query->where(function (Builder $query): void {
+        return $query->where(function (Builder $query): void {
             $query
                 ->orWhere('created_at', 'LIKE', '%' . $this->value . '%')
                 ->orWhere('shipping_date', 'LIKE', '%' . $this->value . '%')
