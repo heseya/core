@@ -10,8 +10,7 @@ class SchemaObserver
     public function deleting(Schema $schema): void
     {
         $schema->products->each(function (Product $product) use ($schema): void {
-            $productSchemas = $product->schemas()->where('id', '!=', $schema->id)->get();
-            if ($productSchemas->isEmpty()) {
+            if (!$product->schemas()->where('id', '!=', $schema->getKey())->exists()) {
                 $product->update(['has_schemas' => false]);
             }
         });
