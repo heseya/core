@@ -109,12 +109,6 @@ class Order extends Model implements AuditableContract, SortableContract
 
     /**
      * Summary amount of paid.
-     *
-     * @OA\Property(
-     *   property="summary_paid",
-     *   type="float",
-     *   example=199.99
-     * )
      */
     public function getPaidAmountAttribute(): float
     {
@@ -123,13 +117,6 @@ class Order extends Model implements AuditableContract, SortableContract
             ->sum('amount');
     }
 
-    /**
-     * @OA\Property(
-     *   property="payments",
-     *   type="array",
-     *   @OA\Items(ref="#/components/schemas/Payment"),
-     * )
-     */
     public function payments(): HasMany
     {
         return $this
@@ -138,12 +125,6 @@ class Order extends Model implements AuditableContract, SortableContract
             ->orderBy('updated_at', 'DESC');
     }
 
-    /**
-     * @OA\Property(
-     *   property="payable",
-     *   type="boolean",
-     * )
-     */
     public function getPayableAttribute(): bool
     {
         return !$this->paid &&
@@ -156,45 +137,21 @@ class Order extends Model implements AuditableContract, SortableContract
         return $this->paid_amount >= $this->summary;
     }
 
-    /**
-     * @OA\Property(
-     *   property="status",
-     *   ref="#/components/schemas/Status",
-     * )
-     */
     public function status(): BelongsTo
     {
         return $this->belongsTo(Status::class);
     }
 
-    /**
-     * @OA\Property(
-     *   property="shipping_method",
-     *   ref="#/components/schemas/ShippingMethod",
-     * )
-     */
     public function shippingMethod(): BelongsTo
     {
         return $this->belongsTo(ShippingMethod::class);
     }
 
-    /**
-     * @OA\Property(
-     *   property="delivery_address",
-     *   ref="#/components/schemas/Address",
-     * )
-     */
     public function deliveryAddress(): HasOne
     {
         return $this->hasOne(Address::class, 'id', 'delivery_address_id');
     }
 
-    /**
-     * @OA\Property(
-     *   property="invoice_address",
-     *   ref="#/components/schemas/Address",
-     * )
-     */
     public function invoiceAddress(): HasOne
     {
         return $this->hasOne(Address::class, 'id', 'invoice_address_id');
@@ -216,13 +173,6 @@ class Order extends Model implements AuditableContract, SortableContract
         }
     }
 
-    /**
-     * @OA\Property(
-     *   property="products",
-     *   type="array",
-     *   @OA\Items(ref="#/components/schemas/OrderProduct"),
-     * )
-     */
     public function products(): HasMany
     {
         return $this->hasMany(OrderProduct::class);
