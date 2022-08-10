@@ -153,6 +153,7 @@ class DiscountService implements DiscountServiceContract
     {
         if ($discount->delete()) {
             if ($discount->code !== null) {
+                $discount->update(['code' => $discount->code . '-' . Carbon::now()->timestamp]);
                 CouponDeleted::dispatch($discount);
             } else {
                 CalculateDiscount::dispatchIf(
@@ -257,47 +258,6 @@ class DiscountService implements DiscountServiceContract
         return $this->calcOrderDiscounts($order, $orderDto, [
             DiscountTargetType::fromValue(DiscountTargetType::SHIPPING_PRICE),
         ]);
-    }
-
-    /**
-     * @param array<DiscountTargetType> $targetTypes
-     *
-     * @throws StoreException
-     * @throws ClientException
-     */
-    private function calcOrderDiscounts(Order $order, OrderDto $orderDto, array $targetTypes = []): Order
-    {
-        $coupons = $orderDto->getCoupons() instanceof Missing ? [] : $orderDto->getCoupons();
-        $sales = $orderDto->getSaleIds() instanceof Missing ? [] : $orderDto->getSaleIds();
-        $discounts = $this->getSalesAndCoupons($coupons, $targetTypes);
-
-        /** @var Discount $discount */
-        foreach ($discounts as $discount) {
-            if ($this->checkConditionGroups($discount, $orderDto, $order->cart_total)) {
-                $order = $this->applyDiscountOnOrder($discount, $order);
-            } elseif (
-                ($discount->code === null && in_array($discount->getKey(), $sales)) ||
-                $discount->code !== null
-            ) {
-                [$type, $id] = $discount->code !== null ? ['coupon', $discount->code] : ['sale', $discount->getKey()];
-                throw new ClientException(Exceptions::CLIENT_CANNOT_APPLY_SELECTED_DISCOUNT_TYPE, errorArray: [
-                    'type' => $type,
-                    'id' => $id,
-                ]);
-            }
-        }
-
-        $refreshed = $order->fresh();
-        if ($refreshed->discounts->count() === 0) {
-            $order = $this->roundProductPrices($order);
-        }
-
-        $order->cart_total = round($order->cart_total, 2, PHP_ROUND_HALF_UP);
-        $order->shipping_price = round($order->shipping_price, 2, PHP_ROUND_HALF_UP);
-        $order->summary = $order->cart_total + $order->shipping_price;
-        $order->paid = $order->summary <= 0;
-
-        return $order;
     }
 
     public function calcCartDiscounts(CartDto $cart, Collection $products): CartResource
@@ -635,6 +595,47 @@ class DiscountService implements DiscountServiceContract
         if ($reindex) {
             $product->searchable();
         }
+    }
+
+    /**
+     * @param array<DiscountTargetType> $targetTypes
+     *
+     * @throws StoreException
+     * @throws ClientException
+     */
+    private function calcOrderDiscounts(Order $order, OrderDto $orderDto, array $targetTypes = []): Order
+    {
+        $coupons = $orderDto->getCoupons() instanceof Missing ? [] : $orderDto->getCoupons();
+        $sales = $orderDto->getSaleIds() instanceof Missing ? [] : $orderDto->getSaleIds();
+        $discounts = $this->getSalesAndCoupons($coupons, $targetTypes);
+
+        /** @var Discount $discount */
+        foreach ($discounts as $discount) {
+            if ($this->checkConditionGroups($discount, $orderDto, $order->cart_total)) {
+                $order = $this->applyDiscountOnOrder($discount, $order);
+            } elseif (
+                ($discount->code === null && in_array($discount->getKey(), $sales)) ||
+                $discount->code !== null
+            ) {
+                [$type, $id] = $discount->code !== null ? ['coupon', $discount->code] : ['sale', $discount->getKey()];
+                throw new ClientException(Exceptions::CLIENT_CANNOT_APPLY_SELECTED_DISCOUNT_TYPE, errorArray: [
+                    'type' => $type,
+                    'id' => $id,
+                ]);
+            }
+        }
+
+        $refreshed = $order->fresh();
+        if ($refreshed->discounts->count() === 0) {
+            $order = $this->roundProductPrices($order);
+        }
+
+        $order->cart_total = round($order->cart_total, 2, PHP_ROUND_HALF_UP);
+        $order->shipping_price = round($order->shipping_price, 2, PHP_ROUND_HALF_UP);
+        $order->summary = $order->cart_total + $order->shipping_price;
+        $order->paid = $order->summary <= 0;
+
+        return $order;
     }
 
     private function allDiscountProductsIds(Discount $discount): Collection
