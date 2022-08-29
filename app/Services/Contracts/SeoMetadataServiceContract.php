@@ -21,5 +21,5 @@ interface SeoMetadataServiceContract
 
     public function checkKeywords(SeoKeywordsDto $dto): Collection;
 
-    public function getGlobalSeo(): SeoMetadata | null;
+    public function getGlobalSeo(): SeoMetadata;
 }
