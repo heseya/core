@@ -111,6 +111,7 @@ class ProductRepository implements ProductRepositoryContract
             'price_max_initial',
             'public',
             'available',
+            'description_html',
             'google_product_category',
         ]));
 
