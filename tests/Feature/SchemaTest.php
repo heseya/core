@@ -706,6 +706,50 @@ class SchemaTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateAvailableSchemaNonSelect($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
+            'name' => 'Test',
+            'type' => SchemaType::getKey(SchemaType::STRING),
+            'price' => 120,
+            'required' => false,
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('data.available', true);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateAvailableSchemaAndOptionWithoutItem($user): void
+    {
+        $this->$user->givePermissionTo('products.add');
+
+        $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
+            'name' => 'Test',
+            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'price' => 120,
+            'required' => false,
+            'options' => [[
+                'name' => "Test option",
+                'price' => 0,
+                'disabled' => false,
+            ]],
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('data.available', true)
+            ->assertJsonPath('data.options.0.available', true);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateProductsEdit($user): void
     {
         $this->$user->givePermissionTo('products.edit');

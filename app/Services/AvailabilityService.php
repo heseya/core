@@ -87,28 +87,34 @@ class AvailabilityService implements AvailabilityServiceContract
 
     public function calculateSchemaAvailability(Schema $schema): void
     {
-        if (!$schema->required || !$schema->type->is(SchemaType::SELECT)) {
+        if (!$schema->type->is(SchemaType::SELECT)) {
             $schema->available = true;
             $schema->shipping_time = null;
             $schema->shipping_date = null;
-        }
 
-        if (
+            $schema->save();
+        } else if (
             $schema->available &&
             $schema->options->every(fn ($option) => !$option->available)
         ) {
             $schema->available = false;
             $schema->shipping_time = null;
             $schema->shipping_date = null;
+
+            $schema->save();
         } elseif (
             !$schema->available &&
             $schema->options->some(fn ($option) => $option->available)
         ) {
             $schema->available = true;
-            $schema->fill($this->depositService->getMinShippingTimeDateForOptions($schema->options));
-        }
+            $schema->fill(
+                $this->depositService->getMinShippingTimeDateForOptions(
+                    $schema->options,
+                ),
+            );
 
-        $schema->save();
+            $schema->save();
+        }
     }
 
     public function calculateProductAvailability(Product $product): void
