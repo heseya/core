@@ -37,6 +37,7 @@
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^2.12",
         "fakerphp/faker": "^v1.19",
+        "friendsofphp/php-cs-fixer": "3.9.5",
         "heseya/demo": "^1.0",
         "heseya/insights": "^1.0",
         "laravel/tinker": "^2.7",

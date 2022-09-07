@@ -738,7 +738,8 @@ class SchemaTest extends TestCase
                 'name' => "Test option",
                 'price' => 0,
                 'disabled' => false,
-            ]],
+            ],
+            ],
         ]);
 
         $response

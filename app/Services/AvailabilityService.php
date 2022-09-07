@@ -93,7 +93,7 @@ class AvailabilityService implements AvailabilityServiceContract
             $schema->shipping_date = null;
 
             $schema->save();
-        } else if (
+        } elseif (
             $schema->available &&
             $schema->options->every(fn ($option) => !$option->available)
         ) {
