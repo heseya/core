@@ -91,6 +91,7 @@ class ProductRepository implements ProductRepositoryContract
 
         $products = new Collection();
 
+        // @phpstan-ignore-next-line
         foreach ($results->items() as $item) {
             if (!isset($item['hits']) || !isset($item['hits']['hits'])) {
                 continue;
@@ -100,8 +101,10 @@ class ProductRepository implements ProductRepositoryContract
             }
         }
 
+        // @phpstan-ignore-next-line
         $results->setCollection($products);
 
+        // @phpstan-ignore-next-line
         return $results;
     }
 
@@ -373,7 +376,7 @@ class ProductRepository implements ProductRepositoryContract
         return $query->filter($value ? $term : Invert::query($term));
     }
 
-    private function handleElastic400(BadRequest400Exception $exception) {
+    private function handleElastic400(BadRequest400Exception $exception): void {
         $error = Str::of($exception->getMessage());
 
         if ($error->contains('] in order to sort on')) {
