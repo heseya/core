@@ -1244,18 +1244,18 @@ class AuthTest extends TestCase
     {
         $this->$user->givePermissionTo('auth.check_identity');
 
-        $otherUser = User::factory()->create();
-
         $token = $this->tokenService->createToken(
-            $otherUser,
+            User::factory()->create(),
             new TokenType(TokenType::IDENTITY),
         ) . 'invalid_hash';
 
-        $this->actingAs($this->$user)->getJson("/auth/check/${token}")
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', "/auth/check/${token}")
             ->assertStatus(422);
 
         $this->actingAs($this->$user)
-            ->getJson('/auth/check/its-not-real-token')
+            ->json('GET', '/auth/check/its-not-real-token')
             ->assertNotFound();
     }
 
