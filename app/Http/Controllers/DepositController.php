@@ -16,8 +16,9 @@ class DepositController extends Controller
     public function index(DepositIndexRequest $request): JsonResource
     {
         $deposits = Deposit::searchByCriteria($request->validated())
+            ->with(['item', 'order'])
             ->orderBy('created_at', 'desc')
-            ->paginate(Config::get('app.pagination_size'));
+            ->paginate(Config::get('pagination.per_page'));
 
         return DepositResource::collection($deposits);
     }

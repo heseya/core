@@ -63,6 +63,64 @@ class DepositsTest extends TestCase
             ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearchBySKU($user): void
+    {
+        $this->$user->givePermissionTo('deposits.show');
+
+        $item1 = Item::factory()->create();
+        Deposit::factory()->count(5)->create(['item_id' => $item1->getKey()]);
+
+        $item2 = Item::factory()->create();
+        Deposit::factory()->count(5)->create(['item_id' => $item2->getKey()]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/deposits', ['sku' => $item1->sku])
+            ->assertOk()
+            ->assertJsonCount(5, 'data')
+            ->assertJsonFragment(['sku' => $item1->sku])
+            ->assertJsonMissing(['sku' => $item2->sku]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearch($user): void
+    {
+        $this->$user->givePermissionTo('deposits.show');
+
+        $item1 = Item::factory()->create();
+        Deposit::factory()->count(5)->create(['item_id' => $item1->getKey()]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/deposits', ['search' => $item1->name])
+            ->assertOk()
+            ->assertJsonCount(5, 'data')
+            ->assertJsonFragment(['sku' => $item1->sku]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexPerformance(): void
+    {
+        $item = Item::factory()->create();
+        Deposit::factory()->count(500)->create(['item_id' => $item->getKey()]);
+
+        $this->user->givePermissionTo('deposits.show');
+        $this
+            ->actingAs($this->user)
+            ->json('GET', '/deposits', ['limit' => 500])
+            ->assertOk()
+            ->assertJsonCount(500, 'data');
+
+        $this->assertQueryCountLessThan(7);
+    }
+
     public function testViewUnauthorized(): void
     {
         $response = $this->getJson('/items/id:' . $this->item->getKey() . '/deposits');
