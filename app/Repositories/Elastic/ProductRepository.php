@@ -377,7 +377,11 @@ class ProductRepository implements ProductRepositoryContract
         $error = Str::of($exception->getMessage());
 
         if ($error->contains('] in order to sort on')) {
-            throw new ClientException('Cannot sort by ' . $error->after('No mapping found for [')->before('] in order to sort on'));
+            throw new ClientException(
+                'Cannot sort by ' . $error
+                    ->after('No mapping found for [')
+                    ->before('] in order to sort on'),
+            );
         }
 
         throw new ServerException('Not found mapping for this query');
