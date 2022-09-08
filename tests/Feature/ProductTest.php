@@ -2202,7 +2202,8 @@ class ProductTest extends TestCase
             'google_product_category' => 123456,
         ]);
 
-        $response->assertUnprocessable();
+        // no validation
+        $response->assertCreated();
     }
 
     /**
@@ -2807,7 +2808,7 @@ class ProductTest extends TestCase
             'google_product_category' => 123456789,
         ]);
 
-        $response->assertUnprocessable();
+        $response->assertOk();
     }
 
     /**

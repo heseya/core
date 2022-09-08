@@ -14,8 +14,8 @@ class DepositSearch extends Criterion
                 ->orWhere('created_at', 'LIKE', '%' . $this->value . '%')
                 ->orWhere('shipping_date', 'LIKE', '%' . $this->value . '%')
                 ->orWhereHas('item', function (Builder $query): void {
-                    $search = new ItemSearch($this->value);
-                    $search->query($query);
+                    $query->where('name', 'LIKE', '%' . $this->value . '%')
+                        ->orWhere('sku', 'LIKE', '%' . $this->value . '%');
                 });
         });
     }

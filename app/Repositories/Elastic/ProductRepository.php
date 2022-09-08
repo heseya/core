@@ -113,6 +113,7 @@ class ProductRepository implements ProductRepositoryContract
             'available',
             'google_product_category',
         ]));
+        $product->forceFill(['description_html' => $hit['_source']['description']]);
 
         if ($hit['_source']['cover'] !== null) {
             $media = new Media();
