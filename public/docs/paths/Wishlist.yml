@@ -1,0 +1,76 @@
+WishlistProduct:
+  get:
+    tags:
+      - Wishlist
+    summary: 'displaying wishlist products'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Wishlist.yml#/WishlistProduct'
+
+  post:
+    tags:
+      - Wishlist
+    summary: 'adding new product to wishlist'
+    security:
+      - BearerAuth: [ ]
+    requestBody:
+      $ref: './../requests/Wishlist.yml#/WishlistProductStore'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: './../schemas/Wishlist.yml#/WishlistProduct'
+
+WishlistProductParams:
+  get:
+    tags:
+      - Wishlist
+    summary: 'get wishlist product'
+    parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
+    security:
+      - BearerAuth: [ ]
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: './../schemas/Wishlist.yml#/WishlistProduct'
+
+  delete:
+    tags:
+      - Wishlist
+    summary: 'soft delete product from wishlist'
+    parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
+    security:
+      - BearerAuth: [ ]
+    responses:
+      204:
+        description: No content

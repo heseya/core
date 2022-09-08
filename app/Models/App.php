@@ -107,6 +107,11 @@ class App extends Model implements
         return false;
     }
 
+    public function wishlistProducts(): MorphMany
+    {
+        return $this->morphMany(WishlistProduct::class, 'user');
+    }
+
     protected function hasPermissionViaRole(Permission $permission): bool
     {
         return false;

@@ -147,6 +147,11 @@ class User extends Model implements
         return $this->hasMany(OneTimeSecurityCode::class, 'user_id', 'id');
     }
 
+    public function wishlistProducts(): MorphMany
+    {
+        return $this->morphMany(WishlistProduct::class, 'user');
+    }
+
     public function preferences(): BelongsTo
     {
         return $this->belongsTo(UserPreference::class, 'preferences_id');

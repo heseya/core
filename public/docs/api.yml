@@ -362,6 +362,10 @@ paths:
     $ref: './paths/Banners.yml#/BannersParam'
   '/google-categories/{lang}':
     $ref: './paths/Category.yml#/Category'
+  '/wishlist':
+    $ref: './paths/Wishlist.yml#/WishlistProduct'
+  '/wishlist/id:{product_id}':
+    $ref: './paths/Wishlist.yml#/WishlistProductParams'
 components:
   schemas:
     Error:
@@ -482,6 +486,8 @@ components:
       $ref: './schemas/Attributes.yml#/AttributeOption'
     Consents:
       $ref: './schemas/Consents.yml#/Consent'
+    Wishlist:
+      $ref: './schemas/Wishlist.yml#/WishlistProductFull'
     UserPreferences:
       $ref: './schemas/Auth.yml#/Preferences'
   requestBodies:
