@@ -11,7 +11,6 @@ use App\Services\AuditService;
 use App\Services\AuthService;
 use App\Services\AvailabilityService;
 use App\Services\BannerService;
-use App\Services\CategoryService;
 use App\Services\ConsentService;
 use App\Services\Contracts\AnalyticsServiceContract;
 use App\Services\Contracts\AppServiceContract;
@@ -21,13 +20,13 @@ use App\Services\Contracts\AuditServiceContract;
 use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\BannerServiceContract;
-use App\Services\Contracts\CategoryServiceContract;
 use App\Services\Contracts\ConsentServiceContract;
 use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\DiscountStoreServiceContract;
 use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\EventServiceContract;
+use App\Services\Contracts\GoogleCategoryServiceContract;
 use App\Services\Contracts\ItemServiceContract;
 use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
@@ -62,6 +61,7 @@ use App\Services\DiscountService;
 use App\Services\DiscountStoreService;
 use App\Services\DocumentService;
 use App\Services\EventService;
+use App\Services\GoogleCategoryService;
 use App\Services\ItemService;
 use App\Services\MediaService;
 use App\Services\MetadataService;
@@ -140,7 +140,7 @@ class AppServiceProvider extends ServiceProvider
         DepositServiceContract::class => DepositService::class,
         DiscountStoreServiceContract::class => DiscountStoreService::class,
         ShippingTimeDateServiceContract::class => ShippingTimeDateService::class,
-        CategoryServiceContract::class => CategoryService::class,
+        GoogleCategoryServiceContract::class => GoogleCategoryService::class,
     ];
 
     /**
