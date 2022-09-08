@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\ExceptionsEnums\Exceptions;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -50,8 +49,9 @@ class CategoryTest extends TestCase
      */
     public function testGoogleCategoryFailed($user): void
     {
-        $this->actingAs($this->$user)->json('get', '/google-categories/test-TEST')
-            ->assertStatus(422)
-            ->assertJsonFragment(['key' => Exceptions::getKey(Exceptions::SERVER_ERROR)]);
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/google-categories/test-TEST')
+            ->assertStatus(422);
     }
 }
