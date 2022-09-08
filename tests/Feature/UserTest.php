@@ -399,6 +399,35 @@ class UserTest extends TestCase
             ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexRolesSearchArray($user): void
+    {
+        $this->$user->givePermissionTo('users.show');
+
+        $role1 = Role::factory()->create();
+        $role2 = Role::factory()->create();
+
+        /** @var User $firstUser */
+        $firstUser = User::factory()->create();
+        $firstUser->assignRole($role1);
+
+        /** @var User $secondUser */
+        $secondUser = User::factory()->create();
+        $secondUser->assignRole($role2);
+
+        User::factory()->create();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/users', ['roles' => [$role1->getKey(), $role2->getKey()]])
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment(['id' => $firstUser->getKey()])
+            ->assertJsonFragment(['id' => $secondUser->getKey()]);
+    }
+
     public function testShowUnauthorized(): void
     {
         $response = $this->getJson('/users/id:' . $this->user->getKey());

@@ -6,6 +6,7 @@ use App\Criteria\ConsentIdSearch;
 use App\Criteria\ConsentNameSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\RolesSearch;
 use App\Criteria\UserSearch;
 use App\Criteria\WhereInIds;
 use App\Enums\SavedAddressType;
@@ -88,6 +89,7 @@ class User extends Model implements
         'metadata_private' => MetadataPrivateSearch::class,
         'consent_name' => ConsentNameSearch::class,
         'consent_id' => ConsentIdSearch::class,
+        'roles' => RolesSearch::class,
     ];
 
     protected array $sortable = [
