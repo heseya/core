@@ -143,7 +143,6 @@ class AppServiceProvider extends ServiceProvider
         DiscountStoreServiceContract::class => DiscountStoreService::class,
         ShippingTimeDateServiceContract::class => ShippingTimeDateService::class,
         GoogleCategoryServiceContract::class => GoogleCategoryService::class,
-        CategoryServiceContract::class => CategoryService::class,
         WishlistServiceContract::class => WishlistService::class,
     ];
 
