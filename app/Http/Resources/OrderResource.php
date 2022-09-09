@@ -17,6 +17,7 @@ class OrderResource extends Resource
             'id' => $this->resource->getKey(),
             'code' => $this->resource->code,
             'email' => $this->resource->email,
+            'payable' => $this->resource->payable,
             'currency' => $this->resource->currency,
             'summary' => $this->resource->summary,
             'summary_paid' => $this->resource->paid_amount,
@@ -71,13 +72,6 @@ class OrderResource extends Resource
             'discounts' => $orderDiscounts,
             'buyer' => $this->resource->buyer instanceof User
                 ? UserResource::make($this->resource->buyer)->baseOnly() : AppResource::make($this->resource->buyer),
-        ];
-    }
-
-    public function index(Request $request): array
-    {
-        return [
-            'payable' => $this->resource->payable,
         ];
     }
 }
