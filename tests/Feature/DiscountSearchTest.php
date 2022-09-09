@@ -24,7 +24,7 @@ class DiscountSearchTest extends TestCase
      */
     public function testIndexSearchByRole($kind): void
     {
-        $this->user->givePermissionTo("$kind.show");
+        $this->user->givePermissionTo("{$kind}.show");
 
         $role = Role::query()->create([
             'name' => 'test',
