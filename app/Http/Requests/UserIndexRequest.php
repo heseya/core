@@ -20,6 +20,8 @@ class UserIndexRequest extends FormRequest
             'metadata_private' => ['nullable', 'array'],
             'consent_name' => ['nullable', 'string'],
             'consent_id' => ['nullable', 'string'],
+            'roles' => ['nullable', 'array'],
+            'roles.*' => ['exists:roles,id'],
         ];
     }
 }
