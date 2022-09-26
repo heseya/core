@@ -17,9 +17,13 @@ Role:
       type: boolean
       example: true
     deletable:
-      description: 'Whether the role can be deleted with appropreiate permissions.'
+      description: 'Whether the role can be deleted with appropriate permissions.'
       type: boolean
       example: true
+    users_count:
+      description: 'Number of users in role.'
+      type: boolean
+      example: 10
     metadata:
       $ref: './../schemas/Metadata.yml#/Metadata'
     metadata_private:
