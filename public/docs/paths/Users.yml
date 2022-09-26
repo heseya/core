@@ -19,6 +19,24 @@ Users:
         description: 'Email search'
         schema:
           type: string
+        example: 'email@example.com'
+      - name: roles[]
+        in: query
+        description: 'Search for users in roles by role id'
+        schema:
+          type: string
+        example: '9e2206ff-1edf-49c4-ab6c-ab620f18b98d'
+      - name: consent_name
+        in: query
+        description: 'Accepted Consent name search'
+        schema:
+          type: string
+      - name: consent_id
+        in: query
+        description: 'Accepted Consent id search'
+        schema:
+          type: string
+        example: '9e2206ff-1edf-49c4-ab6c-ab620f18b98d'
       - name: sort
         in: query
         description: 'Sorting string'
@@ -52,16 +70,6 @@ Users:
         required: false
         schema:
           $ref: '../schemas/Metadata.yml#/MetadataQuery'
-      - name: consent_name
-        in: query
-        description: 'Accepted Consent name search'
-        schema:
-          type: string
-      - name: consent_id
-        in: query
-        description: 'Accepted Consent id search'
-        schema:
-          type: string
     responses:
       200:
         description: Success
