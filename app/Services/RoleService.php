@@ -48,6 +48,7 @@ class RoleService implements RoleServiceContract
         }
 
         $role->refresh();
+        $role->loadCount('users');
 
         return $role;
     }
@@ -79,6 +80,7 @@ class RoleService implements RoleServiceContract
         }
 
         $role->update($dto->toArray());
+        $role->loadCount('users');
 
         return $role;
     }

@@ -50,7 +50,6 @@ class RoleController extends Controller
     public function update(Role $role, RoleUpdateRequest $request): JsonResource
     {
         $dto = RoleUpdateDto::instantiateFromRequest($request);
-        $role->loadCount('users');
 
         return RoleResource::make(
             $this->roleService->update($role, $dto),
