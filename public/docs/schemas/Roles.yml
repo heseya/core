@@ -22,7 +22,7 @@ Role:
       example: true
     users_count:
       description: 'Number of users in role.'
-      type: boolean
+      type: number
       example: 10
     metadata:
       $ref: './../schemas/Metadata.yml#/Metadata'
