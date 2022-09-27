@@ -474,4 +474,35 @@ class SeoMetadataTest extends TestCase
             ],
             ]);
     }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateProduct($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $product = Product::factory()->create();
+
+        $seo = [
+            'title' => 'product-title',
+            'description' => 'product-description',
+            'keywords' => ['product', 'key', 'words'],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/products/id:{$product->getKey()}", [
+                'seo' => $seo,
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => $seo['title'],
+            'description' => $seo['description'],
+            'global' => false,
+            'model_id' => $product->getKey(),
+            'model_type' => Product::class,
+        ]);
+    }
 }

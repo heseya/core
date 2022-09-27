@@ -27,7 +27,7 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
     public array|Missing $schemas;
     public array|Missing $sets;
     public array|Missing $items;
-    public SeoMetadataDto $seo;
+    public SeoMetadataDto|Missing $seo;
     public array|Missing $attributes;
 
     public static function instantiateFromRequest(FormRequest $request): self
@@ -48,7 +48,7 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
             schemas: $request->input('schemas', new Missing()),
             sets: $request->input('sets', new Missing()),
             items: $request->input('items', new Missing()),
-            seo: SeoMetadataDto::instantiateFromRequest($request),
+            seo: $request->has('seo') ? SeoMetadataDto::instantiateFromRequest($request) : new Missing(),
             attributes: $request->input('attributes', new Missing()),
         );
     }
@@ -78,7 +78,7 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
         return $this->items;
     }
 
-    public function getSeo(): SeoMetadataDto
+    public function getSeo(): SeoMetadataDto|Missing
     {
         return $this->seo;
     }

@@ -18,7 +18,7 @@ class ProductSetUpdateDto extends Dto implements InstantiateFromRequest
     private bool|Missing $hide_on_index;
     private string|null|Missing $parent_id;
     private array|Missing $children_ids;
-    private SeoMetadataDto $seo;
+    private SeoMetadataDto|Missing $seo;
     private string|null|Missing $description_html;
     private string|null|Missing $cover_id;
     private array|null|Missing $attributes_ids;
@@ -34,7 +34,7 @@ class ProductSetUpdateDto extends Dto implements InstantiateFromRequest
             hide_on_index: $request->input('hide_on_index', new Missing()),
             parent_id: $request->input('parent_id', new Missing()),
             children_ids: $request->input('children_ids', new Missing()),
-            seo: SeoMetadataDto::instantiateFromRequest($request),
+            seo: $request->has('seo') ? SeoMetadataDto::instantiateFromRequest($request) : new Missing(),
             description_html: $request->input('description_html', new Missing()),
             cover_id: $request->input('cover_id', new Missing()),
             attributes_ids: $request->input('attributes', new Missing()),
@@ -76,7 +76,7 @@ class ProductSetUpdateDto extends Dto implements InstantiateFromRequest
         return $this->children_ids;
     }
 
-    public function getSeo(): SeoMetadataDto
+    public function getSeo(): SeoMetadataDto|Missing
     {
         return $this->seo;
     }
