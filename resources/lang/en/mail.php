@@ -2,6 +2,7 @@
 
 return [
     // new order
+    'subject-new-order' => 'Order :number confirmation',
     'thanks' => 'Thanks you for order from :name',
     'number' => 'Your order number is :number.',
     'info' => 'Order',
@@ -26,6 +27,7 @@ return [
     'team' => ':team crew',
 
     // status changed
+    'subject-status-changed' => 'Order :number status changed',
     'status-changed' => 'Status of your order was changed.',
     'status' => 'New status is',
 

@@ -2,6 +2,7 @@
 
 return [
     // new order
+    'subject-new-order' => 'Meldujemy potwierdzenie zamówienia :number',
     'thanks' => 'Dziękujemy za zakupy w :name',
     'number' => 'Twoje zamówienie ma numer :number, a jego szczegóły możesz sprawdzić poniżej.',
     'info' => 'Informacje o zamówieniu',
@@ -26,6 +27,7 @@ return [
     'team' => 'zespół :team',
 
     // status changed
+    'subject-status-changed' => 'Status zamówienia :number został zmieniony',
     'status-changed' => 'Status Twojego zamówienia został zmieniony.',
     'status' => 'Aktualny status to',
 
