@@ -137,7 +137,7 @@
                             <tbody>
                             <tr>
                                 <td align="center" style="font-size:0px;padding:10px 25px;padding-top:0px;padding-bottom:20px;word-break:break-word;">
-                                    <div style="font-family:Arial, sans-serif;font-size:26px;font-weight:bold;line-height:28px;text-align:center;text-transform:uppercase;color:#000000;">@lang('thanks', ['name' => $settingsService->getSetting('store_name')->value])</div>
+                                    <div style="font-family:Arial, sans-serif;font-size:26px;font-weight:bold;line-height:28px;text-align:center;text-transform:uppercase;color:#000000;">@lang('mail.thanks', ['name' => $settingsService->getSetting('store_name')->value])</div>
                                 </td>
                             </tr>
                             </tbody>
@@ -162,7 +162,7 @@
                             <tr>
                                 <td align="left" style="font-size:0px;padding:10px 25px;padding-top:10px;padding-bottom:10px;word-break:break-word;">
                                     <div style="font-family:Arial, sans-serif;font-size:30px;line-height:22px;text-align:left;color:#55575d;">
-                                        <p style="line-height: 30px; margin: 10px 0; text-align: center; color:#000; font-size:22px; font-family:Arial,sans-serif"> @lang('number', ['number' => $order->code]) </p>
+                                        <p style="line-height: 30px; margin: 10px 0; text-align: center; color:#000; font-size:22px; font-family:Arial,sans-serif"> @lang('mail.number', ['number' => $order->code]) </p>
                                     </div>
                                 </td>
                             </tr>
@@ -179,8 +179,8 @@
                                 <td align="left" style="font-size:0px;padding:10px 25px;padding-top:10px;padding-bottom:0;word-break:break-word;">
                                     <div style="font-family:Arial, sans-serif;font-size:16px;line-height:22px;text-align:left;color:#333333;">
                                         <mj-column>
-                                            <p style="text-align: center; background-color: #244d8b; color: #fff; font-size:14px" text-transform="uppercase">@lang('info'):</p>
-                                            <p style="text-align: center;"> @lang('number-date', ['number' => $order->code, 'date' => $order->created_at->format('d-m-Y')]) </p> @if ($order->shippingMethod) <p style="text-align: center;"> @lang('delivery'): {{ $order->shippingMethod->name }} </p> @endif
+                                            <p style="text-align: center; background-color: #244d8b; color: #fff; font-size:14px" text-transform="uppercase">@lang('mail.info'):</p>
+                                            <p style="text-align: center;"> @lang('mail.number-date', ['number' => $order->code, 'date' => $order->created_at->format('d-m-Y')]) </p> @if ($order->shippingMethod) <p style="text-align: center;"> @lang('mail.delivery'): {{ $order->shippingMethod->name }} </p> @endif
                                         </mj-column>
                                     </div>
                                 </td>
@@ -207,7 +207,7 @@
                             <tr>
                                 <td align="left" style="font-size:0px;padding:10px 25px;padding-top:10px;padding-bottom:0;word-break:break-word;">
                                     <div style="font-family:Arial, sans-serif;font-size:16px;line-height:22px;text-align:left;color:#333333;">
-                                        <p style="text-align: center; background-color: #244d8b; color: #fff; font-size:14px" text-transform="uppercase">@lang('products'):</p>
+                                        <p style="text-align: center; background-color: #244d8b; color: #fff; font-size:14px" text-transform="uppercase">@lang('mail.products'):</p>
                                     </div>
                                 </td>
                             </tr>
@@ -215,9 +215,9 @@
                                 <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
                                     <table cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#000000;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:22px;table-layout:auto;width:100%;border:none;">
                                         <tr style="border-bottom:1px solid #ecedee;text-align:left;padding:15px 0;">
-                                            <th style="text-align: center; padding: 0 15px 0 0;">@lang('name')</th>
-                                            <th style="text-align: center; padding: 0 15px; width: 30px;">@lang('quantity')</th>
-                                            <th style="text-align: center; padding: 0 0 0 15px; width: 25%;">@lang('price')</th>
+                                            <th style="text-align: center; padding: 0 15px 0 0;">@lang('mail.name')</th>
+                                            <th style="text-align: center; padding: 0 15px; width: 30px;">@lang('mail.quantity')</th>
+                                            <th style="text-align: center; padding: 0 0 0 15px; width: 25%;">@lang('mail.price')</th>
                                         </tr> @foreach ($order->products as $item) <tr style='border-bottom: 2px #244d8b solid; line-height: 38px;'>
                                             <td style="padding: 0 15px 0 0;">{{ $item->product->name }}</td>
                                             <td style="text-align: center; padding: 0 15px; width: 30px;">{{ $item->quantity }}</td>
@@ -249,17 +249,17 @@
                                 <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
                                     <table cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#000000;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:22px;table-layout:auto;width:100%;border:none;">
                                         <tr>
-                                            <td style="width: 180px">@lang('summary-products'):</td>
+                                            <td style="width: 180px">@lang('mail.summary-products'):</td>
                                             <td><b>{{ number_format($order->cart_total, 2, '.', '') }} {{ $order->currency }}</b></td>
                                         </tr>
                                         <tr>
-                                            <td style="width: 180px">@lang('summary-delivery'):</td>
+                                            <td style="width: 180px">@lang('mail.summary-delivery'):</td>
                                             <td><b>{{ number_format($order->shipping_price, 2, '.', '') }} {{ $order->currency }}</b></td>
                                         </tr> @if ($order->cart_total_initial !== $order->cart_total) <tr>
-                                            <td style="width: 180px">@lang('summary-discount'):</td>
+                                            <td style="width: 180px">@lang('mail.summary-discount'):</td>
                                             <td><b>{{ number_format($order->cart_total_initial - $order->cart_total, 2, '.', '') }} {{ $order->currency }}</b></td>
                                         </tr> @endif <tr>
-                                            <td style="width: 180px">@lang('summary-paid'):</td>
+                                            <td style="width: 180px">@lang('mail.summary-paid'):</td>
                                             <td><b>{{ number_format($order->summary, 2, '.', '') }} {{ $order->currency }}</b></td>
                                         </tr>
                                     </table>
@@ -287,7 +287,7 @@
                             <tr>
                                 <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
                                     <div style="font-family:Arial, sans-serif;font-size:14px;line-height:22px;text-align:left;color:#000000;">
-                                        <p style="text-align: center; background-color: #244d8b; color: #fff; font-size:14px" text-transform="uppercase">@lang('purchaser'):</p>
+                                        <p style="text-align: center; background-color: #244d8b; color: #fff; font-size:14px" text-transform="uppercase">@lang('mail.purchaser'):</p>
                                     </div>
                                 </td>
                             </tr>
@@ -314,23 +314,23 @@
                                 <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
                                     <table cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#000000;font-family:Ubuntu, Helvetica, Arial, sans-serif;font-size:13px;line-height:22px;table-layout:auto;width:100%;border:none;">
                                         <tr>
-                                            <td style="width: 180px">{{ ($order?->invoiceAddress?->name ? __('company') : __('name-surname')) . ':' }}</td>
+                                            <td style="width: 180px">{{ ($order?->invoiceAddress?->name ? __('mail.company') : __('mail.name-surname')) . ':' }}</td>
                                             <td>{{ $order?->invoiceAddress?->name ?? $order?->deliveryAddress?->name ?? '-' }}</td>
                                         </tr>
                                         <tr>
-                                            <td style="width: 180px">@lang('address'):</td>
+                                            <td style="width: 180px">@lang('mail.address'):</td>
                                             <td>{{ $order?->invoiceAddress?->address ?? $order?->deliveryAddress?->address ?? '-' }}</td>
                                         </tr>
                                         <tr>
-                                            <td style="width: 180px">@lang('zip'):</td>
+                                            <td style="width: 180px">@lang('mail.zip'):</td>
                                             <td>{{ $order?->invoiceAddress?->zip ?? $order?->deliveryAddress?->zip  ?? '-'}}</td>
                                         </tr>
                                         <tr>
-                                            <td style="width: 180px">@lang('city'):</td>
+                                            <td style="width: 180px">@lang('mail.city'):</td>
                                             <td>{{ $order?->invoiceAddress?->city ?? $order?->deliveryAddress?->city ?? '-' }}</td>
                                         </tr>
                                         <tr>
-                                            <td style="width: 180px">@lang('phone'):</td>
+                                            <td style="width: 180px">@lang('mail.phone'):</td>
                                             <td>{{ $order?->invoiceAddress?->phone ?? $order?->deliveryAddress?->phone ?? '-' }}</td>
                                         </tr>
                                     </table>
@@ -365,7 +365,7 @@
                             <tr>
                                 <td align="right" style="font-size:0px;padding:10px 25px;word-break:break-word;">
                                     <div style="font-family:Arial, sans-serif;font-size:14px;line-height:22px;text-align:right;color:#000000;">
-                                        <p> @lang('regards'), <br /> @lang('team' ['team' => $settingsService->getSetting('store_name')->value]) </p>
+                                        <p> @lang('mail.regards'), <br /> @lang('mail.team' ['team' => $settingsService->getSetting('store_name')->value]) </p>
                                     </div>
                                 </td>
                             </tr>
