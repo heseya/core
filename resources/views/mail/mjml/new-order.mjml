@@ -126,7 +126,7 @@
                 <mj-text align="right" color="#000" font-family="Arial, sans-serif" font-size="14px" line-height="22px">
                     <p>
                         @lang('mail.regards'), <br />
-                        @lang('mail.team' ['team' => $settingsService->getSetting('store_name')->value])
+                        @lang('mail.team', ['team' => $settingsService->getSetting('store_name')->value])
                     </p>
                 </mj-text>
             </mj-column>

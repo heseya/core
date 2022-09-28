@@ -365,7 +365,7 @@
                             <tr>
                                 <td align="right" style="font-size:0px;padding:10px 25px;word-break:break-word;">
                                     <div style="font-family:Arial, sans-serif;font-size:14px;line-height:22px;text-align:right;color:#000000;">
-                                        <p> @lang('mail.regards'), <br /> @lang('mail.team' ['team' => $settingsService->getSetting('store_name')->value]) </p>
+                                        <p> @lang('mail.regards'), <br /> @lang('mail.team', ['team' => $settingsService->getSetting('store_name')->value]) </p>
                                     </div>
                                 </td>
                             </tr>

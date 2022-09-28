@@ -6,7 +6,7 @@ return [
     'number' => 'Twoje zamówienie ma numer :number, a jego szczegóły możesz sprawdzić poniżej.',
     'info' => 'Informacje o zamówieniu',
     'number-date' => 'Zamówienie numer :number z dnia :date',
-    'delivary' => 'Dostawa',
+    'delivery' => 'Dostawa',
     'products' => 'Zamówione produkty',
     'name' => 'Nazwa',
     'quantity' => 'Ilość',
@@ -34,9 +34,12 @@ return [
     'reset-request' => 'Otrzymaliśmy informację o potrzebie zmiany hasła do Twojego konta.',
     'link' => 'Aby zmienić hasło kliknij w link',
     'change-password' => 'zmień hasło',
-    'warning' => 'Jeśli zgłoszenie nie pochodzi od Ciebie zignoruj tego maila, a Twoje hasło dostępu pozostanie bez zmian.',
+    'warning' => 'Jeśli zgłoszenie nie pochodzi od Ciebie zignoruj tego maila,
+        a Twoje hasło dostępu pozostanie bez zmian.',
 
     // user registered
     'register-thanks' => 'Dziękujemy za założenie konta na :name',
-    'benefits' => 'Logując się na swoje konto, uzyskasz dostęp do osobistego panelu klienta, gdzie będziesz widzieć wszystkie swoje zamówienia wraz z informacją o statusie ich realizacji. Konto klienta pozwala Ci również na zarządzanie danymi kontaktowymi oraz adresami dostaw.',
+    'benefits' => 'Logując się na swoje konto, uzyskasz dostęp do osobistego panelu klienta,
+        gdzie będziesz widzieć wszystkie swoje zamówienia wraz z informacją o statusie ich realizacji.
+        Konto klienta pozwala Ci również na zarządzanie danymi kontaktowymi oraz adresami dostaw.',
 ];
