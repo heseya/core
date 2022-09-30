@@ -22,6 +22,7 @@ trait EnumUtilities
 
         $result = Arr::first(
             Arr::where($cases, function (self $enum) use ($key) {
+                // @phpstan-ignore-next-line
                 return $enum->name === $key;
             })
         );
@@ -38,6 +39,13 @@ trait EnumUtilities
         return constant(self::class . '::' . $key);
     }
 
+    public static function hasValue(string $value): bool
+    {
+        $result = self::tryFrom($value);
+
+        return $result instanceof self;
+    }
+
     public function is(self $enum): bool
     {
         return $this === $enum;
@@ -46,13 +54,6 @@ trait EnumUtilities
     public function isNot(self $enum): bool
     {
         return !$this->is($enum);
-    }
-
-    public static function hasValue(string $value): bool
-    {
-        $result = self::tryFrom($value);
-
-        return $result instanceof self;
     }
 
     public function in(array $data): bool

@@ -84,11 +84,14 @@ enum Exceptions: string
     case CLIENT_REMOVE_DEFAULT_ADDRESS = 'You cannot delete default address';
     case CLIENT_STATUS_USED = 'Can\'t update or remove status that is currently used in order';
 
+    case CLIENT_WRONG_SORT_FIELDS = 'Cannot sort by this fields';
+
     case CDN_NOT_ALLOWED_TO_CHANGE_ALT = 'You cannot change alt attribute of this image';
 
     case SERVER_CDN_ERROR = 'CDN responded with an error';
     case SERVER_ERROR = 'Server responded with an error';
     case SERVER_ORDER_STATUSES_NOT_CONFIGURED = 'Order statuses are not configured';
+    case SERVER_MAPPING_MISSING = 'Not found mapping for this query';
 
     case ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE = 'Not every item is available';
 

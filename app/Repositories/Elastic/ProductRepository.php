@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Elastic;
 
 use App\Dtos\ProductSearchDto;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
 use App\Exceptions\ServerException;
 use App\Models\Attribute;
@@ -376,17 +377,20 @@ class ProductRepository implements ProductRepositoryContract
         return $query->filter($value ? $term : Invert::query($term));
     }
 
-    private function handleElastic400(BadRequest400Exception $exception): void {
+    private function handleElastic400(BadRequest400Exception $exception): void
+    {
         $error = Str::of($exception->getMessage());
 
         if ($error->contains('] in order to sort on')) {
             throw new ClientException(
-                'Cannot sort by ' . $error
+                Exceptions::CLIENT_WRONG_SORT_FIELDS,
+                errorArray: ['info' => 'Cannot sort by ' . $error
                     ->after('No mapping found for [')
                     ->before('] in order to sort on'),
+                ],
             );
         }
 
-        throw new ServerException('Not found mapping for this query');
+        throw new ServerException(Exceptions::SERVER_MAPPING_MISSING);
     }
 }

@@ -29,19 +29,6 @@ class SaleIndexDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    private static function array(string $key, FormRequest|SaleIndexRequest $request): array|Missing
-    {
-        if (!$request->has($key) || $request->input($key) === null) {
-            return new Missing();
-        }
-
-        if (!is_array($request->input($key))) {
-            return [$request->input($key)];
-        }
-
-        return $request->input($key);
-    }
-
     public function getSearch(): Missing|string
     {
         return $this->search;
@@ -65,5 +52,18 @@ class SaleIndexDto extends Dto implements InstantiateFromRequest
     public function getMetadataPrivate(): Missing|array
     {
         return $this->metadata_private;
+    }
+
+    private static function array(string $key, FormRequest|SaleIndexRequest $request): array|Missing
+    {
+        if (!$request->has($key) || $request->input($key) === null) {
+            return new Missing();
+        }
+
+        if (!is_array($request->input($key))) {
+            return [$request->input($key)];
+        }
+
+        return $request->input($key);
     }
 }

@@ -410,7 +410,7 @@ class AuthService implements AuthServiceContract
     private function invalidTFAType(): void
     {
         $this->userLoginAttemptService->store();
-        throw new TFAException('Invalid Two-Factor Authentication Type', simpleLogs: true);
+        throw new TFAException(Exceptions::CLIENT_INVALID_TFA_TYPE, simpleLogs: true);
     }
 
     private function verifyRecoveryCode(string $code): bool

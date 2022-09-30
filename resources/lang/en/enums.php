@@ -38,7 +38,8 @@ return [
         EventType::TFA_RECOVERY_CODES_CHANGED->value => 'Event triggered when TFA recovery codes are generated',
         EventType::PASSWORD_RESET->value => 'Event triggered when reset password is requested',
         EventType::SUCCESSFUL_LOGIN_ATTEMPT->value => 'Event triggered when a successful login attempt is made',
-        EventType::NEW_LOCALIZATION_LOGIN_ATTEMPT->value => 'Event after successful login attempt from new localization',
+        EventType::NEW_LOCALIZATION_LOGIN_ATTEMPT
+            ->value => 'Event triggered after successful login attempt from new localization',
         EventType::FAILED_LOGIN_ATTEMPT->value => 'Event triggered when a failed login attempt is made',
         EventType::ORDER_UPDATED_SHIPPING_NUMBER->value => 'Event triggered after shipping number is updated',
     ],

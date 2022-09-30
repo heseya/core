@@ -254,7 +254,6 @@ class AvailabilityService implements AvailabilityServiceContract
         foreach ($timeDeposits as $period => $timeDeposit) {
             $onlyOverstocked = [];
             if ($timeDeposit->count() < $items->count()) {
-
                 $itemsWithDeposit = $timeDeposit->pluck('item_id')->toArray();
 
                 $onlyOverstocked = Arr::where($overstockedItems, function ($value, $key) use ($itemsWithDeposit): bool {

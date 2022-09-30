@@ -50,13 +50,6 @@ class Role extends SpatieRole implements AuditableContract
         'metadata_private' => MetadataPrivateSearch::class,
     ];
 
-    protected static function booted(): void
-    {
-        static::addGlobalScope('order', function (Builder $builder): void {
-            $builder->orderByRaw('type = \'' . RoleType::OWNER->value . '\' DESC, type ASC');
-        });
-    }
-
     public function users(): BelongsToMany
     {
         return $this->morphedByMany(
@@ -77,5 +70,12 @@ class Role extends SpatieRole implements AuditableContract
             && $this->type->isNot(RoleType::UNAUTHENTICATED)
             && $this->type->isNot(RoleType::AUTHENTICATED)
             && $user->hasAllPermissions($this->getAllPermissions());
+    }
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope('order', function (Builder $builder): void {
+            $builder->orderByRaw('type = \'' . RoleType::OWNER->value . '\' DESC, type ASC');
+        });
     }
 }

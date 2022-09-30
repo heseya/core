@@ -96,7 +96,7 @@ class MediaService implements MediaServiceContract
         return $media;
     }
 
-    private function getMediaType(string $extension): string
+    private function getMediaType(string $extension): MediaType
     {
         return match ($extension) {
             'jpeg', 'jpg', 'png', 'gif', 'bmp', 'svg', 'webp' => MediaType::PHOTO,
@@ -109,7 +109,7 @@ class MediaService implements MediaServiceContract
     private function updateSlug(Media $media, string $slug): string
     {
         if (!Str::contains($media->url, Config::get('silverbox.host'))) {
-            throw new ClientException(message: Exceptions::CDN_NOT_ALLOWED_TO_CHANGE_ALT);
+            throw new ClientException(Exceptions::CDN_NOT_ALLOWED_TO_CHANGE_ALT);
         }
 
         $response = Http::asJson()
@@ -121,7 +121,7 @@ class MediaService implements MediaServiceContract
 
         if ($response->failed() || !isset($response['path'])) {
             throw new ServerException(
-                message: Exceptions::SERVER_CDN_ERROR,
+                Exceptions::SERVER_CDN_ERROR,
                 errorArray: $response->json() ?? [],
             );
         }

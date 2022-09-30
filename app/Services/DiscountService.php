@@ -243,9 +243,9 @@ class DiscountService implements DiscountServiceContract
     public function calcOrderProductsAndTotalDiscounts(Order $order, OrderDto $orderDto): Order
     {
         return $this->calcOrderDiscounts($order, $orderDto, [
-            DiscountTargetType::fromValue(DiscountTargetType::PRODUCTS),
-            DiscountTargetType::fromValue(DiscountTargetType::CHEAPEST_PRODUCT),
-            DiscountTargetType::fromValue(DiscountTargetType::ORDER_VALUE),
+            DiscountTargetType::PRODUCTS,
+            DiscountTargetType::CHEAPEST_PRODUCT,
+            DiscountTargetType::ORDER_VALUE,
         ]);
     }
 
@@ -256,7 +256,7 @@ class DiscountService implements DiscountServiceContract
     public function calcOrderShippingDiscounts(Order $order, OrderDto $orderDto): Order
     {
         return $this->calcOrderDiscounts($order, $orderDto, [
-            DiscountTargetType::fromValue(DiscountTargetType::SHIPPING_PRICE),
+            DiscountTargetType::SHIPPING_PRICE,
         ]);
     }
 

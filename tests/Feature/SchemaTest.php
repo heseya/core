@@ -735,7 +735,7 @@ class SchemaTest extends TestCase
             'price' => 120,
             'required' => false,
             'options' => [[
-                'name' => "Test option",
+                'name' => 'Test option',
                 'price' => 0,
                 'disabled' => false,
             ],
