@@ -169,7 +169,7 @@ class AuthTest extends TestCase
                 && $data['ip'] === $attempt->ip
                 && $payload['data_type'] === 'LocalizedLoginAttempt'
                 && $payload['event'] === 'SuccessfulLoginAttempt'
-                && $payload['issuer_type'] === IssuerType::USER;
+                && $payload['issuer_type'] === IssuerType::USER->value;
         });
     }
 
@@ -258,7 +258,7 @@ class AuthTest extends TestCase
                 && $data['ip'] === $attempt->ip
                 && $payload['data_type'] === 'LocalizedLoginAttempt'
                 && $payload['event'] === 'NewLocalizationLoginAttempt'
-                && $payload['issuer_type'] === IssuerType::USER;
+                && $payload['issuer_type'] === IssuerType::USER->value;
         });
 
         $attemptFailed->user()->associate($userFailed);
@@ -285,7 +285,7 @@ class AuthTest extends TestCase
                     && $data['ip'] === $attemptFailed->ip
                     && $payload['data_type'] === 'LocalizedLoginAttempt'
                     && $payload['event'] === 'NewLocalizationLoginAttempt'
-                    && $payload['issuer_type'] === IssuerType::USER;
+                    && $payload['issuer_type'] === IssuerType::USER->value;
             }
         );
     }
@@ -381,7 +381,7 @@ class AuthTest extends TestCase
                 && $data['ip'] === $attempt->ip
                 && $payload['data_type'] === 'LocalizedLoginAttempt'
                 && $payload['event'] === 'FailedLoginAttempt'
-                && $payload['issuer_type'] === IssuerType::USER;
+                && $payload['issuer_type'] === IssuerType::USER->value;
         });
     }
 
@@ -424,7 +424,7 @@ class AuthTest extends TestCase
 
         $response->assertStatus(Response::HTTP_FORBIDDEN)
             ->assertJsonFragment([
-                'key' => Exceptions::getKey(Exceptions::CLIENT_TFA_REQUIRED),
+                'key' => Exceptions::CLIENT_TFA_REQUIRED->name,
             ]);
     }
 
@@ -510,7 +510,7 @@ class AuthTest extends TestCase
                 && $data['security_code'] === $code
                 && $payload['data_type'] === 'TfaCode'
                 && $payload['event'] === 'TfaSecurityCode'
-                && $payload['issuer_type'] === IssuerType::USER;
+                && $payload['issuer_type'] === IssuerType::USER->value;
         });
     }
 
@@ -637,23 +637,6 @@ class AuthTest extends TestCase
             ->assertJsonFragment([
                 'key' => Exceptions::CLIENT_TFA_INVALID_TOKEN->name,
             ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testRefreshTokenUnauthorized($user): void
-    {
-        $token = $this->tokenService->createToken(
-            $this->$user,
-            TokenType::REFRESH,
-        );
-
-        $response = $this->actingAs($this->$user)->postJson('/auth/refresh', [
-            'refresh_token' => $token,
-        ]);
-
-        $response->assertForbidden();
     }
 
     /**
@@ -947,7 +930,7 @@ class AuthTest extends TestCase
                 && $data['recovery_url'] === $url
                 && $payload['data_type'] === 'PasswordRecovery'
                 && $payload['event'] === 'PasswordReset'
-                && $payload['issuer_type'] === IssuerType::USER;
+                && $payload['issuer_type'] === IssuerType::USER->value;
         });
     }
 
@@ -1260,6 +1243,8 @@ class AuthTest extends TestCase
     public function testCheckIdentityInvalidToken($user): void
     {
         $this->$user->givePermissionTo('auth.check_identity');
+
+        $otherUser = User::factory()->create();
 
         $token = $this->tokenService->createToken(
             $otherUser,
@@ -1715,7 +1700,7 @@ class AuthTest extends TestCase
                 && $data['security_code'] === $code
                 && $payload['data_type'] === 'TfaCode'
                 && $payload['event'] === 'TfaInit'
-                && $payload['issuer_type'] === IssuerType::USER;
+                && $payload['issuer_type'] === IssuerType::USER->value;
         });
     }
 
@@ -1981,7 +1966,7 @@ class AuthTest extends TestCase
                 && $data['id'] === $user1->getKey()
                 && $payload['data_type'] === 'User'
                 && $payload['event'] === 'TfaRecoveryCodesChanged'
-                && $payload['issuer_type'] === IssuerType::USER;
+                && $payload['issuer_type'] === IssuerType::USER->value;
         });
 
         // Webhook after email TFA is confirmed
@@ -1999,7 +1984,7 @@ class AuthTest extends TestCase
                 && $data['id'] === $user2->getKey()
                 && $payload['data_type'] === 'User'
                 && $payload['event'] === 'TfaRecoveryCodesChanged'
-                && $payload['issuer_type'] === IssuerType::USER;
+                && $payload['issuer_type'] === IssuerType::USER->value;
         });
 
         // Webhook after recovery codes are created
@@ -2017,7 +2002,7 @@ class AuthTest extends TestCase
                 && $data['id'] === $user3->getKey()
                 && $payload['data_type'] === 'User'
                 && $payload['event'] === 'TfaRecoveryCodesChanged'
-                && $payload['issuer_type'] === IssuerType::USER;
+                && $payload['issuer_type'] === IssuerType::USER->value;
         });
     }
 

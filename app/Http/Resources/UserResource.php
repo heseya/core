@@ -18,7 +18,7 @@ class UserResource extends Resource
         $roles = $this->resource->roles;
 
         // filter Authenticated role from resources
-        $filtered = $roles->filter(fn (Role $role) => $role->type->value !== RoleType::AUTHENTICATED);
+        $filtered = $roles->filter(fn (Role $role) => $role->type->value !== RoleType::AUTHENTICATED->value);
 
         return array_merge([
             'id' => $this->resource->getKey(),

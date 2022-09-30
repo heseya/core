@@ -6,7 +6,6 @@ use App\Enums\EventType;
 use App\Models\WebHook;
 use App\Models\WebHookEventLogEntry;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
 class WebHookEventLogEntryFactory extends Factory
 {
@@ -19,10 +18,8 @@ class WebHookEventLogEntryFactory extends Factory
 
     /**
      * Define the model's default state.
-     *
-     * @return array
      */
-    public function definition()
+    public function definition(): array
     {
         $webhooks = WebHook::all();
 
@@ -32,8 +29,8 @@ class WebHookEventLogEntryFactory extends Factory
             'url' => $this->faker->url,
             'status_code' => $this->faker->randomElement([200, 400, 500]),
             'payload' => [
-                'event' => EventType::getRandomKey()
-            ]
+                'event' => EventType::getRandomValue(),
+            ],
         ];
     }
 }

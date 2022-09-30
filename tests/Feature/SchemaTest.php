@@ -402,7 +402,7 @@ class SchemaTest extends TestCase
             ->actingAs($this->$user)
             ->postJson('/schemas', [
                 'name' => 'Test',
-                'type' => SchemaType::getKey(SchemaType::SELECT),
+                'type' => SchemaType::SELECT->value,
                 'description' => '',
                 'hidden' => '',
                 'required' => '',
@@ -436,7 +436,7 @@ class SchemaTest extends TestCase
             ->actingAs($this->$user)
             ->postJson('/schemas', [
                 'name' => 'Test',
-                'type' => SchemaType::getKey(SchemaType::SELECT),
+                'type' => SchemaType::SELECT->value,
                 'description' => null,
                 'hidden' => null,
                 'required' => null,
@@ -712,7 +712,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
             'name' => 'Test',
-            'type' => SchemaType::getKey(SchemaType::STRING),
+            'type' => SchemaType::STRING->value,
             'price' => 120,
             'required' => false,
         ]);
@@ -731,7 +731,7 @@ class SchemaTest extends TestCase
 
         $response = $this->actingAs($this->$user)->json('POST', '/schemas', [
             'name' => 'Test',
-            'type' => SchemaType::getKey(SchemaType::SELECT),
+            'type' => SchemaType::SELECT->value,
             'price' => 120,
             'required' => false,
             'options' => [[

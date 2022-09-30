@@ -271,7 +271,7 @@ class WishlistTest extends TestCase
         $this->actingAs($this->$user)->json('DELETE', '/wishlist/id:' . $this->product->getKey())
             ->assertStatus(422)
             ->assertJsonFragment([
-                'key' => Exceptions::getKey(Exceptions::PRODUCT_IS_NOT_ON_WISHLIST),
+                'key' => Exceptions::PRODUCT_IS_NOT_ON_WISHLIST->name,
             ]);
     }
 }
