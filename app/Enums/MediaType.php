@@ -8,7 +8,8 @@ enum MediaType: string
 {
     use EnumUtilities;
 
-    case OTHER = 'other';
-    case PHOTO = 'photo';
-    case VIDEO = 'video';
+    public const OTHER = 'other';
+    public const PHOTO = 'photo';
+    public const VIDEO = 'video';
+    public const DOCUMENT = 'document';
 }

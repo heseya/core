@@ -896,7 +896,7 @@ class ItemTest extends TestCase
         ]);
         $item = [
             'sku' => 'TES/T3',
-            'unlimited_stock_shipping_date' => Carbon::now()->addDays(3)->toDateTimeString(),
+            'unlimited_stock_shipping_date' => Carbon::now()->addDays(3)->toIso8601String(),
         ];
 
         $this->actingAs($this->$user)->patchJson(
@@ -956,7 +956,7 @@ class ItemTest extends TestCase
             'name' => 'Test',
             'sku' => 'TES/T1',
             'unlimited_stock_shipping_time' => null,
-            'unlimited_stock_shipping_date' => Carbon::now()->addDays(5)->toDateTimeString(),
+            'unlimited_stock_shipping_date' => Carbon::now()->addDays(5)->toIso8601String(),
         ];
 
         $response = $this->actingAs($this->$user)->postJson('/items', $item);
@@ -990,7 +990,7 @@ class ItemTest extends TestCase
             'quantity' => 2.0,
             'shipping_time' => $time + 5,
         ]);
-        $date = Carbon::now()->addDays(5)->toDateTimeString();
+        $date = Carbon::now()->addDays(5)->toIso8601String();
         Deposit::factory()->create([
             'item_id' => $item->getKey(),
             'quantity' => 2.0,

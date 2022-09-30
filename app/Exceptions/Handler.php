@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException;
+use PHPOpenSourceSaver\JWTAuth\Exceptions\TokenInvalidException;
 use Spatie\Permission\Exceptions\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -42,6 +43,7 @@ final class Handler extends ExceptionHandler
         NotFoundHttpException::class => ErrorCode::NOT_FOUND,
         MethodNotAllowedHttpException::class => ErrorCode::NOT_FOUND,
         ModelNotFoundException::class => ErrorCode::NOT_FOUND,
+        TokenInvalidException::class => ErrorCode::NOT_FOUND,
 
         // 422
         ValidationException::class => ErrorCode::VALIDATION_ERROR,

@@ -21,6 +21,7 @@ class CouponIndexDto extends SaleIndexDto implements InstantiateFromRequest
             metadata: $request->input('metadata', new Missing()),
             metadata_private: $request->input('metadata_private', new Missing()),
             code: $request->input('code', new Missing()),
+            for_role: $request->input('for_role', new Missing()),
         );
     }
 

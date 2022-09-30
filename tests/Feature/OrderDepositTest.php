@@ -596,7 +596,7 @@ class OrderDepositTest extends TestCase
         $this->$user->givePermissionTo('orders.add');
         $this->$user->givePermissionTo('cart.verify');
 
-        $date = Carbon::now()->addDays(10)->toDateTimeString();
+        $date = Carbon::now()->addDays(10)->toIso8601String();
 
         $this->item->update([
             'unlimited_stock_shipping_date' => $date,

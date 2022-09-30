@@ -1062,7 +1062,7 @@ class CartTest extends TestCase
     {
         $this->$user->givePermissionTo('cart.verify');
 
-        $shipping_date = Carbon::now()->addDays(10)->toDateTimeString();
+        $shipping_date = Carbon::now()->addDays(10)->toIso8601String();
 
         $itemData = ['unlimited_stock_shipping_date' => $shipping_date];
 
@@ -1101,7 +1101,7 @@ class CartTest extends TestCase
     {
         $this->$user->givePermissionTo('cart.verify');
 
-        $shippingDate = Carbon::now()->addDays(10)->toDateTimeString();
+        $shippingDate = Carbon::now()->addDays(10)->toIso8601String();
 
         $item = Item::factory()->create();
 
@@ -1157,7 +1157,7 @@ class CartTest extends TestCase
                 'shipping_date' => null,
             ]);
 
-        $shippingDate2 = Carbon::now()->addDays(20)->toDateTimeString();
+        $shippingDate2 = Carbon::now()->addDays(20)->toIso8601String();
 
         Deposit::factory([
             'quantity' => 150,
@@ -1199,7 +1199,7 @@ class CartTest extends TestCase
     {
         $this->$user->givePermissionTo('cart.verify');
 
-        $shippingDate = Carbon::now()->addDays(10)->toDateTimeString();
+        $shippingDate = Carbon::now()->addDays(10)->toIso8601String();
 
         $item = Item::factory()->create();
         $item2 = Item::factory()->create();

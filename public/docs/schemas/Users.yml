@@ -53,3 +53,5 @@ UserView:
           items:
             type: string
             example: roles.show_details
+        preferences:
+          $ref: './Auth.yml#/Preferences'

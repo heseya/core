@@ -235,6 +235,7 @@ class ItemProductTest extends TestCase
 
         $response
             ->assertJsonFragment(['required_quantity' => 5])
-            ->assertJsonFragment(['required_quantity' => 15]);
+            ->assertJsonFragment(['required_quantity' => 15])
+            ->assertJsonMissing(['quantity']);
     }
 }

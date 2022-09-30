@@ -17,5 +17,12 @@ class SchemaService implements SchemaServiceContract
         $product->schemas()->sync(
             $this->reorderService->reorder($schemas),
         );
+
+        if ($product->schemas->isEmpty() && $product->has_schemas) {
+            $product->update(['has_schemas' => false]);
+        }
+        if ($product->schemas->isNotEmpty() && !$product->has_schemas) {
+            $product->update(['has_schemas' => true]);
+        }
     }
 }

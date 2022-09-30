@@ -228,7 +228,7 @@ Profile:
   patch:
     tags:
       - Auth
-    summary: 'get your own user or app resource'
+    summary: 'edit your own user resource'
     requestBody:
       content:
         application/json:
@@ -246,6 +246,8 @@ Profile:
                     type: boolean
                     example: false
                 type: object
+              preferences:
+                $ref: '././../schemas/Auth.yml#/Preferences'
             type: object
     responses:
       200:

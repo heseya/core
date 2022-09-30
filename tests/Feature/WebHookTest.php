@@ -62,8 +62,9 @@ class WebHookTest extends TestCase
     {
         $this->$user->givePermissionTo('webhooks.show');
 
-        $response = $this->actingAs($this->$user)->json('GET', '/webhooks');
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/webhooks')
             ->assertOk()
             ->assertJsonStructure(['data' => [
                 0 => $this->expected_structure,
@@ -73,6 +74,29 @@ class WebHookTest extends TestCase
                 0 => $this->expected,
             ],
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexSearch($user): void
+    {
+        $this->$user->givePermissionTo('webhooks.show');
+
+        $webHook = WebHook::factory()->create([
+            'name' => 'test webhook',
+            'creator_id' => $this->$user->getKey(),
+            'model_type' => $this->$user::class,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/webhooks', [
+                'search' => 'test webhook',
+            ])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $webHook->getKey()]);
     }
 
     public function testCreateUnauthorized(): void
@@ -237,6 +261,47 @@ class WebHookTest extends TestCase
             'creator_id' => $this->$user->getKey(),
             'model_type' => $this->$user::class,
         ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateSecureEventNoSecret($user): void
+    {
+        $this->$user->givePermissionTo('webhooks.add');
+
+        $response = $this->actingAs($this->$user)->json('POST', '/webhooks', [
+            'name' => 'webhook',
+            'url' => 'https://example.com',
+            'events' => [
+                'TfaInit',
+            ],
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateSecureEventNoSecureUrl($user): void
+    {
+        $this->$user->givePermissionTo('webhooks.add');
+
+        $response = $this->actingAs($this->$user)->json('POST', '/webhooks', [
+            'name' => 'webhook',
+            'url' => 'http://example.com',
+            'events' => [
+                'TfaInit',
+            ],
+            'secret' => 'secret',
+            'with_issuer' => false,
+            'with_hidden' => false,
+        ]);
+
+        $response->assertStatus(422);
     }
 
     public function testUpdateUnauthorized(): void

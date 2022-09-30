@@ -15,18 +15,18 @@ class SchemaDto extends Dto implements InstantiateFromRequest
 
     protected SchemaType|Missing $type;
     protected string|Missing $name;
-    protected string|Missing $description;
-    protected float|Missing $price;
+    protected string|null|Missing $description;
+    protected float|null|Missing $price;
     protected bool|Missing $hidden;
     protected bool|Missing $required;
-    protected float|Missing $min;
-    protected float|Missing $max;
-    protected float|Missing $step;
-    protected string|Missing $default;
-    protected string|Missing $pattern;
-    protected string|Missing $validation;
-    protected array|Missing $used_schemas;
-    protected array|Missing $options;
+    protected float|null|Missing $min;
+    protected float|null|Missing $max;
+    protected float|null|Missing $step;
+    protected string|null|Missing $default;
+    protected string|null|Missing $pattern;
+    protected string|null|Missing $validation;
+    protected array|null|Missing $used_schemas;
+    protected array|null|Missing $options;
 
     protected array|Missing $metadata;
 
@@ -34,7 +34,7 @@ class SchemaDto extends Dto implements InstantiateFromRequest
     {
         $options = $request->input('options', new Missing());
         $optionsArrayDto = [];
-        if (!$options instanceof Missing) {
+        if (!$options instanceof Missing && $options !== null) {
             foreach ($options as $option) {
                 $optionsArrayDto[] = OptionDto::fromArray($option);
             }
@@ -59,12 +59,12 @@ class SchemaDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    public function getUsedSchemas(): Missing|array
+    public function getUsedSchemas(): Missing|array|null
     {
         return $this->used_schemas;
     }
 
-    public function getOptions(): Missing|array
+    public function getOptions(): Missing|array|null
     {
         return $this->options;
     }

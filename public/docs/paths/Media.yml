@@ -1,4 +1,34 @@
 Media:
+  get:
+    tags:
+      - Media
+    summary: 'List of media'
+    parameters:
+      - name: type
+        in: query
+        required: false
+        schema:
+          type: string
+          example: photo
+      - name: has_relationships
+        in: query
+        required: false
+        allowEmptyValue: true
+        schema:
+          type: boolean
+          example: false
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Media.yml#/MediaDetail'
+              type: object
   post:
     tags:
       - Media

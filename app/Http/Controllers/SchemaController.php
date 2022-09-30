@@ -13,11 +13,13 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class SchemaController extends Controller
 {
-    public function __construct(private SchemaCrudServiceContract $schemaService)
-    {
+    public function __construct(
+        private SchemaCrudServiceContract $schemaService,
+    ) {
     }
 
     public function index(IndexSchemaRequest $request): JsonResource
@@ -31,11 +33,9 @@ class SchemaController extends Controller
 
     public function store(SchemaStoreRequest $request): JsonResource
     {
-        return SchemaResource::make(
-            $this->schemaService->store(
-                SchemaDto::instantiateFromRequest($request)
-            )
-        );
+        return SchemaResource::make($this->schemaService->store(
+            SchemaDto::instantiateFromRequest($request)
+        ));
     }
 
     public function show(Schema $schema): JsonResource
@@ -45,18 +45,16 @@ class SchemaController extends Controller
 
     public function update(SchemaUpdateRequest $request, Schema $schema): JsonResource
     {
-        return SchemaResource::make(
-            $this->schemaService->update(
-                $schema,
-                SchemaDto::instantiateFromRequest($request)
-            )
-        );
+        return SchemaResource::make($this->schemaService->update(
+            $schema,
+            SchemaDto::instantiateFromRequest($request)
+        ));
     }
 
     public function destroy(Schema $schema): JsonResponse
     {
         $this->schemaService->destroy($schema);
 
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+        return Response::json(null, SymfonyResponse::HTTP_NO_CONTENT);
     }
 }

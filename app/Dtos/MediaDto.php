@@ -36,7 +36,7 @@ class MediaDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    public function getAlt(): string|Missing
+    public function getAlt(): string|null|Missing
     {
         return $this->alt;
     }

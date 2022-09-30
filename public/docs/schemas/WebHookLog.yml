@@ -21,5 +21,8 @@ WebHookLog:
       example: 404
     payload:
       type: object
+    event:
+      type: string
+      example: OrderCreated
     response:
       type: string

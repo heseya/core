@@ -1,0 +1,31 @@
+Event:
+  properties:
+    key:
+      description: 'Displayed event key'
+      type: string
+      example: PRODUCT_CREATED
+    name:
+      description: 'Displayed event name'
+      type: string
+      example: 'Product created'
+    description:
+      description: 'Displayed event description'
+      type: string
+      example: 'Event triggered when new products are created'
+    required_permissions:
+      description: 'List of Event required permissions'
+      type: array
+      items:
+        type: string
+        example: products.show
+    required_hidden_permissions:
+      description: 'List of Event required hidden permissions'
+      type: array
+      items:
+        type: string
+        example: products.show_hidden
+    encrypted:
+      description: 'Whether the event is encrypted'
+      type: boolean
+      example: false
+  type: object

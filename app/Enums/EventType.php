@@ -36,9 +36,30 @@ enum EventType : string
     case COUPON_CREATED = 'CouponCreated';
     case COUPON_UPDATED = 'CouponUpdated';
     case COUPON_DELETED = 'CouponDeleted';
+    case TFA_INIT = 'TfaInit';
+    case TFA_SECURITY_CODE = 'TfaSecurityCode';
+    case TFA_RECOVERY_CODES_CHANGED = 'TfaRecoveryCodesChanged';
+    case PASSWORD_RESET = 'PasswordReset';
+    case SUCCESSFUL_LOGIN_ATTEMPT = 'SuccessfulLoginAttempt';
+    case NEW_LOCALIZATION_LOGIN_ATTEMPT = 'NewLocalizationLoginAttempt';
+    case FAILED_LOGIN_ATTEMPT = 'FailedLoginAttempt';
     case ADD_ORDER_DOCUMENT = 'AddOrderDocument';
     case REMOVE_ORDER_DOCUMENT = 'RemoveOrderDocument';
     case ORDER_UPDATED_PAID = 'OrderUpdatedPaid';
+    case ORDER_UPDATED_SHIPPING_NUMBER = 'OrderUpdatedShippingNumber';
+
+    public static function securedEvents(): array
+    {
+        return [
+            self::TFA_INIT,
+            self::TFA_SECURITY_CODE,
+            self::TFA_RECOVERY_CODES_CHANGED,
+            self::PASSWORD_RESET,
+            self::SUCCESSFUL_LOGIN_ATTEMPT,
+            self::NEW_LOCALIZATION_LOGIN_ATTEMPT,
+            self::FAILED_LOGIN_ATTEMPT,
+        ];
+    }
 
     public static function getEventList(): array
     {
@@ -79,6 +100,7 @@ enum EventType : string
             'description' => self::getDescription($enum->value),
             'required_permissions' => $permissions,
             'required_hidden_permissions' => $hidden_permissions,
+            'encrypted' => in_array($enum->value, self::securedEvents()),
         ];
     }
 }

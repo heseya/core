@@ -11,6 +11,7 @@ use App\Models\Discount;
 use App\Models\Item;
 use App\Models\Order;
 use App\Models\OrderProduct;
+use App\Models\PriceRange;
 use App\Models\Product;
 use App\Models\Schema;
 use App\Models\ShippingMethod;
@@ -881,6 +882,63 @@ class DiscountOrderTest extends TestCase
             'quantity' => -1,
             'item_id' => $item->getKey(),
             'shipping_time' => 4,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateOrderCorrectShippingPriceAfterDiscount($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        $productPrice = 50;
+        $product = Product::factory()->create([
+            'public' => true,
+            'price' => $productPrice,
+        ]);
+
+        $shippingMethod = ShippingMethod::factory()->create(['public' => true]);
+        $shippingPriceNonDiscounted = 8.11;
+        $baseRange = PriceRange::create(['start' => 0]);
+        $baseRange->prices()->create(['value' => $shippingPriceNonDiscounted]);
+        $shippingPriceDiscounted = 0;
+        $discountedRange = PriceRange::create(['start' => $productPrice]);
+        $discountedRange->prices()->create(['value' => $shippingPriceDiscounted]);
+        $shippingMethod->priceRanges()->saveMany([$baseRange, $discountedRange]);
+
+        $discount = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'value' => 10,
+            'code' => 'S43SA2',
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+        ]);
+        $discount->products()->attach($product->getKey());
+
+        $response = $this->actingAs($this->$user)->json('POST', '/orders', [
+            'email' => 'example@example.com',
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'delivery_address' => $this->address,
+            'items' => [
+                [
+                    'product_id' => $product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+            'coupons' => [
+                $discount->code,
+            ],
+        ]);
+
+        $response->assertCreated();
+        $orderId = $response->getData()->data->id;
+
+        // Shipping price shouldn't be discounted if cart total after discounts doesn't fit in discounted range
+        $this->assertDatabaseHas('orders', [
+            'id' => $orderId,
+            'shipping_price' => $shippingPriceNonDiscounted,
         ]);
     }
 }

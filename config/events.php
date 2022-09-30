@@ -32,6 +32,14 @@ return [
         EventType::ADD_ORDER_DOCUMENT->value => ['orders.show_details', 'orders.show'],
         EventType::REMOVE_ORDER_DOCUMENT->value => ['orders.show_details', 'orders.show'],
         EventType::ORDER_UPDATED_PAID->value => ['orders.show_details', 'orders.show'],
+        EventType::TFA_INIT->value => ['webhooks.tfa'],
+        EventType::TFA_SECURITY_CODE->value => ['webhooks.tfa'],
+        EventType::TFA_RECOVERY_CODES_CHANGED->value => ['webhooks.tfa'],
+        EventType::PASSWORD_RESET->value => ['webhooks.password'],
+        EventType::SUCCESSFUL_LOGIN_ATTEMPT->value => ['users.show_details'],
+        EventType::NEW_LOCALIZATION_LOGIN_ATTEMPT->value => ['users.show_details'],
+        EventType::FAILED_LOGIN_ATTEMPT->value => ['users.show_details'],
+        EventType::ORDER_UPDATED_SHIPPING_NUMBER->value => ['orders.show_details', 'orders.show'],
     ],
 
     'permissions_hidden' => [

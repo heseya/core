@@ -2,10 +2,13 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\EventType;
 use App\Rules\Boolean;
 use App\Rules\EventExist;
+use App\Rules\HttpsRule;
 use App\Traits\BooleanRules;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class WebHookCreateRequest extends FormRequest
 {
@@ -26,5 +29,26 @@ class WebHookCreateRequest extends FormRequest
             'with_issuer' => ['required', new Boolean()],
             'with_hidden' => ['required', new Boolean()],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->sometimes('secret', ['required'], function ($input) {
+            foreach ($input->events ?? [] as $event) {
+                if (in_array($event, EventType::securedEvents())) {
+                    return true;
+                }
+            }
+            return false;
+        });
+
+        $validator->sometimes('url', [new HttpsRule()], function ($input) {
+            foreach ($input->events ?? [] as $event) {
+                if (in_array($event, EventType::securedEvents())) {
+                    return true;
+                }
+            }
+            return false;
+        });
     }
 }

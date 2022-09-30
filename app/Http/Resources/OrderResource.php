@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use App\Models\User;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class OrderResource extends Resource
 {
@@ -16,6 +17,7 @@ class OrderResource extends Resource
             'id' => $this->resource->getKey(),
             'code' => $this->resource->code,
             'email' => $this->resource->email,
+            'payable' => $this->resource->payable,
             'currency' => $this->resource->currency,
             'summary' => $this->resource->summary,
             'summary_paid' => $this->resource->paid_amount,
@@ -37,21 +39,39 @@ class OrderResource extends Resource
 
     public function view(Request $request): array
     {
+        $orderDiscounts = OrderDiscountResource::collection($this->resource->discounts);
+        $productsDiscounts = $this->resource->products->map(function ($product) {
+            return OrderDiscountResource::collection($product->discounts);
+        });
+        $productsDiscountMerged = new Collection();
+
+        $productsDiscounts->each(function ($productDiscounts) use ($productsDiscountMerged): void {
+            $productDiscounts->each(function ($discount) use ($productsDiscountMerged): void {
+                $found = $productsDiscountMerged
+                    ->where('code', '=', $discount->code)
+                    ->where('name', '=', $discount->name);
+
+                if ($found->isEmpty()) {
+                    $productsDiscountMerged->push($discount);
+                } else {
+                    // @phpstan-ignore-next-line
+                    $found->first()->pivot->applied_discount += $discount->pivot->applied_discount;
+                }
+            });
+        });
+
+        $productsDiscountMerged->map(function ($discount) use (&$orderDiscounts) {
+            return $orderDiscounts = $orderDiscounts->push($discount);
+        });
+
         return [
             'invoice_address' => AddressResource::make($this->resource->invoiceAddress),
             'products' => OrderProductResource::collection($this->resource->products),
             'payments' => PaymentResource::collection($this->resource->payments),
             'shipping_number' => $this->resource->shipping_number,
-            'discounts' => OrderDiscountResource::collection($this->resource->discounts),
+            'discounts' => $orderDiscounts,
             'buyer' => $this->resource->buyer instanceof User
                 ? UserResource::make($this->resource->buyer)->baseOnly() : AppResource::make($this->resource->buyer),
-        ];
-    }
-
-    public function index(Request $request): array
-    {
-        return [
-            'payable' => $this->resource->payable,
         ];
     }
 }

@@ -32,9 +32,9 @@ class UserController extends Controller
                 'metadata_private',
                 'consent_name',
                 'consent_id',
+                'roles',
             ),
             $request->input('sort', 'created_at:asc'),
-            $request->input('limit', 12)
         );
 
         /** @var ResourceCollection $userCollection */

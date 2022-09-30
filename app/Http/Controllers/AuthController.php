@@ -7,6 +7,7 @@ use App\Dtos\SavedAddressDto;
 use App\Dtos\TFAConfirmDto;
 use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
+use App\Dtos\UpdateProfileDto;
 use App\Enums\SavedAddressType;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordChangeRequest;
@@ -238,9 +239,8 @@ class AuthController extends Controller
 
     public function updateProfile(ProfileUpdateRequest $request): JsonResource
     {
-        return UserResource::make($this->authService->updateProfile(
-            $request->input('name'),
-            $request->input('consents')
-        ));
+        return UserResource::make(
+            $this->authService->updateProfile(UpdateProfileDto::instantiateFromRequest($request)),
+        );
     }
 }

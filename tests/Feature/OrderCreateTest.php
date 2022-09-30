@@ -6,7 +6,6 @@ use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
 use App\Enums\ExceptionsEnums\Exceptions;
-use App\Enums\IssuerType;
 use App\Enums\RoleType;
 use App\Enums\SchemaType;
 use App\Events\ItemUpdatedQuantity;
@@ -372,6 +371,7 @@ class OrderCreateTest extends TestCase
         $order = Order::find($response->getData()->data->id)->with('shippingMethod')->first();
 
         Event::assertDispatched(OrderCreated::class);
+
         return [$order, new OrderCreated($order)];
     }
 
@@ -398,56 +398,6 @@ class OrderCreateTest extends TestCase
 
         Event::assertDispatched(OrderCreated::class);
         return [$order, new OrderCreated($order)];
-    }
-
-    /**
-     * @dataProvider authProvider
-     *
-     * @depends testCreateSimpleOrderWithWebHookEvent
-     * @depends testCreateSimpleOrderUnauthenticatedWithWebHookEvent
-     */
-    public function testOrderCreatedWebHookDispatch($user, $payload, $payload2): void
-    {
-        $webHook = WebHook::factory()->create([
-            'events' => [
-                'OrderCreated',
-            ],
-            'model_type' => $this->$user::class,
-            'creator_id' => $this->$user->getKey(),
-            'with_issuer' => false,
-            'with_hidden' => false,
-        ]);
-
-        Bus::fake();
-
-        [$order, $event] = $payload;
-        [$orderUnauthenticated, $eventUnauthenticated] = $payload2;
-        $listener = new WebHookEventListener();
-
-        $listener->handle($event);
-
-        // Zalogowany użytkownik
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $order) {
-            $payload = $job->payload;
-            return $job->webhookUrl === $webHook->url
-                && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $order->getKey()
-                && $payload['data_type'] === 'Order'
-                && $payload['event'] === 'OrderCreated';
-        });
-
-        $listener->handle($eventUnauthenticated);
-
-        // Niezalogowany użytkownik
-        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $orderUnauthenticated) {
-            $payload = $job->payload;
-            return $job->webhookUrl === $webHook->url
-                && isset($job->headers['Signature'])
-                && $payload['data']['id'] === $orderUnauthenticated->getKey()
-                && $payload['data_type'] === 'Order'
-                && $payload['event'] === 'OrderCreated'
-                && $payload['issuer_type'] === IssuerType::UNAUTHENTICATED->value;
-        });
     }
 
     /**

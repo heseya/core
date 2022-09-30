@@ -20,12 +20,12 @@ class SeoMetadataService implements SeoMetadataServiceContract
 {
     public function show(): SeoMetadata
     {
-        return SeoMetadata::where('global', '=', true)->firstOrFail();
+        return $this->getGlobalSeo();
     }
 
     public function createOrUpdate(SeoMetadataDto $dto): SeoMetadata
     {
-        $seo = SeoMetadata::firstOrCreate(
+        $seo = SeoMetadata::query()->firstOrCreate(
             ['global' => true],
             $dto->toArray()
         );
@@ -41,7 +41,7 @@ class SeoMetadataService implements SeoMetadataServiceContract
 
     public function create(SeoMetadataDto $dto): SeoMetadata
     {
-        return SeoMetadata::create(
+        return SeoMetadata::query()->create(
             $dto->toArray()
         );
     }
@@ -49,6 +49,7 @@ class SeoMetadataService implements SeoMetadataServiceContract
     public function update(SeoMetadataDto $dto, SeoMetadata $seoMetadata): SeoMetadata
     {
         $seoMetadata->update($dto->toArray());
+
         return $seoMetadata;
     }
 
@@ -71,28 +72,30 @@ class SeoMetadataService implements SeoMetadataServiceContract
             }
         : null;
 
-        return SeoMetadata::whereHasMorph(
-            'modelSeo',
-            [
-                Page::class,
-                Product::class,
-                ProductSet::class,
-            ],
-            $morph_closure
-        )
+        return SeoMetadata::query()->whereHasMorph('modelSeo', [
+            Page::class,
+            Product::class,
+            ProductSet::class,
+        ], $morph_closure)
             ->whereJsonLength('keywords', count($keywords))
             ->whereJsonContains('keywords', $keywords)
             ->get();
     }
 
-    public function getGlobalSeo(): SeoMetadata | null
+    public function getGlobalSeo(): SeoMetadata
     {
         $seo = Cache::get('seo.global');
 
         if (!$seo) {
-            $seo = SeoMetadata::where('global', true)->first();
+            $seo = SeoMetadata::query()->where('global', true)->first();
+
+            if (!($seo instanceof SeoMetadata)) {
+                $seo = new SeoMetadata();
+            }
+
             Cache::put('seo.global', $seo);
         }
+
         return $seo;
     }
 }

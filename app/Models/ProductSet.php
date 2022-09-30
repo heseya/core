@@ -139,6 +139,17 @@ class ProductSet extends Model
             ->orderByPivot('order');
     }
 
+    public function allProductsIds(): Collection
+    {
+        $products = $this->products()->pluck('id');
+
+        foreach ($this->children as $child) {
+            $products = $products->merge($child->allProductsIds());
+        }
+
+        return $products->unique();
+    }
+
     public function media(): HasOne
     {
         return $this->hasOne(Media::class, 'id', 'cover_id');
@@ -146,29 +157,15 @@ class ProductSet extends Model
 
     public function allProductsSales(): Collection
     {
-        $sales = $this
-            ->discounts()
-            ->with(['products', 'productSets', 'conditionGroups', 'shippingMethods'])
-            ->where('code', '=', null)
-            ->where('target_type', '=', DiscountTargetType::PRODUCTS)
-            ->get();
+        $sales = $this->discounts
+            ->filter(fn ($discount): bool => $discount->code === null
+                && $discount->target_type->is(DiscountTargetType::PRODUCTS));
 
         if ($this->parent) {
             $sales = $sales->merge($this->parent->allProductsSales());
         }
 
         return $sales->unique('id');
-    }
-
-    public function allProducts(): Collection
-    {
-        $products = $this->products()->get();
-
-        foreach ($this->children()->get() as $child) {
-            $products = $products->merge($child->allProducts());
-        }
-
-        return $products->unique('id');
     }
 
     protected static function booted(): void
