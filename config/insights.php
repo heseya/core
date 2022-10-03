@@ -20,7 +20,6 @@ use PHP_CodeSniffer\Standards\Generic\Sniffs\Formatting\SpaceAfterNotSniff;
 use PHP_CodeSniffer\Standards\Generic\Sniffs\PHP\ForbiddenFunctionsSniff;
 use PhpCsFixer\Fixer\ClassNotation\ProtectedToPrivateFixer;
 use PhpCsFixer\Fixer\FunctionNotation\VoidReturnFixer;
-use SlevomatCodingStandard\Sniffs\Arrays\DisallowImplicitArrayCreationSniff;
 use SlevomatCodingStandard\Sniffs\Classes\ForbiddenPublicPropertySniff;
 use SlevomatCodingStandard\Sniffs\Classes\SuperfluousExceptionNamingSniff;
 use SlevomatCodingStandard\Sniffs\ControlStructures\DisallowShortTernaryOperatorSniff;
@@ -88,7 +87,6 @@ return [
         ForbiddenSetterSniff::class,
         DisallowShortTernaryOperatorSniff::class,
         ForbiddenGlobals::class,
-        DisallowImplicitArrayCreationSniff::class,
 
         ForbiddenDefineFunctions::class,
 

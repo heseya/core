@@ -10,7 +10,7 @@ trait MetadataResource
 {
     public function metadataResource(?string $privateMetadataPermission = null): array
     {
-        $data['metadata'] = $this->processMetadata($this->resource->metadata);
+        $data = ['metadata' => $this->processMetadata($this->resource->metadata)];
 
         if ($privateMetadataPermission !== null && Gate::allows($privateMetadataPermission)) {
             $data['metadata_private'] = $this->processMetadata($this->resource->metadataPrivate);
