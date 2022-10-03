@@ -101,12 +101,8 @@ class PayU implements PaymentMethod
 
     /**
      * Function returns signature data object
-     *
-     * @param string $data
-     *
-     * @return array|null
      */
-    public static function parseSignature(string $data)
+    public static function parseSignature(string $data): ?array
     {
         $signatureData = [];
 

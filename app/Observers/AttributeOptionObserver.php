@@ -15,8 +15,6 @@ class AttributeOptionObserver
      * Handle the AttributeOption "created" event.
      *
      * @param AttributeOption $attributeOption
-     *
-     * @return void
      */
     public function created(AttributeOption $attributeOption): void
     {
@@ -27,8 +25,6 @@ class AttributeOptionObserver
      * Handle the AttributeOption "updated" event.
      *
      * @param AttributeOption $attributeOption
-     *
-     * @return void
      */
     public function updated(AttributeOption $attributeOption): void
     {
@@ -39,8 +35,6 @@ class AttributeOptionObserver
      * Handle the AttributeOption "deleted" event.
      *
      * @param AttributeOption  $attributeOption
-     *
-     * @return void
      */
     public function deleted(AttributeOption $attributeOption): void
     {
@@ -51,8 +45,6 @@ class AttributeOptionObserver
      * Handle the AttributeOption "restored" event.
      *
      * @param AttributeOption  $attributeOption
-     *
-     * @return void
      */
     public function restored(AttributeOption $attributeOption): void
     {

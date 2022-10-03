@@ -9,10 +9,8 @@ class RequiredConsentsUpdate extends RequiredConsents
      *
      * @param string $attribute
      * @param mixed $value
-     *
-     * @return bool
      */
-    public function passes($attribute, $value)
+    public function passes($attribute, $value): bool
     {
         if ($value === null) {
             return true;

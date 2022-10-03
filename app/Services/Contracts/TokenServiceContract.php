@@ -13,8 +13,6 @@ interface TokenServiceContract
      * Returns whether token is valid or not
      *
      * @param string $token
-     *
-     * @return bool
      */
     public function validate(string $token): bool;
 
@@ -22,8 +20,6 @@ interface TokenServiceContract
      * Returns user identified by the token or null if the token is invalid
      *
      * @param string $token
-     *
-     * @return Authenticatable|null
      */
     public function getUser(string $token): ?Authenticatable;
 
@@ -31,8 +27,6 @@ interface TokenServiceContract
      * Returns token payload or null if the token is invalid
      *
      * @param string $token
-     *
-     * @return Payload|null
      */
     public function payload(string $token): ?Payload;
 
@@ -41,8 +35,6 @@ interface TokenServiceContract
      *
      * @param JWTSubject $user
      * @param TokenType $type
-     *
-     * @return string
      */
     public function createToken(JWTSubject $user, TokenType $type, ?string $uuid): string;
 
@@ -58,8 +50,6 @@ interface TokenServiceContract
      *
      * @param string $token
      * @param TokenType $type
-     *
-     * @return bool
      */
     public function isTokenType(string $token, TokenType $type): bool;
 }

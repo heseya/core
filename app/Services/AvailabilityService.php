@@ -27,8 +27,6 @@ class AvailabilityService implements AvailabilityServiceContract
      * containing this item.
      *
      * @param Item $item
-     *
-     * @return void
      */
     public function calculateAvailabilityOnOrderAndRestock(Item $item): void
     {
@@ -217,8 +215,6 @@ class AvailabilityService implements AvailabilityServiceContract
     /**
      * @param Collection $options
      * @param array<string, int> $items <unique id of item, quantity>
-     *
-     * @return bool
      */
     public function isOptionsItemsAvailable(Collection $options, array $items): bool
     {

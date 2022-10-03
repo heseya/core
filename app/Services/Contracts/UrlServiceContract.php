@@ -9,8 +9,6 @@ interface UrlServiceContract
      *
      * @param string $url
      * @param bool $stripFluff Whether to strip query and fragment portions of the url
-     *
-     * @return string
      */
     public function normalizeUrl(string $url, bool $stripFluff = false): string;
 
@@ -29,8 +27,6 @@ interface UrlServiceContract
      *
      * @param string $url
      * @param string $path
-     *
-     * @return string
      */
     public function urlAppendPath(string $url, string $path): string;
 
@@ -39,8 +35,6 @@ interface UrlServiceContract
      *
      * @param string $url
      * @param string $path
-     *
-     * @return string
      */
     public function urlSetPath(string $url, string $path): string;
 }

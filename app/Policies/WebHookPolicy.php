@@ -25,8 +25,6 @@ class WebHookPolicy
      *
      * @param User|App $user
      * @param WebHook $webHook
-     *
-     * @return Response
      */
     public function update(User|App $user, WebHook $webHook, array $newWebHook): Response
     {
@@ -45,8 +43,6 @@ class WebHookPolicy
      *
      * @param User|App $user
      * @param WebHook $webHook
-     *
-     * @return Response
      */
     public function delete(User|App $user, WebHook $webHook): Response
     {

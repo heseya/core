@@ -17,8 +17,6 @@ class CheckActiveSales implements ShouldQueue
      * Execute the job.
      *
      * @param DiscountService $discountService
-     *
-     * @return void
      */
     public function handle(DiscountService $discountService): void
     {

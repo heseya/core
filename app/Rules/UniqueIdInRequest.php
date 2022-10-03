@@ -26,10 +26,8 @@ class UniqueIdInRequest implements Rule
 
     /**
      * Get the validation error message.
-     *
-     * @return string
      */
-    public function message()
+    public function message(): string
     {
         return 'Items\' ids has been duplicated';
     }

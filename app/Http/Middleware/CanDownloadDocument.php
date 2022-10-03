@@ -16,11 +16,9 @@ class CanDownloadDocument
      * @param Request $request
      * @param Closure $next
      *
-     * @return mixed
-     *
      * @throws AuthException
      */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): mixed
     {
         /** @var Order $order */
         $order = $request->route('order');

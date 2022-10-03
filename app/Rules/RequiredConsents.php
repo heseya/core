@@ -12,10 +12,8 @@ class RequiredConsents implements ImplicitRule
      *
      * @param string $attribute
      * @param mixed $value
-     *
-     * @return bool
      */
-    public function passes($attribute, $value)
+    public function passes($attribute, $value): bool
     {
         $consents = Consent::where('required', true)->get();
 
@@ -26,10 +24,8 @@ class RequiredConsents implements ImplicitRule
 
     /**
      * Get the validation error message.
-     *
-     * @return string
      */
-    public function message()
+    public function message(): string
     {
         return 'You must accept the required consents.';
     }

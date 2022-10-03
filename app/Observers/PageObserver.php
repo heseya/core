@@ -10,8 +10,6 @@ class PageObserver
      * Handle the Page "deleted" event.
      *
      * @param Page $page
-     *
-     * @return void
      */
     public function deleted(Page $page): void
     {

@@ -15,10 +15,8 @@ class ConsentExists implements Rule
      *
      * @param string $attribute
      * @param mixed $value
-     *
-     * @return bool
      */
-    public function passes($attribute, $value)
+    public function passes($attribute, $value): bool
     {
         $this->id = Str::after($attribute, 'consents.');
         return Consent::where('id', $this->id)->exists();
@@ -26,10 +24,8 @@ class ConsentExists implements Rule
 
     /**
      * Get the validation error message.
-     *
-     * @return string
      */
-    public function message()
+    public function message(): string
     {
         return 'Consent with ID: ' . $this->id . ' does not exist';
     }
