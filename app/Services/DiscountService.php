@@ -49,7 +49,6 @@ use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\ProductSet;
-use App\Models\Role;
 use App\Models\SalesShortResource;
 use App\Models\ShippingMethod;
 use App\Models\User;
@@ -87,7 +86,8 @@ class DiscountService implements DiscountServiceContract
 
     public function store(SaleDto|CouponDto $dto): Discount
     {
-        $discount = Discount::create($dto->toArray());
+        /** @var Discount $discount */
+        $discount = Discount::query()->create($dto->toArray());
 
         $discount->products()->attach($dto->getTargetProducts());
         $discount->productSets()->attach($dto->getTargetSets());
@@ -434,7 +434,8 @@ class DiscountService implements DiscountServiceContract
     public function activeSales(): Collection
     {
         // This doesn't get all active sales. Only ones with conditions.
-        $sales = Discount::where('code', null)
+        $sales = Discount::query()
+            ->where('code', null)
             ->where('target_type', DiscountTargetType::PRODUCTS)
             ->whereHas('conditionGroups', function ($query): void {
                 $query
@@ -974,8 +975,10 @@ class DiscountService implements DiscountServiceContract
     private function getSalesAndCoupons(array|Missing $couponIds, array $targetTypes = []): Collection
     {
         // Get all discounts
-        $salesQuery = Discount::query()->where('code', null)
+        $salesQuery = Discount::query()
+            ->where('code', null)
             ->with(['orders', 'products', 'productSets', 'conditionGroups', 'conditionGroups.conditions']);
+
         if (count($targetTypes)) {
             $salesQuery = $salesQuery->whereIn('target_type', $targetTypes);
         }
@@ -987,8 +990,10 @@ class DiscountService implements DiscountServiceContract
         }
 
         // Get all coupons
-        $couponsQuery = Discount::whereIn('code', $couponIds)
+        $couponsQuery = Discount::query()
+            ->whereIn('code', $couponIds)
             ->with(['orders', 'products', 'productSets', 'conditionGroups', 'conditionGroups.conditions']);
+
         if (count($targetTypes)) {
             $couponsQuery = $couponsQuery->whereIn('target_type', $targetTypes);
         }
@@ -1046,7 +1051,8 @@ class DiscountService implements DiscountServiceContract
         Collection $discountProductSets,
         bool $allowList
     ): bool {
-        $product = Product::where('id', $productId)->firstOrFail();
+        /** @var Product $product */
+        $product = Product::query()->where('id', $productId)->firstOrFail();
 
         $productSets = $product->sets()->with('parent')->get();
         $diffCount = $productSets->pluck('id')->diff($discountProductSets->pluck('id')->all())->count();
@@ -1150,10 +1156,11 @@ class DiscountService implements DiscountServiceContract
         $conditionDto = UserInRoleConditionDto::fromArray(
             $condition->value + ['type' => $condition->type->value]
         );
+
+        /** @var User|App|null $user */
         $user = Auth::user();
 
-        if ($user) {
-            /** @var Role $role */
+        if ($user !== null) {
             foreach ($user->roles as $role) {
                 if (in_array($role->getKey(), $conditionDto->getRoles()) === $conditionDto->isIsAllowList()) {
                     return true;
@@ -1180,7 +1187,9 @@ class DiscountService implements DiscountServiceContract
         $conditionDto = ProductInSetConditionDto::fromArray(
             $condition->value + ['type' => $condition->type->value]
         );
-        $productSets = ProductSet::whereIn('id', $conditionDto->getProductSets())->get();
+        $productSets = ProductSet::query()
+            ->whereIn('id', $conditionDto->getProductSets())
+            ->get();
 
         foreach ($productIds as $productId) {
             $result = $this->checkIsProductInDiscountProductSets(
@@ -1351,9 +1360,12 @@ class DiscountService implements DiscountServiceContract
 
     private function getSalesWithBlockList(): Collection
     {
-        return Discount::where('code', null)
+        return Discount::query()
+            ->where('code', null)
             ->where('target_type', DiscountTargetType::PRODUCTS)
-            ->where('target_is_allow_list', false)->with(['products', 'productSets', 'productSets.products'])->get();
+            ->where('target_is_allow_list', false)
+            ->with(['products', 'productSets', 'productSets.products'])
+            ->get();
     }
 
     private function applyDiscountsOnProductsLazy(Collection $productIds, Collection $salesWithBlockList): void
