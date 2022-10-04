@@ -66,7 +66,9 @@ class ProductService implements ProductServiceContract
             $this->attributeService->sync($product, $dto->getAttributes());
         }
 
-        $product->seo()->save($this->seoMetadataService->create($dto->getSeo()));
+        if (!($dto->getSeo() instanceof Missing)) {
+            $this->seoMetadataService->createOrUpdateFor($product, $dto->getSeo());
+        }
 
         [$priceMin, $priceMax] = $this->getMinMaxPrices($product);
         $product->price_min_initial = $priceMin;
