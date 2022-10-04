@@ -54,7 +54,9 @@ class PageService implements PageServiceContract
 
         $page = Page::create($attributes);
 
-        $page->seo()->save($this->seoMetadataService->create($dto->getSeo()));
+        if (!($dto->getSeo() instanceof Missing)) {
+            $this->seoMetadataService->createOrUpdateFor($page, $dto->getSeo());
+        }
 
         if (!($dto->getMetadata() instanceof Missing)) {
             $this->metadataService->sync($page, $dto->getMetadata());

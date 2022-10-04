@@ -97,7 +97,9 @@ class ProductSetService implements ProductSetServiceContract
             $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->isPublic());
         }
 
-        $set->seo()->save($this->seoMetadataService->create($dto->getSeo()));
+        if (!($dto->getSeo() instanceof Missing)) {
+            $this->seoMetadataService->createOrUpdateFor($set, $dto->getSeo());
+        }
 
         if (!($dto->getMetadata() instanceof Missing)) {
             $this->metadataService->sync($set, $dto->getMetadata());
@@ -193,8 +195,8 @@ class ProductSetService implements ProductSetServiceContract
             $set->attributes()->sync($attributes);
         }
 
-        if ($set->seo !== null) {
-            $this->seoMetadataService->update($dto->getSeo(), $set->seo);
+        if (!($dto->getSeo() instanceof Missing)) {
+            $this->seoMetadataService->createOrUpdateFor($set, $dto->getSeo());
         }
 
         // searchable is handled by the event listener

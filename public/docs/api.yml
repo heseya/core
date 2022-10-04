@@ -361,7 +361,7 @@ paths:
   '/banners/id:{id}':
     $ref: './paths/Banners.yml#/BannersParam'
   '/google-categories/{lang}':
-    $ref: './paths/Category.yml#/Category'
+    $ref: './paths/GoogleCategories.yml#/GoogleCategories'
   '/wishlist':
     $ref: './paths/Wishlist.yml#/WishlistProduct'
   '/wishlist/id:{product_id}':
