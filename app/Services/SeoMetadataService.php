@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Dtos\SeoKeywordsDto;
 use App\Dtos\SeoMetadataDto;
 use App\Enums\SeoModelType;
+use App\Models\Model;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\ProductSet;
@@ -25,6 +26,7 @@ class SeoMetadataService implements SeoMetadataServiceContract
 
     public function createOrUpdate(SeoMetadataDto $dto): SeoMetadata
     {
+        /** @var SeoMetadata $seo */
         $seo = SeoMetadata::query()->firstOrCreate(
             ['global' => true],
             $dto->toArray()
@@ -39,11 +41,15 @@ class SeoMetadataService implements SeoMetadataServiceContract
         return $seo;
     }
 
-    public function create(SeoMetadataDto $dto): SeoMetadata
+    /**
+     * Create or update seo for given model.
+     */
+    public function createOrUpdateFor(Model $model, SeoMetadataDto $dto): void
     {
-        return SeoMetadata::query()->create(
-            $dto->toArray()
-        );
+        SeoMetadata::query()->updateOrCreate([
+            'model_id' => $model->getKey(),
+            'model_type' => $model::class,
+        ], $dto->toArray());
     }
 
     public function update(SeoMetadataDto $dto, SeoMetadata $seoMetadata): SeoMetadata
@@ -64,13 +70,13 @@ class SeoMetadataService implements SeoMetadataServiceContract
 
         $excluded_id = $dto->getExcludedId();
         $excluded_model = $dto->getExcludedModel();
-        $morph_closure = !$excluded_id instanceof Missing
-            ? function (Builder $query, $type) use ($excluded_id, $excluded_model): void {
+
+        $morph_closure = $excluded_id instanceof Missing ? null :
+            function (Builder $query, $type) use ($excluded_id, $excluded_model): void {
                 if ($type === SeoModelType::getValue(Str::upper(Str::snake($excluded_model)))) {
                     $query->where('model_id', '!=', $excluded_id);
                 }
-            }
-        : null;
+            };
 
         return SeoMetadata::query()->whereHasMorph('modelSeo', [
             Page::class,

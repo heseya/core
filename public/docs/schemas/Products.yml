@@ -54,8 +54,8 @@ Product:
       example: 20
     google_product_category:
       description: 'Google product category identification number'
-      type: integer
-      example: 123
+      type: number
+      example: 2271
     vat_rate:
       description: 'Value represent tax value'
       type: number

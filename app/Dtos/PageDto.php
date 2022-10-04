@@ -18,7 +18,7 @@ class PageDto extends Dto implements InstantiateFromRequest
     private string $slug;
     private bool $public;
     private string $content_html;
-    private SeoMetadataDto $seo;
+    private SeoMetadataDto|Missing $seo;
     private array|Missing $metadata;
 
     public static function instantiateFromRequest(FormRequest|PageStoreRequest|PageUpdateRequest $request): self
@@ -28,7 +28,7 @@ class PageDto extends Dto implements InstantiateFromRequest
             slug: $request->input('slug'),
             public: $request->input('public'),
             content_html: $request->input('content_html'),
-            seo: SeoMetadataDto::instantiateFromRequest($request),
+            seo: $request->has('seo') ? SeoMetadataDto::instantiateFromRequest($request) : new Missing(),
             metadata: self::mapMetadata($request),
         );
     }
@@ -53,7 +53,7 @@ class PageDto extends Dto implements InstantiateFromRequest
         return $this->content_html;
     }
 
-    public function getSeo(): SeoMetadataDto
+    public function getSeo(): SeoMetadataDto|Missing
     {
         return $this->seo;
     }
