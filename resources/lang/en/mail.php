@@ -36,7 +36,7 @@ return [
     'reset-request' => 'We have received a request to change your password.',
     'link' => 'Click this link to change your password',
     'change-password' => 'change password',
-    'warning' => 'If you haven't requested the change of password, please ignore this email',
+    'warning' => 'If you haven\'t requested the change of password, please ignore this email',
 
     // user registered
     'register-thanks' => 'Thank you for registering to :name',

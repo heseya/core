@@ -852,7 +852,7 @@ class UserTest extends TestCase
             'roles' => [
                 match ($role) {
                     RoleType::AUTHENTICATED => $this->authenticated->getKey(),
-                        RoleType::UNAUTHENTICATED => $this->unauthenticated->getKey(),
+                    RoleType::UNAUTHENTICATED => $this->unauthenticated->getKey(),
                 },
             ],
         ];

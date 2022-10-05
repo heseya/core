@@ -69,8 +69,8 @@ class SortService implements SortServiceContract
                             ->where('product_sets.slug', Str::after($field, 'set.'));
                     });
             })
-            ->select('product_set_product.order AS set_order', 'products.*')
-            ->orderBy('set_order', $order);
+                ->select('product_set_product.order AS set_order', 'products.*')
+                ->orderBy('set_order', $order);
         } else {
             $query->orderBy($field, $order);
         }
