@@ -376,7 +376,8 @@ class ProductRepository implements ProductRepositoryContract
         return $query->filter($value ? $term : Invert::query($term));
     }
 
-    private function handleElastic400(BadRequest400Exception $exception): void {
+    private function handleElastic400(BadRequest400Exception $exception): void
+    {
         $error = Str::of($exception->getMessage());
 
         if ($error->contains('] in order to sort on')) {

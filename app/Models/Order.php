@@ -199,4 +199,15 @@ class Order extends Model implements AuditableContract, SortableContract
     {
         return $this->morphTo('order', 'buyer_type', 'buyer_id', 'id');
     }
+
+    public function preferredLocale(): string
+    {
+        $country = Str::of($this->deliveryAddress?->country)->limit(2, '')->lower();
+
+        if ($country->is('pl')) {
+            return 'pl';
+        }
+
+        return 'en';
+    }
 }
