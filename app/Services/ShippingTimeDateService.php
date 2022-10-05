@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services;
 
@@ -24,7 +24,7 @@ class ShippingTimeDateService implements ShippingTimeDateServiceContract
     public function stopShippingUnlimitedStockDate(): void
     {
         $items = $this->getItemsWithUnlimitedStockDateLast24h();
-        $items->each(fn ($item) => $this->availabilityService->calculateAvailabilityOnOrderAndRestock($item));
+        $items->each(fn ($item) => $this->availabilityService->calculateAvailabilityOnAllItemRelations($item));
     }
 
     public function getItemsWithUnlimitedStockDateLast24h(): Collection

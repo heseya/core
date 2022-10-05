@@ -10,7 +10,7 @@ use Illuminate\Support\Collection;
 
 interface AvailabilityServiceContract
 {
-    public function calculateAvailabilityOnOrderAndRestock(Item $item): void;
+    public function calculateAvailabilityOnAllItemRelations(Item $item): void;
 
     public function calculateOptionAvailability(Option $option): void;
 

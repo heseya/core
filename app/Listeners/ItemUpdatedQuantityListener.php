@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Listeners;
 
@@ -16,7 +16,7 @@ class ItemUpdatedQuantityListener
 
     public function handle(ItemUpdatedQuantity $event): void
     {
-        $this->availabilityService->calculateAvailabilityOnOrderAndRestock($event->getItem());
+        $this->availabilityService->calculateAvailabilityOnAllItemRelations($event->getItem());
         $this->itemServiceContract->refreshSerchable($event->getItem());
     }
 }

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services;
 
@@ -25,27 +25,27 @@ class AvailabilityService implements AvailabilityServiceContract
      * Function used to calculate "available" field for Options, Schemas and Products related to Item step by step
      * used after changing Item's quantity, usually after including Item in Order or creating Deposit
      * containing this item.
-     *
-     * @param Item $item
      */
-    public function calculateAvailabilityOnOrderAndRestock(Item $item): void
+    public function calculateAvailabilityOnAllItemRelations(Item $item): void
     {
+        // Options
         $options = $item->options;
-        $options->each(fn ($option) => $this->calculateOptionAvailability($option));
+        $options->each(fn (Option $option) => $this->calculateOptionAvailability($option));
 
+        // Schemas
         $schemas = Schema::query()
             ->where('type', SchemaType::SELECT)
             ->whereIn('id', $options->pluck('schema_id'))
             ->get();
+        $schemas->each(fn (Schema $schema) => $this->calculateSchemaAvailability($schema));
 
-        $schemas->each(fn ($schema) => $this->calculateSchemaAvailability($schema));
+        // Products
         $schemas
             ->pluck('products')
             ->flatten()
+            ->merge($item->products)
             ->unique('id')
-            ->each(fn ($product) => $this->calculateProductAvailability($product));
-
-        $item->products->each(fn ($product) => $this->calculateProductAvailability($product));
+            ->each(fn (Product $product) => $this->calculateProductAvailability($product));
     }
 
     public function calculateOptionAvailability(Option $option): void
@@ -93,7 +93,7 @@ class AvailabilityService implements AvailabilityServiceContract
             $schema->save();
         } elseif (
             $schema->available &&
-            $schema->options->every(fn ($option) => !$option->available)
+            $schema->options->every(fn (Option $option) => !$option->available)
         ) {
             $schema->available = false;
             $schema->shipping_time = null;
@@ -102,13 +102,11 @@ class AvailabilityService implements AvailabilityServiceContract
             $schema->save();
         } elseif (
             !$schema->available &&
-            $schema->options->some(fn ($option) => $option->available)
+            $schema->options->some(fn (Option $option) => $option->available)
         ) {
             $schema->available = true;
             $schema->fill(
-                $this->depositService->getMinShippingTimeDateForOptions(
-                    $schema->options,
-                ),
+                $this->depositService->getMinShippingTimeDateForOptions($schema->options),
             );
 
             $schema->save();
@@ -200,7 +198,14 @@ class AvailabilityService implements AvailabilityServiceContract
             if ($index < $max - 1) {
                 $newIndex = $index + 1;
 
-                return $this->getSchemaOptions($schemas->get($newIndex), $schemas, $options, $max, $items, $newIndex);
+                return $this->getSchemaOptions(
+                    $schemas->get($newIndex),
+                    $schemas,
+                    $options,
+                    $max,
+                    $items,
+                    $newIndex,
+                );
             }
             if ($index === $max - 1) {
                 if ($this->isOptionsItemsAvailable($options, $items)) {
@@ -212,10 +217,6 @@ class AvailabilityService implements AvailabilityServiceContract
         return false;
     }
 
-    /**
-     * @param Collection $options
-     * @param array<string, int> $items <unique id of item, quantity>
-     */
     public function isOptionsItemsAvailable(Collection $options, array $items): bool
     {
         $itemsOptions = $options->pluck('items')->flatten()->groupBy('id');
@@ -224,6 +225,7 @@ class AvailabilityService implements AvailabilityServiceContract
             function (Collection $item) use ($itemsOptions, $items) {
                 $requiredAmount = ($items[$item->first()->getKey()] ?? 0) +
                     $itemsOptions->get($item->first()->getKey())->count();
+
                 return $item->first()->quantity >= $requiredAmount;
             }
         );
@@ -289,15 +291,15 @@ class AvailabilityService implements AvailabilityServiceContract
     }
 
     private function addProductAvailability(
-        mixed $minQuantity,
+        float $minQuantity,
         Product $product,
         string $type,
-        string $period,
+        string|int|float $period,
         Collection $timeDeposit,
         array $overstockedItems,
         array $requiredQuantities,
     ): array {
-        foreach ($timeDeposit as  $deposit) {
+        foreach ($timeDeposit as $deposit) {
             $overstockedItems[$deposit->item_id] +=
                 $deposit->quantity - ($minQuantity * $requiredQuantities[$deposit->item_id]);
         }
@@ -362,13 +364,10 @@ class AvailabilityService implements AvailabilityServiceContract
         $quantities = Collection::make();
 
         foreach ($timeDeposit as  $deposit) {
-            $quantities
-                ->push(
-                    floor(
-                        ($deposit->quantity + $overstockedItems[$deposit->item_id])
-                        / $requiredQuantities[$deposit->item_id]
-                    )
-                );
+            $quantities->push(floor(
+                ($deposit->quantity + $overstockedItems[$deposit->item_id])
+                / $requiredQuantities[$deposit->item_id]
+            ));
         }
 
         foreach ($onlyOverstocked as $key => $value) {

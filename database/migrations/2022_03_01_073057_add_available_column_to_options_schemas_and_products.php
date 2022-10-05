@@ -26,7 +26,7 @@ class AddAvailableColumnToOptionsSchemasAndProducts extends Migration
         $availabilityService = app(AvailabilityServiceContract::class);
 
         $items = Item::all();
-        $items->each(fn ($item) => $availabilityService->calculateAvailabilityOnOrderAndRestock($item));
+        $items->each(fn ($item) => $availabilityService->calculateAvailabilityOnAllItemRelations($item));
 
         $products = Product::doesntHave('schemas')->get();
         $products->each(function (Product $product): void {
