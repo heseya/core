@@ -724,6 +724,29 @@ class RoleTest extends TestCase
         ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateExistingName($user): void
+    {
+        $this->$user->givePermissionTo('roles.add');
+
+        Role::factory()->create([
+            'name' => 'test_role',
+        ]);
+
+        $this->actingAs($this->$user)->postJson('/roles', [
+            'name' => 'test_role',
+            'description' => 'Test role',
+            'permissions' => [],
+        ])->assertUnprocessable();
+
+        $this->assertDatabaseMissing('roles', [
+            'name' => 'test_role',
+            'description' => 'Test role',
+        ]);
+    }
+
     public function testUpdateUnauthorized(): void
     {
         $role = Role::create([
@@ -1042,6 +1065,34 @@ class RoleTest extends TestCase
         $this->assertFalse($role->hasPermissionTo('test.custom1'));
         $this->assertTrue($role->hasPermissionTo('test.custom2'));
         $this->assertTrue($role->hasPermissionTo('test.custom3'));
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateExistingName($user): void
+    {
+        $this->$user->givePermissionTo('roles.edit');
+
+        Role::create([
+            'name' => 'role1',
+        ]);
+
+        $role2 = Role::create([
+            'name' => 'role2',
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', '/roles/id:' . $role2->getKey(), [
+                'name' => 'role1',
+            ])
+            ->assertUnprocessable();
+
+        $this->assertDatabaseHas('roles', [
+            $role2->getKeyName() => $role2->getKey(),
+            'name' => 'role2',
+        ]);
     }
 
     public function testDeleteUnauthorized(): void
