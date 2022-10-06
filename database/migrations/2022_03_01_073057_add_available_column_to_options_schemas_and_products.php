@@ -1,9 +1,6 @@
 <?php
 
-use App\Models\Item;
 use App\Models\Product;
-use App\Services\AvailabilityService;
-use App\Services\Contracts\AvailabilityServiceContract;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -22,11 +19,11 @@ class AddAvailableColumnToOptionsSchemasAndProducts extends Migration
             $table->boolean('available')->default(false);
         });
 
-        /** @var AvailabilityService $availabilityService */
-        $availabilityService = app(AvailabilityServiceContract::class);
-
-        $items = Item::all();
-        $items->each(fn ($item) => $availabilityService->calculateAvailabilityOnOrderAndRestock($item));
+//        /** @var AvailabilityService $availabilityService */
+//        $availabilityService = app(AvailabilityServiceContract::class);
+//
+//        $items = Item::all();
+//        $items->each(fn ($item) => $availabilityService->calculateAvailabilityOnAllItemRelations($item));
 
         $products = Product::doesntHave('schemas')->get();
         $products->each(function (Product $product): void {
