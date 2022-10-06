@@ -4,8 +4,8 @@ ProductSetStore:
       schema:
         required:
           - name
-          - slug
           - slug_suffix
+          - slug_override
         properties:
           name:
             description: 'Name displayed to the user'
