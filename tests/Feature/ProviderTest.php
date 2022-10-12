@@ -324,7 +324,14 @@ class ProviderTest extends TestCase
             'client_secret' => 'test_secret',
         ]);
 
-        $response = $this->json('get', "auth/providers/{$key}/login?code=test");
+        $response = $this->json(
+            'get',
+            "auth/providers/{$key}/login",
+            [
+                'code' => 'test',
+                'return_url' => 'https://example.com',
+            ]
+        );
 
         $response->assertJsonStructure(
             [
@@ -391,7 +398,14 @@ class ProviderTest extends TestCase
             'user_id' => $existingUser->getKey(),
         ]);
 
-        $response = $this->json('get', "auth/providers/{$key}/login?code=test");
+        $response = $this->json(
+            'get',
+            "auth/providers/{$key}/login",
+            [
+                'code' => 'test',
+                'return_url' => 'https://example.com',
+            ]
+        );
 
         $response->assertJsonStructure(
             [

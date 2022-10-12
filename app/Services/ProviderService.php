@@ -3,16 +3,18 @@
 namespace App\Services;
 
 use App\Dtos\AuthProviderDto;
+use App\Dtos\AuthProviderLoginDto;
 use App\Enums\AuthProviderKey;
 use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\RoleType;
 use App\Exceptions\ClientException;
 use App\Http\Resources\AuthProviderListResource;
 use App\Models\AuthProvider;
+use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\ProviderServiceContract;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
@@ -99,13 +101,14 @@ class ProviderService implements ProviderServiceContract
         Config::set("services.{$authProviderKey}.redirect", $returnUrl);
     }
 
-    public function login(string $authProviderKey, Request $request): array
+    public function login(string $authProviderKey, AuthProviderLoginDto $dto): array
     {
         /** @var AuthProvider $provider */
         $provider = AuthProvider::query()->where('key', $authProviderKey)->first();
 
         Config::set("services.{$authProviderKey}.client_id", $provider->client_id);
         Config::set("services.{$authProviderKey}.client_secret", $provider->client_secret);
+        Config::set("services.{$authProviderKey}.redirect", $dto->getReturnUrl());
 
         $user = Socialite::driver($authProviderKey)->stateless()->user();
 
@@ -123,8 +126,8 @@ class ProviderService implements ProviderServiceContract
 
             $data = $this->authService->loginWithUser(
                 $apiUser,
-                $request->ip(),
-                $request->userAgent(),
+                $dto->getIp(),
+                $dto->getUserAgent(),
             );
         } else {
             $newUser = User::create([
@@ -137,10 +140,13 @@ class ProviderService implements ProviderServiceContract
                 'user_id' => $newUser->getKey(),
             ]);
 
+            $authenticated = Role::where('type', RoleType::AUTHENTICATED)->first();
+            $newUser->syncRoles($authenticated);
+
             $data = $this->authService->loginWithUser(
                 $newUser,
-                $request->ip(),
-                $request->userAgent(),
+                $dto->getIp(),
+                $dto->getUserAgent(),
             );
         }
         return $data;
