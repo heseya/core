@@ -3,8 +3,8 @@
 namespace App\Services\Contracts;
 
 use App\Dtos\AuthProviderDto;
+use App\Dtos\AuthProviderLoginDto;
 use App\Models\AuthProvider;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 interface ProviderServiceContract
@@ -13,5 +13,5 @@ interface ProviderServiceContract
     public function getProvider(string $authProviderKey): AuthProvider|array;
     public function update(AuthProviderDto $dto, AuthProvider $provider): AuthProvider;
     public function setupRedirect(string $authProviderKey, string $returnUrl): void;
-    public function login(string $authProviderKey, Request $request): array;
+    public function login(string $authProviderKey, AuthProviderLoginDto $dto): array;
 }

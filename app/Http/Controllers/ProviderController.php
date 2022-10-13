@@ -3,15 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\AuthProviderDto;
+use App\Dtos\AuthProviderLoginDto;
 use App\Enums\AuthProviderKey;
 use App\Http\Requests\AuthProviderIndexRequest;
+use App\Http\Requests\AuthProviderLoginRequest;
 use App\Http\Requests\AuthProviderRedirectRequest;
 use App\Http\Requests\AuthProviderUpdateRequest;
 use App\Http\Resources\AuthResource;
 use App\Models\AuthProvider;
 use App\Services\Contracts\ProviderServiceContract;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
 use Laravel\Socialite\Facades\Socialite;
@@ -46,9 +47,9 @@ class ProviderController extends Controller
         return Response::json($this->providerService->update($dto, $provider));
     }
 
-    public function login(Request $request, string $authProviderKey): JsonResource
+    public function login(AuthProviderLoginRequest $request, string $authProviderKey): JsonResource
     {
-        $data = $this->providerService->login($authProviderKey, $request);
+        $data = $this->providerService->login($authProviderKey, AuthProviderLoginDto::instantiateFromRequest($request));
 
         return AuthResource::make($data);
     }
