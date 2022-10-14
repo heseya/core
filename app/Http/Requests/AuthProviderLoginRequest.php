@@ -9,7 +9,6 @@ class AuthProviderLoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => ['required', 'string'],
             'return_url' => ['required', 'url'],
         ];
     }

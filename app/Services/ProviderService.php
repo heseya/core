@@ -20,6 +20,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Socialite\Facades\Socialite;
+use Throwable;
 
 class ProviderService implements ProviderServiceContract
 {
@@ -110,7 +111,12 @@ class ProviderService implements ProviderServiceContract
         Config::set("services.{$authProviderKey}.client_secret", $provider->client_secret);
         Config::set("services.{$authProviderKey}.redirect", $dto->getReturnUrl());
 
-        $user = Socialite::driver($authProviderKey)->stateless()->user();
+        request()->merge($dto->getParams());
+        try {
+            $user = Socialite::driver($authProviderKey)->stateless()->user();
+        } catch (Throwable $exception) {
+            throw new ClientException(Exceptions::CLIENT_INVALID_CREDENTIALS);
+        }
 
         $id = $user->getId();
 

@@ -1,22 +1,19 @@
 ProviderLogin:
-  get:
+  post:
     tags:
       - Auth
     summary: Login
-    parameters:
-      - name: code
-        in: path
-        required: true
-        schema:
-          type: string
-          example: 4938nv902347856bv237462v03
-      - name: return_url
-        in: path
-        required: true
-        schema:
-          type: string
-          example: https://example.com
-        description: Must be same as the `return_url` used in the `/auth/providers/{provider}/redirect` endpoint
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              return_url:
+                type: string
+                example: https://example.com?code=1234
+                description: Must be same as the `return_url` used in the `/auth/providers/{provider}/redirect` endpoint
+                  and contains query params received from providers
+            type: object
     responses:
       200:
         description: Success
