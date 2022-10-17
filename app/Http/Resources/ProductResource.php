@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\ProductSet;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -39,7 +40,10 @@ class ProductResource extends Resource
     public function view(Request $request): array
     {
         $sets = Gate::denies('product_sets.show_hidden')
-            ? $this->resource->sets()->public()->get() : $this->resource->sets;
+            ? $this->resource->sets->filter(
+                fn (ProductSet $set) => $set->public === true && $set->public_parent === true
+            )
+            : $this->resource->sets;
 
         $sales = $this->resource->sales ? ['sales' => SaleResource::collection($this->resource->sales)] : [];
 
