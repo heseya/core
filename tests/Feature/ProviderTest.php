@@ -295,8 +295,25 @@ class ProviderTest extends TestCase
     /**
      * @dataProvider socialMediaProvider
      */
+    public function testLoginUnauthorized($key): void
+    {
+        $this->user->givePermissionTo('auth.login');
+
+        $this->actingAs($this->user)->json(
+            'POST',
+            "auth/providers/{$key}/login",
+            [
+                'return_url' => 'https://example.com?code=test',
+            ]
+        )->assertForbidden();
+    }
+
+    /**
+     * @dataProvider socialMediaProvider
+     */
     public function testLoginNewUser($key): void
     {
+        $this->user->givePermissionTo(['auth.login', 'auth.register']);
         $user = \Mockery::mock('Laravel\Socialite\Two\User');
         $user
             ->shouldReceive('getId')
@@ -324,12 +341,11 @@ class ProviderTest extends TestCase
             'client_secret' => 'test_secret',
         ]);
 
-        $response = $this->json(
-            'get',
+        $response = $this->actingAs($this->user)->json(
+            'POST',
             "auth/providers/{$key}/login",
             [
-                'code' => 'test',
-                'return_url' => 'https://example.com',
+                'return_url' => 'https://example.com?code=test',
             ]
         );
 
@@ -359,6 +375,7 @@ class ProviderTest extends TestCase
      */
     public function testLoginExistingUser($key): void
     {
+        $this->user->givePermissionTo(['auth.login', 'auth.register']);
         $user = \Mockery::mock('Laravel\Socialite\Two\User');
         $user
             ->shouldReceive('getId')
@@ -398,12 +415,11 @@ class ProviderTest extends TestCase
             'user_id' => $existingUser->getKey(),
         ]);
 
-        $response = $this->json(
-            'get',
+        $response = $this->actingAs($this->user)->json(
+            'POST',
             "auth/providers/{$key}/login",
             [
-                'code' => 'test',
-                'return_url' => 'https://example.com',
+                'return_url' => 'https://example.com?code=test',
             ]
         );
 

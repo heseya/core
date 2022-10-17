@@ -49,7 +49,8 @@ Route::prefix('auth')->group(function (): void {
 
     Route::prefix('providers')->group(function (): void {
         Route::get(null, [ProviderController::class, 'getProvidersList']);
-        Route::get('{authProviderKey}/login', [ProviderController::class, 'login']);
+        Route::post('{authProviderKey}/login', [ProviderController::class, 'login'])
+            ->middleware(['can:auth.login', 'can:auth.register']);
         Route::post('{authProviderKey}/redirect', [ProviderController::class, 'redirect']);
         Route::get('{authProviderKey}', [ProviderController::class, 'getProvider']);
         Route::patch('{authProviderKey}', [ProviderController::class, 'update'])
