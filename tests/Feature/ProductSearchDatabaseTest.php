@@ -10,7 +10,6 @@ use App\Models\ProductSet;
 use App\Models\Tag;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
