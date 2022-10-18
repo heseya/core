@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services;
 
@@ -25,64 +25,106 @@ class AvailabilityService implements AvailabilityServiceContract
      * Function used to calculate "available" field for Options, Schemas and Products related to Item step by step
      * used after changing Item's quantity, usually after including Item in Order or creating Deposit
      * containing this item.
-     *
-     * @param Item $item
-     *
-     * @return void
      */
     public function calculateAvailabilityOnOrderAndRestock(Item $item): void
     {
+        // Options
         $options = $item->options;
-        $options->each(fn ($option) => $this->calculateOptionAvailability($option));
+        $options->each(fn (Option $option) => $this->calculateOptionAvailability($option));
 
+        // Schemas
         $schemas = Schema::query()
             ->where('type', SchemaType::SELECT)
             ->whereIn('id', $options->pluck('schema_id'))
             ->get();
+        $schemas->each(fn (Schema $schema) => $this->calculateSchemaAvailability($schema));
 
-        $schemas->each(fn ($schema) => $this->calculateSchemaAvailability($schema));
+        // Products
         $schemas
             ->pluck('products')
             ->flatten()
+            ->merge($item->products)
             ->unique('id')
-            ->each(fn ($product) => $this->calculateProductAvailability($product));
-
-        $item->products->each(fn ($product) => $this->calculateProductAvailability($product));
+            ->each(fn (Product $product) => $this->calculateProductAvailability($product));
     }
 
     public function calculateOptionAvailability(Option $option): void
     {
-        if ($option->items->count() <= 0) {
-            $option->update([
-                'available' => true,
-                'shipping_time' => null,
-                'shipping_date' => null,
-            ]);
+        $option->update($this->getCalculateOptionAvailability($option));
+    }
 
-            return;
+    /**
+     * @return array{available: bool, shipping_time: null|int, shipping_date: null|Carbon}
+     */
+    public function getCalculateOptionAvailability(Option $option): array
+    {
+        $now = Carbon::now();
+
+        // If option don't have any related items is always avaiable
+        $available = true;
+        $shipping_time = null;
+        $shipping_date = null;
+
+        foreach ($option->items as $item) {
+            if (
+                $item->unlimited_stock_shipping_time !== null &&
+                $item->unlimited_stock_shipping_time > $shipping_time
+            ) {
+                $available = true;
+                $shipping_time = $item->unlimited_stock_shipping_time;
+            }
+
+            if (
+                $item->unlimited_stock_shipping_date !== null &&
+                $now->isBefore($item->unlimited_stock_shipping_date) && (
+                    $shipping_date === null || (
+                        $shipping_date instanceof Carbon &&
+                        $shipping_date->isBefore($item->unlimited_stock_shipping_date)
+                    )
+                )
+            ) {
+                $available = true;
+                $shipping_date = $item->unlimited_stock_shipping_date;
+            }
+
+            // If
+            if ($item->pivot->required_quantity > $item->quantity) {
+                return [
+                    'available' => false,
+                    'shipping_time' => null,
+                    'shipping_date' => null,
+                ];
+            }
+
+//            $this->depositService->getMaxShippingTimeDateForItems($option->items);
         }
 
-        if ($option->available && $option->items->some(
-            fn ($item) => $item->quantity <= 0 &&
-                $item->unlimited_stock_shipping_time === null &&
-                ($item->unlimited_stock_shipping_date === null ||
-                    $item->unlimited_stock_shipping_date < Carbon::now())
-        )) {
-            $option->update([
-                'available' => false,
-                'shipping_time' => null,
-                'shipping_date' => null,
-            ]);
-        } elseif (!$option->available && $option->items->every(
-            fn ($item) => $item->quantity > 0 ||
-                $item->unlimited_stock_shipping_time !== null ||
-                ($item->unlimited_stock_shipping_date !== null &&
-                    $item->unlimited_stock_shipping_date >= Carbon::now())
-        )) {
-            $option->update([
-                'available' => true,
-            ] + $this->depositService->getMaxShippingTimeDateForItems($option->items));
-        }
+//        if ($option->available && $option->items->some(
+//            fn ($item) => $item->quantity <= 0 &&
+//                $item->unlimited_stock_shipping_time === null &&
+//                ($item->unlimited_stock_shipping_date === null || $item->unlimited_stock_shipping_date < Carbon::now())
+//        )) {
+//            return [
+//                'available' => false,
+//                'shipping_time' => null,
+//                'shipping_date' => null,
+//            ];
+//        } elseif (!$option->available && $option->items->every(
+//            fn ($item) => $item->quantity > 0 ||
+//                $item->unlimited_stock_shipping_time !== null ||
+//                ($item->unlimited_stock_shipping_date !== null &&
+//                    $item->unlimited_stock_shipping_date >= Carbon::now())
+//        )) {
+//            return [
+//                'available' => true,
+//            ] + $this->depositService->getMaxShippingTimeDateForItems($option->items);
+//        }
+
+        return [
+            'available' => $available,
+            'shipping_time' => $shipping_time,
+            'shipping_date' => $shipping_date,
+        ];
     }
 
     public function calculateSchemaAvailability(Schema $schema): void
