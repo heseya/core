@@ -26,7 +26,7 @@ class SettingsService implements SettingsServiceContract
         });
 
         if ($publicOnly) {
-            $settings->filter(fn ($setting) => $setting->public);
+            $settings = $settings->filter(fn ($setting) => $setting->public);
         }
 
         return $settings;

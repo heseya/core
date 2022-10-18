@@ -15,7 +15,7 @@ class PageObserver
      */
     public function deleted(Page $page): void
     {
-        $page->slug .= '_'.$page->deleted_at;
+        $page->slug .= '_' . $page->deleted_at;
         $page->save();
     }
 }

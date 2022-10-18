@@ -297,9 +297,7 @@ class ProviderTest extends TestCase
      */
     public function testLoginUnauthorized($key): void
     {
-        $this->user->givePermissionTo('auth.login');
-
-        $this->actingAs($this->user)->json(
+        $this->json(
             'POST',
             "auth/providers/{$key}/login",
             [
@@ -313,7 +311,7 @@ class ProviderTest extends TestCase
      */
     public function testLoginNewUser($key): void
     {
-        $this->user->givePermissionTo(['auth.login', 'auth.register']);
+        $this->user->givePermissionTo(['auth.register']);
         $user = \Mockery::mock('Laravel\Socialite\Two\User');
         $user
             ->shouldReceive('getId')
@@ -375,7 +373,7 @@ class ProviderTest extends TestCase
      */
     public function testLoginExistingUser($key): void
     {
-        $this->user->givePermissionTo(['auth.login', 'auth.register']);
+        $this->user->givePermissionTo(['auth.register']);
         $user = \Mockery::mock('Laravel\Socialite\Two\User');
         $user
             ->shouldReceive('getId')

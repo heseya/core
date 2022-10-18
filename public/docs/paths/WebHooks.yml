@@ -1,3 +1,134 @@
+Webhooks:
+  get:
+    tags:
+      - WebHooks
+    summary: 'list webhooks by filters'
+    parameters:
+      - name: name
+        in: query
+        description: 'Name search'
+        allowEmptyValue: true
+        schema:
+          type: string
+      - name: url
+        in: query
+        description: 'URL search'
+        allowEmptyValue: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/WebHooks.yml#/WebHook'
+              type: object
+  post:
+    tags:
+      - WebHooks
+    summary: 'add new webhook'
+    requestBody:
+      $ref: './../requests/WebHooks.yml#/WebHookCreate'
+    responses:
+      201:
+        description: Created
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/WebHooks.yml#/WebHook'
+              type: object
+    security:
+      - oauth: [ ]
+
+WebhooksParams:
+  get:
+    tags:
+      - WebHooks
+    summary: 'show webhook'
+    parameters:
+      - name: id
+        in: path
+        description: 'Name search'
+        required: true
+        schema:
+          type: string
+          example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/WebHooks.yml#/WebHook'
+              type: object
+  delete:
+    tags:
+      - WebHooks
+    summary: 'delete webhook'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
+    responses:
+      204:
+        description: Success
+    security:
+      - oauth: [ ]
+  patch:
+    tags:
+      - WebHooks
+    summary: 'update webhook'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
+    requestBody:
+      $ref: './../requests/WebHookUpdate.yml#/WebHookUpdate'
+    responses:
+      200:
+        description: Updated
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/WebHooks.yml#/WebHook'
+              type: object
+    security:
+      - oauth: [ ]
+
+WebhooksEvents:
+  get:
+    tags:
+      - WebHooks
+    summary: 'list available events'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Events.yml#/Event'
+              type: object
 Logs:
   get:
     tags:

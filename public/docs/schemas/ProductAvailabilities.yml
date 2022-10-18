@@ -1,0 +1,13 @@
+ProductAvailability:
+  type: object
+  properties:
+    quantity:
+      type: number
+      example: 20
+    shipping_time:
+      type: integer
+      example: 5
+    shipping_date:
+      type: string
+      format: date-time
+      example: '2021-09-13T11:11'

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Criteria\DiscountSearch;
+use App\Criteria\ForRoleDiscountSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Criteria\WhereHasCode;
@@ -50,6 +51,7 @@ class Discount extends Model implements AuditableContract
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'coupon' => WhereHasCode::class,
+        'for_role' => ForRoleDiscountSearch::class,
     ];
 
     public function getUsesAttribute(): int
@@ -94,14 +96,14 @@ class Discount extends Model implements AuditableContract
         return $this->belongsToMany(ConditionGroup::class, 'discount_condition_groups');
     }
 
-    public function allProducts(): Collection
+    public function allProductsIds(): Collection
     {
-        $products = $this->products()->get();
+        $products = $this->products->pluck('id');
 
         foreach ($this->productSets()->get() as $productSet) {
-            $products = $products->merge($productSet->allProducts());
+            $products = $products->merge($productSet->allProductsIds());
         }
 
-        return $products->unique('id');
+        return $products->unique();
     }
 }

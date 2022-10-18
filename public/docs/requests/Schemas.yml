@@ -2,15 +2,8 @@ SchemaStore:
   content:
     application/json:
       schema:
-        type: object
         allOf:
-          - $ref: '../schemas/Schemas.yml#/SchemaMetadata'
-        properties:
-          options:
-            type: array
-            items:
-              allOf:
-                - $ref: '../schemas/Schemas.yml#/OptionMetadata'
+          - $ref: './../schemas/Schemas.yml#/SchemaRequest'
 
 SchemaUpdate:
   content:
@@ -18,4 +11,4 @@ SchemaUpdate:
       schema:
         type: object
         allOf:
-          - $ref: '../schemas/Schemas.yml#/Schema'
+          - $ref: './../schemas/Schemas.yml#/SchemaRequest'

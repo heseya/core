@@ -176,11 +176,11 @@ class MetadataTest extends TestCase
 
             'media as user' => [
                 'user',
-                ['model' => Media::class, 'prefix_url' => 'media', 'role' => 'products.edit'],
+                ['model' => Media::class, 'prefix_url' => 'media', 'role' => 'media.edit'],
             ],
             'media as application' => [
                 'application',
-                ['model' => Media::class, 'prefix_url' => 'media', 'role' => 'products.edit'],
+                ['model' => Media::class, 'prefix_url' => 'media', 'role' => 'media.edit'],
             ],
 
             'banners as user' => [

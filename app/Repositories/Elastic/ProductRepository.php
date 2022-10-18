@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Repositories\Elastic;
 
 use App\Dtos\ProductSearchDto;
+use App\Exceptions\ClientException;
+use App\Exceptions\ServerException;
 use App\Models\Attribute;
 use App\Models\AttributeOption;
 use App\Models\Media;
@@ -13,6 +15,7 @@ use App\Models\Product;
 use App\Models\Tag;
 use App\Repositories\Contracts\ProductRepositoryContract;
 use App\Services\Contracts\SortServiceContract;
+use Elasticsearch\Common\Exceptions\BadRequest400Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -80,9 +83,15 @@ class ProductRepository implements ProductRepositoryContract
             }
         }
 
-        $results = $query->paginateRaw(Config::get('pagination.per_page'));
+        try {
+            $results = $query->paginateRaw(Config::get('pagination.per_page'));
+        } catch (BadRequest400Exception $exception) {
+            $this->handleElastic400($exception);
+        }
+
         $products = new Collection();
 
+        // @phpstan-ignore-next-line
         foreach ($results->items() as $item) {
             if (!isset($item['hits']) || !isset($item['hits']['hits'])) {
                 continue;
@@ -92,8 +101,10 @@ class ProductRepository implements ProductRepositoryContract
             }
         }
 
+        // @phpstan-ignore-next-line
         $results->setCollection($products);
 
+        // @phpstan-ignore-next-line
         return $results;
     }
 
@@ -113,6 +124,7 @@ class ProductRepository implements ProductRepositoryContract
             'available',
             'google_product_category',
         ]));
+        $product->forceFill(['description_html' => $hit['_source']['description']]);
 
         if ($hit['_source']['cover'] !== null) {
             $media = new Media();
@@ -362,5 +374,19 @@ class ProductRepository implements ProductRepositoryContract
     {
         $term = Exists::field('cover');
         return $query->filter($value ? $term : Invert::query($term));
+    }
+
+    private function handleElastic400(BadRequest400Exception $exception): void {
+        $error = Str::of($exception->getMessage());
+
+        if ($error->contains('] in order to sort on')) {
+            throw new ClientException(
+                'Cannot sort by ' . $error
+                    ->after('No mapping found for [')
+                    ->before('] in order to sort on'),
+            );
+        }
+
+        throw new ServerException('Not found mapping for this query');
     }
 }

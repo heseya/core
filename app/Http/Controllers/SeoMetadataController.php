@@ -8,8 +8,8 @@ use App\Http\Requests\SeoKeywordsRequest;
 use App\Http\Requests\SeoRequest;
 use App\Http\Resources\SeoKeywordsResource;
 use App\Http\Resources\SeoMetadataResource;
-use App\Models\SeoMetadata;
 use App\Services\Contracts\SeoMetadataServiceContract;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class SeoMetadataController extends Controller
@@ -19,20 +19,26 @@ class SeoMetadataController extends Controller
     ) {
     }
 
-    public function show(SeoMetadata $seoMetadata): JsonResource
+    public function show(): JsonResponse
     {
-        return SeoMetadataResource::make($this->seoMetadataService->show());
+        return SeoMetadataResource::make($this->seoMetadataService->show())
+            ->response()
+            ->setStatusCode(200);
     }
 
     public function createOrUpdate(SeoRequest $request): JsonResource
     {
         $seo = SeoMetadataDto::instantiateFromRequest($request);
+
         return SeoMetadataResource::make($this->seoMetadataService->createOrUpdate($seo));
     }
 
     public function checkKeywords(SeoKeywordsRequest $request): JsonResource
     {
-        $seo_list = $this->seoMetadataService->checkKeywords(SeoKeywordsDto::instantiateFromRequest($request));
-        return SeoKeywordsResource::make($seo_list);
+        $seoCollection = $this->seoMetadataService->checkKeywords(
+            SeoKeywordsDto::instantiateFromRequest($request),
+        );
+
+        return SeoKeywordsResource::make($seoCollection);
     }
 }

@@ -6,7 +6,6 @@ use App\Http\Requests\Contracts\MetadataRequestContract;
 use App\Http\Requests\Contracts\SeoRequestContract;
 use App\Rules\AttributeOptionExist;
 use App\Rules\Boolean;
-use App\Rules\GoogleProductCategoryExist;
 use App\Rules\ProductAttributeOptions;
 use App\Rules\UniqueIdInRequest;
 use App\Traits\BooleanRules;
@@ -63,7 +62,6 @@ class ProductCreateRequest extends FormRequest implements SeoRequestContract, Me
                 'google_product_category' => [
                     'nullable',
                     'integer',
-                    new GoogleProductCategoryExist(),
                 ],
             ],
         );

@@ -6,6 +6,7 @@ use App\Criteria\ConsentIdSearch;
 use App\Criteria\ConsentNameSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
+use App\Criteria\RolesSearch;
 use App\Criteria\UserSearch;
 use App\Criteria\WhereInIds;
 use App\Enums\SavedAddressType;
@@ -23,6 +24,7 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -70,6 +72,7 @@ class User extends Model implements
         'tfa_type',
         'tfa_secret',
         'is_tfa_active',
+        'preferences_id',
     ];
 
     protected $hidden = [
@@ -86,6 +89,7 @@ class User extends Model implements
         'metadata_private' => MetadataPrivateSearch::class,
         'consent_name' => ConsentNameSearch::class,
         'consent_id' => ConsentIdSearch::class,
+        'roles' => RolesSearch::class,
     ];
 
     protected array $sortable = [
@@ -143,6 +147,21 @@ class User extends Model implements
     public function securityCodes(): HasMany
     {
         return $this->hasMany(OneTimeSecurityCode::class, 'user_id', 'id');
+    }
+
+    public function wishlistProducts(): MorphMany
+    {
+        return $this->morphMany(WishlistProduct::class, 'user');
+    }
+
+    public function preferences(): BelongsTo
+    {
+        return $this->belongsTo(UserPreference::class, 'preferences_id');
+    }
+
+    public function loginAttempts(): HasMany
+    {
+        return $this->hasMany(UserLoginAttempt::class, 'user_id', 'id');
     }
 
     public function providers(): HasMany

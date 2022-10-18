@@ -66,9 +66,10 @@ class TimeFormatTest extends TestCase
         $item = Item::factory()->create();
         $deposit = Deposit::factory()->create([
             'item_id' => $item->getKey(),
+            'shipping_date' => Carbon::now()->addDay(),
         ]);
 
-        $this->modelTimeFormat($deposit, ['created_at', 'updated_at']);
+        $this->modelTimeFormat($deposit, ['created_at', 'updated_at', 'shipping_date']);
     }
 
     public function testDiscountTimeFormat(): void
@@ -86,10 +87,19 @@ class TimeFormatTest extends TestCase
     public function testItemTimeFormat(): void
     {
         /** @var Item $item */
-        $item = Item::factory()->create();
+        $item = Item::factory()->create([
+            'shipping_date' => Carbon::now()->addDay(),
+            'unlimited_stock_shipping_date' => Carbon::now()->addDay(),
+        ]);
         $item->delete();
 
-        $this->modelTimeFormat($item, ['created_at', 'updated_at', 'deleted_at']);
+        $this->modelTimeFormat($item, [
+            'created_at',
+            'updated_at',
+            'deleted_at',
+            'shipping_date',
+            'unlimited_stock_shipping_date',
+        ]);
     }
 
     public function testMediaTimeFormat(): void
@@ -202,7 +212,11 @@ class TimeFormatTest extends TestCase
 
     public function testProductTimeFormat(): void
     {
-        $this->modelTimeFormat(Product::factory()->create(), ['created_at', 'updated_at']);
+        $product = Product::factory()->create([
+            'shipping_date' => Carbon::now()->addDay(),
+        ]);
+
+        $this->modelTimeFormat($product, ['created_at', 'updated_at', 'shipping_date']);
     }
 
     public function testProductSetTimeFormat(): void

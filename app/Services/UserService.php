@@ -11,6 +11,7 @@ use App\Events\UserUpdated;
 use App\Exceptions\ClientException;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserPreference;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\UserServiceContract;
 use Heseya\Dto\Missing;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 
 class UserService implements UserServiceContract
@@ -26,12 +28,12 @@ class UserService implements UserServiceContract
     {
     }
 
-    public function index(array $search, ?string $sort, int $limit): LengthAwarePaginator
+    public function index(array $search, ?string $sort): LengthAwarePaginator
     {
         return User::searchByCriteria($search)
             ->sort($sort)
             ->with('metadata')
-            ->paginate($limit);
+            ->paginate(Config::get('pagination.per_page'));
     }
 
     public function create(UserDto $dto): User
@@ -56,11 +58,18 @@ class UserService implements UserServiceContract
             'password' => Hash::make($dto->getPassword()),
         ]);
 
+        $preferences = UserPreference::create();
+        $preferences->refresh();
+
+        $user->preferences()->associate($preferences);
+
         $user->syncRoles($roleModels);
 
         if (!($dto->getMetadata() instanceof Missing)) {
             $this->metadataService->sync($user, $dto->getMetadata());
         }
+
+        $user->save();
 
         UserCreated::dispatch($user);
 

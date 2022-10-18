@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Criteria\AttributeOptionSearch;
 use App\Criteria\MetadataPrivateSearch;
 use App\Criteria\MetadataSearch;
 use App\Traits\HasMetadata;
@@ -36,6 +37,7 @@ class AttributeOption extends Model
     ];
 
     protected array $criteria = [
+        'search' => AttributeOptionSearch::class,
         'metadata' => MetadataSearch::class,
         'metadata_private' => MetadataPrivateSearch::class,
         'name' => Like::class,

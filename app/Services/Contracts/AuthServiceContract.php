@@ -6,6 +6,7 @@ use App\Dtos\RegisterDto;
 use App\Dtos\TFAConfirmDto;
 use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
+use App\Dtos\UpdateProfileDto;
 use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 
@@ -47,5 +48,5 @@ interface AuthServiceContract
 
     public function register(RegisterDto $dto): User;
 
-    public function updateProfile(?string $name, array $consents): User;
+    public function updateProfile(UpdateProfileDto $dto): User;
 }

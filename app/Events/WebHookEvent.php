@@ -18,25 +18,31 @@ abstract class WebHookEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    protected bool $encrypted;
     protected string $triggered_at;
     protected Authenticatable|Model|Pivot|null $issuer;
 
     public function __construct()
     {
+        $user = Auth::user();
+
+        $this->encrypted = false;
         $this->triggered_at = Carbon::now()->format('c');
-        $this->issuer = Auth::user()?->getAuthIdentifier() ? Auth::user() : null;
+        // Check if the user is logged in and has an ID (Unauthorized user doesn't have).
+        $this->issuer = $user?->getAuthIdentifier() ? $user : null;
     }
 
     public function getData(): array
     {
         return [
-            'data' => $this->getDataContent(),
-            'data_type' => $this->getDataType(),
             'event' => $this->getEvent(),
             'triggered_at' => $this->triggered_at,
-            'issuer_type' => $this->issuer ? IssuerType::getValue(strtoupper($this->getModelClass($this->issuer)))
+            'issuer_type' => $this->issuer
+                ? IssuerType::getValue(strtoupper($this->getModelClass($this->issuer)))
                 : IssuerType::UNAUTHENTICATED,
             'api_url' => Config::get('app.url'),
+            'data_type' => $this->getDataType(),
+            'data' => $this->getDataContent(),
         ];
     }
 
@@ -52,6 +58,11 @@ abstract class WebHookEvent
     public function isHidden(): bool
     {
         return false;
+    }
+
+    public function isEncrypted(): bool
+    {
+        return $this->encrypted;
     }
 
     public function getEvent(): string

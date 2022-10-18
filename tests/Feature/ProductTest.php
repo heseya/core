@@ -2202,7 +2202,8 @@ class ProductTest extends TestCase
             'google_product_category' => 123456,
         ]);
 
-        $response->assertUnprocessable();
+        // no validation
+        $response->assertCreated();
     }
 
     /**
@@ -2807,7 +2808,7 @@ class ProductTest extends TestCase
             'google_product_category' => 123456789,
         ]);
 
-        $response->assertUnprocessable();
+        $response->assertOk();
     }
 
     /**
@@ -3080,5 +3081,78 @@ class ProductTest extends TestCase
                 && $payload['data_type'] === 'Product'
                 && $payload['event'] === 'ProductDeleted';
         });
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductHasSchemaOnSchemaDelete($user): void
+    {
+        $this->$user->givePermissionTo('schemas.remove');
+
+        Schema::query()->delete();
+        $schema = Schema::factory()->create([
+            'name' => 'test schema',
+        ]);
+
+        $this->product->schemas()->save($schema);
+        $this->product->update(['has_schemas' => true]);
+
+        $this->actingAs($this->$user)->json('delete', 'schemas/id:' . $schema->getKey());
+
+        $this->assertDatabaseHas('products', [
+            'id' => $this->product->getKey(),
+            'has_schemas' => false,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductHasSchemaOnSchemaAdded($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        Schema::query()->delete();
+        $schema = Schema::factory()->create([
+            'name' => 'test schema',
+        ]);
+
+        $this->actingAs($this->$user)->json('patch', 'products/id:' . $this->product->getKey(), [
+            'schemas' => [
+                $schema->getKey(),
+            ],
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $this->product->getKey(),
+            'has_schemas' => true,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductHasSchemaOnSchemasRemovedFromProduct($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        Schema::query()->delete();
+        $schema = Schema::factory()->create([
+            'name' => 'test schema',
+        ]);
+
+        $this->product->schemas()->save($schema);
+
+        $this->product->update(['has_schemas' => true]);
+
+        $this->actingAs($this->$user)->json('patch', 'products/id:' . $this->product->getKey(), [
+            'schemas' => [],
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $this->product->getKey(),
+            'has_schemas' => false,
+        ]);
     }
 }

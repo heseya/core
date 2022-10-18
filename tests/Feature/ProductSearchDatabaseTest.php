@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Attribute;
+use App\Models\AttributeOption;
 use App\Models\Media;
 use App\Models\Product;
 use App\Models\ProductSet;
@@ -342,16 +344,58 @@ class ProductSearchDatabaseTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-//    public function testSearchByParentSet($user): void
-//    {
-//        $this->$user->givePermissionTo('products.show');
-//
-//        $this
-//            ->getProductsByParentSet($this->$user, true, $product)
-//            ->assertOk()
-//            ->assertJsonCount(1, 'data')
-//            ->assertJsonFragment(['id' => $product->getKey()]);
-//    }
+    public function testSearchByParentSet($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $this
+            ->getProductsByParentSet($this->$user, true, $product)
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $product->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByGrandParentSet($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $grandParentSet = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $parentSet = ProductSet::factory()->create([
+            'parent_id' => $grandParentSet->getKey(),
+            'public' => true,
+        ]);
+
+        $childSet = ProductSet::factory()->create([
+            'parent_id' => $parentSet->getKey(),
+            'public' => true,
+        ]);
+
+        $productRef = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        // Product not in set
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $childSet->products()->attach($productRef);
+
+        $this->actingAs($this->$user)
+            ->json('GET', '/products', ['sets' => [$grandParentSet->slug]])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $productRef->getKey()]);
+        // + 1 additional query per nesting level
+        $this->assertQueryCountLessThan(20);
+    }
+
     /**
      * @dataProvider authProvider
      */
@@ -368,19 +412,19 @@ class ProductSearchDatabaseTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-//    public function testSearchByParentSetWithPrivateChild($user): void
-//    {
-//        $this->$user->givePermissionTo([
-//            'products.show',
-//            'product_sets.show_hidden',
-//        ]);
-//
-//        $this
-//            ->getProductsByParentSet($this->$user, false, $product)
-//            ->assertOk()
-//            ->assertJsonCount(1, 'data')
-//            ->assertJsonFragment(['id' => $product->getKey()]);
-//    }
+    public function testSearchByParentSetWithPrivateChild($user): void
+    {
+        $this->$user->givePermissionTo([
+            'products.show',
+            'product_sets.show_hidden',
+        ]);
+
+        $this
+            ->getProductsByParentSet($this->$user, false, $product)
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $product->getKey()]);
+    }
 
     /**
      * @dataProvider authProvider
@@ -634,6 +678,653 @@ class ProductSearchDatabaseTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['id' => $productPhoto->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByAttributeId($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $products = Product::factory()->count(2)->create([
+            'public' => true,
+        ]);
+
+        $attribute = Attribute::factory()->create([
+            'name' => 'Serie',
+            'slug' => 'serie',
+            'sortable' => 1,
+            'type' => 'multi-choice-option',
+        ]);
+
+        $options = AttributeOption::factory()->count(2)->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+        ]);
+
+        $products[0]->attributes()->attach($attribute->getKey());
+        $products[0]->attributes->first()->pivot->options()->attach($options[0]->getKey());
+
+        $products[1]->attributes()->attach($attribute->getKey());
+        $products[1]->attributes->first()->pivot->options()->attach($options[1]->getKey());
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => $options[0]->getKey(),
+                    ],
+                ]
+            )
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'name' => $attribute->name,
+            ])
+            ->assertJsonFragment([
+                'id' => $options[0]->getKey(),
+                'name' => $options[0]->name,
+            ])
+            ->assertJsonMissing([
+                'id' => $options[1]->getKey(),
+                'name' => $options[1]->name,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByAttributeNumber($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $products = Product::factory()->count(2)->create([
+            'public' => true,
+        ]);
+
+        $attribute = Attribute::factory()->create([
+            'name' => 'Ilość stron',
+            'slug' => 'ilosc-stron',
+            'sortable' => 1,
+            'type' => 'number',
+        ]);
+
+        $option1 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'value_number' => 1437,
+        ]);
+
+        $option2 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'value_number' => 2237,
+        ]);
+
+        $products[0]->attributes()->attach($attribute->getKey());
+        $products[0]->attributes->first()->pivot->options()->attach($option1->getKey());
+
+        $products[1]->attributes()->attach($attribute->getKey());
+        $products[1]->attributes->first()->pivot->options()->attach($option2->getKey());
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => [
+                            'min' => 1337,
+                            'max' => 2137,
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'name' => $attribute->name,
+            ])
+            ->assertJsonFragment([
+                'id' => $option1->getKey(),
+                'value_number' => $option1->value_number,
+            ])
+            ->assertJsonMissing([
+                'id' => $option2->getKey(),
+                'value_number' => $option2->value_number,
+            ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => [
+                            'min' => 1337,
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'name' => $attribute->name,
+            ])
+            ->assertJsonFragment([
+                'id' => $option1->getKey(),
+                'value_number' => $option1->value_number,
+            ])
+            ->assertJsonFragment([
+                'id' => $option2->getKey(),
+                'value_number' => $option2->value_number,
+            ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => [
+                            'min' => 2337,
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => [
+                            'max' => 1337,
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByAttributeDate($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $products = Product::factory()->count(2)->create([
+            'public' => true,
+        ]);
+
+        $attribute = Attribute::factory()->create([
+            'name' => 'Data wydania',
+            'slug' => 'data-wydania',
+            'sortable' => 1,
+            'type' => 'date',
+        ]);
+
+        $option1 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'value_date' => '2022-09-11',
+        ]);
+
+        $option2 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'value_date' => '2022-11-11',
+        ]);
+
+        $products[0]->attributes()->attach($attribute->getKey());
+        $products[0]->attributes->first()->pivot->options()->attach($option1->getKey());
+
+        $products[1]->attributes()->attach($attribute->getKey());
+        $products[1]->attributes->first()->pivot->options()->attach($option2->getKey());
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => [
+                            'min' => '2022-09-01',
+                            'max' => '2022-09-30',
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'name' => $attribute->name,
+            ])
+            ->assertJsonFragment([
+                'id' => $option1->getKey(),
+                'value_date' => $option1->value_date,
+            ])
+            ->assertJsonMissing([
+                'id' => $option2->getKey(),
+                'value_date' => $option2->value_date,
+            ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => [
+                            'min' => '2022-09-01',
+                            'max' => '2022-11-30',
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'name' => $attribute->name,
+            ])
+            ->assertJsonFragment([
+                'id' => $option1->getKey(),
+                'value_date' => $option1->value_date,
+            ])
+            ->assertJsonFragment([
+                'id' => $option2->getKey(),
+                'value_date' => $option2->value_date,
+            ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => [
+                            'min' => '2022-12-01',
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute' => [
+                        $attribute->slug => [
+                            'max' => '2022-09-10',
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByAttributeNotId($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $products = Product::factory()->count(2)->create([
+            'public' => true,
+        ]);
+
+        $attribute = Attribute::factory()->create([
+            'name' => 'Serie',
+            'slug' => 'serie',
+            'sortable' => 1,
+            'type' => 'multi-choice-option',
+        ]);
+
+        $options = AttributeOption::factory()->count(2)->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+        ]);
+
+        $products[0]->attributes()->attach($attribute->getKey());
+        $products[0]->attributes->first()->pivot->options()->attach($options[0]->getKey());
+
+        $products[1]->attributes()->attach($attribute->getKey());
+        $products[1]->attributes->first()->pivot->options()->attach($options[1]->getKey());
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute_not' => [
+                        $attribute->slug => $options[0]->getKey(),
+                    ],
+                ]
+            )
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonMissing([
+                'id' => $products[0]->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $products[1]->getKey(),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByAttributeNotNumber($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $products = Product::factory()->count(2)->create([
+            'public' => true,
+        ]);
+
+        $attribute = Attribute::factory()->create([
+            'name' => 'Ilość stron',
+            'slug' => 'ilosc-stron',
+            'sortable' => 1,
+            'type' => 'number',
+        ]);
+
+        $option1 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'value_number' => 1437,
+        ]);
+
+        $option2 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'value_number' => 2237,
+        ]);
+
+        $products[0]->attributes()->attach($attribute->getKey());
+        $products[0]->attributes->first()->pivot->options()->attach($option1->getKey());
+
+        $products[1]->attributes()->attach($attribute->getKey());
+        $products[1]->attributes->first()->pivot->options()->attach($option2->getKey());
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute_not' => [
+                        $attribute->slug => [
+                            'min' => 1337,
+                            'max' => 2137,
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonMissing([
+                'id' => $products[0]->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $products[1]->getKey(),
+            ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute_not' => [
+                        $attribute->slug => [
+                            'min' => 1337,
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute_not' => [
+                        $attribute->slug => [
+                            'min' => 2337,
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $products[0]->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $products[1]->getKey(),
+            ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute_not' => [
+                        $attribute->slug => [
+                            'max' => 1337,
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $products[0]->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $products[1]->getKey(),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByAttributeNotDate($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $products = Product::factory()->count(2)->create([
+            'public' => true,
+        ]);
+
+        $attribute = Attribute::factory()->create([
+            'name' => 'Data wydania',
+            'slug' => 'data-wydania',
+            'sortable' => 1,
+            'type' => 'date',
+        ]);
+
+        $option1 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'value_date' => '2022-09-11',
+        ]);
+
+        $option2 = AttributeOption::factory()->create([
+            'attribute_id' => $attribute->getKey(),
+            'index' => 1,
+            'value_date' => '2022-11-11',
+        ]);
+
+        $products[0]->attributes()->attach($attribute->getKey());
+        $products[0]->attributes->first()->pivot->options()->attach($option1->getKey());
+
+        $products[1]->attributes()->attach($attribute->getKey());
+        $products[1]->attributes->first()->pivot->options()->attach($option2->getKey());
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute_not' => [
+                        $attribute->slug => [
+                            'min' => '2022-09-01',
+                            'max' => '2022-09-30',
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonMissing([
+                'id' => $products[0]->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $products[1]->getKey(),
+            ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute_not' => [
+                        $attribute->slug => [
+                            'min' => '2022-09-01',
+                            'max' => '2022-11-30',
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute_not' => [
+                        $attribute->slug => [
+                            'min' => '2022-12-01',
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $products[0]->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $products[1]->getKey(),
+            ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'GET',
+                '/products',
+                [
+                    'attribute_not' => [
+                        $attribute->slug => [
+                            'max' => '2022-09-10',
+                        ],
+                    ],
+                ]
+            )
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonFragment([
+                'id' => $products[0]->getKey(),
+            ])
+            ->assertJsonFragment([
+                'id' => $products[1]->getKey(),
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSortBySetOrder($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $product1 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $product2 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $product3 = Product::factory()->create([
+            'public' => true,
+        ]);
+        $set = ProductSet::factory()->create([
+            'slug' => 'test',
+            'public' => true,
+            'hide_on_index' => false,
+        ]);
+        $set->products()->sync([
+            $product1->getKey() => ['order' => 1],
+            $product2->getKey() => ['order' => 2],
+            $product3->getKey() => ['order' => 3],
+        ]);
+
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['sort' => 'set.test', 'sets[]' => 'test']);
+        $response
+            ->assertOk()
+            ->assertJsonCount(3, 'data');
+
+        $data = $response->getData()->data;
+        $this->assertEquals($product1->getKey(), $data[0]->id);
+        $this->assertEquals($product2->getKey(), $data[1]->id);
+        $this->assertEquals($product3->getKey(), $data[2]->id);
+
+        $this->assertQueryCountLessThan(20);
+
+        // desc
+        $response = $this
+            ->actingAs($this->$user)
+            ->json('GET', '/products', ['sort' => 'set.test:desc', 'sets[]' => 'test']);
+
+        $data = $response->getData()->data;
+        $this->assertEquals($product1->getKey(), $data[2]->id);
+        $this->assertEquals($product2->getKey(), $data[1]->id);
+        $this->assertEquals($product3->getKey(), $data[0]->id);
     }
 
     private function getProductsByParentSet(

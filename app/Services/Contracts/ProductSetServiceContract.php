@@ -19,7 +19,7 @@ interface ProductSetServiceContract
 
     public function update(ProductSet $set, ProductSetUpdateDto $dto): ProductSet;
 
-    public function reorder(ProductSet $parent, array $sets): void;
+    public function reorder(array $sets, ProductSet|null $parent = null): void;
 
     public function updateChildren(
         Collection $children,
@@ -36,7 +36,9 @@ interface ProductSetServiceContract
 
     public function flattenParentsSetsTree(Collection $sets): Collection;
 
-    public function attach(ProductSet $set, array $products): Collection;
+    public function attach(ProductSet $set, array $productsIds): Collection;
 
     public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void;
+
+    public function indexAllProducts(ProductSet $set): void;
 }

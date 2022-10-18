@@ -3,7 +3,7 @@ GoogleCategory:
   properties:
     id:
       type: number
-      example: 1623
+      example: 2271
     name:
       type: string
-      example: test
+      example: 'Apparel & Accessories > Clothing > Dresses'

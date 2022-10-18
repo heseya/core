@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\ProductSet;
 use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -31,13 +32,18 @@ class ProductResource extends Resource
             'shipping_date' => $this->resource->shipping_date,
             'cover' => MediaResource::make($this->resource->media->first()),
             'tags' => TagResource::collection($this->resource->tags),
+            'has_schemas' => $this->resource->has_schemas,
+            'quantity' => $this->resource->quantity,
         ], $this->metadataResource('products.show_metadata_private'));
     }
 
     public function view(Request $request): array
     {
         $sets = Gate::denies('product_sets.show_hidden')
-            ? $this->resource->sets()->public()->get() : $this->resource->sets;
+            ? $this->resource->sets->filter(
+                fn (ProductSet $set) => $set->public === true && $set->public_parent === true
+            )
+            : $this->resource->sets;
 
         $sales = $this->resource->sales ? ['sales' => SaleResource::collection($this->resource->sales)] : [];
 
@@ -52,6 +58,7 @@ class ProductResource extends Resource
             'sets' => ProductSetResource::collection($sets),
             'attributes' => ProductAttributeResource::collection($this->resource->attributes),
             'seo' => SeoMetadataResource::make($this->resource->seo),
+            'availability' => ProductAvailabilityResource::collection($this->resource->productAvailabilities),
         ] + $sales;
     }
 

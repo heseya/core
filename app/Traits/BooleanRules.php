@@ -38,7 +38,7 @@ trait BooleanRules
     private function toBooleanArrayInPath(string $fieldPath, string $fieldAfter, array $data): array
     {
         // Check if request array has given field
-        if (Arr::has($data, $fieldPath)) {
+        if (Arr::has($data, $fieldPath) && Arr::get($data, $fieldPath) !== null) {
             if (Str::contains($fieldAfter, '*')) {
                 $before = Str::before($fieldAfter, '.*');
                 $after = Str::after($fieldAfter, $before);

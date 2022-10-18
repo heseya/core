@@ -11,6 +11,7 @@ class WebHookIndexRequest extends FormRequest
         return [
             'name' => ['nullable', 'string', 'max:255'],
             'url' => ['nullable', 'string', 'max:255'],
+            'search' => ['nullable', 'string', 'max:255'],
         ];
     }
 }
