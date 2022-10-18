@@ -175,4 +175,15 @@ class ProductSet extends Model
             fn (Builder $builder) => $builder->orderBy('product_sets.order'),
         );
     }
+
+    public function allChildrenIds(string $relation): Collection
+    {
+        $result = $this->$relation->pluck('id');
+
+        foreach ($this->$relation as $child) {
+            $result = $result->merge($child->allChildrenIds($relation));
+        }
+
+        return $result->unique();
+    }
 }
