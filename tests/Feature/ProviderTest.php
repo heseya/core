@@ -138,11 +138,13 @@ class ProviderTest extends TestCase
             ->actingAs($this->$user)
             ->getJson('auth/providers/facebook')
             ->assertJson([
-                'id' => $provider->getKey(),
-                'key' => $provider->key,
-                'active' => $provider->active,
-                'client_id' => $provider->client_id,
-                'client_secret' => $provider->client_secret,
+                'data' => [
+                    'id' => $provider->getKey(),
+                    'key' => $provider->key,
+                    'active' => $provider->active,
+                    'client_id' => $provider->client_id,
+                    'client_secret' => $provider->client_secret,
+                ],
             ]);
     }
 
@@ -155,9 +157,11 @@ class ProviderTest extends TestCase
         $this
             ->getJson('auth/providers/facebook')
             ->assertJson([
-                'id' => $provider->getKey(),
-                'key' => $provider->key,
-                'active' => $provider->active,
+                'data' => [
+                    'id' => $provider->getKey(),
+                    'key' => $provider->key,
+                    'active' => $provider->active,
+                ],
             ])
             ->assertJsonMissing([
                 'client_id' => $provider->client_id,

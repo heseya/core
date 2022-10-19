@@ -3,6 +3,13 @@ ProviderLogin:
     tags:
       - Auth
     summary: Login
+    parameters:
+      - name: AuthProviderKey
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [ 'facebook', 'google', 'apple', 'github', 'gitlab', 'bitbucket', 'linkedin' ]
     requestBody:
       content:
         application/json:
@@ -39,6 +46,13 @@ ProviderRedirect:
     tags:
       - Auth
     summary: Redirect to auth provider login
+    parameters:
+      - name: AuthProviderKey
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [ 'facebook', 'google', 'apple', 'github', 'gitlab', 'bitbucket', 'linkedin' ]
     requestBody:
       content:
         application/json:
@@ -93,6 +107,13 @@ ProviderParams:
     tags:
       - Auth
     summary: 'Gets provider'
+    parameters:
+      - name: AuthProviderKey
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [ 'facebook', 'google', 'apple', 'github', 'gitlab', 'bitbucket', 'linkedin' ]
     responses:
       200:
         description: Success
@@ -109,6 +130,13 @@ ProviderParams:
     tags:
       - Auth
     summary: 'Updates provider'
+    parameters:
+      - name: AuthProviderKey
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [ 'facebook', 'google', 'apple', 'github', 'gitlab', 'bitbucket', 'linkedin' ]
     requestBody:
       content:
         application/json:
