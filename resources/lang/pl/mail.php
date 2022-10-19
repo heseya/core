@@ -25,7 +25,8 @@ return [
     'phone' => 'Telefon kontaktowy',
     'regards' => 'Pozdrawiamy',
     'team' => 'zespół :team',
-    'order-created' => 'Dziękujemy za złożenie zamówienia. Otrzymasz osobną wiadomość e-mail, gdy status ulegnie zmianie.',
+    'order-created' => 'Dziękujemy za złożenie zamówienia.
+        Otrzymasz osobną wiadomość e-mail, gdy status ulegnie zmianie.',
 
     // status changed
     'subject-status-changed' => 'Status zamówienia :number został zmieniony',
