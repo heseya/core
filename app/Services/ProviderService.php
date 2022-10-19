@@ -59,13 +59,7 @@ class ProviderService implements ProviderServiceContract
     public function getProvider(string $authProviderKey): ?AuthProvider
     {
         $providerEnum = AuthProviderKey::fromValue($authProviderKey);
-        $providerQuery = AuthProvider::query()->where('key', $providerEnum->value);
-
-        if ($providerQuery->exists()) {
-            return $providerQuery->first();
-        }
-
-        return null;
+        return AuthProvider::query()->where('key', $providerEnum->value)->first();
     }
 
     public function update(AuthProviderDto $dto, AuthProvider $provider): AuthProvider
