@@ -34,6 +34,7 @@ class ProductResource extends Resource
             'tags' => TagResource::collection($this->resource->tags),
             'has_schemas' => $this->resource->has_schemas,
             'quantity' => $this->resource->quantity,
+            'is_digital' => $this->resource->is_digital,
         ], $this->metadataResource('products.show_metadata_private'));
     }
 
