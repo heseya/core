@@ -13,7 +13,7 @@ class ShippingMethodDto extends Dto
 {
     protected string $name;
     protected bool $public;
-    protected bool $black_list;
+    protected bool $block_list;
     protected ?array $payment_methods;
     protected ?array $countries;
     protected ?array $price_ranges;
@@ -30,7 +30,7 @@ class ShippingMethodDto extends Dto
         return new self(
             name: $request->input('name'),
             public: $request->boolean('public'),
-            black_list: $request->boolean('black_list'),
+            block_list: $request->boolean('block_list'),
             payment_methods: $request->input('payment_methods'),
             countries: $request->input('countries'),
             price_ranges: $request->input('price_ranges'),
@@ -53,9 +53,9 @@ class ShippingMethodDto extends Dto
         return $this->public;
     }
 
-    public function isBlackList(): bool
+    public function isBlockList(): bool
     {
-        return $this->black_list;
+        return $this->block_list;
     }
 
     public function getPaymentMethods(): ?array

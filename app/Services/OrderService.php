@@ -17,6 +17,7 @@ use App\Models\ShippingMethod;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Exception;
+use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -53,10 +54,12 @@ class OrderService implements OrderServiceContract
     public function update(OrderUpdateDto $dto, Order $order): JsonResponse
     {
         DB::beginTransaction();
-
         try {
-            $shippingType = ShippingMethod::find($dto->getShippingMethodId())->shipping_type ??
-                $order->shippingMethod->shipping_type;
+            if (!($dto->getShippingMethodId() instanceof Missing) && $dto->getShippingMethodId() !== null) {
+                $shippingType = ShippingMethod::find($dto->getShippingMethodId())->shipping_type;
+            } else {
+                $shippingType = $order->shippingMethod->shipping_type;
+            }
 
             if ($shippingType !== ShippingType::POINT) {
                 $shippingPlace = $dto->getShippingPlace() instanceof AddressDto ?
@@ -66,7 +69,11 @@ class OrderService implements OrderServiceContract
                         $dto->getShippingPlace(),
                     ) : $dto->getShippingPlace();
             } else {
-                $shippingPlace = Address::find($dto->getShippingPlace())->getKey();
+                if (!($dto->getShippingPlace() instanceof Missing)) {
+                    $shippingPlace = Address::find($dto->getShippingPlace())->getKey();
+                } else {
+                    $shippingPlace = null;
+                }
             }
 
             $billingAddress = $this->modifyAddress(
@@ -74,7 +81,6 @@ class OrderService implements OrderServiceContract
                 'billing_address_id',
                 $dto->getBillingAddress(),
             );
-
             $order->update([
                 'email' => $dto->getEmail() ?? $order->email,
                 'comment' => $dto->getComment() ?? $order->comment,
@@ -83,12 +89,14 @@ class OrderService implements OrderServiceContract
                     (is_object($dto->getBillingAddress()) ? null : $order->billing_address_id) :
                     $billingAddress->getKey(),
                 'invoice_requested' => $dto->getInvoiceRequested(),
-                'shipping_place' => $this->resolveShippingPlace($shippingPlace, $shippingType, $order),
+                'shipping_place' => $dto->getShippingPlace() !== null ?
+                    $this->resolveShippingPlace($shippingPlace, $shippingType, $order)
+                    : $order->shipping_place,
                 'shipping_type' => $shippingType ?? $order->shipping_type,
             ]);
-
             DB::commit();
 
+            $order->refresh();
             OrderUpdated::dispatch($order);
 
             return OrderResource::make($order)->response();
@@ -143,10 +151,14 @@ class OrderService implements OrderServiceContract
     }
 
     private function resolveShippingAddress(
-        Address|string|null $shippingPlace,
+        Address|string|null|Missing $shippingPlace,
         string $shippingType,
         Order $order
     ): ?string {
+        if ($shippingPlace instanceof Missing && $shippingType !== ShippingType::NONE) {
+            return $order->shipping_address_id;
+        }
+
         switch ($shippingType) {
             case ShippingType::POINT:
                 if ($order->shippingMethod->shipping_type === ShippingType::POINT && !$shippingPlace) {
@@ -166,19 +178,17 @@ class OrderService implements OrderServiceContract
     }
 
     private function resolveShippingPlace(
-        Address|string|null $shippingPlace,
+        Address|string|null|Missing $shippingPlace,
         string $shippingType,
         Order $order
     ): ?string {
-        switch ($shippingType) {
-            case ShippingType::POINT_EXTERNAL:
-                if ($order->shippingMethod->shipping_type === ShippingType::POINT && !$shippingPlace) {
-                    return $order->shipping_place;
-                }
-
-                return $shippingPlace;
-            default:
-                return null;
+        if ($shippingPlace instanceof Missing) {
+            return $order->shipping_place;
         }
+
+        return match ($shippingType) {
+            ShippingType::POINT_EXTERNAL => $shippingPlace,
+            default => null,
+        };
     }
 }
