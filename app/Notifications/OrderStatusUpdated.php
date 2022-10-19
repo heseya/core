@@ -32,7 +32,7 @@ class OrderStatusUpdated extends Notification
     public function toMail(mixed $notifiable): MailMessage
     {
         return (new MailMessage())
-            ->subject(Lang::get('subject-status-updated', ['number' => $this->order->code], $this->locale))
+            ->subject(Lang::get('mail.subject-status-changed', ['number' => $this->order->code], $this->locale))
             ->view('mail.status-change', [
                 'order' => $this->order,
             ]);
