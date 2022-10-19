@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Lang;
 
 class ResetPassword extends Notification
 {
@@ -41,7 +42,7 @@ class ResetPassword extends Notification
         ]);
 
         return (new MailMessage())
-            ->subject('Wniosek o zmianę hasła')
+            ->subject(Lang::get('mail.subject-password-reset'))
             ->view('mail.user-password-reset', [
                 'url' => "{$this->redirect_url}?{$param}",
             ]);

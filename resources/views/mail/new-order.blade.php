@@ -170,7 +170,7 @@
                                 <td align="left" style="font-size:0px;padding:10px 25px;padding-top:10px;padding-bottom:10px;word-break:break-word;">
                                     <div style="font-family:Arial, sans-serif;font-size:30px;line-height:22px;text-align:left;color:#55575d;">
                                         <p style="line-height: 30px; margin: 10px 0; text-align: center; color:#000; font-size:22px; font-family:Arial,sans-serif">
-                                            {{ $settingsService->getSetting('mail_order_created')->value }}
+                                            @lang('mail.order-created')
                                         </p>
                                     </div>
                                 </td>
