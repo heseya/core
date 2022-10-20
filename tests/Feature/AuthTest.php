@@ -106,6 +106,33 @@ class AuthTest extends TestCase
             ->assertOk();
     }
 
+    public function testUserAgentLength(): void
+    {
+        $userAgent = 'Mozilla/5.0 (Linux; Android 10; moto e(7) power Build/QOMS30.288-52-10; wv)
+         AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/105.0.5195.136
+         Mobile Safari/537.36 Instagram 255.1.0.17.102
+         Android (29/10; 280dpi; 720x1472; motorola; moto e(7) power; malta; mt6762; pl_PL; 405431925)';
+        $this
+            ->actingAs($this->user)->json(
+                'POST',
+                '/login',
+                [
+                    'email' => $this->user->email,
+                    'password' => $this->password,
+                ],
+                [
+                    'User-Agent' => $userAgent,
+                ],
+            )
+            ->assertOk()
+            ->assertJsonStructure(['data' => $this->expected]);
+
+        $this->assertDatabaseHas('user_login_attempts', [
+            'user_id' => $this->user->getKey(),
+            'user_agent' => $userAgent,
+        ]);
+    }
+
     public function testSuccessfulLoginAttempt(): array
     {
         $this->user->preferences()->update([
