@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Item;
 use App\Models\Product;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class ItemProductTest extends TestCase
@@ -25,7 +24,7 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testStoreProductWithItems($user)
+    public function testStoreProductWithItems($user): void
     {
         $this->$user->givePermissionTo('products.add');
         $response = $this->actingAs($this->$user)->postJson('/products', [
@@ -36,11 +35,11 @@ class ItemProductTest extends TestCase
             'items' => [
                 [
                     'id' => $this->items->first()->getKey(),
-                    'quantity' => 5,
+                    'required_quantity' => 5,
                 ],
                 [
                     'id' => $this->items->last()->getKey(),
-                    'quantity' => 15,
+                    'required_quantity' => 15,
                 ],
             ],
         ]);
@@ -52,7 +51,7 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateProductWithItems($user)
+    public function testUpdateProductWithItems($user): void
     {
         $this->$user->givePermissionTo('products.edit');
         $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
@@ -63,11 +62,11 @@ class ItemProductTest extends TestCase
             'items' => [
                 [
                     'id' => $this->items->first()->getKey(),
-                    'quantity' => 5,
+                    'required_quantity' => 5,
                 ],
                 [
                     'id' => $this->items->last()->getKey(),
-                    'quantity' => 15,
+                    'required_quantity' => 15,
                 ],
             ],
         ]);
@@ -79,7 +78,7 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateProductWithoutItems($user)
+    public function testUpdateProductWithoutItems($user): void
     {
         $this->$user->givePermissionTo('products.edit');
         $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
@@ -96,7 +95,7 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateProductWithEmptyItems($user)
+    public function testUpdateProductWithEmptyItems($user): void
     {
         $this->$user->givePermissionTo('products.edit');
         $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
@@ -115,10 +114,10 @@ class ItemProductTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateProductWithItemsOverride($user)
+    public function testUpdateProductWithItemsOverride($user): void
     {
-        $this->product->items()->attach($this->items->get(0)->getKey(), ['quantity' => 5]);
-        $this->product->items()->attach($this->items->get(1)->getKey(), ['quantity' => 15]);
+        $this->product->items()->attach($this->items->get(0)->getKey(), ['required_quantity' => 5]);
+        $this->product->items()->attach($this->items->get(1)->getKey(), ['required_quantity' => 15]);
 
         $this->$user->givePermissionTo('products.edit');
         $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
@@ -129,7 +128,7 @@ class ItemProductTest extends TestCase
             'items' => [
                 [
                     'id' => $this->items->get(2)->getKey(),
-                    'quantity' => 20,
+                    'required_quantity' => 20,
                 ],
             ],
         ]);
@@ -143,17 +142,17 @@ class ItemProductTest extends TestCase
             ->assertDatabaseHas('item_product', [
                 'item_id' => $this->items->get(2)->getKey(),
                 'product_id' => $this->product->getKey(),
-                'quantity' => 20,
+                'required_quantity' => 20,
             ]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateProductWithClearItems($user)
+    public function testUpdateProductWithClearItems($user): void
     {
-        $this->product->items()->attach($this->items->get(0)->getKey(), ['quantity' => 5]);
-        $this->product->items()->attach($this->items->get(1)->getKey(), ['quantity' => 15]);
+        $this->product->items()->attach($this->items->get(0)->getKey(), ['required_quantity' => 5]);
+        $this->product->items()->attach($this->items->get(1)->getKey(), ['required_quantity' => 15]);
 
         $this->$user->givePermissionTo('products.edit');
         $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
@@ -173,24 +172,25 @@ class ItemProductTest extends TestCase
             ->assertDatabaseMissing('item_product', [
                 'item_id' => $this->items->get(0)->getKey(),
                 'product_id' => $this->product->getKey(),
-                'quantity' => 5,
+                'required_quantity' => 5,
             ])
             ->assertDatabaseMissing('item_product', [
                 'item_id' => $this->items->get(1)->getKey(),
                 'product_id' => $this->product->getKey(),
-                'quantity' => 15,
+                'required_quantity' => 15,
             ]);
     }
 
     /**
      * @dataProvider authProvider
      */
-    public function testUpdateProductWithoutItemsOverride($user)
+    public function testUpdateProductWithoutItemsOverride($user): void
     {
-        $this->product->items()->attach($this->items->get(0)->getKey(), ['quantity' => 5]);
-        $this->product->items()->attach($this->items->get(1)->getKey(), ['quantity' => 15]);
+        $this->product->items()->attach($this->items->get(0)->getKey(), ['required_quantity' => 5]);
+        $this->product->items()->attach($this->items->get(1)->getKey(), ['required_quantity' => 15]);
 
         $this->$user->givePermissionTo('products.edit');
+
         $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
             'name' => 'test',
             'slug' => 'test',
@@ -207,12 +207,35 @@ class ItemProductTest extends TestCase
             ->assertDatabaseHas('item_product', [
                 'item_id' => $this->items->get(0)->getKey(),
                 'product_id' => $this->product->getKey(),
-                'quantity' => 5,
+                'required_quantity' => 5,
             ])
             ->assertDatabaseHas('item_product', [
                 'item_id' => $this->items->get(1)->getKey(),
                 'product_id' => $this->product->getKey(),
-                'quantity' => 15,
+                'required_quantity' => 15,
             ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testProductItemsHasRequiredQuantityInsteadOfQuantity($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $this->product->items()->attach($this->items->get(0)->getKey(), ['required_quantity' => 5]);
+        $this->product->items()->attach($this->items->get(1)->getKey(), ['required_quantity' => 15]);
+
+        $response = $this->actingAs($this->$user)->patchJson('/products/id:' . $this->product->getKey(), [
+            'name' => 'test',
+            'slug' => 'test',
+            'price' => 50,
+            'public' => true,
+        ]);
+
+        $response
+            ->assertJsonFragment(['required_quantity' => 5])
+            ->assertJsonFragment(['required_quantity' => 15])
+            ->assertJsonMissing(['quantity']);
     }
 }

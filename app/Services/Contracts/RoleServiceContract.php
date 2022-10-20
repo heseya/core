@@ -10,7 +10,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface RoleServiceContract
 {
-    public function search(RoleSearchDto $searchDto, int $limit): LengthAwarePaginator;
+    public function search(RoleSearchDto $searchDto): LengthAwarePaginator;
 
     public function create(RoleCreateDto $dto): Role;
 

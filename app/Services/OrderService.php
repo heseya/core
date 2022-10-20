@@ -3,18 +3,33 @@
 namespace App\Services;
 
 use App\Dtos\AddressDto;
+use App\Dtos\CartDto;
+use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
 use App\Dtos\OrderUpdateDto;
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\SchemaType;
 use App\Enums\ShippingType;
+use App\Events\OrderCreated;
 use App\Events\OrderRequestedShipping;
 use App\Events\OrderUpdated;
+use App\Events\OrderUpdatedShippingNumber;
+use App\Exceptions\ClientException;
 use App\Exceptions\OrderException;
+use App\Exceptions\ServerException;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
+use App\Models\CartResource;
 use App\Models\Order;
+use App\Models\OrderProduct;
 use App\Models\PackageTemplate;
 use App\Models\ShippingMethod;
+use App\Models\Status;
+use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
+use App\Services\Contracts\ItemServiceContract;
+use App\Services\Contracts\MetadataServiceContract;
+use App\Services\Contracts\NameServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Exception;
 use Heseya\Dto\Missing;
@@ -24,14 +39,17 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class OrderService implements OrderServiceContract
 {
-    protected DiscountServiceContract $discountService;
-
-    public function __construct(DiscountServiceContract $discountService)
-    {
-        $this->discountService = $discountService;
+    public function __construct(
+        private DiscountServiceContract $discountService,
+        private ItemServiceContract $itemService,
+        private NameServiceContract $nameService,
+        private MetadataServiceContract $metadataService,
+        private DepositServiceContract $depositService
+    ) {
     }
 
     public function calcSummary(Order $order): float
@@ -46,12 +64,142 @@ class OrderService implements OrderServiceContract
             $value -= $this->discountService->calc($cartValue, $discount);
         }
 
-        $value = ($value < 0 ? 0 : $value) + $order->shipping_price;
+        $value = max($value, 0) + $order->shipping_price;
 
-        return round($value, 2);
+        return round($value, 2, PHP_ROUND_HALF_UP);
     }
 
-    public function update(OrderUpdateDto $dto, Order $order): JsonResponse
+    /**
+     * @throws Throwable
+     * @throws OrderException
+     * @throws ServerException
+     */
+    public function store(OrderDto $dto): Order
+    {
+        DB::beginTransaction();
+
+        // Schema values and warehouse items validation
+        $products = $this->itemService->checkOrderItems($dto->getItems());
+
+        // Creating order
+        $shippingMethod = ShippingMethod::findOrFail($dto->getShippingMethodId());
+        $deliveryAddress = Address::firstOrCreate($dto->getDeliveryAddress()->toArray());
+
+        if ($this->checkAddress($dto->getInvoiceAddress())) {
+            $invoiceAddress = Address::firstOrCreate($dto->getInvoiceAddress()->toArray());
+        }
+
+        $status = Status::select('id')->orderBy('order')->first();
+
+        if ($status === null) {
+            throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED);
+        }
+
+        $order = Order::create(
+            $dto->toArray() + [
+                'code' => $this->nameService->generate(),
+                'currency' => 'PLN',
+                'shipping_price_initial' => 0.0,
+                'shipping_price' => 0.0,
+                'cart_total_initial' => 0.0,
+                'cart_total' => 0.0,
+                'status_id' => $status->getKey(),
+                'delivery_address_id' => $deliveryAddress->getKey(),
+                'invoice_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
+                'buyer_id' => Auth::user()->getKey(),
+                'buyer_type' => Auth::user()::class,
+            ]
+        );
+
+        // Add products to order
+        $cartValueInitial = 0;
+        $tempSchemaOrderProduct = [];
+        try {
+            foreach ($dto->getItems() as $item) {
+                $product = $products->firstWhere('id', $item->getProductId());
+
+                $orderProduct = new OrderProduct([
+                    'product_id' => $item->getProductId(),
+                    'quantity' => $item->getQuantity(),
+                    'price_initial' => $product->price,
+                    'price' => $product->price,
+                    'base_price_initial' => $product->price,
+                    'base_price' => $product->price,
+                    'name' => $product->name,
+                    'vat_rate' => $product->vat_rate,
+                ]);
+
+                $order->products()->save($orderProduct);
+                $cartValueInitial += $product->price * $item->getQuantity();
+
+                $schemaProductPrice = 0;
+                // Add schemas to products
+                foreach ($item->getSchemas() as $schemaId => $value) {
+                    $schema = $product->schemas()->findOrFail($schemaId);
+
+                    $price = $schema->getPrice($value, $item->getSchemas());
+
+                    if ($schema->type->is(SchemaType::SELECT)) {
+                        $option = $schema->options()->findOrFail($value);
+                        $tempSchemaOrderProduct[$schema->name . '_' . $item->getProductId()] = [$schemaId, $value];
+                        $value = $option->name;
+                    }
+
+                    $orderProduct->schemas()->create([
+                        'name' => $schema->name,
+                        'value' => $value,
+                        'price_initial' => $price,
+                        'price' => $price,
+                    ]);
+
+                    $schemaProductPrice += $price;
+                    $cartValueInitial += $price * $item->getQuantity();
+                }
+
+                if ($schemaProductPrice) {
+                    $orderProduct->price += $schemaProductPrice;
+                    $orderProduct->price_initial += $schemaProductPrice;
+                    $orderProduct->save();
+                }
+            }
+
+            if (!($dto->getMetadata() instanceof Missing)) {
+                $this->metadataService->sync($order, $dto->getMetadata());
+            }
+
+            $order->cart_total_initial = $cartValueInitial;
+
+            // Apply discounts to order/products
+            $order = $this->discountService->calcOrderProductsAndTotalDiscounts($order, $dto);
+
+            $shippingPrice = $shippingMethod->getPrice($order->cart_total);
+
+            $order->shipping_price_initial = $shippingPrice;
+            $order->shipping_price = $shippingPrice;
+
+            // Apply discounts to order
+            $order = $this->discountService->calcOrderShippingDiscounts($order, $dto);
+
+            foreach ($order->products as $orderProduct) {
+                // Remove items from warehouse
+                if (!$this->removeItemsFromWarehouse($orderProduct, $tempSchemaOrderProduct)) {
+                    throw new OrderException(Exceptions::ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE);
+                }
+            }
+            $order->push();
+        } catch (Throwable $exception) {
+            $order->delete();
+
+            throw $exception;
+        }
+
+        DB::commit();
+        OrderCreated::dispatch($order);
+
+        return $order;
+    }
+
+    public function update(OrderDto $dto, Order $order): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -81,40 +229,55 @@ class OrderService implements OrderServiceContract
                 'billing_address_id',
                 $dto->getBillingAddress(),
             );
-            $order->update([
-                'email' => $dto->getEmail() ?? $order->email,
-                'comment' => $dto->getComment() ?? $order->comment,
+
+            $billingAddressId = $invoiceAddress instanceof Address
+                ? ['billing_address_id' => $invoiceAddress->getKey() ]
+                : (!$dto->getInvoiceAddress() instanceof Missing ? ['billing_address_id' => null] : []);
+
+            $order->update($dto->toArray() + $billingAddressId + [
                 'shipping_address_id' => $this->resolveShippingAddress($shippingPlace, $shippingType, $order),
-                'billing_address_id' => $billingAddress === null ?
-                    (is_object($dto->getBillingAddress()) ? null : $order->billing_address_id) :
-                    $billingAddress->getKey(),
-                'invoice_requested' => $dto->getInvoiceRequested(),
                 'shipping_place' => $dto->getShippingPlace() !== null ?
                     $this->resolveShippingPlace($shippingPlace, $shippingType, $order)
                     : $order->shipping_place,
                 'shipping_type' => $shippingType ?? $order->shipping_type,
             ]);
+
             DB::commit();
 
-            $order->refresh();
-            OrderUpdated::dispatch($order);
+            // other event when only shipping number is updated
+            if (!($dto->getShippingNumber() instanceof Missing)) {
+                OrderUpdatedShippingNumber::dispatch($order);
+
+                if (count($dto->toArray()) !== 1) {
+                    OrderUpdated::dispatch($order);
+                }
+            } else {
+                OrderUpdated::dispatch($order);
+            }
 
             return OrderResource::make($order)->response();
         } catch (Exception $error) {
             DB::rollBack();
 
-            throw new OrderException(
-                'Error while editing order',
-                JsonResponse::HTTP_UNPROCESSABLE_ENTITY,
-            );
+            throw new ClientException(Exceptions::CLIENT_ORDER_EDIT_ERROR);
         }
     }
 
     public function indexUserOrder(OrderIndexDto $dto): LengthAwarePaginator
     {
-        return Order::search(['user_id' => Auth::id()] + $dto->getSearchCriteria())
+        return Order::searchByCriteria(['buyer_id' => Auth::id()] + $dto->getSearchCriteria())
             ->sort($dto->getSort())
-            ->with(['products', 'discounts', 'payments'])
+            ->with([
+                'products',
+                'discounts',
+                'payments',
+                'status',
+                'shippingMethod',
+                'shippingMethod.paymentMethods',
+                'deliveryAddress',
+                'metadata',
+                'documents',
+            ])
             ->paginate(Config::get('pagination.per_page'));
     }
 
@@ -126,10 +289,18 @@ class OrderService implements OrderServiceContract
         return $order;
     }
 
-    private function modifyAddress(Order $order, string $attribute, ?AddressDto $addressDto): ?Address
+    public function cartProcess(CartDto $cartDto): CartResource
     {
-        if ($addressDto === null) {
-            return null;
+        // Lista tylko dostępnych produktów
+        $products = $this->itemService->checkCartItems($cartDto->getItems());
+
+        return $this->discountService->calcCartDiscounts($cartDto, $products);
+    }
+
+    private function checkAddress(AddressDto|Missing $addressDto): bool
+    {
+        if ($addressDto instanceof Missing) {
+            return false;
         }
 
         $address = $addressDto->toArray();
@@ -140,14 +311,58 @@ class OrderService implements OrderServiceContract
         }
 
         if (!isset($exsistAddress)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function modifyAddress(Order $order, string $attribute, AddressDto|Missing $addressDto): ?Address
+    {
+        if (!$this->checkAddress($addressDto)) {
             return null;
         }
 
         $old = Address::find($order->$attribute);
         Cache::add('address.' . $order->$attribute, $old ? ((string) $old) : null);
         $order->forceAudit($attribute);
+        return Address::updateOrCreate(['id' => $order->$attribute], $addressDto->toArray());
+    }
 
-        return Address::updateOrCreate(['id' => $order->$attribute], $address);
+    private function removeItemsFromWarehouse(OrderProduct $orderProduct, array $tempSchemaOrderProduct): bool
+    {
+        $itemsToRemove = [];
+        $product = $orderProduct->product;
+        $productItems = $product->items;
+        foreach ($productItems as $productItem) {
+            $quantity = $productItem->pivot->required_quantity * $orderProduct->quantity;
+
+            if (!isset($itemsToRemove[$productItem->getKey()])) {
+                $itemsToRemove[$productItem->getKey()] = ['item' => $productItem,'quantity' => $quantity];
+            } else {
+                $itemsToRemove[$productItem->getKey()]['quantity'] += $quantity;
+            }
+        }
+
+        foreach ($orderProduct->schemas as $schemaOrder) {
+            if (isset($tempSchemaOrderProduct[$schemaOrder->name . '_' . $product->getKey()])) {
+                $value = $tempSchemaOrderProduct[$schemaOrder->name . '_' . $product->getKey()][1];
+                $schemaId = $tempSchemaOrderProduct[$schemaOrder->name . '_' . $product->getKey()][0];
+
+                $schema = $product->schemas()->findOrFail($schemaId);
+                $option = $schema->options()->findOrFail($value);
+                foreach ($option->items as $optionItem) {
+                    $quantity = $orderProduct->quantity;
+                    if (!isset($itemsToRemove[$optionItem->getKey()])) {
+                        $itemsToRemove[$optionItem->getKey()] = ['item' => $optionItem, 'quantity' => $quantity];
+                    } else {
+                        $itemsToRemove[$optionItem->getKey()]['quantity'] += $quantity;
+                    }
+                }
+            }
+        }
+
+        return !$itemsToRemove || $this->depositService->removeItemsFromWarehouse($itemsToRemove, $orderProduct);
     }
 
     private function resolveShippingAddress(

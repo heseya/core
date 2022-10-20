@@ -1,4 +1,28 @@
-Item:
+ItemCreate:
+  type: object
+  required:
+    - name
+    - sku
+  properties:
+    name:
+      type: string
+      example: Chain
+    sku:
+      type: string
+      example: K121
+    unlimited_shipping_time:
+      type: integer
+      example: 5
+    unlimited_shipping_date:
+      type: string
+      format: date-time
+      example: '2021-09-13T11:11'
+    metadata:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+    metadata_private:
+      $ref: './../schemas/Metadata.yml#/Metadata'
+
+ItemUpdate:
   type: object
   properties:
     name:
@@ -7,3 +31,10 @@ Item:
     sku:
       type: string
       example: K121
+    unlimited_shipping_time:
+      type: integer
+      example: 5
+    unlimited_shipping_date:
+      type: string
+      format: date-time
+      example: '2021-09-13T11:11'

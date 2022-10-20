@@ -19,7 +19,7 @@ class OrderCreated extends Notification
     /**
      * Get the notification's delivery channels.
      */
-    public function via($notifiable): array
+    public function via(mixed $notifiable): array
     {
         return ['mail'];
     }
@@ -27,10 +27,10 @@ class OrderCreated extends Notification
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail($notifiable): MailMessage
+    public function toMail(mixed $notifiable): MailMessage
     {
         return (new MailMessage())
-            ->subject('Order confirmation')
+            ->subject('Meldujemy potwierdzenie zamówienia '. $this->order->code)
             ->view('mail.new-order', [
                 'order' => $this->order,
             ]);
@@ -39,7 +39,7 @@ class OrderCreated extends Notification
     /**
      * Get the array representation of the notification.
      */
-    public function toArray($notifiable): array
+    public function toArray(mixed $notifiable): array
     {
         return [
             'order' => new OrderResource($this->order),

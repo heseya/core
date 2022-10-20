@@ -140,6 +140,25 @@ class TagTest extends TestCase
         ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithEmptyData($user): void
+    {
+        $this->$user->givePermissionTo('tags.edit');
+
+        $tag = Tag::factory()->create();
+
+        $response = $this->actingAs($this->$user)->patchJson('/tags/id:' . $tag->getKey(), []);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('tags', [
+            'name' => $tag->name,
+            'color' => $tag->color,
+        ]);
+    }
+
     public function testDeleteUnauthorized(): void
     {
         $tag = Tag::factory()->create();

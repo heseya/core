@@ -2,10 +2,15 @@
 
 namespace Tests\Feature;
 
-use App\Events\OrderCreated;
+use App\Enums\DiscountTargetType;
+use App\Enums\DiscountType;
+use App\Enums\MetadataType;
+use App\Enums\ValidationError;
 use App\Events\ItemUpdatedQuantity;
+use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
 use App\Listeners\WebHookEventListener;
+use App\Models\Discount;
 use App\Models\Item;
 use App\Models\Order;
 use App\Models\Payment;
@@ -16,19 +21,20 @@ use App\Models\User;
 use App\Models\WebHook;
 use App\Services\Contracts\OrderServiceContract;
 use App\Services\OrderService;
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Testing\Fluent\AssertableJson;
 use Spatie\WebhookServer\CallWebhookJob;
 use Tests\TestCase;
 
 class OrderTest extends TestCase
 {
     private Order $order;
+    private ShippingMethod $shippingMethod;
     private array $expected;
     private array $expected_summary_structure;
     private array $expected_full_structure;
@@ -40,12 +46,12 @@ class OrderTest extends TestCase
 
         Product::factory()->create();
 
-        $shipping_method = ShippingMethod::factory()->create();
+        $this->shippingMethod = ShippingMethod::factory()->create();
         $status = Status::factory()->create();
         $product = Product::factory()->create();
 
         $this->order = Order::factory()->create([
-            'shipping_method_id' => $shipping_method->getKey(),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
             'status_id' => $status->getKey(),
         ]);
 
@@ -53,12 +59,22 @@ class OrderTest extends TestCase
             'product_id' => $product->getKey(),
             'quantity' => 10,
             'price' => 247.47,
+            'price_initial' => 247.47,
+            'name' => $product->name,
         ]);
 
         $item_product->schemas()->create([
             'name' => 'Grawer',
             'value' => 'HESEYA',
             'price' => 49.99,
+            'price_initial' => 49.99,
+        ]);
+
+        $this->order->metadata()->create([
+            'name' => 'Metadata',
+            'value' => 'metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
         ]);
 
         /** @var OrderService $orderService */
@@ -97,9 +113,25 @@ class OrderTest extends TestCase
             'paid',
             'created_at',
             'shipping_method_id',
+            'comment',
+            'email',
+            'cart_total_initial',
+            'cart_total',
+            'shipping_price_initial',
+            'shipping_price',
+            'summary',
+            'summary_paid',
+            'currency',
+            'delivery_address',
+            'metadata',
         ];
 
-        $this->expected_full_view_structure = $this->expected_full_structure + ['user'];
+        $this->expected_full_view_structure = $this->expected_full_structure + [
+            'buyer',
+            'products',
+            'payments',
+            'discounts',
+        ];
     }
 
     public function testIndexUnauthorized(): void
@@ -122,10 +154,12 @@ class OrderTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonStructure(['data' => [
                 0 => $this->expected_full_structure,
-            ]])
+            ],
+            ])
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ]]);
+            ],
+            ]);
 
         $this->assertQueryCountLessThan(20);
     }
@@ -136,8 +170,12 @@ class OrderTest extends TestCase
     public function testIndexPerformance($user): void
     {
         $this->$user->givePermissionTo('orders.show');
+        $status = Status::factory()->create();
 
-        Order::factory()->count(499)->create();
+        Order::factory()->count(499)->create([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
 
         $this
             ->actingAs($this->$user)
@@ -145,7 +183,7 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonCount(500, 'data');
 
-        $this->assertQueryCountLessThan(20);
+        $this->assertQueryCountLessThan(21);
     }
 
     /**
@@ -155,7 +193,12 @@ class OrderTest extends TestCase
     {
         $this->$user->givePermissionTo('orders.show');
 
-        Order::factory()->count(30)->create();
+        $status = Status::factory()->create();
+
+        Order::factory()->count(30)->create([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
 
         $this
             ->actingAs($this->$user)
@@ -177,12 +220,7 @@ class OrderTest extends TestCase
             ->actingAs($this->$user)
             ->getJson('/orders?limit=30&sort=currency:desssc')
             ->assertStatus(422)
-            ->assertJsonFragment([
-                'errors' => [
-                    ['You can\'t sort by currency field.'],
-                    ['Only asc|desc sorting directions are allowed on field currency.'],
-                ],
-            ]);
+            ->assertJsonFragment(['key' => ValidationError::IN]);
     }
 
     /**
@@ -192,11 +230,10 @@ class OrderTest extends TestCase
     {
         $this->$user->givePermissionTo('orders.show_own');
 
-        $shipping_method = ShippingMethod::factory()->create();
         $status = Status::factory()->create();
 
         $order = Order::factory()->create([
-            'shipping_method_id' => $shipping_method->getKey(),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
             'status_id' => $status->getKey(),
         ]);
 
@@ -205,14 +242,14 @@ class OrderTest extends TestCase
         $another_user = User::factory()->create();
 
         $order_another_user = Order::factory()->create([
-            'shipping_method_id' => $shipping_method->getKey(),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
             'status_id' => $status->getKey(),
         ]);
 
         $another_user->orders()->save($order_another_user);
 
         $order_no_user = Order::factory()->create([
-            'shipping_method_id' => $shipping_method->getKey(),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
             'status_id' => $status->getKey(),
         ]);
 
@@ -223,12 +260,14 @@ class OrderTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonStructure(['data' => [
                 0 => $this->expected_full_structure,
-            ]])
+            ],
+            ])
             ->assertJson(['data' => [
                 0 => [
                     'id' => $order->getKey(),
                 ],
-            ]])
+            ],
+            ])
             ->assertJsonMissing([
                 'id' => $order_another_user->getKey(),
             ])
@@ -246,7 +285,12 @@ class OrderTest extends TestCase
     {
         $this->$user->givePermissionTo('orders.show_own');
 
-        $orders = Order::factory()->count(500)->create();
+        $status = Status::factory()->create();
+
+        $orders = Order::factory()->count(500)->create([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
 
         $this->$user->orders()->saveMany($orders);
 
@@ -270,7 +314,7 @@ class OrderTest extends TestCase
             'hidden' => true,
         ])->create();
 
-        $order = Order::factory([
+        Order::factory([
             'status_id' => $status->getKey(),
         ])->create();
 
@@ -281,10 +325,12 @@ class OrderTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonStructure(['data' => [
                 0 => $this->expected_full_structure,
-            ]])
+            ],
+            ])
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ]]);
+            ],
+            ]);
 
         $this->assertQueryCountLessThan(20);
     }
@@ -301,6 +347,7 @@ class OrderTest extends TestCase
         ])->create();
 
         $order = Order::factory([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
             'status_id' => $status->getKey(),
         ])->create();
 
@@ -311,7 +358,8 @@ class OrderTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonStructure(['data' => [
                 0 => $this->expected_full_structure,
-            ]])
+            ],
+            ])
             ->assertJson(['data' => [
                 0 => [
                     'code' => $order->code,
@@ -323,7 +371,9 @@ class OrderTest extends TestCase
                         'hidden' => $status->hidden,
                         'no_notifications' => $status->no_notifications,
                     ],
-                ]]]);
+                ],
+            ],
+            ]);
 
         $this->assertQueryCountLessThan(20);
     }
@@ -340,9 +390,9 @@ class OrderTest extends TestCase
     }
 
     /**
-     * @dataProvider authProvider
+     * @dataProvider booleanProvider
      */
-    public function testIndexSearchByPaid($user): void
+    public function testIndexSearchByPaid($user, $boolean, $booleanValue): void
     {
         $this->$user->givePermissionTo('orders.show');
 
@@ -352,6 +402,7 @@ class OrderTest extends TestCase
         $status = Status::factory()->create();
 
         $order1 = Order::factory([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
             'status_id' => $status->getKey(),
         ])->create();
 
@@ -359,6 +410,8 @@ class OrderTest extends TestCase
             'product_id' => $product->getKey(),
             'quantity' => 10,
             'price' => 247.47,
+            'price_initial' => 247.47,
+            'name' => $product->name,
         ]);
 
         $order1->refresh();
@@ -368,21 +421,16 @@ class OrderTest extends TestCase
             'paid' => true,
         ]);
 
-        $order2 = Order::factory([
-            'status_id' => $status->getKey(),
-        ])->create();
-
-        $order2->products()->create([
-            'product_id' => $product->getKey(),
-            'quantity' => 10,
-            'price' => 247.47,
-        ]);
+        $orderId = $booleanValue ? $order1->getKey() : $this->order->getKey();
 
         $this
             ->actingAs($this->$user)
-            ->getJson('/orders?paid=1')
+            ->json('GET', '/orders', ['paid' => $boolean])
             ->assertOk()
-            ->assertJsonCount(1, 'data');
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment([
+                'id' => $orderId,
+            ]);
     }
 
     /**
@@ -397,11 +445,13 @@ class OrderTest extends TestCase
         $from = $this->order->created_at;
 
         Order::factory([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
             'status_id' => $status->getKey(),
             'created_at' => Carbon::yesterday(),
         ])->create();
 
         $order2 = Order::factory([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
             'status_id' => $status->getKey(),
             'created_at' => Carbon::tomorrow(),
         ])->create();
@@ -431,11 +481,13 @@ class OrderTest extends TestCase
         $to = $this->order->created_at;
 
         $order1 = Order::factory([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
             'status_id' => $status->getKey(),
             'created_at' => Carbon::yesterday(),
         ])->create();
 
         Order::factory([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
             'status_id' => $status->getKey(),
             'created_at' => Carbon::tomorrow(),
         ])->create();
@@ -466,11 +518,13 @@ class OrderTest extends TestCase
         $to = Carbon::tomorrow()->subHour();
 
         Order::factory([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
             'status_id' => $status->getKey(),
             'created_at' => Carbon::yesterday(),
         ])->create();
 
         Order::factory([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
             'status_id' => $status->getKey(),
             'created_at' => Carbon::tomorrow(),
         ])->create();
@@ -509,6 +563,59 @@ class OrderTest extends TestCase
             ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewWrongId($user): void
+    {
+        $this->$user->givePermissionTo('orders.show_details');
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/orders/id:its-not-uuid')
+            ->assertNotFound();
+
+        $this->assertEquals(404, $response->getData()->error->code); //get error code from our error handle structure
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/orders/id:' . $this->order->getKey() . $this->order->getKey())
+            ->assertNotFound();
+
+        $this->assertEquals(404, $response->getData()->error->code);
+        $this->order->delete();
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/orders/id:' . $this->order->getKey())
+            ->assertNotFound();
+
+        $this->assertEquals(404, $response->getData()->error->code);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewPrivateMetadata($user): void
+    {
+        $this->$user->givePermissionTo(['orders.show_details', 'orders.show_metadata_private']);
+
+        $privateMetadata = $this->order->metadataPrivate()->create([
+            'name' => 'hiddenMetadata',
+            'value' => 'hidden metadata test',
+            'value_type' => MetadataType::STRING,
+            'public' => false,
+        ]);
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/orders/id:' . $this->order->getKey());
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['code' => $this->order->code])
+            ->assertJsonStructure(['data' => $this->expected_full_view_structure])
+            ->assertJsonFragment(['metadata_private' => [
+                $privateMetadata->name => $privateMetadata->value,
+            ],
+            ]);
+    }
+
     public function testViewSummaryUnauthorized(): void
     {
         $response = $this->getJson('/orders/' . $this->order->code);
@@ -528,6 +635,26 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonStructure(['data' => $this->expected_summary_structure])
             ->assertJson(['data' => $this->expected]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewSummaryWrongCode($user): void
+    {
+        $this->$user->givePermissionTo('orders.show_summary');
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/orders/its_wrong_code')
+            ->assertNotFound();
+
+        $this->assertEquals(404, $response->getData()->error->code); //get error code from our error handle structure
+
+        $response = $this->actingAs($this->$user)
+            ->getJson('/orders/' . $this->order->code . '_' . $this->order->code)
+            ->assertNotFound();
+
+        $this->assertEquals(404, $response->getData()->error->code);
     }
 
     /**
@@ -580,11 +707,10 @@ class OrderTest extends TestCase
     {
         $this->$user->givePermissionTo('orders.show_own');
 
-        $shipping_method = ShippingMethod::factory()->create();
         $status = Status::factory()->create();
 
         $order = Order::factory()->create([
-            'shipping_method_id' => $shipping_method->getKey(),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
             'status_id' => $status->getKey(),
         ]);
 
@@ -598,6 +724,32 @@ class OrderTest extends TestCase
                 'code' => $order->code,
             ])
             ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewUserWrongCode($user): void
+    {
+        $this->$user->givePermissionTo('orders.show_own');
+
+        $shipping_method = ShippingMethod::factory()->create();
+        $status = Status::factory()->create();
+
+        $order = Order::factory()->create([
+            'shipping_method_id' => $shipping_method->getKey(),
+            'status_id' => $status->getKey(),
+        ]);
+
+        $this->$user->orders()->save($order);
+
+        $this->actingAs($this->$user)
+            ->json('GET', '/orders/my/its_wrong_code')
+            ->assertNotFound();
+
+        $this->actingAs($this->$user)
+            ->json('GET', '/orders/my/' . $order->code . '_' . $order->code)
+            ->assertNotFound();
     }
 
     /**
@@ -643,13 +795,145 @@ class OrderTest extends TestCase
             ->assertForbidden();
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewOrderDiscounts($user): void
+    {
+        $this->$user->givePermissionTo('orders.show_details');
+
+        $status = Status::factory()->create();
+        $product = Product::factory()->create();
+        $product2 = Product::factory()->create();
+
+        $order = Order::factory()->create([
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'status_id' => $status->getKey(),
+            'cart_total_initial' => 394.94,
+            'cart_total' => 300.00,
+            'summary' => 300.00,
+            'shipping_price' => 0,
+        ]);
+
+        $item_product = $order->products()->create([
+            'product_id' => $product->getKey(),
+            'quantity' => 1,
+            'price' => 200.00,
+            'price_initial' => 247.47,
+            'name' => $product->name,
+        ]);
+
+        $item_product2 = $order->products()->create([
+            'product_id' => $product2->getKey(),
+            'quantity' => 1,
+            'price' => 100.00,
+            'price_initial' => 147.47,
+            'name' => $product2->name,
+        ]);
+
+        $discountShipping = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'code' => 'S43SA2',
+            'value' => 100,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::SHIPPING_PRICE,
+            'target_is_allow_list' => true,
+        ]);
+
+        $order->discounts()->attach(
+            $discountShipping->getKey(),
+            [
+                'name' => $discountShipping->name,
+                'type' => $discountShipping->type,
+                'value' => $discountShipping->value,
+                'target_type' => $discountShipping->target_type,
+                'applied_discount' => $order->shipping_price_initial,
+                'code' => $discountShipping->code,
+            ],
+        );
+
+        $discountProduct = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'code' => '2AS34S',
+            'value' => 47.47,
+            'type' => DiscountType::AMOUNT,
+            'target_type' => DiscountTargetType::PRODUCTS,
+            'target_is_allow_list' => true,
+        ]);
+
+        $discountProduct->products()->attach($product);
+        $discountProduct->products()->attach($product2);
+
+        $item_product->discounts()->attach(
+            $discountProduct->getKey(),
+            [
+                'name' => $discountProduct->name,
+                'type' => $discountProduct->type,
+                'value' => $discountProduct->value,
+                'target_type' => $discountProduct->target_type,
+                'applied_discount' => $discountProduct->value,
+                'code' => $discountProduct->code,
+            ],
+        );
+
+        $item_product2->discounts()->attach(
+            $discountProduct->getKey(),
+            [
+                'name' => $discountProduct->name,
+                'type' => $discountProduct->type,
+                'value' => $discountProduct->value,
+                'target_type' => $discountProduct->target_type,
+                'applied_discount' => $discountProduct->value,
+                'code' => $discountProduct->code,
+            ],
+        );
+
+        $this->actingAs($this->$user)
+            ->json('GET', '/orders/id:' . $order->getKey())
+            ->assertJson(function (AssertableJson $json) use ($discountShipping, $discountProduct): void {
+                $json
+                    ->has('data', function ($json) use ($discountShipping, $discountProduct): void {
+                        $json
+                            // order has 1 discount AND 1 discount same for two products
+                            ->has('discounts', function ($json) use ($discountShipping, $discountProduct): void {
+                                $json
+                                    ->has(2)
+                                    ->where('0.code', $discountShipping->code)
+                                    ->where('1.code', $discountProduct->code)
+                                    ->where('1.applied_discount', 94.94);
+                            })
+                            // order product has 1 discounts
+                            ->has('products', function ($json) use ($discountProduct): void {
+                                $json
+                                    ->has(2)
+                                    ->first(function ($json) use ($discountProduct): void {
+                                        $json
+                                            ->has('discounts', function ($json) use ($discountProduct): void {
+                                                $json
+                                                    ->has(1)
+                                                    ->first(function ($json) use ($discountProduct): void {
+                                                        $json
+                                                            ->where('code', $discountProduct->code)
+                                                            ->etc();
+                                                    });
+                                            })
+                                            ->etc();
+                                    })
+                                    ->etc();
+                            })
+                            ->etc();
+                    })
+                    ->etc();
+            });
+    }
+
     public function testUpdateOrderStatusUnauthorized(): void
     {
         Event::fake([OrderUpdatedStatus::class]);
 
         $status = Status::factory()->create();
 
-        $response = $this->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+        $response = $this->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
             'status_id' => $status->getKey(),
         ]);
 
@@ -670,7 +954,7 @@ class OrderTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+            ->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
                 'status_id' => $status->getKey(),
             ])
             ->assertOk();
@@ -698,7 +982,7 @@ class OrderTest extends TestCase
 
         $this
             ->actingAs($this->$user)
-            ->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+            ->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
                 'status_id' => $status->getKey(),
             ])
             ->assertOk();
@@ -743,7 +1027,7 @@ class OrderTest extends TestCase
             'cancel' => true,
         ]);
 
-        $response = $this->actingAs($this->$user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
             'status_id' => $status->getKey(),
         ]);
 
@@ -796,7 +1080,7 @@ class OrderTest extends TestCase
 
         $status = Status::factory()->create();
 
-        $response = $this->actingAs($this->$user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
             'status_id' => $status->getKey(),
         ]);
 
@@ -847,7 +1131,7 @@ class OrderTest extends TestCase
 
         $status = Status::factory()->create();
 
-        $response = $this->actingAs($this->$user)->postJson('/orders/id:' . $this->order->getKey() . '/status', [
+        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
             'status_id' => $status->getKey(),
         ]);
 
@@ -925,7 +1209,6 @@ class OrderTest extends TestCase
     {
         $this->user->givePermissionTo(['orders.add', 'orders.show_details']);
 
-        $shippingMethod = ShippingMethod::factory()->create();
         $product = Product::factory()->create([
             'public' => true,
         ]);
@@ -934,7 +1217,7 @@ class OrderTest extends TestCase
 
         $response = $this->actingAs($this->user)->json('POST', '/orders', [
             'email' => 'test@example.com',
-            'shipping_method_id' => $shippingMethod->getKey(),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_address' => [
                 'name' => 'Wojtek Testowy',
                 'phone' => '+48123321123',
@@ -977,11 +1260,10 @@ class OrderTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testOrderHasUser($user)
+    public function testOrderHasUser($user): void
     {
         $this->$user->givePermissionTo(['orders.add']);
 
-        $shippingMethod = ShippingMethod::factory()->create();
         $product = Product::factory()->create([
             'public' => true,
         ]);
@@ -990,7 +1272,7 @@ class OrderTest extends TestCase
 
         $this->actingAs($this->$user)->json('POST', '/orders', [
             'email' => 'test@example.com',
-            'shipping_method_id' => $shippingMethod->getKey(),
+            'shipping_method_id' => $this->shippingMethod->getKey(),
             'shipping_address' => [
                 'name' => 'Wojtek Testowy',
                 'phone' => '+48123321123',
@@ -1016,7 +1298,7 @@ class OrderTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('orders', [
-            'user_id' => $this->$user->getKey(),
+            'buyer_id' => $this->$user->getKey(),
         ]);
     }
 }

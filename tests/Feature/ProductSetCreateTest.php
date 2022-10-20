@@ -2,9 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Enums\MediaType;
 use App\Events\ProductSetCreated;
 use App\Listeners\WebHookEventListener;
-use App\Enums\MediaType;
+use App\Models\Attribute;
 use App\Models\Media;
 use App\Models\ProductSet;
 use App\Models\WebHook;
@@ -98,7 +99,8 @@ class ProductSetCreateTest extends TestCase
                 'slug_override' => false,
                 'slug_suffix' => 'test',
                 'parent' => null,
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('product_sets', $set + $defaults + [
             'parent_id' => null,
@@ -116,7 +118,7 @@ class ProductSetCreateTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ProductSetCreated'
+                'ProductSetCreated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -137,20 +139,21 @@ class ProductSetCreateTest extends TestCase
         ];
 
         $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
-                'slug_suffix' => 'test',
-                'slug_override' => false,
-            ]);
+            'slug_suffix' => 'test',
+            'slug_override' => false,
+        ]);
         $response
             ->assertCreated()
             ->assertJson(['data' => $set + $defaults + [
-                    'slug_override' => false,
-                    'slug_suffix' => 'test',
-                    'parent' => null,
-                ]]);
+                'slug_override' => false,
+                'slug_suffix' => 'test',
+                'parent' => null,
+            ],
+            ]);
 
         $this->assertDatabaseHas('product_sets', $set + $defaults + [
-                'parent_id' => null,
-            ]);
+            'parent_id' => null,
+        ]);
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
             return $job->class === WebHookEventListener::class
@@ -230,7 +233,7 @@ class ProductSetCreateTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'ProductSetCreated'
+                'ProductSetCreated',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -247,23 +250,23 @@ class ProductSetCreateTest extends TestCase
         ];
 
         $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
-                'slug_suffix' => 'test',
-                'slug_override' => false,
-            ]);
+            'slug_suffix' => 'test',
+            'slug_override' => false,
+        ]);
         $response
             ->assertCreated()
             ->assertJson(['data' => $set + [
-                    'slug_suffix' => 'test',
-                    'slug_override' => false,
-                    'parent' => null,
-                    'slug' => 'test',
-                ],
+                'slug_suffix' => 'test',
+                'slug_override' => false,
+                'parent' => null,
+                'slug' => 'test',
+            ],
             ]);
 
         $this->assertDatabaseHas('product_sets', $set + [
-                'parent_id' => null,
-                'slug' => 'test',
-            ]);
+            'parent_id' => null,
+            'slug' => 'test',
+        ]);
 
         Bus::assertDispatched(CallQueuedListener::class, function ($job) {
             return $job->class === WebHookEventListener::class
@@ -601,29 +604,29 @@ class ProductSetCreateTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
-                'slug_suffix' => 'test',
-                'slug_override' => false,
-                'seo' => [
-                    'title' => 'seo title',
-                    'description' => 'seo description',
-                    'og_image_id' => $media->getKey(),
-                ]
-            ]);
+            'slug_suffix' => 'test',
+            'slug_override' => false,
+            'seo' => [
+                'title' => 'seo title',
+                'description' => 'seo description',
+                'og_image_id' => $media->getKey(),
+            ],
+        ]);
         $response
             ->assertCreated()
             ->assertJson(['data' => $set + [
-                    'slug_suffix' => 'test',
-                    'slug_override' => false,
-                    'parent' => null,
-                    'slug' => 'test',
-                    'seo' => [
-                        'title' => 'seo title',
-                        'description' => 'seo description',
-                        'og_image' => [
-                            'id' => $media->getKey(),
-                        ]
-                    ]
+                'slug_suffix' => 'test',
+                'slug_override' => false,
+                'parent' => null,
+                'slug' => 'test',
+                'seo' => [
+                    'title' => 'seo title',
+                    'description' => 'seo description',
+                    'og_image' => [
+                        'id' => $media->getKey(),
+                    ],
                 ],
+            ],
             ]);
 
         $this->assertDatabaseHas('seo_metadata', [
@@ -634,8 +637,136 @@ class ProductSetCreateTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('product_sets', $set + [
+            'parent_id' => null,
+            'slug' => 'test',
+        ]);
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testCreateBooleanValues($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('product_sets.add');
+
+        Event::fake([ProductSetCreated::class]);
+
+        $media = Media::factory()->create([
+            'type' => MediaType::PHOTO,
+            'url' => 'https://picsum.photos/seed/' . rand(0, 999999) . '/800',
+        ]);
+
+        $set = [
+            'name' => 'Test',
+            'public' => $boolean,
+            'hide_on_index' => $boolean,
+        ];
+
+        $response = $this->actingAs($this->$user)->postJson(
+            '/product-sets',
+            $set + [
+                'slug_suffix' => 'test',
+                'slug_override' => $boolean,
+                'cover_id' => $media->getKey(),
+                'seo' => [
+                    'title' => 'seo title',
+                    'description' => 'seo description',
+                    'no_index' => $boolean,
+                ],
+            ]
+        );
+
+        $setResponse = array_merge($set, ['public' => $booleanValue, 'hide_on_index' => $booleanValue]);
+
+        $response
+            ->assertCreated()
+            ->assertJson([
+                'data' => $setResponse + [
+                    'slug_suffix' => 'test',
+                    'slug_override' => false,
+                    'parent' => null,
+                    'slug' => 'test',
+                    'cover' => [
+                        'id' => $media->getKey(),
+                        'type' => Str::lower($media->type->key),
+                        'url' => $media->url,
+                    ],
+                    'seo' => [
+                        'title' => 'seo title',
+                        'description' => 'seo description',
+                        'no_index' => $booleanValue,
+                    ],
+                ],
+            ]);
+
+        $this->assertDatabaseHas(
+            'product_sets',
+            $setResponse + [
                 'parent_id' => null,
                 'slug' => 'test',
+            ]
+        );
+
+        Event::assertDispatched(ProductSetCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithAttributes($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.add');
+
+        Event::fake([ProductSetCreated::class]);
+
+        $set = [
+            'name' => 'Test',
+        ];
+
+        $defaults = [
+            'public' => true,
+            'hide_on_index' => false,
+            'slug' => 'test',
+        ];
+
+        $attrOne = Attribute::factory()->create();
+        $attrTwo = Attribute::factory()->create();
+
+        $response = $this->actingAs($this->$user)->postJson('/product-sets', $set + [
+            'slug_suffix' => 'test',
+            'slug_override' => false,
+            'attributes' => [
+                $attrOne->getKey(),
+                $attrTwo->getKey(),
+            ],
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $set + $defaults + [
+                'slug_override' => false,
+                'slug_suffix' => 'test',
+                'parent' => null,
+            ],
             ]);
+
+        $productSet = ProductSet::find($response->getData()->data->id);
+
+        $this->assertDatabaseHas('product_sets', $set + $defaults + [
+            'parent_id' => null,
+        ])
+            ->assertDatabaseHas('attribute_product_set', [
+                'attribute_id' => $attrOne->getKey(),
+                'product_set_id' => $productSet->getKey(),
+            ])
+            ->assertDatabaseHas('attribute_product_set', [
+                'attribute_id' => $attrTwo->getKey(),
+                'product_set_id' => $productSet->getKey(),
+            ]);
+
+        $this->assertTrue($productSet->attributes->contains($attrOne));
+        $this->assertTrue($productSet->attributes->contains($attrTwo));
+
+        Event::assertDispatched(ProductSetCreated::class);
     }
 }

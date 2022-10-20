@@ -12,15 +12,16 @@ class OrderUpdateRequest extends FormRequest
         return [
             'email' => ['nullable', 'email'],
             'comment' => ['nullable', 'string', 'max:1000'],
+            'shipping_number' => ['nullable', 'string'],
             'shipping_method_id' => ['uuid', 'exists:shipping_methods,id'],
 
             'billing_address' => ['nullable', 'array'],
-            'billing_address.name' => ['required_with_all:billing_address', 'string', 'max:255'],
-            'billing_address.phone' => ['required_with_all:billing_address', 'string', 'max:20'],
-            'billing_address.address' => ['required_with_all:billing_address', 'string', 'max:255'],
-            'billing_address.zip' => ['required_with_all:billing_address', 'string', 'max:16'],
-            'billing_address.city' => ['required_with_all:billing_address', 'string', 'max:255'],
-            'billing_address.country' => ['required_with_all:billing_address', 'string', 'size:2'],
+            'billing_address.name' => ['string', 'max:255'],
+            'billing_address.phone' => ['string', 'max:20'],
+            'billing_address.address' => ['string', 'max:255'],
+            'billing_address.zip' => ['string', 'max:16'],
+            'billing_address.city' => ['string', 'max:255'],
+            'billing_address.country' => ['string', 'size:2'],
             'billing_address.vat' => ['nullable', 'string', 'max:15'],
 
             'validation' => ['boolean'],

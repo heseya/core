@@ -15,11 +15,45 @@ class SettingsTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testIndex($user): void
+    public function testIndexPublic($user): void
     {
         $this->$user->givePermissionTo('settings.show');
 
-        $this->actingAs($this->$user)->getJson('/settings')->assertOk();
+        Setting::create([
+            'name' => 'private_setting',
+            'value' => 'Private value',
+            'public' => false,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/settings')
+            ->assertOk()
+            ->assertJsonMissing([
+                'name' => 'private_setting',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexPrivate($user): void
+    {
+        $this->$user->givePermissionTo(['settings.show', 'settings.show_hidden']);
+
+        Setting::create([
+            'name' => 'private_setting',
+            'value' => 'Private value',
+            'public' => false,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/settings')
+            ->assertOk()
+            ->assertJsonFragment([
+                'name' => 'private_setting',
+            ]);
     }
 
     public function testViewUnauthorized(): void
@@ -35,6 +69,51 @@ class SettingsTest extends TestCase
         $this->$user->givePermissionTo('settings.show_details');
 
         $this->actingAs($this->$user)->getJson('/settings/store_name')->assertOk();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewPrivateUnauthorized($user): void
+    {
+        $this->$user->givePermissionTo('settings.show_details');
+
+        Setting::create([
+            'name' => 'private_setting',
+            'value' => 'Private value',
+            'public' => false,
+        ]);
+
+        $this->actingAs($this->$user)->getJson('/settings/private_setting')->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewPrivateAuthorized($user): void
+    {
+        $this->$user->givePermissionTo(['settings.show_details', 'settings.show_hidden']);
+
+        Setting::create([
+            'name' => 'private_setting',
+            'value' => 'Private value',
+            'public' => false,
+        ]);
+
+        $this->actingAs($this->$user)->getJson('/settings/private_setting')->assertOk();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testViewWrongSetting($user): void
+    {
+        $this->$user->givePermissionTo('settings.show_details');
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/settings/it\'s-wrong%parameter')
+            ->assertNotFound();
     }
 
     public function testCreateUnauthorized(): void
@@ -65,6 +144,27 @@ class SettingsTest extends TestCase
             ->assertCreated()->assertJsonFragment($setting);
 
         $this->assertDatabaseHas('settings', $setting);
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testCreateBooleanValues($user, $boolean, $booleanValues): void
+    {
+        $this->$user->givePermissionTo('settings.add');
+
+        $setting = [
+            'name' => 'new_setting',
+            'value' => 'New Value',
+            'public' => $boolean,
+        ];
+
+        $settingResponse = array_merge($setting, ['public' => $booleanValues]);
+
+        $this->actingAs($this->$user)->json('POST', '/settings', $setting)
+            ->assertCreated()->assertJsonFragment($settingResponse);
+
+        $this->assertDatabaseHas('settings', $settingResponse);
     }
 
     /**
@@ -121,7 +221,7 @@ class SettingsTest extends TestCase
     {
         $this->$user->givePermissionTo('settings.edit');
 
-        $setting = Setting::create([
+        Setting::create([
             'name' => 'new_setting',
             'value' => 'Old Value',
             'public' => true,
@@ -137,6 +237,52 @@ class SettingsTest extends TestCase
             ->assertOk()->assertJsonFragment($new_setting);
 
         $this->assertDatabaseHas('settings', $new_setting);
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testUpdateBooleanValues($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('settings.edit');
+
+        Setting::create([
+            'name' => 'new_setting',
+            'value' => 'Old Value',
+            'public' => true,
+        ]);
+
+        $new_setting = [
+            'name' => 'new_setting',
+            'value' => 'New Value',
+            'public' => $boolean,
+        ];
+
+        $settingResponse = array_merge($new_setting, ['public' => $booleanValue]);
+
+        $this->actingAs($this->$user)->json('PATCH', '/settings/new_setting', $new_setting)
+            ->assertOk()->assertJsonFragment($settingResponse);
+
+        $this->assertDatabaseHas('settings', $settingResponse);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateDatabaseSettingWithEmptyData($user): void
+    {
+        $this->$user->givePermissionTo('settings.edit');
+
+        $setting = Setting::create([
+            'name' => 'new_setting',
+            'value' => 'Old Value',
+            'public' => true,
+        ]);
+
+        $this->actingAs($this->$user)->json('PATCH', '/settings/new_setting', [])
+            ->assertOk();
+
+        $this->assertDatabaseHas('settings', $setting->toArray());
     }
 
     /**

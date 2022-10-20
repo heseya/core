@@ -9,12 +9,13 @@ class PaymentResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'method' => $this->method,
-            'paid' => $this->paid,
-            'amount' => $this->amount,
-            'redirect_url' => $this->redirect_url,
-            'continue_url' => $this->continue_url,
+            'id' => $this->resource->getKey(),
+            'method' => $this->resource->method,
+            'paid' => $this->resource->paid,
+            'amount' => $this->resource->amount,
+            'redirect_url' => $this->resource->redirect_url,
+            'continue_url' => $this->resource->continue_url,
+            'date' => $this->resource->created_at,
         ];
     }
 }

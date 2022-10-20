@@ -3,18 +3,22 @@
 namespace App\Services;
 
 use App\Dtos\AppInstallDto;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Enums\TokenType;
-use App\Exceptions\AppException;
-use App\Exceptions\AuthException;
+use App\Exceptions\ClientException;
 use App\Models\App;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\AppServiceContract;
+use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UrlServiceContract;
+use Heseya\Dto\Missing;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
@@ -27,74 +31,74 @@ class AppService implements AppServiceContract
     public function __construct(
         protected TokenServiceContract $tokenService,
         protected UrlServiceContract $urlService,
+        protected MetadataServiceContract $metadataService,
     ) {
     }
 
     public function install(AppInstallDto $dto): App
     {
-        $allPermissions = Permission::all()->map(fn ($perm) => $perm->name);
+        $allPermissions = Permission::all()->map(fn (Permission $perm) => $perm->name);
         $permissions = Collection::make($dto->getAllowedPermissions());
 
         if ($permissions->diff($allPermissions)->isNotEmpty()) {
-            throw new AuthException('Assigning invalid permissions');
+            throw new ClientException(Exceptions::CLIENT_ASSIGN_INVALID_PERMISSIONS);
         }
 
         if (!Auth::user()->hasAllPermissions($permissions->toArray())) {
-            throw new AuthException(
-                "Can't add an app with permissions you don't have",
-            );
+            throw new ClientException(Exceptions::CLIENT_ADD_APP_WITH_PERMISSIONS_USER_DONT_HAVE);
         }
 
         try {
             $response = Http::get($dto->getUrl());
         } catch (Throwable) {
-            throw new AppException('Failed to connect with application');
+            throw new ClientException(Exceptions::CLIENT_FAILED_TO_CONNECT_WITH_APP);
         }
 
         if ($response->failed()) {
-            throw new AppException(
-                'Application info responded with invalid status code',
+            throw new ClientException(
+                Exceptions::CLIENT_APP_INFO_RESPONDED_WITH_INVALID_CODE,
                 0,
                 null,
+                false,
                 [
-                    "Status code: {$response->status()}",
-                    "Body: {$response->body()}",
+                    'code' => $response->status(),
+                    'body' => $response->body(),
                 ],
             );
         }
 
         if (!$this->isAppRootValid($response)) {
-            throw new AppException(
-                'App responded with invalid info',
+            throw new ClientException(
+                Exceptions::CLIENT_APP_RESPONDED_WITH_INVALID_INFO,
                 0,
                 null,
+                false,
                 [
                     "Body: {$response->body()}",
                 ],
             );
         }
 
+        /** @var Collection<int, mixed>|array $appConfig */
         $appConfig = $response->json();
+        /** @var Collection<int, mixed> $requiredPermissions */
+        $requiredPermissions = $appConfig['required_permissions'];
 
-        $requiredPerm = Collection::make($appConfig['required_permissions']);
+        $requiredPerm = Collection::make($requiredPermissions);
         $optionalPerm = key_exists('optional_permissions', $appConfig) ?
             $appConfig['optional_permissions'] : [];
         $advertisedPerm = $requiredPerm->concat($optionalPerm)->unique();
 
         if ($advertisedPerm->diff($allPermissions)->isNotEmpty()) {
-            throw new AuthException('App wants invalid permissions');
+            throw new ClientException(Exceptions::CLIENT_APP_WANTS_INVALID_PERMISSION);
         }
 
         if ($permissions->intersect($requiredPerm)->count() < $requiredPerm->count()) {
-            throw new AuthException(
-                "Can't add app without all required permissions",
-            );
+            throw new ClientException(Exceptions::CLIENT_ADD_APP_WITHOUT_REQUIRED_PERMISSIONS);
         }
 
         if ($permissions->intersect($advertisedPerm)->count() < $permissions->count()) {
-            throw new AuthException(
-                "Can't add any permissions application doesn't want",
-            );
+            throw new ClientException(Exceptions::CLIENT_ADD_PERMISSION_APP_DOESNT_WANT);
         }
 
         $name = $dto->getName() ?? $appConfig['name'];
@@ -115,7 +119,7 @@ class AppService implements AppServiceContract
         ])->toArray());
 
         $app->givePermissionTo(
-            $permissions->concat(['auth.login', 'auth.check_identity']),
+            $permissions->concat(['auth.check_identity']),
         );
 
         $uuid = Str::uuid()->toString();
@@ -143,32 +147,33 @@ class AppService implements AppServiceContract
                 'refresh_token' => $refreshToken,
             ]);
         } catch (Throwable) {
-            throw new AppException('Failed to connect with application');
+            throw new ClientException(Exceptions::CLIENT_FAILED_TO_CONNECT_WITH_APP);
         }
 
         if ($response->failed()) {
             $app->delete();
 
-            throw new AppException(
-                'App installation responded with an invalid status code',
+            throw new ClientException(
+                Exceptions::CLIENT_APP_INSTALLATION_RESPONDED_WITH_INVALID_CODE,
                 0,
                 null,
+                false,
                 [
                     "Status code: {$response->status()}",
                     "Body: {$response->body()}",
                 ],
             );
         }
-
         if (!$this->isResponseValid($response, [
-            'uninstall_token' => ['required', 'string'],
+            'uninstall_token' => ['required', 'string', 'max:255'],
         ])) {
             $app->delete();
 
-            throw new AppException(
-                'App has invalid installation response',
+            throw new ClientException(
+                Exceptions::CLIENT_INVALID_INSTALLATION_RESPONSE,
                 0,
                 null,
+                false,
                 [
                     "Body: {$response->body()}",
                 ],
@@ -179,7 +184,10 @@ class AppService implements AppServiceContract
             'uninstall_token' => $response->json('uninstall_token'),
         ]);
 
-        $internalPermissions = Collection::make($appConfig['internal_permissions'])
+        /** @var Collection<int, mixed> $internalPermissions */
+        $internalPermissions = $appConfig['internal_permissions'];
+
+        $internalPermissions = Collection::make($internalPermissions)
             ->map(fn ($permission) => Permission::create([
                 'name' => "app.{$app->slug}.{$permission['name']}",
                 'display_name' => $permission['display_name'] ?? null,
@@ -201,6 +209,10 @@ class AppService implements AppServiceContract
             );
         }
 
+        if (!($dto->getMetadata() instanceof Missing)) {
+            $this->metadataService->sync($app, $dto->getMetadata());
+        }
+
         return $app;
     }
 
@@ -212,17 +224,20 @@ class AppService implements AppServiceContract
             $response = Http::post($url, [
                 'uninstall_token' => $app->uninstall_token,
             ]);
+
+            if (!$force && $response->failed()) {
+                throw new ClientException(Exceptions::CLIENT_FAILED_TO_UNINSTALL_APP);
+            }
         } catch (Throwable) {
             if (!$force) {
-                throw new AppException('Failed to connect with application');
+                throw new ClientException(Exceptions::CLIENT_FAILED_TO_CONNECT_WITH_APP);
             }
         }
 
-        if (!$force && $response->failed()) {
-            throw new AppException('Failed to uninstall the application');
-        }
-
         Permission::where('name', 'like', 'app.' . $app->slug . '%')->delete();
+
+        Artisan::call('permission:cache-reset');
+
         $app->role()->delete();
         $app->webhooks()->delete();
         $app->delete();
@@ -233,7 +248,7 @@ class AppService implements AppServiceContract
         return 'app.' . $app->slug . '.';
     }
 
-    protected function isAppRootValid($response)
+    protected function isAppRootValid(Response $response): bool
     {
         return $this->isResponseValid($response, [
             'name' => ['required', 'string'],
@@ -255,7 +270,7 @@ class AppService implements AppServiceContract
         ]);
     }
 
-    protected function isResponseValid($response, $rules)
+    protected function isResponseValid(Response $response, array $rules): bool
     {
         if ($response->json() === null) {
             return false;

@@ -7,20 +7,20 @@ Login:
       content:
         application/json:
           schema:
+            required:
+              - email
+              - password
+            type: object
             properties:
               email:
                 type: string
                 example: admin@example.com
-                required: true
               password:
                 type: string
                 example: secret
-                required: true
               code:
                 type: string
                 example: XyDZR-M9GWZ
-                required: false
-            type: object
     responses:
       200:
         description: Success
@@ -92,21 +92,52 @@ ResetPassword:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 ResetPasswordParams:
   get:
     tags:
       - Auth
-    summary: 'Show reset password form'
+    summary: 'Checks if token belongs to user with email'
+    parameters:
+      - in: path
+        name: token
+        required: true
+        schema:
+          type: string
+          example: be55ec43d8f58c85b333605f06be1163091a697f2460d86755ca4324cf56cccc
+        description: User token
+      - in: path
+        name: email
+        required: true
+        schema:
+          type: string
+          example: test@test.test
+        description: User email
     responses:
       200:
         description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  properties:
+                    token:
+                      type: string
+                    identity_token:
+                      type: string
+                    refresh_token:
+                      type: string
+                    user:
+                      $ref: './../schemas/Users.yml#/User'
+                  type: object
+              type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 SaveResetPassword:
-  patch:
+  put:
     tags:
       - Auth
     summary: 'save the reset password'
@@ -116,10 +147,10 @@ SaveResetPassword:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 Password:
-  patch:
+  put:
     tags:
       - Auth
     summary: 'Change password'
@@ -139,7 +170,7 @@ Password:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 Refresh:
   post:
@@ -174,50 +205,6 @@ Refresh:
                   type: object
               type: object
 
-LoginHistory:
-  get:
-    tags:
-      - Auth
-    summary: 'Get login history'
-    responses:
-      200:
-        description: Success
-    deprecated: true
-    security:
-      - oauth: [ ]
-
-KillSessionParams:
-  get:
-    tags:
-      - Auth
-    summary: 'Allow to ''kill'' active session'
-    parameters:
-      - name: id
-        in: path
-        description: 'token id from the table ''oauth_access_tokens'''
-        required: true
-        schema:
-          type: string
-          example: 47e380b746d6cacb20473b82d911b2701a3c05422c65cbc4872045a100fcb72be554ad1680aef2bf
-    responses:
-      200:
-        description: Success
-    deprecated: true
-    security:
-      - oauth: [ ]
-
-KillSession:
-  get:
-    tags:
-      - Auth
-    summary: 'Allow to ''kill'' all old sessions'
-    responses:
-      200:
-        description: Success
-    deprecated: true
-    security:
-      - oauth: [ ]
-
 Profile:
   get:
     tags:
@@ -237,7 +224,43 @@ Profile:
                     - $ref: './../schemas/Apps.yml#/AppView'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
+  patch:
+    tags:
+      - Auth
+    summary: 'edit your own user resource'
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              name:
+                type: string
+                example: 'Test User'
+              consents:
+                properties:
+                  119c0a63-1ea1-4769-8d5f-169f68de5598:
+                    type: boolean
+                    example: true
+                  02b97693-857c-4fb9-9999-47400ac5fbef:
+                    type: boolean
+                    example: false
+                type: object
+              preferences:
+                $ref: '././../schemas/Auth.yml#/Preferences'
+            type: object
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  $ref: './../schemas/Users.yml#/UserView'
+              type: object
+    security:
+      - BearerAuth: [ ]
 
 Check:
   get:
@@ -260,6 +283,13 @@ CheckParams:
     tags:
       - Auth
     summary: 'get profile resource from identity token'
+    parameters:
+      - name: identity_token
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
     responses:
       200:
         description: Success
@@ -376,9 +406,9 @@ TFARemove:
                 type: string
                 example: secret
             type: object
-  responses:
-    204:
-      description: Success
+    responses:
+      204:
+        description: Success
 
 Register:
   post:
@@ -409,5 +439,14 @@ Register:
                     description: 'Authenticated user role'
                     assignable: false
                     deletable: false
+                consents:
+                  - name: 'Consent one'
+                    description_html: '<h1>Lorem ipsum dolor sit amet</h1>'
+                    required: false
+                    value: true
+                  - name: 'Consent two'
+                    description_html: '<h1>Lorem ipsum dolor sit amet</h1>'
+                    required: true
+                    value: true
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]

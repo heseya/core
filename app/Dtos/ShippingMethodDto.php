@@ -2,18 +2,23 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\ShippingMethodStoreRequest;
 use App\Http\Requests\ShippingMethodUpdateRequest;
 use App\Models\App;
+use App\Traits\MapMetadata;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
-class ShippingMethodDto extends Dto
+class ShippingMethodDto extends Dto implements InstantiateFromRequest
 {
-    protected string $name;
-    protected bool $public;
-    protected bool $block_list;
+    use MapMetadata;
+
+    protected string|Missing $name;
+    protected bool|Missing $public;
+    protected bool|Missing $block_list;
     protected ?array $payment_methods;
     protected ?array $countries;
     protected ?array $price_ranges;
@@ -24,13 +29,15 @@ class ShippingMethodDto extends Dto
     protected ?array $shipping_points;
     protected string|null $app_id;
 
+    protected array|Missing $metadata;
+
     public static function instantiateFromRequest(
-        ShippingMethodStoreRequest|ShippingMethodUpdateRequest $request,
+        FormRequest|ShippingMethodStoreRequest|ShippingMethodUpdateRequest $request,
     ): self {
         return new self(
-            name: $request->input('name'),
-            public: $request->boolean('public'),
-            block_list: $request->boolean('block_list'),
+            name: $request->input('name', new Missing()),
+            public: $request->input('public', new Missing()),
+            block_list: $request->input('block_list', new Missing()),
             payment_methods: $request->input('payment_methods'),
             countries: $request->input('countries'),
             price_ranges: $request->input('price_ranges'),
@@ -40,20 +47,21 @@ class ShippingMethodDto extends Dto
             shipping_points: $request->input('shipping_points'),
             integration_key: $request->input('integration_key'),
             app_id: Auth::user() instanceof App ? Auth::id() : null,
+            metadata: self::mapMetadata($request),
         );
     }
 
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    public function isPublic(): bool
+    public function isPublic(): ?bool
     {
         return $this->public;
     }
 
-    public function isBlockList(): bool
+    public function isBlockList(): ?bool
     {
         return $this->block_list;
     }

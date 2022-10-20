@@ -1,29 +1,19 @@
 <?php
 
-use Database\Seeders\CountriesSeeder;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
 
 class CreateCountriesTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::create('countries', function (Blueprint $table) {
+        Schema::create('countries', function (Blueprint $table): void {
             $table->char('code', 2)->primary()->index();
             $table->string('name', 64);
         });
 
-        $seeder = new CountriesSeeder;
-        $seeder->run();
-
-        Schema::create('shipping_method_country', function (Blueprint $table) {
+        Schema::create('shipping_method_country', function (Blueprint $table): void {
             $table->char('country_code', 2)->index();
             $table->uuid('shipping_method_id')->index();
 
@@ -33,19 +23,14 @@ class CreateCountriesTable extends Migration
             $table->foreign('shipping_method_id')->references('id')->on('shipping_methods')->onDelete('cascade');
         });
 
-        Schema::table('shipping_methods', function (Blueprint $table) {
+        Schema::table('shipping_methods', function (Blueprint $table): void {
             $table->boolean('black_list')->default(true);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('shipping_methods', function (Blueprint $table) {
+        Schema::table('shipping_methods', function (Blueprint $table): void {
             $table->dropColumn('black_list');
         });
 

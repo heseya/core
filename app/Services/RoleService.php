@@ -5,43 +5,63 @@ namespace App\Services;
 use App\Dtos\RoleCreateDto;
 use App\Dtos\RoleSearchDto;
 use App\Dtos\RoleUpdateDto;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
-use App\Exceptions\AuthException;
-use App\Exceptions\RoleException;
+use App\Exceptions\ClientException;
 use App\Models\Role;
+use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\RoleServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 
 class RoleService implements RoleServiceContract
 {
-    public function search(RoleSearchDto $searchDto, int $limit): LengthAwarePaginator
-    {
-        return Role::search($searchDto->toArray())->paginate($limit);
+    public function __construct(
+        private MetadataServiceContract $metadataService,
+    ) {
     }
 
+    public function search(RoleSearchDto $searchDto): LengthAwarePaginator
+    {
+        return Role::searchByCriteria($searchDto->toArray())
+            ->withCount('users')
+            ->paginate(Config::get('pagination.per_page'));
+    }
+
+    /**
+     * @throws ClientException
+     */
     public function create(RoleCreateDto $dto): Role
     {
         if (!Auth::user()->hasAllPermissions($dto->getPermissions())) {
-            throw new AuthException(
-                'Cant create a role with permissions you don\'t have',
-            );
+            throw new ClientException(Exceptions::CLIENT_CREATE_ROLE_WITHOUT_PERMISSION);
         }
 
+        /** @var Role $role */
         $role = Role::create($dto->toArray());
         $role->syncPermissions($dto->getPermissions());
+
+        if (!($dto->getMetadata() instanceof Missing)) {
+            $this->metadataService->sync($role, $dto->getMetadata());
+        }
+
         $role->refresh();
+        $role->loadCount('users');
 
         return $role;
     }
 
+    /**
+     * @throws ClientException
+     */
     public function update(Role $role, RoleUpdateDto $dto): Role
     {
-        if (!Auth::user()->hasAllPermissions($role->getAllPermissions())) {
-            throw new AuthException(
-                'Cant update a role with permissions you don\'t have',
-            );
+        $user = Auth::user();
+
+        if (!$user->hasAllPermissions($role->getAllPermissions())) {
+            throw new ClientException(Exceptions::CLIENT_UPDATE_ROLE_WITHOUT_PERMISSION);
         }
 
         if (!$dto->getPermissions() instanceof Missing) {
@@ -49,23 +69,25 @@ class RoleService implements RoleServiceContract
                 $role->type->is(RoleType::OWNER) &&
                 $role->getPermissionNames()->diff($dto->getPermissions())->isNotEmpty()
             ) {
-                throw new RoleException('Can\'t update owners permissions');
+                throw new ClientException(Exceptions::CLIENT_UPDATE_OWNER_PERMISSION);
             }
 
-            if (!Auth::user()->hasAllPermissions($dto->getPermissions())) {
-                throw new AuthException(
-                    'Cant update a role with permissions you don\'t have',
-                );
+            if (!$user->hasAllPermissions($dto->getPermissions())) {
+                throw new ClientException(Exceptions::CLIENT_UPDATE_ROLE_WITHOUT_PERMISSION);
             }
 
             $role->syncPermissions($dto->getPermissions());
         }
 
         $role->update($dto->toArray());
+        $role->loadCount('users');
 
         return $role;
     }
 
+    /**
+     * @throws ClientException
+     */
     public function delete(Role $role): void
     {
         if (
@@ -73,13 +95,11 @@ class RoleService implements RoleServiceContract
             $role->type->is(RoleType::UNAUTHENTICATED) ||
             $role->type->is(RoleType::AUTHENTICATED)
         ) {
-            throw new RoleException('Can\'t delete built-in roles');
+            throw new ClientException(Exceptions::CLIENT_DELETE_BUILT_IN_ROLE);
         }
 
         if (!Auth::user()->hasAllPermissions($role->getAllPermissions())) {
-            throw new AuthException(
-                'Cant delete a role with permissions you don\'t have',
-            );
+            throw new ClientException(Exceptions::CLIENT_DELETE_ROLE_WITHOUT_PERMISSION);
         }
 
         $role->delete();

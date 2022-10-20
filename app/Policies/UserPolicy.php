@@ -2,7 +2,9 @@
 
 namespace App\Policies;
 
-use App\Exceptions\TFAException;
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ClientException;
+use App\Models\App;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Auth\Access\Response;
@@ -14,7 +16,7 @@ class UserPolicy
     public function removeUserTFA(User|App $user, User $selected_user): Response
     {
         if ($user->getAuthIdentifier() === $selected_user->getAuthIdentifier()) {
-            throw new TFAException('You cannot remove 2FA yourself in this way.');
+            throw new ClientException(Exceptions::CLIENT_TFA_CANNOT_REMOVE);
         }
 
         return Response::allow();

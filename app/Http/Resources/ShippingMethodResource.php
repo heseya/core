@@ -2,27 +2,30 @@
 
 namespace App\Http\Resources;
 
+use App\Traits\MetadataResource;
 use Illuminate\Http\Request;
 
 class ShippingMethodResource extends Resource
 {
+    use MetadataResource;
+
     public function base(Request $request): array
     {
-        return [
-            'id' => $this->getKey(),
-            'name' => $this->name,
-            'price' => $this->price,
-            'public' => $this->public,
-            'block_list' => $this->block_list,
-            'payment_methods' => PaymentMethodResource::collection($this->paymentMethods),
-            'countries' => CountryResource::collection($this->countries),
-            'price_ranges' => PriceRangeResource::collection($this->priceRanges->sortBy('start')),
-            'shipping_time_min' => $this->shipping_time_min,
-            'shipping_time_max' => $this->shipping_time_max,
-            'shipping_type' => $this->shipping_type,
-            'integration_key' => $this->integration_key,
-            'deletable' => $this->deletable,
+        return array_merge([
+            'id' => $this->resource->getKey(),
+            'name' => $this->resource->name,
+            'price' => $this->resource->price,
+            'public' => $this->resource->public,
+            'block_list' => $this->resource->block_list,
+            'payment_methods' => PaymentMethodResource::collection($this->resource->paymentMethods),
+            'countries' => CountryResource::collection($this->resource->countries),
+            'price_ranges' => PriceRangeResource::collection($this->resource->priceRanges->sortBy('start')),
+            'shipping_time_min' => $this->resource->shipping_time_min,
+            'shipping_time_max' => $this->resource->shipping_time_max,
+            'shipping_type' => $this->resource->shipping_type,
+            'integration_key' => $this->resource->integration_key,
+            'deletable' => $this->resource->deletable,
             'shipping_points' => AddressResource::collection($this->shippingPoints),
-        ];
+        ], $this->metadataResource('shipping_methods.show_metadata_private'));
     }
 }

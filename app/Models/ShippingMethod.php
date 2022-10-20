@@ -2,6 +2,11 @@
 
 namespace App\Models;
 
+use App\Criteria\MetadataPrivateSearch;
+use App\Criteria\MetadataSearch;
+use App\Traits\HasDiscounts;
+use App\Traits\HasMetadata;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -11,14 +16,18 @@ use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 
 /**
+ * @property float $price
+ *
  * @mixin IdeHelperShippingMethod
  */
 class ShippingMethod extends Model implements AuditableContract
 {
-    use HasFactory, Auditable;
+    use HasFactory, Auditable, HasCriteria, HasMetadata, HasDiscounts;
 
     /**
      * The attributes that are mass assignable.
+     *
+     * @var array<string>
      */
     protected $fillable = [
         'name',
@@ -35,11 +44,19 @@ class ShippingMethod extends Model implements AuditableContract
     /**
      * The attributes that should be cast to native types.
      *
-     * @var array
+     * @var array<string, string>
      */
     protected $casts = [
         'public' => 'boolean',
         'block_list' => 'boolean',
+    ];
+
+    /**
+     * @var array<string, class-string>
+     */
+    protected array $criteria = [
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     public function app(): BelongsTo

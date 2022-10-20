@@ -1,0 +1,11 @@
+Attribute:
+  content:
+    application/json:
+      schema:
+        $ref: '../schemas/Attributes.yml#/AttributeMetadata'
+
+AttributeOption:
+  content:
+    application/json:
+      schema:
+        $ref: '../schemas/Attributes.yml#/AttributeOptionMetadata'

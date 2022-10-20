@@ -5,8 +5,8 @@ namespace Tests\Unit;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\Contracts\AnalyticsServiceContract;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class AnalyticsServiceTest extends TestCase
@@ -84,53 +84,6 @@ class AnalyticsServiceTest extends TestCase
         );
     }
 
-    private function testGetPaymentsOverPeriodGroup(
-        Carbon $groupOne0, Carbon $groupOne1, Carbon $groupTwo0, Carbon $groupTwo1,
-        string $labelOne, string $labelTwo, string $group
-    ): void
-    {
-        $order = Order::factory()->create();
-
-        $oneG0 = Payment::factory([
-            'paid' => true,
-            'created_at' => $groupOne0,
-        ])->make();
-
-        $twoG0 = Payment::factory([
-            'paid' => true,
-            'created_at' => $groupOne1,
-        ])->make();
-
-        $oneG1 = Payment::factory([
-            'paid' => true,
-            'created_at' => $groupTwo0,
-        ])->make();
-
-        $twoG1 = Payment::factory([
-            'paid' => true,
-            'created_at' => $groupTwo1,
-        ])->make();
-
-        $order->payments()->save($oneG0);
-        $order->payments()->save($twoG0);
-        $order->payments()->save($oneG1);
-        $order->payments()->save($twoG1);
-
-        $amountG0 = $oneG0->amount + $twoG0->amount;
-        $amountG1 = $oneG1->amount + $twoG1->amount;
-
-        $this->assertEquals([
-            $labelOne => [
-                'amount' => $amountG0,
-                'count' => 2,
-            ],
-            $labelTwo => [
-                'amount' => $amountG1,
-                'count' => 2,
-            ],
-        ], $this->analyticsService->getPaymentsOverPeriod($groupOne0, $groupTwo1, $group));
-    }
-
     public function testGetPaymentsOverPeriodMonthly(): void
     {
         $from = Carbon::parse('2020-01-01');
@@ -177,5 +130,56 @@ class AnalyticsServiceTest extends TestCase
             '2020-01-01 01',
             'hourly',
         );
+    }
+
+    private function testGetPaymentsOverPeriodGroup(
+        Carbon $groupOne0,
+        Carbon $groupOne1,
+        Carbon $groupTwo0,
+        Carbon $groupTwo1,
+        string $labelOne,
+        string $labelTwo,
+        string $group
+    ): void {
+        $order = Order::factory()->create();
+
+        $oneG0 = Payment::factory([
+            'paid' => true,
+            'created_at' => $groupOne0,
+        ])->make();
+
+        $twoG0 = Payment::factory([
+            'paid' => true,
+            'created_at' => $groupOne1,
+        ])->make();
+
+        $oneG1 = Payment::factory([
+            'paid' => true,
+            'created_at' => $groupTwo0,
+        ])->make();
+
+        $twoG1 = Payment::factory([
+            'paid' => true,
+            'created_at' => $groupTwo1,
+        ])->make();
+
+        $order->payments()->save($oneG0);
+        $order->payments()->save($twoG0);
+        $order->payments()->save($oneG1);
+        $order->payments()->save($twoG1);
+
+        $amountG0 = $oneG0->amount + $twoG0->amount;
+        $amountG1 = $oneG1->amount + $twoG1->amount;
+
+        $this->assertEquals([
+            $labelOne => [
+                'amount' => $amountG0,
+                'count' => 2,
+            ],
+            $labelTwo => [
+                'amount' => $amountG1,
+                'count' => 2,
+            ],
+        ], $this->analyticsService->getPaymentsOverPeriod($groupOne0, $groupTwo1, $group));
     }
 }

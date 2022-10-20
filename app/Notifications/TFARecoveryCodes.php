@@ -10,12 +10,12 @@ class TFARecoveryCodes extends Notification
 {
     use Queueable;
 
-    public function via($notifiable)
+    public function via(mixed $notifiable): array
     {
         return ['mail'];
     }
 
-    public function toMail($notifiable): MailMessage
+    public function toMail(mixed $notifiable): MailMessage
     {
         return (new MailMessage())
             ->subject('2FA recovery codes')

@@ -6,32 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 class AddSoftDeletesToPageAndProductSet extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::table('pages', function (Blueprint $table) {
+        Schema::table('pages', function (Blueprint $table): void {
             $table->softDeletes();
         });
-        Schema::table('product_sets', function (Blueprint $table) {
+        Schema::table('product_sets', function (Blueprint $table): void {
             $table->softDeletes();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('pages', function (Blueprint $table) {
+        Schema::table('pages', function (Blueprint $table): void {
             $table->dropSoftDeletes();
         });
-        Schema::table('product_sets', function (Blueprint $table) {
+        Schema::table('product_sets', function (Blueprint $table): void {
             $table->dropSoftDeletes();
         });
     }

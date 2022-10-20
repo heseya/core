@@ -5,13 +5,18 @@ namespace App\Models;
 use App\Audits\Redactors\AddressRedactor;
 use App\Audits\Redactors\ShippingMethodRedactor;
 use App\Audits\Redactors\StatusRedactor;
-use App\SearchTypes\OrderSearch;
-use App\SearchTypes\WhereCreatedAfter;
-use App\SearchTypes\WhereCreatedBefore;
-use App\SearchTypes\WhereHasStatusHidden;
-use Heseya\Searchable\Searches\Like;
-use Heseya\Searchable\Traits\Searchable;
-use Heseya\Sortable\Sortable;
+use App\Criteria\MetadataPrivateSearch;
+use App\Criteria\MetadataSearch;
+use App\Criteria\OrderSearch;
+use App\Criteria\WhereCreatedAfter;
+use App\Criteria\WhereCreatedBefore;
+use App\Criteria\WhereHasStatusHidden;
+use App\Models\Contracts\SortableContract;
+use App\Traits\HasMetadata;
+use App\Traits\HasOrderDiscount;
+use App\Traits\Sortable;
+use Heseya\Searchable\Criteria\Like;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -27,9 +32,9 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 /**
  * @mixin IdeHelperOrder
  */
-class Order extends Model implements AuditableContract
+class Order extends Model implements AuditableContract, SortableContract
 {
-    use HasFactory, Searchable, Sortable, Notifiable, Auditable;
+    use HasFactory, HasCriteria, Sortable, Notifiable, Auditable, HasMetadata, HasOrderDiscount;
 
     protected $fillable = [
         'code',
@@ -38,21 +43,24 @@ class Order extends Model implements AuditableContract
         'comment',
         'status_id',
         'shipping_method_id',
+        'shipping_price_initial',
         'shipping_price',
         'shipping_number',
         'billing_address_id',
         'shipping_address_id',
         'created_at',
-        'user_id',
-        'user_type',
+        'buyer_id',
+        'buyer_type',
         'summary',
         'paid',
+        'cart_total_initial',
+        'cart_total',
         'shipping_place',
         'invoice_requested',
         'shipping_type',
     ];
 
-    protected $auditInclude = [
+    protected array $auditInclude = [
         'code',
         'email',
         'currency',
@@ -65,24 +73,26 @@ class Order extends Model implements AuditableContract
         'shipping_address_id',
     ];
 
-    protected $attributeModifiers = [
+    protected array $attributeModifiers = [
         'status_id' => StatusRedactor::class,
         'shipping_method_id' => ShippingMethodRedactor::class,
         'billing_address_id' => AddressRedactor::class,
         'shipping_address_id' => AddressRedactor::class,
     ];
 
-    protected array $searchable = [
+    protected array $criteria = [
         'search' => OrderSearch::class,
         'status_id',
         'shipping_method_id',
         'code' => Like::class,
         'email' => Like::class,
-        'user_id',
+        'buyer_id',
         'status.hidden' => WhereHasStatusHidden::class,
         'paid',
         'from' => WhereCreatedAfter::class,
         'to' => WhereCreatedBefore::class,
+        'metadata' => MetadataSearch::class,
+        'metadata_private' => MetadataPrivateSearch::class,
     ];
 
     protected array $sortable = [
@@ -103,12 +113,6 @@ class Order extends Model implements AuditableContract
 
     /**
      * Summary amount of paid.
-     *
-     * @OA\Property(
-     *   property="summary_paid",
-     *   type="float",
-     *   example=199.99
-     * )
      */
     public function getPaidAmountAttribute(): float
     {
@@ -117,13 +121,6 @@ class Order extends Model implements AuditableContract
             ->sum('amount');
     }
 
-    /**
-     * @OA\Property(
-     *   property="payments",
-     *   type="array",
-     *   @OA\Items(ref="#/components/schemas/Payment"),
-     * )
-     */
     public function payments(): HasMany
     {
         return $this
@@ -132,17 +129,11 @@ class Order extends Model implements AuditableContract
             ->orderBy('updated_at', 'DESC');
     }
 
-    /**
-     * @OA\Property(
-     *   property="payable",
-     *   type="boolean",
-     * )
-     */
     public function getPayableAttribute(): bool
     {
         return !$this->paid &&
             !$this->status->cancel &&
-            $this->shippingMethod->paymentMethods()->count() > 0;
+            $this->shippingMethod->paymentMethods->count() > 0;
     }
 
     public function isPaid(): bool
@@ -150,45 +141,21 @@ class Order extends Model implements AuditableContract
         return $this->paid_amount >= $this->summary;
     }
 
-    /**
-     * @OA\Property(
-     *   property="status",
-     *   ref="#/components/schemas/Status",
-     * )
-     */
     public function status(): BelongsTo
     {
         return $this->belongsTo(Status::class);
     }
 
-    /**
-     * @OA\Property(
-     *   property="shipping_method",
-     *   ref="#/components/schemas/ShippingMethod",
-     * )
-     */
     public function shippingMethod(): BelongsTo
     {
         return $this->belongsTo(ShippingMethod::class);
     }
 
-    /**
-     * @OA\Property(
-     *   property="shipping_address",
-     *   ref="#/components/schemas/Address",
-     * )
-     */
     public function shippingAddress(): HasOne
     {
         return $this->hasOne(Address::class, 'id', 'shipping_address_id');
     }
 
-    /**
-     * @OA\Property(
-     *   property="billing_address",
-     *   ref="#/components/schemas/Address",
-     * )
-     */
     public function invoiceAddress(): HasOne
     {
         return $this->hasOne(Address::class, 'id', 'billing_address_id');
@@ -197,14 +164,6 @@ class Order extends Model implements AuditableContract
     public function deposits(): HasManyThrough
     {
         return $this->hasManyThrough(Deposit::class, OrderProduct::class);
-    }
-
-    public function discounts(): BelongsToMany
-    {
-        return $this
-            ->belongsToMany(Discount::class, 'order_discounts')
-            ->withPivot(['type', 'discount'])
-            ->withTrashed();
     }
 
     /**
@@ -218,16 +177,17 @@ class Order extends Model implements AuditableContract
         }
     }
 
-    /**
-     * @OA\Property(
-     *   property="products",
-     *   type="array",
-     *   @OA\Items(ref="#/components/schemas/OrderProduct"),
-     * )
-     */
     public function products(): HasMany
     {
         return $this->hasMany(OrderProduct::class);
+    }
+
+    public function documents(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(Media::class, 'order_document', 'order_id', 'media_id')
+            ->using(OrderDocument::class)
+            ->withPivot('id', 'type', 'name');
     }
 
     public function generateCode(): string
@@ -239,8 +199,8 @@ class Order extends Model implements AuditableContract
         return $code;
     }
 
-    public function user(): MorphTo
+    public function buyer(): MorphTo
     {
-        return $this->morphTo('order', 'user_type', 'user_id', 'id');
+        return $this->morphTo('order', 'buyer_type', 'buyer_id', 'id');
     }
 }

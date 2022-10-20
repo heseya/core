@@ -30,4 +30,4 @@ FurgonetkaCreatePackage:
                   example: 0000000773354Q
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]

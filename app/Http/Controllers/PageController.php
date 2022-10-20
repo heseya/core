@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\PageDto;
+use App\Http\Requests\PageIndexRequest;
 use App\Http\Requests\PageReorderRequest;
 use App\Http\Requests\PageStoreRequest;
 use App\Http\Requests\PageUpdateRequest;
@@ -22,10 +23,10 @@ class PageController extends Controller
         $this->pageService = $pageService;
     }
 
-    public function index(): JsonResource
+    public function index(PageIndexRequest $request): JsonResource
     {
         return PageResource::collection(
-            $this->pageService->getPaginated(),
+            $this->pageService->getPaginated($request->validated()),
         );
     }
 
@@ -38,7 +39,7 @@ class PageController extends Controller
 
     public function store(PageStoreRequest $request): JsonResource
     {
-        $dto = PageDto::fromFormRequest($request);
+        $dto = PageDto::instantiateFromRequest($request);
         $page = $this->pageService->create($dto);
 
         return PageResource::make($page);
@@ -46,7 +47,7 @@ class PageController extends Controller
 
     public function update(Page $page, PageUpdateRequest $request): JsonResource
     {
-        $dto = PageDto::fromFormRequest($request);
+        $dto = PageDto::instantiateFromRequest($request);
         $page = $this->pageService->update($page, $dto);
 
         return PageResource::make($page);

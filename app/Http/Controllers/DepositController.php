@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\ItemUpdatedQuantity;
 use App\Http\Requests\DepositCreateRequest;
+use App\Http\Requests\DepositIndexRequest;
 use App\Http\Resources\DepositResource;
 use App\Models\Deposit;
 use App\Models\Item;
@@ -12,11 +13,14 @@ use Illuminate\Support\Facades\Config;
 
 class DepositController extends Controller
 {
-    public function index(): JsonResource
+    public function index(DepositIndexRequest $request): JsonResource
     {
-        return DepositResource::collection(
-            Deposit::paginate(Config::get('pagination.per_page')),
-        );
+        $deposits = Deposit::searchByCriteria($request->validated())
+            ->with(['item', 'order'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(Config::get('pagination.per_page'));
+
+        return DepositResource::collection($deposits);
     }
 
     public function show(Item $item): JsonResource

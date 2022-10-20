@@ -19,9 +19,10 @@ return [
     |--------------------------------------------------------------------------
     | Application Version
     |--------------------------------------------------------------------------
+    |
      */
 
-    'ver' => '2.0.5',
+    'ver' => '3.0.0',
 
     /*
     |--------------------------------------------------------------------------
@@ -180,6 +181,7 @@ return [
          * Application Service Providers...
          */
         App\Providers\AppServiceProvider::class,
+        App\Providers\RepositoryServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,

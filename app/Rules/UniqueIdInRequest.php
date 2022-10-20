@@ -19,7 +19,8 @@ class UniqueIdInRequest implements Rule
     public function passes($attribute, $value): bool
     {
         $items = new Collection($value);
-        $items = $items->pluck('id')->duplicates();
+        $items = $items->duplicates();
+
         return $items->isEmpty();
     }
 

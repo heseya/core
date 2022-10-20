@@ -9,10 +9,11 @@ class OrderSchemaResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'name' => $this->name,
-            'value' => $this->value,
-            'price' => $this->price,
+            'id' => $this->resource->getKey(),
+            'name' => $this->resource->name,
+            'value' => $this->resource->value,
+            'price' => $this->resource->price,
+            'price_initial' => $this->resource->price_initial,
         ];
     }
 }

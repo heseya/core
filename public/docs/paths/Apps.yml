@@ -2,6 +2,23 @@ Apps:
   get:
     tags:
       - Apps
+    parameters:
+    - name: metadata
+      in: query
+      description: search by metadata
+      style: deepObject
+      explode: true
+      required: false
+      schema:
+        $ref: '../schemas/Metadata.yml#/MetadataQuery'
+    - name: metadata_private
+      in: query
+      description: search by metadata private
+      style: deepObject
+      explode: true
+      required: false
+      schema:
+        $ref: '../schemas/Metadata.yml#/MetadataQuery'
     summary: 'All registered app list'
     responses:
       200:
@@ -37,6 +54,13 @@ AppsParams:
     tags:
       - Apps
     summary: 'show an app'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
     responses:
       200:
         description: Success

@@ -68,7 +68,24 @@ class AppOtherTest extends TestCase
                 'icon' => $app->icon,
                 'author' => $app->author,
                 'permissions' => [],
-            ]]);
+                'metadata' => [],
+            ],
+            ]);
+    }
+
+    public function testShowWrongId(): void
+    {
+        $this->user->givePermissionTo('apps.show_details');
+
+        $app = App::factory()->create();
+
+        $this->actingAs($this->user)
+            ->getJson('/apps/id:its-not-uuid')
+            ->assertNotFound();
+
+        $this->actingAs($this->user)
+            ->getJson('/apps/id:' . $app->getKey() . $app->getKey())
+            ->assertNotFound();
     }
 
     public function testUninstallUnauthorized(): void
@@ -108,7 +125,7 @@ class AppOtherTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->deleteJson('/apps/id:' . $app->getKey() . '?force');
+            ->json('DELETE', '/apps/id:' . $app->getKey(), ['force' => true]);
 
         $response->assertNoContent();
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase
@@ -122,7 +139,7 @@ class AppOtherTest extends TestCase
         $app = App::factory()->create(['url' => $this->url]);
 
         Http::fake([
-            $this->url . '/uninstall' => new ConnectionException("Test", 7),
+            $this->url . '/uninstall' => new ConnectionException('Test', 7),
         ]);
 
         $response = $this->actingAs($this->user)
@@ -139,7 +156,7 @@ class AppOtherTest extends TestCase
         $app = App::factory()->create(['url' => $this->url]);
 
         Http::fake([
-            $this->url . '/uninstall' => new ConnectionException("Test", 7),
+            $this->url . '/uninstall' => new ConnectionException('Test', 7),
         ]);
 
         $response = $this->actingAs($this->user)
@@ -162,6 +179,41 @@ class AppOtherTest extends TestCase
 
         $response = $this->actingAs($this->user)
             ->deleteJson('/apps/id:' . $app->getKey());
+
+        $response->assertNoContent();
+        $this->assertDatabaseCount('apps', 1); // +1 from TestCase
+        $this->assertModelMissing($app);
+    }
+
+    public function shortBooleanProvider(): array
+    {
+        return [
+            'as true' => [true],
+            'as false' => [false],
+            'as 1' => [1],
+            'as 0' => [0],
+            'as on' => ['on'],
+            'as off' => ['off'],
+            'as yes' => ['yes'],
+            'as no' => ['no'],
+        ];
+    }
+
+    /**
+     * @dataProvider shortBooleanProvider
+     */
+    public function testUninstallForce($boolean): void
+    {
+        $this->user->givePermissionTo('apps.remove');
+
+        $app = App::factory()->create(['url' => $this->url]);
+
+        Http::fake([
+            $this->url . '/uninstall' => Http::response(status: 204),
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->json('DELETE', '/apps/id:' . $app->getKey(), ['force' => $boolean]);
 
         $response->assertNoContent();
         $this->assertDatabaseCount('apps', 1); // +1 from TestCase

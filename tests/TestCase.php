@@ -8,18 +8,19 @@ use App\Models\App as Application;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Contracts\TokenServiceContract;
-use Database\Seeders\PermissionSeeder;
+use Database\Seeders\InitSeeder;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Tests\Support\ElasticTest;
 use Tests\Traits\JsonQueryCounter;
 
 abstract class TestCase extends BaseTestCase
 {
-    use CreatesApplication, RefreshDatabase, JsonQueryCounter;
+    use CreatesApplication, RefreshDatabase, JsonQueryCounter, ElasticTest;
 
     public User $user;
     public Application $application;
@@ -30,7 +31,11 @@ abstract class TestCase extends BaseTestCase
     public function setUp(): void
     {
         parent::setUp();
-        ini_set('memory_limit', '1024M');
+
+        $this->fakeElastic();
+
+        $seeder = new InitSeeder();
+        $seeder->run();
 
         $this->tokenService = App::make(TokenServiceContract::class);
 
@@ -43,6 +48,13 @@ abstract class TestCase extends BaseTestCase
         ]);
 
         $this->application = Application::factory()->create();
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        app()->forgetInstances();
     }
 
     public function authProvider(): array
@@ -62,10 +74,34 @@ abstract class TestCase extends BaseTestCase
         );
 
         $this->withHeaders(
-            $this->defaultHeaders + ['Authorization' => "Bearer $token"],
+            $this->defaultHeaders + ['Authorization' => "Bearer ${token}"],
         );
 
         return $this;
     }
 
+    public function booleanProvider(): array
+    {
+        return array_merge($this->trueBooleanProvider(), $this->falseBooleanProvider());
+    }
+
+    public function trueBooleanProvider(): array
+    {
+        return [
+            'as user 1' => ['user', 1, true],
+            'as user on' => ['user', 'on', true],
+            'as user yes' => ['user', 'yes', true],
+            'as application true' => ['application', true, true],
+        ];
+    }
+
+    public function falseBooleanProvider(): array
+    {
+        return [
+            'as user 0' => ['user', 0, false],
+            'as user off' => ['user', 'off', false],
+            'as user no' => ['user', 'no', false],
+            'as application false' => ['application', false, false],
+        ];
+    }
 }

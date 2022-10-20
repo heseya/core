@@ -6,27 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 class AddDatesToDiscounts extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::table('discounts', function (Blueprint $table) {
+        Schema::table('discounts', function (Blueprint $table): void {
             $table->dateTime('starts_at')->nullable();
             $table->dateTime('expires_at')->nullable();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('discounts', function (Blueprint $table) {
+        Schema::table('discounts', function (Blueprint $table): void {
             $table->dropColumn('starts_at');
             $table->dropColumn('expires_at');
         });

@@ -6,14 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 class RemoveBrandAndCategoryIdFromProducts extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::table('products', function (Blueprint $table) {
+        Schema::table('products', function (Blueprint $table): void {
             $table->dropForeign('products_brand_id_foreign');
             $table->dropForeign('products_category_id_foreign');
 
@@ -22,14 +17,9 @@ class RemoveBrandAndCategoryIdFromProducts extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('products', function (Blueprint $table) {
+        Schema::table('products', function (Blueprint $table): void {
             $table->uuid('brand_id')->index()->nullable();
             $table->uuid('category_id')->index()->nullable();
 

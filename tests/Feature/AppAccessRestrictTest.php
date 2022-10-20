@@ -14,8 +14,8 @@ class AppAccessRestrictTest extends TestCase
             'logout' => ['POST', '/auth/logout'],
             'request password reset' => ['POST', '/users/reset-password'],
             'validate password reset' => ['GET', '/users/reset-password/uuid/test@example.com'],
-            'save password reset' => ['PATCH', '/users/save-reset-password'],
-            'change password' => ['PATCH', '/users/password'],
+            'save password reset' => ['PUT', '/users/save-reset-password'],
+            'change password' => ['PUT', '/users/password'],
         ];
     }
 

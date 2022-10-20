@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\TagCreateRequest;
 use App\Http\Requests\TagIndexRequest;
+use App\Http\Requests\TagUpdateRequest;
 use App\Http\Resources\TagResource;
 use App\Models\Tag;
 use Illuminate\Http\JsonResponse;
@@ -15,7 +16,7 @@ class TagController extends Controller
 {
     public function index(TagIndexRequest $request): JsonResource
     {
-        $tags = Tag::search($request->validated())
+        $tags = Tag::searchByCriteria($request->validated())
             ->withCount('products')
             ->orderBy('products_count', 'DESC')
             ->paginate(Config::get('pagination.per_page'));
@@ -30,7 +31,7 @@ class TagController extends Controller
         return TagResource::make($tag);
     }
 
-    public function update(Tag $tag, TagCreateRequest $request): JsonResource
+    public function update(Tag $tag, TagUpdateRequest $request): JsonResource
     {
         $tag->update($request->validated());
 

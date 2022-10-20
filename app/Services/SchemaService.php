@@ -8,11 +8,8 @@ use App\Services\Contracts\SchemaServiceContract;
 
 class SchemaService implements SchemaServiceContract
 {
-    protected ReorderServiceContract $reorderService;
-
-    public function __construct(ReorderServiceContract $reorderService)
+    public function __construct(private ReorderServiceContract $reorderService)
     {
-        $this->reorderService = $reorderService;
     }
 
     public function sync(Product $product, array $schemas = []): void
@@ -20,5 +17,12 @@ class SchemaService implements SchemaServiceContract
         $product->schemas()->sync(
             $this->reorderService->reorder($schemas),
         );
+
+        if ($product->schemas->isEmpty() && $product->has_schemas) {
+            $product->update(['has_schemas' => false]);
+        }
+        if ($product->schemas->isNotEmpty() && !$product->has_schemas) {
+            $product->update(['has_schemas' => true]);
+        }
     }
 }

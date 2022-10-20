@@ -6,35 +6,50 @@ use App\Dtos\RegisterDto;
 use App\Dtos\TFAConfirmDto;
 use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
+use App\Dtos\UpdateProfileDto;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
 use App\Enums\TFAType;
 use App\Enums\TokenType;
+use App\Events\PasswordReset;
+use App\Events\TfaInit;
+use App\Events\TfaSecurityCode as TfaSecurityCodeEvent;
 use App\Exceptions\AuthException;
+use App\Exceptions\ClientException;
 use App\Exceptions\TFAException;
 use App\Models\App;
 use App\Models\Role;
 use App\Models\Token;
 use App\Models\User;
+use App\Models\UserPreference;
 use App\Notifications\ResetPassword;
 use App\Notifications\TFAInitialization;
 use App\Notifications\TFASecurityCode;
 use App\Notifications\UserRegistered;
 use App\Services\Contracts\AuthServiceContract;
+use App\Services\Contracts\ConsentServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
-use Carbon\Carbon;
+use App\Services\Contracts\UserLoginAttemptServiceContract;
+use Heseya\Dto\Missing;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use PHPGangsta_GoogleAuthenticator;
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
 class AuthService implements AuthServiceContract
 {
     public function __construct(
         protected TokenServiceContract $tokenService,
         protected OneTimeSecurityCodeContract $oneTimeSecurityCodeService,
+        protected ConsentServiceContract $consentService,
+        protected UserLoginAttemptServiceContract $userLoginAttemptService,
     ) {
     }
 
@@ -52,7 +67,8 @@ class AuthService implements AuthServiceContract
         ]);
 
         if ($token === false) {
-            throw new AuthException('Invalid credentials', simpleLogs: true);
+            $this->userLoginAttemptService->store();
+            throw new ClientException(Exceptions::CLIENT_INVALID_CREDENTIALS, simpleLogs: true);
         }
 
         $this->verifyTFA($code);
@@ -68,6 +84,8 @@ class AuthService implements AuthServiceContract
             $uuid,
         );
 
+        $this->userLoginAttemptService->store(true);
+
         return [
             'token' => $token,
             'identity_token' => $identityToken,
@@ -78,7 +96,7 @@ class AuthService implements AuthServiceContract
     public function refresh(string $refreshToken, ?string $ip, ?string $userAgent): array
     {
         if (!$this->tokenService->validate($refreshToken)) {
-            throw new AuthException('Invalid token');
+            throw new ClientException(Exceptions::CLIENT_INVALID_TOKEN);
         }
 
         $payload = $this->tokenService->payload($refreshToken);
@@ -87,12 +105,17 @@ class AuthService implements AuthServiceContract
             $payload->get('typ') !== TokenType::REFRESH ||
             Token::where('id', $payload->get('jti'))->where('invalidated', true)->exists()
         ) {
-            throw new AuthException('Invalid token');
+            throw new ClientException(Exceptions::CLIENT_INVALID_TOKEN);
         }
 
         $uuid = Str::uuid()->toString();
+        /** @var JWTSubject|Authenticatable|null $user */
         $user = $this->tokenService->getUser($refreshToken);
         $this->tokenService->invalidateToken($refreshToken);
+
+        if ($user === null) {
+            throw new ClientException(Exceptions::CLIENT_USER_DOESNT_EXIST);
+        }
 
         $token = $this->tokenService->createToken(
             $user,
@@ -119,23 +142,25 @@ class AuthService implements AuthServiceContract
 
     public function logout(): void
     {
+        // @phpstan-ignore-next-line
         $this->tokenService->invalidateToken(Auth::getToken());
     }
 
-    public function resetPassword(string $email): void
+    public function resetPassword(string $email, string $redirect_url): void
     {
         $user = User::whereEmail($email)->first();
         if ($user) {
             $token = Password::createToken($user);
 
-            $user->notify(new ResetPassword($token));
+            PasswordReset::dispatch($user, $redirect_url);
+            $user->notify(new ResetPassword($token, $redirect_url));
         }
     }
 
     public function showResetPasswordForm(?string $email, ?string $token): User
     {
         if (!$token) {
-            throw new AuthException('The token is invalid');
+            throw new ClientException(Exceptions::CLIENT_INVALID_TOKEN);
         }
 
         $user = $this->getUserByEmail($email);
@@ -177,7 +202,7 @@ class AuthService implements AuthServiceContract
         );
 
         if (!($user instanceof User) || !$isIdentityToken) {
-            throw new AuthException('Invalid identity token');
+            throw new ClientException(Exceptions::CLIENT_INVALID_IDENTITY_TOKEN);
         }
 
         return $user;
@@ -185,19 +210,20 @@ class AuthService implements AuthServiceContract
 
     public function unauthenticatedUser(): User
     {
-        $user = User::make([
+        $user = new User([
             'name' => 'Unauthenticated',
         ]);
 
         $roles = Role::where('type', RoleType::UNAUTHENTICATED)->get();
         $user->setRelation('roles', $roles);
-        $user->id = null;
+        $user->setAttribute('id', null);
 
         return $user;
     }
 
     public function isAppAuthenticated(): bool
     {
+        // @phpstan-ignore-next-line
         return Auth::user() instanceof App;
     }
 
@@ -209,7 +235,7 @@ class AuthService implements AuthServiceContract
         return match ($dto->getType()) {
             TFAType::APP => $this->googleTFA(),
             TFAType::EMAIL => $this->emailTFA(),
-            default => throw new TFAException('Invalid Two-Factor Authentication type.'),
+            default => throw new ClientException(Exceptions::CLIENT_INVALID_TFA_TYPE),
         };
     }
 
@@ -224,7 +250,7 @@ class AuthService implements AuthServiceContract
         $this->checkIsTFA(Auth::user());
 
         if (!Auth::user()->tfa_type) {
-            throw new TFAException('First select Two-Factor Authentication type.');
+            throw new ClientException(Exceptions::CLIENT_DOESNT_HAVE_TFA_TYPE_SELECTED);
         }
 
         $this->checkIsValidTFA($dto->getCode());
@@ -275,7 +301,34 @@ class AuthService implements AuthServiceContract
 
         $user->syncRoles($authenticated);
 
+        $this->consentService->syncUserConsents($user, $dto->getConsents());
+
+        $preferences = UserPreference::create();
+        $preferences->refresh();
+
+        $user->preferences()->associate($preferences);
+
+        $user->save();
+
         $user->notify(new UserRegistered());
+
+        return $user;
+    }
+
+    public function updateProfile(UpdateProfileDto $dto): User
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        if (!($dto->getName() instanceof Missing)) {
+            $user->update([
+                'name' => $dto->getName(),
+            ]);
+        }
+
+        $user->preferences()->update($dto->getPreferences()->toArray());
+
+        $this->consentService->updateUserConsents(Collection::make($dto->getConsents()), $user);
 
         return $user;
     }
@@ -283,7 +336,8 @@ class AuthService implements AuthServiceContract
     private function verifyTFA(?string $code): void
     {
         if (!Auth::user()->is_tfa_active && $code !== null) {
-            throw new TFAException('Two-Factor Authentication is not setup.', simpleLogs: true);
+            $this->userLoginAttemptService->store();
+            throw new ClientException(Exceptions::CLIENT_TFA_NOT_SET_UP, simpleLogs: true);
         }
 
         if (Auth::user()->is_tfa_active) {
@@ -303,13 +357,14 @@ class AuthService implements AuthServiceContract
                 Config::get('tfa.code_expires_time')
             );
 
+            TfaSecurityCodeEvent::dispatch(Auth::user(), $code);
             Auth::user()->notify(new TFASecurityCode($code));
         }
-        throw new TFAException(
-            'Two-Factor Authentication is required',
+        throw new ClientException(
+            Exceptions::CLIENT_TFA_REQUIRED,
             403,
             simpleLogs: true,
-            type: Auth::user()->tfa_type
+            errorArray: ['type' => Auth::user()->tfa_type]
         );
     }
 
@@ -318,6 +373,7 @@ class AuthService implements AuthServiceContract
         $valid = match (Auth::user()->tfa_type) {
             TFAType::APP => $this->googleTFAVerify($code),
             TFAType::EMAIL => $this->emailTFAVerify($code),
+            default => $this->invalidTFAType(),
         };
 
         if (Auth::user()->is_tfa_active && !$valid) {
@@ -325,7 +381,8 @@ class AuthService implements AuthServiceContract
         }
 
         if (!$valid) {
-            throw new TFAException('Invalid Two-Factor Authentication token.', simpleLogs: true);
+            $this->userLoginAttemptService->store();
+            throw new ClientException(Exceptions::CLIENT_TFA_INVALID_TOKEN, simpleLogs: true);
         }
     }
 
@@ -351,6 +408,12 @@ class AuthService implements AuthServiceContract
         return false;
     }
 
+    private function invalidTFAType(): void
+    {
+        $this->userLoginAttemptService->store();
+        throw new TFAException('Invalid Two-Factor Authentication Type', simpleLogs: true);
+    }
+
     private function verifyRecoveryCode(string $code): bool
     {
         $security_codes = Auth::user()->securityCodes()
@@ -371,7 +434,7 @@ class AuthService implements AuthServiceContract
     {
         $user = User::whereEmail($email)->first();
         if (!$user) {
-            throw new AuthException('User does not exist', simpleLogs: true);
+            throw new ClientException(Exceptions::CLIENT_USER_DOESNT_EXIST, simpleLogs: true);
         }
 
         return $user;
@@ -380,31 +443,28 @@ class AuthService implements AuthServiceContract
     private function checkPasswordResetToken(User $user, string $token): void
     {
         if (!Password::tokenExists($user, $token)) {
-            throw new AuthException(
-                'The token is invalid or inactive. Try to reset your password again.',
-                simpleLogs: true
-            );
+            throw new ClientException(Exceptions::CLIENT_TOKEN_INVALID_OR_INACTIVE, simpleLogs: true);
         }
     }
 
     private function checkCredentials(User $user, string $password): void
     {
         if (!Hash::check($password, $user->password)) {
-            throw new AuthException('Invalid credentials', simpleLogs: true);
+            throw new ClientException(Exceptions::CLIENT_INVALID_PASSWORD, simpleLogs: true);
         }
     }
 
     private function checkIsUserTFA(): void
     {
         if (!$this->isUserAuthenticated()) {
-            throw new TFAException('Only users can set up Two-Factor Authentication');
+            throw new ClientException(Exceptions::CLIENT_ONLY_USER_CAN_SET_TFA);
         }
     }
 
     private function checkIsTFA(User $user): void
     {
         if ($user->is_tfa_active) {
-            throw new TFAException('Two-Factor Authentication is already setup.');
+            throw new ClientException(Exceptions::CLIENT_TFA_ALREADY_SET_UP);
         }
     }
 
@@ -443,6 +503,7 @@ class AuthService implements AuthServiceContract
             'tfa_type' => TFAType::EMAIL,
         ]);
 
+        TfaInit::dispatch(Auth::user(), $code);
         Auth::user()->notify(new TFAInitialization($code));
 
         return [
@@ -453,7 +514,7 @@ class AuthService implements AuthServiceContract
     private function checkNoTFA(User $user): void
     {
         if (!$user->is_tfa_active) {
-            throw new TFAException('Two-Factor Authentication is not setup.');
+            throw new ClientException(Exceptions::CLIENT_TFA_NOT_SET_UP);
         }
     }
 

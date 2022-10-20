@@ -2,35 +2,52 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\StatusDto;
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Exceptions\ClientException;
 use App\Exceptions\Error;
 use App\Http\Requests\StatusCreateRequest;
+use App\Http\Requests\StatusIndexRequest;
 use App\Http\Requests\StatusReorderRequest;
 use App\Http\Requests\StatusUpdateRequest;
 use App\Http\Resources\StatusResource;
 use App\Models\Status;
+use App\Services\Contracts\StatusServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Response;
 
 class StatusController extends Controller
 {
-    public function index(): JsonResource
+    public function __construct(private StatusServiceContract $statusService)
     {
-        return StatusResource::collection(Status::orderBy('order')->get());
+    }
+
+    public function index(StatusIndexRequest $request): JsonResource
+    {
+        $statuses = Status::searchByCriteria($request->validated())
+            ->with(['metadata']);
+
+        return StatusResource::collection(
+            $statuses->orderBy('order')->get()
+        );
     }
 
     public function store(StatusCreateRequest $request): JsonResource
     {
-        $status = Status::create($request->validated());
-
-        return StatusResource::make($status);
+        return StatusResource::make(
+            $this->statusService->store(StatusDto::instantiateFromRequest($request))
+        );
     }
 
     public function update(Status $status, StatusUpdateRequest $request): JsonResource
     {
-        $status->update($request->validated());
-
-        return StatusResource::make($status);
+        return StatusResource::make(
+            $this->statusService->update(
+                $status,
+                StatusDto::instantiateFromRequest($request)
+            )
+        );
     }
 
     public function reorder(StatusReorderRequest $request): JsonResponse
@@ -52,13 +69,10 @@ class StatusController extends Controller
         }
 
         if ($status->orders()->count() > 0) {
-            return Error::abort(
-                'Status nie może być usunięty, ponieważ jest przypisany do zamówienia.',
-                409,
-            );
+            throw new ClientException(Exceptions::CLIENT_STATUS_USED);
         }
 
-        $status->delete();
+        $this->statusService->destroy($status);
 
         return Response::json(null, 204);
     }

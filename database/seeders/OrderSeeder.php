@@ -21,7 +21,7 @@ class OrderSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         $shipping_methods = ShippingMethod::all();
         $statuses = Status::all();
@@ -29,8 +29,7 @@ class OrderSeeder extends Seeder
         /** @var OrderService $orderService */
         $orderService = App::make(OrderServiceContract::class);
 
-        Order::factory()->count(50)->create()->each(function ($order) use ($shipping_methods, $statuses, $orderService) {
-
+        Order::factory()->count(50)->create()->each(function ($order) use ($shipping_methods, $statuses, $orderService): void {
             $order->shipping_method_id = $shipping_methods->random()->getKey();
             $order->status_id = $statuses->random()->getKey();
 
@@ -47,15 +46,26 @@ class OrderSeeder extends Seeder
             $products = OrderProduct::factory()->count(rand(1, 3))->make();
             $order->products()->saveMany($products);
 
-            $products->each(function ($product) {
+            $products->each(function ($product): void {
                 if (rand(0, 3) === 0) {
                     $schemas = OrderSchema::factory()->count(rand(1, 3))->make();
                     $product->schemas()->saveMany($schemas);
+
+                    $sum = $product->price_initial + $schemas->sum('price');
+                    $product->update([
+                        'price_initial' => $sum,
+                        'price' => $sum,
+                    ]);
                 }
             });
 
+            $summary = $orderService->calcSummary($order);
+            $cart_total = $summary - $order->shipping_price;
+
             $order->update([
-                'summary' => $orderService->calcSummary($order),
+                'summary' => $summary,
+                'cart_total' => $cart_total,
+                'cart_total_initial' => $cart_total,
             ]);
 
             for ($i = 0; $i < rand(0, 5); $i++) {

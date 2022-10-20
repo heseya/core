@@ -1,0 +1,24 @@
+GoogleCategories:
+  get:
+    tags:
+      - Google Categories
+    summary: 'google category list'
+    parameters:
+      - name: 'lang'
+        in: query
+        required: false
+        schema:
+          type: string
+          example: 'pl-PL'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/GoogleCategories.yml#/GoogleCategory'

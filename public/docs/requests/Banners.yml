@@ -1,0 +1,13 @@
+BannerUpdate:
+  content:
+    application/json:
+      schema:
+        allOf:
+          - $ref: '../schemas/Banners.yml#/Banner'
+
+BannerStore:
+  content:
+    application/json:
+      schema:
+        allOf:
+          - $ref: '../schemas/Banners.yml#/BannerMetadata'

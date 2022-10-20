@@ -67,15 +67,16 @@ class ShippingMethodTest extends TestCase
             'public' => $this->shipping_method->public,
             'shipping_time_min' => $this->shipping_method->shipping_time_min,
             'shipping_time_max' => $this->shipping_method->shipping_time_max,
+            'metadata' => [],
         ];
 
         $this->priceRangesWithNoInitialStart = [
             [
-                'start' => $this->faker()->randomFloat(2,1, 49),
+                'start' => $this->faker()->randomFloat(2, 1, 49),
                 'value' => $this->faker()->randomFloat(2, 20),
             ],
             [
-                'start' => $this->faker()->randomFloat(2,50, 99),
+                'start' => $this->faker()->randomFloat(2, 50, 99),
                 'value' => $this->faker()->randomFloat(2, 100),
             ],
             [
@@ -103,7 +104,8 @@ class ShippingMethodTest extends TestCase
             ->assertJsonCount(1, 'data') // Should show only public shipping methods.
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ]]);
+            ],
+            ]);
     }
 
     /**
@@ -151,7 +153,8 @@ class ShippingMethodTest extends TestCase
             ->assertJsonCount(1, 'data') // Should show only public shipping methods.
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ]])
+            ],
+            ])
             ->assertJsonCount(1, 'data.0.payment_methods')
             ->assertJsonFragment(['id' => $paymentMethod->getKey()]);
     }
@@ -182,7 +185,8 @@ class ShippingMethodTest extends TestCase
             ->assertJsonCount(1, 'data') // Should show only public shipping methods.
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ]])
+            ],
+            ])
             ->assertJsonCount(2, 'data.0.payment_methods')
             ->assertJsonFragment(['id' => $paymentMethod->getKey()])
             ->assertJsonFragment(['id' => $paymentMethodHidden->getKey()]);
@@ -214,7 +218,8 @@ class ShippingMethodTest extends TestCase
             ->assertJsonCount(1, 'data') // Should show only public shipping methods.
             ->assertJson(['data' => [
                 0 => $this->expected,
-            ]])
+            ],
+            ])
             ->assertJsonCount(2, 'data.0.payment_methods')
             ->assertJsonFragment(['id' => $paymentMethod->getKey()])
             ->assertJsonFragment(['id' => $paymentMethodHidden->getKey()]);
@@ -265,9 +270,10 @@ class ShippingMethodTest extends TestCase
         ];
 
         $response = $this->actingAs($this->$user)->postJson(
-            '/shipping-methods', $shipping_method + [
-               'price_ranges' => $this->priceRangesWithNoInitialStart,
-           ],
+            '/shipping-methods',
+            $shipping_method + [
+                'price_ranges' => $this->priceRangesWithNoInitialStart,
+            ],
         );
 
         $response->assertStatus(422);
@@ -288,22 +294,23 @@ class ShippingMethodTest extends TestCase
         ];
 
         $response = $this->actingAs($this->$user)->postJson(
-            '/shipping-methods', $shipping_method + [
-               'price_ranges' => [
-                   [
-                       'start' => 0,
-                       'value' => 0,
-                   ],
-                   [
-                       'start' => 0,
-                       'value' => 0,
-                   ],
-                   [
-                       'start' => 10,
-                       'value' => 0,
-                   ]
-               ],
-           ],
+            '/shipping-methods',
+            $shipping_method + [
+                'price_ranges' => [
+                    [
+                        'start' => 0,
+                        'value' => 0,
+                    ],
+                    [
+                        'start' => 0,
+                        'value' => 0,
+                    ],
+                    [
+                        'start' => 10,
+                        'value' => 0,
+                    ],
+                ],
+            ],
         );
 
         $response->assertStatus(422);
@@ -356,6 +363,82 @@ class ShippingMethodTest extends TestCase
             ->assertJsonFragment(['value' => 0]);
 
         $this->assertDatabaseHas('shipping_methods', $shipping_method);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('shipping_methods.add');
+
+        ShippingMethod::query()->delete();
+
+        $shipping_method = [
+            'name' => 'Test',
+            'public' => true,
+            'block_list' => false,
+            'shipping_time_min' => 2,
+            'shipping_time_max' => 3,
+            'metadata' => [
+                'attributeMeta' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/shipping-methods', $shipping_method + [
+                'price_ranges' => [
+                    [
+                        'start' => 0,
+                        'value' => 10.37,
+                    ],
+                    [
+                        'start' => 200,
+                        'value' => 0,
+                    ],
+                ],
+            ])
+            ->assertCreated()
+            ->assertJson(['data' => $shipping_method]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithMetadataPrivate($user): void
+    {
+        $this->$user->givePermissionTo(['shipping_methods.add', 'shipping_methods.show_metadata_private']);
+
+        ShippingMethod::query()->delete();
+
+        $shipping_method = [
+            'name' => 'Test',
+            'public' => true,
+            'block_list' => false,
+            'shipping_time_min' => 2,
+            'shipping_time_max' => 3,
+            'metadata_private' => [
+                'attributeMetaPriv' => 'attributeValue',
+            ],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/shipping-methods', $shipping_method + [
+                'price_ranges' => [
+                    [
+                        'start' => 0,
+                        'value' => 10.37,
+                    ],
+                    [
+                        'start' => 200,
+                        'value' => 0,
+                    ],
+                ],
+            ])
+            ->assertCreated()
+            ->assertJson(['data' => $shipping_method]);
     }
 
     /**
@@ -444,19 +527,60 @@ class ShippingMethodTest extends TestCase
 
         $response = $this->actingAs($this->$user)
             ->postJson('/shipping-methods', $shipping_method + [
-                    'price_ranges' => [
-                        [
-                            'start' => 0,
-                            'value' => 10.37,
-                        ],
+                'price_ranges' => [
+                    [
+                        'start' => 0,
+                        'value' => 10.37,
                     ],
-                ]);
+                ],
+            ]);
 
         $response
             ->assertCreated()
             ->assertJson(['data' => $shipping_method]);
 
         $this->assertDatabaseHas('shipping_methods', $shipping_method);
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testCreateBooleanValues($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('shipping_methods.add');
+
+        $shipping_method = [
+            'name' => 'Test',
+            'public' => $boolean,
+            'block_list' => $boolean,
+            'shipping_time_min' => 2,
+            'shipping_time_max' => 2,
+        ];
+
+        $response = $this->actingAs($this->$user)
+            ->json(
+                'POST',
+                '/shipping-methods',
+                $shipping_method + [
+                    'price_ranges' => [
+                        [
+                            'start' => 0,
+                            'value' => 10.37,
+                        ],
+                    ],
+                ]
+            );
+
+        $shippingMethodResponse = array_merge($shipping_method, [
+            'public' => $booleanValue,
+            'block_list' => $booleanValue,
+        ]);
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $shippingMethodResponse]);
+
+        $this->assertDatabaseHas('shipping_methods', $shippingMethodResponse);
     }
 
     /**
@@ -633,7 +757,7 @@ class ShippingMethodTest extends TestCase
                     [
                         'start' => 10,
                         'value' => 0,
-                    ]
+                    ],
                 ],
             ],
         );
@@ -694,6 +818,45 @@ class ShippingMethodTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testUpdateWithEmptyData($user): void
+    {
+        $this->$user->givePermissionTo('shipping_methods.edit');
+
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/shipping-methods/id:' . $this->shipping_method->getKey(),
+            []
+        );
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => [
+                'id' => $this->shipping_method->getKey(),
+                'name' => $this->shipping_method->name,
+                'public' => $this->shipping_method->public,
+                'block_list' => $this->shipping_method->block_list,
+                'shipping_time_min' => $this->shipping_method->shipping_time_min,
+                'shipping_time_max' => $this->shipping_method->shipping_time_max,
+            ],
+            ])
+            ->assertJsonCount(2, 'data.price_ranges')
+            ->assertJsonFragment(['start' => $this->shipping_method->priceRanges->first()->start])
+            ->assertJsonFragment(['value' => $this->shipping_method->priceRanges->first()->prices()->first()->value])
+            ->assertJsonFragment(['start' => $this->shipping_method->priceRanges->last()->start])
+            ->assertJsonFragment(['value' => $this->shipping_method->priceRanges->last()->prices()->first()->value]);
+
+        $this->assertDatabaseHas('shipping_methods', [
+            'id' => $this->shipping_method->getKey(),
+            'name' => $this->shipping_method->name,
+            'public' => $this->shipping_method->public,
+            'block_list' => $this->shipping_method->block_list,
+            'shipping_time_min' => $this->shipping_method->shipping_time_min,
+            'shipping_time_max' => $this->shipping_method->shipping_time_max,
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testUpdateBlacklistToTrue($user): void
     {
         $this->$user->givePermissionTo('shipping_methods.edit');
@@ -725,6 +888,48 @@ class ShippingMethodTest extends TestCase
         $this->assertDatabaseHas(
             'shipping_methods',
             $shipping_method + ['id' => $this->shipping_method->getKey()],
+        );
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testUpdateBooleanValues($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('shipping_methods.edit');
+
+        $this->shipping_method->update(['block_list' => false]);
+
+        $shipping_method = [
+            'name' => 'Test 2',
+            'public' => $boolean,
+            'block_list' => $boolean,
+        ];
+
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/shipping-methods/id:' . $this->shipping_method->getKey(),
+            $shipping_method + [
+                'price_ranges' => [
+                    [
+                        'start' => 0,
+                        'value' => 10.37,
+                    ],
+                ],
+            ],
+        );
+
+        $shippingMethodResponse = array_merge($shipping_method, [
+            'public' => $booleanValue,
+            'block_list' => $booleanValue,
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJson(['data' => $shippingMethodResponse]);
+
+        $this->assertDatabaseHas(
+            'shipping_methods',
+            $shippingMethodResponse + ['id' => $this->shipping_method->getKey()],
         );
     }
 

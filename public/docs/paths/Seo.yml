@@ -10,14 +10,14 @@ Seo:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Seo.yml#SeoView'
+                  $ref: './../schemas/Seo.yml#/SeoView'
               type: object
   patch:
     tags:
       - SEO
     summary: 'Update or create global SEO'
     requestBody:
-      $ref: './../requests/Seo.yml#SeoStore'
+      $ref: './../requests/Seo.yml#/SeoStore'
     responses:
       200:
         description: Updated
@@ -26,7 +26,7 @@ Seo:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Seo.yml#SeoView'
+                  $ref: './../schemas/Seo.yml#/SeoView'
               type: object
       201:
         description: Created
@@ -35,7 +35,7 @@ Seo:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Seo.yml#SeoView'
+                  $ref: './../schemas/Seo.yml#/SeoView'
               type: object
 
 SeoCheck:
@@ -43,7 +43,7 @@ SeoCheck:
     tags:
       - SEO
     requestBody:
-      $ref: './../requests/Seo.yml#SeoKeywordsCheck'
+      $ref: './../requests/Seo.yml#/SeoKeywordsCheck'
     responses:
       200:
         description: Success
@@ -52,5 +52,5 @@ SeoCheck:
             schema:
               properties:
                 data:
-                  $ref: './../schemas/Seo.yml#SeoKeywordsResponse'
+                  $ref: './../schemas/Seo.yml#/SeoKeywordsResponse'
               type: object

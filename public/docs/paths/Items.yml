@@ -35,7 +35,24 @@ Items:
         description: 'Items status as at day. If present cannot search by sold_out field and sort by quantity.
         If only date is provided then default time is set to 23:59:59'
         schema:
-          type: date | datetime
+          type: string
+          format: date | date-time
+      - name: metadata
+        in: query
+        description: search by metadata
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
+      - name: metadata_private
+        in: query
+        description: search by metadata private
+        style: deepObject
+        explode: true
+        required: false
+        schema:
+          $ref: '../schemas/Metadata.yml#/MetadataQuery'
     responses:
       200:
         description: Success
@@ -71,7 +88,7 @@ Items:
                     ]
                 }
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   post:
     tags:
       - Items
@@ -80,7 +97,7 @@ Items:
       content:
         application/json:
           schema:
-            $ref: './../requests/Items.yml#/Item'
+            $ref: './../requests/Items.yml#/ItemCreate'
     responses:
       201:
         description: Created
@@ -92,7 +109,7 @@ Items:
                   $ref: './../schemas/Items.yml#/Item'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
 
 ItemsParams:
   get:
@@ -117,7 +134,7 @@ ItemsParams:
                   $ref: './../schemas/Items.yml#/Item'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   delete:
     tags:
       - Items
@@ -134,7 +151,7 @@ ItemsParams:
       204:
         description: Success
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]
   patch:
     tags:
       - Items
@@ -151,7 +168,7 @@ ItemsParams:
       content:
         application/json:
           schema:
-            $ref: './../requests/Items.yml#/Item'
+            $ref: './../requests/Items.yml#/ItemUpdate'
     responses:
       200:
         description: Success
@@ -163,4 +180,4 @@ ItemsParams:
                   $ref: './../schemas/Items.yml#/Item'
               type: object
     security:
-      - oauth: [ ]
+      - BearerAuth: [ ]

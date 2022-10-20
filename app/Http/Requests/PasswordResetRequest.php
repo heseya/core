@@ -10,6 +10,7 @@ class PasswordResetRequest extends FormRequest
     {
         return [
             'email' => ['required', 'email'],
+            'redirect_url' => ['required', 'url'],
         ];
     }
 }

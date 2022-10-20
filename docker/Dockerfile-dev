@@ -1,5 +1,7 @@
 FROM php:8.0.2-apache
 
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+
 RUN apt-get update && apt-get install -y \
     libc-client-dev \
     libkrb5-dev \
@@ -9,16 +11,33 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libxml2-dev \
     zip \
-    unzip
+    unzip \
+    nodejs \
+    wget
 
-RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl
-RUN docker-php-ext-install imap
+RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl && docker-php-ext-configure gd --with-jpeg
+RUN docker-php-ext-install imap pdo_mysql soap gd
+RUN npm i -g swagger-cli
 
-RUN docker-php-ext-install pdo_mysql
-RUN docker-php-ext-install soap
+RUN wget https://github.com/maglnet/ComposerRequireChecker/releases/latest/download/composer-require-checker.phar \
+    -O /usr/bin/composer-require-checker
+RUN wget https://phar.phpunit.de/phpcpd.phar \
+    -O /usr/bin/phpcpd
+RUN wget https://github.com/qossmic/deptrac/releases/latest/download/deptrac.phar \
+    -O /usr/bin/deptrac
+RUN wget https://github.com/vimeo/psalm/releases/latest/download/psalm.phar \
+    -O /usr/bin/psalm
+RUN wget https://github.com/composer-unused/composer-unused/releases/latest/download/composer-unused.phar \
+    -O /usr/bin/composer-unused
+RUN wget http://github.com/ergebnis/composer-normalize/releases/latest/download/composer-normalize.phar \
+    -O /usr/bin/composer-normalize
 
-RUN docker-php-ext-configure gd --with-jpeg
-RUN docker-php-ext-install gd
+RUN chmod 777 /usr/bin/composer-require-checker \
+    /usr/bin/phpcpd \
+    /usr/bin/deptrac \
+    /usr/bin/psalm \
+    /usr/bin/composer-unused \
+    /usr/bin/composer-normalize
 
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 

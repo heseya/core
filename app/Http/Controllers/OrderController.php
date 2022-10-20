@@ -2,49 +2,48 @@
 
 namespace App\Http\Controllers;
 
+use App\Dtos\CartDto;
+use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
-use App\Dtos\OrderUpdateDto;
-use App\Enums\SchemaType;
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\ShippingType;
+use App\Events\AddOrderDocument;
 use App\Events\ItemUpdatedQuantity;
-use App\Events\OrderCreated;
 use App\Events\OrderUpdatedStatus;
-use App\Exceptions\OrderException;
+use App\Events\RemoveOrderDocument;
+use App\Events\SendOrderDocument;
+use App\Exceptions\ClientException;
+use App\Http\Requests\CartRequest;
 use App\Http\Requests\OrderCreateRequest;
+use App\Http\Requests\OrderDocumentRequest;
 use App\Http\Requests\OrderIndexRequest;
-use App\Http\Requests\OrderItemsRequest;
 use App\Http\Requests\OrderShippingListRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
+use App\Http\Requests\SendDocumentRequest;
+use App\Http\Resources\CartResource;
+use App\Http\Resources\OrderDocumentResource;
 use App\Http\Resources\OrderPublicResource;
 use App\Http\Resources\OrderResource;
-use App\Models\Address;
-use App\Models\Discount;
 use App\Models\Order;
-use App\Models\OrderProduct;
-use App\Models\Product;
-use App\Models\Schema;
-use App\Models\ShippingMethod;
+use App\Models\OrderDocument;
 use App\Models\Status;
-use App\Services\Contracts\DiscountServiceContract;
-use App\Services\Contracts\ItemServiceContract;
-use App\Services\Contracts\NameServiceContract;
+use App\Services\Contracts\DepositServiceContract;
+use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
-use Throwable;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class OrderController extends Controller
 {
     public function __construct(
-        private NameServiceContract $nameService,
         private OrderServiceContract $orderService,
-        private DiscountServiceContract $discountService,
-        private ItemServiceContract $itemService,
+        private DocumentServiceContract $documentService,
+        private DepositServiceContract $depositService
     ) {
     }
 
@@ -53,9 +52,19 @@ class OrderController extends Controller
         $search_data = !$request->has('status_id')
             ? $request->validated() + ['status.hidden' => 0] : $request->validated();
 
-        $query = Order::search($search_data)
+        $query = Order::searchByCriteria($search_data)
             ->sort($request->input('sort'))
-            ->with(['products', 'discounts', 'payments']);
+            ->with([
+                'products',
+                'discounts',
+                'payments',
+                'status',
+                'shippingMethod',
+                'shippingMethod.paymentMethods',
+                'deliveryAddress',
+                'metadata',
+                'documents',
+            ]);
 
         return OrderResource::collection(
             $query->paginate(Config::get('pagination.per_page')),
@@ -64,6 +73,99 @@ class OrderController extends Controller
 
     public function show(Order $order): JsonResource
     {
+        $order->load([
+            'shippingMethod.priceRanges.prices',
+            // Order products product
+            'products.product',
+            'products.product.metadata',
+            'products.product.metadataPrivate',
+            'products.product.media',
+            'products.product.media.metadata',
+            'products.product.media.metadataPrivate',
+            'products.product.tags',
+            'products.product.sales',
+            'products.product.sales.orders',
+            'products.product.sales.conditionGroups',
+            'products.product.sales.conditionGroups.conditions',
+            'products.product.sales.conditionGroups.conditions.users',
+            'products.product.sales.conditionGroups.conditions.roles',
+            'products.product.sales.conditionGroups.conditions.products',
+            'products.product.sales.conditionGroups.conditions.productSets',
+            'products.product.sales.products',
+            'products.product.sales.productSets',
+            'products.product.sales.productSets.children',
+            'products.product.sales.productSets.childrenPublic',
+            'products.product.sales.shippingMethods',
+            'products.product.sales.shippingMethods.paymentMethods',
+            'products.product.sales.shippingMethods.countries',
+            'products.product.sales.shippingMethods.priceRanges',
+            'products.product.sales.shippingMethods.priceRanges.prices',
+            'products.product.sales.shippingMethods.metadata',
+            'products.product.sales.shippingMethods.metadataPrivate',
+            'products.product.sales.metadata',
+            'products.product.sales.metadataPrivate',
+            'products.product.items',
+            'products.product.schemas',
+            'products.product.schemas.usedSchemas',
+            'products.product.schemas.metadata',
+            'products.product.schemas.metadataPrivate',
+            'products.product.sets',
+            'products.product.sets.media',
+            'products.product.sets.children',
+            'products.product.sets.childrenPublic',
+            'products.product.sets.metadata',
+            'products.product.sets.metadataPrivate',
+            'products.product.attributes',
+            'products.product.attributes.metadata',
+            'products.product.attributes.metadataPrivate',
+            'products.product.seo',
+            'products.product.seo.media',
+            'products.product.productAvailabilities',
+            'products.schemas',
+            'products.deposits',
+            'products.deposits.order',
+            'products.deposits.order.status',
+            'products.deposits.order.metadata',
+            'products.deposits.order.metadataPrivate',
+            'products.discounts',
+            'products.discounts.orders',
+            'products.discounts.conditionGroups',
+            'products.discounts.conditionGroups.conditions',
+            'products.discounts.conditionGroups.conditions.users',
+            'products.discounts.conditionGroups.conditions.roles',
+            'products.discounts.conditionGroups.conditions.products',
+            'products.discounts.conditionGroups.conditions.productSets',
+            'products.discounts.products',
+            'products.discounts.productSets',
+            'products.discounts.productSets.children',
+            'products.discounts.productSets.childrenPublic',
+            'products.discounts.shippingMethods',
+            'products.discounts.shippingMethods.paymentMethods',
+            'products.discounts.shippingMethods.countries',
+            'products.discounts.shippingMethods.priceRanges',
+            'products.discounts.shippingMethods.priceRanges.prices',
+            'products.discounts.metadata',
+            'products.discounts.metadataPrivate',
+            // Discounts
+            'discounts.orders',
+            'discounts.conditionGroups',
+            'discounts.conditionGroups.conditions',
+            'discounts.conditionGroups.conditions.users',
+            'discounts.conditionGroups.conditions.roles',
+            'discounts.conditionGroups.conditions.products',
+            'discounts.conditionGroups.conditions.productSets',
+            'discounts.products',
+            'discounts.productSets',
+            'discounts.productSets.children',
+            'discounts.productSets.childrenPublic',
+            'discounts.shippingMethods',
+            'discounts.shippingMethods.paymentMethods',
+            'discounts.shippingMethods.countries',
+            'discounts.shippingMethods.priceRanges',
+            'discounts.shippingMethods.priceRanges.prices',
+            'discounts.metadata',
+            'discounts.metadataPrivate',
+        ]);
         return OrderResource::make($order);
     }
 
@@ -74,188 +176,15 @@ class OrderController extends Controller
 
     public function store(OrderCreateRequest $request): JsonResource
     {
-        # Schema values and warehouse items validation
-        $items = [];
-
-        foreach ($request->input('items', []) as $item) {
-            $product = Product::findOrFail($item['product_id']);
-            $schemas = $item['schemas'] ?? [];
-
-            /** @var Schema $schema */
-            foreach ($product->schemas as $schema) {
-                $value = $schemas[$schema->getKey()] ?? null;
-
-                $schema->validate($value, $item['quantity']);
-
-                if ($value === null) {
-                    continue;
-                }
-
-                $schemaItems = $schema->getItems($value, $item['quantity']);
-                $items = $this->itemService->addItemArrays($items, $schemaItems);
-            }
-        }
-
-        $this->itemService->validateItems($items);
-
-        # Discount validation
-        foreach ($request->input('discounts', []) as $discount) {
-            Discount::where('code', $discount)->firstOrFail();
-        }
-
-        # Creating order
-        $validated = $request->validated();
-
-        $shippingMethod = ShippingMethod::findOrFail($request->input('shipping_method_id'));
-
-        switch ($shippingMethod->shipping_type) {
-            case ShippingType::ADDRESS:
-                $shippingPlace = null;
-                $shippingAddressId = Address::firstOrCreate($validated['shipping_place'])->getKey();
-                break;
-            case ShippingType::POINT:
-                $shippingPlace = null;
-                $shippingAddressId = Address::find($validated['shipping_place'])->getKey();
-                break;
-            case ShippingType::POINT_EXTERNAL:
-                $shippingPlace = $validated['shipping_place'];
-                $shippingAddressId = null;
-                break;
-            default:
-                $shippingPlace = null;
-                $shippingAddressId = null;
-                break;
-        }
-
-        if ($request->filled('billing_address.name')) {
-            $billingAddress = Address::firstOrCreate($validated['billing_address']);
-        }
-
-        $order = Order::create([
-            'code' => $this->nameService->generate(),
-            'email' => $request->input('email'),
-            'comment' => $request->input('comment'),
-            'currency' => 'PLN',
-            'shipping_method_id' => $shippingMethod->getKey(),
-            'shipping_price' => 0.0,
-            'status_id' => Status::select('id')->orderBy('order')->first()->getKey(),
-            'billing_address_id' => isset($billingAddress) ? $billingAddress->getKey() : null,
-            'shipping_address_id' => $shippingAddressId,
-            'user_id' => Auth::user()->getKey(),
-            'user_type' => Auth::user()::class,
-            'invoice_requested' => $request->input('invoice_requested'),
-            'shipping_place' => $shippingPlace,
-            'shipping_type' => $shippingMethod->shipping_type,
-        ]);
-
-        # Add products to order
-        $summary = 0;
-
-        try {
-            foreach ($request->input('items', []) as $item) {
-                $product = Product::findOrFail($item['product_id']);
-                $schemas = $item['schemas'] ?? [];
-
-                $orderProduct = new OrderProduct([
-                    'product_id' => $product->getKey(),
-                    'quantity' => $item['quantity'],
-                    'price' => $product->price,
-                ]);
-
-                $order->products()->save($orderProduct);
-                $summary += $product->price * $item['quantity'];
-
-                # Add schemas to products
-                foreach ($product->schemas as $schema) {
-                    $value = $schemas[$schema->getKey()] ?? null;
-
-                    if ($value === null) {
-                        continue;
-                    }
-
-                    $price = $schema->getPrice($value, $schemas);
-
-                    if ($schema->type->is(SchemaType::SELECT)) {
-                        $option = $schema->options()->findOrFail($value);
-                        $value = $option->name;
-
-                        # Remove items from warehouse
-                        foreach ($option->items as $optionItem) {
-                            $orderProduct->deposits()->create([
-                                'item_id' => $optionItem->getKey(),
-                                'quantity' => -1 * $item['quantity'],
-                            ]);
-                            ItemUpdatedQuantity::dispatch($optionItem);
-                        }
-                    }
-
-                    $orderProduct->schemas()->create([
-                        'name' => $schema->name,
-                        'value' => $value,
-                        'price' => $price,
-                    ]);
-
-                    $summary += $price;
-                }
-            }
-        } catch (Throwable $exception) {
-            $order->delete();
-
-            throw $exception;
-        }
-
-        # Apply discounts to order
-        $discounts = [];
-        $cartValue = $summary;
-        foreach ($request->input('discounts', []) as $discount) {
-            $discount = Discount::where('code', $discount)->first();
-
-            $discounts[$discount->getKey()] = [
-                'type' => $discount->type,
-                'discount' => $discount->discount,
-            ];
-
-            $summary -= $this->discountService->calc($cartValue, $discount);
-        }
-        $order->discounts()->sync($discounts);
-
-        # Calculate shipping price for complete order
-        $summary = max($summary, 0);
-        $shippingPrice = $shippingMethod->getPrice($summary);
-        $summary = round($summary + $shippingPrice, 2);
-
-        $order->update([
-            'shipping_price' => $shippingPrice,
-            'summary' => $summary,
-            'paid' => $summary <= 0,
-        ]);
-
-        OrderCreated::dispatch($order);
-
-        return OrderPublicResource::make($order);
-    }
-
-    public function verify(OrderItemsRequest $request): JsonResponse
-    {
-        foreach ($request->input('items', []) as $item) {
-            $product = Product::findOrFail($item['product_id']);
-            $schemas = $item['schemas'] ?? [];
-
-            foreach ($product->schemas as $schema) {
-                $schema->validate(
-                    $schemas[$schema->getKey()] ?? null,
-                    $item['quantity'],
-                );
-            }
-        }
-
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+        return OrderPublicResource::make(
+            $this->orderService->store(OrderDto::instantiateFromRequest($request)),
+        );
     }
 
     public function updateStatus(OrderUpdateStatusRequest $request, Order $order): JsonResponse
     {
         if ($order->status && $order->status->cancel) {
-            throw new OrderException(__('admin.error.order_change_status_canceled'));
+            throw new ClientException(Exceptions::CLIENT_CHANGE_CANCELED_ORDER_STATUS);
         }
 
         $status = Status::findOrFail($request->input('status_id'));
@@ -269,6 +198,7 @@ class OrderController extends Controller
             foreach ($deposits as $deposit) {
                 $item = $deposit->item;
                 $item->decrement('quantity', $deposit->quantity);
+                $deposit->item->update($this->depositService->getShippingTimeDateForQuantity($item));
                 ItemUpdatedQuantity::dispatch($item);
             }
         }
@@ -280,7 +210,8 @@ class OrderController extends Controller
 
     public function update(OrderUpdateRequest $request, Order $order): JsonResponse
     {
-        $orderUpdateDto = OrderUpdateDto::instantiateFromRequest($request);
+        $orderUpdateDto = OrderDto::instantiateFromRequest($request);
+
         return $this->orderService->update($orderUpdateDto, $order);
     }
 
@@ -305,5 +236,46 @@ class OrderController extends Controller
         return OrderResource::make(
             $this->orderService->shippingList($order, $request->package_template_id)
         );
+    }
+
+    public function storeDocument(OrderDocumentRequest $request, Order $order): JsonResource
+    {
+        $document = $this->documentService
+            ->storeDocument(
+                $order,
+                $request->input('name'),
+                $request->input('type'),
+                $request->file('file'),
+            );
+        AddOrderDocument::dispatch($order, $document);
+
+        return OrderDocumentResource::make($document);
+    }
+
+    public function deleteDocument(Order $order, OrderDocument $document): JsonResponse
+    {
+        $document = $this->documentService->removeDocument($order, $document->media_id);
+        RemoveOrderDocument::dispatch($order, $document);
+
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    public function downloadDocument(Order $order, OrderDocument $document): StreamedResponse
+    {
+        return $this->documentService->downloadDocument($document);
+    }
+
+    public function sendDocuments(SendDocumentRequest $request, Order $order): JsonResponse
+    {
+        $documents = OrderDocument::findMany($request->input('uuid'));
+        //MAIL MICROSERVICE
+        SendOrderDocument::dispatch($order, $documents);
+
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    public function cartProcess(CartRequest $request): JsonResource
+    {
+        return CartResource::make($this->orderService->cartProcess(CartDto::instantiateFromRequest($request)));
     }
 }

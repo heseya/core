@@ -2,17 +2,23 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\DiscountAvailable;
 use App\Rules\ShippingPlaceValidation;
+use App\Traits\MetadataRules;
+use Illuminate\Validation\Rule;
 
 class OrderCreateRequest extends OrderItemsRequest
 {
+    use MetadataRules;
+
     public function rules(): array
     {
-        return parent::rules() + [
-            'email' => ['required', 'email', 'max:255'],
-            'comment' => ['nullable', 'string', 'max:1000'],
-            'shipping_method_id' => ['required', 'uuid', 'exists:shipping_methods,id'],
+        return array_merge(
+            parent::rules(),
+            $this->metadataRules(),
+            [
+                'email' => ['required', 'email', 'max:255'],
+                'comment' => ['nullable', 'string', 'max:1000'],
+                'shipping_method_id' => ['required', 'uuid', 'exists:shipping_methods,id'],
 
             'billing_address.name' => ['required', 'string', 'max:255'],
             'billing_address.phone' => ['required', 'string', 'max:20'],
@@ -22,8 +28,16 @@ class OrderCreateRequest extends OrderItemsRequest
             'billing_address.country' => ['required', 'string', 'size:2'],
             'billing_address.vat' => ['nullable', 'string', 'max:15'],
 
-            'discounts' => ['nullable', 'array'],
-            'discounts.*' => ['string', 'max:64', 'exists:discounts,code', new DiscountAvailable()],
+            'coupons' => ['nullable', 'array'],
+            'coupons.*' => ['string', 'max:64', 'exists:discounts,code'],
+
+            'sale_ids' => ['nullable'],
+            'sale_ids.*' => [
+                'uuid',
+                Rule::exists('discounts', 'id')->where(function ($query) {
+                    return $query->where('code', null);
+                }),
+            ],
 
             'validation' => ['boolean'],
             'invoice_requested' => ['boolean'],

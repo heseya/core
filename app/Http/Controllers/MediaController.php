@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Dtos\MediaUpdateDto;
+use App\Dtos\MediaDto;
+use App\Http\Requests\MediaIndexRequest;
 use App\Http\Requests\MediaStoreRequest;
 use App\Http\Requests\MediaUpdateRequest;
+use App\Http\Resources\MediaDetailResource;
 use App\Http\Resources\MediaResource;
 use App\Models\Media;
 use App\Services\Contracts\MediaServiceContract;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Response;
 
 class MediaController extends Controller
@@ -21,18 +25,26 @@ class MediaController extends Controller
         $this->mediaServiceContract = $mediaServiceContract;
     }
 
+    public function index(MediaIndexRequest $request): JsonResource
+    {
+        /** @var Builder $query */
+        $query = Media::searchByCriteria($request->validated());
+
+        return MediaDetailResource::collection($query->paginate(Config::get('pagination.per_page')));
+    }
+
     public function store(MediaStoreRequest $request): JsonResource
     {
-        $media = $this->mediaServiceContract->store($request->file('file'));
+        $media = $this->mediaServiceContract->store(MediaDto::instantiateFromRequest($request));
 
-        return MediaResource::make($media);
+        return MediaDetailResource::make($media);
     }
 
     public function update(Media $media, MediaUpdateRequest $request): JsonResource
     {
         $media = $this->mediaServiceContract->update(
             $media,
-            MediaUpdateDto::instantiateFromRequest($request),
+            MediaDto::instantiateFromRequest($request),
         );
 
         return MediaResource::make($media);

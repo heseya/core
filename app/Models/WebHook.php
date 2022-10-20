@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
-use Heseya\Searchable\Searches\Like;
-use Heseya\Searchable\Traits\Searchable;
-use Heseya\Sortable\Sortable;
+use App\Criteria\WebHookSearch;
+use App\Models\Contracts\SortableContract;
+use App\Traits\Sortable;
+use Heseya\Searchable\Criteria\Like;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -16,9 +18,9 @@ use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 /**
  * @mixin IdeHelperWebHook
  */
-class WebHook extends Model implements AuditableContract
+class WebHook extends Model implements AuditableContract, SortableContract
 {
-    use HasFactory, SoftDeletes, Searchable, Sortable, Auditable, Notifiable;
+    use HasFactory, SoftDeletes, HasCriteria, Sortable, Auditable, Notifiable;
 
     protected $fillable = [
         'name',
@@ -39,9 +41,10 @@ class WebHook extends Model implements AuditableContract
         'events' => 'array',
     ];
 
-    protected array $searchable = [
+    protected array $criteria = [
         'name' => Like::class,
         'url' => Like::class,
+        'search' => WebHookSearch::class,
     ];
 
     protected array $sortable = [
@@ -60,12 +63,12 @@ class WebHook extends Model implements AuditableContract
         return $this->hasMany(WebHookEventLogEntry::class);
     }
 
-    public function getEventsAttribute($value)
+    public function getEventsAttribute(string $value): mixed
     {
         return json_decode($value);
     }
 
-    public function setEventsAttribute($value): void
+    public function setEventsAttribute(mixed $value): void
     {
         $this->attributes['events'] = json_encode($value);
     }

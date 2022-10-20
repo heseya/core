@@ -2,12 +2,14 @@
 
 namespace App\Dtos;
 
+use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\ProductSetStoreRequest;
 use App\Http\Requests\ProductSetUpdateRequest;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
+use Illuminate\Foundation\Http\FormRequest;
 
-class ProductSetDto extends Dto
+class ProductSetDto extends Dto implements InstantiateFromRequest
 {
     private string $name;
     private string|null|Missing $slug_suffix;
@@ -16,12 +18,16 @@ class ProductSetDto extends Dto
     private bool $hide_on_index;
     private string|null|Missing $parent_id;
     private array $children_ids;
-    private SeoMetadataDto $seo;
+    private SeoMetadataDto|Missing $seo;
     private string|null|Missing $description_html;
     private string|null|Missing $cover_id;
+    private array|null|Missing $attributes_ids;
 
-    public static function fromFormRequest(ProductSetStoreRequest|ProductSetUpdateRequest $request): self
-    {
+    private array|Missing $metadata;
+
+    public static function instantiateFromRequest(
+        FormRequest|ProductSetStoreRequest|ProductSetUpdateRequest $request
+    ): self {
         return new self(
             name: $request->input('name'),
             slug_suffix: $request->input('slug_suffix'),
@@ -30,9 +36,11 @@ class ProductSetDto extends Dto
             hide_on_index: $request->boolean('hide_on_index', false),
             parent_id: $request->input('parent_id', null),
             children_ids: $request->input('children_ids', []),
-            seo: SeoMetadataDto::fromFormRequest($request),
+            seo: $request->has('seo') ? SeoMetadataDto::instantiateFromRequest($request) : new Missing(),
             description_html: $request->input('description_html'),
             cover_id: $request->input('cover_id'),
+            attributes_ids: $request->input('attributes'),
+            metadata: ProductCreateDto::mapMetadata($request),
         );
     }
 
@@ -71,7 +79,7 @@ class ProductSetDto extends Dto
         return $this->children_ids;
     }
 
-    public function getSeo(): SeoMetadataDto
+    public function getSeo(): SeoMetadataDto|Missing
     {
         return $this->seo;
     }
@@ -84,5 +92,15 @@ class ProductSetDto extends Dto
     public function getCoverId(): Missing|string|null
     {
         return $this->cover_id;
+    }
+
+    public function getAttributesIds(): Missing|null|array
+    {
+        return $this->attributes_ids;
+    }
+
+    public function getMetadata(): Missing|array
+    {
+        return $this->metadata;
     }
 }

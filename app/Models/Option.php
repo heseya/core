@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasMetadata;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Option extends Model
 {
-    use HasFactory;
+    use HasFactory, HasMetadata;
 
     protected $fillable = [
         'name',
@@ -20,6 +21,8 @@ class Option extends Model
         'schema_id',
         'order',
         'available',
+        'shipping_time',
+        'shipping_date',
     ];
 
     protected $casts = [
@@ -28,13 +31,6 @@ class Option extends Model
         'available' => 'bool',
     ];
 
-    /**
-     * @OA\Property(
-     *   property="items",
-     *   type="array",
-     *   @OA\Items(ref="#/components/schemas/Item"),
-     * )
-     */
     public function items(): BelongsToMany
     {
         return $this->belongsToMany(Item::class, 'option_items');

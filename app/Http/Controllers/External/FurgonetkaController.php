@@ -8,7 +8,6 @@ use App\Exceptions\PackageException;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\PackageTemplate;
-use App\Models\Status;
 use App\Services\Contracts\SettingsServiceContract;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -25,48 +24,6 @@ class FurgonetkaController extends Controller
     public function __construct(
         private SettingsServiceContract $settingsService
     ) {
-    }
-
-    /**
-     * Odbieranie statusów przesyłek z Furgonetka.pl w formacie JSON
-     *
-     * https://furgonetka.pl/files/dokumentacja_webhook.pdf
-     */
-    public function webhook(Request $request): JsonResponse
-    {
-        $control = md5(
-            $request->package_id .
-            $request->package_no .
-            $request->partner_order_id .
-            $request->tracking['state'] .
-            $request->tracking['description'] .
-            $request->tracking['datetime'] .
-            $request->tracking['branch'] .
-            Config::get('furgonetka.webhook_salt')
-        );
-
-        if ($control !== $request->control) {
-            return Response::json([
-                'status' => 'ERROR',
-                'message' => 'control value not match',
-            ], 400);
-        }
-
-        $order = Order::where('delivery_tracking', $request->package_no) // numer śledzenia
-            ->orWhere('code', $request->partner_order_id) // kod zamówienia
-            ->first();
-
-        if ($order) {
-            $status = new Status();
-            $order->update([
-                'delivery_status' => $status->furgonetka_status[$request->tracking['state']],
-            ]);
-        }
-
-        // Brak błędów bo furgonetka musi dostać status ok jak hash się zgadza
-        return Response::json([
-            'status' => 'OK',
-        ]);
     }
 
     public function createPackage(Request $request): JsonResponse
@@ -255,7 +212,7 @@ class FurgonetkaController extends Controller
         ], 201);
     }
 
-    private function getApiKey($refresh = false): string
+    private function getApiKey(bool $refresh = false): string
     {
         if (Storage::missing('furgonetka.key') || $refresh) {
             $response = Http::withBasicAuth(

@@ -6,14 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 class AddPolymorphicRelationToSeo extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::table('seo_metadata', function (Blueprint $table) {
+        Schema::table('seo_metadata', function (Blueprint $table): void {
             $table->uuid('model_id')->nullable();
             $table->string('model_type')->nullable();
             $table->index(['model_id', 'model_type'], 'seo_metadata_model_id_model_type_index');
@@ -22,14 +17,9 @@ class AddPolymorphicRelationToSeo extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('seo_metadata', function (Blueprint $table) {
+        Schema::table('seo_metadata', function (Blueprint $table): void {
             $table->dropColumn('model_id');
             $table->dropColumn('model_type');
         });

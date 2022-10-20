@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\Feature;
+
 use App\Models\Product;
 use App\Models\SeoMetadata;
 use Illuminate\Support\Str;
@@ -25,22 +27,26 @@ class SeoMetadataTest extends TestCase
 
     public function testShowUnauthenticated(): void
     {
-        $seo = SeoMetadata::where('global', 1)->first();
+        $seo = SeoMetadata::query()->where('global', true)->first();
 
-        $response = $this->json('GET', '/seo');
-
-        $response->assertOk()
-            ->assertJson(fn (AssertableJson $json) =>
-            $json->has('meta', fn ($json) =>
-            $json->has('seo')
-                ->etc())
-                ->has('data', fn ($json) =>
-                $json->where('title', $seo->title)
-                    ->where('description', $seo->description)
-                    ->etc())
-                ->etc())
+        $this
+            ->json('GET', '/seo')
+            ->assertOk()
+            ->assertJson(function (AssertableJson $json) use ($seo): void {
+                $json
+                    ->has('meta', function ($json): void {
+                        $json->has('seo')->etc();
+                    })
+                    ->has('data', function ($json) use ($seo): void {
+                        $json
+                            ->where('title', $seo->title)
+                            ->where('description', $seo->description)
+                            ->etc();
+                    })
+                    ->etc();
+            })
             ->assertJsonStructure([
-                'data' => $this->expected_structure
+                'data' => $this->expected_structure,
             ]);
     }
 
@@ -49,23 +55,39 @@ class SeoMetadataTest extends TestCase
      */
     public function testShow($user): void
     {
-        $seo = SeoMetadata::where('global', 1)->first();
+        $seo = SeoMetadata::query()->where('global', true)->first();
 
-        $response = $this->actingAs($this->$user)->json('GET', '/seo');
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/seo')
+            ->assertOk()
+            ->assertJson(function (AssertableJson $json) use ($seo): void {
+                $json
+                    ->has('meta', function ($json): void {
+                        $json->has('seo')->etc();
+                    })
+                    ->has('data', function ($json) use ($seo): void {
+                        $json
+                            ->where('title', $seo->title)
+                            ->where('description', $seo->description)
+                            ->etc();
+                    })
+                    ->etc();
+            });
+    }
 
-        $response->assertOk()
-            ->assertJson(fn (AssertableJson $json) =>
-                $json->has('meta', fn ($json) =>
-                    $json->has('seo')
-                        ->etc())
-                    ->has('data', fn ($json) =>
-                    $json->where('title', $seo->title)
-                        ->where('description', $seo->description)
-                        ->etc())
-                    ->etc())
-            ->assertJsonStructure([
-                'data' => $this->expected_structure
-            ]);
+    /**
+     * @dataProvider authProvider
+     */
+    public function testShowEmptyDatabase($user): void
+    {
+        SeoMetadata::query()->delete();
+
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', '/seo')
+            ->assertOk()
+            ->assertJsonFragment(['title' => null]);
     }
 
     public function testCreateUnauthorized(): void
@@ -92,22 +114,28 @@ class SeoMetadataTest extends TestCase
             'description' => 'description',
             'keywords' => ['key', 'words'],
         ];
-        $response = $this->actingAs($this->$user)->json('PATCH', '/seo', $seo);
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', '/seo', $seo)
+            ->assertCreated()
+            ->assertJson(function (AssertableJson $json) use ($seo): void {
+                $json
+                    ->has('meta', function ($json): void {
+                        $json->has('seo')->etc();
+                    })
+                    ->has('data', function ($json) use ($seo): void {
+                        $json
+                            ->where('title', $seo['title'])
+                            ->where('description', $seo['description'])
+                            ->etc();
+                    })
+                    ->etc();
+            })
+            ->assertJsonStructure([
+                'data' => $this->expected_structure,
+            ]);
 
-        $response->assertCreated()->assertJson(fn (AssertableJson $json) =>
-            $json->has('meta', fn ($json) =>
-                    $json->has('seo')
-                        ->etc())
-                ->has('data', fn ($json) =>
-                    $json->where('title', $seo['title'])
-                        ->where('description', $seo['description'])
-                        ->etc())
-                ->etc()
-        )->assertJsonStructure([
-            'data' => $this->expected_structure,
-        ]);
-
-        $seo = SeoMetadata::where('global', '=', true)->first();
+        $seo = SeoMetadata::query()->where('global', true)->first();
 
         $this->assertEquals(['key', 'words'], $seo->keywords);
 
@@ -115,6 +143,47 @@ class SeoMetadataTest extends TestCase
             'title' => $seo->title,
             'description' => $seo->description,
             'global' => true,
+        ]);
+    }
+
+    /**
+     * @dataProvider booleanProvider
+     */
+    public function testCreateBooleanValues($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('seo.edit');
+
+        SeoMetadata::query()->where('global', true)->delete();
+
+        $seo = [
+            'title' => 'title',
+            'description' => 'description',
+            'no_index' => $boolean,
+        ];
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', '/seo', $seo)
+            ->assertCreated()
+            ->assertJson(function (AssertableJson $json) use ($seo, $booleanValue): void {
+                $json
+                    ->has('meta', function ($json): void {
+                        $json->has('seo')->etc();
+                    })
+                    ->has('data', function ($json) use ($seo, $booleanValue): void {
+                        $json
+                            ->where('title', $seo['title'])
+                            ->where('description', $seo['description'])
+                            ->where('no_index', $booleanValue)
+                            ->etc();
+                    })
+                    ->etc();
+            });
+
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => $seo['title'],
+            'description' => $seo['description'],
+            'global' => true,
+            'no_index' => $booleanValue,
         ]);
     }
 
@@ -141,7 +210,7 @@ class SeoMetadataTest extends TestCase
                 'data' => $this->expected_structure,
             ]);
 
-        $seo2 = SeoMetadata::where('global', '=', true)->first();
+        $seo2 = SeoMetadata::query()->where('global', true)->first();
 
         $this->assertEquals(['key', 'words'], $seo2->keywords);
 
@@ -155,6 +224,37 @@ class SeoMetadataTest extends TestCase
     }
 
     /**
+     * @dataProvider booleanProvider
+     */
+    public function testUpdateBooleanValues($user, $boolean, $booleanValue): void
+    {
+        $this->$user->givePermissionTo('seo.edit');
+
+        $seo2 = [
+            'title' => 'title',
+            'description' => 'description',
+            'no_index' => $boolean,
+        ];
+        $response = $this->actingAs($this->$user)->json('PATCH', '/seo', $seo2);
+
+        $response->assertOk()
+            ->assertJsonFragment([
+                'title' => $seo2['title'],
+                'description' => $seo2['description'],
+                'no_index' => $booleanValue,
+            ]);
+
+        $this->assertDatabaseCount('seo_metadata', 1);
+
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => $seo2['title'],
+            'description' => $seo2['description'],
+            'global' => true,
+            'no_index' => $booleanValue,
+        ]);
+    }
+
+    /**
      * @dataProvider authProvider
      */
     public function testCheckKeywordsUnauthorized($user): void
@@ -164,7 +264,7 @@ class SeoMetadataTest extends TestCase
                 'PHP',
                 'Laravel',
                 'Java',
-            ]
+            ],
         ])->create();
 
         $this->actingAs($this->$user)->json('POST', '/seo/check', [
@@ -179,7 +279,7 @@ class SeoMetadataTest extends TestCase
     {
         $this->$user->givePermissionTo('seo.edit');
 
-        $seo = SeoMetadata::where('global', '=', true)->first();
+        $seo = SeoMetadata::query()->where('global', true)->first();
 
         $seo->update([
             'keywords' => [
@@ -198,12 +298,13 @@ class SeoMetadataTest extends TestCase
         ])->assertOk()->assertJsonFragment(['data' => [
             'duplicated' => false,
             'duplicates' => [],
-        ]]);
+        ],
+        ]);
     }
 
     public function noDuplicationsProvider(): array
     {
-        $different = ['Different1', 'Different2', 'Different3',];
+        $different = ['Different1', 'Different2', 'Different3'];
         $less = ['PHP', 'Laravel'];
         return [
             'as user different keywords' => ['user', $different],
@@ -239,7 +340,8 @@ class SeoMetadataTest extends TestCase
         ])->assertOk()->assertJsonFragment(['data' => [
             'duplicated' => false,
             'duplicates' => [],
-        ]]);
+        ],
+        ]);
     }
 
     public function duplicationsProvider(): array
@@ -283,7 +385,8 @@ class SeoMetadataTest extends TestCase
                     'model_type' => Str::afterLast($product::class, '\\'),
                 ],
             ],
-        ]]);
+        ],
+        ]);
     }
 
     /**
@@ -314,7 +417,8 @@ class SeoMetadataTest extends TestCase
         ])->assertOk()->assertJsonFragment(['data' => [
             'duplicated' => false,
             'duplicates' => [],
-        ]]);
+        ],
+        ]);
     }
 
     /**
@@ -348,23 +452,57 @@ class SeoMetadataTest extends TestCase
             ],
         ])->create());
 
-        $this->actingAs($this->$user)->json('POST', '/seo/check', [
-            'keywords' => $keywords,
-            'excluded' => [
-                'id' => $product->getKey(),
-                'model' => 'Product',
-            ],
-        ])
+        $this
+            ->actingAs($this->$user)
+            ->json('POST', '/seo/check', [
+                'keywords' => $keywords,
+                'excluded' => [
+                    'id' => $product->getKey(),
+                    'model' => 'Product',
+                ],
+            ])
             ->assertOk()
             ->assertJsonCount(1, 'data.duplicates')
             ->assertJsonFragment(['data' => [
-            'duplicated' => true,
-            'duplicates' => [
-                [
-                    'id' => $product2->getKey(),
-                    'model_type' => Str::afterLast($product2::class, '\\'),
+                'duplicated' => true,
+                'duplicates' => [
+                    [
+                        'id' => $product2->getKey(),
+                        'model_type' => Str::afterLast($product2::class, '\\'),
+                    ],
                 ],
             ],
-        ]]);
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateProduct($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $product = Product::factory()->create();
+
+        $seo = [
+            'title' => 'product-title',
+            'description' => 'product-description',
+            'keywords' => ['product', 'key', 'words'],
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->json('PATCH', "/products/id:{$product->getKey()}", [
+                'seo' => $seo,
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('seo_metadata', [
+            'title' => $seo['title'],
+            'description' => $seo['description'],
+            'global' => false,
+            'model_id' => $product->getKey(),
+            'model_type' => Product::class,
+        ]);
     }
 }

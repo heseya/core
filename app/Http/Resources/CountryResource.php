@@ -2,13 +2,15 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Request;
+
 class CountryResource extends Resource
 {
-    public function base($request): array
+    public function base(Request $request): array
     {
         return [
-            'code' => $this->code,
-            'name' => $this->name,
+            'code' => $this->resource->code,
+            'name' => $this->resource->name,
         ];
     }
 }

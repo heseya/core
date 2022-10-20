@@ -11,29 +11,27 @@ use Illuminate\Notifications\Notification;
 
 class WebHookNotification extends Notification
 {
-    private array $data;
-    private Model|null $issuer;
-
-    public function __construct(array $data, Model|null $issuer)
-    {
-        $this->data = $data;
-        $this->issuer = $issuer;
+    public function __construct(
+        private array $data,
+        private Model|null $issuer,
+    ) {
     }
 
-    public function via($notifiable)
+    public function via(mixed $notifiable): array
     {
         return [WebHookChannel::class];
     }
 
-    public function toWebHook($notifiable)
+    public function toWebHook(mixed $notifiable): array
     {
         if ($notifiable->with_issuer) {
             $this->data['issuer'] = match ($this->data['issuer_type']) {
                 IssuerType::APP => AppIssuerResource::make($this->issuer)->resolve(),
                 IssuerType::USER => UserIssuerResource::make($this->issuer)->resolve(),
-                IssuerType::UNAUTHENTICATED => null,
+                default => null,
             };
         }
+
         return $this->data;
     }
 }

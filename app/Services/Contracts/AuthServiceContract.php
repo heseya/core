@@ -6,6 +6,7 @@ use App\Dtos\RegisterDto;
 use App\Dtos\TFAConfirmDto;
 use App\Dtos\TFAPasswordDto;
 use App\Dtos\TFASetupDto;
+use App\Dtos\UpdateProfileDto;
 use App\Models\User;
 
 interface AuthServiceContract
@@ -16,7 +17,7 @@ interface AuthServiceContract
 
     public function logout(): void;
 
-    public function resetPassword(string $email): void;
+    public function resetPassword(string $email, string $redirect_url): void;
 
     public function showResetPasswordForm(?string $email, ?string $token): User;
 
@@ -43,4 +44,6 @@ interface AuthServiceContract
     public function removeUsersTFA(User $user): void;
 
     public function register(RegisterDto $dto): User;
+
+    public function updateProfile(UpdateProfileDto $dto): User;
 }

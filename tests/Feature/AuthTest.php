@@ -2,21 +2,38 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ExceptionsEnums\Exceptions;
+use App\Enums\IssuerType;
 use App\Enums\RoleType;
 use App\Enums\TFAType;
 use App\Enums\TokenType;
+use App\Events\FailedLoginAttempt;
+use App\Events\NewLocalizationLoginAttempt;
+use App\Events\PasswordReset;
+use App\Events\SuccessfulLoginAttempt;
+use App\Events\TfaInit;
+use App\Events\TfaRecoveryCodesChanged;
+use App\Events\TfaSecurityCode as TfaSecurityCodeEvent;
+use App\Listeners\WebHookEventListener;
 use App\Models\App;
 use App\Models\OneTimeSecurityCode;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserLoginAttempt;
+use App\Models\UserPreference;
+use App\Models\WebHook;
+use App\Notifications\ResetPassword;
 use App\Notifications\TFAInitialization;
 use App\Notifications\TFARecoveryCodes;
 use App\Notifications\TFASecurityCode;
 use App\Notifications\UserRegistered;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -24,6 +41,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use PHPGangsta_GoogleAuthenticator;
+use Spatie\WebhookServer\CallWebhookJob;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
@@ -34,12 +52,20 @@ class AuthTest extends TestCase
     private string $expectedLog;
     private OneTimeSecurityCodeContract $oneTimeSecurityCodeService;
     private array $expected;
+    private string $cipher;
+    private string $webhookKey;
 
     public function setUp(): void
     {
         parent::setUp();
+        $this->user->preferences()->associate(UserPreference::create([
+            'failed_login_attempt_alert' => false,
+            'new_localization_login_alert' => false,
+            'recovery_code_changed_alert' => false,
+        ]));
+        $this->user->save();
 
-        $this->expectedLog = 'AuthException(code: 0): Invalid credentials at';
+        $this->expectedLog = 'ClientException(code: 422): Invalid credentials at';
         $this->oneTimeSecurityCodeService = \Illuminate\Support\Facades\App::make(OneTimeSecurityCodeContract::class);
 
         $this->expected = [
@@ -51,37 +77,222 @@ class AuthTest extends TestCase
                 'email',
                 'name',
                 'avatar',
+                'roles',
+                'delivery_addresses',
+                'invoice_addresses',
+                'permissions',
             ],
         ];
+
+        $this->cipher = Config::get('webhook.cipher');
+        $this->webhookKey = Config::get('webhook.key');
     }
 
-    public function testLoginUnauthorized(): void
+    public function testSuccessfulLoginWithoutPreferences(): void
     {
-        $response = $this->postJson('/login', [
-            'email' => $this->user->email,
-            'password' => $this->password,
+        /** @var User $user */
+        $user = User::query()->create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => Hash::make('password'),
         ]);
 
-        $response->assertForbidden();
+        $this
+            ->actingAs($user)
+            ->json('POST', '/login', [
+                'email' => 'test@example.com',
+                'password' => 'password',
+            ])
+            ->assertOk();
     }
 
-    public function testLogin(): void
+    public function testSuccessfulLoginAttempt(): array
     {
-        $this->user->givePermissionTo('auth.login');
-
-        $response = $this->actingAs($this->user)->postJson('/login', [
-            'email' => $this->user->email,
-            'password' => $this->password,
+        $this->user->preferences()->update([
+            'successful_login_attempt_alert' => true,
         ]);
 
-        $response
+        Event::fake([SuccessfulLoginAttempt::class]);
+
+        $this
+            ->actingAs($this->user)->postJson('/login', [
+                'email' => $this->user->email,
+                'password' => $this->password,
+            ])
             ->assertOk()
             ->assertJsonStructure(['data' => $this->expected]);
+
+        $attempt = UserLoginAttempt::where('user_id', $this->user->id)->latest()->first();
+
+        Event::assertDispatched(SuccessfulLoginAttempt::class);
+        return [$this->user, $attempt, new SuccessfulLoginAttempt($attempt)];
+    }
+
+    /**
+     * @depends testSuccessfulLoginAttempt
+     */
+    public function testSuccessfulLoginAttemptWebhookDispatch($payload): void
+    {
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'SuccessfulLoginAttempt',
+            ],
+            'model_type' => $this->user::class,
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => true,
+            'with_hidden' => false,
+        ]);
+
+        Bus::fake();
+
+        [$user, $attempt, $event] = $payload;
+
+        $attempt->user()->associate($user);
+
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $user, $attempt) {
+            $payload = $job->payload;
+
+            $data = $this->decryptData($payload['data']);
+
+            if (!$data) {
+                return false;
+            }
+
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $data['user']['id'] === $user->getKey()
+                && $data['user_agent'] === $attempt->user_agent
+                && $data['ip'] === $attempt->ip
+                && $payload['data_type'] === 'LocalizedLoginAttempt'
+                && $payload['event'] === 'SuccessfulLoginAttempt'
+                && $payload['issuer_type'] === IssuerType::USER;
+        });
+    }
+
+    public function testSuccessfulLoginNewLocalization(): array
+    {
+        $this->user->preferences()->update([
+            'new_localization_login_alert' => true,
+        ]);
+
+        Event::fake([NewLocalizationLoginAttempt::class]);
+
+        $this
+            ->actingAs($this->user)->postJson('/login', [
+                'email' => $this->user->email,
+                'password' => $this->password,
+            ])
+            ->assertOk()
+            ->assertJsonStructure(['data' => $this->expected]);
+
+        $attempt = UserLoginAttempt::where('user_id', $this->user->id)->latest()->first();
+
+        Event::assertDispatched(NewLocalizationLoginAttempt::class);
+        return [$this->user, $attempt, new NewLocalizationLoginAttempt($attempt)];
+    }
+
+    public function testFailedLoginNewLocalization(): array
+    {
+        $this->user->preferences()->update([
+            'new_localization_login_alert' => true,
+        ]);
+
+        Event::fake([NewLocalizationLoginAttempt::class]);
+
+        $this
+            ->actingAs($this->user)->postJson('/login', [
+                'email' => $this->user->email,
+                'password' => 'bad-password',
+            ]);
+
+        $attempt = UserLoginAttempt::where('user_id', $this->user->id)->latest()->first();
+
+        Event::assertDispatched(NewLocalizationLoginAttempt::class);
+        return [$this->user, $attempt, new NewLocalizationLoginAttempt($attempt)];
+    }
+
+    /**
+     * @depends testSuccessfulLoginNewLocalization
+     * @depends testFailedLoginNewLocalization
+     */
+    public function testNewLocalizationWebhookDispatch($payload1, $payload2): void
+    {
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'NewLocalizationLoginAttempt',
+            ],
+            'model_type' => $this->user::class,
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => true,
+            'with_hidden' => false,
+        ]);
+
+        Bus::fake();
+
+        [$user, $attempt, $event] = $payload1;
+        [$userFailed, $attemptFailed, $eventFailed] = $payload2;
+
+        $attempt->user()->associate($user);
+
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $user, $attempt) {
+            $payload = $job->payload;
+
+            $data = $this->decryptData($payload['data']);
+
+            if (!$data) {
+                return false;
+            }
+
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $data['user']['id'] === $user->getKey()
+                && $data['user_agent'] === $attempt->user_agent
+                && $data['ip'] === $attempt->ip
+                && $payload['data_type'] === 'LocalizedLoginAttempt'
+                && $payload['event'] === 'NewLocalizationLoginAttempt'
+                && $payload['issuer_type'] === IssuerType::USER;
+        });
+
+        $attemptFailed->user()->associate($userFailed);
+
+        $listener = new WebHookEventListener();
+
+        $listener->handle($eventFailed);
+
+        Bus::assertDispatched(
+            CallWebhookJob::class,
+            function ($job) use ($webHook, $userFailed, $attemptFailed) {
+                $payload = $job->payload;
+
+                $data = $this->decryptData($payload['data']);
+
+                if (!$data) {
+                    return false;
+                }
+
+                return $job->webhookUrl === $webHook->url
+                    && isset($job->headers['Signature'])
+                    && $data['user']['id'] === $userFailed->getKey()
+                    && $data['user_agent'] === $attemptFailed->user_agent
+                    && $data['ip'] === $attemptFailed->ip
+                    && $payload['data_type'] === 'LocalizedLoginAttempt'
+                    && $payload['event'] === 'NewLocalizationLoginAttempt'
+                    && $payload['issuer_type'] === IssuerType::USER;
+            }
+        );
     }
 
     public function testLoginInvalidCredential(): void
     {
-        $this->user->givePermissionTo('auth.login');
+        Event::fake([FailedLoginAttempt::class]);
 
         Log::shouldReceive('error')
             ->once()
@@ -89,27 +300,103 @@ class AuthTest extends TestCase
                 return str_contains($message, $this->expectedLog);
             });
 
-        $response = $this->actingAs($this->user)->postJson('/login', [
-            'email' => $this->user->email,
-            'password' => 'bad-password',
+        $this
+            ->actingAs($this->user)
+            ->json('POST', '/login', [
+                'email' => $this->user->email,
+                'password' => 'bad-password',
+            ])
+            ->assertUnprocessable();
+
+        Event::assertNotDispatched(FailedLoginAttempt::class);
+    }
+
+    public function testFailedLoginAttempt(): array
+    {
+        $this->user->preferences()->update([
+            'failed_login_attempt_alert' => true,
         ]);
 
-        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+        Event::fake([FailedLoginAttempt::class]);
+
+        Log::shouldReceive('error')
+            ->once()
+            ->withArgs(function ($message) {
+                return str_contains($message, $this->expectedLog);
+            });
+
+        $this
+            ->actingAs($this->user)
+            ->json('POST', '/login', [
+                'email' => $this->user->email,
+                'password' => 'bad-password',
+            ])
+            ->assertUnprocessable();
+
+        $attempt = UserLoginAttempt::where('user_id', $this->user->getKey())->latest()->first();
+
+        Event::assertDispatched(FailedLoginAttempt::class);
+
+        return [$this->user, $attempt, new FailedLoginAttempt($attempt)];
+    }
+
+    /**
+     * @depends testFailedLoginAttempt
+     */
+    public function testFailedLoginAttemptWebhookDispatch($payload): void
+    {
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'FailedLoginAttempt',
+            ],
+            'model_type' => $this->user::class,
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => true,
+            'with_hidden' => false,
+        ]);
+
+        Bus::fake();
+
+        [$user, $attempt, $event] = $payload;
+
+        $attempt->user()->associate($user);
+
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $user, $attempt) {
+            $payload = $job->payload;
+
+            $data = $this->decryptData($payload['data']);
+
+            if (!$data) {
+                return false;
+            }
+
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $data['user']['id'] === $user->getKey()
+                && $data['user_agent'] === $attempt->user_agent
+                && $data['ip'] === $attempt->ip
+                && $payload['data_type'] === 'LocalizedLoginAttempt'
+                && $payload['event'] === 'FailedLoginAttempt'
+                && $payload['issuer_type'] === IssuerType::USER;
+        });
     }
 
     public function testLoginDisabledTfaCode(): void
     {
-        $this->user->givePermissionTo('auth.login');
-
-        $response = $this->actingAs($this->user)->postJson('/login', [
-            'email' => $this->user->email,
-            'password' => $this->password,
-            'code' => 'code',
-        ]);
-
-        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+        $this
+            ->actingAs($this->user)
+            ->json('POST', '/login', [
+                'email' => $this->user->email,
+                'password' => $this->password,
+                'code' => 'code',
+            ])
+            ->assertUnprocessable()
             ->assertJsonFragment([
-                'message' => 'Two-Factor Authentication is not setup.'
+                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_NOT_SET_UP)->key,
             ]);
     }
 
@@ -118,8 +405,6 @@ class AuthTest extends TestCase
      */
     public function testLoginEnabledTfaNoCode($method, $secret): void
     {
-        $this->user->givePermissionTo('auth.login');
-
         Notification::fake();
 
         $this->user->update([
@@ -139,8 +424,94 @@ class AuthTest extends TestCase
 
         $response->assertStatus(Response::HTTP_FORBIDDEN)
             ->assertJsonFragment([
-                'message' => 'Two-Factor Authentication is required'
+                'key' => Exceptions::getKey(Exceptions::CLIENT_TFA_REQUIRED),
             ]);
+    }
+
+    public function testLoginEnabledTfaAppNoCodeWebhookEvent(): void
+    {
+        Event::fake([TFASecurityCode::class]);
+
+        $this->user->update([
+            'tfa_type' => TFAType::APP,
+            'tfa_secret' => 'secret',
+            'is_tfa_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+        ]);
+
+        $response->assertStatus(Response::HTTP_FORBIDDEN);
+
+        Event::assertNotDispatched(TFASecurityCode::class);
+    }
+
+    public function testLoginEnabledTfaEmailNoCodeWebhookEvent(): array
+    {
+        Event::fake([TfaSecurityCodeEvent::class]);
+        Notification::fake();
+
+        $this->user->update([
+            'tfa_type' => TFAType::EMAIL,
+            'tfa_secret' => null,
+            'is_tfa_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->user)->postJson('/login', [
+            'email' => $this->user->email,
+            'password' => $this->password,
+        ]);
+
+        $response->assertStatus(Response::HTTP_FORBIDDEN);
+
+        $code = OneTimeSecurityCode::where('user_id', $this->user->id)->first()->code;
+
+        Event::assertDispatched(TfaSecurityCodeEvent::class);
+        return [$this->user, $code, new TfaSecurityCodeEvent($this->user, $code)];
+    }
+
+    /**
+     * @depends testLoginEnabledTfaEmailNoCodeWebhookEvent
+     */
+    public function testLoginEnabledTfaNoCodeWebhookDispatch($payload): void
+    {
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'TfaSecurityCode',
+            ],
+            'model_type' => $this->user::class,
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => true,
+            'with_hidden' => false,
+        ]);
+
+        Bus::fake();
+
+        [$user, $code, $event] = $payload;
+
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $user, $code) {
+            $payload = $job->payload;
+
+            $data = $this->decryptData($payload['data']);
+
+            if (!$data) {
+                return false;
+            }
+
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $data['user']['id'] === $user->getKey()
+                && $data['security_code'] === $code
+                && $payload['data_type'] === 'TfaCode'
+                && $payload['event'] === 'TfaSecurityCode'
+                && $payload['issuer_type'] === IssuerType::USER;
+        });
     }
 
     /**
@@ -148,8 +519,6 @@ class AuthTest extends TestCase
      */
     public function testLoginEnabledTfaCode($method, $secret): void
     {
-        $this->user->givePermissionTo('auth.login');
-
         Notification::fake();
 
         $this->user->update([
@@ -160,7 +529,10 @@ class AuthTest extends TestCase
         $code = '';
 
         if ($method === TFAType::EMAIL) {
-            $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user, Config::get('tfa.code_expires_time'));
+            $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
+                $this->user,
+                Config::get('tfa.code_expires_time'),
+            );
         } elseif ($method === TFAType::APP) {
             $google_authenticator = new PHPGangsta_GoogleAuthenticator();
             $code = $google_authenticator->getCode($secret);
@@ -180,8 +552,6 @@ class AuthTest extends TestCase
 
     public function testLoginEnabledTfaOldCode(): void
     {
-        $this->user->givePermissionTo('auth.login');
-
         Notification::fake();
 
         $this->user->update([
@@ -190,7 +560,10 @@ class AuthTest extends TestCase
             'is_tfa_active' => true,
         ]);
 
-        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user, Config::get('tfa.code_expires_time'));
+        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
+            $this->user,
+            Config::get('tfa.code_expires_time'),
+        );
 
         // Wygenerowanie nowego kodu
         $this->actingAs($this->user)->postJson('/login', [
@@ -207,7 +580,7 @@ class AuthTest extends TestCase
         $response
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
             ->assertJsonFragment([
-                'message' => 'Invalid Two-Factor Authentication token.'
+                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_INVALID_TOKEN)->key,
             ]);
 
         $this->assertDatabaseCount('one_time_security_codes', 1);
@@ -218,8 +591,6 @@ class AuthTest extends TestCase
      */
     public function testLoginEnabledTfaRecoveryCode($method, $secret): void
     {
-        $this->user->givePermissionTo('auth.login');
-
         Notification::fake();
 
         $this->user->update([
@@ -247,8 +618,6 @@ class AuthTest extends TestCase
      */
     public function testLoginEnabledTfaInvalidCode($method, $secret): void
     {
-        $this->user->givePermissionTo('auth.login');
-
         Notification::fake();
 
         $this->user->update([
@@ -266,25 +635,8 @@ class AuthTest extends TestCase
         $response
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
             ->assertJsonFragment([
-                'message' => 'Invalid Two-Factor Authentication token.'
+                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_INVALID_TOKEN)->key,
             ]);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testRefreshTokenUnauthorized($user): void
-    {
-        $token = $this->tokenService->createToken(
-            $this->$user,
-            new TokenType(TokenType::REFRESH),
-        );
-
-        $response = $this->actingAs($this->$user)->postJson('/auth/refresh', [
-            'refresh_token' => $token,
-        ]);
-
-        $response->assertForbidden();
     }
 
     /**
@@ -292,8 +644,6 @@ class AuthTest extends TestCase
      */
     public function testRefreshTokenMissing($user): void
     {
-        $this->$user->givePermissionTo('auth.login');
-
         $response = $this->actingAs($this->$user)->postJson('/auth/refresh', [
             'refresh_token' => null,
         ]);
@@ -301,10 +651,29 @@ class AuthTest extends TestCase
         $response->assertUnprocessable();
     }
 
+    public function testRefreshTokenAfterUserDeleted(): void
+    {
+        $token = $this->tokenService->createToken(
+            $this->user,
+            new TokenType(TokenType::REFRESH),
+        );
+
+        $response = $this->actingAs($this->user)->json('POST', 'auth/refresh', [
+            'refresh_token' => $token,
+        ]);
+
+        $this->user->delete();
+
+        $responseFail = $this->json('POST', 'auth/refresh', [
+            'refresh_token' => $response->getData()->data->refresh_token,
+        ]);
+
+        $responseFail->assertStatus(422)
+            ->assertJsonFragment(['key' => Exceptions::fromValue(Exceptions::CLIENT_USER_DOESNT_EXIST)->key]);
+    }
+
     public function testRefreshTokenUser(): void
     {
-        $this->user->givePermissionTo('auth.login');
-
         $token = $this->tokenService->createToken(
             $this->user,
             new TokenType(TokenType::REFRESH),
@@ -326,13 +695,12 @@ class AuthTest extends TestCase
                     'name',
                     'avatar',
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     public function testRefreshTokenApp(): void
     {
-        $this->application->givePermissionTo('auth.login');
-
         $token = $this->tokenService->createToken(
             $this->application,
             new TokenType(TokenType::REFRESH),
@@ -360,7 +728,8 @@ class AuthTest extends TestCase
                     'author',
                     'permissions',
                 ],
-            ]])->assertJsonFragment([
+            ],
+            ])->assertJsonFragment([
                 'identity_token' => null,
             ]);
     }
@@ -370,8 +739,6 @@ class AuthTest extends TestCase
      */
     public function testRefreshTokenInvalidated($user): void
     {
-        $this->$user->givePermissionTo('auth.login');
-
         $token = $this->tokenService->createToken(
             $this->$user,
             new TokenType(TokenType::REFRESH),
@@ -411,8 +778,6 @@ class AuthTest extends TestCase
 
     public function testLogoutWithInvalidatedTokenAfterRefreshToken(): void
     {
-        $this->user->givePermissionTo('auth.login');
-
         $response = $this->actingAs($this->user)->postJson('/login', [
             'email' => $this->user->email,
             'password' => $this->password,
@@ -462,7 +827,7 @@ class AuthTest extends TestCase
         $response->assertForbidden();
     }
 
-    public function testResetPassword(): void
+    public function testResetPassword11(): void
     {
         $this->user->givePermissionTo('auth.password_reset');
 
@@ -475,14 +840,98 @@ class AuthTest extends TestCase
             'password' => Hash::make($password),
         ]);
 
-        Mail::fake();
-        Mail::assertNothingSent();
+        Notification::fake();
 
         $response = $this->actingAs($this->user)->postJson('/users/reset-password', [
             'email' => $user->email,
+            'redirect_url' => 'https://test.com',
         ]);
 
+        Notification::assertSentTo($user, ResetPassword::class);
+
         $response->assertNoContent();
+    }
+
+    public function testResetPasswordWebhookEvent(): array
+    {
+        $this->user->givePermissionTo('auth.password_reset');
+
+        $email = $this->faker->unique()->safeEmail;
+        $password = 'Passwd###111';
+
+        $user = User::factory()->create([
+            'name' => $this->faker->firstName() . ' ' . $this->faker->lastName(),
+            'email' => $email,
+            'password' => Hash::make($password),
+        ]);
+
+        Mail::fake();
+        Event::fake([PasswordReset::class]);
+
+        $this
+            ->actingAs($this->user)
+            ->json('POST', '/users/reset-password', [
+                'email' => $user->email,
+                'redirect_url' => 'https://example.com',
+            ])
+            ->assertNoContent();
+
+        Event::assertDispatched(PasswordReset::class);
+
+        $passwordResetData = DB::table('password_resets')
+            ->where('email', $user->email)
+            ->first();
+
+        $param = http_build_query([
+            'token' => $passwordResetData->token,
+            'email' => $passwordResetData->email,
+        ]);
+
+        $url = Config::get('app.admin_url') . '/password/reset?' . $param;
+
+        return [$user, $url, new PasswordReset($user, $url)];
+    }
+
+    /**
+     * @depends testResetPasswordWebhookEvent
+     */
+    public function testResetPasswordWebhookDispatch($payload): void
+    {
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'PasswordReset',
+            ],
+            'model_type' => $this->user::class,
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => true,
+            'with_hidden' => false,
+        ]);
+
+        Bus::fake();
+
+        [$user, $url, $event] = $payload;
+
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $user, $url) {
+            $payload = $job->payload;
+
+            $data = $this->decryptData($payload['data']);
+
+            if (!$data) {
+                return false;
+            }
+
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $data['user']['id'] === $user->getKey()
+                && $data['recovery_url'] === $url
+                && $payload['data_type'] === 'PasswordRecovery'
+                && $payload['event'] === 'PasswordReset'
+                && $payload['issuer_type'] === IssuerType::USER;
+        });
     }
 
     public function testResetPasswordDifferentEmail(): void
@@ -492,22 +941,26 @@ class AuthTest extends TestCase
         $email = $this->faker->unique()->safeEmail;
         $password = 'Passwd###111';
 
-        $user = User::factory()->create([
+        User::factory()->create([
             'name' => $this->faker->firstName() . ' '  . $this->faker->lastName(),
             'email' => $email,
             'password' => Hash::make($password),
         ]);
 
         Mail::fake();
+        Event::fake([PasswordReset::class]);
         Mail::assertNothingSent();
 
         $response = $this->actingAs($this->user)->postJson('/users/reset-password', [
             'email' => $this->faker->unique()->safeEmail,
+            'redirect_url' => 'https://test.com',
         ]);
 
         Mail::assertNothingSent();
 
         $response->assertNoContent();
+
+        Event::assertNotDispatched(PasswordReset::class);
     }
 
     public function testSaveResetPasswordUnauthorized(): void
@@ -522,7 +975,7 @@ class AuthTest extends TestCase
 
         $token = Password::createToken($user);
 
-        $response = $this->patchJson('/users/save-reset-password', [
+        $response = $this->putJson('/users/save-reset-password', [
             'email' => $email,
             'password' => $newPassword,
             'token' => $token,
@@ -531,7 +984,7 @@ class AuthTest extends TestCase
         $response->assertForbidden();
     }
 
-    function testSaveResetPassword(): void
+    public function testSaveResetPassword(): void
     {
         $this->user->givePermissionTo('auth.password_reset');
 
@@ -546,7 +999,7 @@ class AuthTest extends TestCase
         $token = Password::createToken($user);
         $this->assertTrue(Password::tokenExists($user, $token));
 
-        $this->actingAs($this->user)->patchJson('/users/save-reset-password', [
+        $this->actingAs($this->user)->putJson('/users/save-reset-password', [
             'email' => $email,
             'password' => $newPassword,
             'token' => $token,
@@ -557,7 +1010,17 @@ class AuthTest extends TestCase
         $this->assertFalse(Password::tokenExists($user, $token));
     }
 
-    function testSaveResetPasswordInvalidToken(): void
+    public function testShowResetPasswordForm(): void
+    {
+        $this->user->givePermissionTo('auth.password_reset');
+
+        $token = Password::createToken($this->user);
+        $response = $this->actingAs($this->user)
+            ->json('get', '/users/reset-password/' . $token . '/' . $this->user->email);
+        $response->assertOk();
+    }
+
+    public function testSaveResetPasswordInvalidToken(): void
     {
         $this->user->givePermissionTo('auth.password_reset');
 
@@ -577,16 +1040,19 @@ class AuthTest extends TestCase
             ->withArgs(function ($message) {
                 return str_contains(
                     $message,
-                    'AuthException(code: 0): The token is invalid or inactive. '
-                    . 'Try to reset your password again. at'
+                    'ClientException(code: 422): The token is invalid or inactive. Try to reset your password again',
                 );
             });
 
-        $response = $this->actingAs($this->user)->json('PATCH', '/users/save-reset-password', [
-            'email' => $email,
-            'password' => $newPassword,
-            'token' => 'token',
-        ]);
+        $response = $this->actingAs($this->user)->json(
+            'PUT',
+            '/users/save-reset-password',
+            [
+                'email' => $email,
+                'password' => $newPassword,
+                'token' => 'token',
+            ],
+        );
 
         $user->refresh();
         $response->assertStatus(422);
@@ -598,7 +1064,7 @@ class AuthTest extends TestCase
             'password' => Hash::make('test'),
         ]);
 
-        $response = $this->actingAs($user)->patchJson('/users/password', [
+        $response = $this->actingAs($user)->putJson('/users/password', [
             'password' => 'test',
             'password_new' => 'Test1@3456',
         ]);
@@ -614,15 +1080,15 @@ class AuthTest extends TestCase
 
         $user->givePermissionTo('auth.password_change');
 
-        $response = $this->actingAs($user)->patchJson('/users/password', [
+        $response = $this->actingAs($user)->putJson('/users/password', [
             'password' => 'test',
-            'password_new' => 'Test1@3456',
+            'password_new' => 'Test1@345678',
         ]);
 
         $response->assertNoContent();
 
         $user->refresh();
-        $this->assertTrue(Hash::check('Test1@3456', $user->password));
+        $this->assertTrue(Hash::check('Test1@345678', $user->password));
     }
 
     public function testChangePasswordInvalidPassword(): void
@@ -636,169 +1102,16 @@ class AuthTest extends TestCase
         Log::shouldReceive('error')
             ->once()
             ->withArgs(function ($message) {
-                return str_contains($message, $this->expectedLog);
+                return str_contains($message, 'App\Exceptions\ClientException(code: 422): Invalid password at');
             });
 
-        $response = $this->actingAs($user)->json('PATCH', '/users/password', [
+        $response = $this->actingAs($user)->json('PUT', '/users/password', [
             'password' => 'tests',
-            'password_new' => 'Test1@3456',
+            'password_new' => 'Test1@345678',
         ]);
 
         $response->assertStatus(422);
     }
-
-//    public function testLoginHistoryUnauthorized(): void
-//    {
-//        $response = $this->actingAs($this->user)->getJson('/auth/login-history');
-//        $response->assertForbidden();
-//    }
-//
-//    public function testLoginHistory(): void
-//    {
-//        $this->user->givePermissionTo('auth.sessions.show');
-//
-//        $response = $this->actingAs($this->user)->getJson('/auth/login-history');
-//        $response->assertOk();
-//    }
-//
-//    public function testKillActiveSessionUnauthorized(): void
-//    {
-//        $user = User::factory()->create();
-//        $token = $user->createToken('Test Active Token');
-//        $headers = ['Authorization' => 'Bearer ' . $token->accessToken];
-//
-//        $this->getJson('/auth/kill-session/id:' . $token->token->id, $headers)
-//            ->assertForbidden();
-//    }
-//
-//    public function testKillActiveSession(): void
-//    {
-//        $user = User::factory()->create();
-//        $user->givePermissionTo('auth.sessions.revoke');
-//
-//        $token = $user->createToken('Test Active Token');
-//        $headers = ['Authorization' => 'Bearer ' . $token->accessToken];
-//
-//        $this->getJson('/auth/kill-session/id:' . $token->token->id, $headers)
-//            ->assertStatus(422);
-//
-//        $this->assertDatabaseHas('oauth_access_tokens', [
-//            'id' => $token->token->id,
-//            'user_id' => $user->getKey(),
-//            'revoked' => false,
-//        ]);
-//    }
-//
-//    public function testKillOldSessionUnauthorized(): void
-//    {
-//        $user = User::factory()->create();
-//        $token1 = $user->createToken('Test A Access Token');
-//        $token3 = $user->createToken('Test C Access Token');
-//
-//        $headers = ['Authorization' => 'Bearer ' . $token1->accessToken];
-//        $this->getJson('/auth/kill-session/id:' . $token3->token->id, $headers)
-//            ->assertForbidden();
-//    }
-//
-//    public function testKillOldSession(): void
-//    {
-//        $user = User::factory()->create();
-//        $user->givePermissionTo('auth.sessions.revoke');
-//
-//        $token1 = $user->createToken('Test A Access Token');
-//        $token2 = $user->createToken('Test B Access Token');
-//        $token3 = $user->createToken('Test C Access Token');
-//
-//        $headers = ['Authorization' => 'Bearer ' . $token1->accessToken];
-//        $this->getJson('/auth/kill-session/id:' . $token3->token->id, $headers)
-//            ->assertOk()
-//            ->assertJsonCount(3, 'data')
-//            ->assertJsonFragment(
-//                [
-//                    'id' => $token3->token->id,
-//                    'current_session' => false,
-//                    'revoked' => true,
-//                ],
-//            );
-//
-//        $this->assertDatabaseHas('oauth_access_tokens', [
-//            'id' => $token1->token->id,
-//            'user_id' => $user->getKey(),
-//            'revoked' => false,
-//        ]);
-//        $this->assertDatabaseHas('oauth_access_tokens', [
-//            'id' => $token2->token->id,
-//            'user_id' => $user->getKey(),
-//            'revoked' => false,
-//        ]);
-//        $this->assertDatabaseHas('oauth_access_tokens', [
-//            'id' => $token3->token->id,
-//            'user_id' => $user->getKey(),
-//            'revoked' => true,
-//        ]);
-//    }
-//
-//    public function testKillAllSessionsUnauthorized(): void
-//    {
-//        $user = User::factory()->create();
-//
-//        $token3 = $user->createToken('Test 3 Access Token');
-//
-//        $token3->token->update([
-//          'ip' => Request::ip(),
-//        ]);
-//
-//        $headers = ['Authorization' => 'Bearer ' . $token3->accessToken];
-//        $this->getJson('/auth/kill-all-sessions', $headers)
-//            ->assertForbidden();
-//    }
-//
-//    public function testKillAllSessions(): void
-//    {
-//        $user = User::factory()->create();
-//        $user->givePermissionTo('auth.sessions.revoke');
-//
-//        $token1 = $user->createToken('Test 1 Access Token');
-//        $token2 = $user->createToken('Test 2 Access Token');
-//        $token3 = $user->createToken('Test 3 Access Token');
-//
-//        $token3->token->update([
-//            'ip' => Request::ip(),
-//        ]);
-//
-//        $headers = ['Authorization' => 'Bearer ' . $token3->accessToken];
-//        $this->getJson('/auth/kill-all-sessions', $headers)
-//            ->assertOk()
-//            ->assertJsonCount(1, 'data')
-//            ->assertJsonFragment(
-//                [
-//                    'current_session' => true,
-//                    'ip' => Request::ip(),
-//                    'revoked' => false,
-//                ],
-//            );
-//
-//        $this->assertDatabaseHas('oauth_access_tokens', [
-//            'id' => $token3->token->id,
-//            'user_id' => $user->getKey(),
-//            'revoked' => false,
-//        ]);
-//
-//        // check revoked sessions
-//        $resultToken1 = $this->checkToken($token1->token->id, true);
-//        $this->assertCount(1, $resultToken1);
-//
-//        $resultToken2 = $this->checkToken($token2->token->id, true);
-//        $this->assertCount(1, $resultToken2);
-//    }
-//
-//    private function checkToken(string $idToken, bool $isRevoke)
-//    {
-//        return Passport::token()
-//            ->where('id', $idToken)
-//            ->where('revoked', $isRevoke)
-//            ->get();
-//    }
 
     public function testProfileUnauthenticated(): void
     {
@@ -834,12 +1147,14 @@ class AuthTest extends TestCase
                     'name' => $role1->name,
                     'description' => $role1->description,
                     'assignable' => true,
-                ]],
+                ],
+                ],
                 'permissions' => [
                     'permission.1',
                     'permission.2',
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     public function testProfileApp(): void
@@ -867,7 +1182,46 @@ class AuthTest extends TestCase
                     'permission.1',
                     'permission.2',
                 ],
-            ]]);
+            ],
+            ]);
+    }
+
+    public function testUpdateProfile(): void
+    {
+        $user = User::factory()->create();
+        $user->preferences()->associate(UserPreference::create());
+        $user->save();
+
+        $this->actingAs($user)->json('PATCH', '/auth/profile', [
+            'preferences' => [
+                'successful_login_attempt_alert' => true,
+                'failed_login_attempt_alert' => 'off',
+                'new_localization_login_alert' => 'no',
+                'recovery_code_changed_alert' => 0,
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $user->getKey(),
+                'email' => $user->email,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+            ])
+            ->assertJsonFragment([
+                'successful_login_attempt_alert' => true,
+                'failed_login_attempt_alert' => false,
+                'new_localization_login_alert' => false,
+                'recovery_code_changed_alert' => false,
+            ]);
+
+        $this->assertDatabaseCount('user_preferences', 2); // +1 for $this->user
+        $this->assertDatabaseHas('user_preferences', [
+            'id' => $user->preferences_id,
+            'successful_login_attempt_alert' => true,
+            'failed_login_attempt_alert' => false,
+            'new_localization_login_alert' => false,
+            'recovery_code_changed_alert' => false,
+        ]);
     }
 
     public function testCheckIdentityUnauthorized(): void
@@ -879,7 +1233,7 @@ class AuthTest extends TestCase
             new TokenType(TokenType::IDENTITY),
         );
 
-        $this->actingAs($user)->getJson("/auth/check/$token")
+        $this->actingAs($user)->getJson("/auth/check/${token}")
             ->assertForbidden();
     }
 
@@ -890,15 +1244,19 @@ class AuthTest extends TestCase
     {
         $this->$user->givePermissionTo('auth.check_identity');
 
-        $otherUser = User::factory()->create();
-
         $token = $this->tokenService->createToken(
-                $otherUser,
-                new TokenType(TokenType::IDENTITY),
-            ) . 'invalid_hash';
+            User::factory()->create(),
+            new TokenType(TokenType::IDENTITY),
+        ) . 'invalid_hash';
 
-        $this->actingAs($this->$user)->getJson("/auth/check/$token")
+        $this
+            ->actingAs($this->$user)
+            ->json('GET', "/auth/check/${token}")
             ->assertStatus(422);
+
+        $this->actingAs($this->$user)
+            ->json('GET', '/auth/check/its-not-real-token')
+            ->assertNotFound();
     }
 
     /**
@@ -908,7 +1266,7 @@ class AuthTest extends TestCase
     {
         $this->$user->givePermissionTo('auth.check_identity');
 
-        $this->actingAs($this->$user)->getJson("/auth/check")
+        $this->actingAs($this->$user)->getJson('/auth/check')
             ->assertOk()
             ->assertJsonFragment([
                 'id' => null,
@@ -937,7 +1295,7 @@ class AuthTest extends TestCase
             new TokenType(TokenType::IDENTITY),
         );
 
-        $this->actingAs($this->$user)->getJson("/auth/check/$token")
+        $this->actingAs($this->$user)->getJson("/auth/check/${token}")
             ->assertOk()
             ->assertJson(['data' => [
                 'id' => $otherUser->getKey(),
@@ -947,7 +1305,8 @@ class AuthTest extends TestCase
                     'permission.1',
                     'permission.2',
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     /**
@@ -976,7 +1335,7 @@ class AuthTest extends TestCase
             new TokenType(TokenType::IDENTITY),
         );
 
-        $this->actingAs($this->$user)->getJson("/auth/check/$token")
+        $this->actingAs($this->$user)->getJson("/auth/check/${token}")
             ->assertOk()
             ->assertJson(['data' => [
                 'id' => $otherUser->getKey(),
@@ -987,13 +1346,14 @@ class AuthTest extends TestCase
                     'permission.1',
                     'permission.2',
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     public function testCheckIdentityAppMapping(): void
     {
         $app = App::factory()->create([
-           'slug' => 'app_slug',
+            'slug' => 'app_slug',
         ]);
 
         $app->givePermissionTo('auth.check_identity');
@@ -1013,7 +1373,7 @@ class AuthTest extends TestCase
             new TokenType(TokenType::IDENTITY),
         );
 
-        $this->actingAs($app)->getJson("/auth/check/$token")
+        $this->actingAs($app)->getJson("/auth/check/${token}")
             ->assertOk()
             ->assertJson(['data' => [
                 'id' => $user->getKey(),
@@ -1024,7 +1384,8 @@ class AuthTest extends TestCase
                     'permission.2',
                     'raw_name',
                 ],
-            ]]);
+            ],
+            ]);
     }
 
     public function testSetupTfaUnauthorized(): void
@@ -1064,7 +1425,9 @@ class AuthTest extends TestCase
             'type' => $method,
         ])
             ->assertStatus(422)
-            ->assertJsonFragment(['message' => 'Two-Factor Authentication is already setup.']);
+            ->assertJsonFragment([
+                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_ALREADY_SET_UP)->key,
+            ]);
     }
 
     /**
@@ -1128,6 +1491,8 @@ class AuthTest extends TestCase
 
     public function testSetupAppTfa(): void
     {
+        Event::fake([TfaInit::class]);
+
         $response = $this->actingAs($this->user)->json('POST', '/auth/2fa/setup', [
             'type' => TFAType::APP,
         ]);
@@ -1147,11 +1512,17 @@ class AuthTest extends TestCase
                 'type',
                 'secret',
                 'qr_code_url',
-            ]]);
+            ],
+            ]);
+
+        Event::assertNotDispatched(TfaInit::class);
     }
 
     public function testConfirmAppTfa(): void
     {
+        $this->user->preferences()->update([
+            'recovery_code_changed_alert' => true,
+        ]);
         Notification::fake();
 
         $google_authenticator = new PHPGangsta_GoogleAuthenticator();
@@ -1167,12 +1538,76 @@ class AuthTest extends TestCase
         $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
             'code' => $code,
         ])->assertOk()->assertJsonStructure(['data' => [
-            'recovery_codes'
-        ]]);
+            'recovery_codes',
+        ],
+        ]);
 
         Notification::assertSentTo(
-            [$this->user], TFARecoveryCodes::class
+            [$this->user],
+            TFARecoveryCodes::class
         );
+
+        $this->assertDatabaseHas('users', [
+            'id' => $this->user->getKey(),
+            'is_tfa_active' => true,
+        ]);
+
+        $this->assertDatabaseCount('one_time_security_codes', 3);
+    }
+
+    public function testConfirmAppTfaWebhookEvent(): array
+    {
+        $this->user->preferences()->update([
+            'recovery_code_changed_alert' => true,
+        ]);
+        Notification::fake();
+        Event::fake([TfaRecoveryCodesChanged::class]);
+
+        $google_authenticator = new PHPGangsta_GoogleAuthenticator();
+
+        $secret = $google_authenticator->createSecret();
+        $code = $google_authenticator->getCode($secret);
+
+        $this->user->update([
+            'tfa_type' => TFAType::APP,
+            'tfa_secret' => $secret,
+        ]);
+
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
+            'code' => $code,
+        ])->assertOk();
+
+        Event::assertDispatched(TfaRecoveryCodesChanged::class);
+        return [$this->user, new TfaRecoveryCodesChanged($this->user)];
+    }
+
+    public function testConfirmAppTfaNoPreferences(): void
+    {
+        Notification::fake();
+        Event::fake([TfaRecoveryCodesChanged::class]);
+
+        $google_authenticator = new PHPGangsta_GoogleAuthenticator();
+
+        $secret = $google_authenticator->createSecret();
+        $code = $google_authenticator->getCode($secret);
+
+        $this->user->update([
+            'tfa_type' => TFAType::APP,
+            'tfa_secret' => $secret,
+        ]);
+
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
+            'code' => $code,
+        ])->assertOk()->assertJsonStructure(['data' => [
+            'recovery_codes',
+        ],
+        ]);
+
+        Notification::assertNotSentTo(
+            [$this->user],
+            TFARecoveryCodes::class
+        );
+        Event::assertNotDispatched(TfaRecoveryCodesChanged::class);
 
         $this->assertDatabaseHas('users', [
             'id' => $this->user->getKey(),
@@ -1191,7 +1626,8 @@ class AuthTest extends TestCase
         ]);
 
         Notification::assertSentTo(
-            [$this->user], TFAInitialization::class
+            [$this->user],
+            TFAInitialization::class
         );
 
         $this->assertDatabaseHas('users', [
@@ -1205,14 +1641,78 @@ class AuthTest extends TestCase
             ->assertOk()
             ->assertJsonStructure(['data' => [
                 'type',
-            ]]);
+            ],
+            ]);
+    }
+
+    public function testSetupEmailTfaWithWebhookEvent(): array
+    {
+        Event::fake([TfaInit::class]);
+        Notification::fake();
+
+        $response = $this->actingAs($this->user)->json('POST', '/auth/2fa/setup', [
+            'type' => TFAType::EMAIL,
+        ]);
+        $response->assertOk();
+
+        $code = OneTimeSecurityCode::where('user_id', $this->user->getKey())->first();
+
+        Event::assertDispatched(TfaInit::class);
+        return [$this->user, $code->code, new TfaInit($this->user, $code->code)];
+    }
+
+    /**
+     * @depends testSetupEmailTfaWithWebhookEvent
+     */
+    public function testSetupEmailTfaWithWebhookDispatch($payload): void
+    {
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'TfaInit',
+            ],
+            'model_type' => $this->user::class,
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => true,
+            'with_hidden' => false,
+        ]);
+
+        Bus::fake();
+
+        [$user, $code, $event] = $payload;
+
+        $listener = new WebHookEventListener();
+        $listener->handle($event);
+
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $user, $code) {
+            $payload = $job->payload;
+
+            $data = $this->decryptData($payload['data']);
+
+            if (!$data) {
+                return false;
+            }
+
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $data['user']['id'] === $user->getKey()
+                && $data['security_code'] === $code
+                && $payload['data_type'] === 'TfaCode'
+                && $payload['event'] === 'TfaInit'
+                && $payload['issuer_type'] === IssuerType::USER;
+        });
     }
 
     public function testConfirmEmailTfa(): void
     {
+        $this->user->preferences()->update([
+            'recovery_code_changed_alert' => true,
+        ]);
         Notification::fake();
 
-        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode($this->user, Config::get('tfa.code_expires_time'));
+        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
+            $this->user,
+            Config::get('tfa.code_expires_time'),
+        );
 
         $this->user->update([
             'tfa_type' => TFAType::EMAIL,
@@ -1221,12 +1721,72 @@ class AuthTest extends TestCase
         $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
             'code' => $code,
         ])->assertOk()->assertJsonStructure(['data' => [
-            'recovery_codes'
-        ]]);
+            'recovery_codes',
+        ],
+        ]);
 
         Notification::assertSentTo(
-            [$this->user], TFARecoveryCodes::class
+            [$this->user],
+            TFARecoveryCodes::class
         );
+
+        $this->assertDatabaseHas('users', [
+            'id' => $this->user->getKey(),
+            'is_tfa_active' => true,
+        ]);
+
+        $this->assertDatabaseCount('one_time_security_codes', 3);
+    }
+
+    public function testConfirmEmailTfaWebhookEvent(): array
+    {
+        $this->user->preferences()->update([
+            'recovery_code_changed_alert' => true,
+        ]);
+        Notification::fake();
+        Event::fake([TfaRecoveryCodesChanged::class]);
+
+        $code = $this->oneTimeSecurityCodeService
+            ->generateOneTimeSecurityCode($this->user, Config::get('tfa.code_expires_time'));
+
+        $this->user->update([
+            'tfa_type' => TFAType::EMAIL,
+        ]);
+
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
+            'code' => $code,
+        ])->assertOk();
+
+        Event::assertDispatched(TfaRecoveryCodesChanged::class);
+        return [$this->user, new TfaRecoveryCodesChanged($this->user)];
+    }
+
+    public function testConfirmEmailTfaNoPreferences(): void
+    {
+        Notification::fake();
+        Event::fake([TfaRecoveryCodesChanged::class]);
+
+        $code = $this->oneTimeSecurityCodeService->generateOneTimeSecurityCode(
+            $this->user,
+            Config::get('tfa.code_expires_time'),
+        );
+
+        $this->user->update([
+            'tfa_type' => TFAType::EMAIL,
+        ]);
+
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/confirm', [
+            'code' => $code,
+        ])->assertOk()->assertJsonStructure(['data' => [
+            'recovery_codes',
+        ],
+        ]);
+
+        Notification::assertNotSentTo(
+            [$this->user],
+            TFARecoveryCodes::class
+        );
+        Event::assertNotDispatched(TfaRecoveryCodesChanged::class);
 
         $this->assertDatabaseHas('users', [
             'id' => $this->user->getKey(),
@@ -1250,7 +1810,7 @@ class AuthTest extends TestCase
         ])
             ->assertStatus(422)
             ->assertJsonFragment([
-                'message' => 'Invalid credentials',
+                'key' => Exceptions::getKey(Exceptions::CLIENT_INVALID_PASSWORD),
             ]);
     }
 
@@ -1261,7 +1821,7 @@ class AuthTest extends TestCase
         ])
             ->assertStatus(422)
             ->assertJsonFragment([
-                'message' => 'Two-Factor Authentication is not setup.',
+                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_NOT_SET_UP)->key,
             ]);
     }
 
@@ -1270,6 +1830,9 @@ class AuthTest extends TestCase
      */
     public function testRecoveryCodesCreate($method, $secret): void
     {
+        $this->user->preferences()->update([
+            'recovery_code_changed_alert' => true,
+        ]);
         Notification::fake();
 
         $this->user->update([
@@ -1283,7 +1846,8 @@ class AuthTest extends TestCase
         ])->assertOk();
 
         Notification::assertSentTo(
-            [$this->user], TFARecoveryCodes::class
+            [$this->user],
+            TFARecoveryCodes::class
         );
 
         $recovery_codes = OneTimeSecurityCode::where('user_id', '=', $this->user->getKey())
@@ -1292,9 +1856,152 @@ class AuthTest extends TestCase
 
         $response->assertJsonStructure(['data' => [
             'recovery_codes',
-        ]]);
+        ],
+        ]);
 
         $this->assertDatabaseCount('one_time_security_codes', count($recovery_codes));
+    }
+
+    /**
+     * @dataProvider tfaMethodProvider
+     */
+    public function testRecoveryCodesCreateNoPreferences($method, $secret): void
+    {
+        Notification::fake();
+        Event::fake([TfaRecoveryCodesChanged::class]);
+
+        $this->user->update([
+            'tfa_type' => $method,
+            'tfa_secret' => $secret,
+            'is_tfa_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->user)->json('POST', '/auth/2fa/recovery/create', [
+            'password' => $this->password,
+        ])->assertOk();
+
+        Notification::assertNotSentTo(
+            [$this->user],
+            TFARecoveryCodes::class
+        );
+        Event::assertNotDispatched(TfaRecoveryCodesChanged::class);
+
+        $recovery_codes = OneTimeSecurityCode::where('user_id', '=', $this->user->getKey())
+            ->whereNull('expires_at')
+            ->get();
+
+        $response->assertJsonStructure(['data' => [
+            'recovery_codes',
+        ],
+        ]);
+
+        $this->assertDatabaseCount('one_time_security_codes', count($recovery_codes));
+    }
+
+    public function testRecoveryCodesCreateWebhookEvent(): array
+    {
+        $this->user->preferences()->update([
+            'recovery_code_changed_alert' => true,
+        ]);
+        Notification::fake();
+        Event::fake([TfaRecoveryCodesChanged::class]);
+
+        $this->user->update([
+            'tfa_type' => TFAType::APP,
+            'tfa_secret' => 'secret',
+            'is_tfa_active' => true,
+        ]);
+
+        $this->actingAs($this->user)->json('POST', '/auth/2fa/recovery/create', [
+            'password' => $this->password,
+        ])->assertOk();
+
+        Event::assertDispatched(TfaRecoveryCodesChanged::class);
+        return [$this->user, new TfaRecoveryCodesChanged($this->user)];
+    }
+
+    /**
+     * @depends testConfirmAppTfaWebhookEvent
+     * @depends testConfirmEmailTfaWebhookEvent
+     * @depends testRecoveryCodesCreateWebhookEvent
+     */
+    public function testConfirmTfaWebhookDispatch($payload1, $payload2, $payload3): void
+    {
+        $webHook = WebHook::factory()->create([
+            'events' => [
+                'TfaRecoveryCodesChanged',
+            ],
+            'model_type' => $this->user::class,
+            'creator_id' => $this->user->getKey(),
+            'with_issuer' => true,
+            'with_hidden' => false,
+        ]);
+
+        Bus::fake();
+
+        [$user1, $event1] = $payload1;
+        [$user2, $event2] = $payload2;
+        [$user3, $event3] = $payload3;
+
+        $listener = new WebHookEventListener();
+
+        $listener->handle($event1);
+        $listener->handle($event2);
+        $listener->handle($event3);
+
+        // Webhook after app TFA is confirmed
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $user1) {
+            $payload = $job->payload;
+
+            $data = $this->decryptData($payload['data']);
+
+            if (!$data) {
+                return false;
+            }
+
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $data['id'] === $user1->getKey()
+                && $payload['data_type'] === 'User'
+                && $payload['event'] === 'TfaRecoveryCodesChanged'
+                && $payload['issuer_type'] === IssuerType::USER;
+        });
+
+        // Webhook after email TFA is confirmed
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $user2) {
+            $payload = $job->payload;
+
+            $data = $this->decryptData($payload['data']);
+
+            if (!$data) {
+                return false;
+            }
+
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $data['id'] === $user2->getKey()
+                && $payload['data_type'] === 'User'
+                && $payload['event'] === 'TfaRecoveryCodesChanged'
+                && $payload['issuer_type'] === IssuerType::USER;
+        });
+
+        // Webhook after recovery codes are created
+        Bus::assertDispatched(CallWebhookJob::class, function ($job) use ($webHook, $user3) {
+            $payload = $job->payload;
+
+            $data = $this->decryptData($payload['data']);
+
+            if (!$data) {
+                return false;
+            }
+
+            return $job->webhookUrl === $webHook->url
+                && isset($job->headers['Signature'])
+                && $data['id'] === $user3->getKey()
+                && $payload['data_type'] === 'User'
+                && $payload['event'] === 'TfaRecoveryCodesChanged'
+                && $payload['issuer_type'] === IssuerType::USER;
+        });
     }
 
     public function testRemoveTfaUnauthorized(): void
@@ -1311,7 +2018,7 @@ class AuthTest extends TestCase
         ])
             ->assertStatus(422)
             ->assertJsonFragment([
-                'message' => 'Two-Factor Authentication is not setup.',
+                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_NOT_SET_UP)->key,
             ]);
     }
 
@@ -1360,7 +2067,7 @@ class AuthTest extends TestCase
         $this->actingAs($this->user)->json('POST', '/users/id:' . $otherUser->getKey() . '/2fa/remove')
             ->assertStatus(422)
             ->assertJsonFragment([
-                'message' => 'Two-Factor Authentication is not setup.',
+                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_NOT_SET_UP)->key,
             ]);
     }
 
@@ -1371,7 +2078,7 @@ class AuthTest extends TestCase
         $this->actingAs($this->user)->json('POST', '/users/id:' . $this->user->getKey() . '/2fa/remove')
             ->assertStatus(422)
             ->assertJsonFragment([
-                'message' => 'You cannot remove 2FA yourself in this way.',
+                'key' => Exceptions::coerce(Exceptions::CLIENT_TFA_CANNOT_REMOVE)->key,
             ]);
     }
 
@@ -1450,33 +2157,50 @@ class AuthTest extends TestCase
                     'email',
                     'avatar',
                     'roles',
+                    'preferences',
                 ],
             ])
             ->assertJsonFragment([
                 'name' => 'Registered user',
                 'email' => $email,
             ])
+            ->assertJsonMissing(['name' => 'Authenticated'])
             ->assertJsonFragment([
-                'name' => 'Authenticated',
-                'assignable' => false,
-                'deletable' => false,
+                'successful_login_attempt_alert' => false,
+                'failed_login_attempt_alert' => true,
+                'new_localization_login_alert' => true,
+                'recovery_code_changed_alert' => true,
             ]);
 
         $user = User::where('email', $email)->first();
 
+        $this->assertDatabaseHas('user_preferences', [
+            'id' => $user->preferences_id,
+            'successful_login_attempt_alert' => false,
+            'failed_login_attempt_alert' => true,
+            'new_localization_login_alert' => true,
+            'recovery_code_changed_alert' => true,
+        ]);
+
         Notification::assertSentTo(
-            [$user], UserRegistered::class,
+            [$user],
+            UserRegistered::class,
         );
     }
 
-//    public function testAuthWithReokedToken(): void
-//    {
-//        $user = User::factory()->create();
-//        $token = $user->createToken('Test Access Token');
-//        $token->token->revoke();
-//
-//        $headers = ['Authorization' => 'Bearer ' . $token->accessToken];
-//        $this->getJson('/auth/kill-all-sessions', $headers)
-//            ->assertUnauthorized();
-//    }
+    private function decryptData(string $data): array|false
+    {
+        $decoded = base64_decode($data);
+        $ivLen = openssl_cipher_iv_length($this->cipher);
+        $iv = substr($decoded, 0, $ivLen);
+
+        $ciphertext = substr($decoded, $ivLen);
+        $decrypted = openssl_decrypt($ciphertext, $this->cipher, $this->webhookKey, OPENSSL_RAW_DATA, $iv);
+
+        if ($decrypted) {
+            return json_decode($decrypted, true);
+        }
+
+        return false;
+    }
 }

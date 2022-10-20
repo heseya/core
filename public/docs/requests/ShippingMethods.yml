@@ -53,17 +53,6 @@ ShippingMethod:
       example: 026bc5f6-8373-4aeb-972e-e78d72a67121
 
 
-ShippingMethodIndex:
-  content:
-    application/json:
-      schema:
-        properties:
-          country:
-            type: string
-          cart_value:
-            type: float
-        type: object
-
 ShippingMethodReorder:
   content:
     application/json:
@@ -85,14 +74,19 @@ ShippingMethodStore:
           - price_ranges
           - shipping_time_min
           - shipping_time_max
-        allOf:
-          - $ref: '#ShippingMethod'
         type: object
+        allOf:
+          - $ref: '#/ShippingMethod'
+          - properties:
+              metadata:
+                $ref: './../schemas/Metadata.yml#/Metadata'
+              metadata_private:
+                $ref: './../schemas/Metadata.yml#/Metadata'
 
 ShippingMethodUpdate:
   content:
     application/json:
       schema:
         allOf:
-          - $ref: '#ShippingMethod'
+          - $ref: '#/ShippingMethod'
         type: object

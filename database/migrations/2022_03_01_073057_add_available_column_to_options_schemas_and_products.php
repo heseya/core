@@ -10,20 +10,15 @@ use Illuminate\Support\Facades\Schema;
 
 class AddAvailableColumnToOptionsSchemasAndProducts extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        Schema::table('options', function (Blueprint $table) {
+        Schema::table('options', function (Blueprint $table): void {
             $table->boolean('available')->default(false);
         });
-        Schema::table('schemas', function (Blueprint $table) {
+        Schema::table('schemas', function (Blueprint $table): void {
             $table->boolean('available')->default(false);
         });
-        Schema::table('products', function (Blueprint $table) {
+        Schema::table('products', function (Blueprint $table): void {
             $table->boolean('available')->default(false);
         });
 
@@ -34,23 +29,22 @@ class AddAvailableColumnToOptionsSchemasAndProducts extends Migration
         $items->each(fn ($item) => $availabilityService->calculateAvailabilityOnOrderAndRestock($item));
 
         $products = Product::doesntHave('schemas')->get();
-        $products->each(fn ($product) => $product->update(['available' => true]));
+        $products->each(function (Product $product): void {
+            Product::withoutSyncingToSearch(function () use ($product): void {
+                $product->update(['available' => true]);
+            });
+        });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::table('options', function (Blueprint $table) {
+        Schema::table('options', function (Blueprint $table): void {
             $table->dropColumn('available');
         });
-        Schema::table('schemas', function (Blueprint $table) {
+        Schema::table('schemas', function (Blueprint $table): void {
             $table->dropColumn('available');
         });
-        Schema::table('products', function (Blueprint $table) {
+        Schema::table('products', function (Blueprint $table): void {
             $table->dropColumn('available');
         });
     }

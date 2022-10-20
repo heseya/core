@@ -9,6 +9,9 @@ class TFAResource extends Resource
 {
     public function base(Request $request): array
     {
-        return Collection::make($this->resource)->toArray();
+        /** @var Collection<int, mixed> $resource */
+        $resource = $this->resource;
+
+        return Collection::make($resource)->toArray();
     }
 }

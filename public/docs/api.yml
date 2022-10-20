@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: 'Heseya Store API'
   description: "IMPORTANT!!! Auth locks replaced with permissions:\n     *   <https://escl24.atlassian.net/wiki/spaces/HES/pages/6476169217/Autoryzacja>.\n     *   You need specific permissions to access each endpoint."
-  version: 2.0.0
+  version: 3.0.0
 paths:
   /analytics/payments:
     get:
@@ -13,19 +13,19 @@ paths:
       operationId: d66c4ebadd485eeef6d72f508f1f6533
       parameters:
         - name: from
-          in: path
+          in: query
           description: 'date datetime or timestamp by default in UTC+0; required if ''to'' is set'
           schema:
             type: string
           example: '2021-03-23'
         - name: to
-          in: path
+          in: query
           description: 'date datetime or timestamp by default in UTC+0'
           schema:
             type: string
           example: '2021-04-23 15:37'
         - name: group
-          in: path
+          in: query
           description: total/yearly/monthly/daily/hourly
           schema:
             type: string
@@ -54,42 +54,13 @@ paths:
                     type: object
                 type: object
       security:
-        - oauth: [ ]
+        - BearerAuth: [ ]
   /apps:
     $ref: './paths/Apps.yml#/Apps'
   '/apps/id:{id}':
     $ref: './paths/Apps.yml#/AppsParams'
   '/audits/{object}/id:{id}':
-    get:
-      tags:
-        - Audits
-      summary: 'list changes for object'
-      operationId: e30e643af2cbd18d3525f753fed7082e
-      parameters:
-        - name: object
-          in: path
-          required: true
-          schema:
-            type: string
-            example: products
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Audit'
-                type: object
+    $ref: './paths/Audits.yml#/Audit'
   /login:
     $ref: './paths/Auth.yml#/Login'
   /register:
@@ -106,12 +77,6 @@ paths:
     $ref: './paths/Auth.yml#/Password'
   /auth/refresh:
     $ref: './paths/Auth.yml#/Refresh'
-  /auth/login-history:
-    $ref: './paths/Auth.yml#/LoginHistory'
-  '/auth/kill-session/id:{id}':
-    $ref: './paths/Auth.yml#/KillSessionParams'
-  /auth/kill-all-sessions:
-    $ref: './paths/Auth.yml#/KillSession'
   /auth/profile:
     $ref: './paths/Auth.yml#/Profile'
   /auth/check:
@@ -127,156 +92,27 @@ paths:
   /auth/2fa/remove:
     $ref: './paths/Auth.yml#/TFARemove'
   /countries:
-    $ref: './paths/Countries.yml#Countries'
+    $ref: './paths/Countries.yml#/Countries'
   /deposits:
     $ref: './paths/Deposits.yml#/Deposits'
   '/items/id:{id}/deposits':
     $ref: './paths/Deposits.yml#/ItemDeposits'
-  /discounts:
-    get:
-      tags:
-        - Discounts
-      summary: 'get all discounts'
-      operationId: 48cb22131f7f432605564e1929459975
-      parameters:
-        - name: search
-          in: query
-          required: false
-          schema:
-            type: string
-        - name: description
-          in: query
-          required: false
-          schema:
-            type: string
-        - name: code
-          in: query
-          required: false
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Discount'
-                type: object
-      security:
-        - oauth: [ ]
-    post:
-      tags:
-        - Discounts
-      summary: 'add new discount'
-      operationId: 2fc4fbd324ec2ae8d910665255d1a3c0
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Discount'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Discount'
-                type: object
-      security:
-        - oauth: [ ]
-  '/discounts/{code}':
-    get:
-      tags:
-        - Discounts
-      summary: 'show discount'
-      operationId: f961a76e9e4cd4035be42b73e8076385
-      parameters:
-        - name: code
-          in: path
-          required: false
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Discount'
-                type: object
-  '/discounts/id:{id}':
-    delete:
-      tags:
-        - Discounts
-      summary: 'delete discount'
-      operationId: 696b261316fff870c9f296902a6f116e
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
-    patch:
-      tags:
-        - Discounts
-      summary: 'update discount'
-      operationId: 0ce28dd72c4a02adb46ddd0768ad7f6b
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Discount'
-      responses:
-        200:
-          description: Updated
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Discount'
-                type: object
-      security:
-        - oauth: [ ]
+  /sales:
+    $ref: './paths/Sales.yml#/Sales'
+  '/sales/id:{id}':
+    $ref: './paths/Sales.yml#/SalesParams'
+  /coupons:
+    $ref: './paths/Coupons.yml#/Coupons'
+  '/coupons/id:{id}':
+    $ref: './paths/Coupons.yml#/CouponsParams'
+  '/coupons/{code}':
+    $ref: './paths/Coupons.yml#/CouponCode'
+  /webhooks/logs:
+    $ref: './paths/WebHooks.yml#/Logs'
   /webhooks/events:
-    get:
-      tags:
-        - WebHooks
-      summary: 'list available events'
-      operationId: 6414d6482ecea4faf4b1754015e9df32
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Event'
-                type: object
+    $ref: './paths/WebHooks.yml#/WebhooksEvents'
+  /filters:
+    $ref: './paths/Filters.yml#/Filters'
   /furgonetka/create-package:
     $ref: './paths/Furgonetka.yml#/FurgonetkaCreatePackage'
   /items:
@@ -284,248 +120,45 @@ paths:
   '/items/id:{id}':
     $ref: './paths/Items.yml#/ItemsParams'
   /media:
-    $ref: './paths/Media.yml#Media'
+    $ref: './paths/Media.yml#/Media'
   '/media/id:{id}':
-    $ref: './paths/Media.yml#MediaParams'
+    $ref: './paths/Media.yml#/MediaParams'
   /orders:
     $ref: './paths/Orders.yml#/Orders'
   '/orders/id:{id}':
     $ref: './paths/Orders.yml#/OrdersParams'
   '/orders/{code}':
     $ref: './paths/Orders.yml#/OrdersCode'
-  /orders/verify:
-    $ref: './paths/Orders.yml#/OrdersVerify'
   '/orders/id:{id}/status':
     $ref: './paths/Orders.yml#/OrdersStatus'
   '/orders/id:{id}/shipping-lists':
     $ref: './paths/Orders.yml#/OrdersShippingLists'
   /orders/my:
     $ref: './paths/Orders.yml#/OrdersMy'
-  '/orders/my/id:{id}':
-    $ref: './paths/Orders.yml#/OrdersMyId'
+  '/orders/my/{code}':
+    $ref: './paths/Orders.yml#/OrdersMySingle'
+  '/orders/id:{id}/docs':
+    $ref: './paths/Orders.yml#/OrderAddDocument'
+  '/orders/id:{order_id}/docs/id:{doc_id}':
+    $ref: './paths/Orders.yml#/OrderDeleteDocument'
+  '/orders/id:{order_id}/docs/id:{doc_id}/download':
+    $ref: './paths/Orders.yml#/OrderDownloadDocument'
+  '/orders/id:{id}/docs/send':
+    $ref: './paths/Orders.yml#/OrdersDocumentsSend'
+  /cart/process:
+    $ref: './paths/Orders.yml#/CartProcess'
   /package-templates:
-    get:
-      tags:
-        - Packages
-      summary: 'list packages'
-      operationId: 521fda12b023dd7945d369e3c30599c5
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/PackageTemplateSwagger'
-                type: object
-      security:
-        - oauth: [ ]
-    post:
-      tags:
-        - Packages
-      summary: 'add new package'
-      operationId: 3691fc47dd8ccedc165fba9f01cc7e48
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PackageTemplateSwagger'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/PackageTemplateSwagger'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/PackageTemplates.yml#/PackageTemplates'
   '/package-templates/id:{id}':
-    delete:
-      tags:
-        - Packages
-      summary: 'delete package'
-      operationId: 0b01c1ca12327aac13892b9e5b103c0f
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
-    patch:
-      tags:
-        - Packages
-      summary: 'update package'
-      operationId: c52220735d551c071d0d4e04ddc13a8e
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PackageTemplateSwagger'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/PackageTemplateSwagger'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/PackageTemplates.yml#/PackageTemplatesParam'
   /pages:
-    get:
-      tags:
-        - Pages
-      summary: 'list page'
-      operationId: 82fdf932ecaac31515345d77358bcbe7
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Page'
-                type: object
-    post:
-      tags:
-        - Pages
-      summary: 'add new page'
-      operationId: e8d6c6d7cc98ba67b75a91855dbb0e1b
-      requestBody:
-        $ref: '#/components/requestBodies/PageStore'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/PageView'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Pages.yml#/Pages'
   '/pages/{slug}':
-    get:
-      tags:
-        - Pages
-      summary: 'single page view'
-      parameters:
-        - name: slug
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/PageView'
-                type: object
+    $ref: './paths/Pages.yml#/PagesSlug'
   '/pages/id:{id}':
-    get:
-      tags:
-        - Pages
-      summary: alias
-      operationId: ba0bd4e0f9d4ce9c18da285fd3c93bcc
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/PageView'
-                type: object
-      security:
-        - oauth: [ ]
-    delete:
-      tags:
-        - Pages
-      summary: 'delete page'
-      operationId: 5284a2b1e29dda6d65eb3a091e592c8b
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
-    patch:
-      tags:
-        - Pages
-      summary: 'update page'
-      operationId: 692a2573c6f6f2da427600913c1e29f7
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        $ref: '#/components/requestBodies/PageUpdate'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/PageView'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Pages.yml#/PagesParam'
   /pages/reorder:
-    post:
-      tags:
-        - Pages
-      summary: 'change pages order'
-      operationId: 85d901e3118685015dc71cc1543d25a9
-      requestBody:
-        $ref: '#/components/requestBodies/PageReorder'
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
+    $ref: './paths/Pages.yml#/PagesReorder'
   '/orders/{code}/pay/{payment_method}':
     $ref: './paths/Orders.yml#/OrdersCodePay'
   '/payments/{payment_method}':
@@ -574,137 +207,39 @@ paths:
                       $ref: '#/components/schemas/Permission'
                 type: object
       security:
-        - oauth: [ ]
+        - BearerAuth: [ ]
   /products:
-    $ref: './paths/Products.yml#Products'
+    $ref: './paths/Products.yml#/Products'
   '/products/{slug}':
-    $ref: './paths/Products.yml#ProductsSlug'
+    $ref: './paths/Products.yml#/ProductsSlug'
   '/products/id:{id}':
-    $ref: './paths/Products.yml#ProductsParams'
+    $ref: './paths/Products.yml#/ProductsParams'
   /product-sets:
-    $ref: './paths/ProductSets.yml#ProductSets'
+    $ref: './paths/ProductSets.yml#/ProductSets'
   '/product-sets/{slug}':
-    $ref: './paths/ProductSets.yml#ProductSetsSlug'
+    $ref: './paths/ProductSets.yml#/ProductSetsSlug'
   '/product-sets/id:{id}':
-    $ref: './paths/ProductSets.yml#ProductSetsParams'
+    $ref: './paths/ProductSets.yml#/ProductSetsParams'
   /product-sets/reorder:
-    $ref: './paths/ProductSets.yml#ProductSetsReorder'
+    $ref: './paths/ProductSets.yml#/ProductSetsReorder'
   '/product-sets/reorder/id:{id}':
-    $ref: './paths/ProductSets.yml#ProductSetsReorderParams'
+    $ref: './paths/ProductSets.yml#/ProductSetsReorderParams'
   '/product-sets/id:{id}/products':
-    $ref: './paths/ProductSets.yml#ProductSetsProducts'
+    $ref: './paths/ProductSets.yml#/ProductSetsProducts'
+  '/product-sets/id:{id}/products/reorder':
+    $ref: './paths/ProductSets.yml#/ProductSetsProductsReorder'
   /roles:
     $ref: './paths/Roles.yml#/Roles'
   '/roles/id:{id}':
     $ref: './paths/Roles.yml#/RolesParams'
   /schemas:
-    get:
-      tags:
-        - Schemas
-      summary: 'all schemas list'
-      operationId: 170c0b7f342ea07d3a8a3049dd252ca4
-      requestBody:
-        $ref: '#/components/requestBodies/IndexSchema'
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Schema'
-                type: object
-      security:
-        - oauth: [ ]
-    post:
-      tags:
-        - Schemas
-      summary: 'create schema'
-      operationId: d103be543bfb100b60eaa7b27eb5e150
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Schema'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Schema'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Schemas.yml#/Schemas'
   '/schemas/id:{id}':
-    get:
-      tags:
-        - Schemas
-      operationId: 73d12dd89ba8210a22b5240704e63ee8
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Schema'
-                type: object
-      security:
-        - oauth: [ ]
-    delete:
-      tags:
-        - Schemas
-      operationId: 459ce0314ef100d188cd1d1d04025e99
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
-    patch:
-      tags:
-        - Schemas
-      summary: 'update schema'
-      operationId: 809f90ba94d09b70423a5d7ceeedb2ff
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Schema'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/Schema'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/Schemas.yml#/SchemasParam'
   /seo:
-    $ref: './paths/Seo.yml#Seo'
+    $ref: './paths/Seo.yml#/Seo'
   /seo/check:
-    $ref: './paths/Seo.yml#SeoCheck'
+    $ref: './paths/Seo.yml#/SeoCheck'
   /settings:
     $ref: './paths/Settings.yml#/Settings'
   '/settings/{name}':
@@ -720,134 +255,119 @@ paths:
   '/statuses/id:{id}':
     $ref: './paths/Statuses.yml#/StatusesParams'
   /statuses/reorder:
-    $ref: './paths/Statuses.yml#StatusesReorder'
+    $ref: './paths/Statuses.yml#/StatusesReorder'
   /tags:
-    $ref: './paths/Tags.yml#Tags'
+    $ref: './paths/Tags.yml#/Tags'
   '/tags/id:{id}':
-    $ref: './paths/Tags.yml#TagsParams'
+    $ref: './paths/Tags.yml#/TagsParams'
   /users:
     $ref: './paths/Users.yml#/Users'
   '/users/id:{id}':
     $ref: './paths/Users.yml#/UsersParams'
+  '/products/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/products/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/schemas/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/schemas/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/options/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/options/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/product-sets/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/product-sets/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/sales/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/sales/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/coupons/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/coupons/id:{id}/metadata-private':
+     $ref: './paths/Metadata.yml#/Metadata'
+  '/items/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/items/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/orders/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/orders/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/statuses/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/statuses/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/shipping-methods/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/shipping-methods/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/package-templates/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/package-templates/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/users/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/users/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/roles/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/roles/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/pages/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/pages/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/apps/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/apps/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/media/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/media/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/attributes/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/attributes/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/attributes/id:{id}/options/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/attributes/id:{id}/options/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/banners/id:{id}/metadata':
+    $ref: './paths/Metadata.yml#/Metadata'
+  '/banners/id:{id}/metadata-private':
+    $ref: './paths/Metadata.yml#/Metadata'
   '/users/id:{id}/2fa/remove':
     $ref: './paths/Users.yml#/UserTFARemove'
   /webhooks:
-    get:
-      tags:
-        - WebHooks
-      summary: 'list webhooks by filters'
-      operationId: f117e0d9744b820cd732d70bd7457c6d
-      parameters:
-        - name: name
-          in: query
-          description: 'Name search'
-          allowEmptyValue: true
-          schema:
-            type: string
-        - name: url
-          in: query
-          description: 'URL search'
-          allowEmptyValue: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/WebHook'
-                type: object
-    post:
-      tags:
-        - WebHooks
-      summary: 'add new webhook'
-      operationId: 24a5ff9bca8d89624ddc8639312d8360
-      requestBody:
-        $ref: '#/components/requestBodies/WebHookCreate'
-      responses:
-        201:
-          description: Created
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/WebHook'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/WebHooks.yml#/Webhooks'
   '/webhooks/id:{id}':
-    get:
-      tags:
-        - WebHooks
-      summary: 'show webhook'
-      operationId: ed3a1cc4a7dc4d00ecb95aedb2eba3ea
-      parameters:
-        - name: id
-          in: path
-          description: 'Name search'
-          required: true
-          schema:
-            type: string
-            example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/WebHook'
-                type: object
-    delete:
-      tags:
-        - WebHooks
-      summary: 'delete webhook'
-      operationId: 6b66c3b845cda9fb9fe63f7e1415392c
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
-      responses:
-        204:
-          description: Success
-      security:
-        - oauth: [ ]
-    patch:
-      tags:
-        - WebHooks
-      summary: 'update webhook'
-      operationId: 6592bce5d0ff79a23fd8060baf69d225
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
-      requestBody:
-        $ref: './requests/WebHookUpdate.yml#WebHookUpdate'
-      responses:
-        200:
-          description: Updated
-          content:
-            application/json:
-              schema:
-                properties:
-                  data:
-                    $ref: '#/components/schemas/WebHook'
-                type: object
-      security:
-        - oauth: [ ]
+    $ref: './paths/WebHooks.yml#/WebhooksParams'
+  '/attributes':
+    $ref: './paths/Attributes.yml#/Attributes'
+  '/attributes/id:{id}':
+    $ref: './paths/Attributes.yml#/AttributesParams'
+  '/attributes/id:{id}/options':
+    $ref: './paths/Attributes.yml#/AttributeOption'
+  '/attributes/id:{attribute_id}/options/id:{option_id}':
+    $ref: './paths/Attributes.yml#/AttributeOptionParams'
+  '/consents':
+    $ref: './paths/Consents.yml#/Consents'
+  '/consents/id:{id}':
+    $ref: './paths/Consents.yml#/ConsentsParam'
+  '/banners':
+    $ref: './paths/Banners.yml#/Banners'
+  '/banners/id:{id}':
+    $ref: './paths/Banners.yml#/BannersParam'
+  '/google-categories/{lang}':
+    $ref: './paths/GoogleCategories.yml#/GoogleCategories'
+  '/wishlist':
+    $ref: './paths/Wishlist.yml#/WishlistProduct'
+  '/wishlist/id:{product_id}':
+    $ref: './paths/Wishlist.yml#/WishlistProductParams'
 components:
   schemas:
     Error:
@@ -858,99 +378,10 @@ components:
       $ref: './schemas/Apps.yml#/App'
     AppView:
       $ref: './schemas/Apps.yml#/AppView'
-    Audit:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        event:
-          type: string
-          example: updated
-        created_at:
-          description: 'Date of event'
-          type: string
-          example: '2021-10-10T12:00:00'
-        old_values:
-          type: array
-          items:
-            properties:
-              key:
-                type: string
-                example: value
-            type: object
-        new_values:
-          type: array
-          items:
-            properties:
-              key:
-                type: string
-                example: value
-            type: object
-        user:
-          $ref: './schemas/Users.yml#/User'
-      type: object
     Event:
-      properties:
-        key:
-          description: 'Displayed event key'
-          type: string
-          example: PRODUCT_CREATED
-        name:
-          description: 'Displayed event name'
-          type: string
-          example: 'Product created'
-        description:
-          description: 'Displayed event description'
-          type: string
-          example: 'Event triggered when new products are created'
-        required_permissions:
-          description: 'List of Event required permissions'
-          type: array
-          items:
-            type: string
-            example: products.show
-        required_hidden_permissions:
-          description: 'List of Event required hidden permissions'
-          type: array
-          items:
-            type: string
-            example: products.show_hidden
-      type: object
+      $ref: './schemas/Events.yml#/Event'
     OrderSummary:
       $ref: './schemas/Orders.yml#/OrderSummary'
-    Page:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        slug:
-          description: 'Name used in the URL path'
-          type: string
-          example: terms-and-conditions
-        name:
-          description: 'Name displayed as a page header'
-          type: string
-          example: 'Terms & Conditions'
-        public:
-          description: 'Whether page is visible to unauthorized users'
-          type: boolean
-          example: true
-      type: object
-    PageView:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/Page'
-        - properties:
-            content_html:
-              description: 'HTML formated text to be displayed as a main content under the page header'
-              type: string
-              example: '<h1>Lorem ipsum dolor sit amet</h1>'
-            meta_description:
-              description: 'Tag stripped and trimmed version of HTML content to use as meta data'
-              type: string
-              example: 'Lorem ipsum dolor sit amet'
-            seo:
-              $ref: '#/components/schemas/SeoView'
     Permission:
       properties:
         id:
@@ -974,7 +405,7 @@ components:
     ProductView:
       $ref: './schemas/Products.yml#/ProductView'
     ProfileView:
-      $ref: './schemas/Auth.yml#/Profile'
+      $ref: './schemas/Auth.yml#/ProfileView'
     Role:
       $ref: './schemas/Roles.yml#/Role'
     RoleView:
@@ -988,130 +419,31 @@ components:
     UserView:
       $ref: './schemas/Users.yml#/UserView'
     WebHookEventLogEntry:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        triggered_at:
-          description: 'Displayed webhook event triggered time'
-          type: datetime
-          example: '2021-10-07T08:49'
-        url:
-          description: 'Displayed webhook event url'
-          type: string
-          example: 'https://app.heseya.com'
-        status_code:
-          description: 'Webhook event status code'
-          type: number
-          example: 200
-      type: object
+      $ref: './schemas/WebHooks.yml#/WebHookEventLogEntry'
     WebHook:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        name:
-          description: 'Displayed webhook name'
-          type: string
-          example: 'WebHook name'
-        url:
-          description: 'Displayed webhook url'
-          type: string
-          example: 'https://app.heseya.com'
-        secret:
-          description: 'Displayed webhook secret'
-          type: string
-          example: secret
-        with_issuer:
-          description: 'Whether issuer is visible in WebHookEvent.'
-          type: boolean
-          example: true
-        with_hidden:
-          description: 'Whether hidden data are visible in WebHookEvent.'
-          type: boolean
-          example: true
-        events:
-          description: 'List of WebHook events'
-          type: array
-          items:
-            type: string
-            example: OrderCreated
-        logs:
-          description: 'List of WebHooks logs'
-          type: array
-          items:
-            $ref: '#/components/schemas/WebHookEventLogEntry'
-      type: object
+      $ref: './schemas/WebHooks.yml#/WebHook'
     Address:
       $ref: './schemas/Addresses.yml#/Address'
     Country:
       $ref: './schemas/Countries.yml#/Country'
     Deposit:
       $ref: './schemas/Deposits.yml#/Deposit'
-    Discount:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        code:
-          type: string
-          example: 83734AE
-        description:
-          type: string
-          example: 'Balck Weekend 2021'
-        type:
-          type: number
-          example: '0'
-        discount:
-          type: float
-          example: '50'
-        uses:
-          type: float
-          example: '41'
-        max_uses:
-          type: float
-          example: '100'
-        available:
-          type: boolean
-          example: 'true'
-        starts_at:
-          type: datetime
-          example: '2021-09-13T11:11'
-        expires_at:
-          type: datetime
-          example: '2021-09-13T11:11'
-      type: object
+    Sale:
+      $ref: './schemas/Sales.yml#/SaleShow'
+    Coupon:
+      $ref: './schemas/Coupons.yml#/CouponShow'
+    ConditionGroup:
+      $ref: './schemas/DiscountConditions.yml#/ConditionGroupShow'
     Item:
       $ref: './schemas/Items.yml#/Item'
     Media:
-      $ref: './schemas/Media.yml#Media'
+      $ref: './schemas/Media.yml#/Media'
     Option:
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        name:
-          type: string
-          example: XL
-        price:
-          description: 'Additional price the customer will have to pay after selecting this option (can be negative)'
-          type: float
-          example: 3.99
-        disabled:
-          description: 'Shows if the option has been disabled manually'
-          type: boolean
-          example: false
-        available:
-          description: 'Shows whether the option is available for purchase (in stock and not disabled)'
-          type: boolean
-          example: true
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/Item'
-      type: object
+      $ref: './schemas/Schemas.yml#/Option'
     Order:
       $ref: './schemas/Orders.yml#/Order'
+    OrderDiscount:
+      $ref: './schemas/Orders.yml#/OrderDiscount'
     OrderProduct:
       $ref: './schemas/Orders.yml#/OrderProduct'
     OrderSchema:
@@ -1125,62 +457,7 @@ components:
     PriceRange:
       $ref: './schemas/PriceRanges.yml#/PriceRange'
     Schema:
-      description: "Schema allows a product to take on new optional characteristics that can be\n *   chosen by the userand influences the price based on said choices. Schemas can use other\n *   schemas for their price calculation e.g. multiply_schema multiplies price of different\n *   schema based on it's own value. SCHEMAS USED BY OTHERS SHOULD NOT AFFECT THE PRICE\n *   (schema multiplied by multiply_schema adds 0 to the price while multiply_schema adds\n *   the multiplied value)"
-      properties:
-        id:
-          type: string
-          example: 026bc5f6-8373-4aeb-972e-e78d72a67121
-        type:
-          description: "multiply_schema(min, max, step) type uses one schema and multiplies\n     *     it's price by own numeric value"
-          type: string
-          enum:
-            - string
-            - numeric
-            - boolean
-            - date
-            - select
-            - file
-            - multiply
-            - multiply_schema
-        name:
-          type: string
-          example: Size
-        description:
-          description: 'Short description, no html or md allowed'
-          type: string
-        price:
-          description: "Additional price the customer will have to pay after selecting the option\n     *     (can be negative)"
-          type: float
-          example: 9.99
-        hidden:
-          type: boolean
-          example: false
-        required:
-          type: boolean
-          example: false
-        min:
-          type: string
-        max:
-          type: string
-        step:
-          type: string
-        default:
-          type: string
-        pattern:
-          type: string
-        validation:
-          type: string
-        options:
-          type: array
-          items:
-            $ref: '#/components/schemas/Option'
-        used_schemas:
-          description: "Array of schema id's given schema uses e.g.\n     *   multiply_schema type uses one schema of which price it miltiplies"
-          type: array
-          items:
-            type: string
-            example: used-schema-ids
-      type: object
+      $ref: './schemas/Schemas.yml#/Schema'
     Setting:
       $ref: './schemas/Settings.yml#/Setting'
     ShippingMethod:
@@ -1188,47 +465,33 @@ components:
     Status:
       $ref: './schemas/Statuses.yml#/Status'
     PackageTemplateSwagger:
-      title: PackageTemplate
-      properties:
-        id:
-          type: string
-          example: 5fb4a472-b5fd-4e9a-a4ee-bf42bde86a73
-        name:
-          type: string
-          example: 'Small package'
-        wieght:
-          description: 'Weight in kg'
-          type: number
-          example: 5.7
-        width:
-          description: 'Width in cm'
-          type: integer
-          example: 10
-        height:
-          description: 'Height in cm'
-          type: integer
-          example: 20
-        depth:
-          description: 'Depth in cm'
-          type: integer
-          example: 30
-      type: object
+      $ref: './schemas/PackageTemplate.yml#/PackageTemplate'
     Tag:
-      $ref: './schemas/Tags.yml#Tag'
+      $ref: './schemas/Tags.yml#/Tag'
     ProductSet:
-      $ref: './schemas/ProductSets.yml#ProductSet'
+      $ref: './schemas/ProductSets.yml#/ProductSet'
     ProductSetChildren:
-      $ref: './schemas/ProductSets.yml#ProductSetChildren'
+      $ref: './schemas/ProductSets.yml#/ProductSetChildren'
     ProductSetParent:
-      $ref: './schemas/ProductSets.yml#ProductSetParent'
+      $ref: './schemas/ProductSets.yml#/ProductSetParent'
     ProductSetParentChildren:
-      $ref: './schemas/ProductSets.yml#ProductSetParentChildren'
+      $ref: './schemas/ProductSets.yml#/ProductSetParentChildren'
     SeoStore:
-      $ref: './schemas/Seo.yml#SeoStore'
+      $ref: './schemas/Seo.yml#/SeoStore'
     SeoView:
-      $ref: './schemas/Seo.yml#SeoView'
+      $ref: './schemas/Seo.yml#/SeoView'
     SeoKeywordsResponse:
-      $ref: './schemas/Seo.yml#SeoKeywordsResponse'
+      $ref: './schemas/Seo.yml#/SeoKeywordsResponse'
+    Attribute:
+      $ref: './schemas/Attributes.yml#/Attribute'
+    AttributeOption:
+      $ref: './schemas/Attributes.yml#/AttributeOption'
+    Consents:
+      $ref: './schemas/Consents.yml#/Consent'
+    Wishlist:
+      $ref: './schemas/Wishlist.yml#/WishlistProductFull'
+    UserPreferences:
+      $ref: './schemas/Auth.yml#/Preferences'
   requestBodies:
     AppStore:
       $ref: './requests/Apps.yml#/AppStore'
@@ -1254,81 +517,18 @@ components:
       $ref: './requests/Orders.yml#/OrderCreate'
     OrderUpdate:
       $ref: './requests/Orders.yml#/OrderUpdate'
-    PageReorder:
-      content:
-        application/json:
-          schema:
-            properties:
-              pages:
-                type: array
-                items: [ ]
-            type: object
-    PageStore:
-      content:
-        application/json:
-          schema:
-            required:
-              - name
-              - slug
-              - content_html
-            properties:
-              name:
-                description: 'Name displayed as a page header'
-                type: string
-                example: 'Terms & Conditions'
-              slug:
-                description: 'Name used in the URL path'
-                type: string
-                example: terms-and-conditions
-              public:
-                description: 'Whether page is visible to unauthorized users'
-                type: boolean
-                example: true
-              content_html:
-                description: 'HTML formated text to be displayed as a main content under the page header'
-                type: string
-                example: '<h1>Lorem ipsum dolor sit amet</h1>'
-              seo:
-                $ref: '#/components/schemas/SeoStore'
-            type: object
-    PageUpdate:
-      content:
-        application/json:
-          schema:
-            properties:
-              name:
-                description: 'Name displayed as a page header'
-                type: string
-                example: 'Terms & Conditions'
-              slug:
-                description: 'Name used in the URL path'
-                type: string
-                example: terms-and-conditions
-              public:
-                description: 'Whether page is visible to unauthorized users'
-                type: boolean
-                example: true
-              content_html:
-                description: 'HTML formated text to be displayed as a main content under the page header'
-                type: string
-                example: '<h1>Lorem ipsum dolor sit amet</h1>'
-              seo:
-                $ref: '#/components/schemas/SeoStore'
-            type: object
     PasswordReset:
       $ref: './requests/Auth.yml#/PasswordReset'
     PasswordResetSave:
       $ref: './requests/Auth.yml#/PasswordResetSave'
     ProductStore:
-      $ref: './requests/Products.yml#ProductStore'
+      $ref: './requests/Products.yml#/ProductStore'
     ProductUpdate:
-      $ref: './requests/Products.yml#ProductUpdate'
+      $ref: './requests/Products.yml#/ProductUpdate'
     RoleStore:
       $ref: './requests/Roles.yml#/RoleStore'
     RoleUpdate:
       $ref: './requests/Roles.yml#/RoleUpdate'
-    ShippingMethodIndex:
-      $ref: './requests/ShippingMethods.yml#/ShippingMethodIndex'
     ShippingMethodReorder:
       $ref: './requests/ShippingMethods.yml#/ShippingMethodReorder'
     ShippingMethodStore:
@@ -1342,43 +542,11 @@ components:
     UserUpdate:
       $ref: './requests/Users.yml#/UserUpdate'
     WebHookCreate:
-      content:
-        application/json:
-          schema:
-            properties:
-              name:
-                description: 'Displayed webhook name'
-                type: string
-                example: 'WebHook name'
-              url:
-                description: 'Displayed webhook url'
-                type: string
-                example: 'https://app.heseya.com'
-              secret:
-                description: 'Displayed webhook secret'
-                type: string
-                example: secret
-              with_issuer:
-                description: 'Whether issuer is visible in WebHookEvent.'
-                type: boolean
-                example: true
-              with_hidden:
-                description: 'Whether hidden data are visible in WebHookEvent.'
-                type: boolean
-                example: true
-              events:
-                description: 'List of WebHook events'
-                type: array
-                items:
-                  type: string
-                  example: OrderCreated
-            type: object
+      $ref: './requests/WebHooks.yml#/WebHookCreate'
   securitySchemes:
-    oauth:
-      type: apiKey
-      description: 'Use /login and past token in value field below in format (Bearer <token>)'
+    BearerAuth:
+      description: 'Use /login and paste token in value field below'
+      type: http
       scheme: bearer
-      name: Authorization
-      in: header
 security:
-  - oauth: [ ]
+  - BearerAuth: [ ]

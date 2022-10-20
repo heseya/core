@@ -30,8 +30,8 @@ use App\Models\Status;
 use App\Models\Tag;
 use App\Models\Token;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Tests\TestCase;
 
@@ -66,35 +66,40 @@ class TimeFormatTest extends TestCase
         $item = Item::factory()->create();
         $deposit = Deposit::factory()->create([
             'item_id' => $item->getKey(),
+            'shipping_date' => Carbon::now()->addDay(),
         ]);
 
-        $this->modelTimeFormat($deposit, ['created_at', 'updated_at']);
+        $this->modelTimeFormat($deposit, ['created_at', 'updated_at', 'shipping_date']);
     }
 
     public function testDiscountTimeFormat(): void
     {
-        $discount = Discount::factory()->create([
-            'starts_at' => Carbon::now(),
-            'expires_at' => Carbon::now()->addHour(),
-        ]);
+        $discount = Discount::factory()->create();
         $discount->delete();
 
         $this->modelTimeFormat($discount, [
             'created_at',
             'updated_at',
             'deleted_at',
-            'starts_at',
-            'expires_at',
         ]);
     }
 
     public function testItemTimeFormat(): void
     {
         /** @var Item $item */
-        $item = Item::factory()->create();
+        $item = Item::factory()->create([
+            'shipping_date' => Carbon::now()->addDay(),
+            'unlimited_stock_shipping_date' => Carbon::now()->addDay(),
+        ]);
         $item->delete();
 
-        $this->modelTimeFormat($item, ['created_at', 'updated_at', 'deleted_at']);
+        $this->modelTimeFormat($item, [
+            'created_at',
+            'updated_at',
+            'deleted_at',
+            'shipping_date',
+            'unlimited_stock_shipping_date',
+        ]);
     }
 
     public function testMediaTimeFormat(): void
@@ -207,7 +212,11 @@ class TimeFormatTest extends TestCase
 
     public function testProductTimeFormat(): void
     {
-        $this->modelTimeFormat(Product::factory()->create(), ['created_at', 'updated_at']);
+        $product = Product::factory()->create([
+            'shipping_date' => Carbon::now()->addDay(),
+        ]);
+
+        $this->modelTimeFormat($product, ['created_at', 'updated_at', 'shipping_date']);
     }
 
     public function testProductSetTimeFormat(): void
@@ -275,11 +284,11 @@ class TimeFormatTest extends TestCase
         $model->refresh();
 
         Collection::make($fields)->each(fn ($field) => [
-            $this->assertInstanceOf(Carbon::class, $model->$field, "Field $field error:"),
+            $this->assertInstanceOf(Carbon::class, $model->$field, "Field ${field} error:"),
             $this->assertEquals(
                 $model->$field->toIso8601String(),
                 $model->$field . '',
-                "Field $field error:",
+                "Field ${field} error:",
             ),
         ]);
     }

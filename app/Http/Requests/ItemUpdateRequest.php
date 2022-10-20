@@ -2,6 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Item;
+use App\Rules\UnlimitedShippingDate;
+use App\Rules\UnlimitedShippingTime;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -9,13 +12,27 @@ class ItemUpdateRequest extends FormRequest
 {
     public function rules(): array
     {
+        /** @var Item $item */
+        $item = $this->route('item');
+
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['string', 'max:255'],
             'sku' => [
-                'required',
                 'string',
                 'max:255',
-                Rule::unique('items')->ignore($this->route('item')->sku, 'sku'),
+                Rule::unique('items')->ignore($item->sku, 'sku'),
+            ],
+            'unlimited_stock_shipping_time' => [
+                'nullable',
+                'integer',
+                'prohibited_unless:unlimited_stock_shipping_date,null',
+                new UnlimitedShippingTime($item),
+            ],
+            'unlimited_stock_shipping_date' => [
+                'nullable',
+                'date',
+                'prohibited_unless:unlimited_stock_shipping_time,null',
+                new UnlimitedShippingDate($item),
             ],
         ];
     }

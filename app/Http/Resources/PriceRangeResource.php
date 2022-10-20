@@ -9,9 +9,9 @@ class PriceRangeResource extends Resource
     public function base(Request $request): array
     {
         return [
-            'id' => $this->getKey(),
-            'start' => $this->start,
-            'prices' => PriceResource::collection($this->prices),
+            'id' => $this->resource->getKey(),
+            'start' => $this->resource->start,
+            'prices' => PriceResource::collection($this->resource->prices),
         ];
     }
 }

@@ -1,0 +1,75 @@
+Cart:
+  type: object
+  properties:
+    cart_total_initial:
+      type: number
+      example: 380.7
+    cart_total:
+      type: number
+      example: 180.7
+    shipping_price_initial:
+      type: number
+      example: 38.7
+    shipping_price:
+      type: number
+      example: 18.7
+    shipping_time:
+      type: integer
+      example: 5
+    shipping_date:
+      type: string
+      format: date-time
+      example: '2021-09-13T11:11'
+    summary:
+      type: number
+      example: 189.4
+    items:
+      type: array
+      items:
+        $ref: '#/CartItemResponse'
+    coupons:
+      type: array
+      items:
+        $ref: '#/CouponShortResource'
+    sales:
+      type: array
+      items:
+        $ref: '#/SalesShortResource'
+
+CartItemResponse:
+  type: object
+  properties:
+    cartitem_id:
+      type: string
+      example: 1
+    price:
+      type: number
+      example: 380.7
+    price_discounted:
+      type: number
+      example: 180.7
+    quantity:
+      type: number
+      example: 1
+
+SalesShortResource:
+  type: object
+  properties:
+    id:
+      type: string
+      example: 1c8705ce-5fae-4468-b88a-8784cb5414a0,
+    name:
+      type: string
+      example: 'Black Week'
+    value:
+      type: number
+      example: 100
+
+CouponShortResource:
+  type: object
+  allOf:
+    - $ref: '#/SalesShortResource'
+    - properties:
+        code:
+          type: string
+          example: 'BLWEEK22'
