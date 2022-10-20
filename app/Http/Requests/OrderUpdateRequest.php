@@ -27,7 +27,6 @@ class OrderUpdateRequest extends FormRequest
             'validation' => ['boolean'],
             'invoice_requested' => ['boolean'],
             'shipping_place' => ['nullable', new ShippingPlaceValidation()],
-
         ];
     }
 }

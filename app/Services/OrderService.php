@@ -83,11 +83,32 @@ class OrderService implements OrderServiceContract
 
         // Creating order
         $shippingMethod = ShippingMethod::findOrFail($dto->getShippingMethodId());
-        $deliveryAddress = Address::firstOrCreate($dto->getDeliveryAddress()->toArray());
-
-        if ($this->checkAddress($dto->getInvoiceAddress())) {
-            $invoiceAddress = Address::firstOrCreate($dto->getInvoiceAddress()->toArray());
+        switch ($shippingMethod->shipping_type) {
+            case ShippingType::ADDRESS:
+                $shippingPlace = null;
+                $shippingAddressId = Address::firstOrCreate($validated['shipping_place'])->getKey();
+                break;
+            case ShippingType::POINT:
+                $shippingPlace = null;
+                $shippingAddressId = Address::find($validated['shipping_place'])->getKey();
+                break;
+            case ShippingType::POINT_EXTERNAL:
+                $shippingPlace = $validated['shipping_place'];
+                $shippingAddressId = null;
+                break;
+            default:
+                $shippingPlace = null;
+                $shippingAddressId = null;
+                break;
         }
+
+        if (!($dto->getBillingAddress() instanceof Missing)) {
+            $billingAddress = Address::firstOrCreate($dto->getBillingAddress()->toArray());
+        }
+
+        $getInvoiceRequested = $dto->getInvoiceRequested() instanceof Missing
+            ? false
+            : $dto->getInvoiceRequested();
 
         $status = Status::select('id')->orderBy('order')->first();
 
@@ -104,10 +125,13 @@ class OrderService implements OrderServiceContract
                 'cart_total_initial' => 0.0,
                 'cart_total' => 0.0,
                 'status_id' => $status->getKey(),
-                'delivery_address_id' => $deliveryAddress->getKey(),
-                'invoice_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
+                'shipping_address_id' => $shippingAddressId,
+                'billing_address_id' => isset($billingAddress) ? $billingAddress->getKey() : null,
                 'buyer_id' => Auth::user()->getKey(),
                 'buyer_type' => Auth::user()::class,
+                'invoice_requested' => $getInvoiceRequested,
+                'shipping_place' => $shippingPlace,
+                'shipping_type' => $shippingMethod->shipping_type,
             ]
         );
 

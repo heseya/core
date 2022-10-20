@@ -25,7 +25,7 @@ class ShippingMethodResource extends Resource
             'shipping_type' => $this->resource->shipping_type,
             'integration_key' => $this->resource->integration_key,
             'deletable' => $this->resource->deletable,
-            'shipping_points' => AddressResource::collection($this->shippingPoints),
+            'shipping_points' => AddressResource::collection($this->resource->shippingPoints),
         ], $this->metadataResource('shipping_methods.show_metadata_private'));
     }
 }
