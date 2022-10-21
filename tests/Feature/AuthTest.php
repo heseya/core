@@ -1193,6 +1193,8 @@ class AuthTest extends TestCase
         $user->save();
 
         $this->actingAs($user)->json('PATCH', '/auth/profile', [
+            'birthday_date' => '1990-01-01',
+            'phone' => '+48123456789',
             'preferences' => [
                 'successful_login_attempt_alert' => true,
                 'failed_login_attempt_alert' => 'off',
@@ -1206,6 +1208,10 @@ class AuthTest extends TestCase
                 'email' => $user->email,
                 'name' => $user->name,
                 'avatar' => $user->avatar,
+                'birthday_date' => '1990-01-01',
+                'phone' => '+48123456789',
+                'phone_country' => 'PL',
+                'phone_number' => '12 345 67 89',
             ])
             ->assertJsonFragment([
                 'successful_login_attempt_alert' => true,
@@ -1214,6 +1220,12 @@ class AuthTest extends TestCase
                 'recovery_code_changed_alert' => false,
             ]);
 
+        $this->assertDatabaseHas('users', [
+            'id' => $user->getKey(),
+            'birthday_date' => '1990-01-01',
+            'phone_number' => '12 345 67 89',
+            'phone_country' => 'PL',
+        ]);
         $this->assertDatabaseCount('user_preferences', 2); // +1 for $this->user
         $this->assertDatabaseHas('user_preferences', [
             'id' => $user->preferences_id,
@@ -2186,6 +2198,53 @@ class AuthTest extends TestCase
             [$user],
             UserRegistered::class,
         );
+    }
+
+    public function testRegisterWithPhone(): void
+    {
+        Notification::fake();
+
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.register');
+
+        $email = $this->faker->email();
+        $this->json('POST', '/register', [
+            'name' => 'Registered user',
+            'email' => $email,
+            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+            'phone' => '+48123456789',
+            'birthday_date' => '1990-01-01',
+        ])
+            ->assertCreated()
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'email',
+                    'avatar',
+                    'roles',
+                    'preferences',
+                    'birthday_date',
+                    'phone',
+                    'phone_country',
+                    'phone_number',
+                ],
+            ])
+            ->assertJsonFragment([
+                'name' => 'Registered user',
+                'email' => $email,
+                'birthday_date' => '1990-01-01',
+                'phone' => '+48123456789',
+                'phone_country' => 'PL',
+                'phone_number' => '12 345 67 89',
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'email' => $email,
+            'phone_country' => 'PL',
+            'phone_number' => '12 345 67 89',
+            'birthday_date' => '1990-01-01',
+        ]);
     }
 
     private function decryptData(string $data): array|false
