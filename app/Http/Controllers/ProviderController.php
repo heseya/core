@@ -9,6 +9,8 @@ use App\Http\Requests\AuthProviderIndexRequest;
 use App\Http\Requests\AuthProviderLoginRequest;
 use App\Http\Requests\AuthProviderRedirectRequest;
 use App\Http\Requests\AuthProviderUpdateRequest;
+use App\Http\Resources\AuthProviderRedirectResource;
+use App\Http\Resources\AuthProviderResource;
 use App\Http\Resources\AuthResource;
 use App\Models\AuthProvider;
 use App\Services\Contracts\ProviderServiceContract;
@@ -30,11 +32,11 @@ class ProviderController extends Controller
         return $this->providerService->getProvidersList($active);
     }
 
-    public function getProvider(string $authProviderKey): JsonResponse
+    public function getProvider(string $authProviderKey): JsonResource
     {
         $provider = $this->providerService->getProvider($authProviderKey);
 
-        return Response::json($provider);
+        return AuthProviderResource::make($provider);
     }
 
     public function update(AuthProviderUpdateRequest $request, string $authProviderKey): JsonResponse
@@ -54,7 +56,7 @@ class ProviderController extends Controller
         return AuthResource::make($data);
     }
 
-    public function redirect(AuthProviderRedirectRequest $request, string $authProviderKey): JsonResponse
+    public function redirect(AuthProviderRedirectRequest $request, string $authProviderKey): JsonResource
     {
         $this->providerService->setupRedirect(
             $authProviderKey,
@@ -63,7 +65,7 @@ class ProviderController extends Controller
 
         $driver = AuthProviderKey::getDriver($authProviderKey);
 
-        return Response::json([
+        return AuthProviderRedirectResource::make([
             'redirect_url' => Socialite::driver($driver)
                 ->stateless()
                 ->redirect()

@@ -10,7 +10,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 interface ProviderServiceContract
 {
     public function getProvidersList(bool $active): JsonResource;
-    public function getProvider(string $authProviderKey): AuthProvider|array;
+    public function getProvider(string $authProviderKey): ?AuthProvider;
     public function update(AuthProviderDto $dto, AuthProvider $provider): AuthProvider;
     public function setupRedirect(string $authProviderKey, string $returnUrl): void;
     public function login(string $authProviderKey, AuthProviderLoginDto $dto): array;
