@@ -338,8 +338,12 @@ paths:
     $ref: './paths/Metadata.yml#/Metadata'
   '/banners/id:{id}/metadata-private':
     $ref: './paths/Metadata.yml#/Metadata'
+  '/users/id:{id}/metadata-personal':
+    $ref: './paths/Metadata.yml#/Metadata'
   '/users/id:{id}/2fa/remove':
     $ref: './paths/Users.yml#/UserTFARemove'
+  '/auth/profile/metadata-personal':
+    $ref: './paths/Metadata.yml#/Metadata'
   /webhooks:
     $ref: './paths/WebHooks.yml#/Webhooks'
   '/webhooks/id:{id}':
