@@ -366,7 +366,8 @@ class OrderDepositTest extends TestCase
         $request = [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $product->getKey(),
@@ -417,7 +418,8 @@ class OrderDepositTest extends TestCase
         $request = [
             'email' => 'test1@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $product->getKey(),
@@ -468,7 +470,8 @@ class OrderDepositTest extends TestCase
         $request = [
             'email' => 'test1@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $product->getKey(),
@@ -617,7 +620,8 @@ class OrderDepositTest extends TestCase
         $request = [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address->toArray(),
+            'billing_address' => $this->address->toArray(),
+            'shipping_place' => $this->address->toArray(),
             'items' => [
                 [
                     'product_id' => $product->getKey(),

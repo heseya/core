@@ -324,7 +324,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address,
+            'billing_address' => $this->address,
             'items' => [
                 [
                     'product_id' => $product1->getKey(),
@@ -409,7 +409,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address,
+            'billing_address' => $this->address,
             'items' => [
                 [
                     'product_id' => $this->product->getKey(),
@@ -505,7 +505,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address,
+            'billing_address' => $this->address,
             'items' => [
                 [
                     'product_id' => $product1->getKey(),
@@ -553,7 +553,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address,
+            'billing_address' => $this->address,
             'items' => [
                 [
                     'product_id' => $product1->getKey(),
@@ -610,7 +610,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address,
+            'billing_address' => $this->address,
             'items' => $items,
         ]);
 
@@ -655,7 +655,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address,
+            'billing_address' => $this->address,
             'items' => $items,
         ]);
 
@@ -697,7 +697,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address,
+            'billing_address' => $this->address,
             'items' => [
                 [
                     'product_id' => $product->getKey(),
@@ -747,7 +747,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address,
+            'billing_address' => $this->address,
             'items' => [
                 [
                     'product_id' => $product->getKey(),
@@ -797,7 +797,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address,
+            'billing_address' => $this->address,
             'items' => [
                 [
                     'product_id' => $product->getKey(),
@@ -848,7 +848,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->postJson('/orders', [
             'email' => 'info@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => $this->address,
+            'billing_address' => $this->address,
             'items' => [
                 [
                     'product_id' => $product->getKey(),
@@ -923,7 +923,7 @@ class DiscountOrderTest extends TestCase
         $response = $this->actingAs($this->$user)->json('POST', '/orders', [
             'email' => 'example@example.com',
             'shipping_method_id' => $shippingMethod->getKey(),
-            'delivery_address' => $this->address,
+            'billing_address' => $this->address,
             'items' => [
                 [
                     'product_id' => $product->getKey(),

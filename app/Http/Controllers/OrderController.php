@@ -61,7 +61,7 @@ class OrderController extends Controller
                 'status',
                 'shippingMethod',
                 'shippingMethod.paymentMethods',
-                'deliveryAddress',
+                'shippingAddress',
                 'metadata',
                 'documents',
             ]);

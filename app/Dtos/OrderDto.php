@@ -22,7 +22,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
     private array|Missing $sale_ids;
     private string|null|Missing $shipping_number;
     private string|AddressDto|Missing $shipping_place;
-    private bool|Missing $invoice_request;
+    private bool|Missing $invoice_requested;
 
     private array|Missing $metadata;
 
@@ -32,7 +32,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
         $items = [];
         if (!$orderProducts instanceof Missing) {
             foreach ($orderProducts as $orderProduct) {
-                array_push($items, OrderProductDto::fromArray($orderProduct));
+                $items[] = OrderProductDto::fromArray($orderProduct);
             }
         }
 
@@ -43,14 +43,14 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
             items: $orderProducts instanceof Missing ? $orderProducts : $items,
             shipping_place: is_array($request->input('shipping_place'))
                 ? AddressDto::instantiateFromRequest($request, 'shipping_place.')
-                : $request->input('shipping_place', new Missing());
+                : $request->input('shipping_place', new Missing()) ?? new Missing(),
             billing_address: $request->has('billing_address')
                 ? AddressDto::instantiateFromRequest($request, 'billing_address.') : new Missing(),
             coupons: $request->input('coupons', new Missing()),
             sale_ids: $request->input('sale_ids', new Missing()),
             metadata: self::mapMetadata($request),
             shipping_number: $request->input('shipping_number', new Missing()),
-            invoice_request: $request->input('invoice_requested', new Missing()),
+            invoice_requested: $request->input('invoice_requested', new Missing()),
         );
     }
 
@@ -86,7 +86,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
 
     public function getInvoiceRequested(): Missing|bool
     {
-        return $this->invoiceRequested;
+        return $this->invoice_requested;
     }
 
     public function getCoupons(): Missing|array
@@ -104,7 +104,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
         $result = [];
         /** @var OrderProductDto $item */
         foreach ($this->items as $item) {
-            array_push($result, $item->getProductId());
+            $result[] = $item->getProductId();
         }
         return $result;
     }

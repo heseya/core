@@ -162,10 +162,10 @@ class OrderUpdateTest extends TestCase
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'email' => $email,
             'comment' => $comment,
-            'delivery_address' => [
+            'shipping_place' => [
                 'name' => 'delivery test',
             ],
-            'invoice_address' => [
+            'billing_address' => [
                 'name' => 'invoice test',
             ],
         ]);
@@ -174,23 +174,23 @@ class OrderUpdateTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonFragment([
-                'delivery_address' => [
+                'shipping_place' => [
                     'id' => $this->addressDelivery->getKey(),
                     'address' => $this->addressDelivery->address,
                     'city' => $this->addressDelivery->city,
                     'country' => $this->addressDelivery->country,
-                    'country_name' => $responseData->delivery_address->country_name,
+                    'country_name' => $responseData->shipping_place->country_name,
                     'name' => 'delivery test',
                     'phone' => $this->addressDelivery->phone,
                     'vat' => $this->addressDelivery->vat,
                     'zip' => $this->addressDelivery->zip,
                 ],
-                'invoice_address' => [
+                'billing_address' => [
                     'id' => $this->addressInvoice->getKey(),
                     'address' => $this->addressInvoice->address,
                     'city' => $this->addressInvoice->city,
                     'country' => $this->addressInvoice->country,
-                    'country_name' => $responseData->invoice_address->country_name,
+                    'country_name' => $responseData->billing_address->country_name,
                     'name' => 'invoice test',
                     'phone' => $this->addressInvoice->phone,
                     'vat' => $this->addressInvoice->vat,
@@ -202,8 +202,8 @@ class OrderUpdateTest extends TestCase
             'id' => $this->order->getKey(),
             'email' => $email,
             'comment' => $comment,
-            'delivery_address_id' => $responseData->delivery_address->id,
-            'invoice_address_id' => $responseData->invoice_address->id,
+            'shipping_address_id' => $responseData->shipping_place->id,
+            'billing_address_id' => $responseData->billing_address->id,
         ])
             ->assertDatabaseHas('addresses', [
                 'id' => $this->addressDelivery->getKey(),
@@ -633,20 +633,6 @@ class OrderUpdateTest extends TestCase
         Event::assertDispatched(OrderUpdated::class);
     }
 
-    private function checkAddress(Address $address): void
-    {
-        $this->assertDatabaseHas('addresses', [
-            'id' => $address->getKey(),
-            'name' => $address->name,
-            'phone' =>  $address->phone,
-            'address' =>  $address->address,
-            'vat' =>  $address->vat,
-            'zip' =>  $address->zip,
-            'city' =>  $address->city,
-            'country' =>  $address->country,
-        ]);
-    }
-
     /**
      * @dataProvider authProvider
      */
@@ -946,8 +932,7 @@ class OrderUpdateTest extends TestCase
             'invoice_requested' => true,
         ]);
 
-        $response->assertStatus(422)
-            ->assertJsonFragment(['shipping_place' => ['Shipping place data is incorrect.']]);
+        $response->assertStatus(422);
 
         Event::assertNotDispatched(OrderUpdated::class);
     }
@@ -971,8 +956,7 @@ class OrderUpdateTest extends TestCase
             'invoice_requested' => true,
         ]);
 
-        $response->assertStatus(422)
-            ->assertJsonFragment(['shipping_place' => ['Shipping place data is incorrect.']]);
+        $response->assertStatus(422);
 
         Event::assertNotDispatched(OrderUpdated::class);
     }

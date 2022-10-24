@@ -78,149 +78,155 @@ class OrderService implements OrderServiceContract
     {
         DB::beginTransaction();
 
-        // Schema values and warehouse items validation
-        $products = $this->itemService->checkOrderItems($dto->getItems());
-
-        // Creating order
-        $shippingMethod = ShippingMethod::findOrFail($dto->getShippingMethodId());
-        switch ($shippingMethod->shipping_type) {
-            case ShippingType::ADDRESS:
-                $shippingPlace = null;
-                $shippingAddressId = Address::firstOrCreate($validated['shipping_place'])->getKey();
-                break;
-            case ShippingType::POINT:
-                $shippingPlace = null;
-                $shippingAddressId = Address::find($validated['shipping_place'])->getKey();
-                break;
-            case ShippingType::POINT_EXTERNAL:
-                $shippingPlace = $validated['shipping_place'];
-                $shippingAddressId = null;
-                break;
-            default:
-                $shippingPlace = null;
-                $shippingAddressId = null;
-                break;
-        }
-
-        if (!($dto->getBillingAddress() instanceof Missing)) {
-            $billingAddress = Address::firstOrCreate($dto->getBillingAddress()->toArray());
-        }
-
-        $getInvoiceRequested = $dto->getInvoiceRequested() instanceof Missing
-            ? false
-            : $dto->getInvoiceRequested();
-
-        $status = Status::select('id')->orderBy('order')->first();
-
-        if ($status === null) {
-            throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED);
-        }
-
-        $order = Order::create(
-            $dto->toArray() + [
-                'code' => $this->nameService->generate(),
-                'currency' => 'PLN',
-                'shipping_price_initial' => 0.0,
-                'shipping_price' => 0.0,
-                'cart_total_initial' => 0.0,
-                'cart_total' => 0.0,
-                'status_id' => $status->getKey(),
-                'shipping_address_id' => $shippingAddressId,
-                'billing_address_id' => isset($billingAddress) ? $billingAddress->getKey() : null,
-                'buyer_id' => Auth::user()->getKey(),
-                'buyer_type' => Auth::user()::class,
-                'invoice_requested' => $getInvoiceRequested,
-                'shipping_place' => $shippingPlace,
-                'shipping_type' => $shippingMethod->shipping_type,
-            ]
-        );
-
-        // Add products to order
-        $cartValueInitial = 0;
-        $tempSchemaOrderProduct = [];
         try {
-            foreach ($dto->getItems() as $item) {
-                $product = $products->firstWhere('id', $item->getProductId());
+            // Schema values and warehouse items validation
+            $products = $this->itemService->checkOrderItems($dto->getItems());
 
-                $orderProduct = new OrderProduct([
-                    'product_id' => $item->getProductId(),
-                    'quantity' => $item->getQuantity(),
-                    'price_initial' => $product->price,
-                    'price' => $product->price,
-                    'base_price_initial' => $product->price,
-                    'base_price' => $product->price,
-                    'name' => $product->name,
-                    'vat_rate' => $product->vat_rate,
-                ]);
+            // Creating order
+            $shippingMethod = ShippingMethod::findOrFail($dto->getShippingMethodId());
+            switch ($shippingMethod->shipping_type) {
+                case ShippingType::ADDRESS:
+                    $shippingPlace = null;
+                    $shippingAddressId = Address::firstOrCreate($dto->getShippingPlace()->toArray())->getKey();
+                    break;
+                case ShippingType::POINT:
+                    $shippingPlace = null;
+                    $shippingAddressId = Address::find($dto->getShippingPlace())->getKey();
+                    break;
+                case ShippingType::POINT_EXTERNAL:
+                    $shippingPlace = $dto->getShippingPlace();
+                    $shippingAddressId = null;
+                    break;
+                default:
+                    $shippingPlace = null;
+                    $shippingAddressId = null;
+                    break;
+            }
 
-                $order->products()->save($orderProduct);
-                $cartValueInitial += $product->price * $item->getQuantity();
+            if (!($dto->getBillingAddress() instanceof Missing)) {
+                $billingAddress = Address::firstOrCreate($dto->getBillingAddress()->toArray());
+            }
 
-                $schemaProductPrice = 0;
-                // Add schemas to products
-                foreach ($item->getSchemas() as $schemaId => $value) {
-                    $schema = $product->schemas()->findOrFail($schemaId);
+            $getInvoiceRequested = $dto->getInvoiceRequested() instanceof Missing
+                ? false
+                : $dto->getInvoiceRequested();
 
-                    $price = $schema->getPrice($value, $item->getSchemas());
+            $status = Status::select('id')->orderBy('order')->first();
 
-                    if ($schema->type->is(SchemaType::SELECT)) {
-                        $option = $schema->options()->findOrFail($value);
-                        $tempSchemaOrderProduct[$schema->name . '_' . $item->getProductId()] = [$schemaId, $value];
-                        $value = $option->name;
-                    }
+            if ($status === null) {
+                throw new ServerException(Exceptions::SERVER_ORDER_STATUSES_NOT_CONFIGURED);
+            }
 
-                    $orderProduct->schemas()->create([
-                        'name' => $schema->name,
-                        'value' => $value,
-                        'price_initial' => $price,
-                        'price' => $price,
+            $order = Order::create(
+                [
+                    'code' => $this->nameService->generate(),
+                    'currency' => 'PLN',
+                    'shipping_price_initial' => 0.0,
+                    'shipping_price' => 0.0,
+                    'cart_total_initial' => 0.0,
+                    'cart_total' => 0.0,
+                    'status_id' => $status->getKey(),
+                    'shipping_address_id' => $shippingAddressId,
+                    'billing_address_id' => isset($billingAddress) ? $billingAddress->getKey() : null,
+                    'buyer_id' => Auth::user()->getKey(),
+                    'buyer_type' => Auth::user()::class,
+                    'invoice_requested' => $getInvoiceRequested,
+                    'shipping_place' => $shippingPlace,
+                    'shipping_type' => $shippingMethod->shipping_type,
+                ] + $dto->toArray(),
+            );
+
+            // Add products to order
+            $cartValueInitial = 0;
+            $tempSchemaOrderProduct = [];
+            try {
+                foreach ($dto->getItems() as $item) {
+                    $product = $products->firstWhere('id', $item->getProductId());
+
+                    $orderProduct = new OrderProduct([
+                        'product_id' => $item->getProductId(),
+                        'quantity' => $item->getQuantity(),
+                        'price_initial' => $product->price,
+                        'price' => $product->price,
+                        'base_price_initial' => $product->price,
+                        'base_price' => $product->price,
+                        'name' => $product->name,
+                        'vat_rate' => $product->vat_rate,
                     ]);
 
-                    $schemaProductPrice += $price;
-                    $cartValueInitial += $price * $item->getQuantity();
+                    $order->products()->save($orderProduct);
+                    $cartValueInitial += $product->price * $item->getQuantity();
+
+                    $schemaProductPrice = 0;
+                    // Add schemas to products
+                    foreach ($item->getSchemas() as $schemaId => $value) {
+                        $schema = $product->schemas()->findOrFail($schemaId);
+
+                        $price = $schema->getPrice($value, $item->getSchemas());
+
+                        if ($schema->type->is(SchemaType::SELECT)) {
+                            $option = $schema->options()->findOrFail($value);
+                            $tempSchemaOrderProduct[$schema->name . '_' . $item->getProductId()] = [$schemaId, $value];
+                            $value = $option->name;
+                        }
+
+                        $orderProduct->schemas()->create([
+                            'name' => $schema->name,
+                            'value' => $value,
+                            'price_initial' => $price,
+                            'price' => $price,
+                        ]);
+
+                        $schemaProductPrice += $price;
+                        $cartValueInitial += $price * $item->getQuantity();
+                    }
+
+                    if ($schemaProductPrice) {
+                        $orderProduct->price += $schemaProductPrice;
+                        $orderProduct->price_initial += $schemaProductPrice;
+                        $orderProduct->save();
+                    }
                 }
 
-                if ($schemaProductPrice) {
-                    $orderProduct->price += $schemaProductPrice;
-                    $orderProduct->price_initial += $schemaProductPrice;
-                    $orderProduct->save();
+                if (!($dto->getMetadata() instanceof Missing)) {
+                    $this->metadataService->sync($order, $dto->getMetadata());
                 }
-            }
 
-            if (!($dto->getMetadata() instanceof Missing)) {
-                $this->metadataService->sync($order, $dto->getMetadata());
-            }
+                $order->cart_total_initial = $cartValueInitial;
 
-            $order->cart_total_initial = $cartValueInitial;
+                // Apply discounts to order/products
+                $order = $this->discountService->calcOrderProductsAndTotalDiscounts($order, $dto);
 
-            // Apply discounts to order/products
-            $order = $this->discountService->calcOrderProductsAndTotalDiscounts($order, $dto);
+                $shippingPrice = $shippingMethod->getPrice($order->cart_total);
 
-            $shippingPrice = $shippingMethod->getPrice($order->cart_total);
+                $order->shipping_price_initial = $shippingPrice;
+                $order->shipping_price = $shippingPrice;
 
-            $order->shipping_price_initial = $shippingPrice;
-            $order->shipping_price = $shippingPrice;
+                // Apply discounts to order
+                $order = $this->discountService->calcOrderShippingDiscounts($order, $dto);
 
-            // Apply discounts to order
-            $order = $this->discountService->calcOrderShippingDiscounts($order, $dto);
-
-            foreach ($order->products as $orderProduct) {
-                // Remove items from warehouse
-                if (!$this->removeItemsFromWarehouse($orderProduct, $tempSchemaOrderProduct)) {
-                    throw new OrderException(Exceptions::ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE);
+                foreach ($order->products as $orderProduct) {
+                    // Remove items from warehouse
+                    if (!$this->removeItemsFromWarehouse($orderProduct, $tempSchemaOrderProduct)) {
+                        throw new OrderException(Exceptions::ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE);
+                    }
                 }
-            }
-            $order->push();
-        } catch (Throwable $exception) {
-            $order->delete();
+                $order->push();
+            } catch (Throwable $exception) {
+                $order->delete();
 
-            throw $exception;
+                throw $exception;
+            }
+
+            DB::commit();
+            OrderCreated::dispatch($order);
+            return $order;
+        } catch (Exception $error) {
+            DB::rollBack();
+
+            // WRONG ERROR
+            throw new ClientException(Exceptions::CLIENT_ORDER_EDIT_ERROR);
         }
-
-        DB::commit();
-        OrderCreated::dispatch($order);
-
-        return $order;
     }
 
     public function update(OrderDto $dto, Order $order): JsonResponse
@@ -254,17 +260,17 @@ class OrderService implements OrderServiceContract
                 $dto->getBillingAddress(),
             );
 
-            $billingAddressId = $invoiceAddress instanceof Address
-                ? ['billing_address_id' => $invoiceAddress->getKey() ]
-                : (!$dto->getInvoiceAddress() instanceof Missing ? ['billing_address_id' => null] : []);
+            $billingAddressId = $billingAddress instanceof Address
+                ? ['billing_address_id' => $billingAddress->getKey() ]
+                : (!$dto->getBillingAddress() instanceof Missing ? ['billing_address_id' => null] : []);
 
-            $order->update($dto->toArray() + $billingAddressId + [
+            $order->update([
                 'shipping_address_id' => $this->resolveShippingAddress($shippingPlace, $shippingType, $order),
                 'shipping_place' => $dto->getShippingPlace() !== null ?
                     $this->resolveShippingPlace($shippingPlace, $shippingType, $order)
                     : $order->shipping_place,
                 'shipping_type' => $shippingType ?? $order->shipping_type,
-            ]);
+            ] + $dto->toArray() + $billingAddressId);
 
             DB::commit();
 
@@ -298,7 +304,7 @@ class OrderService implements OrderServiceContract
                 'status',
                 'shippingMethod',
                 'shippingMethod.paymentMethods',
-                'deliveryAddress',
+                'shippingAddress',
                 'metadata',
                 'documents',
             ])

@@ -965,8 +965,8 @@ class ShippingMethodTest extends TestCase
         $response = $this->actingAs($this->$user)
             ->deleteJson('/shipping-methods/id:' . $shippingMethod->getKey());
 
-        $response->assertJsonFragment(['message' => 'This shipping method belongs to other application'])
-            ->assertStatus(400);
+        $response
+            ->assertStatus(422);
     }
 
     /**

@@ -14,6 +14,7 @@ use App\Services\Contracts\ShippingMethodServiceContract;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 
@@ -155,7 +156,7 @@ class ShippingMethodService implements ShippingMethodServiceContract
             throw new ClientException(Exceptions::CLIENT_DELETE_WHEN_RELATION_EXISTS);
         }
         if (!$shippingMethod->deletable) {
-            throw new StoreException('This shipping method belongs to other application');
+            throw new StoreException(Exceptions::CLIENT_SHIPPING_METHOD_NOT_OWNER);
         }
 
         $shippingMethod->delete();
