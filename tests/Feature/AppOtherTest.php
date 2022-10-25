@@ -319,10 +319,10 @@ class AppOtherTest extends TestCase
             ->deleteJson('/apps/id:' . $app->getKey() . '?force');
 
         $this->assertDatabaseMissing('shipping_methods', [
-            'id' => $shippingMethodIdOne
+            'id' => $shippingMethodIdOne,
         ]);
         $this->assertDatabaseMissing('shipping_methods', [
-            'id' => $shippingMethodIdTwo
+            'id' => $shippingMethodIdTwo,
         ]);
 
         $this->assertDatabaseCount('apps', 0);

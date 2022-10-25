@@ -617,17 +617,17 @@ class ShippingMethodTest extends TestCase
 
         $response = $this->actingAs($this->$user)
             ->postJson('/shipping-methods', $shipping_method + [
-                    'price_ranges' => [
-                        [
-                            'start' => 0,
-                            'value' => 10.37,
-                        ],
-                        [
-                            'start' => 200,
-                            'value' => 0,
-                        ],
+                'price_ranges' => [
+                    [
+                        'start' => 0,
+                        'value' => 10.37,
                     ],
-                ] + $shipping_points);
+                    [
+                        'start' => 200,
+                        'value' => 0,
+                    ],
+                ],
+            ] + $shipping_points);
 
         $addressSaved = Address::where('name', 'test2')->first();
 
@@ -643,8 +643,8 @@ class ShippingMethodTest extends TestCase
             ->assertJsonFragment(['shipping_type' => ShippingType::NONE]);
 
         $this->assertDatabaseHas('shipping_methods', $shipping_method + [
-                'app_id' => $this->$user instanceof App ? $this->$user->getKey() : null,
-            ])
+            'app_id' => $this->$user instanceof App ? $this->$user->getKey() : null,
+        ])
             ->assertDatabaseHas('address_shipping_method', [
                 'address_id' => $address->getKey(),
                 'shipping_method_id' => $response->getData()->data->id,
@@ -693,7 +693,6 @@ class ShippingMethodTest extends TestCase
 
         $address = Address::factory()->create();
         $shippingMethod->shippingPoints()->sync($address);
-
 
         $response = $this->actingAs($this->$user)
             ->patchJson('/shipping-methods/id:' . $shippingMethod->getKey(), [

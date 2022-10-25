@@ -6,7 +6,6 @@ use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
 use App\Enums\ExceptionsEnums\Exceptions;
-use App\Enums\ShippingType;
 use App\Events\AddOrderDocument;
 use App\Events\ItemUpdatedQuantity;
 use App\Events\OrderUpdatedStatus;

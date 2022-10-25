@@ -6,7 +6,6 @@ use App\Dtos\AddressDto;
 use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
-use App\Dtos\OrderUpdateDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\SchemaType;
 use App\Enums\ShippingType;
@@ -17,6 +16,7 @@ use App\Events\OrderUpdatedShippingNumber;
 use App\Exceptions\ClientException;
 use App\Exceptions\OrderException;
 use App\Exceptions\ServerException;
+use App\Exceptions\StoreException;
 use App\Http\Resources\OrderResource;
 use App\Models\Address;
 use App\Models\CartResource;
@@ -221,11 +221,14 @@ class OrderService implements OrderServiceContract
             DB::commit();
             OrderCreated::dispatch($order);
             return $order;
-        } catch (Exception $error) {
+        } catch (StoreException $exception) {
             DB::rollBack();
 
-            // WRONG ERROR
-            throw new ClientException(Exceptions::CLIENT_ORDER_EDIT_ERROR);
+            throw $exception;
+        } catch (Throwable) {
+            DB::rollBack();
+
+            throw new ServerException(Exceptions::SERVER_TRANSACTION_ERROR);
         }
     }
 

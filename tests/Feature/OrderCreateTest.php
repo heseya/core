@@ -1112,7 +1112,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                     'schemas' => [
                         $schema->getKey() => 'Test',
-                    ]
+                    ],
                 ],
             ],
         ]);
@@ -1171,7 +1171,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                     'schemas' => [
                         $schema->getKey() => 'Test',
-                    ]
+                    ],
                 ],
             ],
         ]);
@@ -1233,11 +1233,10 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                     'schemas' => [
                         $schema->getKey() => 'Test',
-                    ]
+                    ],
                 ],
             ],
         ]);
-
 
         $response->assertCreated();
         $order = Order::find($response->getData()->data->id);
@@ -1292,7 +1291,7 @@ class OrderCreateTest extends TestCase
                     'quantity' => $productQuantity,
                     'schemas' => [
                         $schema->getKey() => 'Test',
-                    ]
+                    ],
                 ],
             ],
         ]);

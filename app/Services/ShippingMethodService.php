@@ -172,8 +172,9 @@ class ShippingMethodService implements ShippingMethodServiceContract
             } else {
                 $address = Address::create($shippingPoint);
             }
-            $addresses->push($address);
+            $addresses->push($address->getKey());
         }
+
         $shippingMethod->shippingPoints()->sync($addresses);
     }
 }

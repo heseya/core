@@ -89,6 +89,7 @@ final class Exceptions extends Enum
     public const SERVER_CDN_ERROR = 'CDN responded with an error';
     public const SERVER_ERROR = 'Server responded with an error';
     public const SERVER_ORDER_STATUSES_NOT_CONFIGURED = 'Order statuses are not configured';
+    public const SERVER_TRANSACTION_ERROR = 'Unexpected error occurred during the database transaction.';
 
     public const ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE = 'Not every item is available';
 

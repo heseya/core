@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Events\OrderRequestedShipping;
 use App\Enums\ShippingType;
+use App\Events\OrderRequestedShipping;
 use App\Events\OrderUpdated;
 use App\Events\OrderUpdatedShippingNumber;
 use App\Listeners\WebHookEventListener;
@@ -775,8 +775,6 @@ class OrderUpdateTest extends TestCase
 
         $response->assertOk();
 
-        $order = Order::find($response->getData()->data->id);
-
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
             'invoice_requested' => true,
@@ -801,7 +799,6 @@ class OrderUpdateTest extends TestCase
             'public' => true,
             'shipping_type' => ShippingType::ADDRESS,
         ]);
-
 
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'shipping_method_id' => $shippingMethod->getKey(),
@@ -894,7 +891,7 @@ class OrderUpdateTest extends TestCase
         $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
             'shipping_method_id' => $shippingMethod->getKey(),
             'invoice_requested' => true,
-            'shipping_place' => 'Testowy numer domu w testowym mieście'
+            'shipping_place' => 'Testowy numer domu w testowym mieście',
         ]);
 
         $response->assertOk();
@@ -920,7 +917,6 @@ class OrderUpdateTest extends TestCase
         $this->$user->givePermissionTo('orders.edit');
 
         Event::fake([OrderUpdated::class]);
-
 
         $shippingMethod = ShippingMethod::factory()->create([
             'public' => true,
@@ -970,7 +966,7 @@ class OrderUpdateTest extends TestCase
 
         $webHook = WebHook::factory()->create([
             'events' => [
-                'OrderRequestedShipping'
+                'OrderRequestedShipping',
             ],
             'model_type' => $this->$user::class,
             'creator_id' => $this->$user->getKey(),
@@ -985,7 +981,7 @@ class OrderUpdateTest extends TestCase
         $this->actingAs($this->$user)
             ->postJson('/orders/id:' . $this->order->getKey() . '/shipping-lists',
                 [
-                    'package_template_id' => $package->getKey()
+                    'package_template_id' => $package->getKey(),
                 ]
             )->assertOk()
             ->assertJsonFragment([
@@ -1026,7 +1022,7 @@ class OrderUpdateTest extends TestCase
         $this->actingAs($this->$user)
             ->postJson('/orders/id:' . $this->order->getKey() . '/shipping-lists',
                 [
-                    'package_template_id' => $package->getKey()
+                    'package_template_id' => $package->getKey(),
                 ]
             )->assertUnprocessable();
 
