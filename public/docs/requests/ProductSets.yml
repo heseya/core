@@ -164,3 +164,14 @@ ProductSetProductReorder:
                   example: 5
         type: object
 
+FavouriteProductSet:
+  content:
+    application/json:
+      schema:
+        required:
+          - product_set_id
+        properties:
+          product_set_id:
+            type: string
+            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+        type: object
