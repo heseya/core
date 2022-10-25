@@ -269,10 +269,8 @@ class OrderService implements OrderServiceContract
 
             $order->update([
                 'shipping_address_id' => $this->resolveShippingAddress($shippingPlace, $shippingType, $order),
-                'shipping_place' => $dto->getShippingPlace() !== null ?
-                    $this->resolveShippingPlace($shippingPlace, $shippingType, $order)
-                    : $order->shipping_place,
-                'shipping_type' => $shippingType ?? $order->shipping_type,
+                'shipping_place' => $this->resolveShippingPlace($shippingPlace, $shippingType, $order),
+                'shipping_type' => $shippingType,
             ] + $dto->toArray() + $billingAddressId);
 
             DB::commit();

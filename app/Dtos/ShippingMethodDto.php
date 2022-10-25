@@ -6,6 +6,7 @@ use App\Dtos\Contracts\InstantiateFromRequest;
 use App\Http\Requests\ShippingMethodStoreRequest;
 use App\Http\Requests\ShippingMethodUpdateRequest;
 use App\Models\App;
+use App\Models\User;
 use App\Traits\MapMetadata;
 use Heseya\Dto\Dto;
 use Heseya\Dto\Missing;
@@ -34,6 +35,9 @@ class ShippingMethodDto extends Dto implements InstantiateFromRequest
     public static function instantiateFromRequest(
         FormRequest|ShippingMethodStoreRequest|ShippingMethodUpdateRequest $request,
     ): self {
+        /** @var User|App|null $user */
+        $user = Auth::user();
+
         return new self(
             name: $request->input('name', new Missing()),
             public: $request->input('public', new Missing()),
@@ -46,7 +50,7 @@ class ShippingMethodDto extends Dto implements InstantiateFromRequest
             shipping_type: $request->input('shipping_type', 'none'),
             shipping_points: $request->input('shipping_points'),
             integration_key: $request->input('integration_key'),
-            app_id: Auth::user() instanceof App ? Auth::id() : null,
+            app_id: $user instanceof App ? Auth::id() : null,
             metadata: self::mapMetadata($request),
         );
     }

@@ -28,9 +28,9 @@ class OrderResource extends Resource
             'shipping_method_id' => $this->resource->shippingMethod ? $this->resource->shippingMethod->getKey() : null,
             'shipping_type' => $this->resource->shippingMethod ? $this->resource->shippingMethod->shipping_type : null,
             'invoice_requested' => $this->resource->invoice_requested,
-            'shipping_place' => AddressResource::make(
-                $this->resource->shippingAddress,
-            ) ?? $this->resource->shipping_place,
+            'shipping_place' =>  $this->resource->shippingAddress
+                ? AddressResource::make($this->resource->shippingAddress)
+                : $this->resource->shipping_place,
             'documents' => OrderDocumentResource::collection($this->resource->documents->pluck('pivot')),
             'paid' => $this->resource->paid,
             'cart_total' => $this->resource->cart_total,
