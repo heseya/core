@@ -2,7 +2,6 @@
 
 namespace Tests\Unit\Availability;
 
-
 use App\Models\Item;
 use App\Models\Option;
 use Illuminate\Support\Collection;
@@ -30,7 +29,7 @@ trait ItemCreate
 
     protected function createOption(array $relatedItems = []): Option
     {
-        $option = new Option;
+        $option = new Option();
         $option->setRelation('items', $this->createItems($relatedItems));
 
         return $option;

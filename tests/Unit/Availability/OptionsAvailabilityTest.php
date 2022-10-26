@@ -77,6 +77,54 @@ class OptionsAvailabilityTest extends TestCase
         $this->assertNull($availability['shipping_date']);
     }
 
+    public function testWithItemShippingDate(): void
+    {
+        Carbon::setTestNow(Carbon::create(2022, 9, 1));
+
+        $option = $this->createOption([
+            [
+                'quantity' => 1,
+                'shipping_date' => '2022-09-01',
+            ],
+            [
+                'quantity' => 1,
+                'shipping_date' => '2022-09-10',
+            ],
+            [
+                'quantity' => 1,
+                'shipping_date' => '2022-09-02',
+            ],
+        ]);
+
+        $availability = $this->availabilityService->getCalculateOptionAvailability($option);
+
+        $this->assertTrue($availability['available']);
+        $this->assertNull($availability['shipping_time']);
+        $this->assertTrue($availability['shipping_date']->is('2022-09-10'));
+    }
+
+    public function testWithItemShippingTimeAndDate(): void
+    {
+        Carbon::setTestNow(Carbon::create(2022, 9, 1));
+
+        $option = $this->createOption([
+            [
+                'quantity' => 1,
+                'shipping_date' => '2022-09-10',
+            ],
+            [
+                'quantity' => 1,
+                'shipping_time' => 2,
+            ],
+        ]);
+
+        $availability = $this->availabilityService->getCalculateOptionAvailability($option);
+
+        $this->assertTrue($availability['available']);
+        $this->assertEquals(2, $availability['shipping_time']);
+        $this->assertTrue($availability['shipping_date']->is('2022-09-10'));
+    }
+
     public function testNoEnoughQuantity(): void
     {
         $option = $this->createOption([
@@ -85,8 +133,7 @@ class OptionsAvailabilityTest extends TestCase
                 'required_quantity' => 2,
             ],
             [
-                'quantity' => 5,
-                'required_quantity' => 5,
+                'quantity' => 1,
             ],
         ]);
 

@@ -54,7 +54,7 @@ class AvailabilityService implements AvailabilityServiceContract
     }
 
     /**
-     * @return array{available: bool, shipping_time: null|int, shipping_date: null|Carbon}
+     * @return array{available: bool, shipping_time: (int|null), shipping_date: (Carbon|null)}
      */
     public function getCalculateOptionAvailability(Option $option): array
     {
@@ -73,11 +73,13 @@ class AvailabilityService implements AvailabilityServiceContract
                     continue;
                 }
 
-                if ($item->shipping_time >= $shipping_time) {
+                if ($item->shipping_time > $shipping_time) {
                     $shipping_time = $item->shipping_time;
                 }
 
-                continue;
+                if ($item->shipping_date === null) {
+                    continue;
+                }
             }
 
             if ($item->unlimited_stock_shipping_time !== null) {
@@ -87,19 +89,31 @@ class AvailabilityService implements AvailabilityServiceContract
                 continue;
             }
 
+            if ($item->quantity >= $item->pivot->required_quantity) {
+                if (
+                    $item->shipping_date !== null &&
+                    ($now->isBefore($item->shipping_date) || $now->isSameDay($item->shipping_date))
+                ) {
+                    if ($shipping_date === null || ($shipping_date instanceof Carbon &&
+                        ($shipping_date->isBefore($item->shipping_date) ||
+                            $shipping_date->isSameDay($item->shipping_date)))
+                    ) {
+                        $shipping_date = $item->shipping_date;
+                    }
+                }
+
+                continue;
+            }
+
             if (
                 $item->unlimited_stock_shipping_date !== null &&
-                (
-                    $now->isBefore($item->unlimited_stock_shipping_date) ||
-                    $now->isSameDay($item->unlimited_stock_shipping_date)
-                )
+                ($now->isBefore($item->unlimited_stock_shipping_date) ||
+                    $now->isSameDay($item->unlimited_stock_shipping_date))
             ) {
-                if ($shipping_date === null || (
-                        $shipping_date instanceof Carbon && (
-                            $shipping_date->isBefore($item->unlimited_stock_shipping_date) ||
-                            $shipping_date->isSameDay($item->unlimited_stock_shipping_date)
-                        )
-                    )) {
+                if ($shipping_date === null || ($shipping_date instanceof Carbon &&
+                    ($shipping_date->isBefore($item->unlimited_stock_shipping_date) ||
+                        $shipping_date->isSameDay($item->unlimited_stock_shipping_date)))
+                ) {
                     $shipping_date = $item->unlimited_stock_shipping_date;
                 }
                 continue;
