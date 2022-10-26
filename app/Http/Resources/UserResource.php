@@ -28,6 +28,10 @@ class UserResource extends Resource
             'roles' => RoleResource::collection($filtered),
             'is_tfa_active' => $this->resource->is_tfa_active,
             'consents' => ConsentUserResource::collection($this->resource->consents),
+            'birthday_date' => $this->resource->birthday_date,
+            'phone' => $this->resource->phone,
+            'phone_country' => $this->resource->phone_country,
+            'phone_number' => $this->resource->phone_number,
         ], $this->metadataResource('users.show_metadata_private'));
     }
 

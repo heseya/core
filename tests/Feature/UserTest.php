@@ -231,6 +231,10 @@ class UserTest extends TestCase
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
                 'consents' => [],
+                'birthday_date' => null,
+                'phone' => null,
+                'phone_country' => null,
+                'phone_number' => null,
                 'metadata' => [],
             ]);
     }
@@ -259,6 +263,10 @@ class UserTest extends TestCase
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
                 'consents' => [],
+                'birthday_date' => null,
+                'phone' => null,
+                'phone_country' => null,
+                'phone_number' => null,
                 'metadata' => [],
             ]);
     }
@@ -286,6 +294,10 @@ class UserTest extends TestCase
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
                 'consents' => [],
+                'birthday_date' => null,
+                'phone' => null,
+                'phone_country' => null,
+                'phone_number' => null,
                 'metadata' => [],
             ]);
     }
@@ -313,6 +325,10 @@ class UserTest extends TestCase
                 'roles' => [],
                 'is_tfa_active' => $otherUser->is_tfa_active,
                 'consents' => [],
+                'birthday_date' => null,
+                'phone' => null,
+                'phone_country' => null,
+                'phone_number' => null,
                 'metadata' => [],
             ]);
     }
@@ -354,6 +370,10 @@ class UserTest extends TestCase
                         'value' => true,
                     ],
                 ],
+                'birthday_date' => null,
+                'phone' => null,
+                'phone_country' => null,
+                'phone_number' => null,
                 'metadata' => [],
             ]);
     }
@@ -395,6 +415,10 @@ class UserTest extends TestCase
                         'value' => true,
                     ],
                 ],
+                'birthday_date' => null,
+                'phone' => null,
+                'phone_country' => null,
+                'phone_number' => null,
                 'metadata' => [],
             ]);
     }
@@ -892,6 +916,41 @@ class UserTest extends TestCase
         $this->actingAs($this->$user)->postJson('/users', $data)->assertStatus(422);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithPhone($user): void
+    {
+        $this->$user->givePermissionTo('users.add');
+
+        Event::fake([UserCreated::class]);
+
+        $data = User::factory()->raw()
+            + [
+                'password' => $this->validPassword,
+                'birthday_date' => '1990-01-01',
+                'phone' => '+48123456789',
+            ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/users', $data)
+            ->assertCreated()
+            ->assertJsonFragment([
+                'birthday_date' => '1990-01-01',
+                'phone' => '+48123456789',
+                'phone_country' => 'PL',
+                'phone_number' => '12 345 67 89',
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'email' => $data['email'],
+            'birthday_date' => '1990-01-01',
+            'phone_country' => 'PL',
+            'phone_number' => '12 345 67 89',
+        ]);
+    }
+
     public function testUpdateUnauthorized(): void
     {
         Event::fake([UserUpdated::class]);
@@ -916,19 +975,29 @@ class UserTest extends TestCase
 
         $response = $this->actingAs($this->$user)->patchJson(
             '/users/id:' . $otherUser->getKey(),
-            $data,
+            $data + [
+                'birthday_date' => '1990-01-01',
+                'phone' => '+48123456789',
+            ],
         );
 
         $response
             ->assertOk()
             ->assertJsonPath('data.id', $otherUser->getKey())
             ->assertJsonPath('data.email', $data['email'])
-            ->assertJsonPath('data.name', $data['name']);
+            ->assertJsonPath('data.name', $data['name'])
+            ->assertJsonPath('data.birthday_date', '1990-01-01')
+            ->assertJsonPath('data.phone', '+48123456789')
+            ->assertJsonPath('data.phone_country', 'PL')
+            ->assertJsonPath('data.phone_number', '12 345 67 89');
 
         $this->assertDatabaseHas('users', [
             'id' => $otherUser->getKey(),
             'name' => $data['name'],
             'email' => $data['email'],
+            'birthday_date' => '1990-01-01',
+            'phone_country' => 'PL',
+            'phone_number' => '12 345 67 89',
         ]);
 
         Event::assertDispatched(UserUpdated::class);
