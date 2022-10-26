@@ -60,65 +60,57 @@ class AvailabilityService implements AvailabilityServiceContract
     {
         $now = Carbon::now();
 
-        // If option don't have any related items is always avaiable
+        // 0. If option don't have any related items is always avaiable
         $available = true;
         $shipping_time = null;
         $shipping_date = null;
 
         foreach ($option->items as $item) {
-            if (
-                $item->unlimited_stock_shipping_time !== null &&
-                $item->unlimited_stock_shipping_time > $shipping_time
-            ) {
-                $available = true;
-                $shipping_time = $item->unlimited_stock_shipping_time;
+            // If item required quantity is satisfied by limited stocks
+            if ($item->quantity >= $item->pivot->required_quantity) {
+                // 1. If item doesn't have shipping time or date
+                if ($item->shipping_time === null && $item->shipping_date === null) {
+                    continue;
+                }
+
+                if ($item->shipping_time >= $shipping_time) {
+                    $shipping_time = $item->shipping_time;
+                }
+
+                continue;
+            }
+
+            if ($item->unlimited_stock_shipping_time !== null) {
+                if ($item->unlimited_stock_shipping_time > $shipping_time) {
+                    $shipping_time = $item->unlimited_stock_shipping_time;
+                }
+                continue;
             }
 
             if (
                 $item->unlimited_stock_shipping_date !== null &&
-                $now->isBefore($item->unlimited_stock_shipping_date) && (
-                    $shipping_date === null || (
-                        $shipping_date instanceof Carbon &&
-                        $shipping_date->isBefore($item->unlimited_stock_shipping_date)
-                    )
+                (
+                    $now->isBefore($item->unlimited_stock_shipping_date) ||
+                    $now->isSameDay($item->unlimited_stock_shipping_date)
                 )
             ) {
-                $available = true;
-                $shipping_date = $item->unlimited_stock_shipping_date;
+                if ($shipping_date === null || (
+                        $shipping_date instanceof Carbon && (
+                            $shipping_date->isBefore($item->unlimited_stock_shipping_date) ||
+                            $shipping_date->isSameDay($item->unlimited_stock_shipping_date)
+                        )
+                    )) {
+                    $shipping_date = $item->unlimited_stock_shipping_date;
+                }
+                continue;
             }
 
-            // If
-            if ($item->pivot->required_quantity > $item->quantity) {
-                return [
-                    'available' => false,
-                    'shipping_time' => null,
-                    'shipping_date' => null,
-                ];
-            }
-
-//            $this->depositService->getMaxShippingTimeDateForItems($option->items);
+            return [
+                'available' => false,
+                'shipping_time' => null,
+                'shipping_date' => null,
+            ];
         }
-
-//        if ($option->available && $option->items->some(
-//            fn ($item) => $item->quantity <= 0 &&
-//                $item->unlimited_stock_shipping_time === null &&
-//                ($item->unlimited_stock_shipping_date === null || $item->unlimited_stock_shipping_date < Carbon::now())
-//        )) {
-//            return [
-//                'available' => false,
-//                'shipping_time' => null,
-//                'shipping_date' => null,
-//            ];
-//        } elseif (!$option->available && $option->items->every(
-//            fn ($item) => $item->quantity > 0 ||
-//                $item->unlimited_stock_shipping_time !== null ||
-//                ($item->unlimited_stock_shipping_date !== null &&
-//                    $item->unlimited_stock_shipping_date >= Carbon::now())
-//        )) {
-//            return [
-//                'available' => true,
-//            ] + $this->depositService->getMaxShippingTimeDateForItems($option->items);
-//        }
 
         return [
             'available' => $available,

@@ -88,21 +88,6 @@ class DepositService implements DepositServiceContract
         return $minTimeDate;
     }
 
-    public function getMaxShippingTimeDateForItems(Collection $items, float $quantity = 1): array
-    {
-        $maxTimeDate = ['shipping_time' => null, 'shipping_date' => null];
-        foreach ($items as $item) {
-            $timeDate = $quantity > 1 ? $this->getShippingTimeDateForQuantity($item, $quantity) :
-                ['shipping_time' => $item->shipping_time, 'shipping_date' => $item->shipping_date];
-            if (is_null($timeDate['shipping_time']) && is_null($timeDate['shipping_date'])) {
-                return $timeDate;
-            }
-            $maxTimeDate = $this->maxShippingTimeAndDate($timeDate, $maxTimeDate);
-        }
-
-        return $maxTimeDate;
-    }
-
     public function getShippingTimeDateForQuantity(Item $item, float $quantity = 1): array
     {
         $groupedDepositsByTime = $this->getShippingTimeForQuantity($item, $quantity);

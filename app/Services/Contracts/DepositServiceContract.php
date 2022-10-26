@@ -17,8 +17,6 @@ interface DepositServiceContract
 
     public function getMinShippingTimeDateForOptions(Collection $options): array;
 
-    public function getMaxShippingTimeDateForItems(Collection $items, float $quantity = 1): array;
-
     public function getShippingTimeDateForQuantity(Item $item, float $quantity = 1): array;
 
     public function getShippingTimeForQuantity(Item $item, float $quantity = 1): array;

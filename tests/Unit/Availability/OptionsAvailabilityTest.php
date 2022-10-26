@@ -145,7 +145,7 @@ class OptionsAvailabilityTest extends TestCase
 
         $this->assertTrue($availability['available']);
         $this->assertEquals(2, $availability['shipping_time']);
-        $this->assertTrue($availability['shipping_date']->is('2022-09-01'));
+        $this->assertNull($availability['shipping_date']);
     }
 
     // If there's more than one item, option should have higher shipping_time
