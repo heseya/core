@@ -48,6 +48,12 @@ class UserTest extends TestCase
             'public' => true,
         ]);
 
+        $metadataPersonal = $this->user->metadataPersonal()->create([
+            'name' => 'Personal_metadata',
+            'value' => 'personal metadata test',
+            'value_type' => MetadataType::STRING,
+        ]);
+
         $this->user->preferences()->associate(UserPreference::create());
 
         $this->user->save();
@@ -61,6 +67,9 @@ class UserTest extends TestCase
             'is_tfa_active' => $this->user->is_tfa_active,
             'metadata' => [
                 $metadata->name => $metadata->value,
+            ],
+            'metadata_personal' => [
+                $metadataPersonal->name => $metadataPersonal->value,
             ],
         ];
 
@@ -235,6 +244,7 @@ class UserTest extends TestCase
                 'phone' => null,
                 'phone_country' => null,
                 'phone_number' => null,
+                'metadata_personal' => [],
                 'metadata' => [],
             ]);
     }
@@ -267,6 +277,7 @@ class UserTest extends TestCase
                 'phone' => null,
                 'phone_country' => null,
                 'phone_number' => null,
+                'metadata_personal' => [],
                 'metadata' => [],
             ]);
     }
@@ -298,6 +309,7 @@ class UserTest extends TestCase
                 'phone' => null,
                 'phone_country' => null,
                 'phone_number' => null,
+                'metadata_personal' => [],
                 'metadata' => [],
             ]);
     }
@@ -329,6 +341,7 @@ class UserTest extends TestCase
                 'phone' => null,
                 'phone_country' => null,
                 'phone_number' => null,
+                'metadata_personal' => [],
                 'metadata' => [],
             ]);
     }
@@ -374,6 +387,7 @@ class UserTest extends TestCase
                 'phone' => null,
                 'phone_country' => null,
                 'phone_number' => null,
+                'metadata_personal' => [],
                 'metadata' => [],
             ]);
     }
@@ -419,6 +433,7 @@ class UserTest extends TestCase
                 'phone' => null,
                 'phone_country' => null,
                 'phone_number' => null,
+                'metadata_personal' => [],
                 'metadata' => [],
             ]);
     }
