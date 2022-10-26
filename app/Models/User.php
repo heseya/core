@@ -13,6 +13,7 @@ use App\Enums\SavedAddressType;
 use App\Models\Contracts\SortableContract;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasMetadata;
+use App\Traits\HasMetadataPersonal;
 use App\Traits\HasWebHooks;
 use App\Traits\Sortable;
 use Heseya\Searchable\Criteria\Like;
@@ -61,7 +62,8 @@ class User extends Model implements
         Auditable,
         HasWebHooks,
         HasMetadata,
-        HasDiscountConditions;
+        HasDiscountConditions,
+        HasMetadataPersonal;
 
     // Bez tego nie działały testy, w których jako aplikacja tworzy się użytkownika z określoną rolą
     protected string $guard_name = 'api';

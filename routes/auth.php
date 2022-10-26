@@ -2,6 +2,7 @@
 
 use App\Enums\SavedAddressType;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\MetadataController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group(function (): void {
@@ -11,9 +12,11 @@ Route::prefix('auth')->group(function (): void {
     Route::get('profile', [AuthController::class, 'profile']);
     Route::patch('profile', [AuthController::class, 'updateProfile'])
         ->middleware('can:authenticated');
+    Route::patch('profile/metadata-personal', [MetadataController::class, 'updateOrCreateLoggedMyPersonal'])
+        ->middleware('can:authenticated');
     Route::prefix('profile')
         ->middleware('can:profile.addresses_manage')
-        ->group(function (): void {
+        ->group(callback: function (): void {
             Route::post('delivery-addresses', [AuthController::class, 'storeSavedAddress'])
                 ->defaults('type', SavedAddressType::DELIVERY);
             Route::patch('delivery-addresses/id:{address}', [AuthController::class, 'updateSavedAddress'])
