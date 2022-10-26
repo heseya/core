@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Models\Metadata;
+use App\Models\MetadataPersonal;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 
@@ -31,6 +32,6 @@ trait MetadataResource
             return (object) [];
         }
 
-        return $data->mapWithKeys(fn (Metadata $meta) => [$meta->name => $meta->value]);
+        return $data->mapWithKeys(fn (Metadata|MetadataPersonal $meta) => [$meta->name => $meta->value]);
     }
 }

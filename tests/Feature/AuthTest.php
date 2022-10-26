@@ -1180,6 +1180,8 @@ class AuthTest extends TestCase
                     'permission.1',
                     'permission.2',
                 ],
+                'metadata' => [],
+                'metadata_personal' => [],
             ],
             ]);
     }
