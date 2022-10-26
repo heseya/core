@@ -958,18 +958,22 @@ class OrderCreateTest extends TestCase
             'price' => 10,
         ]);
 
-        $this->actingAs($this->$user)->postJson('/orders',
-            [
-                'email' => $this->email,
-                'shipping_method_id' => $this->shippingMethod->getKey(),
-                'shipping_address' => $this->address->toArray(),
-                'items' => [
-                    [
-                        'product_id' => $this->product->getKey(),
-                        'quantity' => 20,
+        $this
+            ->actingAs($this->$user)
+            ->postJson(
+                '/orders',
+                [
+                    'email' => $this->email,
+                    'shipping_method_id' => $this->shippingMethod->getKey(),
+                    'shipping_address' => $this->address->toArray(),
+                    'items' => [
+                        [
+                            'product_id' => $this->product->getKey(),
+                            'quantity' => 20,
+                        ],
                     ],
-                ],
-            ])
+                ]
+            )
             ->assertUnprocessable();
 
         Event::assertNotDispatched(OrderCreated::class);

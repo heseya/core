@@ -979,7 +979,8 @@ class OrderUpdateTest extends TestCase
         Event::fake([OrderRequestedShipping::class]);
 
         $this->actingAs($this->$user)
-            ->postJson('/orders/id:' . $this->order->getKey() . '/shipping-lists',
+            ->postJson(
+                '/orders/id:' . $this->order->getKey() . '/shipping-lists',
                 [
                     'package_template_id' => $package->getKey(),
                 ]
@@ -1020,7 +1021,8 @@ class OrderUpdateTest extends TestCase
         $package->delete();
 
         $this->actingAs($this->$user)
-            ->postJson('/orders/id:' . $this->order->getKey() . '/shipping-lists',
+            ->postJson(
+                '/orders/id:' . $this->order->getKey() . '/shipping-lists',
                 [
                     'package_template_id' => $package->getKey(),
                 ]
