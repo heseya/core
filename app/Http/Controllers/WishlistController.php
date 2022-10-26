@@ -47,4 +47,10 @@ class WishlistController extends Controller
         $this->wishlistService->destroy($product);
         return Response::json(null, ResponseAlias::HTTP_NO_CONTENT);
     }
+
+    public function destroyAll(): JsonResponse
+    {
+        $this->wishlistService->destroyAll();
+        return Response::json(null, ResponseAlias::HTTP_NO_CONTENT);
+    }
 }

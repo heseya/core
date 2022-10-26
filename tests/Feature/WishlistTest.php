@@ -274,4 +274,35 @@ class WishlistTest extends TestCase
                 'key' => Exceptions::getKey(Exceptions::PRODUCT_IS_NOT_ON_WISHLIST),
             ]);
     }
+
+    public function testDeleteAllUnauthorized(): void
+    {
+        $this->actingAs($this->user)->json('DELETE', '/wishlist')->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteAll($user): void
+    {
+        $this->$user->givePermissionTo('profile.wishlist_manage');
+
+        $wishlistProduct1 = $this->$user->wishlistProducts()->create([
+            'product_id' => $this->product->getKey(),
+        ]);
+
+        $product = Product::factory()->create([
+            'public' => true,
+            'name' => 'another test product',
+        ]);
+
+        $wishlistProduct2 = $this->$user->wishlistProducts()->create([
+            'product_id' => $product->getKey(),
+        ]);
+
+        $this->actingAs($this->$user)->json('DELETE', '/wishlist')->assertNoContent();
+
+        $this->assertSoftDeleted($wishlistProduct1);
+        $this->assertSoftDeleted($wishlistProduct2);
+    }
 }
