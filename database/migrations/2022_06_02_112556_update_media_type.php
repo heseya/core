@@ -19,13 +19,13 @@ return new class extends Migration
             $table->string('type')->change();
         });
 
-        Media::query()->where('type', 0)->update([
+        Media::query()->where('type', '0')->update([
             'type' => MediaType::OTHER
         ]);
-        Media::query()->where('type', 1)->update([
+        Media::query()->where('type', '1')->update([
             'type' => MediaType::PHOTO
         ]);
-        Media::query()->where('type', 2)->update([
+        Media::query()->where('type', '2')->update([
             'type' => MediaType::VIDEO
         ]);
     }
