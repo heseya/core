@@ -73,6 +73,7 @@ ProductStore:
           - slug
           - price
           - public
+          - is_digital
         allOf:
           - $ref: '#/Product'
         type: object
