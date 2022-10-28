@@ -1576,7 +1576,8 @@ class ProductTest extends TestCase
                 'price' => 100,
                 'public' => true,
                 'is_digital' => true,
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
@@ -1609,7 +1610,8 @@ class ProductTest extends TestCase
                 'price' => 100,
                 'public' => true,
                 'is_digital' => false,
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('products', [
             'slug' => 'test',
@@ -2405,7 +2407,8 @@ class ProductTest extends TestCase
             ->assertOk()
             ->assertJson(['data' => [
                 'is_digital' => true,
-            ]]);
+            ],
+            ]);
 
         $this->assertDatabaseHas('products', [
             $this->product->getKeyName() => $this->product->getKey(),
