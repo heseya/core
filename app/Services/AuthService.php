@@ -31,7 +31,6 @@ use App\Services\Contracts\ConsentServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UserLoginAttemptServiceContract;
-use Heseya\Dto\Missing;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -291,11 +290,9 @@ class AuthService implements AuthServiceContract
 
     public function register(RegisterDto $dto): User
     {
-        $user = User::create([
-            'name' => $dto->getName(),
-            'email' => $dto->getEmail(),
-            'password' => Hash::make($dto->getPassword()),
-        ]);
+        $fields = $dto->toArray();
+        $fields['password'] = Hash::make($dto->getPassword());
+        $user = User::create($fields);
 
         $authenticated = Role::where('type', RoleType::AUTHENTICATED)->first();
 
@@ -319,12 +316,7 @@ class AuthService implements AuthServiceContract
     {
         /** @var User $user */
         $user = Auth::user();
-
-        if (!($dto->getName() instanceof Missing)) {
-            $user->update([
-                'name' => $dto->getName(),
-            ]);
-        }
+        $user->update($dto->toArray());
 
         $user->preferences()->update($dto->getPreferences()->toArray());
 

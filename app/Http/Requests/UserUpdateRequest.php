@@ -27,6 +27,8 @@ class UserUpdateRequest extends FormRequest
                     return $query->whereNotIn('type', [RoleType::AUTHENTICATED, RoleType::UNAUTHENTICATED]);
                 }),
             ],
+            'birthday_date' => ['nullable', 'date', 'before_or_equal:now'],
+            'phone' => ['nullable', 'phone:AUTO'],
         ];
     }
 }

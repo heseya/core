@@ -13,6 +13,7 @@ use App\Enums\SavedAddressType;
 use App\Models\Contracts\SortableContract;
 use App\Traits\HasDiscountConditions;
 use App\Traits\HasMetadata;
+use App\Traits\HasMetadataPersonal;
 use App\Traits\HasWebHooks;
 use App\Traits\Sortable;
 use Heseya\Searchable\Criteria\Like;
@@ -34,6 +35,7 @@ use Illuminate\Notifications\Notifiable;
 use OwenIt\Auditing\Auditable;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+use Propaganistas\LaravelPhone\PhoneNumber;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -60,7 +62,8 @@ class User extends Model implements
         Auditable,
         HasWebHooks,
         HasMetadata,
-        HasDiscountConditions;
+        HasDiscountConditions,
+        HasMetadataPersonal;
 
     // Bez tego nie działały testy, w których jako aplikacja tworzy się użytkownika z określoną rolą
     protected string $guard_name = 'api';
@@ -73,6 +76,9 @@ class User extends Model implements
         'tfa_secret',
         'is_tfa_active',
         'preferences_id',
+        'birthday_date',
+        'phone_country',
+        'phone_number',
     ];
 
     protected $hidden = [
@@ -108,6 +114,11 @@ class User extends Model implements
     public function getAvatarAttribute(): string
     {
         return '//www.gravatar.com/avatar/' . md5(strtolower(trim($this->email))) . '?d=mp&s=50x50';
+    }
+
+    public function getPhoneAttribute(): ?string
+    {
+        return $this->phone_number ? PhoneNumber::make($this->phone_number, $this->phone_country) : null;
     }
 
     public function getJWTIdentifier(): string

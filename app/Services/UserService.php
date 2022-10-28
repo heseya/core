@@ -52,11 +52,9 @@ class UserService implements UserServiceContract
             throw new ClientException(Exceptions::CLIENT_GIVE_ROLE_THAT_USER_DOESNT_HAVE, simpleLogs: true);
         }
 
-        $user = User::create([
-            'name' => $dto->getName(),
-            'email' => $dto->getEmail(),
-            'password' => Hash::make($dto->getPassword()),
-        ]);
+        $fields = $dto->toArray();
+        $fields['password'] = Hash::make($dto->getPassword());
+        $user = User::create($fields);
 
         $preferences = UserPreference::create();
         $preferences->refresh();

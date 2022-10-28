@@ -28,6 +28,8 @@ Route::prefix('users')->group(function (): void {
         ->middleware('can:users.edit');
     Route::patch('id:{user:id}/metadata-private', [MetadataController::class, 'updateOrCreate'])
         ->middleware('can:users.edit');
+    Route::patch('id:{user:id}/metadata-personal', [MetadataController::class, 'updateOrCreateUserPersonal'])
+        ->middleware('can:users.edit');
     Route::delete('id:{user:id}', [UserController::class, 'destroy'])
         ->middleware('can:users.remove');
 });

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Dtos\MetadataDto;
+use App\Dtos\MetadataPersonalListDto;
 use App\Http\Resources\MetadataResource;
 use App\Models\AttributeOption;
 use App\Services\Contracts\MetadataServiceContract;
@@ -46,5 +47,24 @@ class MetadataController extends Controller
         }
 
         return MetadataResource::make($model->metadataPrivate);
+    }
+
+    public function updateOrCreateLoggedMyPersonal(Request $request): JsonResource
+    {
+        return MetadataResource::make(
+            $this->metadataService->updateOrCreateMyPersonal(
+                MetadataPersonalListDto::instantiateFromRequest($request)
+            )
+        );
+    }
+
+    public function updateOrCreateUserPersonal(string $modelId, Request $request): JsonResource
+    {
+        return MetadataResource::make(
+            $this->metadataService->updateOrCreateUserPersonal(
+                MetadataPersonalListDto::instantiateFromRequest($request),
+                $modelId,
+            )
+        );
     }
 }

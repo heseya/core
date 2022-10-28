@@ -230,25 +230,7 @@ Profile:
       - Auth
     summary: 'edit your own user resource'
     requestBody:
-      content:
-        application/json:
-          schema:
-            properties:
-              name:
-                type: string
-                example: 'Test User'
-              consents:
-                properties:
-                  119c0a63-1ea1-4769-8d5f-169f68de5598:
-                    type: boolean
-                    example: true
-                  02b97693-857c-4fb9-9999-47400ac5fbef:
-                    type: boolean
-                    example: false
-                type: object
-              preferences:
-                $ref: '././../schemas/Auth.yml#/Preferences'
-            type: object
+      $ref: './../requests/Auth.yml#/UpdateProfile'
     responses:
       200:
         description: Success
