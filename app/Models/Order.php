@@ -46,8 +46,8 @@ class Order extends Model implements AuditableContract, SortableContract
         'shipping_price_initial',
         'shipping_price',
         'shipping_number',
-        'delivery_address_id',
-        'invoice_address_id',
+        'billing_address_id',
+        'shipping_address_id',
         'created_at',
         'buyer_id',
         'buyer_type',
@@ -55,6 +55,9 @@ class Order extends Model implements AuditableContract, SortableContract
         'paid',
         'cart_total_initial',
         'cart_total',
+        'shipping_place',
+        'invoice_requested',
+        'shipping_type',
     ];
 
     protected array $auditInclude = [
@@ -66,15 +69,15 @@ class Order extends Model implements AuditableContract, SortableContract
         'shipping_method_id',
         'shipping_price',
         'shipping_number',
-        'delivery_address_id',
-        'invoice_address_id',
+        'billing_address_id',
+        'shipping_address_id',
     ];
 
     protected array $attributeModifiers = [
         'status_id' => StatusRedactor::class,
         'shipping_method_id' => ShippingMethodRedactor::class,
-        'delivery_address_id' => AddressRedactor::class,
-        'invoice_address_id' => AddressRedactor::class,
+        'billing_address_id' => AddressRedactor::class,
+        'shipping_address_id' => AddressRedactor::class,
     ];
 
     protected array $criteria = [
@@ -105,6 +108,7 @@ class Order extends Model implements AuditableContract, SortableContract
 
     protected $casts = [
         'paid' => 'boolean',
+        'invoice_request' => 'boolean',
     ];
 
     /**
@@ -147,14 +151,14 @@ class Order extends Model implements AuditableContract, SortableContract
         return $this->belongsTo(ShippingMethod::class);
     }
 
-    public function deliveryAddress(): HasOne
+    public function shippingAddress(): HasOne
     {
-        return $this->hasOne(Address::class, 'id', 'delivery_address_id');
+        return $this->hasOne(Address::class, 'id', 'shipping_address_id');
     }
 
     public function invoiceAddress(): HasOne
     {
-        return $this->hasOne(Address::class, 'id', 'invoice_address_id');
+        return $this->hasOne(Address::class, 'id', 'billing_address_id');
     }
 
     public function deposits(): HasManyThrough

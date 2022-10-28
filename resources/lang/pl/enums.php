@@ -8,6 +8,7 @@ return [
         EventType::ORDER_CREATED => 'Zdarzenie wyzwalane po utworzeniu nowych zamówień',
         EventType::ORDER_UPDATED => 'Zdarzenie wyzwalane po aktualizacji zamówienia',
         EventType::ORDER_UPDATED_STATUS => 'Zdarzenie wyzwalane po aktualizacji statusu zamówienia',
+        EventType::ORDER_REQUESTED_SHIPPING => 'Zdarzenie wyzwalane przy tworzeniu listu przewozowego',
         EventType::PRODUCT_CREATED => 'Zdarzenie wyzwalane po utworzeniu nowych produktów',
         EventType::PRODUCT_UPDATED => 'Zdarzenie wyzwalane po aktualizacji produktu',
         EventType::PRODUCT_DELETED => 'Zdarzenie wyzwalane po usunięciu produktu',

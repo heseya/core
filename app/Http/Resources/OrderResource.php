@@ -25,8 +25,12 @@ class OrderResource extends Resource
             'shipping_price' => $this->resource->shipping_price,
             'comment' => $this->resource->comment,
             'status' => $this->resource->status ? StatusResource::make($this->resource->status) : null,
-            'shipping_method' => $this->resource->shippingMethod ?
-                ShippingMethodResource::make($this->resource->shippingMethod) : null,
+            'shipping_method_id' => $this->resource->shippingMethod ? $this->resource->shippingMethod->getKey() : null,
+            'shipping_type' => $this->resource->shippingMethod ? $this->resource->shippingMethod->shipping_type : null,
+            'invoice_requested' => $this->resource->invoice_requested,
+            'shipping_place' =>  $this->resource->shippingAddress
+                ? AddressResource::make($this->resource->shippingAddress)
+                : $this->resource->shipping_place,
             'documents' => OrderDocumentResource::collection($this->resource->documents->pluck('pivot')),
             'paid' => $this->resource->paid,
             'cart_total' => $this->resource->cart_total,
@@ -65,7 +69,7 @@ class OrderResource extends Resource
         });
 
         return [
-            'invoice_address' => AddressResource::make($this->resource->invoiceAddress),
+            'billing_address' => AddressResource::make($this->resource->invoiceAddress),
             'products' => OrderProductResource::collection($this->resource->products),
             'payments' => PaymentResource::collection($this->resource->payments),
             'shipping_number' => $this->resource->shipping_number,

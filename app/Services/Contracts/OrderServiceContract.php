@@ -21,4 +21,6 @@ interface OrderServiceContract
     public function indexUserOrder(OrderIndexDto $dto): LengthAwarePaginator;
 
     public function cartProcess(CartDto $cartDto): CartResource;
+
+    public function shippingList(Order $order, string $packageTemplateId): Order;
 }
