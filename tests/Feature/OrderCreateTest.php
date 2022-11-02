@@ -1117,6 +1117,104 @@ class OrderCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCantCreateOrderWithInactiveCoupon($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        $discount = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'code' => 'S43SA2',
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+            'active' => false,
+        ]);
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::DATE_BETWEEN,
+            'value' => [
+                'end_at' => Carbon::tomorrow(),
+                'is_in_range' => true,
+            ],
+        ]);
+
+        $discount->conditionGroups()->attach($conditionGroup);
+
+        $shippingMethod = ShippingMethod::factory()->create();
+
+        $response = $this->actingAs($this->$user)->json('POST', '/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'delivery_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+            'coupons' => [
+                $discount->code,
+            ],
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCantCreateOrderWithInactiveSale($user): void
+    {
+        $this->$user->givePermissionTo('orders.add');
+
+        $discount = Discount::factory()->create([
+            'description' => 'Testowy kupon',
+            'code' => null,
+            'value' => 10,
+            'type' => DiscountType::PERCENTAGE,
+            'target_type' => DiscountTargetType::ORDER_VALUE,
+            'target_is_allow_list' => true,
+            'active' => false,
+        ]);
+
+        $conditionGroup = ConditionGroup::create();
+
+        $conditionGroup->conditions()->create([
+            'type' => ConditionType::DATE_BETWEEN,
+            'value' => [
+                'end_at' => Carbon::tomorrow(),
+                'is_in_range' => true,
+            ],
+        ]);
+
+        $discount->conditionGroups()->attach($conditionGroup);
+
+        $shippingMethod = ShippingMethod::factory()->create();
+
+        $response = $this->actingAs($this->$user)->json('POST', '/orders', [
+            'email' => $this->email,
+            'shipping_method_id' => $shippingMethod->getKey(),
+            'delivery_address' => $this->address->toArray(),
+            'items' => [
+                [
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 1,
+                ],
+            ],
+            'sale_ids' => [
+                $discount->getKey(),
+            ],
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateOrderWithEnabledAudit($user): void
     {
         Config::set('audit.console', true);

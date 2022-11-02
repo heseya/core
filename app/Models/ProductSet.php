@@ -159,6 +159,7 @@ class ProductSet extends Model
     {
         $sales = $this->discounts
             ->filter(fn ($discount): bool => $discount->code === null
+                && $discount->active
                 && $discount->target_type->is(DiscountTargetType::PRODUCTS));
 
         if ($this->parent) {
