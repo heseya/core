@@ -1572,7 +1572,8 @@ class CartTest extends TestCase
 
         $code = $coupon ? [] : ['code' => null];
 
-        $discount = Discount::factory()->create([
+        $discount = Discount::factory()->create(
+            [
                 'description' => 'Testowy kupon nieaktywny',
                 'name' => 'Testowy kupon nieaktywny',
                 'value' => 10,
@@ -1580,14 +1581,16 @@ class CartTest extends TestCase
                 'target_type' => DiscountTargetType::ORDER_VALUE,
                 'target_is_allow_list' => true,
                 'active' => false,
-            ] + $code);
+            ] + $code
+        );
 
         $conditionGroup = ConditionGroup::create();
 
         $conditionGroup->conditions()->create([
             'type' => ConditionType::DATE_BETWEEN,
             'value' => [
-                'start_at' => Carbon::tomorrow(),
+                'start_at' => Carbon::yesterday(),
+                'end_at' => Carbon::tomorrow(),
                 'is_in_range' => true,
             ],
         ]);
@@ -1598,7 +1601,9 @@ class CartTest extends TestCase
             ],
         ] : [];
 
-        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+        $response = $this->actingAs($this->$user)->postJson(
+            '/cart/process',
+            [
                 'shipping_method_id' => $this->shippingMethod->getKey(),
                 'items' => [
                     [
@@ -1608,30 +1613,35 @@ class CartTest extends TestCase
                         'schemas' => [],
                     ],
                 ],
-            ] + $coupons);
+            ] + $coupons
+        );
 
         $result = $coupon ? ['sales' => []] : ['coupons' => []];
         $discountCode = $coupon ? ['code' => $discount->code] : [];
 
         $response
             ->assertOk()
-            ->assertJsonFragment([
+            ->assertJsonFragment(
+                [
                     'cart_total_initial' => 9200,
                     'cart_total' => 9200,
                     'shipping_price_initial' => 0,
                     'shipping_price' => 0,
                     'summary' => 9200,
-                ] + $result)
+                ] + $result
+            )
             ->assertJsonFragment([
                 'cartitem_id' => '1',
                 'price' => 4600,
                 'price_discounted' => 4600,
             ])
-            ->assertJsonMissing([
+            ->assertJsonMissing(
+                [
                     'id' => $discount->getKey(),
                     'name' => $discount->name,
                     'value' => 920,
-                ] + $discountCode);
+                ] + $discountCode
+            );
     }
 
     private function prepareDataForCouponTest($coupon): array

@@ -34,7 +34,9 @@ class DiscountConditionsCheckTest extends TestCase
     {
         parent::setUp();
 
-        $this->discount = Discount::factory()->create();
+        $this->discount = Discount::factory()->create([
+            'active' => true,
+        ]);
         $this->conditionGroup = ConditionGroup::create();
         $this->shippingMethod = ShippingMethod::factory()->create();
 

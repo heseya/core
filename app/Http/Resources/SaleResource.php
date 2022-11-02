@@ -32,6 +32,7 @@ class SaleResource extends Resource
             'target_sets' => ProductSetResource::collection($this->resource->productSets),
             'target_shipping_methods' => ShippingMethodResource::collection($this->resource->shippingMethods),
             'target_is_allow_list' => $this->resource->target_is_allow_list,
+            'active' => $this->resource->active,
         ], $this->metadataResource('sales.show_metadata_private'));
     }
 }
