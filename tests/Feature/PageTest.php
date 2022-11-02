@@ -714,7 +714,7 @@ class PageTest extends TestCase
     {
         Event::fake(PageDeleted::class);
 
-        $page = $this->page->toArray();
+        $page = $this->page->only(['name', 'slug', 'public', 'content_html', 'id']);
         unset($page['content_html']);
 
         $response = $this->patchJson('/pages/id:' . $this->page->getKey());
