@@ -33,4 +33,9 @@ class WishlistService implements WishlistServiceContract
 
         $wishlistProduct->delete();
     }
+
+    public function destroyAll(): void
+    {
+        Auth::user()->wishlistProducts()->delete();
+    }
 }
