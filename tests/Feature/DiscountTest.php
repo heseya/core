@@ -151,6 +151,7 @@ class DiscountTest extends TestCase
                 'target_shipping_methods',
                 'target_is_allow_list',
                 'metadata',
+                'active',
             ],
         ];
     }
@@ -237,7 +238,10 @@ class DiscountTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonStructure($this->expectedStructure)
-            ->assertJsonFragment(['id' => $discount->getKey()]);
+            ->assertJsonFragment([
+                'id' => $discount->getKey(),
+                'active' => true,
+            ]);
     }
 
     /**
@@ -377,7 +381,10 @@ class DiscountTest extends TestCase
             ->actingAs($this->$user)
             ->getJson("/${discountKind}/id:" . $discount->getKey())
             ->assertOk()
-            ->assertJsonFragment(['id' => $discount->getKey()]);
+            ->assertJsonFragment([
+                'id' => $discount->getKey(),
+                'active' => true,
+            ]);
     }
 
     /**
