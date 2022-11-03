@@ -174,4 +174,9 @@ class User extends Model implements
     {
         return $this->hasMany(UserLoginAttempt::class, 'user_id', 'id');
     }
+
+    public function favouriteProductSets(): MorphMany
+    {
+        return $this->morphMany(FavouriteProductSet::class, 'user');
+    }
 }

@@ -91,6 +91,7 @@ final class Exceptions extends Enum
     public const ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE = 'Not every item is available';
 
     public const PRODUCT_IS_NOT_ON_WISHLIST = 'Product is not on wishlist';
+    public const PRODUCT_SET_IS_NOT_ON_FAVOURITES_LIST = 'Product set is not on favourites list';
 
     public static function getCode(string $value): int
     {

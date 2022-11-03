@@ -226,6 +226,10 @@ paths:
     $ref: './paths/ProductSets.yml#/ProductSetsProducts'
   '/product-sets/id:{id}/products/reorder':
     $ref: './paths/ProductSets.yml#/ProductSetsProductsReorder'
+  '/product-sets/favourites':
+    $ref: './paths/ProductSets.yml#/ProductSetsFavourites'
+  '/product-sets/favourites/id:{id}':
+    $ref: './paths/ProductSets.yml#/ProductSetsFavouritesParams'
   /roles:
     $ref: './paths/Roles.yml#/Roles'
   '/roles/id:{id}':

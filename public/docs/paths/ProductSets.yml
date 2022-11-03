@@ -315,3 +315,91 @@ ProductSetsProductsReorder:
         description: No content
     security:
       - BearerAuth: [ ]
+
+ProductSetsFavourites:
+  get:
+    tags:
+      - 'Product Sets'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/ProductSets.yml#/FavouriteProductSet'
+              type: object
+    security:
+      - BearerAuth: [ ]
+  post:
+    tags:
+      - 'Product Sets'
+    requestBody:
+      $ref: './../requests/ProductSets.yml#/FavouriteProductSet'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: object
+                  $ref: './../schemas/ProductSets.yml#/FavouriteProductSet'
+              type: object
+    security:
+      - BearerAuth: [ ]
+  delete:
+    description: 'Delete all favourites product sets from logged user'
+    tags:
+      - 'Product Sets'
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]
+
+ProductSetsFavouritesParams:
+  get:
+    tags:
+      - 'Product Sets'
+    parameters:
+      - name: id
+        in: path
+        description: 'Product set id'
+        required: true
+        schema:
+          type: string
+          example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: object
+                  $ref: './../schemas/ProductSets.yml#/FavouriteProductSet'
+              type: object
+    security:
+      - BearerAuth: [ ]
+  delete:
+    tags:
+      - 'Product Sets'
+    parameters:
+      - name: id
+        in: path
+        description: 'Product set id'
+        required: true
+        schema:
+          type: string
+          example: 0006c3a0-21af-4485-b7fe-9c42233cf03a
+    responses:
+      204:
+        description: Success
+    security:
+      - BearerAuth: [ ]
