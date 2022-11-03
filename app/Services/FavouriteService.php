@@ -5,16 +5,11 @@ namespace App\Services;
 use App\Dtos\FavouriteProductSetDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Exceptions\ClientException;
-use App\Http\Resources\FavouriteProductSetResource;
 use App\Models\FavouriteProductSet;
 use App\Services\Contracts\FavouriteServiceContract;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Response;
-use Symfony\Component\HttpFoundation\Response as ResponseStatus;
 
 class FavouriteService implements FavouriteServiceContract
 {
@@ -23,11 +18,9 @@ class FavouriteService implements FavouriteServiceContract
         return Auth::user()->favouriteProductSets()->create($dto->toArray());
     }
 
-    public function showProductSet(string $id): JsonResource|JsonResponse
+    public function showProductSet(string $id): ?FavouriteProductSet
     {
-        $favouriteProductSet = Auth::user()->favouriteProductSets()->where('product_set_id', $id)->first();
-        return $favouriteProductSet ? FavouriteProductSetResource::make($favouriteProductSet)
-            : Response::json(null, ResponseStatus::HTTP_NOT_FOUND);
+        return Auth::user()->favouriteProductSets()->where('product_set_id', $id)->first();
     }
 
     public function index(): LengthAwarePaginator
@@ -38,7 +31,7 @@ class FavouriteService implements FavouriteServiceContract
     /**
      * @throws ClientException
      */
-    public function destroy(string $id): JsonResponse
+    public function destroy(string $id): void
     {
         $favouriteProductSet = Auth::user()->favouriteProductSets()->where('product_set_id', $id)->first();
 
@@ -47,14 +40,10 @@ class FavouriteService implements FavouriteServiceContract
         }
 
         $favouriteProductSet->delete();
-
-        return Response::json(null, ResponseStatus::HTTP_NO_CONTENT);
     }
 
-    public function destroyAll(): JsonResponse
+    public function destroyAll(): void
     {
         Auth::user()->favouriteProductSets()->delete();
-
-        return Response::json(null, ResponseStatus::HTTP_NO_CONTENT);
     }
 }
