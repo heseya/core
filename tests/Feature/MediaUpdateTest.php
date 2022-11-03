@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\MediaType;
+use App\Enums\ValidationError;
 use App\Models\Media;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Config;
@@ -153,7 +154,10 @@ class MediaUpdateTest extends TestCase
             ->json('PATCH', "/media/id:{$this->media->getKey()}", [
                 'slug' => null,
             ])
-            ->assertUnprocessable();
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::MEDIASLUG,
+            ]);
 
         Http::assertNothingSent();
     }
