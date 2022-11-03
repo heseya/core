@@ -44,6 +44,7 @@ class Discount extends Model implements AuditableContract
         'type' => DiscountType::class,
         'target_type' => DiscountTargetType::class,
         'target_is_allow_list' => 'boolean',
+        'active' => 'boolean',
     ];
 
     protected array $criteria = [
