@@ -963,7 +963,7 @@ class SchemaTest extends TestCase
     {
         $this->$user->givePermissionTo('products.edit');
 
-        $schema = Schema::factory()->create([
+        $schemaValues = [
             'name' => 'new schema',
             'description' => 'new schema description',
             'price' => 10,
@@ -971,7 +971,8 @@ class SchemaTest extends TestCase
             'required' => true,
             'max' => 10,
             'min' => 1,
-        ]);
+        ];
+        $schema = Schema::factory()->create($schemaValues);
 
         $item = Item::factory()->create();
         $item2 = Item::factory()->create();
@@ -991,7 +992,7 @@ class SchemaTest extends TestCase
 
         $response->assertOk();
 
-        $this->assertDatabaseHas('schemas', $schema->toArray());
+        $this->assertDatabaseHas('schemas', $schemaValues);
     }
 
     /**
