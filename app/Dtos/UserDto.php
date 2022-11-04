@@ -13,15 +13,14 @@ class UserDto extends Dto implements InstantiateFromRequest
 {
     use MapMetadata;
 
-    private string|Missing $name;
-    private string|Missing $email;
-    private string|Missing $password;
-    private array|Missing $roles;
-    private string|null|Missing $birthday_date;
-    private string|null|Missing $phone_country;
-    private string|null|Missing $phone_number;
+    protected string|Missing $name;
+    protected string|Missing $email;
+    protected array|Missing $roles;
+    protected string|null|Missing $birthday_date;
+    protected string|null|Missing $phone_country;
+    protected string|null|Missing $phone_number;
 
-    private array|Missing $metadata;
+    protected array|Missing $metadata;
 
     public static function instantiateFromRequest(FormRequest $request): self
     {
@@ -31,7 +30,6 @@ class UserDto extends Dto implements InstantiateFromRequest
         return new self(
             name: $request->input('name', new Missing()),
             email: $request->input('email', new Missing()),
-            password: $request->input('password', new Missing()),
             roles: $request->input('roles', new Missing()),
             metadata: self::mapMetadata($request),
             birthday_date: $request->input('birthday_date', new Missing()),
@@ -48,11 +46,6 @@ class UserDto extends Dto implements InstantiateFromRequest
     public function getEmail(): Missing|string
     {
         return $this->email;
-    }
-
-    public function getPassword(): Missing|string
-    {
-        return $this->password;
     }
 
     public function getRoles(): Missing|array

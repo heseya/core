@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Dtos\UserCreateDto;
 use App\Dtos\UserDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\RoleType;
@@ -36,7 +37,7 @@ class UserService implements UserServiceContract
             ->paginate(Config::get('pagination.per_page'));
     }
 
-    public function create(UserDto $dto): User
+    public function create(UserCreateDto $dto): User
     {
         if (!$dto->getRoles() instanceof Missing) {
             $roleModels = Role::whereIn('id', $dto->getRoles())->orWhere('type', RoleType::AUTHENTICATED)->get();
