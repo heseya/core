@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\MetadataType;
 use App\Enums\RoleType;
+use App\Enums\ValidationError;
 use App\Events\UserCreated;
 use App\Events\UserDeleted;
 use App\Events\UserUpdated;
@@ -1016,6 +1017,33 @@ class UserTest extends TestCase
         ]);
 
         Event::assertDispatched(UserUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateInvalidPhone($user): void
+    {
+        $this->$user->givePermissionTo('users.edit');
+
+        Event::fake([UserUpdated::class]);
+
+        $otherUser = User::factory()->create();
+
+        $response = $this->actingAs($this->$user)->patchJson(
+            '/users/id:' . $otherUser->getKey(),
+            [
+                'phone' => '123456789',
+            ],
+        );
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'key' => ValidationError::PHONE,
+            ]);
+
+        Event::assertNotDispatched(UserUpdated::class);
     }
 
     /**
