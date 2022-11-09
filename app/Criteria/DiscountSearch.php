@@ -9,11 +9,11 @@ class DiscountSearch extends Criterion
 {
     public function query(Builder $query): Builder
     {
-        return $query->where(function (Builder $query): Builder {
-            return $query->where('description', '%' . $this->value . '%')
-                ->orWhere('code', '%' . $this->value . '%')
-                ->orWhere('type', '%' . $this->value . '%')
-                ->orWhere('discount', '%' . $this->value . '%');
+        return $query->where(function (Builder $query): void {
+            $query->where('description', 'LIKE', '%' . $this->value . '%')
+                ->orWhere('code', 'LIKE', '%' . $this->value . '%')
+                ->orWhere('type', 'LIKE', '%' . $this->value . '%')
+                ->orWhere('value', 'LIKE', '%' . $this->value . '%');
         });
     }
 }
