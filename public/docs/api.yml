@@ -368,6 +368,8 @@ paths:
     $ref: './paths/Banners.yml#/Banners'
   '/banners/id:{id}':
     $ref: './paths/Banners.yml#/BannersParam'
+  '/banners/{slug}':
+    $ref: './paths/Banners.yml#/BannersSlug'
   '/google-categories/{lang}':
     $ref: './paths/GoogleCategories.yml#/GoogleCategories'
   '/wishlist':
