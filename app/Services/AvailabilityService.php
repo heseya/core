@@ -53,14 +53,17 @@ class AvailabilityService implements AvailabilityServiceContract
         $option->update($this->getCalculateOptionAvailability($option));
     }
 
+    public function calculateSchemaAvailability(Schema $schema): void
+    {
+        $schema->update($this->getCalculateSchemaAvailability($schema));
+    }
+
     /**
      * @return array{available: bool, shipping_time: (int|null), shipping_date: (Carbon|null)}
      */
     public function getCalculateOptionAvailability(Option $option): array
     {
-        $now = Carbon::now();
-
-        // 0. If option don't have any related items is always avaiable
+        // If option don't have any related items is always avaiable
         $available = true;
         $shipping_time = null;
         $shipping_date = null;
@@ -68,7 +71,7 @@ class AvailabilityService implements AvailabilityServiceContract
         foreach ($option->items as $item) {
             // If item required quantity is satisfied by limited stocks
             if ($item->quantity >= $item->pivot->required_quantity) {
-                // 1. If item doesn't have shipping time or date
+                // If item doesn't have shipping time or date
                 if ($item->shipping_time === null && $item->shipping_date === null) {
                     continue;
                 }
@@ -90,32 +93,18 @@ class AvailabilityService implements AvailabilityServiceContract
             }
 
             if ($item->quantity >= $item->pivot->required_quantity) {
-                if (
-                    $item->shipping_date !== null &&
-                    ($now->isBefore($item->shipping_date) || $now->isSameDay($item->shipping_date))
-                ) {
-                    if ($shipping_date === null || ($shipping_date instanceof Carbon &&
-                        ($shipping_date->isBefore($item->shipping_date) ||
-                            $shipping_date->isSameDay($item->shipping_date)))
-                    ) {
-                        $shipping_date = $item->shipping_date;
-                    }
-                }
-
+                $shipping_date = $this->compareShippingDate(
+                    $shipping_date,
+                    $item->shipping_date,
+                );
                 continue;
             }
 
-            if (
-                $item->unlimited_stock_shipping_date !== null &&
-                ($now->isBefore($item->unlimited_stock_shipping_date) ||
-                    $now->isSameDay($item->unlimited_stock_shipping_date))
-            ) {
-                if ($shipping_date === null || ($shipping_date instanceof Carbon &&
-                    ($shipping_date->isBefore($item->unlimited_stock_shipping_date) ||
-                        $shipping_date->isSameDay($item->unlimited_stock_shipping_date)))
-                ) {
-                    $shipping_date = $item->unlimited_stock_shipping_date;
-                }
+            if ($item->unlimited_stock_shipping_date !== null) {
+                $shipping_date = $this->compareShippingDate(
+                    $shipping_date,
+                    $item->unlimited_stock_shipping_date,
+                );
                 continue;
             }
 
@@ -133,36 +122,46 @@ class AvailabilityService implements AvailabilityServiceContract
         ];
     }
 
-    public function calculateSchemaAvailability(Schema $schema): void
+    /**
+     * @return array{available: bool, shipping_time: (int|null), shipping_date: (Carbon|null)}
+     */
+    public function getCalculateSchemaAvailability(Schema $schema): array
     {
-        if (!$schema->type->is(SchemaType::SELECT)) {
-            $schema->available = true;
-            $schema->shipping_time = null;
-            $schema->shipping_date = null;
-
-            $schema->save();
-        } elseif (
-            $schema->available &&
-            $schema->options->every(fn ($option) => !$option->available)
-        ) {
-            $schema->available = false;
-            $schema->shipping_time = null;
-            $schema->shipping_date = null;
-
-            $schema->save();
-        } elseif (
-            !$schema->available &&
-            $schema->options->some(fn ($option) => $option->available)
-        ) {
-            $schema->available = true;
-            $schema->fill(
-                $this->depositService->getMinShippingTimeDateForOptions(
-                    $schema->options,
-                ),
-            );
-
-            $schema->save();
+        if ($schema->type->isNot(SchemaType::SELECT)) {
+            return [
+                'available' => true,
+                'shipping_time' => null,
+                'shipping_date' => null,
+            ];
         }
+
+        // If option don't have any related options is always unavailable
+        $available = false;
+        $shipping_time = null;
+        $shipping_date = null;
+
+        foreach ($schema->options as $option) {
+            $availability = $this->getCalculateOptionAvailability($option);
+            if ($option->disabled || !$availability['available']) {
+                continue;
+            }
+
+            $available = true;
+            if ($shipping_time === null || $shipping_time > $availability['shipping_time']) {
+                $shipping_time = $availability['shipping_time'];
+            }
+            $shipping_date = $this->compareShippingDate(
+                $shipping_date,
+                $availability['shipping_date'],
+                true,
+            );
+        }
+
+        return [
+            'available' => $available,
+            'shipping_time' => $shipping_time,
+            'shipping_date' => $shipping_date,
+        ];
     }
 
     public function calculateProductAvailability(Product $product): void
@@ -279,6 +278,20 @@ class AvailabilityService implements AvailabilityServiceContract
                 return $item->first()->quantity >= $requiredAmount;
             }
         );
+    }
+
+    protected function compareShippingDate(
+        \Carbon\Carbon|null $shippingDate1,
+        \Carbon\Carbon|null $shippingDate2,
+        bool $isAfter = false,
+    ): \Carbon\Carbon|null {
+        if ($shippingDate1 === null || ($shippingDate1 instanceof Carbon &&
+            ((!$isAfter && $shippingDate1->isBefore($shippingDate2)) ||
+                ($isAfter && $shippingDate1->isAfter($shippingDate2))))) {
+            return $shippingDate2;
+        }
+
+        return $shippingDate1;
     }
 
     private function calculateProductDeposits(

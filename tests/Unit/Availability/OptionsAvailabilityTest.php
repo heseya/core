@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 
 class OptionsAvailabilityTest extends TestCase
 {
-    use ItemCreate;
+    use AvailabilityUntiles;
 
     protected AvailabilityService $availabilityService;
 
