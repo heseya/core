@@ -25,6 +25,8 @@ return [
     'phone' => 'Telefon kontaktowy',
     'regards' => 'Pozdrawiamy',
     'team' => 'zespół :team',
+    'order-created' => 'Dziękujemy za złożenie zamówienia.
+        Otrzymasz osobną wiadomość e-mail, gdy status ulegnie zmianie.',
 
     // status changed
     'subject-status-changed' => 'Status zamówienia :number został zmieniony',
@@ -32,6 +34,7 @@ return [
     'status' => 'Aktualny status to',
 
     // password reset
+    'subject-password-reset' => 'Wniosek o zmianę hasła',
     'hello' => 'Witaj',
     'reset-request' => 'Otrzymaliśmy informację o potrzebie zmiany hasła do Twojego konta.',
     'link' => 'Aby zmienić hasło kliknij w link',
@@ -40,6 +43,7 @@ return [
         a Twoje hasło dostępu pozostanie bez zmian.',
 
     // user registered
+    'subject-user-registered' => 'Witamy na pokładzie! Konto utworzono',
     'register-thanks' => 'Dziękujemy za założenie konta na :name',
     'benefits' => 'Logując się na swoje konto, uzyskasz dostęp do osobistego panelu klienta,
         gdzie będziesz widzieć wszystkie swoje zamówienia wraz z informacją o statusie ich realizacji.

@@ -344,16 +344,58 @@ class ProductSearchDatabaseTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-//    public function testSearchByParentSet($user): void
-//    {
-//        $this->$user->givePermissionTo('products.show');
-//
-//        $this
-//            ->getProductsByParentSet($this->$user, true, $product)
-//            ->assertOk()
-//            ->assertJsonCount(1, 'data')
-//            ->assertJsonFragment(['id' => $product->getKey()]);
-//    }
+    public function testSearchByParentSet($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $this
+            ->getProductsByParentSet($this->$user, true, $product)
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $product->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testSearchByGrandParentSet($user): void
+    {
+        $this->$user->givePermissionTo('products.show');
+
+        $grandParentSet = ProductSet::factory()->create([
+            'public' => true,
+        ]);
+
+        $parentSet = ProductSet::factory()->create([
+            'parent_id' => $grandParentSet->getKey(),
+            'public' => true,
+        ]);
+
+        $childSet = ProductSet::factory()->create([
+            'parent_id' => $parentSet->getKey(),
+            'public' => true,
+        ]);
+
+        $productRef = Product::factory()->create([
+            'public' => true,
+        ]);
+
+        // Product not in set
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $childSet->products()->attach($productRef);
+
+        $this->actingAs($this->$user)
+            ->json('GET', '/products', ['sets' => [$grandParentSet->slug]])
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $productRef->getKey()]);
+        // + 1 additional query per nesting level
+        $this->assertQueryCountLessThan(20);
+    }
+
     /**
      * @dataProvider authProvider
      */
@@ -370,19 +412,19 @@ class ProductSearchDatabaseTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-//    public function testSearchByParentSetWithPrivateChild($user): void
-//    {
-//        $this->$user->givePermissionTo([
-//            'products.show',
-//            'product_sets.show_hidden',
-//        ]);
-//
-//        $this
-//            ->getProductsByParentSet($this->$user, false, $product)
-//            ->assertOk()
-//            ->assertJsonCount(1, 'data')
-//            ->assertJsonFragment(['id' => $product->getKey()]);
-//    }
+    public function testSearchByParentSetWithPrivateChild($user): void
+    {
+        $this->$user->givePermissionTo([
+            'products.show',
+            'product_sets.show_hidden',
+        ]);
+
+        $this
+            ->getProductsByParentSet($this->$user, false, $product)
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(['id' => $product->getKey()]);
+    }
 
     /**
      * @dataProvider authProvider

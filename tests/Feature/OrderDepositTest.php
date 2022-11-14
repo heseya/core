@@ -173,7 +173,7 @@ class OrderDepositTest extends TestCase
             ->json('PATCH', "/orders/id:{$order->getKey()}/status", [
                 'status_id' => $status->getKey(),
             ])
-            ->assertOk();
+            ->assertNoContent();
 
         $this->assertDatabaseHas('orders', [
             'id' => $order->getKey(),
@@ -564,7 +564,7 @@ class OrderDepositTest extends TestCase
             ->json('PATCH', "/orders/id:{$order->getKey()}/status", [
                 'status_id' => $status->getKey(),
             ])
-            ->assertOk();
+            ->assertNoContent();
 
         $this->assertDatabaseHas('orders', [
             'id' => $order->getKey(),
