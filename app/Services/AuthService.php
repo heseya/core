@@ -14,6 +14,7 @@ use App\Enums\TokenType;
 use App\Events\PasswordReset;
 use App\Events\TfaInit;
 use App\Events\TfaSecurityCode as TfaSecurityCodeEvent;
+use App\Events\UserCreated;
 use App\Exceptions\AuthException;
 use App\Exceptions\ClientException;
 use App\Exceptions\TFAException;
@@ -28,9 +29,11 @@ use App\Notifications\TFASecurityCode;
 use App\Notifications\UserRegistered;
 use App\Services\Contracts\AuthServiceContract;
 use App\Services\Contracts\ConsentServiceContract;
+use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UserLoginAttemptServiceContract;
+use Heseya\Dto\Missing;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -49,6 +52,7 @@ class AuthService implements AuthServiceContract
         protected OneTimeSecurityCodeContract $oneTimeSecurityCodeService,
         protected ConsentServiceContract $consentService,
         protected UserLoginAttemptServiceContract $userLoginAttemptService,
+        private MetadataServiceContract $metadataService,
     ) {
     }
 
@@ -305,9 +309,15 @@ class AuthService implements AuthServiceContract
 
         $user->preferences()->associate($preferences);
 
+        if (!($dto->getMetadataPersonal() instanceof Missing)) {
+            $this->metadataService->sync($user, $dto->getMetadataPersonal());
+        }
+
         $user->save();
 
         $user->notify(new UserRegistered());
+
+        UserCreated::dispatch($user);
 
         return $user;
     }

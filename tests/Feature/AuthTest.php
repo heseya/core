@@ -2276,6 +2276,70 @@ class AuthTest extends TestCase
         ]);
     }
 
+    public function testRegisterWithMetadata(): void
+    {
+        Notification::fake();
+
+        $role = Role::where('type', RoleType::UNAUTHENTICATED)->firstOrFail();
+        $role->givePermissionTo('auth.register');
+
+        $email = $this->faker->email();
+        $this->json('POST', '/register', [
+            'name' => 'Registered user',
+            'email' => $email,
+            'password' => '3yXtFWHKCKJjXz6geJuTGpvAscGBnGgR',
+            'metadata' => [
+                'meta' => 'value',
+            ],
+            'metadata_private' => [
+                'meta_priv' => 'test',
+            ],
+            'metadata_personal' => [
+                'meta_personal' => 'test2',
+            ],
+        ])
+            ->assertCreated()
+            ->assertJsonFragment([
+                'metadata_personal' => [
+                    'meta_personal' => 'test2',
+                ],
+            ])
+            ->assertJsonMissing([
+                'metadata' => [
+                    'meta' => 'value',
+                ],
+            ])->assertJsonMissing([
+                'metadata_private' => [
+                    'meta_priv' => 'test',
+                ],
+            ]);
+
+        $user = User::where('email', $email)->first();
+
+        $this->assertDatabaseMissing('metadata', [
+            'model_id' => $user->getKey(),
+            'name' => 'meta',
+            'value' => 'value',
+        ]);
+
+        $this->assertDatabaseMissing('metadata', [
+            'model_id' => $user->getKey(),
+            'name' => 'meta_priv',
+            'value' => 'test',
+        ]);
+
+        $this->assertDatabaseHas('metadata_personals', [
+            'model_id' => $user->getKey(),
+            'name' => 'meta_personal',
+            'value' => 'test2',
+        ]);
+
+        Notification::assertSentTo(
+            [$user],
+            UserRegistered::class,
+        );
+    }
+
     private function decryptData(string $data): array|false
     {
         $decoded = base64_decode($data);

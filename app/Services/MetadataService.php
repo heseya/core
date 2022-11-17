@@ -19,7 +19,11 @@ class MetadataService implements MetadataServiceContract
     public function sync(Model|Role $model, array $metadata): void
     {
         foreach ($metadata as $meta) {
-            $this->updateOrCreate($model, $meta);
+            if ($meta instanceof MetadataPersonalDto) {
+                $this->processMetadata($model, $meta, 'metadataPersonal');
+            } else {
+                $this->updateOrCreate($model, $meta);
+            }
         }
     }
 
