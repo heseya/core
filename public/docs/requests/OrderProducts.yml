@@ -1,0 +1,19 @@
+OrderProductUrls:
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          is_delivered:
+            type: boolean
+            example: true
+          urls:
+            type: object
+            description: 'Object keys are link names and values are links'
+            properties:
+              link1:
+                type: string
+                example: https://example.com
+              link2:
+                type: string
+                example: https://example2.com

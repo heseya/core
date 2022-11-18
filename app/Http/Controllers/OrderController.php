@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
+use App\Dtos\OrderProductUpdateDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Events\AddOrderDocument;
 use App\Events\ItemUpdatedQuantity;
@@ -16,6 +17,7 @@ use App\Http\Requests\CartRequest;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderDocumentRequest;
 use App\Http\Requests\OrderIndexRequest;
+use App\Http\Requests\OrderProductUpdateRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Requests\SendDocumentRequest;
@@ -25,6 +27,7 @@ use App\Http\Resources\OrderPublicResource;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Models\OrderDocument;
+use App\Models\OrderProduct;
 use App\Models\Status;
 use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DocumentServiceContract;
@@ -268,5 +271,17 @@ class OrderController extends Controller
     public function cartProcess(CartRequest $request): JsonResource
     {
         return CartResource::make($this->orderService->cartProcess(CartDto::instantiateFromRequest($request)));
+    }
+
+    public function updateOrderProduct(
+        OrderProductUpdateRequest $request,
+        Order $order,
+        OrderProduct $product,
+    ): JsonResponse {
+        $this->orderService->processOrderProductUrls(
+            OrderProductUpdateDto::instantiateFromRequest($request),
+            $product,
+        );
+        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

@@ -6,6 +6,8 @@ use App\Dtos\AddressDto;
 use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
+use App\Dtos\OrderProductUpdateDto;
+use App\Dtos\OrderProductUrlDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\SchemaType;
 use App\Events\OrderCreated;
@@ -335,5 +337,26 @@ class OrderService implements OrderServiceContract
         }
 
         return !$itemsToRemove || $this->depositService->removeItemsFromWarehouse($itemsToRemove, $orderProduct);
+    }
+
+    public function processOrderProductUrls(OrderProductUpdateDto $dto, OrderProduct $product): void
+    {
+        $product->update([
+            'is_delivered' => $dto->getIsDelivered(),
+        ]);
+
+        if (!$dto->getUrls() instanceof Missing) {
+            /** @var OrderProductUrlDto $url */
+            foreach ($dto->getUrls() as $url) {
+                if ($url->getUrl() === null) {
+                    $product->urls()->where('name', $url->getName())->delete();
+                    continue;
+                }
+                $product->urls()->updateOrCreate(
+                    ['name' => $url->getName()],
+                    $url->toArray(),
+                );
+            }
+        }
     }
 }
