@@ -721,6 +721,9 @@ class DiscountService implements DiscountServiceContract
     private function checkConditionForProduct(DiscountCondition $condition): bool
     {
         return match ($condition->type->value) {
+            ConditionType::ORDER_VALUE => false,
+            ConditionType::PRODUCT_IN_SET => false,
+            ConditionType::PRODUCT_IN => false,
             ConditionType::USER_IN_ROLE => $this->checkConditionUserInRole($condition),
             ConditionType::USER_IN => $this->checkConditionUserIn($condition),
             ConditionType::DATE_BETWEEN => $this->checkConditionDateBetween($condition),
@@ -728,7 +731,9 @@ class DiscountService implements DiscountServiceContract
             ConditionType::MAX_USES => $this->checkConditionMaxUses($condition),
             ConditionType::MAX_USES_PER_USER => $this->checkConditionMaxUsesPerUser($condition),
             ConditionType::WEEKDAY_IN => $this->checkConditionWeekdayIn($condition),
-            default => false,
+            ConditionType::CART_LENGTH => false,
+            ConditionType::COUPONS_COUNT => $this->checkConditionCouponsCount($condition, 0),
+            // don't add default false, better to crash site than got unexpected behaviour
         };
     }
 
@@ -743,7 +748,7 @@ class DiscountService implements DiscountServiceContract
         );
         $orderProduct->price -= $appliedDiscount;
 
-        # Dodanie zniżki do orderProduct
+        // Adding a discount to orderProduct
         $this->attachDiscount($orderProduct, $discount, $appliedDiscount);
     }
 
