@@ -215,3 +215,30 @@ OrderProductUrl:
     url:
       type: string
       example: https://example.com
+
+OrderProductPublic:
+  type: object
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    quantity:
+      type: number
+      example: '12.4'
+    price:
+      type: number
+      example: '199.99'
+    price_initial:
+      type: number
+      example: '299.99'
+    schemas:
+      type: array
+      items:
+        $ref: '#/OrderSchema'
+    shipping_digital:
+      type: boolean
+      example: true
+    urls:
+      type: array
+      items:
+        $ref: '#/OrderProductUrl'

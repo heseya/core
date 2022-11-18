@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
+use App\Dtos\OrderProductSearchDto;
 use App\Dtos\OrderProductUpdateDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Events\AddOrderDocument;
@@ -17,12 +18,14 @@ use App\Http\Requests\CartRequest;
 use App\Http\Requests\OrderCreateRequest;
 use App\Http\Requests\OrderDocumentRequest;
 use App\Http\Requests\OrderIndexRequest;
+use App\Http\Requests\OrderProductSearchRequest;
 use App\Http\Requests\OrderProductUpdateRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Requests\SendDocumentRequest;
 use App\Http\Resources\CartResource;
 use App\Http\Resources\OrderDocumentResource;
+use App\Http\Resources\OrderProductResourcePublic;
 use App\Http\Resources\OrderPublicResource;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
@@ -283,5 +286,12 @@ class OrderController extends Controller
             $product,
         );
         return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    public function myOrderProducts(OrderProductSearchRequest $request): JsonResource
+    {
+        return OrderProductResourcePublic::collection(
+            $this->orderService->indexMyOrderProducts(OrderProductSearchDto::instantiateFromRequest($request))
+        );
     }
 }
