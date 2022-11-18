@@ -63,7 +63,7 @@ class ProductService implements ProductServiceContract
         DB::commit();
         ProductUpdated::dispatch($product);
         // @phpstan-ignore-next-line
-        Product::where($product->getKeyName(), $product->getKey())->searchable();
+        Product::query()->where($product->getKeyName(), $product->getKey())->searchable();
 
         return $product;
     }
@@ -85,7 +85,7 @@ class ProductService implements ProductServiceContract
 
         DB::commit();
 
-        Product::where('id', $productId)->withTrashed()->first()->unsearchable();
+        Product::query()->where('id', $productId)->withTrashed()->first()->unsearchable();
     }
 
     public function getMinMaxPrices(Product $product): array
