@@ -2,15 +2,22 @@
 
 namespace Tests\Feature;
 
+use App\Events\SendOrderUrls;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use App\Notifications\SendUrls;
+use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class OrderProductTest extends TestCase
 {
+    use WithFaker;
+
     private Order $order;
     private OrderProduct $digitalProduct;
     private OrderProduct $product;
@@ -33,6 +40,7 @@ class OrderProductTest extends TestCase
         $this->order = Order::factory()->create([
             'shipping_method_id' => $shippingMethod->getKey(),
             'status_id' => $status->getKey(),
+            'email' => $this->faker->freeEmail,
         ]);
 
         $this->user->orders()->save($this->order);
@@ -104,5 +112,68 @@ class OrderProductTest extends TestCase
                 'id' => $this->product->getKey(),
                 'shipping_digital' => false,
             ]);
+    }
+
+    public function testOrderSendUrlsUnauthorized(): void
+    {
+        $this
+            ->json('POST', '/orders/id:' . $this->order->getKey() . '/send-urls')
+            ->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOrderNotSendUrls($user): void
+    {
+        $this->$user->givePermissionTo('orders.show_details');
+
+        Event::fake([SendOrderUrls::class]);
+        Mail::fake();
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'POST',
+                '/orders/id:' . $this->order->getKey() . '/send-urls'
+            )->assertOk();
+
+        $this->assertDatabaseHas('order_products', [
+            'id' => $this->digitalProduct->getKey(),
+            'is_delivered' => false,
+        ]);
+
+        Event::assertNotDispatched(SendOrderUrls::class);
+        Mail::assertNotSent(SendUrls::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testOrderSendUrls($user): void
+    {
+        $this->$user->givePermissionTo('orders.show_details');
+
+        $this->digitalProduct->urls()->create([
+            'name' => 'first_url',
+            'url' => 'https://example-first-url.com',
+        ]);
+
+        Event::fake([SendOrderUrls::class]);
+        Mail::fake();
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'POST',
+                '/orders/id:' . $this->order->getKey() . '/send-urls'
+            )->assertOk();
+
+        $this->assertDatabaseHas('order_products', [
+            'id' => $this->digitalProduct->getKey(),
+            'is_delivered' => true,
+        ]);
+
+        Event::assertDispatched(SendOrderUrls::class);
     }
 }

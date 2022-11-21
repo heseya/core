@@ -31,6 +31,7 @@ use App\Events\SaleCreated;
 use App\Events\SaleDeleted;
 use App\Events\SaleUpdated;
 use App\Events\SendOrderDocument;
+use App\Events\SendOrderUrls;
 use App\Events\SuccessfulLoginAttempt;
 use App\Events\TfaInit;
 use App\Events\TfaRecoveryCodesChanged;
@@ -107,6 +108,7 @@ class EventServiceProvider extends ServiceProvider
         OrderUpdatedPaid::class,
         OrderUpdatedShippingNumber::class,
         OrderUpdatedStatus::class,
+        SendOrderUrls::class,
         PageCreated::class,
         PageDeleted::class,
         PageUpdated::class,

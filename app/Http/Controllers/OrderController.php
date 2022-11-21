@@ -294,4 +294,11 @@ class OrderController extends Controller
             $this->orderService->indexMyOrderProducts(OrderProductSearchDto::instantiateFromRequest($request))
         );
     }
+
+    public function sendUrls(Order $order): JsonResponse
+    {
+        $this->orderService->sendUrls($order);
+
+        return Response::json(null, JsonResponse::HTTP_OK);
+    }
 }

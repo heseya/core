@@ -1,0 +1,55 @@
+<mjml>
+    <mj-body background-color="#fff">
+        <mj-section background-color="#fff" background-repeat="repeat" text-align="center" padding-top="50px">
+            <mj-column>
+                <mj-image height="30px" width="100px" src="{{ $settingsService->getSetting('mail_logo')->value ?? $settingsService->getSetting('store_logo')->value }}"></mj-image>
+            </mj-column>
+        </mj-section>
+        <mj-section background-color="#fff" background-repeat="repeat" padding-bottom="0px" text-align="center">
+            <mj-column>
+                <mj-text align="center" color="#000" font-family="Arial, sans-serif" font-size="26px" line-height="28px" padding-bottom="20px" padding-top="0px" padding="10px 25px" text-transform="uppercase" font-weight="bold">Twoja lista cyfrowych produktów z zamówienia {{ $order->code }}</mj-text>
+            </mj-column>
+        </mj-section>
+        <mj-section background-color="#fff" background-repeat="repeat" background-size="auto" padding-bottom="0px" padding-top="30px" padding="20px 0" text-align="center">
+            <mj-column>
+                <mj-text align="left" color="#55575d" font-family="Arial, sans-serif" font-size="30px" line-height="22px" padding-bottom="10px" padding-top="10px" padding="10px 25px">
+                    <p style="line-height: 30px; margin: 10px 0; text-align: center; color:#000; font-size:22px; font-family:Arial,sans-serif">Poniżej znajduje się lista zakupionych produktów z zamówienia <b>{{ $order->code }}</b>, wraz z linkami do ich pobrania.</p>
+                </mj-text>
+            </mj-column>
+        </mj-section>
+        <mj-section background-color="#fff" padding-bottom="0">
+            <mj-column>
+                <mj-text align="left" color="#333" font-family="Arial, sans-serif" font-size="16px" line-height="22px" padding-bottom="0" padding-top="10px" padding="10px 25px">
+                    <p style="text-align: center; background-color: #244d8b; color: #fff; font-size:14px">ZAMÓWIONE PRODUKTY:</p>
+                </mj-text>
+                <mj-table>
+                    @foreach ($products as $product)
+                    <tr style='border-bottom: 2px #244d8b solid; line-height: 38px;'>
+                        <td style="padding: 0 15px 0 0;">{{ $product->name }}</td>
+                    </tr>
+                    @foreach ($product->urls as $url)
+                    <tr style='line-height: 38px;'>
+                        <td style="padding: 0 15px 0 0;">{{ $url->name }}</td>
+                        <td style="padding: 0 15px 0 0; text-align: right"><a href="{{ $url->url }}">{{ $url->url }}</a></td>
+                    </tr>
+                    @endforeach
+                    @endforeach
+                </mj-table>
+            </mj-column>
+        </mj-section>
+
+        <mj-section background-color="#fff" background-repeat="repeat" background-size="auto" padding-bottom="0px" text-align="center">
+            <mj-column>
+                <mj-text align="right" color="#000" font-family="Arial, sans-serif" font-size="14px" line-height="22px">
+                    <p>Pozdrawiamy,<br />Zespół {{ $settingsService->getSetting('store_name')->value }}</p>
+                </mj-text>
+            </mj-column>
+        </mj-section>
+
+        <mj-section background-color="#fff" background-repeat="repeat">
+            <mj-column>
+                <mj-text align="center" color="#666" font-family="Arial, sans-serif" font-size="12px" line-height="17px"> {!! $settingsService->getSetting('mail_footer')->value !!} </mj-text>
+            </mj-column>
+        </mj-section>
+    </mj-body>
+</mjml>

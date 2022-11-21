@@ -28,4 +28,6 @@ interface OrderServiceContract
     public function processOrderProductUrls(OrderProductUpdateDto $dto, OrderProduct $product): void;
 
     public function indexMyOrderProducts(OrderProductSearchDto $dto): LengthAwarePaginator;
+
+    public function sendUrls(Order $order): void;
 }
