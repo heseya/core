@@ -68,7 +68,7 @@ Orders:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Orders.yml#/OrderList'
+                    $ref: './../schemas/Orders.yml#/Order'
               type: object
     security:
       - BearerAuth: [ ]

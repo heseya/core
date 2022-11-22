@@ -133,6 +133,26 @@ class ItemService implements ItemServiceContract
         return $products;
     }
 
+    public function checkHasItemType(Collection $products, ?bool $physical, ?bool $digital): bool
+    {
+        $hasPhysical = false;
+        $hasDigital = false;
+
+        /** @var Product $product */
+        foreach ($products as $product) {
+            if ($product->shipping_digital) {
+                $hasDigital = true;
+            } else {
+                $hasPhysical = true;
+            }
+        }
+
+        $physicalCheck = $physical === null || $hasPhysical === $physical;
+        $digitalCheck = $digital === null || $hasDigital === $digital;
+
+        return $physicalCheck && $digitalCheck;
+    }
+
     public function store(ItemDto $dto): Item
     {
         $item = Item::create($dto->toArray());

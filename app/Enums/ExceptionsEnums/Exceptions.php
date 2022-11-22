@@ -92,6 +92,7 @@ final class Exceptions extends Enum
     public const SERVER_TRANSACTION_ERROR = 'Unexpected error occurred during the database transaction.';
 
     public const ORDER_NOT_ENOUGH_ITEMS_IN_WAREHOUSE = 'Not every item is available';
+    public const ORDER_SHIPPING_METHOD_TYPE_MISMATCH = 'Selected shipping methods don\'t match selected product types';
 
     public const PRODUCT_IS_NOT_ON_WISHLIST = 'Product is not on wishlist';
 

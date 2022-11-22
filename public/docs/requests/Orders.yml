@@ -5,9 +5,7 @@ OrderCreate:
         type: object
         required:
           - email
-          - shipping_method_id
           - items
-          - delivery_address
           - billing_address
         properties:
           email:
@@ -17,6 +15,9 @@ OrderCreate:
             type: string
             example: 'asap plz'
           shipping_method_id:
+            type: string
+            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+          digital_shipping_method_id:
             type: string
             example: 026bc5f6-8373-4aeb-972e-e78d72a67121
           items:
@@ -73,8 +74,16 @@ OrderUpdate:
           shipping_number:
             type: string
             example: '630552359128340015809770'
+          shipping_method_id:
+            type: string
+            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+          digital_shipping_method_id:
+            type: string
+            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
           shipping_place:
             $ref: './../schemas/Addresses.yml#/Address'
           billing_address:
             $ref: './../schemas/Addresses.yml#/Address'
+          invoice_requested:
+            type: boolean
         type: object

@@ -9,7 +9,9 @@ use App\Events\OrderUpdatedShippingNumber;
 use App\Listeners\WebHookEventListener;
 use App\Models\Address;
 use App\Models\Order;
+use App\Models\OrderProduct;
 use App\Models\PackageTemplate;
+use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Models\WebHook;
@@ -54,6 +56,14 @@ class OrderUpdateTest extends TestCase
             'billing_address_id' => $this->addressInvoice->getKey(),
             'shipping_address_id' => $this->addressDelivery->getKey(),
         ]);
+
+        Product::factory()->create([
+            'public' => true,
+        ]);
+
+        $this->order->products()->save(
+            OrderProduct::factory()->make(),
+        );
     }
 
     public function testUpdateUnauthorized(): void
@@ -750,37 +760,6 @@ class OrderUpdateTest extends TestCase
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
             'billing_address_id' => null,
-        ]);
-
-        Event::assertDispatched(OrderUpdated::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
-    public function testUpdateOrderWithShippingMethodTypeNone($user): void
-    {
-        $this->$user->givePermissionTo('orders.edit');
-
-        Event::fake([OrderUpdated::class]);
-
-        $shippingMethod = ShippingMethod::factory()->create([
-            'public' => true,
-            'shipping_type' => ShippingType::NONE,
-        ]);
-        $response = $this->actingAs($this->$user)->patchJson('/orders/id:' . $this->order->getKey(), [
-            'shipping_method_id' => $shippingMethod->getKey(),
-            'invoice_requested' => true,
-        ]);
-
-        $response->assertOk();
-
-        $this->assertDatabaseHas('orders', [
-            'id' => $this->order->getKey(),
-            'invoice_requested' => true,
-            'shipping_place' => null,
-            'shipping_address_id' => null,
-            'shipping_type' => ShippingType::NONE,
         ]);
 
         Event::assertDispatched(OrderUpdated::class);

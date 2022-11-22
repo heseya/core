@@ -43,6 +43,7 @@ class Order extends Model implements AuditableContract, SortableContract
         'comment',
         'status_id',
         'shipping_method_id',
+        'digital_shipping_method_id',
         'shipping_price_initial',
         'shipping_price',
         'shipping_number',
@@ -67,6 +68,7 @@ class Order extends Model implements AuditableContract, SortableContract
         'comment',
         'status_id',
         'shipping_method_id',
+        'digital_shipping_method_id',
         'shipping_price',
         'shipping_number',
         'billing_address_id',
@@ -76,6 +78,7 @@ class Order extends Model implements AuditableContract, SortableContract
     protected array $attributeModifiers = [
         'status_id' => StatusRedactor::class,
         'shipping_method_id' => ShippingMethodRedactor::class,
+        'digital_shipping_method_id' => ShippingMethodRedactor::class,
         'billing_address_id' => AddressRedactor::class,
         'shipping_address_id' => AddressRedactor::class,
     ];
@@ -84,6 +87,7 @@ class Order extends Model implements AuditableContract, SortableContract
         'search' => OrderSearch::class,
         'status_id',
         'shipping_method_id',
+        'digital_shipping_method_id',
         'code' => Like::class,
         'email' => Like::class,
         'buyer_id',
@@ -131,9 +135,13 @@ class Order extends Model implements AuditableContract, SortableContract
 
     public function getPayableAttribute(): bool
     {
+        $paymentMethodCount = $this->shippingMethod?->paymentMethods->count()
+            ?? $this->digitalShippingMethod?->paymentMethods->count()
+            ?? 0;
+
         return !$this->paid &&
             !$this->status->cancel &&
-            $this->shippingMethod->paymentMethods->count() > 0;
+            $paymentMethodCount > 0;
     }
 
     public function isPaid(): bool
@@ -148,7 +156,12 @@ class Order extends Model implements AuditableContract, SortableContract
 
     public function shippingMethod(): BelongsTo
     {
-        return $this->belongsTo(ShippingMethod::class);
+        return $this->belongsTo(ShippingMethod::class, 'shipping_method_id');
+    }
+
+    public function digitalShippingMethod(): BelongsTo
+    {
+        return $this->belongsTo(ShippingMethod::class, 'digital_shipping_method_id');
     }
 
     public function shippingAddress(): HasOne

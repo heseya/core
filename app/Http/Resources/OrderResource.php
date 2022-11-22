@@ -25,7 +25,10 @@ class OrderResource extends Resource
             'shipping_price' => $this->resource->shipping_price,
             'comment' => $this->resource->comment,
             'status' => $this->resource->status ? StatusResource::make($this->resource->status) : null,
-            'shipping_method_id' => $this->resource->shippingMethod ? $this->resource->shippingMethod->getKey() : null,
+            'shipping_method' => $this->resource->shippingMethod ?
+                ShippingMethodResource::make($this->resource->shippingMethod) : null,
+            'digital_shipping_method' => $this->resource->digitalShippingMethod ?
+                ShippingMethodResource::make($this->resource->digitalShippingMethod) : null,
             'shipping_type' => $this->resource->shippingMethod ? $this->resource->shippingMethod->shipping_type : null,
             'invoice_requested' => $this->resource->invoice_requested,
             'shipping_place' =>  $this->resource->shippingAddress
@@ -35,8 +38,6 @@ class OrderResource extends Resource
             'paid' => $this->resource->paid,
             'cart_total' => $this->resource->cart_total,
             'cart_total_initial' => $this->resource->cart_total_initial,
-            'delivery_address' => $this->resource->deliveryAddress ?
-                AddressResource::make($this->resource->deliveryAddress) : null,
             'created_at' => $this->resource->created_at,
         ], $this->metadataResource('orders.show_metadata_private'));
     }

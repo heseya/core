@@ -1080,65 +1080,6 @@ class OrderCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
-    public function testCreateOrderWithShippingMethodTypeNone($user): void
-    {
-        $this->$user->givePermissionTo('orders.add');
-
-        Event::fake([OrderCreated::class]);
-
-        $schema = Schema::factory()->create([
-            'type' => 'string',
-            'price' => 10,
-            'hidden' => false,
-        ]);
-
-        $this->product->schemas()->sync([$schema->getKey()]);
-        $this->product->update([
-            'price' => 100,
-        ]);
-
-        $productQuantity = 2;
-
-        $shippingMethod = ShippingMethod::factory()->create([
-            'public' => true,
-            'shipping_type' => ShippingType::NONE,
-        ]);
-
-        $response = $this->actingAs($this->$user)->postJson('/orders', [
-            'email' => $this->email,
-            'shipping_method_id' => $shippingMethod->getKey(),
-            'invoice_requested' => true,
-            'billing_address' => Address::factory()->create(),
-            'shipping_place' => null,
-            'items' => [
-                [
-                    'product_id' => $this->product->getKey(),
-                    'quantity' => $productQuantity,
-                    'schemas' => [
-                        $schema->getKey() => 'Test',
-                    ],
-                ],
-            ],
-        ]);
-
-        $response->assertCreated();
-
-        $order = Order::find($response->getData()->data->id);
-
-        $this->assertDatabaseHas('orders', [
-            'id' => $order->getKey(),
-            'invoice_requested' => true,
-            'shipping_place' => null,
-            'shipping_address_id' => null,
-            'shipping_type' => ShippingType::NONE,
-        ]);
-
-        Event::assertDispatched(OrderCreated::class);
-    }
-
-    /**
-     * @dataProvider authProvider
-     */
     public function testCreateOrderWithShippingMethodTypeAddress($user): void
     {
         $this->$user->givePermissionTo('orders.add');

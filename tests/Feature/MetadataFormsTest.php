@@ -25,7 +25,7 @@ class MetadataFormsTest extends TestCase
                 'slug' => 'test',
                 'price' => 100.00,
                 'public' => true,
-                'is_digital' => false,
+                'shipping_digital' => false,
                 'metadata' => [
                     'test' => '123',
                 ],

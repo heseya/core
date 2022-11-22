@@ -601,7 +601,7 @@ class ShippingMethodTest extends TestCase
             'block_list' => false,
             'shipping_time_min' => 2,
             'shipping_time_max' => 3,
-            'shipping_type' => ShippingType::NONE,
+            'shipping_type' => ShippingType::POINT,
         ];
         $shipping_points = [
             'shipping_points' => [
@@ -640,7 +640,7 @@ class ShippingMethodTest extends TestCase
             ->assertJsonFragment(['value' => 10.37])
             ->assertJsonFragment(['start' => 200])
             ->assertJsonFragment(['value' => 0])
-            ->assertJsonFragment(['shipping_type' => ShippingType::NONE]);
+            ->assertJsonFragment(['shipping_type' => ShippingType::POINT]);
 
         $this->assertDatabaseHas('shipping_methods', $shipping_method + [
             'app_id' => $this->$user instanceof App ? $this->$user->getKey() : null,

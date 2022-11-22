@@ -19,6 +19,9 @@ CartProcess:
           shipping_method_id:
             type: string
             example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+          digital_shipping_method_id:
+            type: string
+            example: 026bc5f6-8373-4aeb-972e-e78d72a67121
 
 CartItem:
   type: object

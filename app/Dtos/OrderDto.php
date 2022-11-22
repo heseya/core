@@ -16,6 +16,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
     private string|Missing $email;
     private string|null|Missing $comment;
     private string|Missing $shipping_method_id;
+    private string|Missing $digital_shipping_method_id;
     private array|Missing $items;
     private AddressDto|Missing $billing_address;
     private array|Missing $coupons;
@@ -40,6 +41,7 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
             email: $request->input('email', new Missing()),
             comment: $request->input('comment', new Missing()),
             shipping_method_id: $request->input('shipping_method_id', new Missing()),
+            digital_shipping_method_id: $request->input('digital_shipping_method_id', new Missing()),
             items: $orderProducts instanceof Missing ? $orderProducts : $items,
             shipping_place: is_array($request->input('shipping_place'))
                 ? AddressDto::instantiateFromRequest($request, 'shipping_place.')
@@ -67,6 +69,11 @@ class OrderDto extends CartOrderDto implements InstantiateFromRequest
     public function getShippingMethodId(): Missing|string
     {
         return $this->shipping_method_id;
+    }
+
+    public function getDigitalShippingMethodId(): Missing|string
+    {
+        return $this->digital_shipping_method_id;
     }
 
     public function getItems(): Missing|array

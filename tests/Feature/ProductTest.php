@@ -57,7 +57,7 @@ class ProductTest extends TestCase
         $this->discountService = App::make(DiscountServiceContract::class);
 
         $this->product = Product::factory()->create([
-            'is_digital' => false,
+            'shipping_digital' => false,
             'public' => true,
             'order' => 1,
         ]);
@@ -1204,7 +1204,7 @@ class ProductTest extends TestCase
             'description_short' => 'So called short description...',
             'public' => true,
             'vat_rate' => 23,
-            'is_digital' => false,
+            'shipping_digital' => false,
         ]);
 
         $response
@@ -1215,7 +1215,7 @@ class ProductTest extends TestCase
                 'price' => 100,
                 'public' => true,
                 'vat_rate' => 23,
-                'is_digital' => false,
+                'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
                 'description_short' => 'So called short description...',
                 'cover' => null,
@@ -1229,7 +1229,7 @@ class ProductTest extends TestCase
             'price' => 100,
             'public' => true,
             'vat_rate' => 23,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'description_html' => '<h1>Description</h1>',
             'description_short' => 'So called short description...',
         ]);
@@ -1273,7 +1273,7 @@ class ProductTest extends TestCase
             'price' => 100.00,
             'description_html' => '<h1>Description</h1>',
             'public' => true,
-            'is_digital' => false,
+            'shipping_digital' => false,
         ]);
 
         $response
@@ -1283,7 +1283,7 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
-                'is_digital' => false,
+                'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -1295,7 +1295,7 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 100,
             'public' => true,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'description_html' => '<h1>Description</h1>',
         ]);
 
@@ -1345,7 +1345,7 @@ class ProductTest extends TestCase
             'price' => 100.00,
             'description_html' => '<h1>Description</h1>',
             'public' => true,
-            'is_digital' => false,
+            'shipping_digital' => false,
         ]);
 
         $response
@@ -1355,7 +1355,7 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
-                'is_digital' => false,
+                'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -1367,7 +1367,7 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 100,
             'public' => true,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'description_html' => '<h1>Description</h1>',
         ]);
 
@@ -1417,7 +1417,7 @@ class ProductTest extends TestCase
             'price' => 100.00,
             'description_html' => '<h1>Description</h1>',
             'public' => false,
-            'is_digital' => false,
+            'shipping_digital' => false,
         ]);
 
         $response
@@ -1427,7 +1427,7 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => false,
-                'is_digital' => false,
+                'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -1439,7 +1439,7 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 100,
             'public' => false,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'description_html' => '<h1>Description</h1>',
         ]);
 
@@ -1482,7 +1482,7 @@ class ProductTest extends TestCase
             'price' => 100.00,
             'description_html' => '<h1>Description</h1>',
             'public' => false,
-            'is_digital' => false,
+            'shipping_digital' => false,
         ]);
 
         $response
@@ -1492,7 +1492,7 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => false,
-                'is_digital' => false,
+                'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -1504,7 +1504,7 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 100,
             'public' => false,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'description_html' => '<h1>Description</h1>',
         ]);
 
@@ -1542,7 +1542,7 @@ class ProductTest extends TestCase
                 'slug' => 'test',
                 'price' => 0,
                 'public' => true,
-                'is_digital' => false,
+                'shipping_digital' => false,
             ])
             ->assertCreated();
 
@@ -1567,7 +1567,7 @@ class ProductTest extends TestCase
                 'slug' => 'test',
                 'price' => 100,
                 'public' => true,
-                'is_digital' => true,
+                'shipping_digital' => true,
             ])
             ->assertCreated()
             ->assertJson(['data' => [
@@ -1575,7 +1575,7 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
-                'is_digital' => true,
+                'shipping_digital' => true,
             ],
             ]);
 
@@ -1583,7 +1583,7 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'name' => 'Test',
             'price' => 100,
-            'is_digital' => true,
+            'shipping_digital' => true,
         ]);
     }
 
@@ -1601,7 +1601,7 @@ class ProductTest extends TestCase
                 'slug' => 'test',
                 'price' => 100,
                 'public' => true,
-                'is_digital' => false,
+                'shipping_digital' => false,
             ])
             ->assertCreated()
             ->assertJson(['data' => [
@@ -1609,7 +1609,7 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
-                'is_digital' => false,
+                'shipping_digital' => false,
             ],
             ]);
 
@@ -1617,7 +1617,7 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'name' => 'Test',
             'price' => 100,
-            'is_digital' => false,
+            'shipping_digital' => false,
         ]);
     }
 
@@ -1635,7 +1635,7 @@ class ProductTest extends TestCase
                 'slug' => 'test',
                 'price' => -100,
                 'public' => true,
-                'is_digital' => false,
+                'shipping_digital' => false,
             ])
             ->assertUnprocessable();
     }
@@ -1656,7 +1656,7 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'price' => 150,
             'public' => false,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'schemas' => [
                 $schema->getKey(),
             ],
@@ -1670,7 +1670,7 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 150,
             'public' => false,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'description_html' => null,
         ]);
 
@@ -1699,7 +1699,7 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'price' => 150,
             'public' => false,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'sets' => [
                 $set1->getKey(),
                 $set2->getKey(),
@@ -1714,7 +1714,7 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 150,
             'public' => false,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'description_html' => null,
         ]);
 
@@ -1749,7 +1749,7 @@ class ProductTest extends TestCase
             'price' => 100.00,
             'description_html' => '<h1>Description</h1>',
             'public' => $boolean,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'seo' => [
                 'title' => 'seo title',
                 'description' => 'seo description',
@@ -1765,7 +1765,7 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => $booleanValue,
-                'is_digital' => false,
+                'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -1785,7 +1785,7 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 100,
             'public' => $booleanValue,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'description_html' => '<h1>Description</h1>',
         ]);
 
@@ -1813,7 +1813,7 @@ class ProductTest extends TestCase
             'price' => 100.00,
             'description_html' => '<h1>Description</h1>',
             'public' => true,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'seo' => [
                 'title' => 'seo title',
                 'description' => 'seo description',
@@ -1827,7 +1827,7 @@ class ProductTest extends TestCase
                 'name' => 'Test',
                 'price' => 100,
                 'public' => true,
-                'is_digital' => false,
+                'shipping_digital' => false,
                 'description_html' => '<h1>Description</h1>',
                 'cover' => null,
                 'gallery' => [],
@@ -1844,7 +1844,7 @@ class ProductTest extends TestCase
             'name' => 'Test',
             'price' => 100,
             'public' => true,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'description_html' => '<h1>Description</h1>',
         ]);
 
@@ -1879,7 +1879,7 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'price' => $productPrice,
             'public' => false,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'sets' => [],
             'schemas' => [
                 $schema->getKey(),
@@ -1895,7 +1895,7 @@ class ProductTest extends TestCase
             'price_min' => $productPrice,
             'price_max' => $productPrice + $schemaPrice,
             'public' => false,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'description_html' => null,
         ]);
     }
@@ -1920,7 +1920,7 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'price' => $productPrice,
             'public' => false,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'sets' => [],
             'schemas' => [
                 $schema->getKey(),
@@ -1936,7 +1936,7 @@ class ProductTest extends TestCase
             'price_min' => $productPrice + $schemaPrice,
             'price_max' => $productPrice + $schemaPrice,
             'public' => false,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'description_html' => null,
         ]);
     }
@@ -1969,7 +1969,7 @@ class ProductTest extends TestCase
                 'slug' => 'test',
                 'price' => 0,
                 'public' => true,
-                'is_digital' => false,
+                'shipping_digital' => false,
                 'attributes' => [
                     $attribute->getKey() => [
                         $option->getKey(),
@@ -2078,7 +2078,7 @@ class ProductTest extends TestCase
                 'slug' => 'test',
                 'price' => 0,
                 'public' => true,
-                'is_digital' => false,
+                'shipping_digital' => false,
                 'attributes' => [
                     $attribute->getKey() => [
                         $option->getKey(),
@@ -2169,7 +2169,7 @@ class ProductTest extends TestCase
                 'slug' => 'test',
                 'price' => 0,
                 'public' => true,
-                'is_digital' => false,
+                'shipping_digital' => false,
                 'attributes' => [
                     $attribute->getKey() => [
                         $option->getKey(),
@@ -2202,7 +2202,7 @@ class ProductTest extends TestCase
                 'slug' => 'test',
                 'price' => 0,
                 'public' => true,
-                'is_digital' => false,
+                'shipping_digital' => false,
                 'attributes' => [
                     $attribute->getKey() => [
                         $option->getKey(),
@@ -2240,7 +2240,7 @@ class ProductTest extends TestCase
             'slug' => 'test',
             'price' => 100.00,
             'public' => true,
-            'is_digital' => false,
+            'shipping_digital' => false,
         ]);
 
         $productId = $response->getData()->data->id;
@@ -2280,7 +2280,7 @@ class ProductTest extends TestCase
             'description_html' => '<h1>Description</h1>',
             'description_short' => 'So called short description...',
             'public' => true,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'google_product_category' => 123,
         ]);
 
@@ -2305,7 +2305,7 @@ class ProductTest extends TestCase
             'description_html' => '<h1>Description</h1>',
             'description_short' => 'So called short description...',
             'public' => true,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'google_product_category' => 123456,
         ]);
 
@@ -2327,7 +2327,7 @@ class ProductTest extends TestCase
             'description_html' => '<h1>Description</h1>',
             'description_short' => 'So called short description...',
             'public' => true,
-            'is_digital' => false,
+            'shipping_digital' => false,
             'google_product_category' => null,
         ]);
 
@@ -2402,17 +2402,17 @@ class ProductTest extends TestCase
         $this
             ->actingAs($this->$user)
             ->patchJson('/products/id:' . $this->product->getKey(), [
-                'is_digital' => true,
+                'shipping_digital' => true,
             ])
             ->assertOk()
             ->assertJson(['data' => [
-                'is_digital' => true,
+                'shipping_digital' => true,
             ],
             ]);
 
         $this->assertDatabaseHas('products', [
             $this->product->getKeyName() => $this->product->getKey(),
-            'is_digital' => true,
+            'shipping_digital' => true,
         ]);
     }
 

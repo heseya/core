@@ -108,21 +108,26 @@ class OrderTest extends TestCase
         ];
 
         $this->expected_full_structure = [
+            'id',
             'code',
             'status',
             'paid',
+            'payable',
             'created_at',
-            'shipping_method_id',
+            'shipping_method',
+            'digital_shipping_method',
             'comment',
             'email',
             'cart_total_initial',
             'cart_total',
             'shipping_price_initial',
             'shipping_price',
+            'shipping_type',
+            'invoice_requested',
+            'documents',
             'summary',
             'summary_paid',
             'currency',
-            'delivery_address',
             'metadata',
         ];
 
@@ -131,6 +136,8 @@ class OrderTest extends TestCase
             'products',
             'payments',
             'discounts',
+            'billing_address',
+            'shipping_number',
         ];
     }
 

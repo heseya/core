@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->boolean('is_digital')->default(false);
+            $table->boolean('shipping_digital')->default(false);
         });
     }
 
@@ -26,7 +26,7 @@ return new class extends Migration
     public function down()
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->dropColumn('is_digital');
+            $table->dropColumn('shipping_digital');
         });
     }
 };

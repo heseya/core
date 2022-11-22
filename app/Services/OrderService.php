@@ -35,6 +35,7 @@ use Exception;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
@@ -82,9 +83,10 @@ class OrderService implements OrderServiceContract
             // Schema values and warehouse items validation
             $products = $this->itemService->checkOrderItems($dto->getItems());
 
+            [$shippingMethod, $digitalShippingMethod] = $this->getDeliveryMethods($dto, $products, true);
+
             // Creating order
-            $shippingMethod = ShippingMethod::findOrFail($dto->getShippingMethodId());
-            switch ($shippingMethod->shipping_type) {
+            switch ($shippingMethod?->shipping_type) {
                 case ShippingType::ADDRESS:
                     $shippingPlace = null;
                     $shippingAddressId = Address::firstOrCreate($dto->getShippingPlace()->toArray())->getKey();
@@ -132,7 +134,7 @@ class OrderService implements OrderServiceContract
                     'buyer_type' => Auth::user()::class,
                     'invoice_requested' => $getInvoiceRequested,
                     'shipping_place' => $shippingPlace,
-                    'shipping_type' => $shippingMethod->shipping_type,
+                    'shipping_type' => $shippingMethod->shipping_type ?? $digitalShippingMethod->shipping_type,
                 ] + $dto->toArray(),
             );
 
@@ -197,7 +199,8 @@ class OrderService implements OrderServiceContract
                 // Apply discounts to order/products
                 $order = $this->discountService->calcOrderProductsAndTotalDiscounts($order, $dto);
 
-                $shippingPrice = $shippingMethod->getPrice($order->cart_total);
+                $shippingPrice = $shippingMethod?->getPrice($order->cart_total) ?? 0;
+                $shippingPrice += $digitalShippingMethod?->getPrice($order->cart_total) ?? 0;
 
                 $order->shipping_price_initial = $shippingPrice;
                 $order->shipping_price = $shippingPrice;
@@ -225,7 +228,7 @@ class OrderService implements OrderServiceContract
             DB::rollBack();
 
             throw $exception;
-        } catch (Throwable) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             throw new ServerException(Exceptions::SERVER_TRANSACTION_ERROR);
@@ -236,11 +239,11 @@ class OrderService implements OrderServiceContract
     {
         DB::beginTransaction();
         try {
-            if (!($dto->getShippingMethodId() instanceof Missing) && $dto->getShippingMethodId() !== null) {
-                $shippingType = ShippingMethod::find($dto->getShippingMethodId())->shipping_type;
-            } else {
-                $shippingType = $order->shippingMethod->shipping_type;
-            }
+            [$shippingMethod] = $this->getDeliveryMethods($dto, $order->products, false);
+
+            $shippingType = $shippingMethod
+                ? $shippingMethod->shipping_type
+                : $order->shippingMethod->shipping_type;
 
             if ($shippingType !== ShippingType::POINT) {
                 $shippingPlace = $dto->getShippingPlace() instanceof AddressDto ?
@@ -325,7 +328,37 @@ class OrderService implements OrderServiceContract
         // Lista tylko dostępnych produktów
         $products = $this->itemService->checkCartItems($cartDto->getItems());
 
+        if ($products->isNotEmpty()) {
+            $this->getDeliveryMethods($cartDto, $products, false);
+        }
+
         return $this->discountService->calcCartDiscounts($cartDto, $products);
+    }
+
+    private function getDeliveryMethods(OrderDto|CartDto $dto, Collection $products, bool $required): array {
+        // Validate whether delivery methods are the proper type
+        $shippingMethod = $dto->getShippingMethodId() instanceof Missing ? null :
+            ShippingMethod::whereNot('shipping_type', ShippingType::DIGITAL)
+            ->findOrFail($dto->getShippingMethodId());
+
+        $digitalShippingMethod = $dto->getDigitalShippingMethodId() instanceof Missing ? null :
+            ShippingMethod::where('shipping_type', ShippingType::DIGITAL)
+            ->findOrFail($dto->getDigitalShippingMethodId());
+
+        // Validate whether there are products suited to given delivery types
+        // if delivery type isn't required, it's ignored when missing
+        if (!$this->itemService->checkHasItemType(
+            $products,
+            $shippingMethod !== null ? true : ($required ? false : null),
+            $digitalShippingMethod !== null ? true : ($required ? false : null),
+        )) {
+            throw new OrderException(Exceptions::ORDER_SHIPPING_METHOD_TYPE_MISMATCH);
+        }
+
+        return [
+            $shippingMethod,
+            $digitalShippingMethod,
+        ];
     }
 
     private function checkAddress(AddressDto|Missing $addressDto): bool
@@ -401,7 +434,7 @@ class OrderService implements OrderServiceContract
         string $shippingType,
         Order $order
     ): ?string {
-        if ($shippingPlace instanceof Missing && $shippingType !== ShippingType::NONE) {
+        if ($shippingPlace instanceof Missing) {
             return $order->shipping_address_id;
         }
 
