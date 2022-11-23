@@ -92,6 +92,8 @@ final class Exceptions extends Enum
 
     public const PRODUCT_IS_NOT_ON_WISHLIST = 'Product is not on wishlist';
 
+    public const PRODUCT_PURCHASE_LIMIT = 'The limit of purchased product units per user has been exceeded';
+
     public static function getCode(string $value): int
     {
         return match ($value) {

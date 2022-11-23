@@ -267,7 +267,8 @@ class OrderService implements OrderServiceContract
     public function cartProcess(CartDto $cartDto): CartResource
     {
         // Lista tylko dostępnych produktów
-        $products = $this->itemService->checkCartItems($cartDto->getItems());
+        $items = $cartDto->getItems();
+        $products = $this->itemService->checkCartItems($items);
 
         return $this->discountService->calcCartDiscounts($cartDto, $products);
     }

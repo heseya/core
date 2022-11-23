@@ -41,6 +41,7 @@ class ProductCreateRequest extends FormRequest implements SeoRequestContract, Me
                 'quantity_step' => ['numeric'],
                 'order' => ['nullable', 'numeric'],
                 'vat_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+                'purchase_limit_per_user' => ['nullable', 'numeric', 'min:0'],
 
                 'media' => ['nullable', 'array'],
                 'media.*' => ['uuid', 'exists:media,id'],

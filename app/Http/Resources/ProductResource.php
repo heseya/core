@@ -35,6 +35,7 @@ class ProductResource extends Resource
             'has_schemas' => $this->resource->has_schemas,
             'quantity' => $this->resource->quantity,
             'is_digital' => $this->resource->is_digital,
+            'purchase_limit_per_user' => $this->resource->purchase_limit_per_user,
         ], $this->metadataResource('products.show_metadata_private'));
     }
 

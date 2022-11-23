@@ -14,7 +14,7 @@ interface ItemServiceContract
 
     public function checkOrderItems(array $items): Collection;
 
-    public function checkCartItems(array $items): Collection;
+    public function checkCartItems(array &$items): Collection;
 
     public function store(ItemDto $dto): Item;
 

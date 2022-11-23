@@ -2,11 +2,12 @@
 
 namespace App\Criteria;
 
+use App\Models\App;
 use App\Models\User;
 use Heseya\Searchable\Criteria\Criterion;
 use Illuminate\Database\Eloquent\Builder;
 
-class WhereHasUser extends Criterion
+class WhereHasBuyer extends Criterion
 {
     public function query(Builder $query): Builder
     {
@@ -15,7 +16,7 @@ class WhereHasUser extends Criterion
             fn (Builder $query) => $query
                 ->whereHasMorph(
                     'buyer',
-                    [User::class],
+                    $this->key === 'user' ? [User::class] : [App::class],
                     fn (Builder $query) => $query->where('id', $this->value),
                 )
         );
