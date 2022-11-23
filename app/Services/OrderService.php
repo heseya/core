@@ -339,11 +339,13 @@ class OrderService implements OrderServiceContract
         return !$itemsToRemove || $this->depositService->removeItemsFromWarehouse($itemsToRemove, $orderProduct);
     }
 
-    public function processOrderProductUrls(OrderProductUpdateDto $dto, OrderProduct $product): void
+    public function processOrderProductUrls(OrderProductUpdateDto $dto, OrderProduct $product): OrderProduct
     {
-        $product->update([
-            'is_delivered' => $dto->getIsDelivered(),
-        ]);
+        if (!$dto->getIsDelivered() instanceof Missing) {
+            $product->update([
+                'is_delivered' => $dto->getIsDelivered(),
+            ]);
+        }
 
         if (!$dto->getUrls() instanceof Missing) {
             /** @var OrderProductUrlDto $url */
@@ -358,5 +360,7 @@ class OrderService implements OrderServiceContract
                 );
             }
         }
+
+        return $product;
     }
 }

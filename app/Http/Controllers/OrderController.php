@@ -23,6 +23,7 @@ use App\Http\Requests\OrderUpdateStatusRequest;
 use App\Http\Requests\SendDocumentRequest;
 use App\Http\Resources\CartResource;
 use App\Http\Resources\OrderDocumentResource;
+use App\Http\Resources\OrderProductResource;
 use App\Http\Resources\OrderPublicResource;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
@@ -277,11 +278,10 @@ class OrderController extends Controller
         OrderProductUpdateRequest $request,
         Order $order,
         OrderProduct $product,
-    ): JsonResponse {
-        $this->orderService->processOrderProductUrls(
+    ): JsonResource {
+        return OrderProductResource::make($this->orderService->processOrderProductUrls(
             OrderProductUpdateDto::instantiateFromRequest($request),
             $product,
-        );
-        return Response::json(null, JsonResponse::HTTP_NO_CONTENT);
+        ));
     }
 }

@@ -17,7 +17,7 @@ class OrderProductUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'is_delivered' => ['required', new Boolean()],
+            'is_delivered' => [new Boolean()],
             'urls' => ['array'],
             'urls.*' => ['nullable', 'url'],
         ];

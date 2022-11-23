@@ -868,7 +868,7 @@ class OrderUpdateTest extends TestCase
                     ],
                 ]
             )
-            ->assertNoContent();
+            ->assertOk();
 
         $this->assertDatabaseHas('order_products', [
             'is_delivered' => true,
@@ -919,13 +919,12 @@ class OrderUpdateTest extends TestCase
                 'PATCH',
                 "/orders/id:{$this->order->getKey()}/products/id:{$orderProduct->getKey()}",
                 [
-                    'is_delivered' => true,
                     'urls' => [
                         'updated_url' => 'https://updated.com',
                     ],
                 ]
             )
-            ->assertNoContent();
+            ->assertOk();
 
         $this->assertDatabaseCount('order_product_urls', 2);
 
@@ -976,7 +975,7 @@ class OrderUpdateTest extends TestCase
                     ],
                 ]
             )
-            ->assertNoContent();
+            ->assertOk();
 
         $this->assertDatabaseCount('order_product_urls', 1);
 

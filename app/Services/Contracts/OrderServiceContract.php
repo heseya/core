@@ -24,5 +24,5 @@ interface OrderServiceContract
 
     public function cartProcess(CartDto $cartDto): CartResource;
 
-    public function processOrderProductUrls(OrderProductUpdateDto $dto, OrderProduct $product): void;
+    public function processOrderProductUrls(OrderProductUpdateDto $dto, OrderProduct $product): OrderProduct;
 }
