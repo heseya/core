@@ -36,6 +36,7 @@ use App\Events\SaleCreated;
 use App\Events\SaleDeleted;
 use App\Events\SaleUpdated;
 use App\Exceptions\ClientException;
+use App\Exceptions\ServerException;
 use App\Exceptions\StoreException;
 use App\Jobs\CalculateDiscount;
 use App\Models\App;
@@ -734,6 +735,7 @@ class DiscountService implements DiscountServiceContract
             ConditionType::CART_LENGTH => false,
             ConditionType::COUPONS_COUNT => $this->checkConditionCouponsCount($condition, 0),
             // don't add default false, better to crash site than got unexpected behaviour
+            default => throw new ServerException('Unknown condition type: ' . $condition->type->value),
         };
     }
 

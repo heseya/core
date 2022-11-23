@@ -51,6 +51,7 @@ class ProductSetService implements ProductSetServiceContract
         } else {
             $query->with(['children', 'metadataPrivate', 'media.metadataPrivate']);
         }
+
         if ($root) {
             $query->root();
         }
@@ -61,7 +62,8 @@ class ProductSetService implements ProductSetServiceContract
     public function create(ProductSetDto $dto): ProductSet
     {
         if ($dto->getParentId() !== null) {
-            $parent = ProductSet::findOrFail($dto->getParentId());
+            /** @var ProductSet $parent */
+            $parent = ProductSet::query()->findOrFail($dto->getParentId());
             $lastChild = $parent->children()->reversed()->first();
 
             $order = $lastChild ? $lastChild->order + 1 : 0;
@@ -145,7 +147,7 @@ class ProductSetService implements ProductSetServiceContract
     public function update(ProductSet $set, ProductSetUpdateDto $dto): ProductSet
     {
         if ($dto->getParentId() !== null) {
-            $parent = ProductSet::findOrFail($dto->getParentId());
+            $parent = ProductSet::query()->findOrFail($dto->getParentId());
 
             if ($set->parent_id !== $dto->getParentId()) {
                 $lastChild = $parent->children()->reversed()->first();
@@ -173,16 +175,17 @@ class ProductSetService implements ProductSetServiceContract
             'slug' => Rule::unique('product_sets', 'slug')->ignoreModel($set),
         ])->validate();
 
-        $children = ProductSet::whereIn('id', $dto->getChildrenIds())->get();
+        $children = ProductSet::query()->whereIn('id', $dto->getChildrenIds())->get();
         $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->isPublic());
 
         $rootOrder = ProductSet::reversed()->first()->order + 1;
 
-        $set->children()->whereNotIn('id', $dto->getChildrenIds())
-            ->get()->each(fn ($child, $order) => $child->update([
+        $set->children()
+            ->whereNotIn('id', $dto->getChildrenIds())
+            ->update([
                 'parent_id' => null,
                 'order' => $rootOrder + $order,
-            ]));
+            ]);
 
         $set->update($dto->toArray() + [
             'order' => $order,
@@ -284,6 +287,7 @@ class ProductSetService implements ProductSetServiceContract
         return $sets->merge($this->flattenParentsSetsTree($parents));
     }
 
+    // TODO: fix this
     public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void
     {
         $product = $set->products()->where('id', $dto->getProducts()[0]['id'])->first();
