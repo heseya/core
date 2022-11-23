@@ -6,6 +6,7 @@ use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Lang;
 
 class OrderCreated extends Notification
 {
@@ -14,6 +15,7 @@ class OrderCreated extends Notification
     public function __construct(Order $order)
     {
         $this->order = $order;
+        $this->locale = $order->preferredLocale();
     }
 
     /**
@@ -30,7 +32,7 @@ class OrderCreated extends Notification
     public function toMail(mixed $notifiable): MailMessage
     {
         return (new MailMessage())
-            ->subject('Meldujemy potwierdzenie zamówienia '. $this->order->code)
+            ->subject(Lang::get('mail.subject-new-order', ['number' => $this->order->code], $this->locale))
             ->view('mail.new-order', [
                 'order' => $this->order,
             ]);

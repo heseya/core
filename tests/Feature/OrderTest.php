@@ -957,7 +957,7 @@ class OrderTest extends TestCase
             ->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
                 'status_id' => $status->getKey(),
             ])
-            ->assertOk();
+            ->assertNoContent();
 
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
@@ -985,7 +985,7 @@ class OrderTest extends TestCase
             ->patchJson('/orders/id:' . $this->order->getKey() . '/status', [
                 'status_id' => $status->getKey(),
             ])
-            ->assertOk();
+            ->assertNoContent();
 
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
@@ -1031,7 +1031,7 @@ class OrderTest extends TestCase
             'status_id' => $status->getKey(),
         ]);
 
-        $response->assertOk();
+        $response->assertNoContent();
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
             'status_id' => $status->getKey(),
@@ -1084,7 +1084,7 @@ class OrderTest extends TestCase
             'status_id' => $status->getKey(),
         ]);
 
-        $response->assertOk();
+        $response->assertNoContent();
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
             'status_id' => $status->getKey(),
@@ -1135,7 +1135,7 @@ class OrderTest extends TestCase
             'status_id' => $status->getKey(),
         ]);
 
-        $response->assertOk();
+        $response->assertNoContent();
         $this->assertDatabaseHas('orders', [
             'id' => $this->order->getKey(),
             'status_id' => $status->getKey(),

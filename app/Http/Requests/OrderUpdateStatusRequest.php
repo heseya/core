@@ -9,7 +9,7 @@ class OrderUpdateStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status_id' => ['required', 'uuid', 'exists:statuses,id'],
+            'status_id' => ['required', 'uuid'],
         ];
     }
 }

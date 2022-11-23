@@ -60,10 +60,11 @@ class NewOrderMailTest extends TestCase
         $shippingPrice = number_format($this->order->shipping_price, 2, '.', ''); // 10.90
         $cartTotal = number_format($this->order->cart_total, 2, '.', ''); // 1251
 
-        $this->assertStringContainsString("Zamówienie numer <b>${orderCode}</b> z dnia ${date}", $rendered);
-        $this->assertStringContainsString(">${productPrice} PLN</td>", $rendered);
-        $this->assertStringContainsString("Koszt przesyłki:</td><td><b>${shippingPrice} PLN</b>", $rendered);
-        $this->assertStringContainsString("Wartość produktów:</td><td><b>${cartTotal} PLN</b>", $rendered);
-        $this->assertStringContainsString("Do zapłaty:</td><td><b>${orderSummary} PLN</b>", $rendered);
+        $this->assertStringContainsString("${orderCode}", $rendered);
+        $this->assertStringContainsString("${date}", $rendered);
+        $this->assertStringContainsString("${productPrice} PLN</td>", $rendered);
+        $this->assertStringContainsString("${shippingPrice} PLN</b>", $rendered);
+        $this->assertStringContainsString("${cartTotal} PLN</b>", $rendered);
+        $this->assertStringContainsString("${orderSummary} PLN</b>", $rendered);
     }
 }

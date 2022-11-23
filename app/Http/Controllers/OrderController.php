@@ -185,10 +185,19 @@ class OrderController extends Controller
             throw new ClientException(Exceptions::CLIENT_CHANGE_CANCELED_ORDER_STATUS);
         }
 
-        $status = Status::findOrFail($request->input('status_id'));
-        $order->update([
-            'status_id' => $status->getKey(),
-        ]);
+        $status = Status::query()->find($request->input('status_id'));
+        if (!($status instanceof Status)) {
+            throw new ClientException(Exceptions::CLIENT_UNKNOWN_STATUS);
+        }
+
+        $changed = false;
+
+        if ($order->status_id !== $status->getKey()) {
+            $order->update([
+                'status_id' => $status->getKey(),
+            ]);
+            $changed = true;
+        }
 
         if ($status->cancel) {
             $deposits = $order->deposits()->with('item')->get();
@@ -201,9 +210,11 @@ class OrderController extends Controller
             }
         }
 
-        OrderUpdatedStatus::dispatch($order);
+        if ($changed) {
+            OrderUpdatedStatus::dispatch($order);
+        }
 
-        return OrderResource::make($order)->response();
+        return Response::json([], 204);
     }
 
     public function update(OrderUpdateRequest $request, Order $order): JsonResponse
