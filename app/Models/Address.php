@@ -44,7 +44,7 @@ class Address extends Model
             Cache::put('countryName.' . $this->country, $name);
         }
 
-        return $name;
+        return $name ?? $this->country;
     }
 
     public function getPhoneSimpleAttribute(): string
