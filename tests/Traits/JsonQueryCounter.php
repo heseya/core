@@ -7,14 +7,6 @@ use Illuminate\Support\Facades\DB;
 
 trait JsonQueryCounter
 {
-    public function json($method, $uri, array $data = [], array $headers = [])
-    {
-        static::getQueryCount();
-
-        static::trackQueries();
-        return parent::json($method, $uri, $data, $headers);
-    }
-
     public static function getQueryCount(): int
     {
         return count(self::getQueriesExecuted());
@@ -28,6 +20,14 @@ trait JsonQueryCounter
     public static function trackQueries(): void
     {
         DB::enableQueryLog();
+    }
+
+    public function json($method, $uri, array $data = [], array $headers = [])
+    {
+        static::getQueryCount();
+        static::trackQueries();
+
+        return parent::json($method, $uri, $data, $headers);
     }
 
     public function assertNoQueriesExecuted(?Closure $closure = null): void
@@ -69,21 +69,6 @@ trait JsonQueryCounter
         }
 
         $this->assertLessThan($count, self::getQueryCount());
-
-        if ($closure) {
-            DB::flushQueryLog();
-        }
-    }
-
-    public function assertQueryCountGreaterThan(int $count, ?Closure $closure = null): void
-    {
-        if ($closure) {
-            self::trackQueries();
-
-            $closure();
-        }
-
-        $this->assertGreaterThan($count, self::getQueryCount());
 
         if ($closure) {
             DB::flushQueryLog();

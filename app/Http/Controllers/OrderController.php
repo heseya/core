@@ -71,6 +71,20 @@ class OrderController extends Controller
 
     public function show(Order $order): JsonResource
     {
+        $order->loadMissing([
+            'discounts',
+            'discounts.metadata',
+            'products.discounts',
+            'products.discounts.metadata',
+            'products',
+            'products.schemas',
+            'products.deposits',
+            'products.product',
+            'products.product.media',
+            'products.product.tags',
+            'products.product.metadata',
+        ]);
+
         return OrderResource::make($order);
     }
 
