@@ -561,6 +561,8 @@ class OrderTest extends TestCase
             ->assertOk()
             ->assertJsonFragment(['code' => $this->order->code])
             ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
+
+        $this->assertQueryCountLessThan(30);
     }
 
     /**
@@ -604,9 +606,9 @@ class OrderTest extends TestCase
             'public' => false,
         ]);
 
-        $response = $this->actingAs($this->$user)
-            ->getJson('/orders/id:' . $this->order->getKey());
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders/id:' . $this->order->getKey())
             ->assertOk()
             ->assertJsonFragment(['code' => $this->order->code])
             ->assertJsonStructure(['data' => $this->expected_full_view_structure])
@@ -614,6 +616,8 @@ class OrderTest extends TestCase
                 $privateMetadata->name => $privateMetadata->value,
             ],
             ]);
+
+        $this->assertQueryCountLessThan(30);
     }
 
     public function testViewSummaryUnauthorized(): void
@@ -629,9 +633,9 @@ class OrderTest extends TestCase
     {
         $this->$user->givePermissionTo('orders.show_summary');
 
-        $response = $this->actingAs($this->$user)
-            ->getJson('/orders/' . $this->order->code);
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders/' . $this->order->code)
             ->assertOk()
             ->assertJsonStructure(['data' => $this->expected_summary_structure])
             ->assertJson(['data' => $this->expected]);
@@ -671,14 +675,16 @@ class OrderTest extends TestCase
             'paid' => true,
         ]));
 
-        $response = $this->actingAs($this->$user)
-            ->getJson('/orders/id:' . $this->order->getKey());
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders/id:' . $this->order->getKey())
             ->assertOk()
             ->assertJsonFragment([
                 'paid' => true,
                 'summary_paid' => $summaryPaid,
             ]);
+
+        $this->assertQueryCountLessThan(30);
     }
 
     /**
@@ -693,9 +699,9 @@ class OrderTest extends TestCase
             'paid' => true,
         ]));
 
-        $response = $this->actingAs($this->$user)
-            ->getJson('/orders/' . $this->order->code);
-        $response
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/orders/' . $this->order->code)
             ->assertOk()
             ->assertJsonFragment(['paid' => true]);
     }
@@ -724,6 +730,8 @@ class OrderTest extends TestCase
                 'code' => $order->code,
             ])
             ->assertJsonStructure(['data' => $this->expected_full_view_structure]);
+
+        $this->assertQueryCountLessThan(30);
     }
 
     /**
@@ -925,6 +933,8 @@ class OrderTest extends TestCase
                     })
                     ->etc();
             });
+
+        $this->assertQueryCountLessThan(32);
     }
 
     public function testUpdateOrderStatusUnauthorized(): void
