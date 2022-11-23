@@ -74,6 +74,16 @@ OrderProduct:
       type: array
       items:
         $ref: '#/OrderDiscount'
+    shipping_digital:
+      type: boolean
+      example: true
+    is_delivered:
+      type: boolean
+      example: true
+    urls:
+      type: array
+      items:
+        $ref: '#/OrderProductUrl'
 
 OrderDiscount:
   type: object
@@ -192,3 +202,16 @@ OrderSummary:
     metadata_private:
       $ref: './../schemas/Metadata.yml#/Metadata'
   type: object
+
+OrderProductUrl:
+  type: object
+  properties:
+    id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    name:
+      type: string
+      example: first_link
+    url:
+      type: string
+      example: https://example.com

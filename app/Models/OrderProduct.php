@@ -24,10 +24,14 @@ class OrderProduct extends Model
         'product_id',
         'name',
         'vat_rate',
+        'shipping_digital',
+        'is_delivered',
     ];
 
     protected $casts = [
         'vat_rate' => 'float',
+        'shipping_digital' => 'boolean',
+        'is_delivered' => 'boolean',
     ];
 
     public function schemas(): HasMany
@@ -48,5 +52,10 @@ class OrderProduct extends Model
     public function deposits(): HasMany
     {
         return $this->hasMany(Deposit::class);
+    }
+
+    public function urls(): HasMany
+    {
+        return $this->hasMany(OrderProductUrl::class);
     }
 }

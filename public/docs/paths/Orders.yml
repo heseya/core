@@ -468,3 +468,27 @@ CartProcess:
                 data:
                   $ref: './../schemas/Cart.yml#/Cart'
               type: object
+
+OrderProductUrls:
+  patch:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 5b320ba6-d5ee-4870-bed2-1a101704c2c4
+      - name: order_product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+    tags:
+      - Orders
+    summary: 'Add links to order products'
+    requestBody:
+      $ref: './../requests/OrderProducts.yml#/OrderProductUrls'
+    responses:
+      204:
+        description: No content

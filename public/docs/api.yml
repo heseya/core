@@ -143,6 +143,8 @@ paths:
     $ref: './paths/Orders.yml#/OrderDownloadDocument'
   '/orders/id:{id}/docs/send':
     $ref: './paths/Orders.yml#/OrdersDocumentsSend'
+  '/orders/id:{id}/products/id:{order_product_id}':
+    $ref: './paths/Orders.yml#/OrderProductUrls'
   /cart/process:
     $ref: './paths/Orders.yml#/CartProcess'
   /package-templates:

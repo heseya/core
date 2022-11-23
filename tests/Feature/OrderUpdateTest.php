@@ -7,6 +7,7 @@ use App\Events\OrderUpdatedShippingNumber;
 use App\Listeners\WebHookEventListener;
 use App\Models\Address;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\Status;
 use App\Models\WebHook;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -836,6 +837,159 @@ class OrderUpdateTest extends TestCase
         // two events
         Event::assertDispatched(OrderUpdatedShippingNumber::class);
         Event::assertDispatched(OrderUpdated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOrderProductUrl($user): void
+    {
+        $this->$user->givePermissionTo('orders.edit');
+
+        $product = Product::factory()->create(['public' => true]);
+        $orderProduct = $this->order->products()->create([
+            'product_id' => $product->getKey(),
+            'quantity' => 3,
+            'price' => 80.00,
+            'price_initial' => 80.00,
+            'name' => $product->name,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'PATCH',
+                "/orders/id:{$this->order->getKey()}/products/id:{$orderProduct->getKey()}",
+                [
+                    'is_delivered' => true,
+                    'urls' => [
+                        'first_url' => 'https://example.com',
+                        'second_url' => 'https://example2.com',
+                    ],
+                ]
+            )
+            ->assertOk();
+
+        $this->assertDatabaseHas('order_products', [
+            'is_delivered' => true,
+        ]);
+
+        $this->assertDatabaseHas('order_product_urls', [
+            'order_product_id' => $orderProduct->getKey(),
+            'name' => 'first_url',
+            'url' => 'https://example.com',
+        ]);
+
+        $this->assertDatabaseHas('order_product_urls', [
+            'order_product_id' => $orderProduct->getKey(),
+            'name' => 'second_url',
+            'url' => 'https://example2.com',
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateOneOrderProductUrl($user): void
+    {
+        $this->$user->givePermissionTo('orders.edit');
+
+        $product = Product::factory()->create(['public' => true]);
+        $orderProduct = $this->order->products()->create([
+            'product_id' => $product->getKey(),
+            'quantity' => 3,
+            'price' => 80.00,
+            'price_initial' => 80.00,
+            'name' => $product->name,
+        ]);
+
+        $orderProduct->urls()->create([
+            'name' => 'old_url',
+            'url' => 'https://example.com',
+        ]);
+
+        $orderProduct->urls()->create([
+            'name' => 'updated_url',
+            'url' => 'https://to-update.com',
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'PATCH',
+                "/orders/id:{$this->order->getKey()}/products/id:{$orderProduct->getKey()}",
+                [
+                    'urls' => [
+                        'updated_url' => 'https://updated.com',
+                    ],
+                ]
+            )
+            ->assertOk();
+
+        $this->assertDatabaseCount('order_product_urls', 2);
+
+        $this->assertDatabaseHas('order_product_urls', [
+            'order_product_id' => $orderProduct->getKey(),
+            'name' => 'old_url',
+            'url' => 'https://example.com',
+        ]);
+
+        $this->assertDatabaseHas('order_product_urls', [
+            'order_product_id' => $orderProduct->getKey(),
+            'name' => 'updated_url',
+            'url' => 'https://updated.com',
+        ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteOrderProductUrl($user): void
+    {
+        $this->$user->givePermissionTo('orders.edit');
+
+        $product = Product::factory()->create(['public' => true]);
+        $orderProduct = $this->order->products()->create([
+            'product_id' => $product->getKey(),
+            'quantity' => 3,
+            'price' => 80.00,
+            'price_initial' => 80.00,
+            'name' => $product->name,
+        ]);
+
+        $orderProduct->urls()->create([
+            'name' => 'old_url',
+            'url' => 'https://old-url.com',
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->json(
+                'PATCH',
+                "/orders/id:{$this->order->getKey()}/products/id:{$orderProduct->getKey()}",
+                [
+                    'is_delivered' => true,
+                    'urls' => [
+                        'old_url' => null,
+                        'second_url' => 'https://example2.com',
+                    ],
+                ]
+            )
+            ->assertOk();
+
+        $this->assertDatabaseCount('order_product_urls', 1);
+
+        $this->assertDatabaseMissing('order_product_urls', [
+            'order_product_id' => $orderProduct->getKey(),
+            'name' => 'old_url',
+            'url' => 'https://old-url.com',
+        ]);
+
+        $this->assertDatabaseHas('order_product_urls', [
+            'order_product_id' => $orderProduct->getKey(),
+            'name' => 'second_url',
+            'url' => 'https://example2.com',
+        ]);
     }
 
     private function checkAddress(Address $address): void

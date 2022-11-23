@@ -29,6 +29,8 @@ Route::prefix('orders')->group(function (): void {
         ->middleware('can:orders.edit');
     Route::patch('id:{order:id}/metadata-private', [MetadataController::class, 'updateOrCreate'])
         ->middleware('can:orders.edit');
+    Route::patch('id:{order:id}/products/id:{product:id}', [OrderController::class, 'updateOrderProduct'])
+        ->middleware('can:orders.edit');
     Route::get('{order:code}', [OrderController::class, 'showPublic'])
         ->middleware('can:orders.show_summary')
         ->whereAlphaNumeric('order');
