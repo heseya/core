@@ -41,5 +41,6 @@ return [
         EventType::NEW_LOCALIZATION_LOGIN_ATTEMPT => 'Zdarzenie po pomyślnej próbie logowania z nowej lokalizacji',
         EventType::FAILED_LOGIN_ATTEMPT => 'Zdarzenie wyzwalane po niepomyślnej próbie logowania',
         EventType::ORDER_UPDATED_SHIPPING_NUMBER => 'Zdarzenie wyzwalane po aktualizacji numeru listu przewozowego',
+        EventType::SEND_ORDER_URLS => 'Zdarzenie wyzwalane po wysłaniu linków do zamówionych produktów',
     ],
 ];

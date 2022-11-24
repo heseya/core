@@ -40,6 +40,7 @@ return [
         EventType::NEW_LOCALIZATION_LOGIN_ATTEMPT => ['users.show_details'],
         EventType::FAILED_LOGIN_ATTEMPT => ['users.show_details'],
         EventType::ORDER_UPDATED_SHIPPING_NUMBER => ['orders.show_details', 'orders.show'],
+        EventType::SEND_ORDER_URLS => ['orders.show_details', 'orders.show'],
     ],
 
     'permissions_hidden' => [
