@@ -10,18 +10,18 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class OrderProductUpdateDto extends Dto implements InstantiateFromRequest
 {
-    private bool $is_delivered;
+    private bool|Missing $is_delivered;
     private array|Missing $urls;
 
     public static function instantiateFromRequest(FormRequest|OrderProductUpdateRequest $request): self
     {
         return new self(
-            is_delivered: $request->input('is_delivered'),
+            is_delivered: $request->input('is_delivered', new Missing()),
             urls: self::processUrls($request->input('urls', new Missing())),
         );
     }
 
-    public function getIsDelivered(): bool
+    public function getIsDelivered(): Missing|bool
     {
         return $this->is_delivered;
     }

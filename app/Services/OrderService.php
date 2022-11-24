@@ -272,11 +272,13 @@ class OrderService implements OrderServiceContract
         return $this->discountService->calcCartDiscounts($cartDto, $products);
     }
 
-    public function processOrderProductUrls(OrderProductUpdateDto $dto, OrderProduct $product): void
+    public function processOrderProductUrls(OrderProductUpdateDto $dto, OrderProduct $product): OrderProduct
     {
-        $product->update([
-            'is_delivered' => $dto->getIsDelivered(),
-        ]);
+        if (!$dto->getIsDelivered() instanceof Missing) {
+            $product->update([
+                'is_delivered' => $dto->getIsDelivered(),
+            ]);
+        }
 
         if (!$dto->getUrls() instanceof Missing) {
             /** @var OrderProductUrlDto $url */
@@ -291,6 +293,7 @@ class OrderService implements OrderServiceContract
                 );
             }
         }
+        return $product;
     }
 
     public function indexMyOrderProducts(OrderProductSearchDto $dto): LengthAwarePaginator
