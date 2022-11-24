@@ -92,6 +92,9 @@ final class Exceptions extends Enum
 
     public const PRODUCT_IS_NOT_ON_WISHLIST = 'Product is not on wishlist';
 
+    public const PAYMENT_METHOD_NOT_AVAILABLE_FOR_SHIPPING =
+        'Payment method not available for selected shipping method';
+
     public static function getCode(string $value): int
     {
         return match ($value) {
