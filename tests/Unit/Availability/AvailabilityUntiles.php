@@ -5,10 +5,22 @@ namespace Tests\Unit\Availability;
 use App\Models\Item;
 use App\Models\Option;
 use App\Models\Schema;
+use App\Services\AvailabilityService;
+use App\Services\DepositService;
 use Illuminate\Support\Collection;
 
 trait AvailabilityUntiles
 {
+    protected AvailabilityService $availabilityService;
+
+    public function __construct(?string $name = null, array $data = [], $dataName = '')
+    {
+        parent::__construct($name, $data, $dataName);
+
+        $this->availabilityService = new AvailabilityService(new DepositService());
+        Item::disableAuditing();
+    }
+
     /**
      * Crate array of Items with pivot. You can use required_quantity param.
      */

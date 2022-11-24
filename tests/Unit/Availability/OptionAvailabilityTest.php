@@ -2,25 +2,12 @@
 
 namespace Tests\Unit\Availability;
 
-use App\Models\Item;
-use App\Services\AvailabilityService;
-use App\Services\DepositService;
 use Illuminate\Support\Carbon;
 use PHPUnit\Framework\TestCase;
 
-class OptionsAvailabilityTest extends TestCase
+class OptionAvailabilityTest extends TestCase
 {
     use AvailabilityUntiles;
-
-    protected AvailabilityService $availabilityService;
-
-    public function __construct(?string $name = null, array $data = [], $dataName = '')
-    {
-        parent::__construct($name, $data, $dataName);
-
-        $this->availabilityService = new AvailabilityService(new DepositService());
-        Item::disableAuditing();
-    }
 
     /**
      * Digital items

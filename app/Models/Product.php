@@ -143,31 +143,24 @@ class Product extends Model implements AuditableContract, Explored, SortableCont
     ];
 
     protected string $defaultSortBy = 'products.order';
-
     protected string $defaultSortDirection = 'desc';
-
-    private ProductSearchServiceContract $searchService;
-
-    public function __construct(array $attributes = [])
-    {
-        parent::__construct($attributes);
-
-        $this->searchService = app(ProductSearchServiceContract::class);
-    }
 
     public function mappableAs(): array
     {
-        return $this->searchService->mappableAs();
+        $searchService = app(ProductSearchServiceContract::class);
+        return $searchService->mappableAs();
     }
 
     public function toSearchableArray(): array
     {
-        return $this->searchService->mapSearchableArray($this);
+        $searchService = app(ProductSearchServiceContract::class);
+        return $searchService->mapSearchableArray($this);
     }
 
     public function getSearchableFields(): array
     {
-        return $this->searchService->searchableFields();
+        $searchService = app(ProductSearchServiceContract::class);
+        return $searchService->searchableFields();
     }
 
     public function indexSettings(): array

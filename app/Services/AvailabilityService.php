@@ -58,6 +58,16 @@ class AvailabilityService implements AvailabilityServiceContract
         $schema->update($this->getCalculateSchemaAvailability($schema));
     }
 
+    public function calculateProductAvailability(Product $product): void
+    {
+        $product->productAvailabilities()->delete();
+        $product->update($this->getCalculateProductAvailability($product));
+
+        if ($product->wasChanged()) {
+            ProductUpdated::dispatch($product);
+        }
+    }
+
     /**
      * @return array{available: bool, shipping_time: (int|null), shipping_date: (Carbon|null)}
      */
@@ -164,13 +174,20 @@ class AvailabilityService implements AvailabilityServiceContract
         ];
     }
 
-    public function calculateProductAvailability(Product $product): void
+    public function getCalculateProductAvailability(Product $product): array
     {
+        if ($product->schemas->isEmpty() && $product->items->isEmpty()) {
+            return [
+                'available' => true,
+                'quantity' => null,
+                'shipping_time' => null,
+                'shipping_date' => null,
+            ];
+        }
+
         [$items, $requiredItems] = $this->productRequiredItems($product);
 
         [$shippingTimeDeposits, $shippingDateDeposits] = $this->itemsGroupedDeposits($items);
-
-        $product->productAvailabilities()->delete();
 
         $quantity = $this->calculateProductDeposits(
             $items,
@@ -179,6 +196,7 @@ class AvailabilityService implements AvailabilityServiceContract
             'shipping_time',
             $requiredItems,
         );
+
         $quantity += $this->calculateProductDeposits(
             $items,
             $shippingDateDeposits,
@@ -187,14 +205,10 @@ class AvailabilityService implements AvailabilityServiceContract
             $requiredItems,
         );
 
-        $product->update([
+        return [
             'quantity' => $quantity,
             'available' => $this->isProductAvailable($product),
-        ] + $this->depositService->getProductShippingTimeDate($product));
-
-        if ($product->wasChanged()) {
-            ProductUpdated::dispatch($product);
-        }
+        ] + $this->depositService->getProductShippingTimeDate($product);
     }
 
     public function isProductAvailable(Product $product): bool

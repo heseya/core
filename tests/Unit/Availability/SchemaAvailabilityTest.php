@@ -3,9 +3,6 @@
 namespace Tests\Unit\Availability;
 
 use App\Enums\SchemaType;
-use App\Models\Item;
-use App\Services\AvailabilityService;
-use App\Services\DepositService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use PHPUnit\Framework\TestCase;
@@ -13,16 +10,6 @@ use PHPUnit\Framework\TestCase;
 class SchemaAvailabilityTest extends TestCase
 {
     use AvailabilityUntiles;
-
-    protected AvailabilityService $availabilityService;
-
-    public function __construct(?string $name = null, array $data = [], $dataName = '')
-    {
-        parent::__construct($name, $data, $dataName);
-
-        $this->availabilityService = new AvailabilityService(new DepositService());
-        Item::disableAuditing();
-    }
 
     /**
      * All schema types without SELECT
@@ -40,7 +27,7 @@ class SchemaAvailabilityTest extends TestCase
      *
      * @dataProvider schemaTypesProvider
      */
-    public function testNoOptions($type): void
+    public function testNoOptions(int $type): void
     {
         $schema = $this->createSchema([
             'type' => $type,
