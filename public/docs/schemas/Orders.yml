@@ -222,6 +222,12 @@ OrderProductPublic:
     id:
       type: string
       example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    order_id:
+      type: string
+      example: 026bc5f6-8373-4aeb-972e-e78d72a67121
+    name:
+      type: string
+      example: Produkt
     quantity:
       type: number
       example: '12.4'
@@ -231,6 +237,9 @@ OrderProductPublic:
     price_initial:
       type: number
       example: '299.99'
+    vat_rate:
+      type: number
+      example: '0.23'
     schemas:
       type: array
       items:
@@ -238,6 +247,8 @@ OrderProductPublic:
     shipping_digital:
       type: boolean
       example: true
+    product:
+      $ref: './Products.yml#/ProductView'
     urls:
       type: array
       items:
