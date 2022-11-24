@@ -22,7 +22,8 @@ class Kernel extends ConsoleKernel
     {
         $schedule->job(new CheckActiveSales())->everyThirtyMinutes();
 
-        $schedule->job(new StopShippingUnlimitedStockDateJob())->hourly();
+        // every hour at minute 43.
+        $schedule->job(new StopShippingUnlimitedStockDateJob())->cron('43 * * * *');
 
         $schedule->job(new GoogleCategoryJob())->weekly();
     }
