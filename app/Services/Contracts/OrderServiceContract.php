@@ -5,6 +5,7 @@ namespace App\Services\Contracts;
 use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
+use App\Dtos\OrderProductSearchDto;
 use App\Dtos\OrderProductUpdateDto;
 use App\Models\CartResource;
 use App\Models\Order;
@@ -25,4 +26,6 @@ interface OrderServiceContract
     public function cartProcess(CartDto $cartDto): CartResource;
 
     public function processOrderProductUrls(OrderProductUpdateDto $dto, OrderProduct $product): OrderProduct;
+
+    public function indexMyOrderProducts(OrderProductSearchDto $dto): LengthAwarePaginator;
 }

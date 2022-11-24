@@ -6,6 +6,7 @@ use App\Dtos\AddressDto;
 use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
+use App\Dtos\OrderProductSearchDto;
 use App\Dtos\OrderProductUpdateDto;
 use App\Dtos\OrderProductUrlDto;
 use App\Enums\ExceptionsEnums\Exceptions;
@@ -271,6 +272,38 @@ class OrderService implements OrderServiceContract
         return $this->discountService->calcCartDiscounts($cartDto, $products);
     }
 
+    public function processOrderProductUrls(OrderProductUpdateDto $dto, OrderProduct $product): OrderProduct
+    {
+        if (!$dto->getIsDelivered() instanceof Missing) {
+            $product->update([
+                'is_delivered' => $dto->getIsDelivered(),
+            ]);
+        }
+
+        if (!$dto->getUrls() instanceof Missing) {
+            /** @var OrderProductUrlDto $url */
+            foreach ($dto->getUrls() as $url) {
+                if ($url->getUrl() === null) {
+                    $product->urls()->where('name', $url->getName())->delete();
+                    continue;
+                }
+                $product->urls()->updateOrCreate(
+                    ['name' => $url->getName()],
+                    $url->toArray(),
+                );
+            }
+        }
+        return $product;
+    }
+
+    public function indexMyOrderProducts(OrderProductSearchDto $dto): LengthAwarePaginator
+    {
+        return OrderProduct::searchByCriteria(['user' => Auth::id()] + $dto->toArray())
+            ->sort('created_at:desc')
+            ->with(['urls', 'product'])
+            ->paginate(Config::get('pagination.per_page'));
+    }
+
     private function checkAddress(AddressDto|Missing $addressDto): bool
     {
         if ($addressDto instanceof Missing) {
@@ -337,30 +370,5 @@ class OrderService implements OrderServiceContract
         }
 
         return !$itemsToRemove || $this->depositService->removeItemsFromWarehouse($itemsToRemove, $orderProduct);
-    }
-
-    public function processOrderProductUrls(OrderProductUpdateDto $dto, OrderProduct $product): OrderProduct
-    {
-        if (!$dto->getIsDelivered() instanceof Missing) {
-            $product->update([
-                'is_delivered' => $dto->getIsDelivered(),
-            ]);
-        }
-
-        if (!$dto->getUrls() instanceof Missing) {
-            /** @var OrderProductUrlDto $url */
-            foreach ($dto->getUrls() as $url) {
-                if ($url->getUrl() === null) {
-                    $product->urls()->where('name', $url->getName())->delete();
-                    continue;
-                }
-                $product->urls()->updateOrCreate(
-                    ['name' => $url->getName()],
-                    $url->toArray(),
-                );
-            }
-        }
-
-        return $product;
     }
 }

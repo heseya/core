@@ -492,3 +492,30 @@ OrderProductUrls:
     responses:
       204:
         description: No content
+
+MyOrderProducts:
+  get:
+    tags:
+      - Orders
+    parameters:
+      - name: shipping_digital
+        in: query
+        required: false
+        schema:
+          type: boolean
+          example: true
+    summary: 'User ordered products list'
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Orders.yml#/OrderProductPublic'
+              type: object
+    security:
+      - BearerAuth: [ ]

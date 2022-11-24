@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Criteria\WhereHasUser;
 use App\Traits\HasOrderDiscount;
+use App\Traits\Sortable;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class OrderProduct extends Model
 {
-    use HasFactory, HasOrderDiscount;
+    use HasFactory, HasOrderDiscount, HasCriteria, Sortable;
 
     protected $fillable = [
         'quantity',
@@ -32,6 +35,15 @@ class OrderProduct extends Model
         'vat_rate' => 'float',
         'shipping_digital' => 'boolean',
         'is_delivered' => 'boolean',
+    ];
+
+    protected array $criteria = [
+        'shipping_digital',
+        'user' => WhereHasUser::class,
+    ];
+
+    protected array $sortable = [
+        'created_at',
     ];
 
     public function schemas(): HasMany

@@ -135,6 +135,8 @@ paths:
     $ref: './paths/Orders.yml#/OrdersMy'
   '/orders/my/{code}':
     $ref: './paths/Orders.yml#/OrdersMySingle'
+  '/orders/my-products':
+    $ref: './paths/Orders.yml#/MyOrderProducts'
   '/orders/id:{id}/docs':
     $ref: './paths/Orders.yml#/OrderAddDocument'
   '/orders/id:{order_id}/docs/id:{doc_id}':
