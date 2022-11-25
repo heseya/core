@@ -247,6 +247,22 @@ class DiscountTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testShowInactiveByCode($user): void
+    {
+        $this->$user->givePermissionTo('coupons.show_details');
+        $discount = Discount::factory()->create([
+            'active' => false,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson('/coupons/' . $discount->code)
+            ->assertNotFound();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testShowWithConditions($user): void
     {
         $this->$user->givePermissionTo('coupons.show_details');
@@ -384,6 +400,27 @@ class DiscountTest extends TestCase
             ->assertJsonFragment([
                 'id' => $discount->getKey(),
                 'active' => true,
+            ]);
+    }
+
+    /**
+     * @dataProvider authWithDiscountProvider
+     */
+    public function testShowByIdInactive($user, $discountKind): void
+    {
+        $this->$user->givePermissionTo("${discountKind}.show_details");
+
+        $code = $discountKind === 'coupons' ? [] : ['code' => null];
+        $discount = Discount::factory($code)->create([
+            'active' => false,
+        ]);
+
+        $this
+            ->actingAs($this->$user)
+            ->getJson("/${discountKind}/id:" . $discount->getKey())
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $discount->getKey(),
             ]);
     }
 
