@@ -131,6 +131,88 @@ class PaymentTest extends TestCase
             ]);
     }
 
+    /**
+     * @dataProvider authProvider
+     */
+    public function testNotAvailablePaymentMethodDigital($user): void
+    {
+        $this->$user->givePermissionTo('payments.add');
+
+        $paymentMethod = PaymentMethod::factory()->create([
+            'public' => true,
+            'name' => 'Przelewy24',
+            'alias' => 'przelewy',
+        ]);
+        $digitalShippingMethod = ShippingMethod::factory()->create(['public' => true]);
+        $digitalShippingMethod->paymentMethods()->save($paymentMethod);
+
+        $this->order->update([
+            'digital_shipping_method_id' => $digitalShippingMethod->getKey(),
+        ]);
+
+        $code = $this->order->code;
+        $this
+            ->actingAs($this->$user)
+            ->postJson("/orders/${code}/pay/przelewy24", [
+                'continue_url' => 'continue_url',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => Exceptions::PAYMENT_METHOD_NOT_AVAILABLE_FOR_SHIPPING,
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testPaymentMethodDigital($user): void
+    {
+        $this->$user->givePermissionTo('payments.add');
+
+        Http::fakeSequence()
+            ->push([
+                'access_token' => 'random_access_token',
+            ])
+            ->push([
+                'status' => [
+                    'statusCode' => 'SUCCESS',
+                ],
+                'redirectUri' => 'payment_url',
+                'orderId' => 'payu_id',
+            ]);
+
+        $code = $this->order->code;
+
+        $digitalShippingMethod = ShippingMethod::factory()->create();
+        $paymentMethod = PaymentMethod::factory()->create([
+            'public' => true,
+            'name' => 'Payu',
+            'alias' => 'payu',
+        ]);
+        $digitalShippingMethod->paymentMethods()->save($paymentMethod);
+
+        $this->order->shippingMethod()->delete();
+        $this->order->digitalShippingMethod()->save($digitalShippingMethod);
+
+        $response = $this->actingAs($this->$user)
+            ->postJson("/orders/${code}/pay/payu", [
+                'continue_url' => 'continue_url',
+            ]);
+
+        $payment = Payment::find($response->getData()->data->id);
+
+        $response
+            ->assertCreated()
+            ->assertJsonFragment([
+                'method' => 'payu',
+                'paid' => false,
+                'amount' => $this->order->summary,
+                'date' => $payment->created_at,
+                'redirect_url' => 'payment_url',
+                'continue_url' => 'continue_url',
+            ]);
+    }
+
     public function testPayuNotificationUnauthorized(): void
     {
         $payment = Payment::factory()->make([
