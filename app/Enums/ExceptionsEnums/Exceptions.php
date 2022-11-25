@@ -94,6 +94,9 @@ final class Exceptions extends Enum
 
     public const PRODUCT_PURCHASE_LIMIT = 'The limit of purchased product units per user has been exceeded';
 
+    public const PAYMENT_METHOD_NOT_AVAILABLE_FOR_SHIPPING =
+        'Payment method not available for selected shipping method';
+
     public static function getCode(string $value): int
     {
         return match ($value) {

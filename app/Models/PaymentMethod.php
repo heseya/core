@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Criteria\WhereHasOrderWithCode;
+use App\Criteria\WhereHasShippingMethod;
+use Heseya\Searchable\Traits\HasCriteria;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -10,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class PaymentMethod extends Model
 {
-    use HasFactory;
+    use HasFactory, HasCriteria;
 
     /**
      * The attributes that are mass assignable.
@@ -30,6 +33,13 @@ class PaymentMethod extends Model
      */
     protected $casts = [
         'public' => 'boolean',
+    ];
+
+    protected array $criteria = [
+        'order_code' => WhereHasOrderWithCode::class,
+        'shipping_method_id' => WhereHasShippingMethod::class,
+        'public',
+        'alias',
     ];
 
     public function shippingMethods(): BelongsToMany

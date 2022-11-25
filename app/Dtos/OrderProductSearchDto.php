@@ -10,7 +10,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class OrderProductSearchDto extends Dto implements InstantiateFromRequest
 {
-    private bool|null|Missing $shipping_digital;
+    private bool|Missing $shipping_digital;
 
     public static function instantiateFromRequest(FormRequest|OrderProductSearchRequest $request): self
     {

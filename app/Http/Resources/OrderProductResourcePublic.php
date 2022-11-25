@@ -10,6 +10,7 @@ class OrderProductResourcePublic extends Resource
     {
         return [
             'id' => $this->resource->getKey(),
+            'order_id' => $this->resource->order_id,
             'name' => $this->resource->name,
             'quantity' => (float) $this->resource->quantity,
             'price' => $this->resource->price,

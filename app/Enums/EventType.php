@@ -44,6 +44,7 @@ final class EventType extends Enum implements LocalizedEnum
     public const REMOVE_ORDER_DOCUMENT = 'RemoveOrderDocument';
     public const ORDER_UPDATED_PAID = 'OrderUpdatedPaid';
     public const ORDER_UPDATED_SHIPPING_NUMBER = 'OrderUpdatedShippingNumber';
+    public const SEND_ORDER_URLS = 'SendOrderUrls';
 
     public static array $securedEvents = [
         self::TFA_INIT,

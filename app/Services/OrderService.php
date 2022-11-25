@@ -14,6 +14,7 @@ use App\Enums\SchemaType;
 use App\Events\OrderCreated;
 use App\Events\OrderUpdated;
 use App\Events\OrderUpdatedShippingNumber;
+use App\Events\SendOrderUrls;
 use App\Exceptions\ClientException;
 use App\Exceptions\OrderException;
 use App\Exceptions\ServerException;
@@ -24,6 +25,7 @@ use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\ShippingMethod;
 use App\Models\Status;
+use App\Notifications\SendUrls;
 use App\Services\Contracts\DepositServiceContract;
 use App\Services\Contracts\DiscountServiceContract;
 use App\Services\Contracts\ItemServiceContract;
@@ -273,11 +275,13 @@ class OrderService implements OrderServiceContract
         return $this->discountService->calcCartDiscounts($cartDto, $products);
     }
 
-    public function processOrderProductUrls(OrderProductUpdateDto $dto, OrderProduct $product): void
+    public function processOrderProductUrls(OrderProductUpdateDto $dto, OrderProduct $product): OrderProduct
     {
-        $product->update([
-            'is_delivered' => $dto->getIsDelivered(),
-        ]);
+        if (!$dto->getIsDelivered() instanceof Missing) {
+            $product->update([
+                'is_delivered' => $dto->getIsDelivered(),
+            ]);
+        }
 
         if (!$dto->getUrls() instanceof Missing) {
             /** @var OrderProductUrlDto $url */
@@ -292,6 +296,7 @@ class OrderService implements OrderServiceContract
                 );
             }
         }
+        return $product;
     }
 
     public function indexMyOrderProducts(OrderProductSearchDto $dto): LengthAwarePaginator
@@ -368,5 +373,19 @@ class OrderService implements OrderServiceContract
         }
 
         return !$itemsToRemove || $this->depositService->removeItemsFromWarehouse($itemsToRemove, $orderProduct);
+    }
+
+    public function sendUrls(Order $order): void
+    {
+        $products = $order->products()->has('urls')->get();
+        if (!$products->isEmpty()) {
+            $order->notify(new SendUrls($order, $products));
+
+            $products->toQuery()->update([
+                'is_delivered' => true,
+            ]);
+
+            SendOrderUrls::dispatch($order);
+        }
     }
 }

@@ -33,6 +33,9 @@ Route::prefix('orders')->group(function (): void {
         ->middleware('can:orders.edit');
     Route::patch('id:{order:id}/products/id:{product:id}', [OrderController::class, 'updateOrderProduct'])
         ->middleware('can:orders.edit');
+    Route::post('id:{order:id}/send-urls', [OrderController::class, 'sendUrls'])
+        ->middleware('can:orders.show_details')
+        ->whereUuid('order');
     Route::get('{order:code}', [OrderController::class, 'showPublic'])
         ->middleware('can:orders.show_summary')
         ->whereAlphaNumeric('order');
