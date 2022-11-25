@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ExceptionsEnums\Exceptions;
 use App\Events\OrderUpdatedPaid;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
@@ -24,6 +26,12 @@ class PaymentTest extends TestCase
         Product::factory()->create();
 
         $shipping_method = ShippingMethod::factory()->create();
+        $paymentMethod = PaymentMethod::factory()->create([
+            'public' => true,
+            'name' => 'Payu',
+            'alias' => 'payu',
+        ]);
+        $shipping_method->paymentMethods()->save($paymentMethod);
         $status = Status::factory()->create();
         $product = Product::factory()->create();
 
@@ -101,6 +109,25 @@ class PaymentTest extends TestCase
                 'date' => $payment->created_at,
                 'redirect_url' => 'payment_url',
                 'continue_url' => 'continue_url',
+            ]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testNotAvailablePaymentMethod($user): void
+    {
+        $this->$user->givePermissionTo('payments.add');
+
+        $code = $this->order->code;
+        $this
+            ->actingAs($this->$user)
+            ->postJson("/orders/${code}/pay/przelewy24", [
+                'continue_url' => 'continue_url',
+            ])
+            ->assertUnprocessable()
+            ->assertJsonFragment([
+                'message' => Exceptions::PAYMENT_METHOD_NOT_AVAILABLE_FOR_SHIPPING,
             ]);
     }
 

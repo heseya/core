@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\ShippingMethod;
 use Tests\TestCase;
@@ -54,6 +55,38 @@ class PaymentMethodTest extends TestCase
             ->assertOk()
             ->assertJsonCount(2, 'data') // Should show only public payment methods.
             ->assertJsonFragment(['id' => $this->payment_method->getKey()])
+            ->assertJsonFragment(['id' => $this->payment_method_related->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexByOrderCode($user): void
+    {
+        $this->$user->givePermissionTo('payment_methods.show');
+
+        $order = Order::factory()->create([
+            'shipping_method_id' => $this->shipping_method->getKey(),
+        ]);
+
+        $this->actingAs($this->$user)
+            ->json('GET', '/payment-methods', ['order_code' => $order->code])
+            ->assertOk()
+            ->assertJsonCount(1, 'data') // Should show only public payment methods.
+            ->assertJsonFragment(['id' => $this->payment_method_related->getKey()]);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testIndexByShippingMethod($user): void
+    {
+        $this->$user->givePermissionTo('payment_methods.show');
+
+        $this->actingAs($this->$user)
+            ->json('GET', '/payment-methods', ['shipping_method_id' => $this->shipping_method->getKey()])
+            ->assertOk()
+            ->assertJsonCount(1, 'data') // Should show only public payment methods.
             ->assertJsonFragment(['id' => $this->payment_method_related->getKey()]);
     }
 
