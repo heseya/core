@@ -13,8 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('shipping_methods', function (Blueprint $table): void {
-            $table->renameColumn('black_list', 'block_list');
+        Schema::table('orders', function (Blueprint $table) {
+            $table->renameColumn('delivery_address_id', 'shipping_address_id');
         });
     }
 
@@ -25,8 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('shipping_methods', function (Blueprint $table): void {
-            $table->renameColumn('block_list', 'black_list');
+        Schema::table('orders', function (Blueprint $table) {
+            $table->renameColumn('shipping_address_id', 'delivery_address_id');
         });
     }
 };

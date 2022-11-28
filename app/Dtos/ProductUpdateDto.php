@@ -13,7 +13,7 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
     public string|Missing $slug;
     public float|Missing $price;
     public bool|Missing $public;
-    public bool|Missing $is_digital;
+    public bool|Missing $shipping_digital;
 
     public int|Missing $order;
     public float|Missing $quantity_step;
@@ -38,7 +38,7 @@ class ProductUpdateDto extends Dto implements InstantiateFromRequest
             slug: $request->input('slug', new Missing()),
             price: $request->input('price', new Missing()),
             public: $request->input('public', new Missing()),
-            is_digital: $request->input('is_digital', new Missing()),
+            shipping_digital: $request->input('shipping_digital', new Missing()),
             order: $request->input('order', new Missing()),
             quantity_step: $request->input('quantity_step', new Missing()),
             google_product_category: $request->input('google_product_category', new Missing()),

@@ -10,15 +10,14 @@ Order:
     email:
       type: string
       example: admin@example.com
+    payable:
+      type: boolean
     currency:
       type: string
       example: PLN
     comment:
       type: string
       example: 'asap plz'
-    shipping_number:
-      type: string
-      example: '630552359128340015809770'
     cart_total_initial:
       type: number
       example: 38.7
@@ -43,8 +42,22 @@ Order:
       $ref: './Statuses.yml#/Status'
     shipping_method:
       $ref: './ShippingMethods.yml#/ShippingMethod'
-    delivery_address:
-      $ref: './Addresses.yml#/Address'
+    digital_shipping_method:
+      $ref: './ShippingMethods.yml#/ShippingMethod'
+    documents:
+      $ref: './Documents.yml#/Document'
+    shipping_type:
+      type: string
+      example: 'address'
+    invoice_requested:
+      type: boolean
+    shipping_place:
+      oneOf:
+        - $ref: './Addresses.yml#/Address'
+        - type: string
+          example: 'Test 12 11-111 Test'
+    created_at:
+      type: string
     metadata:
       $ref: './../schemas/Metadata.yml#/Metadata'
     metadata_private:
@@ -129,21 +142,12 @@ OrderSchema:
       type: number
       example: '59.99'
 
-OrderList:
-  type: object
-  allOf:
-    - $ref: '#/Order'
-    - properties:
-        payable:
-          type: boolean
-
-
 OrderView:
   type: object
   allOf:
     - $ref: '#/Order'
     - properties:
-        invoice_address:
+        billing_address:
           $ref: './Addresses.yml#/Address'
         products:
           type: array
@@ -153,6 +157,9 @@ OrderView:
           type: array
           items:
             $ref: './Payments.yml#/Payment'
+        shipping_number:
+          type: string
+          example: '630552359128340015809770'
         buyer:
           oneOf:
             - $ref: './Users.yml#/UserView'
@@ -192,6 +199,8 @@ OrderSummary:
     summary:
       type: number
     shipping_method:
+      $ref: './ShippingMethods.yml#/ShippingMethod'
+    digital_shipping_method:
       $ref: './ShippingMethods.yml#/ShippingMethod'
     created_at:
       type: string

@@ -191,8 +191,8 @@ class PaymentTest extends TestCase
         ]);
         $digitalShippingMethod->paymentMethods()->save($paymentMethod);
 
-        $this->order->shippingMethod()->delete();
-        $this->order->digitalShippingMethod()->save($digitalShippingMethod);
+        $this->order->shippingMethod()->dissociate();
+        $this->order->digitalShippingMethod()->associate($digitalShippingMethod);
 
         $response = $this->actingAs($this->$user)
             ->postJson("/orders/${code}/pay/payu", [

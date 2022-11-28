@@ -33,10 +33,12 @@ class OrderSeeder extends Seeder
             $order->shipping_method_id = $shipping_methods->random()->getKey();
             $order->status_id = $statuses->random()->getKey();
 
-            $order->delivery_address_id = Address::factory()->create()->getKey();
+            $order->shipping_address_id = Address::factory()->create()->getKey();
 
             if (rand(0, 1)) {
-                $order->invoice_address_id = Address::factory()->create()->getKey();
+                $order->billing_address_id = Address::factory()->create()->getKey();
+            } else {
+                $order->billing_address_id = $order->delivery_address_id;
             }
 
             $order->save();

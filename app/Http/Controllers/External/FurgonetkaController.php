@@ -38,7 +38,14 @@ class FurgonetkaController extends Controller
         $packageTemplate = PackageTemplate::findOrFail($validated['package_template_id']);
         $service_type = $validated['provider'];
 
-        $validator = Validator::make($order->deliveryAddress->toArray(), [
+        if ($order->shippingAddress === null) {
+            return Error::abort(
+                'Order has no shipping address.',
+                502,
+            );
+        }
+
+        $validator = Validator::make($order->shippingAddress->toArray(), [
             'country' => ['required', 'in:PL'],
             'phone' => ['required', 'phone:PL'],
         ]);
@@ -158,11 +165,11 @@ class FurgonetkaController extends Controller
                 ],
                 'receiver' => [
                     'email' => $order->email,
-                    'name' => $order->deliveryAddress->name,
-                    'street' => $order->deliveryAddress->address,
-                    'postcode' => $order->deliveryAddress->zip,
-                    'city' => $order->deliveryAddress->city,
-                    'phone' => $order->deliveryAddress->phoneSimple,
+                    'name' => $order->shippingAddress->name,
+                    'street' => $order->shippingAddress->address,
+                    'postcode' => $order->shippingAddress->zip,
+                    'city' => $order->shippingAddress->city,
+                    'phone' => $order->shippingAddress->phoneSimple,
                 ],
                 'label' => [
                     'file_format' => 'pdf',
