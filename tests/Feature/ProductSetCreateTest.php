@@ -112,6 +112,52 @@ class ProductSetCreateTest extends TestCase
     /**
      * @dataProvider authProvider
      */
+    public function testCreateTreeViewFalse($user): void
+    {
+        $this->$user->givePermissionTo('product_sets.add');
+
+        Event::fake([ProductSetCreated::class]);
+
+        $set = [
+            'name' => 'Test',
+        ];
+
+        $defaults = [
+            'public' => true,
+            'hide_on_index' => false,
+            'slug' => 'test',
+        ];
+
+        $this
+            ->actingAs($this->$user)
+            ->postJson('/product-sets?tree=0', $set + [
+                'slug_suffix' => 'test',
+                'slug_override' => false,
+            ])
+            ->assertCreated()
+            ->assertJson([
+                'data' => $set + $defaults + [
+                    'slug_override' => false,
+                    'slug_suffix' => 'test',
+                    'parent' => null,
+                    'children_ids' => [],
+                ],
+            ])
+            ->assertJsonMissing(['data' => 'children']);
+
+        $this->assertDatabaseHas(
+            'product_sets',
+            $set + $defaults + [
+                'parent_id' => null,
+            ]
+        );
+
+        Event::assertDispatched(ProductSetCreated::class);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
     public function testCreateMinimalWithWebHook($user): void
     {
         $this->$user->givePermissionTo('product_sets.add');
