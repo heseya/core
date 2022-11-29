@@ -30,7 +30,11 @@ class StatusService implements StatusServiceContract
 
     public function update(Status $status, StatusDto $dto): Status
     {
-        if (is_bool($dto->getCancel()) && $status->orders()->count() > 0) {
+        if (
+            $status->orders()->count() > 0
+            && !$dto->getCancel() instanceof Missing
+            && $dto->getCancel() !== $status->cancel
+        ) {
             throw new ClientException(Exceptions::CLIENT_STATUS_USED);
         }
 
