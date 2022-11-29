@@ -1,0 +1,46 @@
+SavedAddress:
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - default
+          - name
+          - address
+        properties:
+          default:
+            type: boolean
+            example: true
+          name:
+            type: string
+            example: Home
+          address:
+            type: object
+            required:
+              - name
+              - phone
+              - address
+              - zip
+              - city
+              - country
+            properties:
+              name:
+                type: string
+                example: Jan Kowalski
+              phone:
+                type: string
+                example: 123456789
+              address:
+                type: string
+                example: ul. Ulica 12
+              zip:
+                type: string
+                example: 12-123
+              city:
+                type: string
+                example: Miasto
+              country:
+                type: string
+                example: Polska
+              vat:
+                type: string
