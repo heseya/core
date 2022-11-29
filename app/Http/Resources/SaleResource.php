@@ -39,5 +39,6 @@ class SaleResource extends Resource
             'target_products' => ProductResource::collection($this->resource->products),
             'target_sets' => ProductSetResource::collection($this->resource->productSets),
             'target_shipping_methods' => ShippingMethodResource::collection($this->resource->shippingMethods),
+        ];
     }
 }
