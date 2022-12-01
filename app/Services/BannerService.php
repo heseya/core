@@ -69,6 +69,6 @@ class BannerService implements BannerServiceContract
 
     public function delete(Banner $banner): bool
     {
-        return $banner->delete();
+        return (bool) $banner->delete();
     }
 }

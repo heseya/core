@@ -227,7 +227,7 @@ class AvailabilityService implements AvailabilityServiceContract
         return $itemsOptions->every(
             function (Collection $item) use ($itemsOptions, $items) {
                 $requiredAmount = ($items[$item->first()->getKey()] ?? 0) +
-                    $itemsOptions->get($item->first()->getKey())->count();
+                    $itemsOptions->get($item->first()->getKey())?->count();
                 return $item->first()->quantity >= $requiredAmount;
             }
         );

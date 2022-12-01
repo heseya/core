@@ -49,8 +49,16 @@ class MediaService implements MediaServiceContract
         $media->forceDelete();
     }
 
+    /**
+     * @throws ClientException
+     * @throws ServerException
+     */
     public function store(MediaDto $dto, bool $private = false): Media
     {
+        if ($dto->getFile() instanceof Missing) {
+            // TODO jakiś komunikat dodać
+            throw new ClientException();
+        }
         $private = $private ? '?private' : '';
 
         $response = Http::attach('file', $dto->getFile()->getContent(), 'file')
@@ -112,7 +120,7 @@ class MediaService implements MediaServiceContract
         };
     }
 
-    private function updateSlug(string $mediaUrl, string $slug): string
+    private function updateSlug(string $mediaUrl, ?string $slug): string
     {
         if (!Str::contains($mediaUrl, Config::get('silverbox.host'))) {
             throw new ClientException(message: Exceptions::CDN_NOT_ALLOWED_TO_CHANGE_ALT);

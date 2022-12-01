@@ -419,7 +419,7 @@ class DiscountService implements DiscountServiceContract
         if (
             ($discount->target_type->value === DiscountTargetType::ORDER_VALUE
                 || $discount->target_type->value === DiscountTargetType::SHIPPING_PRICE)
-            && $refreshedOrder->discounts->count() === 0) {
+            && $refreshedOrder?->discounts->count() === 0) {
             $order = $this->roundProductPrices($order);
         }
         return match ($discount->target_type->value) {
@@ -637,7 +637,7 @@ class DiscountService implements DiscountServiceContract
         }
 
         $refreshed = $order->fresh();
-        if ($refreshed->discounts->count() === 0) {
+        if ($refreshed?->discounts->count() === 0) {
             $order = $this->roundProductPrices($order);
         }
 
@@ -838,39 +838,41 @@ class DiscountService implements DiscountServiceContract
             ['quantity', 'asc'],
         ])->first();
 
-        $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
+        if ($product !== null) {
+            $minimalProductPrice = $this->settingsService->getMinimalPrice('minimal_product_price');
 
-        if ($product->quantity > 1 && $product->price !== $minimalProductPrice) {
-            $product->update(['quantity' => $product->quantity - 1]);
+            if ($product->quantity > 1 && $product->price !== $minimalProductPrice) {
+                $product->update(['quantity' => $product->quantity - 1]);
 
-            /** @var OrderProduct $newProduct */
-            $newProduct = $order->products()->create([
-                'product_id' => $product->product_id,
-                'quantity' => 1,
-                'price' => $product->price,
-                'price_initial' => $product->price_initial,
-                'name' => $product->name,
-                'base_price_initial' => $product->price,
-                'base_price' => $product->price,
-                'vat_rate' => $product->vat_rate,
-            ]);
+                /** @var OrderProduct $newProduct */
+                $newProduct = $order->products()->create([
+                    'product_id' => $product->product_id,
+                    'quantity' => 1,
+                    'price' => $product->price,
+                    'price_initial' => $product->price_initial,
+                    'name' => $product->name,
+                    'base_price_initial' => $product->price,
+                    'base_price' => $product->price,
+                    'vat_rate' => $product->vat_rate,
+                ]);
 
-            $product->discounts->each(function (Discount $discount) use ($newProduct): void {
-                // @phpstan-ignore-next-line
-                $this->attachDiscount($newProduct, $discount, $discount->pivot->applied_discount);
-            });
+                $product->discounts->each(function (Discount $discount) use ($newProduct): void {
+                    // @phpstan-ignore-next-line
+                    $this->attachDiscount($newProduct, $discount, $discount->pivot->applied_discount);
+                });
 
-            $product = $newProduct;
+                $product = $newProduct;
+            }
+
+            $price = $product->price ?? 0;
+
+            if ($price !== $minimalProductPrice) {
+                $this->calcOrderProductDiscount($product, $discount);
+                $product->save();
+            }
+
+            $order->cart_total -= ($price - $product->price) * $product->quantity;
         }
-
-        $price = $product->price;
-
-        if ($price !== $minimalProductPrice) {
-            $this->calcOrderProductDiscount($product, $discount);
-            $product->save();
-        }
-
-        $order->cart_total -= ($price - $product->price) * $product->quantity;
 
         return $order;
     }
@@ -1285,7 +1287,7 @@ class DiscountService implements DiscountServiceContract
     private function checkConditionMaxUses(DiscountCondition $condition): bool
     {
         $conditionDto = MaxUsesConditionDto::fromArray($condition->value + ['type' => $condition->type]);
-        return $condition->conditionGroup->discounts()->first()->orders()->count() < $conditionDto->getMaxUses();
+        return $condition->conditionGroup?->discounts()->first()?->orders()->count() < $conditionDto->getMaxUses();
     }
 
     private function checkConditionMaxUsesPerUser(DiscountCondition $condition): bool
@@ -1295,9 +1297,9 @@ class DiscountService implements DiscountServiceContract
         if (Auth::user()) {
             return $condition
                 ->conditionGroup
-                ->discounts()
+                ?->discounts()
                 ->first()
-                ->orders()
+                ?->orders()
                 ->whereHasMorph('buyer', [User::class, App::class], function (Builder $query): void {
                     $query->where('buyer_id', Auth::id());
                 })

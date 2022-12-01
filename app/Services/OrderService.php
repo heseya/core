@@ -310,7 +310,7 @@ class OrderService implements OrderServiceContract
     {
         $itemsToRemove = [];
         $product = $orderProduct->product;
-        $productItems = $product?->items;
+        $productItems = $product?->items ?? [];
         foreach ($productItems as $productItem) {
             $quantity = $productItem->pivot->required_quantity * $orderProduct->quantity;
 

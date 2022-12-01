@@ -105,7 +105,7 @@ class AuthService implements AuthServiceContract
         $payload = $this->tokenService->payload($refreshToken);
 
         if (
-            $payload->get('typ') !== TokenType::REFRESH ||
+            $payload?->get('typ') !== TokenType::REFRESH ||
             Token::where('id', $payload->get('jti'))->where('invalidated', true)->exists()
         ) {
             throw new ClientException(Exceptions::CLIENT_INVALID_TOKEN);
@@ -400,10 +400,12 @@ class AuthService implements AuthServiceContract
         $security_codes = Auth::user()?->securityCodes()
             ->where('expires_at', '>', Carbon::now())->get();
 
-        foreach ($security_codes as $security_code) {
-            if (Hash::check($code, $security_code->code)) {
-                $security_code->delete();
-                return true;
+        if ($security_codes !== null) {
+            foreach ($security_codes as $security_code) {
+                if (Hash::check($code, $security_code->code)) {
+                    $security_code->delete();
+                    return true;
+                }
             }
         }
 

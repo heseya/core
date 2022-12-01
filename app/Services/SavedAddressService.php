@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 
 class SavedAddressService implements SavedAddressServiceContract
 {
-    public function storeAddress(SavedAddressDto $addressDto, int $type): SavedAddress
+    public function storeAddress(SavedAddressDto $addressDto, int $type): ?SavedAddress
     {
         $savedAddress = null;
 

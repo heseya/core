@@ -9,6 +9,7 @@ use App\Traits\MapMetadata;
 use Heseya\Dto\Missing;
 use Illuminate\Foundation\Http\FormRequest;
 
+// TODO rozdzielić na Store i Update, bo są różnice w polach i tak
 class OrderDto extends CartOrderDto implements InstantiateFromRequest
 {
     use MapMetadata;

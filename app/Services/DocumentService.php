@@ -35,7 +35,7 @@ class DocumentService implements DocumentServiceContract
             ['name', $name],
             ['media_id', $media->getKey()],
             ['order_id', $order->getKey()],
-        ])->first();
+        ])->firstOrFail();
     }
 
     public function downloadDocument(OrderDocument $document): StreamedResponse

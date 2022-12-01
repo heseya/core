@@ -181,7 +181,7 @@ class ProductSetService implements ProductSetServiceContract
         $children = ProductSet::query()->whereIn('id', $dto->getChildrenIds())->get();
         $this->updateChildren($children, $set->getKey(), $slug, $publicParent && $dto->isPublic());
 
-        $rootOrder = ProductSet::reversed()->first()->order + 1;
+        $rootOrder = ProductSet::reversed()->first()?->order + 1;
 
         $set->children()
             ->whereNotIn('id', $dto->getChildrenIds())
@@ -293,34 +293,36 @@ class ProductSetService implements ProductSetServiceContract
     // TODO: fix this
     public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void
     {
-        $product = $set->products()->where('id', $dto->getProducts()[0]['id'])->first();
-        $order = $dto->getProducts()[0]['order'];
-        $orderedProductsAmount = $set->products()
-            ->whereNotNull('product_set_product.order')
-            ->whereNot('product_id', $dto->getProducts()[0]['id'])
-            ->count();
+        if (!$dto->getProducts() instanceof Missing) {
+            $product = $set->products()->where('id', $dto->getProducts()[0]['id'])->first();
+            $order = $dto->getProducts()[0]['order'];
+            $orderedProductsAmount = $set->products()
+                ->whereNotNull('product_set_product.order')
+                ->whereNot('product_id', $dto->getProducts()[0]['id'])
+                ->count();
 
-        if ($order > $orderedProductsAmount) {
-            $order = $orderedProductsAmount;
-        }
-
-        if ($product->pivot->order === null) {
-            $this->setOrder($order);
-        } else {
-            if ($order < $product->pivot->order) {
-                $this->setHigherOrder($product, $order);
-            } else {
-                $this->setLowerOrder($product, $order);
+            if ($order > $orderedProductsAmount) {
+                $order = $orderedProductsAmount;
             }
+
+            if ($product?->pivot->order === null) {
+                $this->setOrder($order);
+            } else {
+                if ($order < $product->pivot->order) {
+                    $this->setHigherOrder($product, $order);
+                } else {
+                    $this->setLowerOrder($product, $order);
+                }
+            }
+
+            $product->pivot->order = $order;
+            $product->pivot->save();
+
+            /** @var int $highestOrder */
+            $highestOrder = $set->products->max('pivot.order');
+
+            $this->assignOrderToNulls($highestOrder, $set->products->whereNull('pivot.order'));
         }
-
-        $product->pivot->order = $order;
-        $product->pivot->save();
-
-        /** @var int $highestOrder */
-        $highestOrder = $set->products->max('pivot.order');
-
-        $this->assignOrderToNulls($highestOrder, $set->products->whereNull('pivot.order'));
     }
 
     public function indexAllProducts(ProductSet $set): void
