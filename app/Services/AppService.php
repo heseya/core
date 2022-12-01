@@ -44,7 +44,7 @@ class AppService implements AppServiceContract
             throw new ClientException(Exceptions::CLIENT_ASSIGN_INVALID_PERMISSIONS);
         }
 
-        if (!Auth::user()->hasAllPermissions($permissions->toArray())) {
+        if (!Auth::user()?->hasAllPermissions($permissions->toArray())) {
             throw new ClientException(Exceptions::CLIENT_ADD_APP_WITH_PERMISSIONS_USER_DONT_HAVE);
         }
 
@@ -79,7 +79,7 @@ class AppService implements AppServiceContract
             );
         }
 
-        /** @var Collection<int, mixed>|array $appConfig */
+        /** @var array $appConfig */
         $appConfig = $response->json();
         /** @var Collection<int, mixed> $requiredPermissions */
         $requiredPermissions = $appConfig['required_permissions'];
@@ -298,7 +298,7 @@ class AppService implements AppServiceContract
             'role_id' => $role->getKey(),
         ]);
 
-        Auth::user()->assignRole($role);
+        Auth::user()?->assignRole($role);
     }
 
     /**

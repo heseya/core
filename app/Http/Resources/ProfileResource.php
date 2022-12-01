@@ -17,7 +17,7 @@ class ProfileResource extends Resource
             'avatar' => $this->resource->avatar,
             'permissions' => $this->resource->getAllPermissions()
                 ->map(
-                    fn ($perm) => Str::startsWith($perm->name, $this->permissionPrefix) ?
+                    fn ($perm) => Str::startsWith($perm->name, [$this->permissionPrefix]) ?
                     Str::substr($perm->name, Str::length($this->permissionPrefix)) : $perm->name,
                 )->sort()
                 ->values(),

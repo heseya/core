@@ -175,9 +175,9 @@ class ItemService implements ItemServiceContract
     {
         $ids = $item->products()->select('id')->pluck('id');
 
+        /** @var Option $option */
         foreach ($item->options as $option) {
-            /** @var Option $option */
-            $ids->concat($option->schema->products()->select('id')->pluck('id')->toArray());
+            $ids->concat($option->schema?->products()?->select('id')->pluck('id')->toArray());
         }
 
         // @phpstan-ignore-next-line

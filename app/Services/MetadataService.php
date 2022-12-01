@@ -65,10 +65,13 @@ class MetadataService implements MetadataServiceContract
     public function updateOrCreateMyPersonal(MetadataPersonalListDto $dto): Collection
     {
         $user = Auth::user();
-        foreach ($dto->getMetadata() as $metadata) {
-            $this->processMetadata($user, $metadata, 'metadataPersonal');
+        if ($user !== null) {
+            foreach ($dto->getMetadata() as $metadata) {
+                $this->processMetadata($user, $metadata, 'metadataPersonal');
+            }
+            return $user->metadataPersonal;
         }
-        return $user->metadataPersonal;
+        return Collection::make();
     }
 
     public function updateOrCreateUserPersonal(MetadataPersonalListDto $dto, string $userId): Collection

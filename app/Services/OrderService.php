@@ -31,6 +31,7 @@ use Exception;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
@@ -72,10 +73,14 @@ class OrderService implements OrderServiceContract
      */
     public function store(OrderDto $dto): Order
     {
+//        dd('test');
         DB::beginTransaction();
 
+        $products = Collection::make();
         // Schema values and warehouse items validation
-        $products = $this->itemService->checkOrderItems($dto->getItems());
+        if (!$dto->getItems() instanceof Missing) {
+            $products = $this->itemService->checkOrderItems($dto->getItems());
+        }
 
         // Creating order
         $shippingMethod = ShippingMethod::findOrFail($dto->getShippingMethodId());
@@ -102,8 +107,8 @@ class OrderService implements OrderServiceContract
                 'status_id' => $status->getKey(),
                 'delivery_address_id' => $deliveryAddress->getKey(),
                 'invoice_address_id' => isset($invoiceAddress) ? $invoiceAddress->getKey() : null,
-                'buyer_id' => Auth::user()->getKey(),
-                'buyer_type' => Auth::user()::class,
+                'buyer_id' => Auth::user()?->getKey(),
+                'buyer_type' => Auth::user() ? Auth::user()::class : null,
             ]
         );
 
@@ -305,7 +310,7 @@ class OrderService implements OrderServiceContract
     {
         $itemsToRemove = [];
         $product = $orderProduct->product;
-        $productItems = $product->items;
+        $productItems = $product?->items;
         foreach ($productItems as $productItem) {
             $quantity = $productItem->pivot->required_quantity * $orderProduct->quantity;
 

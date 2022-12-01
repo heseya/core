@@ -34,13 +34,16 @@ class Address extends Model
         return $this->belongsTo(Country::class, 'country', 'code');
     }
 
-    public function getPhoneSimpleAttribute(): string
+    public function getPhoneSimpleAttribute(): ?string
     {
-        $phone = PhoneNumber::make(
-            $this->phone,
-            $this->country,
-        );
+        if ($this->phone && $this->country) {
+            $phone = PhoneNumber::make(
+                $this->phone,
+                $this->country,
+            );
 
-        return $phone->formatForMobileDialingInCountry($this->country);
+            return $phone->formatForMobileDialingInCountry($this->country);
+        }
+        return null;
     }
 }

@@ -24,7 +24,7 @@ class ShippingMethodService implements ShippingMethodServiceContract
     public function index(?array $search, ?string $country, float $cartValue): LengthAwarePaginator
     {
         $query = ShippingMethod::query()
-            ->searchByCriteria($search)
+            ->searchByCriteria($search ?? [])
             ->with('metadata')
             ->orderBy('order');
 

@@ -189,21 +189,24 @@ class DiscountService implements DiscountServiceContract
     public function checkCondition(
         DiscountCondition $condition,
         ?CartOrderDto $dto = null,
-        ?float $cartValue = 0,
+        float $cartValue = 0,
     ): bool {
         return match ($condition->type->value) {
             ConditionType::ORDER_VALUE => $this->checkConditionOrderValue($condition, $cartValue),
             ConditionType::USER_IN_ROLE => $this->checkConditionUserInRole($condition),
             ConditionType::USER_IN => $this->checkConditionUserIn($condition),
-            ConditionType::PRODUCT_IN_SET => $this->checkConditionProductInSet($condition, $dto->getProductIds()),
-            ConditionType::PRODUCT_IN => $this->checkConditionProductIn($condition, $dto->getProductIds()),
+            ConditionType::PRODUCT_IN_SET => $this->checkConditionProductInSet($condition, $dto?->getProductIds()),
+            ConditionType::PRODUCT_IN => $this->checkConditionProductIn($condition, $dto?->getProductIds()),
             ConditionType::DATE_BETWEEN => $this->checkConditionDateBetween($condition),
             ConditionType::TIME_BETWEEN => $this->checkConditionTimeBetween($condition),
             ConditionType::MAX_USES => $this->checkConditionMaxUses($condition),
             ConditionType::MAX_USES_PER_USER => $this->checkConditionMaxUsesPerUser($condition),
             ConditionType::WEEKDAY_IN => $this->checkConditionWeekdayIn($condition),
-            ConditionType::CART_LENGTH => $this->checkConditionCartLength($condition, $dto->getCartLength()),
-            ConditionType::COUPONS_COUNT => $this->checkConditionCouponsCount($condition, count($dto->getCoupons())),
+            ConditionType::CART_LENGTH => $this->checkConditionCartLength($condition, $dto?->getCartLength()),
+            ConditionType::COUPONS_COUNT => $this->checkConditionCouponsCount(
+                $condition,
+                $dto?->getCoupons() instanceof Missing ? 0 : count($dto?->getCoupons()),
+            ),
             default => false,
         };
     }

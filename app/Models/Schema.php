@@ -139,7 +139,7 @@ class Schema extends Model implements SortableContract
 
         $option = $this->options()->find($value);
 
-        foreach ($option->items as $item) {
+        foreach ($option?->items as $item) {
             $items[$item->getKey()] = $quantity;
         }
 

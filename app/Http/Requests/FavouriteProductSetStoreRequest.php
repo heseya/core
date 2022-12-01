@@ -19,7 +19,7 @@ class FavouriteProductSetStoreRequest extends FormRequest
                 Rule::unique('favourite_product_sets')
                     ->where(function (Builder $query) {
                         return $query->where([
-                            ['user_type', Auth::user()::class],
+                            ['user_type', Auth::user() ? Auth::user()::class : null],
                             ['user_id', Auth::id()],
                             ['deleted_at', null],
                             ['product_set_id', $this->product_set_id],

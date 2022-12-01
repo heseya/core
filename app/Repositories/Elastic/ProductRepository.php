@@ -59,7 +59,7 @@ class ProductRepository implements ProductRepositoryContract
 
     public function search(ProductSearchDto $dto): LengthAwarePaginator
     {
-        $query = Product::search($dto->getSearch());
+        $query = $dto->getSearch() === null ? Product::search() : Product::search($dto->getSearch());
 
         if ($dto->getSort() !== null) {
             $query = $this->sortService->sortScout($query, $dto->getSort());

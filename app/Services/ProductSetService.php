@@ -88,8 +88,11 @@ class ProductSetService implements ProductSetServiceContract
             'public_parent' => $publicParent,
         ]);
 
-        $attributes = Collection::make($dto->getAttributesIds());
-        if ($attributes->isNotEmpty()) {
+        $attributes = null;
+        if (!$dto->getAttributesIds() instanceof Missing) {
+            $attributes = Collection::make($dto->getAttributesIds());
+        }
+        if ($attributes !== null && $attributes->isNotEmpty()) {
             $set->attributes()->sync($attributes);
         }
 

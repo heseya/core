@@ -25,7 +25,7 @@ class SchemaDto extends Dto implements InstantiateFromRequest
     protected string|null|Missing $pattern;
     protected string|null|Missing $validation;
     protected array|null|Missing $used_schemas;
-    protected array|null|Missing $options;
+    protected array|Missing $options;
 
     protected array|Missing $metadata;
 
@@ -58,12 +58,12 @@ class SchemaDto extends Dto implements InstantiateFromRequest
         );
     }
 
-    public function getUsedSchemas(): Missing|array|null
+    public function getUsedSchemas(): Missing|null|array
     {
         return $this->used_schemas;
     }
 
-    public function getOptions(): Missing|array|null
+    public function getOptions(): Missing|array
     {
         return $this->options;
     }

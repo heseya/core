@@ -18,19 +18,21 @@ class BannerService implements BannerServiceContract
     {
         $banner = Banner::create($dto->toArray());
 
-        foreach ($dto->getBannerMedia()->all() as $index => $group) {
-            $bannerMedia = $banner->bannerMedia()->create([
-                'title' => $group->getTitle(),
-                'subtitle' => $group->getSubtitle(),
-                'url' => $group->getUrl(),
-                'order' => $index + 1,
-            ]);
-
-            $group->getMedia()->each(function ($media) use ($bannerMedia): void {
-                $bannerMedia->media()->attach($media->getMedia(), [
-                    'min_screen_width' => $media->getMinScreenWidth(),
+        if (!$dto->getBannerMedia() instanceof Missing) {
+            foreach ($dto->getBannerMedia()->all() as $index => $group) {
+                $bannerMedia = $banner->bannerMedia()->create([
+                    'title' => $group->getTitle(),
+                    'subtitle' => $group->getSubtitle(),
+                    'url' => $group->getUrl(),
+                    'order' => $index + 1,
                 ]);
-            });
+
+                $group->getMedia()->each(function ($media) use ($bannerMedia): void {
+                    $bannerMedia->media()->attach($media->getMedia(), [
+                        'min_screen_width' => $media->getMinScreenWidth(),
+                    ]);
+                });
+            }
         }
 
         if (!($dto->getMetadata() instanceof Missing)) {
@@ -45,19 +47,21 @@ class BannerService implements BannerServiceContract
         $banner->update($dto->toArray());
         $banner->bannerMedia()->delete();
 
-        foreach ($dto->getBannerMedia()->all() as $index => $group) {
-            $bannerMedia = $banner->BannerMedia()->firstOrCreate([
-                'title' => $group->getTitle(),
-                'subtitle' => $group->getSubtitle(),
-                'url' => $group->getUrl(),
-                'order' => $index + 1,
-            ]);
+        if (!$dto->getBannerMedia() instanceof Missing) {
+            foreach ($dto->getBannerMedia()->all() as $index => $group) {
+                $bannerMedia = $banner->BannerMedia()->firstOrCreate([
+                    'title' => $group->getTitle(),
+                    'subtitle' => $group->getSubtitle(),
+                    'url' => $group->getUrl(),
+                    'order' => $index + 1,
+                ]);
 
-            $medias = [];
-            $group->getMedia()->each(function ($media) use (&$medias): void {
-                $medias[$media->getMedia()] = ['min_screen_width' => $media->getMinScreenWidth()];
-            });
-            $bannerMedia->media()->sync($medias);
+                $medias = [];
+                $group->getMedia()->each(function ($media) use (&$medias): void {
+                    $medias[$media->getMedia()] = ['min_screen_width' => $media->getMinScreenWidth()];
+                });
+                $bannerMedia->media()->sync($medias);
+            }
         }
 
         return $banner->refresh();
