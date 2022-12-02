@@ -67,12 +67,13 @@ class ProductSetService implements ProductSetServiceContract
             $lastChild = $parent->children()->reversed()->first();
 
             $order = $lastChild ? $lastChild->order + 1 : 0;
-            $slug = $dto->isSlugOverridden() ? $dto->getSlugSuffix() : $parent->slug . '-' . $dto->getSlugSuffix();
+            $slug = $this->prepareSlug($dto->isSlugOverridden(), $dto->getSlugSuffix(), $parent->slug);
             $publicParent = $parent->public && $parent->public_parent;
         } else {
             $last = ProductSet::reversed()->first();
 
             $order = $last ? $last->order + 1 : 0;
+            /** @var string $slug */
             $slug = $dto->getSlugSuffix();
             $publicParent = true;
         }
@@ -160,8 +161,7 @@ class ProductSetService implements ProductSetServiceContract
             }
 
             $publicParent = $parent->public && $parent->public_parent;
-            $slug = $dto->isSlugOverridden() ? $dto->getSlugSuffix() :
-                $parent->slug . '-' . $dto->getSlugSuffix();
+            $slug = $this->prepareSlug($dto->isSlugOverridden(), $dto->getSlugSuffix(), $parent->slug);
         } else {
             if ($set->parent_id !== null) {
                 $last = ProductSet::reversed()->first();
@@ -364,5 +364,16 @@ class ProductSetService implements ProductSetServiceContract
             $product->pivot->order = $highestOrder;
             $product->pivot->save();
         });
+    }
+
+    private function prepareSlug(bool|Missing $isOverridden, string|Missing|null $slugSuffix, string $parentSlug): string
+    {
+        /** @var string $slug */
+        $slug = $slugSuffix instanceof Missing ? null : $slugSuffix;
+        if (!$isOverridden instanceof Missing && $isOverridden) {
+            return "{$parentSlug}-{$slug}";
+        }
+
+        return $slug;
     }
 }

@@ -44,9 +44,11 @@ class MetadataController extends Controller
         $model->refresh();
 
         if ($public) {
+            // @phpstan-ignore-next-line
             return MetadataResource::make($model->metadata);
         }
 
+        // @phpstan-ignore-next-line
         return MetadataResource::make($model->metadataPrivate);
     }
 

@@ -50,13 +50,17 @@ class MetadataService implements MetadataServiceContract
         $className = 'App\\Models\\' . Str::studly(Str::singular($class));
 
         if (class_exists($className)) {
-            return new $className();
+            /** @var Model $newClass */
+            $newClass = new $className();
+            return new $newClass;
         }
 
         $className = 'App\\Models\\' . Str::studly($class);
 
         if (class_exists($className)) {
-            return new $className();
+            /** @var Model $newClass */
+            $newClass = new $className();
+            return new $newClass;
         }
 
         return null;
