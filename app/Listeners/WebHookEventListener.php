@@ -39,6 +39,7 @@ class WebHookEventListener implements ShouldQueue
     private function encryptData(array|string $data): string
     {
         $data = json_encode($data);
+        /** @var string $cipher */
         $cipher = Config::get('webhook.cipher');
 
         $ivLen = openssl_cipher_iv_length($cipher);

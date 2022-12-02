@@ -294,7 +294,7 @@ class ProductSetService implements ProductSetServiceContract
     public function reorderProducts(ProductSet $set, ProductsReorderDto $dto): void
     {
         if (!$dto->getProducts() instanceof Missing) {
-            $product = $set->products()->where('id', $dto->getProducts()[0]['id'])->first();
+            $product = $set->products()->where('id', $dto->getProducts()[0]['id'])->firstOrFail();
             $order = $dto->getProducts()[0]['order'];
             $orderedProductsAmount = $set->products()
                 ->whereNotNull('product_set_product.order')
@@ -305,7 +305,7 @@ class ProductSetService implements ProductSetServiceContract
                 $order = $orderedProductsAmount;
             }
 
-            if ($product?->pivot->order === null) {
+            if ($product->pivot->order === null) {
                 $this->setOrder($order);
             } else {
                 if ($order < $product->pivot->order) {

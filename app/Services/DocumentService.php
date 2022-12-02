@@ -40,13 +40,15 @@ class DocumentService implements DocumentServiceContract
 
     public function downloadDocument(OrderDocument $document): StreamedResponse
     {
+        /** @var string $url */
+        $url = $document->media?->url;
         $mime = Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
-            ->get($document->media?->url . '/info')->json('mime');
+            ->get($url . '/info')->json('mime');
 
-        return response()->streamDownload(function () use ($document): void {
+        return response()->streamDownload(function () use ($url): void {
             echo Http::withHeaders(['x-api-key' => Config::get('silverbox.key')])
-                ->get($document->media?->url);
-        }, Str::of($document->media?->url)->afterLast('/'), [
+                ->get($url);
+        }, Str::of($url)->afterLast('/'), [
             'Content-Type' => $mime,
         ]);
     }
@@ -58,7 +60,7 @@ class DocumentService implements DocumentServiceContract
             ['order_id', $order->getKey()],
         ])->firstOrFail();
 
-        $this->mediaService->destroy(Media::find($document->media_id));
+        $this->mediaService->destroy(Media::where('id', $document->media_id)->firstOrFail());
 
         return $document;
     }

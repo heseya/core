@@ -55,7 +55,7 @@ class MediaService implements MediaServiceContract
      */
     public function store(MediaDto $dto, bool $private = false): Media
     {
-        if ($dto->getFile() instanceof Missing) {
+        if ($dto->getFile() instanceof Missing || $dto->getFile() === null) {
             // TODO jakiś komunikat dodać
             throw new ClientException();
         }

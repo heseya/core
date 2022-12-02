@@ -22,8 +22,8 @@ class PaymentObserver
         $isPaid = $payment->order?->isPaid();
 
         // update only if paid status changed
-        if ($payment->order?->paid !== $isPaid) {
-            $payment->order?->update([
+        if ($payment->order && $payment->order->paid !== $isPaid) {
+            $payment->order->update([
                 'paid' => $isPaid,
             ]);
 

@@ -38,7 +38,7 @@ class FurgonetkaController extends Controller
         $packageTemplate = PackageTemplate::where('id', $validated['package_template_id'])->firstOrFail();
         $service_type = $validated['provider'];
 
-        $validator = Validator::make($order->deliveryAddress?->toArray(), [
+        $validator = Validator::make($order->deliveryAddress?->toArray() ?? [], [
             'country' => ['required', 'in:PL'],
             'phone' => ['required', 'phone:PL'],
         ]);
@@ -158,11 +158,11 @@ class FurgonetkaController extends Controller
                 ],
                 'receiver' => [
                     'email' => $order->email,
-                    'name' => $order->deliveryAddress->name,
-                    'street' => $order->deliveryAddress->address,
-                    'postcode' => $order->deliveryAddress->zip,
-                    'city' => $order->deliveryAddress->city,
-                    'phone' => $order->deliveryAddress->phoneSimple,
+                    'name' => $order->deliveryAddress?->name,
+                    'street' => $order->deliveryAddress?->address,
+                    'postcode' => $order->deliveryAddress?->zip,
+                    'city' => $order->deliveryAddress?->city,
+                    'phone' => $order->deliveryAddress?->phoneSimple,
                 ],
                 'label' => [
                     'file_format' => 'pdf',

@@ -14,7 +14,7 @@ class CalculateDiscount implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected ?Discount $discount;
+    protected Discount $discount;
     protected bool $updated;
 
     /**
@@ -22,7 +22,7 @@ class CalculateDiscount implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(?Discount $discount = null, bool $updated = false)
+    public function __construct(Discount $discount, bool $updated = false)
     {
         $this->discount = $discount;
         $this->updated = $updated;

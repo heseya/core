@@ -204,9 +204,11 @@ class OrderController extends Controller
             $order->deposits()->delete();
             foreach ($deposits as $deposit) {
                 $item = $deposit->item;
-                $item?->decrement('quantity', $deposit->quantity);
-                $deposit->item?->update($this->depositService->getShippingTimeDateForQuantity($item));
-                ItemUpdatedQuantity::dispatch($item);
+                if ($item !== null) {
+                    $item->decrement('quantity', $deposit->quantity);
+                    $deposit->item?->update($this->depositService->getShippingTimeDateForQuantity($item));
+                    ItemUpdatedQuantity::dispatch($item);
+                }
             }
         }
 

@@ -52,6 +52,7 @@ use App\Models\Product;
 use App\Models\ProductSet;
 use App\Models\Role;
 use App\Models\SalesShortResource;
+use App\Models\Schema;
 use App\Models\ShippingMethod;
 use App\Models\User;
 use App\Services\Contracts\DiscountServiceContract;
@@ -353,6 +354,7 @@ class DiscountService implements DiscountServiceContract
         $price = $product->price;
 
         foreach ($orderProductDto->getSchemas() as $schemaId => $value) {
+            /** @var Schema $schema */
             $schema = $product->schemas()->findOrFail($schemaId);
 
             $price += $schema->getPrice($value, $orderProductDto->getSchemas());

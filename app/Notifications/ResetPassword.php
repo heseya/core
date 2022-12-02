@@ -41,8 +41,11 @@ class ResetPassword extends Notification
             'email' => $notifiable->getEmailForPasswordReset(),
         ]);
 
+        /** @var string $subject */
+        $subject = Lang::get('mail.subject-password-reset');
+
         return (new MailMessage())
-            ->subject(Lang::get('mail.subject-password-reset'))
+            ->subject($subject)
             ->view('mail.user-password-reset', [
                 'url' => "{$this->redirect_url}?{$param}",
             ]);

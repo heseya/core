@@ -19,6 +19,7 @@ use App\Models\Address;
 use App\Models\CartResource;
 use App\Models\Order;
 use App\Models\OrderProduct;
+use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\Status;
 use App\Services\Contracts\DepositServiceContract;
@@ -73,7 +74,6 @@ class OrderService implements OrderServiceContract
      */
     public function store(OrderDto $dto): Order
     {
-//        dd('test');
         DB::beginTransaction();
 
         $products = Collection::make();
@@ -296,7 +296,7 @@ class OrderService implements OrderServiceContract
 
     private function modifyAddress(Order $order, string $attribute, AddressDto|Missing $addressDto): ?Address
     {
-        if (!$this->checkAddress($addressDto)) {
+        if ($addressDto instanceof Missing || !$this->checkAddress($addressDto)) {
             return null;
         }
 
@@ -309,8 +309,9 @@ class OrderService implements OrderServiceContract
     private function removeItemsFromWarehouse(OrderProduct $orderProduct, array $tempSchemaOrderProduct): bool
     {
         $itemsToRemove = [];
+        /** @var Product $product */
         $product = $orderProduct->product;
-        $productItems = $product?->items ?? [];
+        $productItems = $product->items;
         foreach ($productItems as $productItem) {
             $quantity = $productItem->pivot->required_quantity * $orderProduct->quantity;
 

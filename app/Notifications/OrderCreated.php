@@ -31,8 +31,10 @@ class OrderCreated extends Notification
      */
     public function toMail(mixed $notifiable): MailMessage
     {
+        /** @var string $subject */
+        $subject = Lang::get('mail.subject-new-order', ['number' => $this->order->code], $this->locale);
         return (new MailMessage())
-            ->subject(Lang::get('mail.subject-new-order', ['number' => $this->order->code], $this->locale))
+            ->subject($subject)
             ->view('mail.new-order', [
                 'order' => $this->order,
             ]);

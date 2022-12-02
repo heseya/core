@@ -16,7 +16,7 @@ class Language
      */
     public function handle($request, Closure $next): mixed
     {
-        if ($request->hasHeader('x-language')) {
+        if ($request->hasHeader('x-language') && is_string($request->header('x-language'))) {
             App::setLocale($request->header('x-language'));
         }
 
