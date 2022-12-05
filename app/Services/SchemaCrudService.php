@@ -74,10 +74,6 @@ class SchemaCrudService implements SchemaCrudServiceContract
             }
         }
 
-        if (!($dto->getMetadata() instanceof Missing)) {
-            $this->metadataService->sync($schema, $dto->getMetadata());
-        }
-
         $schema->products->each(
             fn (Product $product) => $this->productService->updateMinMaxPrices($product),
         );

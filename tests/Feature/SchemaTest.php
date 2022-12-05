@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\MetadataType;
 use App\Enums\SchemaType;
 use App\Models\Item;
 use App\Models\Option;
@@ -1003,6 +1004,42 @@ class SchemaTest extends TestCase
         $this->$user->givePermissionTo('products.edit');
 
         $this->update($user);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateWithMetadata($user): void
+    {
+        $this->$user->givePermissionTo('products.edit');
+
+        $schema = Schema::factory()->create();
+
+        $schema->metadata()->create([
+            'name' => 'first',
+            'value' => 'metadata',
+            'value_type' => MetadataType::STRING,
+            'public' => true,
+        ]);
+
+        $this->actingAs($this->$user)->json('PATCH', '/schemas/id:' . $schema->getKey(), [
+            'metadata' => [
+                'first' => 'new value',
+                'second' => 'new metadata',
+            ],
+        ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'metadata' => [
+                    'first' => 'metadata',
+                ],
+            ])
+            ->assertJsonMissing([
+                'first' => 'new value',
+            ])
+            ->assertJsonMissing([
+                'second' => 'new metadata',
+            ]);
     }
 
     /**
