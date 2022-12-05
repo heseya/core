@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Schema;
 use App\Services\Contracts\AvailabilityServiceContract;
 use App\Services\Contracts\DepositServiceContract;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -176,39 +177,83 @@ class AvailabilityService implements AvailabilityServiceContract
 
     public function getCalculateProductAvailability(Product $product): array
     {
-        if ($product->schemas->isEmpty() && $product->items->isEmpty()) {
-            return [
-                'available' => true,
-                'quantity' => null,
-                'shipping_time' => null,
-                'shipping_date' => null,
-            ];
+        $requiredSchemas = $this->getRequiredSchemasWithItems($product);
+
+        // simple return when no required schemas and items
+        if ($requiredSchemas->isEmpty() && $product->items->isEmpty()) {
+            return $this->returnProductAvailability(true);
         }
 
-        [$items, $requiredItems] = $this->productRequiredItems($product);
+        $items = $this->getAllRequiredItems($product, $requiredSchemas);
 
-        [$shippingTimeDeposits, $shippingDateDeposits] = $this->itemsGroupedDeposits($items);
+        // check only permutation when product don't have required schemas
+        if ($requiredSchemas->isEmpty()) {
+            return $this->checkProductPermutation($items, $product->items);
+        }
 
-        $quantity = $this->calculateProductDeposits(
-            $items,
-            $shippingTimeDeposits,
-            $product,
-            'shipping_time',
-            $requiredItems,
-        );
+        $available = true;
+        $quantity = 0;
+        $shipping_time = null;
+        $shipping_date = null;
+        $productAvailabilities = [];
 
-        $quantity += $this->calculateProductDeposits(
-            $items,
-            $shippingDateDeposits,
-            $product,
-            'shipping_date',
-            $requiredItems,
-        );
+        $permutations = Collection::make($requiredSchemas->first()->options);
+        $requiredSchemas->shift();
+
+        foreach ($requiredSchemas as $schema) {
+            $permutations = $permutations->crossJoin($schema->options);
+        }
+
+        foreach ($permutations as $permutation) {
+            $this->checkProductPermutation($items, $product->items, $permutation);
+        }
 
         return [
+            'available' => $available,
             'quantity' => $quantity,
-            'available' => $this->isProductAvailable($product),
-        ] + $this->depositService->getProductShippingTimeDate($product);
+            'shipping_time' => $shipping_time,
+            'shipping_date' => $shipping_date,
+            'productAvailabilities' => $productAvailabilities,
+        ];
+    }
+
+    public function checkProductPermutation(
+        Collection $items,
+        Collection $requiredItems,
+        ?Collection $selectedOptions = null,
+    ): array {
+        $available = true;
+        $quantity = 0;
+        $shipping_time = null;
+        $shipping_date = null;
+        $productAvailabilities = [];
+
+        if ($selectedOptions !== null && $selectedOptions->isNotEmpty()) {
+            foreach ($selectedOptions as $option) {
+                foreach ($option->items as $item) {
+                    $requiredItems->push($item);
+                }
+            }
+        }
+
+        /** @var Item $requiredItem */
+        foreach ($requiredItems as $requiredItem) {
+            $item = $items->firstWhere('id', $requiredItem->getKey());
+
+            if ($requiredItem->pivot->required_quantity <= $item->quantity) {
+                $quantity = floor($item->quantity / $requiredItem->pivot->required_quantity);
+                $item->quantity -= $requiredItem->pivot->required_quantity;
+
+                return $this->returnProductAvailability(
+                    true,
+                    $quantity,
+                    $item->shipping_time,
+                    $item->shipping_date,
+                );
+            }
+        }
+
+        return $this->returnProductAvailability(false, 0);
     }
 
     public function isProductAvailable(Product $product): bool
@@ -294,18 +339,48 @@ class AvailabilityService implements AvailabilityServiceContract
         );
     }
 
-    protected function compareShippingDate(
-        \Carbon\Carbon|null $shippingDate1,
-        \Carbon\Carbon|null $shippingDate2,
-        bool $isAfter = false,
-    ): \Carbon\Carbon|null {
-        if ($shippingDate1 === null || ($shippingDate1 instanceof Carbon &&
-            ((!$isAfter && $shippingDate1->isBefore($shippingDate2)) ||
-                ($isAfter && $shippingDate1->isAfter($shippingDate2))))) {
-            return $shippingDate2;
+    private function returnProductAvailability(
+        bool $available = false,
+        ?float $quantity = null,
+        ?int $shipping_time = null,
+        ?string $shipping_date = null,
+        array $productAvailabilities = [],
+    ): array {
+        return [
+            'available' => $available,
+            'quantity' => $quantity,
+            'shipping_time' => $shipping_time,
+            'shipping_date' => $shipping_date,
+            'productAvailabilities' => $productAvailabilities,
+        ];
+    }
+
+    /**
+     * Get only required schemas of type SELECT and with related items
+     */
+    private function getRequiredSchemasWithItems(Product $product): Collection
+    {
+        return $product
+            ->requiredSchemas()
+            ->where('type', SchemaType::SELECT)
+            ->whereHas('options', fn (Builder $query) => $query->whereHas('items'))
+            ->with('options.items')
+            ->get();
+    }
+
+    private function getAllRequiredItems(Product $product, Collection $requiredSchemas): Collection
+    {
+        $items = $product->items()->with('groupedDeposits')->get();;
+
+        foreach ($requiredSchemas as $schema) {
+            foreach ($schema->options as $option) {
+                $items->merge($option->items()->with('groupedDeposits')->get());
+            }
         }
 
-        return $shippingDate1;
+        $items->unique();
+
+        return $items;
     }
 
     private function calculateProductDeposits(
@@ -399,17 +474,17 @@ class AvailabilityService implements AvailabilityServiceContract
             $requiredItems[$item->getKey()] = $item->pivot->required_quantity;
         }
 
-        $requiredSchemas = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
+        $requiredQuantities = $product->requiredSchemas->where('type.value', SchemaType::SELECT);
 
-        if (!$requiredSchemas->isEmpty()) {
-            /** @var Schema $requiredSchema */
-            foreach ($requiredSchemas as $requiredSchema) {
-                $itemsOptions = $requiredSchema->options->pluck('items')->flatten()->groupBy('id');
+        if (!$requiredQuantities->isEmpty()) {
+            /** @var Schema $requiredQuantity */
+            foreach ($requiredQuantities as $requiredQuantity) {
+                $itemsOptions = $requiredQuantity->options->pluck('items')->flatten();
                 foreach ($itemsOptions as $id => $item) {
                     if (!array_key_exists($id, $requiredItems)) {
                         $items->push($item->first());
                     }
-                    $requiredItems[$id] = ($requiredItems[$id] ?? 0) + $item->count();
+                    $requiredItems[$id] = ($requiredItems[$id] ?? 0) + $item->pivot->reqired_quantity;
                 }
             }
         }
@@ -455,5 +530,19 @@ class AvailabilityService implements AvailabilityServiceContract
         }
 
         return $quantities;
+    }
+
+    private function compareShippingDate(
+        \Carbon\Carbon|null $shippingDate1,
+        \Carbon\Carbon|null $shippingDate2,
+        bool $isAfter = false,
+    ): \Carbon\Carbon|null {
+        if ($shippingDate1 === null || ($shippingDate1 instanceof Carbon &&
+                ((!$isAfter && $shippingDate1->isBefore($shippingDate2)) ||
+                    ($isAfter && $shippingDate1->isAfter($shippingDate2))))) {
+            return $shippingDate2;
+        }
+
+        return $shippingDate1;
     }
 }
