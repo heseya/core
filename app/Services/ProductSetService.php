@@ -67,6 +67,7 @@ class ProductSetService implements ProductSetServiceContract
             $lastChild = $parent->children()->reversed()->first();
 
             $order = $lastChild ? $lastChild->order + 1 : 0;
+            /** @var string $slug */
             $slug = $this->prepareSlug($dto->isSlugOverridden(), $dto->getSlugSuffix(), $parent->slug);
             $publicParent = $parent->public && $parent->public_parent;
         } else {
@@ -171,7 +172,7 @@ class ProductSetService implements ProductSetServiceContract
             }
 
             $publicParent = true;
-            $slug = $dto->getSlugSuffix();
+            $slug = $dto->getSlugSuffix() instanceof Missing ? null : $dto->getSlugSuffix();
         }
 
         Validator::make(['slug' => $slug], [
@@ -366,11 +367,14 @@ class ProductSetService implements ProductSetServiceContract
         });
     }
 
-    private function prepareSlug(bool|Missing $isOverridden, string|Missing|null $slugSuffix, string $parentSlug): string
+    private function prepareSlug(
+        bool|Missing $isOverridden,
+        string|Missing|null $slugSuffix,
+        string $parentSlug
+    ): ?string
     {
-        /** @var string $slug */
         $slug = $slugSuffix instanceof Missing ? null : $slugSuffix;
-        if (!$isOverridden instanceof Missing && $isOverridden) {
+        if (!$isOverridden instanceof Missing && !$isOverridden) {
             return "{$parentSlug}-{$slug}";
         }
 

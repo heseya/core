@@ -196,7 +196,10 @@ class DiscountService implements DiscountServiceContract
             ConditionType::ORDER_VALUE => $this->checkConditionOrderValue($condition, $cartValue),
             ConditionType::USER_IN_ROLE => $this->checkConditionUserInRole($condition),
             ConditionType::USER_IN => $this->checkConditionUserIn($condition),
-            ConditionType::PRODUCT_IN_SET => $this->checkConditionProductInSet($condition, $dto?->getProductIds() ?? []),
+            ConditionType::PRODUCT_IN_SET => $this->checkConditionProductInSet(
+                $condition,
+                $dto?->getProductIds() ?? []
+            ),
             ConditionType::PRODUCT_IN => $this->checkConditionProductIn($condition, $dto?->getProductIds() ?? []),
             ConditionType::DATE_BETWEEN => $this->checkConditionDateBetween($condition),
             ConditionType::TIME_BETWEEN => $this->checkConditionTimeBetween($condition),

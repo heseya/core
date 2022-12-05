@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
+use App\Dtos\OrderUpdateDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Events\AddOrderDocument;
 use App\Events\ItemUpdatedQuantity;
@@ -31,6 +32,7 @@ use App\Services\Contracts\DocumentServiceContract;
 use App\Services\Contracts\OrderServiceContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
@@ -221,7 +223,7 @@ class OrderController extends Controller
 
     public function update(OrderUpdateRequest $request, Order $order): JsonResponse
     {
-        $orderUpdateDto = OrderDto::instantiateFromRequest($request);
+        $orderUpdateDto = OrderUpdateDto::instantiateFromRequest($request);
 
         return $this->orderService->update($orderUpdateDto, $order);
     }
@@ -244,12 +246,14 @@ class OrderController extends Controller
 
     public function storeDocument(OrderDocumentRequest $request, Order $order): JsonResource
     {
+        /** @var UploadedFile $file */
+        $file = $request->file('file');
         $document = $this->documentService
             ->storeDocument(
                 $order,
                 $request->input('name'),
                 $request->input('type'),
-                $request->file('file'),
+                $file,
             );
         AddOrderDocument::dispatch($order, $document);
 

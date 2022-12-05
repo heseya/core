@@ -8,7 +8,7 @@ use Propaganistas\LaravelPhone\PhoneNumber;
 
 class UserCreateDto extends UserDto
 {
-    private string|Missing $password;
+    private string $password;
 
     public static function instantiateFromRequest(FormRequest $request): self
     {
@@ -18,7 +18,7 @@ class UserCreateDto extends UserDto
         return new self(
             name: $request->input('name', new Missing()),
             email: $request->input('email', new Missing()),
-            password: $request->input('password', new Missing()),
+            password: $request->input('password'),
             roles: $request->input('roles', new Missing()),
             metadata: self::mapMetadata($request),
             birthday_date: $request->input('birthday_date', new Missing()),
@@ -27,7 +27,7 @@ class UserCreateDto extends UserDto
         );
     }
 
-    public function getPassword(): Missing|string
+    public function getPassword(): string
     {
         return $this->password;
     }

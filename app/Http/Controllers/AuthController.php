@@ -111,6 +111,7 @@ class AuthController extends Controller
 
     public function changePassword(PasswordChangeRequest $request): JsonResponse
     {
+        /** @var User $user */
         $user = $request->user();
         $this->authService->changePassword(
             $user,
@@ -144,7 +145,7 @@ class AuthController extends Controller
             ? $this->authService->unauthenticatedUser()
             : $this->authService->userByIdentity($identityToken);
 
-        $prefix = $this->authService->isAppAuthenticated()
+        $prefix = $authenticable instanceof App
             ? $this->appService->appPermissionPrefix($authenticable)
             : null;
 

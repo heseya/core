@@ -6,6 +6,7 @@ use App\Dtos\AddressDto;
 use App\Dtos\CartDto;
 use App\Dtos\OrderDto;
 use App\Dtos\OrderIndexDto;
+use App\Dtos\OrderUpdateDto;
 use App\Enums\ExceptionsEnums\Exceptions;
 use App\Enums\SchemaType;
 use App\Events\OrderCreated;
@@ -32,7 +33,6 @@ use Exception;
 use Heseya\Dto\Missing;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
@@ -76,17 +76,14 @@ class OrderService implements OrderServiceContract
     {
         DB::beginTransaction();
 
-        $products = Collection::make();
         // Schema values and warehouse items validation
-        if (!$dto->getItems() instanceof Missing) {
-            $products = $this->itemService->checkOrderItems($dto->getItems());
-        }
+        $products = $this->itemService->checkOrderItems($dto->getItems());
 
         // Creating order
         $shippingMethod = ShippingMethod::findOrFail($dto->getShippingMethodId());
         $deliveryAddress = Address::firstOrCreate($dto->getDeliveryAddress()->toArray());
 
-        if ($this->checkAddress($dto->getInvoiceAddress())) {
+        if (!$dto->getInvoiceAddress() instanceof Missing && $this->checkAddress($dto->getInvoiceAddress())) {
             $invoiceAddress = Address::firstOrCreate($dto->getInvoiceAddress()->toArray());
         }
 
@@ -200,7 +197,7 @@ class OrderService implements OrderServiceContract
         return $order;
     }
 
-    public function update(OrderDto $dto, Order $order): JsonResponse
+    public function update(OrderUpdateDto $dto, Order $order): JsonResponse
     {
         DB::beginTransaction();
 
