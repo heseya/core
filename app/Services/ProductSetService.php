@@ -67,6 +67,7 @@ class ProductSetService implements ProductSetServiceContract
             $lastChild = $parent->children()->reversed()->first();
 
             $order = $lastChild ? $lastChild->order + 1 : 0;
+            // Here slug is always string because slug_suffix is required when creating product set
             /** @var string $slug */
             $slug = $this->prepareSlug($dto->isSlugOverridden(), $dto->getSlugSuffix(), $parent->slug);
             $publicParent = $parent->public && $parent->public_parent;
@@ -121,7 +122,7 @@ class ProductSetService implements ProductSetServiceContract
     public function updateChildren(
         Collection $children,
         string $parentId,
-        string $parentSlug,
+        ?string $parentSlug,
         bool $publicParent
     ): void {
         $children->each(
@@ -129,7 +130,7 @@ class ProductSetService implements ProductSetServiceContract
                 if ($child->slugOverride) {
                     $childSlug = $child->slug;
                 } else {
-                    $childSlug = $parentSlug . '-' . $child->slugSuffix;
+                    $childSlug = ($parentSlug ? $parentSlug . '-' : '') . $child->slugSuffix;
                 }
 
                 $this->updateChildren(
@@ -172,7 +173,7 @@ class ProductSetService implements ProductSetServiceContract
             }
 
             $publicParent = true;
-            $slug = $dto->getSlugSuffix() instanceof Missing ? null : $dto->getSlugSuffix();
+            $slug = $dto->getSlugSuffix() instanceof Missing ? $set->slug : $dto->getSlugSuffix();
         }
 
         Validator::make(['slug' => $slug], [

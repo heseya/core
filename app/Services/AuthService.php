@@ -34,7 +34,6 @@ use App\Services\Contracts\OneTimeSecurityCodeContract;
 use App\Services\Contracts\TokenServiceContract;
 use App\Services\Contracts\UserLoginAttemptServiceContract;
 use Heseya\Dto\Missing;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -76,13 +75,16 @@ class AuthService implements AuthServiceContract
 
         $this->verifyTFA($code);
 
+        /** @var JWTSubject $user */
+        $user = Auth::user();
+
         $identityToken = $this->tokenService->createToken(
-            Auth::user(),
+            $user,
             new TokenType(TokenType::IDENTITY),
             $uuid,
         );
         $refreshToken = $this->tokenService->createToken(
-            Auth::user(),
+            $user,
             new TokenType(TokenType::REFRESH),
             $uuid,
         );
@@ -112,7 +114,7 @@ class AuthService implements AuthServiceContract
         }
 
         $uuid = Str::uuid()->toString();
-        /** @var JWTSubject|Authenticatable|null $user */
+        /** @var JWTSubject|null $user */
         $user = $this->tokenService->getUser($refreshToken);
         $this->tokenService->invalidateToken($refreshToken);
 
@@ -304,7 +306,9 @@ class AuthService implements AuthServiceContract
 
         $authenticated = Role::where('type', RoleType::AUTHENTICATED)->first();
 
-        $user->syncRoles($authenticated);
+        if ($authenticated) {
+            $user->syncRoles($authenticated);
+        }
 
         $this->consentService->syncUserConsents($user, $dto->getConsents());
 
@@ -400,7 +404,7 @@ class AuthService implements AuthServiceContract
 
         /** @var User $user */
         $user = Auth::user();
-        return $google_authenticator->verifyCode($user->tfa_secret, $code);
+        return $user->tfa_secret !== null && $google_authenticator->verifyCode($user->tfa_secret, $code);
     }
 
     private function emailTFAVerify(string $code): bool

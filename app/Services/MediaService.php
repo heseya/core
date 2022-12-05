@@ -13,6 +13,7 @@ use App\Services\Contracts\MediaServiceContract;
 use App\Services\Contracts\MetadataServiceContract;
 use App\Services\Contracts\ReorderServiceContract;
 use Heseya\Dto\Missing;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -50,18 +51,15 @@ class MediaService implements MediaServiceContract
     }
 
     /**
-     * @throws ClientException
-     * @throws ServerException
+     * @throws ServerException|ClientException
      */
     public function store(MediaDto $dto, bool $private = false): Media
     {
-        if ($dto->getFile() instanceof Missing || $dto->getFile() === null) {
-            // TODO jakiś komunikat dodać
-            throw new ClientException();
-        }
+        /** @var UploadedFile $file */
+        $file = $dto->getFile();
         $private = $private ? '?private' : '';
 
-        $response = Http::attach('file', $dto->getFile()->getContent(), 'file')
+        $response = Http::attach('file', $file->getContent(), 'file')
             ->withHeaders(['x-api-key' => Config::get('silverbox.key')])
             ->post(Config::get('silverbox.host') . '/' . Config::get('silverbox.client') . $private);
 
@@ -78,7 +76,7 @@ class MediaService implements MediaServiceContract
         }
 
         $media = Media::create([
-            'type' => $this->getMediaType($dto->getFile()->extension()),
+            'type' => $this->getMediaType($file->extension()),
             'url' => $url,
             'alt' => $dto->getAlt() instanceof Missing ? null : $dto->getAlt(),
             'slug' => $dto->getSlug() instanceof Missing ? null : $dto->getSlug(),
