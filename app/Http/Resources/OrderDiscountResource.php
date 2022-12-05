@@ -10,7 +10,8 @@ class OrderDiscountResource extends Resource
     {
         return [
             'discount' => $this->resource->code !== null
-                ? CouponResource::make($this) : SaleResource::make($this),
+                ? CouponResource::make($this)->baseOnly()
+                : SaleResource::make($this)->baseOnly(),
             'name' => $this->resource->pivot->name,
             'code' => $this->resource->pivot->code,
             'type' => $this->resource->pivot->type,

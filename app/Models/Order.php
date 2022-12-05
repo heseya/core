@@ -190,7 +190,7 @@ class Order extends Model implements AuditableContract, SortableContract
     {
         do {
             $code = Str::upper(Str::random(6));
-        } while (Order::where('code', $code)->exists());
+        } while (Order::query()->where('code', $code)->exists());
 
         return $code;
     }
