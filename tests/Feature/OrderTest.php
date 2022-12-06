@@ -108,21 +108,26 @@ class OrderTest extends TestCase
         ];
 
         $this->expected_full_structure = [
+            'id',
             'code',
             'status',
             'paid',
+            'payable',
             'created_at',
             'shipping_method',
+            'digital_shipping_method',
             'comment',
             'email',
             'cart_total_initial',
             'cart_total',
             'shipping_price_initial',
             'shipping_price',
+            'shipping_type',
+            'invoice_requested',
+            'documents',
             'summary',
             'summary_paid',
             'currency',
-            'delivery_address',
             'metadata',
         ];
 
@@ -131,6 +136,8 @@ class OrderTest extends TestCase
             'products',
             'payments',
             'discounts',
+            'billing_address',
+            'shipping_number',
         ];
     }
 
@@ -1218,7 +1225,15 @@ class OrderTest extends TestCase
         $response = $this->actingAs($this->user)->json('POST', '/orders', [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => [
+            'shipping_address' => [
+                'name' => 'Wojtek Testowy',
+                'phone' => '+48123321123',
+                'address' => 'Gdańska 89/1',
+                'zip' => '12-123',
+                'city' => 'Bydgoszcz',
+                'country' => 'PL',
+            ],
+            'billing_address' => [
                 'name' => 'Wojtek Testowy',
                 'phone' => '+48123321123',
                 'address' => 'Gdańska 89/1',
@@ -1265,7 +1280,15 @@ class OrderTest extends TestCase
         $this->actingAs($this->$user)->json('POST', '/orders', [
             'email' => 'test@example.com',
             'shipping_method_id' => $this->shippingMethod->getKey(),
-            'delivery_address' => [
+            'shipping_address' => [
+                'name' => 'Wojtek Testowy',
+                'phone' => '+48123321123',
+                'address' => 'Gdańska 89/1',
+                'zip' => '12-123',
+                'city' => 'Bydgoszcz',
+                'country' => 'PL',
+            ],
+            'billing_address' => [
                 'name' => 'Wojtek Testowy',
                 'phone' => '+48123321123',
                 'address' => 'Gdańska 89/1',

@@ -68,7 +68,7 @@ Orders:
                 data:
                   type: array
                   items:
-                    $ref: './../schemas/Orders.yml#/OrderList'
+                    $ref: './../schemas/Orders.yml#/Order'
               type: object
     security:
       - BearerAuth: [ ]
@@ -196,6 +196,42 @@ OrdersStatus:
               type: object
     security:
       - BearerAuth: [ ]
+
+OrdersShippingLists:
+  post:
+    tags:
+      - Orders
+    summary: 'create shipping list webhook'
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+    requestBody:
+      content:
+        application/json:
+          schema:
+            properties:
+              package_template_id:
+                type: string
+                example: 1c8705ce-5fae-4468-b88a-8784cb5414a0
+            type: object
+    responses:
+      200:
+        description: Success
+        content:
+          application/json:
+            schema:
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: './../schemas/Orders.yml#/Order'
+              type: object
+    security:
+      - oauth: [ ]
 
 OrdersMy:
   get:

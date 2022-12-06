@@ -17,7 +17,7 @@ Product:
       type: number
     vat_rate:
       type: number
-    is_digital:
+    shipping_digital:
       description: 'Whether product is digital and not delivered by physical means'
       type: boolean
       example: true
@@ -73,7 +73,7 @@ ProductStore:
           - slug
           - price
           - public
-          - is_digital
+          - shipping_digital
         allOf:
           - $ref: '#/Product'
         type: object

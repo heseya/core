@@ -10,7 +10,8 @@ class CartRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'shipping_method_id' => ['nullable', 'uuid', 'exists:shipping_methods,id'],
+            'shipping_method_id' => ['nullable', 'uuid'],
+            'digital_shipping_method_id' => ['nullable', 'uuid'],
 
             'coupons' => ['nullable', 'array'],
             'coupons.*' => ['string', 'max:64'],

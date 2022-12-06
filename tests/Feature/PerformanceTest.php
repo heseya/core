@@ -244,7 +244,7 @@ class PerformanceTest extends TestCase
             ->assertOk();
 
         // TODO: this should be improved
-        $this->assertQueryCountLessThan(11);
+        $this->assertQueryCountLessThan(12);
     }
 
     public function testIndexPerformanceDiscount(): void
@@ -311,7 +311,7 @@ class PerformanceTest extends TestCase
 
         $product = Product::first();
 
-        $this->assertTrue($product->price_min === 1071.0);
+        $this->assertEquals(1071, $product->price_min);
 
         // Every product with discount +3 query to database (update, detach(sales), attach(sales))
         // 1000 products = +- 3137 queries, for 10000 +- 31130

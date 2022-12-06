@@ -13,8 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->boolean('is_digital')->default(false);
+        Schema::table('shipping_methods', function (Blueprint $table) {
+            $table->renameColumn('black_list', 'block_list');
         });
     }
 
@@ -25,8 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->dropColumn('is_digital');
+        Schema::table('shipping_methods', function (Blueprint $table) {
+            $table->renameColumn('block_list', 'black_list');
         });
     }
 };

@@ -13,6 +13,7 @@ use App\Events\ItemUpdatedQuantity;
 use App\Events\NewLocalizationLoginAttempt;
 use App\Events\OrderCreated;
 use App\Events\OrderDocumentEvent;
+use App\Events\OrderRequestedShipping;
 use App\Events\OrderUpdated;
 use App\Events\OrderUpdatedPaid;
 use App\Events\OrderUpdatedShippingNumber;
@@ -104,6 +105,7 @@ class EventServiceProvider extends ServiceProvider
         NewLocalizationLoginAttempt::class,
         OrderCreated::class,
         OrderDocumentEvent::class,
+        OrderRequestedShipping::class,
         OrderUpdated::class,
         OrderUpdatedPaid::class,
         OrderUpdatedShippingNumber::class,

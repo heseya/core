@@ -5,6 +5,7 @@ namespace Feature;
 use App\Enums\ConditionType;
 use App\Enums\DiscountTargetType;
 use App\Enums\DiscountType;
+use App\Enums\ShippingType;
 use App\Models\ConditionGroup;
 use App\Models\Deposit;
 use App\Models\Discount;
@@ -25,9 +26,11 @@ class CartTest extends TestCase
     use RefreshDatabase, WithFaker;
 
     private ShippingMethod $shippingMethod;
+    private ShippingMethod $digitalShippingMethod;
     private ProductSet $category;
     private ProductSet $brand;
     private Product $product;
+    private Product $digitalProduct;
     private string $email;
     private Product $productWithSchema;
     private Schema $schema;
@@ -70,6 +73,14 @@ class CartTest extends TestCase
         ]);
         $this->item = Item::factory()->create();
         $this->option->items()->sync([$this->item->getKey()]);
+
+        $this->digitalProduct = Product::factory()->create([
+            'public' => true,
+            'shipping_digital' => true,
+        ]);
+        $this->digitalShippingMethod = ShippingMethod::factory()->create([
+            'shipping_type' => ShippingType::DIGITAL,
+        ]);
     }
 
     public function testCartProcessUnauthorized(): void
@@ -87,6 +98,50 @@ class CartTest extends TestCase
         ]);
 
         $response->assertForbidden();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessDigitalMethodForPhysicalProduct($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'digital_shipping_method_id' => $this->digitalShippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->product->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [],
+                ],
+            ],
+        ]);
+
+        $response->assertUnprocessable();
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testCartProcessPhysicalMethodForDigitalProduct($user): void
+    {
+        $this->$user->givePermissionTo('cart.verify');
+
+        $response = $this->actingAs($this->$user)->postJson('/cart/process', [
+            'shipping_method_id' => $this->shippingMethod->getKey(),
+            'items' => [
+                [
+                    'cartitem_id' => '1',
+                    'product_id' => $this->digitalProduct->getKey(),
+                    'quantity' => 2,
+                    'schemas' => [],
+                ],
+            ],
+        ]);
+
+        $response->assertUnprocessable();
     }
 
     /**

@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ShippingType;
+use App\Models\Address;
+use App\Models\App;
 use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\PriceRange;
@@ -581,6 +584,78 @@ class ShippingMethodTest extends TestCase
     }
 
     /**
+     * @dataProvider authProvider
+     */
+    public function testCreateWithShippingPoints($user): void
+    {
+        $this->$user->givePermissionTo('shipping_methods.add');
+
+        ShippingMethod::query()->delete();
+        Address::query()->delete();
+
+        $address = Address::factory()->create();
+
+        $shipping_method = [
+            'name' => 'Test',
+            'public' => true,
+            'block_list' => false,
+            'shipping_time_min' => 2,
+            'shipping_time_max' => 3,
+            'shipping_type' => ShippingType::POINT,
+        ];
+        $shipping_points = [
+            'shipping_points' => [
+                [
+                    'id' => $address->getKey(),
+                    'name' => 'test1',
+                ],
+                [
+                    'name' => 'test2',
+                ],
+            ],
+        ];
+
+        $response = $this->actingAs($this->$user)
+            ->postJson('/shipping-methods', $shipping_method + [
+                'price_ranges' => [
+                    [
+                        'start' => 0,
+                        'value' => 10.37,
+                    ],
+                    [
+                        'start' => 200,
+                        'value' => 0,
+                    ],
+                ],
+            ] + $shipping_points);
+
+        $addressSaved = Address::where('name', 'test2')->first();
+
+        $response
+            ->assertCreated()
+            ->assertJson(['data' => $shipping_method])
+            ->assertJsonCount(2, 'data.shipping_points')
+            ->assertJsonCount(2, 'data.price_ranges')
+            ->assertJsonFragment(['start' => 0])
+            ->assertJsonFragment(['value' => 10.37])
+            ->assertJsonFragment(['start' => 200])
+            ->assertJsonFragment(['value' => 0])
+            ->assertJsonFragment(['shipping_type' => ShippingType::POINT]);
+
+        $this->assertDatabaseHas('shipping_methods', $shipping_method + [
+            'app_id' => $this->$user instanceof App ? $this->$user->getKey() : null,
+        ])
+            ->assertDatabaseHas('address_shipping_method', [
+                'address_id' => $address->getKey(),
+                'shipping_method_id' => $response->getData()->data->id,
+            ])
+            ->assertDatabaseHas('address_shipping_method', [
+                'address_id' => $addressSaved->getKey(),
+                'shipping_method_id' => $response->getData()->data->id,
+            ]);
+    }
+
+    /**
      * Price range testing with no initial 'start' value of zero
      *
      * @dataProvider authProvider
@@ -602,6 +677,54 @@ class ShippingMethodTest extends TestCase
         );
 
         $response->assertStatus(422);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testUpdateShippingMethodShippingPoints($user): void
+    {
+        $this->$user->givePermissionTo('shipping_methods.edit');
+
+        ShippingMethod::query()->delete();
+        Address::query()->delete();
+
+        $shippingMethod = ShippingMethod::factory()->create();
+
+        $address = Address::factory()->create();
+        $shippingMethod->shippingPoints()->sync($address);
+
+        $response = $this->actingAs($this->$user)
+            ->patchJson('/shipping-methods/id:' . $shippingMethod->getKey(), [
+                'name' => 'test',
+                'shipping_type' => ShippingType::ADDRESS,
+                'shipping_points' => [
+                    [
+                        'id' => $address->getKey(),
+                        'name' => 'test1',
+                    ],
+                    [
+                        'name' => 'test2',
+                    ],
+                ],
+            ]);
+
+        $addressSaved = Address::where('name', 'test2')->first();
+
+        $response
+            ->assertOk()
+            ->assertJsonFragment(['shipping_type' => ShippingType::ADDRESS])
+            ->assertJsonCount(2, 'data.shipping_points');
+
+        $this
+            ->assertDatabaseHas('address_shipping_method', [
+                'address_id' => $address->getKey(),
+                'shipping_method_id' => $response->getData()->data->id,
+            ])
+            ->assertDatabaseHas('address_shipping_method', [
+                'address_id' => $addressSaved->getKey(),
+                'shipping_method_id' => $response->getData()->data->id,
+            ]);
     }
 
     /**
@@ -822,11 +945,27 @@ class ShippingMethodTest extends TestCase
     public function testDelete($user): void
     {
         $this->$user->givePermissionTo('shipping_methods.remove');
-
         $response = $this->actingAs($this->$user)
             ->deleteJson('/shipping-methods/id:' . $this->shipping_method->getKey());
         $response->assertNoContent();
         $this->assertModelMissing($this->shipping_method);
+    }
+
+    /**
+     * @dataProvider authProvider
+     */
+    public function testDeleteOtherAppMethod($user): void
+    {
+        $app = App::factory()->create();
+        $shippingMethod = ShippingMethod::factory()->create([
+            'app_id' => $app->getKey(),
+        ]);
+        $this->$user->givePermissionTo('shipping_methods.remove');
+        $response = $this->actingAs($this->$user)
+            ->deleteJson('/shipping-methods/id:' . $shippingMethod->getKey());
+
+        $response
+            ->assertStatus(422);
     }
 
     /**
