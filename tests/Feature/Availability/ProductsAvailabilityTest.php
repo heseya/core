@@ -103,27 +103,54 @@ class ProductsAvailabilityTest extends TestCase
     // Product have schema and options with required items but item is not available
     public function testRequiredSchemasNoAvailableItems(): void
     {
-        /** @var Product $product */
-        $product = Product::factory()->create();
+        $item1 = Item::factory()->create();
+        $item2 = Item::factory()->create();
 
         $schema = Schema::factory()->create([
             'required' => true,
             'type' => SchemaType::SELECT,
         ]);
-        $item = Item::factory()->create();
+        $option1 = Option::factory()->create(['schema_id' => $schema->getKey()]);
+        $option2 = Option::factory()->create(['schema_id' => $schema->getKey()]);
+        $option1->items()->attach($item1->getKey());
+        $option2->items()->sync($item2->getKey());
 
-        /** @var Option $option */
-        $option = Option::factory()->create([
-            'schema_id' => $schema->getKey(),
-        ]);
-        $option->items()->attach($item->getKey());
-
-        $item = Item::factory()->create();
-        $option = Option::factory()->create([
-            'schema_id' => $schema->getKey(),
-        ]);
-        $option->items()->sync([$item->getKey() => ['required_quantity' => 1]]);
+        /** @var Product $product */
+        $product = Product::factory()->create();
         $product->schemas()->attach($schema->getKey());
+
+        $availability = $this->availabilityService->getCalculateProductAvailability($product);
+
+        $this->assertFalse($availability['available']);
+        $this->assertEquals(0, $availability['quantity']);
+        $this->assertNull($availability['shipping_time']);
+        $this->assertNull($availability['shipping_date']);
+        $this->assertEmpty($availability['productAvailabilities']);
+    }
+
+    // Product have schema and options with required items but item is not available
+    public function testRequiredSchemasNoAvailableItemsMultipleSchemas(): void
+    {
+        $item1 = Item::factory()->create();
+        $item2 = Item::factory()->create();
+
+        $schema1 = Schema::factory()->create([
+            'required' => true,
+            'type' => SchemaType::SELECT,
+        ]);
+        $option = Option::factory()->create(['schema_id' => $schema1->getKey()]);
+        $option->items()->attach($item1->getKey());
+
+        $schema2 = Schema::factory()->create([
+            'required' => true,
+            'type' => SchemaType::SELECT,
+        ]);
+        $option = Option::factory()->create(['schema_id' => $schema2->getKey()]);
+        $option->items()->attach($item2->getKey());
+
+        /** @var Product $product */
+        $product = Product::factory()->create();
+        $product->schemas()->sync([$schema1->getKey(), $schema2->getKey()]);
 
         $availability = $this->availabilityService->getCalculateProductAvailability($product);
 
